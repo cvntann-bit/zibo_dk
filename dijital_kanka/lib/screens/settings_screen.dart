@@ -1,0 +1,704 @@
+import 'package:flutter/material.dart';
+import 'package:package_info_plus/package_info_plus.dart';
+import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
+
+import '../l10n/app_localizations.dart';
+import '../models/push_notification_type.dart';
+import '../providers/locale_provider.dart';
+import '../providers/notification_provider.dart';
+import '../providers/push_notification_provider.dart';
+import '../providers/theme_provider.dart';
+import 'legal_placeholder_screen.dart';
+
+/// Destek e-postası — Ayarlar > Destek > "Bize Ulaşın" satırında hem
+/// görünen metin hem `mailto:` hedefi olarak kullanılıyor.
+const _contactEmail = 'contact@getzibo.com';
+
+/// Web sitesi — Ayarlar > Hakkında > "Web Sitesi" satırında hem görünen
+/// metin hem `https://` hedefi olarak kullanılıyor.
+const _websiteHost = 'getzibo.com';
+
+/// [uri]'yi açmayı dener; cihazda uygun bir uygulama yoksa (ör. hiç mail
+/// istemcisi kurulu değilse) sessizce başarısız olmak yerine kullanıcıya
+/// kısa bir hata mesajı gösterir.
+Future<void> _launchOrShowError(BuildContext context, Uri uri) async {
+  final l10n = AppLocalizations.of(context)!;
+  final launched = await launchUrl(uri).catchError((_) => false);
+  if (!launched && context.mounted) {
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(l10n.settingsCouldNotOpenLink)));
+  }
+}
+
+/// Ayarlar sayfası. Başlık çubuğundaki dişli ikonundan push edilir; alt
+/// gezinme çubuğunda bir sekme değildir, bu yüzden kendi Scaffold/AppBar'ını
+/// (geri butonu dahil) taşır.
+class SettingsScreen extends StatelessWidget {
+  const SettingsScreen({super.key});
+
+  Future<void> _showLanguagePicker(BuildContext context) async {
+    final l10n = AppLocalizations.of(context)!;
+    final localeProvider = context.read<LocaleProvider>();
+
+    await showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      builder: (sheetContext) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 4, 20, 8),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  l10n.settingsLanguage,
+                  style: Theme.of(sheetContext).textTheme.titleMedium,
+                ),
+              ),
+            ),
+            for (final code in supportedLanguageCodes)
+              ListTile(
+                leading: _LanguageFlagCircle(languageCode: code, size: 30),
+                title: Text(_languageAutonym(code)),
+                trailing: localeProvider.locale.languageCode == code
+                    ? Icon(
+                        Icons.check,
+                        color: Theme.of(sheetContext).colorScheme.primary,
+                      )
+                    : null,
+                onTap: () {
+                  localeProvider.setLocale(Locale(code));
+                  Navigator.of(sheetContext).pop();
+                },
+              ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final isDarkMode = context.watch<ThemeProvider>().isDarkMode;
+    final currentLanguageCode = context.watch<LocaleProvider>().locale.languageCode;
+    final sectionTitleStyle = Theme.of(context).textTheme.labelLarge?.copyWith(
+      color: Theme.of(context).colorScheme.primary,
+      fontWeight: FontWeight.bold,
+      letterSpacing: 0.2,
+    );
+
+    return Scaffold(
+      appBar: AppBar(title: Text(l10n.tabSettings)),
+      body: ListView(
+        padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
+        children: [
+          // --- Genel: koyu tema + dil + (varsa) bildirimler — kullanıcının
+          // uygulama genelinde nasıl davrandığını belirlediği tercihler.
+          Text(l10n.settingsSectionGeneral, style: sectionTitleStyle),
+          const SizedBox(height: 8),
+          Card(
+            clipBehavior: Clip.antiAlias,
+            child: Column(
+              children: [
+                SwitchListTile(
+                  secondary: const Icon(Icons.dark_mode_outlined),
+                  title: Text(l10n.settingsDarkTheme),
+                  value: isDarkMode,
+                  onChanged: (value) =>
+                      context.read<ThemeProvider>().setDarkMode(value),
+                ),
+                const Divider(height: 1),
+                // Dil satırı: seçili dilin küçük yuvarlak bayrağı trailing'de
+                // görünür, dokununca üç dilli (TR/EN/ES) bir seçim sheet'i
+                // açılır (bkz. LocaleProvider).
+                ListTile(
+                  leading: const Icon(Icons.language_outlined),
+                  title: Text(l10n.settingsLanguage),
+                  subtitle: Text(_languageAutonym(currentLanguageCode)),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _LanguageFlagCircle(languageCode: currentLanguageCode),
+                      const SizedBox(width: 6),
+                      const Icon(Icons.chevron_right),
+                    ],
+                  ),
+                  onTap: () => _showLanguagePicker(context),
+                ),
+              ],
+            ),
+          ),
+          if (notificationsFeatureEnabled) ...[
+            const SizedBox(height: 12),
+            const _NotificationSettingsCard(),
+          ],
+
+          // --- Push Bildirimleri: FCM tabanlı, sunucu taraflı gönderim
+          // (bkz. CLAUDE.md "Push Bildirimleri" bölümü) — yukarıdaki ESKİ
+          // yerel sistemden TAMAMEN BAĞIMSIZ, `notificationsFeatureEnabled`
+          // ile gate'lenmiyor (her zaman görünür).
+          const SizedBox(height: 24),
+          Text(l10n.settingsSectionPushNotifications, style: sectionTitleStyle),
+          const SizedBox(height: 8),
+          const _PushNotificationSettingsCard(),
+
+          // --- Destek: kullanıcının bir sorun/soru için bize ulaşabileceği
+          // kanal.
+          const SizedBox(height: 24),
+          Text(l10n.settingsSectionSupport, style: sectionTitleStyle),
+          const SizedBox(height: 8),
+          Card(
+            clipBehavior: Clip.antiAlias,
+            child: ListTile(
+              leading: const Icon(Icons.mail_outline),
+              title: Text(l10n.settingsContactUs),
+              subtitle: const Text(_contactEmail),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => _launchOrShowError(
+                context,
+                Uri(scheme: 'mailto', path: _contactEmail),
+              ),
+            ),
+          ),
+
+          // --- Hakkında: sürüm bilgisi + hukuki/kurumsal linkler.
+          const SizedBox(height: 24),
+          Text(l10n.settingsAbout, style: sectionTitleStyle),
+          const SizedBox(height: 8),
+          Card(
+            clipBehavior: Clip.antiAlias,
+            child: Column(
+              children: [
+                const _AppVersionRow(),
+                const Divider(height: 1),
+                ListTile(
+                  leading: const Icon(Icons.public),
+                  title: Text(l10n.settingsWebsite),
+                  subtitle: const Text(_websiteHost),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => _launchOrShowError(
+                    context,
+                    Uri.https(_websiteHost),
+                  ),
+                ),
+                const Divider(height: 1),
+                ListTile(
+                  leading: const Icon(Icons.privacy_tip_outlined),
+                  title: Text(l10n.settingsPrivacyPolicy),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => LegalPlaceholderScreen(
+                        title: l10n.settingsPrivacyPolicy,
+                        body: l10n.settingsLegalPlaceholderBody,
+                      ),
+                    ),
+                  ),
+                ),
+                const Divider(height: 1),
+                ListTile(
+                  leading: const Icon(Icons.description_outlined),
+                  title: Text(l10n.settingsTermsOfService),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => LegalPlaceholderScreen(
+                        title: l10n.settingsTermsOfService,
+                        body: l10n.settingsLegalPlaceholderBody,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          if (notificationsFeatureEnabled) ...[
+            const SizedBox(height: 24),
+            const _NotificationDebugPanel(),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+/// Uygulama sürümünü ("1.0.0" gibi görünen ad, derleme numarası olmadan)
+/// gösteren satır — `package_info_plus` ile derleme zamanında gömülen
+/// `pubspec.yaml`'daki `version:` alanını platformdan okur, elle
+/// senkronize tutulan bir sabit YOK (sürüm her değiştiğinde tek bir yerde
+/// — pubspec'te — güncellenmesi yeterli).
+class _AppVersionRow extends StatefulWidget {
+  const _AppVersionRow();
+
+  @override
+  State<_AppVersionRow> createState() => _AppVersionRowState();
+}
+
+class _AppVersionRowState extends State<_AppVersionRow> {
+  String? _version;
+
+  @override
+  void initState() {
+    super.initState();
+    // `flutter_test` ortamında platform channel'ı yok — `NotificationService`
+    // ile AYNI desen: platforma dokunan çağrı try/catch ile sarılı, hata
+    // durumunda sessizce "—" göstermeye devam eder, test/widget çökmez.
+    PackageInfo.fromPlatform()
+        .then((info) {
+          if (mounted) setState(() => _version = info.version);
+        })
+        .catchError((_) {});
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return ListTile(
+      leading: const Icon(Icons.tag_outlined),
+      title: Text(l10n.settingsVersion),
+      trailing: Text(
+        _version ?? '—',
+        style: Theme.of(context).textTheme.bodyMedium,
+      ),
+    );
+  }
+}
+
+/// **2026 yeni özellik.** FCM push bildirim türlerinin (bkz.
+/// `PushNotificationType`) tek tek açma/kapama tercihi — dört
+/// `SwitchListTile`, `PushNotificationProvider`'a bağlı. Eski yerel
+/// bildirim sisteminin `_NotificationSettingsCard`'ından (pil optimizasyonu/
+/// otomatik başlatma satırları içeren) BİLEREK çok daha sade — push
+/// bildirimler sunucu taraflı olduğu için cihaza özel bir "güvenilirlik"
+/// sorun yok, yalnızca kullanıcının HANGİ türleri istediği önemli.
+class _PushNotificationSettingsCard extends StatelessWidget {
+  const _PushNotificationSettingsCard();
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final push = context.watch<PushNotificationProvider>();
+
+    Widget tile(
+      PushNotificationType type,
+      IconData icon,
+      String title,
+      String subtitle,
+    ) {
+      return SwitchListTile(
+        secondary: Icon(icon),
+        title: Text(title),
+        subtitle: Text(subtitle),
+        value: push.isEnabled(type),
+        onChanged: (value) => context
+            .read<PushNotificationProvider>()
+            .setEnabled(type, value),
+      );
+    }
+
+    return Card(
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        children: [
+          tile(
+            PushNotificationType.dailyMotivation,
+            Icons.wb_sunny_outlined,
+            l10n.pushNotificationDailyMotivationTitle,
+            l10n.pushNotificationDailyMotivationSubtitle,
+          ),
+          const Divider(height: 1),
+          tile(
+            PushNotificationType.streakReminder,
+            Icons.local_fire_department_outlined,
+            l10n.pushNotificationStreakReminderTitle,
+            l10n.pushNotificationStreakReminderSubtitle,
+          ),
+          const Divider(height: 1),
+          tile(
+            PushNotificationType.dailyReward,
+            Icons.card_giftcard_outlined,
+            l10n.pushNotificationDailyRewardTitle,
+            l10n.pushNotificationDailyRewardSubtitle,
+          ),
+          const Divider(height: 1),
+          tile(
+            PushNotificationType.reEngagement,
+            Icons.favorite_outline,
+            l10n.pushNotificationReEngagementTitle,
+            l10n.pushNotificationReEngagementSubtitle,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Dil kodunun görünen adı (autonym) — bir dilin kendi adı ne UI dilinden
+/// bağımsızdır, bu yüzden ARB'ye taşınmadı (İngilizce arayüzde bile
+/// "Türkçe" hep "Türkçe" görünmeli, "Turkish" değil).
+String _languageAutonym(String code) => switch (code) {
+  'en' => 'English',
+  'es' => 'Español',
+  _ => 'Türkçe',
+};
+
+String _languageFlagEmoji(String code) => switch (code) {
+  'en' => '🇬🇧',
+  'es' => '🇪🇸',
+  _ => '🇹🇷',
+};
+
+/// Bir dil koduna karşılık gelen küçük, YUVARLAK bayrak rozeti — bayrak
+/// emoji glifleri doğası gereği dikdörtgen olduğu için `ClipOval` ile
+/// yuvarlatılıyor (kullanıcı isteği: dil seçince yanında küçük yuvarlak
+/// bayrak görünsün).
+class _LanguageFlagCircle extends StatelessWidget {
+  const _LanguageFlagCircle({required this.languageCode, this.size = 22});
+
+  final String languageCode;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(
+          color: Theme.of(context).colorScheme.outlineVariant,
+          width: 1,
+        ),
+      ),
+      // ClipOval kırpar, ama bayrak emoji glifi kutudan KÜÇÜK kalırsa
+      // kırpma hiçbir şeye dokunmaz ve rozet yuvarlak değil, düz bir bayrak
+      // gibi görünür. Bu yüzden glif bilerek kutudan biraz BÜYÜK çiziliyor
+      // (fontSize > size) ki köşeleri gerçekten yuvarlanıp kırpılsın.
+      child: ClipOval(
+        child: OverflowBox(
+          maxWidth: size * 1.3,
+          maxHeight: size * 1.3,
+          child: Center(
+            child: Text(
+              _languageFlagEmoji(languageCode),
+              style: TextStyle(fontSize: size * 1.05),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// GEÇİCİ: Bildirim izninin gerçekten açık olup olmadığını gösteren ve
+/// gerçek zamanlama mekanizmasını (AlarmManager) saatler değil dakikalar
+/// içinde test etmeyi sağlayan debug paneli — bkz. CLAUDE.md "Bildirimler"
+/// bölümündeki MIUI tanısı. Bildirim sistemi gerçek cihazlarda kararlı
+/// çalıştığı doğrulandıktan sonra tamamen kaldırılacak.
+class _NotificationDebugPanel extends StatefulWidget {
+  const _NotificationDebugPanel();
+
+  @override
+  State<_NotificationDebugPanel> createState() =>
+      _NotificationDebugPanelState();
+}
+
+class _NotificationDebugPanelState extends State<_NotificationDebugPanel> {
+  bool? _hasPermission;
+  String? _lastActionMessage;
+
+  @override
+  void initState() {
+    super.initState();
+    _refreshPermission();
+  }
+
+  Future<void> _refreshPermission() async {
+    final granted = await context.read<NotificationProvider>().hasPermission();
+    if (mounted) setState(() => _hasPermission = granted);
+  }
+
+  Future<void> _showNow() async {
+    await context.read<NotificationProvider>().showTestNotificationNow();
+    if (mounted) {
+      setState(
+        () => _lastActionMessage =
+            'Hemen gönderildi — bildirim çubuğunu kontrol et.',
+      );
+    }
+  }
+
+  Future<void> _scheduleIn5Seconds() async {
+    await context.read<NotificationProvider>().scheduleTestNotificationIn(
+      const Duration(seconds: 5),
+    );
+    if (mounted) {
+      setState(
+        () => _lastActionMessage =
+            '5 saniye sonra gelecek şekilde planlandı (üretimdeki AlarmManager '
+            'mekanizmasıyla aynı) — uygulamayı arka plana at ve bekle.',
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Bildirim Test Paneli (geçici)',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Icon(
+                  _hasPermission == true
+                      ? Icons.check_circle_outline
+                      : Icons.cancel_outlined,
+                  color: _hasPermission == true
+                      ? colorScheme.primary
+                      : colorScheme.error,
+                  size: 20,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    _hasPermission == null
+                        ? 'Bildirim izni kontrol ediliyor...'
+                        : _hasPermission!
+                        ? 'Bildirim izni: Verildi'
+                        : 'Bildirim izni: Verilmedi',
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.refresh),
+                  tooltip: 'Durumu yenile',
+                  onPressed: _refreshPermission,
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                OutlinedButton(
+                  onPressed: _showNow,
+                  child: const Text('Hemen Test Bildirimi Göster'),
+                ),
+                OutlinedButton(
+                  onPressed: _scheduleIn5Seconds,
+                  child: const Text('5sn Sonra Planlanmış Bildirim'),
+                ),
+              ],
+            ),
+            if (_lastActionMessage != null) ...[
+              const SizedBox(height: 8),
+              Text(
+                _lastActionMessage!,
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Bildirim sıklığı (Kapalı/Günde 1/Günde 3) ve üç sabit zaman diliminin
+/// (Sabah/Öğlen/Akşam) saatini ayarlayan kart. Her değişiklik
+/// [NotificationProvider] üzerinden hemen kalıcı hale gelir ve bildirimler
+/// yeniden planlanır. Ayrıca, MIUI/EMUI/ColorOS gibi agresif Android
+/// varyantlarının bildirim tetiklemesini engelleyebilen pil optimizasyonu/
+/// otomatik başlatma kısıtlamalarını gidermek için bir "güvenilirlik"
+/// bölümü içerir (bkz. CLAUDE.md "Bildirimler" bölümündeki tanı).
+class _NotificationSettingsCard extends StatefulWidget {
+  const _NotificationSettingsCard();
+
+  @override
+  State<_NotificationSettingsCard> createState() =>
+      _NotificationSettingsCardState();
+}
+
+class _NotificationSettingsCardState extends State<_NotificationSettingsCard>
+    with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // Kullanıcı pil optimizasyonu/otomatik başlatma ayarını sistem
+    // ayarlarından değiştirip uygulamaya geri dönmüş olabilir.
+    if (state == AppLifecycleState.resumed) {
+      context.read<NotificationProvider>().refreshBatteryOptimizationStatus();
+    }
+  }
+
+  Future<void> _pickTime(
+    BuildContext context,
+    NotificationProvider provider,
+    int slotIndex,
+  ) async {
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: provider.times[slotIndex],
+    );
+    if (picked != null && context.mounted) {
+      provider.setTime(slotIndex, picked);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final provider = context.watch<NotificationProvider>();
+    final colorScheme = Theme.of(context).colorScheme;
+
+    final slotLabels = [
+      l10n.notificationSlotMorning,
+      l10n.notificationSlotNoon,
+      l10n.notificationSlotEvening,
+    ];
+    final activeSlots = switch (provider.frequency) {
+      NotificationFrequency.off => const <int>{},
+      NotificationFrequency.once => const {NotificationProvider.onceSlotIndex},
+      NotificationFrequency.thrice => const {0, 1, 2},
+    };
+
+    return Card(
+      clipBehavior: Clip.antiAlias,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.notifications_outlined),
+                const SizedBox(width: 12),
+                Text(
+                  l10n.notificationsSectionTitle,
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            SegmentedButton<NotificationFrequency>(
+              segments: [
+                ButtonSegment(
+                  value: NotificationFrequency.off,
+                  label: Text(l10n.notificationFrequencyOff),
+                ),
+                ButtonSegment(
+                  value: NotificationFrequency.once,
+                  label: Text(l10n.notificationFrequencyOnce),
+                ),
+                ButtonSegment(
+                  value: NotificationFrequency.thrice,
+                  label: Text(l10n.notificationFrequencyThrice),
+                ),
+              ],
+              selected: {provider.frequency},
+              onSelectionChanged: (selection) =>
+                  context.read<NotificationProvider>().setFrequency(
+                    selection.first,
+                  ),
+            ),
+            for (var slot = 0; slot < 3; slot++)
+              Opacity(
+                opacity: activeSlots.contains(slot) ? 1 : 0.4,
+                child: ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(slotLabels[slot]),
+                  trailing: TextButton(
+                    onPressed: activeSlots.isEmpty
+                        ? null
+                        : () => _pickTime(context, provider, slot),
+                    child: Text(
+                      provider.times[slot].format(context),
+                      style: TextStyle(color: colorScheme.primary),
+                    ),
+                  ),
+                ),
+              ),
+            const Divider(height: 24),
+            Text(
+              l10n.notificationReliabilityTitle,
+              style: Theme.of(context).textTheme.labelLarge,
+            ),
+            const SizedBox(height: 4),
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: Icon(
+                provider.isBatteryOptimizationIgnored
+                    ? Icons.check_circle_outline
+                    : Icons.battery_alert_outlined,
+                color: provider.isBatteryOptimizationIgnored
+                    ? colorScheme.primary
+                    : colorScheme.error,
+              ),
+              title: Text(
+                provider.isBatteryOptimizationIgnored
+                    ? l10n.notificationBatteryOptimizationOk
+                    : l10n.notificationBatteryOptimizationWarning,
+              ),
+              trailing: provider.isBatteryOptimizationIgnored
+                  ? null
+                  : TextButton(
+                      onPressed: () => context
+                          .read<NotificationProvider>()
+                          .requestIgnoreBatteryOptimizations(),
+                      child: Text(l10n.notificationBatteryOptimizationButton),
+                    ),
+            ),
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: const Icon(Icons.rocket_launch_outlined),
+              title: Text(l10n.notificationAutostartDescription),
+              trailing: TextButton(
+                onPressed: () => context
+                    .read<NotificationProvider>()
+                    .openAutostartOrAppSettings(),
+                child: Text(l10n.notificationAutostartButton),
+              ),
+            ),
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: const Icon(Icons.bedtime_outlined),
+              title: Text(l10n.notificationUnusedAppsDescription),
+              trailing: TextButton(
+                onPressed: () => context
+                    .read<NotificationProvider>()
+                    .openUnusedAppsSettings(),
+                child: Text(l10n.notificationUnusedAppsButton),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

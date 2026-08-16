@@ -1,0 +1,20 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Her kullanıcı yalnızca KENDİ verisine (users/{uid}/state/{prefsKey})
+    // erişebilir — bkz. CloudStateStore. Anonim Auth dahil, kimliği
+    // doğrulanmamış hiçbir istek hiçbir veriye erişemez.
+    match /users/{userId}/{document=**} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // TrustedTimeProvider'ın FirestoreTrustedTimeService'i sunucu zaman
+    // damgasını okumak için paylaşılan bir "ping" belgesine yazıp hemen
+    // geri okuyor (bkz. trusted_time_service.dart) — belge içeriği
+    // önemsiz, yalnızca kimliği doğrulanmış herhangi bir kullanıcının bu
+    // yazma/okumayı yapabilmesi gerekiyor.
+    match /_serverTime/{document} {
+      allow read, write: if request.auth != null;
+    }
+  }
+}

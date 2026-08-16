@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Zibo markalı native splash — main.dart'taki _cream (#FFF8E8) açık tema
+     zeminiyle aynı renk, ortasında zibo_splash_logo.png (bkz. drawable-nodpi).
+     Bu, Flutter motoru + Firebase.initializeApp()/signInAnonymously() süren
+     kısa pencerede kullanıcının boş beyaz/siyah bir ekran görmesini önlüyor. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@color/zibo_splash_light" />
+    <item>
+        <bitmap
+            android:gravity="center"
+            android:src="@drawable/zibo_splash_logo" />
+    </item>
+</layer-list>

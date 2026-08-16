@@ -1,0 +1,25 @@
+name: Günlük Motivasyon Bildirimi
+
+on:
+  # 09:00-10:45 (Europe/Istanbul = UTC+3) arası 15 dakikada bir — script her
+  # kullanıcı için o günkü rastgele dilime denk gelip gelmediğini kendisi
+  # kontrol ediyor (bkz. notification-scripts/src/dailyMotivation.js).
+  schedule:
+    - cron: '0,15,30,45 6-7 * * *'
+  workflow_dispatch: {}
+
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: notification-scripts
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm install
+      - run: npm run daily-motivation
+        env:
+          FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}

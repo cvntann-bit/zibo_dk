@@ -1,0 +1,18 @@
+{
+  "name": "zibo-notification-scripts",
+  "description": "Zibo (Dijital Kanka) — GitHub Actions cron'larından çalıştırılan, FCM push bildirimi gönderen bağımsız Node.js betikleri. Firebase Cloud Functions/Scheduler KULLANMAZ (Blaze plan gerektirmez) — yalnızca firebase-admin SDK ile doğrudan Firestore okuyup FCM'e gönderim yapar.",
+  "private": true,
+  "type": "commonjs",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "daily-motivation": "node src/dailyMotivation.js",
+    "streak-reminder": "node src/streakReminder.js",
+    "daily-reward-reminder": "node src/dailyRewardReminder.js",
+    "re-engagement": "node src/reEngagement.js"
+  },
+  "dependencies": {
+    "firebase-admin": "^12.7.0"
+  }
+}

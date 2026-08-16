@@ -1,0 +1,1465 @@
+{
+  "@@locale": "tr",
+  "appTitle": "Zibo",
+  "@appTitle": {
+    "description": "Uygulamanın adı"
+  },
+  "homeAppBarTitle": "Zibo",
+  "@homeAppBarTitle": {
+    "description": "Başlık çubuğundaki Zibo logosu için erişilebilirlik (ekran okuyucu) etiketi"
+  },
+  "coinBalanceLabel": "{count} Zibo Coin",
+  "@coinBalanceLabel": {
+    "description": "Başlık çubuğundaki coin bakiyesi rozetinin erişilebilirlik (ekran okuyucu) etiketi",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "insufficientCoins": "Yetersiz Zibo Coin",
+  "@insufficientCoins": {
+    "description": "Kullanıcı bakiyesi yetmeyen bir harcama denediğinde gösterilen uyarı metni"
+  },
+  "ziboImagePlaceholder": "Zibo",
+  "@ziboImagePlaceholder": {
+    "description": "Zibo görseli için erişilebilirlik (ekran okuyucu) etiketi"
+  },
+  "tapZiboHint": "Yeni bir söz için Zibo'ya dokun",
+  "@tapZiboHint": {
+    "description": "Konuşma balonunun altında gösterilen, Zibo'ya dokunulabileceğini belirten küçük ipucu metni"
+  },
+  "tabHome": "Ana Sayfa",
+  "@tabHome": {
+    "description": "Alt gezinme çubuğunda Ana Sayfa sekmesinin etiketi"
+  },
+  "tabGoalTracking": "Hedef Takibi",
+  "@tabGoalTracking": {
+    "description": "Alt gezinme çubuğunda Hedef Takibi sekmesinin erişilebilirlik etiketi ve sekmenin üst başlığı"
+  },
+  "bottomBarGoalsLabel": "Hedefler",
+  "@bottomBarGoalsLabel": {
+    "description": "Alt gezinme çubuğunun kendi görselinde (açık tema) veya üzerine çizilen metinde (koyu tema) görünen KISA Hedef Takibi etiketi — tabGoalTracking'den farklı olarak yalnızca bar içindeki dar sütuna sığması için kısaltılmış"
+  },
+  "tabSettings": "Ayarlar",
+  "@tabSettings": {
+    "description": "Alt gezinme çubuğunda Ayarlar sekmesinin etiketi ve Ayarlar sekmesinin üst başlığı"
+  },
+  "goalProgressLabel": "{completed}/7 gün",
+  "@goalProgressLabel": {
+    "description": "Bir hedefin güncel 7 günlük döngüde kaç gün işaretlendiğini gösteren metin",
+    "placeholders": {
+      "completed": {
+        "type": "int"
+      }
+    }
+  },
+  "goalDayToday": "Gün {day}, bugün",
+  "@goalDayToday": {
+    "description": "Bugüne karşılık gelen, işaretlenebilir gün kutucuğunun erişilebilirlik etiketi",
+    "placeholders": {
+      "day": {
+        "type": "int"
+      }
+    }
+  },
+  "goalDayDone": "Gün {day}, tamamlandı",
+  "@goalDayDone": {
+    "description": "İşaretlenmiş bir gün kutucuğunun erişilebilirlik etiketi",
+    "placeholders": {
+      "day": {
+        "type": "int"
+      }
+    }
+  },
+  "goalDayMissed": "Gün {day}, kaçırıldı",
+  "@goalDayMissed": {
+    "description": "Tarihi geçmiş ama işaretlenmemiş bir gün kutucuğunun erişilebilirlik etiketi",
+    "placeholders": {
+      "day": {
+        "type": "int"
+      }
+    }
+  },
+  "goalDayUpcoming": "Gün {day}, henüz açılmadı",
+  "@goalDayUpcoming": {
+    "description": "Tarihi henüz gelmemiş, kilitli bir gün kutucuğunun erişilebilirlik etiketi",
+    "placeholders": {
+      "day": {
+        "type": "int"
+      }
+    }
+  },
+  "goalCycleCompleted": "Harika! 7 günlük hedefi tamamladın, +50 Zibo Coin kazandın.",
+  "@goalCycleCompleted": {
+    "description": "Bir hedefin 7 günlük döngüsü tamamlanıp coin ödülü verildiğinde gösterilen mesaj"
+  },
+  "goalStreakReset": "{goalNames} hedefinde bir gün kaçırıldı, seri sıfırlandı. Bugünden yeniden başlıyoruz.",
+  "@goalStreakReset": {
+    "description": "Bir veya daha fazla hedefin, kaçırılan bir gün yüzünden döngüsü sıfırlandığında gösterilen mesaj",
+    "placeholders": {
+      "goalNames": {
+        "type": "String"
+      }
+    }
+  },
+  "addGoalButton": "Yeni Hedef Ekle",
+  "@addGoalButton": {
+    "description": "Yeni bir hedef eklemek için gösterilen butonun etiketi"
+  },
+  "addGoalDialogTitle": "Yeni Hedef",
+  "@addGoalDialogTitle": {
+    "description": "Yeni hedef ekleme diyalog kutusunun başlığı"
+  },
+  "addGoalDialogHint": "ör. Günde 30 dakika kitap oku",
+  "@addGoalDialogHint": {
+    "description": "Yeni hedef ekleme diyalog kutusundaki metin alanının örnek (hint) metni"
+  },
+  "deleteGoalTooltip": "Hedefi sil",
+  "@deleteGoalTooltip": {
+    "description": "Bir hedef kartındaki silme ikonunun erişilebilirlik ipucu"
+  },
+  "completedGoalsButtonTooltip": "Tamamlanan Hedefler",
+  "@completedGoalsButtonTooltip": {
+    "description": "Hedefler sekmesindeyken başlık çubuğunda görünen, Tamamlanan Hedefler ekranını açan ikonun ipucu"
+  },
+  "completedGoalsScreenTitle": "Tamamlanan Hedefler",
+  "@completedGoalsScreenTitle": {
+    "description": "Tamamlanan Hedefler ekranının AppBar başlığı"
+  },
+  "completedGoalsEmpty": "Henüz tamamlanan bir hedef yok. İlk 7 günlük döngünü tamamlayınca burada görünecek!",
+  "@completedGoalsEmpty": {
+    "description": "Hiç tamamlanan döngü olmadığında Tamamlanan Hedefler ekranında gösterilen metin"
+  },
+  "completedGoalsBadgeLabel": "1 haftalık tamamlama",
+  "@completedGoalsBadgeLabel": {
+    "description": "Her tamamlanan 7 günlük döngü kaydının yanındaki rozet metni"
+  },
+  "completedGoalsGroupCount": "{count} tamamlama",
+  "@completedGoalsGroupCount": {
+    "description": "Bir hedef grubunun kaç kez tamamlandığını gösteren alt başlık",
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "completedGoalsDateRange": "{start} – {end}",
+  "@completedGoalsDateRange": {
+    "description": "Tamamlanan bir döngünün başlangıç-bitiş tarih aralığı",
+    "placeholders": {
+      "start": {"type": "String"},
+      "end": {"type": "String"}
+    }
+  },
+  "settingsLanguage": "Dil",
+  "@settingsLanguage": {
+    "description": "Ayarlar listesindeki dil seçimi satırının başlığı"
+  },
+  "settingsAbout": "Uygulama Hakkında",
+  "@settingsAbout": {
+    "description": "Ayarlar listesindeki 'Uygulama Hakkında' bölüm başlığı"
+  },
+  "settingsDarkTheme": "Koyu Tema",
+  "@settingsDarkTheme": {
+    "description": "Ayarlar listesindeki koyu/açık tema anahtarının başlığı"
+  },
+  "settingsSectionGeneral": "Genel",
+  "@settingsSectionGeneral": {
+    "description": "Ayarlar listesindeki 'Genel' bölüm başlığı (koyu tema/dil/bildirimler)"
+  },
+  "settingsSectionSupport": "Destek",
+  "@settingsSectionSupport": {
+    "description": "Ayarlar listesindeki 'Destek' bölüm başlığı"
+  },
+  "settingsSectionPushNotifications": "Push Bildirimleri",
+  "@settingsSectionPushNotifications": {
+    "description": "Ayarlar listesindeki 'Push Bildirimleri' (FCM) bölüm başlığı"
+  },
+  "pushNotificationDailyMotivationTitle": "Günlük Motivasyon",
+  "@pushNotificationDailyMotivationTitle": {
+    "description": "Push bildirim tercihi: günlük motivasyon sözü"
+  },
+  "pushNotificationDailyMotivationSubtitle": "Her sabah 9-11 arası rastgele bir motivasyon sözü al",
+  "@pushNotificationDailyMotivationSubtitle": {
+    "description": "Günlük Motivasyon push bildirim tercihinin açıklaması"
+  },
+  "pushNotificationStreakReminderTitle": "Streak Hatırlatması",
+  "@pushNotificationStreakReminderTitle": {
+    "description": "Push bildirim tercihi: streak/hedef hatırlatması"
+  },
+  "pushNotificationStreakReminderSubtitle": "Günü kaçırmak üzereysen akşam hatırlat",
+  "@pushNotificationStreakReminderSubtitle": {
+    "description": "Streak Hatırlatması push bildirim tercihinin açıklaması"
+  },
+  "pushNotificationDailyRewardTitle": "Günlük Ödül Hatırlatması",
+  "@pushNotificationDailyRewardTitle": {
+    "description": "Push bildirim tercihi: günlük ödül hatırlatması"
+  },
+  "pushNotificationDailyRewardSubtitle": "Günlük ödülünü almadıysan öğleden sonra hatırlat",
+  "@pushNotificationDailyRewardSubtitle": {
+    "description": "Günlük Ödül Hatırlatması push bildirim tercihinin açıklaması"
+  },
+  "pushNotificationReEngagementTitle": "Seni Özledik",
+  "@pushNotificationReEngagementTitle": {
+    "description": "Push bildirim tercihi: geri kazanma bildirimi"
+  },
+  "pushNotificationReEngagementSubtitle": "2 gündür uğramadıysan Zibo seni özler",
+  "@pushNotificationReEngagementSubtitle": {
+    "description": "Seni Özledik (geri kazanma) push bildirim tercihinin açıklaması"
+  },
+  "settingsContactUs": "Bize Ulaşın",
+  "@settingsContactUs": {
+    "description": "Destek bölümündeki, dokununca mail uygulamasını açan satırın başlığı"
+  },
+  "settingsVersion": "Sürüm",
+  "@settingsVersion": {
+    "description": "Hakkında bölümündeki uygulama sürüm numarası satırının başlığı"
+  },
+  "settingsWebsite": "Web Sitesi",
+  "@settingsWebsite": {
+    "description": "Hakkında bölümündeki, dokununca web sitesini açan satırın başlığı"
+  },
+  "settingsPrivacyPolicy": "Gizlilik Politikası",
+  "@settingsPrivacyPolicy": {
+    "description": "Hakkında bölümündeki Gizlilik Politikası satırının başlığı"
+  },
+  "settingsTermsOfService": "Kullanım Koşulları",
+  "@settingsTermsOfService": {
+    "description": "Hakkında bölümündeki Kullanım Koşulları satırının başlığı"
+  },
+  "settingsLegalPlaceholderBody": "Bu içerik yakında burada olacak.",
+  "@settingsLegalPlaceholderBody": {
+    "description": "Gizlilik Politikası/Kullanım Koşulları yer tutucu sayfasının gövde metni"
+  },
+  "settingsCouldNotOpenLink": "Açılamadı, lütfen tekrar deneyin.",
+  "@settingsCouldNotOpenLink": {
+    "description": "Mail/web sitesi linki açılamadığında gösterilen kısa hata mesajı"
+  },
+  "tabMoney": "Para ve Birikim",
+  "@tabMoney": {
+    "description": "Alt gezinme çubuğunda Para ve Birikim sekmesinin erişilebilirlik etiketi (sekmeye dokunma/geçiş testleri buna dayanır) — ekranda görünen başlık için bkz. moneyScreenTitle"
+  },
+  "bottomBarMoneyLabel": "Birikim",
+  "@bottomBarMoneyLabel": {
+    "description": "Alt gezinme çubuğunun kendi görselinde (açık tema) veya üzerine çizilen metinde (koyu tema) görünen KISA Para ve Birikim etiketi — tabMoney'den farklı olarak yalnızca bar içindeki dar sütuna sığması için kısaltılmış"
+  },
+  "moneyModuleDescription": "Harcama, birikim ve gelen paranı takip et",
+  "@moneyModuleDescription": {
+    "description": "Z butonu modül menüsündeki Para ve Birikim kartının açıklaması"
+  },
+  "moneyScreenTitle": "Harcamalar ve Birikimler",
+  "@moneyScreenTitle": {
+    "description": "Para ve Birikim sayfasında ekranın kendi içinde görünen büyük başlık (2026 güncellemesi: eskiden tabMoney ile aynıydı, artık ayrı — modül adı kullanıcı isteğiyle değişti)"
+  },
+  "moneyExpenses": "Harcamalar",
+  "@moneyExpenses": {
+    "description": "Para ve Birikim sayfasındaki harcamalar kategorisinin başlığı"
+  },
+  "moneySavings": "Birikimler",
+  "@moneySavings": {
+    "description": "Para ve Birikim sayfasındaki birikimler kategorisinin başlığı"
+  },
+  "moneyIncome": "Gelen Para",
+  "@moneyIncome": {
+    "description": "Para ve Birikim sayfasındaki gelen para (maaş, ek gelir vb.) kategorisinin başlığı"
+  },
+  "moneyTrendSectionTitle": "Mevcut Durum",
+  "@moneyTrendSectionTitle": {
+    "description": "Sayfanın en altındaki harcama/birikim trend grafiği bölümünün başlığı"
+  },
+  "moneyTrendEmpty": "Trend grafiği için henüz yeterli veri yok. Harcama veya birikim ekleyince burada görünecek.",
+  "@moneyTrendEmpty": {
+    "description": "Trend grafiğinde gösterilecek hiç harcama/birikim kaydı yokken gösterilen metin"
+  },
+  "moneyTrendExpenseLegend": "Harcama",
+  "@moneyTrendExpenseLegend": {
+    "description": "Trend grafiğindeki kırmızı (harcama) çizginin lejant etiketi"
+  },
+  "moneyTrendSavingLegend": "Birikim",
+  "@moneyTrendSavingLegend": {
+    "description": "Trend grafiğindeki yeşil (birikim) çizginin lejant etiketi"
+  },
+  "moneyTrendGranularityDaily": "Günlük",
+  "@moneyTrendGranularityDaily": {
+    "description": "Trend grafiğinin sağ üstündeki periyot seçicide 'günlük' seçeneği"
+  },
+  "moneyTrendGranularityWeekly": "Haftalık",
+  "@moneyTrendGranularityWeekly": {
+    "description": "Trend grafiğinin sağ üstündeki periyot seçicide 'haftalık' seçeneği"
+  },
+  "moneyEmptyCategory": "Henüz kayıt yok",
+  "@moneyEmptyCategory": {
+    "description": "Bir kategoride hiç kayıt yokken gösterilen metin"
+  },
+  "moneyAddEntryButton": "Ekle",
+  "@moneyAddEntryButton": {
+    "description": "Bir kategoriye yeni kayıt eklemek için gösterilen butonun etiketi"
+  },
+  "moneyAddEntryTitle": "Yeni Kayıt",
+  "@moneyAddEntryTitle": {
+    "description": "Yeni kayıt ekleme diyalog kutusunun başlığı"
+  },
+  "moneyEntryNameHint": "Ad",
+  "@moneyEntryNameHint": {
+    "description": "Yeni kayıt ekleme diyalog kutusundaki ad alanının etiketi"
+  },
+  "moneyEntryAmountHint": "Tutar",
+  "@moneyEntryAmountHint": {
+    "description": "Yeni kayıt ekleme diyalog kutusundaki tutar alanının etiketi"
+  },
+  "moneyDeleteEntryTooltip": "Kaydı sil",
+  "@moneyDeleteEntryTooltip": {
+    "description": "Bir para kaydının yanındaki silme ikonunun erişilebilirlik ipucu"
+  },
+  "moneyCategoryTotal": "Toplam: ₺{amount}",
+  "@moneyCategoryTotal": {
+    "description": "Bir kategorideki kayıtların toplam tutarını gösteren metin",
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "storeButtonTooltip": "Coin satın al",
+  "@storeButtonTooltip": {
+    "description": "Başlık çubuğunda coin bakiyesinin yanındaki, Mağaza'yı açan '+' ikonunun erişilebilirlik ipucu"
+  },
+  "storeTitle": "Mağaza",
+  "@storeTitle": {
+    "description": "Alt gezinme çubuğunda Mağaza sekmesinin etiketi ve Mağaza sekmesinin üst başlığı"
+  },
+  "storePackagesSectionTitle": "Coin Paketleri",
+  "@storePackagesSectionTitle": {
+    "description": "Mağaza sayfasında satın alınabilir coin paketleri bölümünün başlığı"
+  },
+  "storeCoinAmount": "{amount} ZC",
+  "@storeCoinAmount": {
+    "description": "Bir coin paketinin miktarını gösteren kısa etiket",
+    "placeholders": {
+      "amount": {
+        "type": "int"
+      }
+    }
+  },
+  "storeBuyButton": "Satın Al",
+  "@storeBuyButton": {
+    "description": "Gerçek fiyat henüz bağlanmamış bir paketin satın alma butonunun etiketi"
+  },
+  "storeFreeSectionTitle": "Ücretsiz",
+  "@storeFreeSectionTitle": {
+    "description": "Mağaza sayfasında reklam izleyerek coin kazanma bölümünün başlığı"
+  },
+  "storeWatchAdTitle": "Reklam İzle",
+  "@storeWatchAdTitle": {
+    "description": "Reklam izleyerek coin kazanma kartının başlığı"
+  },
+  "storeWatchAdSubtitle": "{amount} Zibo Coin kazan, tamamen ücretsiz",
+  "@storeWatchAdSubtitle": {
+    "description": "Reklam izleyerek kazanılacak coin miktarını açıklayan alt metin",
+    "placeholders": {
+      "amount": {
+        "type": "int"
+      }
+    }
+  },
+  "storeWatchAdButton": "İzle",
+  "@storeWatchAdButton": {
+    "description": "Reklam izleme akışını başlatan butonun etiketi"
+  },
+  "storeCoinsAdded": "{amount} Zibo Coin hesabına eklendi!",
+  "@storeCoinsAdded": {
+    "description": "Bir satın alma veya reklam ödülü tamamlanıp coin eklendiğinde gösterilen mesaj",
+    "placeholders": {
+      "amount": {
+        "type": "int"
+      }
+    }
+  },
+  "shareButtonTooltip": "Bu sözü paylaş",
+  "@shareButtonTooltip": {
+    "description": "Bir Zibo sözünün yanındaki paylaş ikonunun erişilebilirlik ipucu"
+  },
+  "favoriteQuoteAddTooltip": "Bu sözü favorile",
+  "@favoriteQuoteAddTooltip": {
+    "description": "Ana Sayfa'daki konuşma balonunun yanındaki kalp ikonunun, söz henüz favorilenmemişken erişilebilirlik ipucu"
+  },
+  "favoriteQuoteRemoveTooltip": "Favorilerden çıkar",
+  "@favoriteQuoteRemoveTooltip": {
+    "description": "Ana Sayfa'daki konuşma balonunun yanındaki kalp ikonunun, söz zaten favorilenmişken erişilebilirlik ipucu"
+  },
+  "shareSheetTitle": "Zibonu Paylaş",
+  "@shareSheetTitle": {
+    "description": "Paylaşım kartı önizleme sayfasının (bottom sheet) başlığı"
+  },
+  "shareBackgroundLabel": "Arka plan",
+  "@shareBackgroundLabel": {
+    "description": "Paylaşım kartındaki gradyan arka plan seçicisinin üstündeki küçük etiket"
+  },
+  "shareTextStyleLabel": "Yazı Stili",
+  "@shareTextStyleLabel": {
+    "description": "Paylaşım kartındaki yazı tipi/renk seçicisinin üstündeki küçük etiket"
+  },
+  "shareActionButton": "Paylaş",
+  "@shareActionButton": {
+    "description": "Paylaşım kartını native paylaşım sayfasına gönderen butonun etiketi"
+  },
+  "shareErrorMessage": "Paylaşım başlatılamadı, tekrar dener misin?",
+  "@shareErrorMessage": {
+    "description": "Görsel oluşturma veya native paylaşım sayfasını açma başarısız olduğunda gösterilen uyarı"
+  },
+  "storeCoinsTabLabel": "Coin Al",
+  "@storeCoinsTabLabel": {
+    "description": "Mağaza sayfasındaki iki segmentten 'coin satın al' segmentinin etiketi"
+  },
+  "storeCostumesTabLabel": "Kostümler",
+  "@storeCostumesTabLabel": {
+    "description": "Mağaza sayfasındaki iki segmentten 'kostümler' segmentinin etiketi"
+  },
+  "costumeNameZiboHippi": "Hippi Zibo",
+  "@costumeNameZiboHippi": {
+    "description": "zibo_hippi kostümünün görünen adı"
+  },
+  "costumeNameZiboSporcu": "Sporcu Zibo",
+  "@costumeNameZiboSporcu": {
+    "description": "zibo_sporcu kostümünün görünen adı"
+  },
+  "costumeNameZiboAsker": "Asker Zibo",
+  "@costumeNameZiboAsker": {
+    "description": "zibo_asker kostümünün görünen adı"
+  },
+  "costumeNameZiboHoca": "Hoca Zibo",
+  "@costumeNameZiboHoca": {
+    "description": "zibo_hoca kostümünün görünen adı"
+  },
+  "costumeNameZiboPunk": "Punk Zibo",
+  "@costumeNameZiboPunk": {
+    "description": "zibo_punk kostümünün görünen adı"
+  },
+  "costumeNameZiboRapci": "Rapçi Zibo",
+  "@costumeNameZiboRapci": {
+    "description": "zibo_rapci kostümünün görünen adı"
+  },
+  "costumeNameZiboGladyator": "Gladyatör Zibo",
+  "@costumeNameZiboGladyator": {
+    "description": "zibo_gladyator kostümünün görünen adı"
+  },
+  "costumeNameZiboKorsan": "Korsan Zibo",
+  "@costumeNameZiboKorsan": {
+    "description": "zibo_korsan kostümünün görünen adı"
+  },
+  "costumeNameZiboZombi": "Zombi Zibo",
+  "@costumeNameZiboZombi": {
+    "description": "zibo_zombi kostümünün görünen adı"
+  },
+  "costumeNameZiboAltin": "Altın Zibo",
+  "@costumeNameZiboAltin": {
+    "description": "zibo_altin kostümünün görünen adı"
+  },
+  "costumeNameZiboElmas": "Elmas Kaplama Zibo",
+  "@costumeNameZiboElmas": {
+    "description": "zibo_elmas kostümünün görünen adı"
+  },
+  "costumeNameZiboGentleman": "Centilmen Zibo",
+  "@costumeNameZiboGentleman": {
+    "description": "zibo_gentleman kostümünün görünen adı"
+  },
+  "costumeNameZiboSamurai": "Samuray Zibo",
+  "@costumeNameZiboSamurai": {
+    "description": "zibo_samurai kostümünün görünen adı"
+  },
+  "costumeNameZiboCyborg": "Siborg Zibo",
+  "@costumeNameZiboCyborg": {
+    "description": "zibo_cyborg kostümünün görünen adı"
+  },
+  "costumeNameZiboAstronot": "Astronot Zibo",
+  "@costumeNameZiboAstronot": {
+    "description": "zibo_astronot kostümünün görünen adı"
+  },
+  "costumeNameZiboKing": "Kral Zibo",
+  "@costumeNameZiboKing": {
+    "description": "zibo_king kostümünün görünen adı"
+  },
+  "costumeOwnedBadge": "Sahip olunan",
+  "@costumeOwnedBadge": {
+    "description": "Satın alınmış ama şu an giyili olmayan bir kostüm kartındaki rozet"
+  },
+  "costumeEquippedBadge": "Giyili",
+  "@costumeEquippedBadge": {
+    "description": "Şu an Ana Sayfa'da giyili olan kostümün kartındaki rozet"
+  },
+  "costumePurchasedMessage": "{name} satın alındı!",
+  "@costumePurchasedMessage": {
+    "description": "Bir kostüm satın alma tamamlandığında gösterilen mesaj",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "costumeLockedSemanticLabel": "{name}, kilitli, {price} Zibo Coin",
+  "@costumeLockedSemanticLabel": {
+    "description": "Henüz satın alınmamış bir kostüm kartının erişilebilirlik etiketi",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "price": {
+        "type": "int"
+      }
+    }
+  },
+  "costumeEquipSemanticLabel": "{name} giy",
+  "@costumeEquipSemanticLabel": {
+    "description": "Sahip olunan ama giyili olmayan bir kostüm kartının erişilebilirlik etiketi",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "costumeUnequipSemanticLabel": "{name} çıkar",
+  "@costumeUnequipSemanticLabel": {
+    "description": "Şu an giyili olan kostüm kartının erişilebilirlik etiketi",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "storeThemesTabLabel": "Temalar",
+  "@storeThemesTabLabel": {
+    "description": "Mağaza sayfasındaki üç segmentten 'temalar' segmentinin etiketi"
+  },
+  "adFreePromoTitle": "Zibo ADS",
+  "@adFreePromoTitle": {
+    "description": "Zibo ADS (reklamsız deneyim) mockup tanıtım sheet'inin kırmızı banner'ındaki ana başlık"
+  },
+  "adFreePromoSubtitle": "Reklamsız Deneyim",
+  "@adFreePromoSubtitle": {
+    "description": "Zibo ADS banner'ındaki alt başlık"
+  },
+  "adFreePromoBenefitNoAds": "Reklam yok",
+  "@adFreePromoBenefitNoAds": {
+    "description": "Zibo ADS tanıtımındaki fayda maddelerinden biri"
+  },
+  "adFreePromoBenefitUninterrupted": "Kesintisiz kullanım",
+  "@adFreePromoBenefitUninterrupted": {
+    "description": "Zibo ADS tanıtımındaki fayda maddelerinden biri"
+  },
+  "adFreePromoBenefitSupport": "Zibo'ya destek ol",
+  "@adFreePromoBenefitSupport": {
+    "description": "Zibo ADS tanıtımındaki fayda maddelerinden biri"
+  },
+  "adFreePromoBuyButton": "Satın Al",
+  "@adFreePromoBuyButton": {
+    "description": "Zibo ADS tanıtımındaki (henüz gerçek işlem yapmayan mockup) satın alma butonu"
+  },
+  "adFreePromoDismissButton": "Belki Sonra",
+  "@adFreePromoDismissButton": {
+    "description": "Zibo ADS tanıtımını kapatan buton"
+  },
+  "adFreePromoComingSoon": "Yakında! Reklamsız deneyim çok yakında sunulacak.",
+  "@adFreePromoComingSoon": {
+    "description": "Zibo ADS 'Satın Al' butonuna basılınca gösterilen mockup mesajı"
+  },
+  "themeNameSunset": "Gün Batımı",
+  "@themeNameSunset": {
+    "description": "sunset temasının görünen adı"
+  },
+  "themeNameOcean": "Okyanus",
+  "@themeNameOcean": {
+    "description": "ocean temasının görünen adı"
+  },
+  "themeNameForest": "Orman",
+  "@themeNameForest": {
+    "description": "forest temasının görünen adı"
+  },
+  "themeNameNightSky": "Gece Gökyüzü",
+  "@themeNameNightSky": {
+    "description": "night_sky temasının görünen adı"
+  },
+  "themeNameGoldenAge": "Altın Çağ",
+  "@themeNameGoldenAge": {
+    "description": "golden_age temasının görünen adı"
+  },
+  "themeNameWinterSnow": "Kış Teması",
+  "@themeNameWinterSnow": {
+    "description": "winter_snow (Premium/Animasyonlu) temasının görünen adı"
+  },
+  "themeNameGalaxyStars": "Galaksi",
+  "@themeNameGalaxyStars": {
+    "description": "galaxy_stars (Premium/Animasyonlu) temasının görünen adı"
+  },
+  "themeNamePartyConfetti": "Parti Konfeti",
+  "@themeNamePartyConfetti": {
+    "description": "party_confetti (Premium/Animasyonlu) temasının görünen adı"
+  },
+  "themeNameHeartsLove": "Kalpli Tema",
+  "@themeNameHeartsLove": {
+    "description": "hearts_love (Premium/Animasyonlu) temasının görünen adı"
+  },
+  "themeNameMusicNotes": "Nota Teması",
+  "@themeNameMusicNotes": {
+    "description": "music_notes (Premium/Animasyonlu) temasının görünen adı"
+  },
+  "themeNameTropicalParadise": "Tropikal Tema",
+  "@themeNameTropicalParadise": {
+    "description": "tropical_paradise (Premium/Animasyonlu) temasının görünen adı"
+  },
+  "themeNameCherryBlossom": "Çiçekli Tema",
+  "@themeNameCherryBlossom": {
+    "description": "cherry_blossom (Premium/Animasyonlu) temasının görünen adı"
+  },
+  "themeNameLavenderGarden": "Lavanta Bahçesi",
+  "@themeNameLavenderGarden": {
+    "description": "lavender_garden (standart) temasının görünen adı"
+  },
+  "themeNameCoralReef": "Mercan Resifi",
+  "@themeNameCoralReef": {
+    "description": "coral_reef (standart) temasının görünen adı"
+  },
+  "themeNameCherryOrchard": "Vişne Bahçesi",
+  "@themeNameCherryOrchard": {
+    "description": "cherry_orchard (standart) temasının görünen adı"
+  },
+  "themeNameMintGreens": "Nane Yeşillikleri",
+  "@themeNameMintGreens": {
+    "description": "mint_greens (standart) temasının görünen adı"
+  },
+  "themeNameDesertDunes": "Çöl Kumulları",
+  "@themeNameDesertDunes": {
+    "description": "desert_dunes (standart) temasının görünen adı"
+  },
+  "themeNameMoonlight": "Ay Işığı",
+  "@themeNameMoonlight": {
+    "description": "moonlight (standart) temasının görünen adı"
+  },
+  "themeNameCopperHills": "Bakır Tepeler",
+  "@themeNameCopperHills": {
+    "description": "copper_hills (standart) temasının görünen adı"
+  },
+  "themeNameEmeraldValley": "Zümrüt Vadisi",
+  "@themeNameEmeraldValley": {
+    "description": "emerald_valley (standart) temasının görünen adı"
+  },
+  "themeNameAmethystCave": "Ametist Mağarası",
+  "@themeNameAmethystCave": {
+    "description": "amethyst_cave (standart) temasının görünen adı"
+  },
+  "themeNameDustyRoseDream": "Gül Kurusu Rüyası",
+  "@themeNameDustyRoseDream": {
+    "description": "dusty_rose_dream (standart) temasının görünen adı"
+  },
+  "storeThemesStandardSectionTitle": "Standart Temalar",
+  "@storeThemesStandardSectionTitle": {
+    "description": "Mağaza > Temalar segmentindeki statik (animasyonsuz) temalar bölümünün başlığı"
+  },
+  "storeThemesPremiumSectionTitle": "Premium / Animasyonlu",
+  "@storeThemesPremiumSectionTitle": {
+    "description": "Mağaza > Temalar segmentindeki hareketli (parçacık animasyonlu) temalar bölümünün başlığı"
+  },
+  "storeThemesPremiumSectionSubtitle": "Ekranında hafif bir hareket efekti olan özel temalar",
+  "@storeThemesPremiumSectionSubtitle": {
+    "description": "Premium/Animasyonlu bölüm başlığının altındaki açıklayıcı alt metin"
+  },
+  "themeOwnedBadge": "Sahip olunan",
+  "@themeOwnedBadge": {
+    "description": "Satın alınmış ama şu an aktif olmayan bir tema kartındaki rozet"
+  },
+  "themeActiveBadge": "Aktif",
+  "@themeActiveBadge": {
+    "description": "Şu an uygulanmış (aktif) temanın kartındaki rozet"
+  },
+  "themePurchasedMessage": "{name} teması satın alındı!",
+  "@themePurchasedMessage": {
+    "description": "Bir tema satın alma tamamlandığında gösterilen mesaj",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "themeLockedSemanticLabel": "{name} teması, kilitli, {price} Zibo Coin",
+  "@themeLockedSemanticLabel": {
+    "description": "Henüz satın alınmamış bir tema kartının erişilebilirlik etiketi",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "price": {
+        "type": "int"
+      }
+    }
+  },
+  "themeApplySemanticLabel": "{name} temasını uygula",
+  "@themeApplySemanticLabel": {
+    "description": "Sahip olunan ama aktif olmayan bir tema kartının erişilebilirlik etiketi",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "themeRemoveSemanticLabel": "{name} temasını kaldır",
+  "@themeRemoveSemanticLabel": {
+    "description": "Şu an aktif olan tema kartının erişilebilirlik etiketi",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "wheelTriggerTooltip": "Şans Çarkı",
+  "@wheelTriggerTooltip": {
+    "description": "Ekranın sol kenarındaki sürekli görünen Şans Çarkı tetikleyicisinin erişilebilirlik ipucu"
+  },
+  "wheelTitle": "Şans Çarkı",
+  "@wheelTitle": {
+    "description": "Şans Çarkı popup'ının başlığı"
+  },
+  "wheelSpinButton": "Reklam İzle\nve Çevir",
+  "@wheelSpinButton": {
+    "description": "Çarkın tam ortasındaki, reklam izleyip çarkı çeviren butonun etiketi"
+  },
+  "wheelCloseTooltip": "Kapat",
+  "@wheelCloseTooltip": {
+    "description": "Şans Çarkı popup'ını kapatan X ikonunun erişilebilirlik ipucu"
+  },
+  "wheelResultTitle": "Tebrikler!",
+  "@wheelResultTitle": {
+    "description": "Çark döndükten sonra açılan kutlama diyaloğunun başlığı"
+  },
+  "wheelResultMessage": "{amount} Zibo Coin kazandın!",
+  "@wheelResultMessage": {
+    "description": "Çark döndükten sonra kazanılan ödülü bildiren mesaj",
+    "placeholders": {
+      "amount": {
+        "type": "int"
+      }
+    }
+  },
+  "wheelResultButton": "Harika!",
+  "@wheelResultButton": {
+    "description": "Kutlama diyaloğunu kapatan butonun etiketi"
+  },
+  "dailyRewardsTriggerTooltip": "Günlük Ödüller",
+  "@dailyRewardsTriggerTooltip": {
+    "description": "Ekranın sağ kenarındaki sürekli görünen Günlük Giriş Ödülleri tetikleyicisinin erişilebilirlik ipucu"
+  },
+  "dailyRewardsTitle": "Günlük Giriş Ödülleri",
+  "@dailyRewardsTitle": {
+    "description": "Günlük Giriş Ödülleri popup'ının başlığı"
+  },
+  "dailyRewardsCloseTooltip": "Kapat",
+  "@dailyRewardsCloseTooltip": {
+    "description": "Günlük Giriş Ödülleri popup'ını kapatan X ikonunun erişilebilirlik ipucu"
+  },
+  "dailyRewardsDayLabel": "Gün {day}",
+  "@dailyRewardsDayLabel": {
+    "description": "Bir gün kutucuğunun üstündeki gün numarası etiketi",
+    "placeholders": {
+      "day": {
+        "type": "int"
+      }
+    }
+  },
+  "dailyRewardsPromptToday": "Bugünün ödülünü almak için Gün {day} kutusuna dokun: {amount} Zibo Coin!",
+  "@dailyRewardsPromptToday": {
+    "description": "Bugünün ödülü henüz alınmadığında popup'ın üstünde gösterilen durum mesajı",
+    "placeholders": {
+      "day": {
+        "type": "int"
+      },
+      "amount": {
+        "type": "int"
+      }
+    }
+  },
+  "dailyRewardsAlreadyClaimedToday": "Bugün {amount} Zibo Coin aldın! Yarın tekrar gel.",
+  "@dailyRewardsAlreadyClaimedToday": {
+    "description": "Bugünün ödülü zaten alınmışsa popup'ın üstünde gösterilen durum mesajı",
+    "placeholders": {
+      "amount": {
+        "type": "int"
+      }
+    }
+  },
+  "dailyRewardsClaimedSemanticLabel": "Gün {day}, {amount} Zibo Coin alındı",
+  "@dailyRewardsClaimedSemanticLabel": {
+    "description": "Ödülü zaten alınmış bir gün kutucuğunun erişilebilirlik etiketi",
+    "placeholders": {
+      "day": {
+        "type": "int"
+      },
+      "amount": {
+        "type": "int"
+      }
+    }
+  },
+  "dailyRewardsClaimSemanticLabel": "Gün {day} ödülünü al, {amount} Zibo Coin",
+  "@dailyRewardsClaimSemanticLabel": {
+    "description": "Bugüne karşılık gelen, tıklanabilir gün kutucuğunun erişilebilirlik etiketi",
+    "placeholders": {
+      "day": {
+        "type": "int"
+      },
+      "amount": {
+        "type": "int"
+      }
+    }
+  },
+  "dailyRewardsLockedSemanticLabel": "Gün {day}, henüz açılmadı, {amount} Zibo Coin",
+  "@dailyRewardsLockedSemanticLabel": {
+    "description": "Tarihi henüz gelmemiş, kilitli bir gün kutucuğunun erişilebilirlik etiketi",
+    "placeholders": {
+      "day": {
+        "type": "int"
+      },
+      "amount": {
+        "type": "int"
+      }
+    }
+  },
+  "notificationsSectionTitle": "Bildirimler",
+  "@notificationsSectionTitle": {
+    "description": "Ayarlar sayfasındaki bildirim sıklığı/saatleri kartının başlığı"
+  },
+  "notificationFrequencyOff": "Kapalı",
+  "@notificationFrequencyOff": {
+    "description": "Bildirim sıklığı seçeneği: bildirim gönderilmez"
+  },
+  "notificationFrequencyOnce": "Günde 1",
+  "@notificationFrequencyOnce": {
+    "description": "Bildirim sıklığı seçeneği: günde bir kez"
+  },
+  "notificationFrequencyThrice": "Günde 3",
+  "@notificationFrequencyThrice": {
+    "description": "Bildirim sıklığı seçeneği: günde üç kez"
+  },
+  "notificationSlotMorning": "Sabah",
+  "@notificationSlotMorning": {
+    "description": "Bildirim zaman dilimi etiketi: sabah"
+  },
+  "notificationSlotNoon": "Öğlen",
+  "@notificationSlotNoon": {
+    "description": "Bildirim zaman dilimi etiketi: öğlen"
+  },
+  "notificationSlotEvening": "Akşam",
+  "@notificationSlotEvening": {
+    "description": "Bildirim zaman dilimi etiketi: akşam"
+  },
+  "notificationReliabilityTitle": "Bildirimlerin güvenilir gelmesi için",
+  "@notificationReliabilityTitle": {
+    "description": "Pil optimizasyonu/otomatik başlatma bölümünün başlığı"
+  },
+  "notificationBatteryOptimizationWarning": "Pil optimizasyonu bildirimleri geciktirebilir",
+  "@notificationBatteryOptimizationWarning": {
+    "description": "Uygulama pil optimizasyonundan muaf değilken gösterilen uyarı"
+  },
+  "notificationBatteryOptimizationOk": "Pil optimizasyonu kapalı",
+  "@notificationBatteryOptimizationOk": {
+    "description": "Uygulama pil optimizasyonundan muafken gösterilen onay metni"
+  },
+  "notificationBatteryOptimizationButton": "Kapat",
+  "@notificationBatteryOptimizationButton": {
+    "description": "Pil optimizasyonu istisnası isteyen butonun etiketi"
+  },
+  "notificationAutostartDescription": "Bazı telefonlarda (Xiaomi, Huawei, Oppo, Vivo gibi) bildirimlerin gelmesi için ayrıca \"otomatik başlatma\" izni gerekir",
+  "@notificationAutostartDescription": {
+    "description": "Otomatik başlatma ayarı satırının açıklaması"
+  },
+  "notificationUnusedAppsDescription": "Telefon, uygulamayı \"kullanılmıyor\" sayıp bildirimleri durdurabilir — bu ayarı da kapatmak gerekebilir",
+  "@notificationUnusedAppsDescription": {
+    "description": "Android'in kullanılmayan uygulama hibernasyonu/izin geri alma ayarını açıklayan metin"
+  },
+  "notificationUnusedAppsButton": "Ayarları Aç",
+  "@notificationUnusedAppsButton": {
+    "description": "Kullanılmayan uygulama ayarını açan buton metni"
+  },
+  "notificationAutostartButton": "Ayarları Aç",
+  "@notificationAutostartButton": {
+    "description": "Otomatik başlatma ayar ekranını açan butonun etiketi"
+  },
+  "dreamJournalTooltip": "Rüya Günlüğü",
+  "@dreamJournalTooltip": {
+    "description": "Ana başlık çubuğundaki Rüya Günlüğü ikonunun tooltip'i"
+  },
+  "dreamJournalTitle": "Rüya Günlüğü",
+  "@dreamJournalTitle": {
+    "description": "Rüya Günlüğü sayfasının AppBar başlığı"
+  },
+  "dreamAddButton": "Yeni Rüya Ekle",
+  "@dreamAddButton": {
+    "description": "Yeni rüya ekleme formunu açan butonun etiketi"
+  },
+  "dreamEmptyState": "Henüz bir rüya yazmadın. Bugün gördüğün bir rüya var mı?",
+  "@dreamEmptyState": {
+    "description": "Hiç rüya kaydı yokken listede gösterilen metin"
+  },
+  "dreamTitleHint": "Başlık",
+  "@dreamTitleHint": {
+    "description": "Rüya formundaki başlık alanının etiketi"
+  },
+  "dreamTextHint": "Rüyanı anlat...",
+  "@dreamTextHint": {
+    "description": "Rüya formundaki metin alanının etiketi"
+  },
+  "dreamSaveButton": "Kaydet",
+  "@dreamSaveButton": {
+    "description": "Rüya formundaki kaydet butonunun etiketi"
+  },
+  "dreamNewEntryTitle": "Yeni Rüya",
+  "@dreamNewEntryTitle": {
+    "description": "Yeni rüya eklerken form ekranının AppBar başlığı"
+  },
+  "dreamEditEntryTitle": "Rüyayı Düzenle",
+  "@dreamEditEntryTitle": {
+    "description": "Var olan bir rüyayı düzenlerken form ekranının AppBar başlığı"
+  },
+  "dreamDeleteEntryTooltip": "Sil",
+  "@dreamDeleteEntryTooltip": {
+    "description": "Rüya formundaki silme ikonunun tooltip'i"
+  },
+  "dreamDeleteConfirmTitle": "Rüyayı sil?",
+  "@dreamDeleteConfirmTitle": {
+    "description": "Silme onay diyaloğunun başlığı"
+  },
+  "dreamDeleteConfirmBody": "Bu rüya kalıcı olarak silinecek.",
+  "@dreamDeleteConfirmBody": {
+    "description": "Silme onay diyaloğunun açıklama metni"
+  },
+  "dreamDeleteConfirmButton": "Sil",
+  "@dreamDeleteConfirmButton": {
+    "description": "Silme onay diyaloğundaki silme butonunun etiketi"
+  },
+  "gratitudeSettingsTitle": "Şükran Günlüğü",
+  "@gratitudeSettingsTitle": {
+    "description": "Z butonu modül menüsündeki Şükran Günlüğü kartının başlığı"
+  },
+  "gratitudeScreenTitle": "Şükran Günlüğü",
+  "@gratitudeScreenTitle": {
+    "description": "Şükran Günlüğü sayfasının AppBar başlığı"
+  },
+  "gratitudeFieldLabel": "{n}. Şükran cümlen",
+  "@gratitudeFieldLabel": {
+    "description": "Üç şükran metin alanından birinin etiketi",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "gratitudeSaveButton": "Kaydet",
+  "@gratitudeSaveButton": {
+    "description": "Şükran formundaki kaydet butonunun etiketi"
+  },
+  "gratitudeTodayDoneTitle": "Bugün tamamlandı!",
+  "@gratitudeTodayDoneTitle": {
+    "description": "Bugünün kaydı tamamlandığında gösterilen başlık"
+  },
+  "gratitudeTodayDoneBody": "3 şükran cümleni yazdın ve 2 Zibo Coin kazandın. Yarın tekrar gel!",
+  "@gratitudeTodayDoneBody": {
+    "description": "Bugünün kaydı tamamlandığında gösterilen açıklama metni"
+  },
+  "gratitudeHistoryTitle": "Geçmiş Kayıtlar",
+  "@gratitudeHistoryTitle": {
+    "description": "Geçmiş şükran kayıtları listesinin başlığı"
+  },
+  "gratitudeHistoryEmpty": "Henüz tamamlanmış bir kayıt yok.",
+  "@gratitudeHistoryEmpty": {
+    "description": "Geçmiş kayıt listesi boşken gösterilen metin"
+  },
+  "gratitudeCoinRewardMessage": "+2 Zibo Coin kazandın!",
+  "@gratitudeCoinRewardMessage": {
+    "description": "Bugünün kaydı kaydedilince gösterilen kısa kutlama mesajı"
+  },
+  "gratitudeEntryDetailCloseButton": "Kapat",
+  "@gratitudeEntryDetailCloseButton": {
+    "description": "Geçmiş kayıt detay diyaloğunu kapatan butonun etiketi"
+  },
+  "gratitudeEditTooltip": "Düzenle",
+  "@gratitudeEditTooltip": {
+    "description": "Bugünün tamamlanmış kartındaki düzenleme ikonunun tooltip metni"
+  },
+  "moodSettingsTitle": "Günlük Ruh Hali Takibi",
+  "@moodSettingsTitle": {
+    "description": "Z butonu modül menüsündeki Ruh Hali Takibi kartının başlığı"
+  },
+  "moodScreenTitle": "Günlük Ruh Hali Takibi",
+  "@moodScreenTitle": {
+    "description": "Ruh Hali Takibi sayfasının AppBar başlığı"
+  },
+  "moodWeekSummaryTitle": "Son 7 Gün",
+  "@moodWeekSummaryTitle": {
+    "description": "Son 7 günün ruh hali özetinin başlığı"
+  },
+  "moodHistoryTitle": "Geçmiş",
+  "@moodHistoryTitle": {
+    "description": "Tüm geçmiş ruh hali kayıtları listesinin başlığı"
+  },
+  "moodHistoryEmpty": "Henüz bir kayıt yok.",
+  "@moodHistoryEmpty": {
+    "description": "Geçmiş kayıt listesi boşken gösterilen metin"
+  },
+  "moodLabelVeryUnhappy": "Çok kötü",
+  "@moodLabelVeryUnhappy": {
+    "description": "En kötü ruh hali seçeneğinin erişilebilirlik etiketi"
+  },
+  "moodLabelUnhappy": "Kötü",
+  "@moodLabelUnhappy": {
+    "description": "Kötü ruh hali seçeneğinin erişilebilirlik etiketi"
+  },
+  "moodLabelNeutral": "Nötr",
+  "@moodLabelNeutral": {
+    "description": "Nötr ruh hali seçeneğinin erişilebilirlik etiketi"
+  },
+  "moodLabelHappy": "İyi",
+  "@moodLabelHappy": {
+    "description": "İyi ruh hali seçeneğinin erişilebilirlik etiketi"
+  },
+  "moodLabelVeryHappy": "Çok iyi",
+  "@moodLabelVeryHappy": {
+    "description": "En iyi ruh hali seçeneğinin erişilebilirlik etiketi"
+  },
+  "modulesMenuZButtonTooltip": "Ek modülleri aç",
+  "@modulesMenuZButtonTooltip": {
+    "description": "Alt gezinme çubuğundaki Z butonunun erişilebilirlik etiketi"
+  },
+  "modulesMenuTitle": "Ek Modüller",
+  "@modulesMenuTitle": {
+    "description": "Z butonuna basınca açılan modül menüsünün başlığı"
+  },
+  "dreamModuleDescription": "Gördüğün rüyaları yaz, geçmişini gör",
+  "@dreamModuleDescription": {
+    "description": "Modül menüsündeki Rüya Günlüğü kartının açıklaması"
+  },
+  "gratitudeModuleDescription": "Günde 3 şükran cümlesi yaz, Zibo Coin kazan",
+  "@gratitudeModuleDescription": {
+    "description": "Modül menüsündeki Şükran Günlüğü kartının açıklaması"
+  },
+  "moodModuleDescription": "Bugünkü ruh halini emoji ile işaretle",
+  "@moodModuleDescription": {
+    "description": "Modül menüsündeki Ruh Hali Takibi kartının açıklaması"
+  },
+  "waterSettingsTitle": "Su Takibi",
+  "@waterSettingsTitle": {
+    "description": "Z butonu modül menüsündeki Su Takibi kartının başlığı"
+  },
+  "waterModuleDescription": "Günlük su hedefini bardak bardak takip et",
+  "@waterModuleDescription": {
+    "description": "Modül menüsündeki Su Takibi kartının açıklaması"
+  },
+  "waterScreenTitle": "Su Takibi",
+  "@waterScreenTitle": {
+    "description": "Su Takibi sayfasının AppBar başlığı"
+  },
+  "waterProgressLabel": "{count}/{goal} {unit}",
+  "@waterProgressLabel": {
+    "description": "Bugün içilen birim sayısı / günlük hedef",
+    "placeholders": {
+      "count": {"type": "int"},
+      "goal": {"type": "int"},
+      "unit": {"type": "String"}
+    }
+  },
+  "waterProgressMl": "{consumedMl} ml / {goalMl} ml",
+  "@waterProgressMl": {
+    "description": "Bugün içilen su miktarı (ml) / günlük hedef (ml)",
+    "placeholders": {
+      "consumedMl": {"type": "int"},
+      "goalMl": {"type": "int"}
+    }
+  },
+  "waterGlassFilledLabel": "{index}. {unit}, dolu",
+  "@waterGlassFilledLabel": {
+    "description": "Doldurulmuş bir su birimi ikonunun erişilebilirlik etiketi",
+    "placeholders": {
+      "index": {"type": "int"},
+      "unit": {"type": "String"}
+    }
+  },
+  "waterGlassEmptyLabel": "{index}. {unit}, boş",
+  "@waterGlassEmptyLabel": {
+    "description": "Boş bir su birimi ikonunun erişilebilirlik etiketi",
+    "placeholders": {
+      "index": {"type": "int"},
+      "unit": {"type": "String"}
+    }
+  },
+  "waterGoalCompletedMessage": "Günlük su hedefini tamamladın! +2 Zibo Coin kazandın!",
+  "@waterGoalCompletedMessage": {
+    "description": "Günlük su hedefi tamamlanınca gösterilen kısa kutlama mesajı"
+  },
+  "waterTodayCompleteBody": "Bugün su hedefini tamamladın, harikasın kanka!",
+  "@waterTodayCompleteBody": {
+    "description": "Hedef tamamlandığında ilerleme kartının altında gösterilen kısa metin"
+  },
+  "waterGoalSettingsTitle": "Günlük Su Hedefi",
+  "@waterGoalSettingsTitle": {
+    "description": "Su Takibi ekranındaki hedef düzenleme ikonunun tooltip metni"
+  },
+  "waterGoalDialogTitle": "Günlük Su Hedefi",
+  "@waterGoalDialogTitle": {
+    "description": "Su hedefi değiştirme diyaloğunun başlığı"
+  },
+  "waterGoalDialogUnitCount": "{count} {unit}",
+  "@waterGoalDialogUnitCount": {
+    "description": "Su hedefi değiştirme diyaloğunda ortadaki sayaç metni",
+    "placeholders": {
+      "count": {"type": "int"},
+      "unit": {"type": "String"}
+    }
+  },
+  "waterUnitGlass": "bardak",
+  "@waterUnitGlass": {
+    "description": "Su takibi birim seçeneği: bardak"
+  },
+  "waterUnitBottle": "şişe",
+  "@waterUnitBottle": {
+    "description": "Su takibi birim seçeneği: şişe"
+  },
+  "waterUnitSectionLabel": "Birim",
+  "@waterUnitSectionLabel": {
+    "description": "Hedef diyaloğunda birim seçici bölümünün başlığı"
+  },
+  "waterMlPerUnitLabel": "1 {unit} = kaç ml?",
+  "@waterMlPerUnitLabel": {
+    "description": "Hedef diyaloğunda seçili birimin ml değerini ayarlayan alanın etiketi",
+    "placeholders": {
+      "unit": {"type": "String"}
+    }
+  },
+  "waterHistoryTitle": "Geçmiş",
+  "@waterHistoryTitle": {
+    "description": "Su Takibi ekranındaki geçmiş kayıtlar bölümünün başlığı"
+  },
+  "waterHistoryEmpty": "Henüz geçmiş kayıt yok.",
+  "@waterHistoryEmpty": {
+    "description": "Geçmiş kaydı hiç olmadığında gösterilen metin"
+  },
+  "waterHistoryCompletedEntry": "{date} tarihinde hedef tamamlandı",
+  "@waterHistoryCompletedEntry": {
+    "description": "Hedefin tamamlandığı bir geçmiş günü için satır metni",
+    "placeholders": {
+      "date": {"type": "String"}
+    }
+  },
+  "waterHistoryPartialEntry": "{date}: {count}/{goal}",
+  "@waterHistoryPartialEntry": {
+    "description": "Hedefin tamamlanmadığı bir geçmiş günü için satır metni",
+    "placeholders": {
+      "date": {"type": "String"},
+      "count": {"type": "int"},
+      "goal": {"type": "int"}
+    }
+  },
+  "manifestSettingsTitle": "Manifest Günlüğü",
+  "@manifestSettingsTitle": {
+    "description": "Z butonu modül menüsündeki Manifest Günlüğü kartının başlığı"
+  },
+  "manifestModuleDescription": "Fotoğraf ve niyetinle günlük vizyon panonu oluştur",
+  "@manifestModuleDescription": {
+    "description": "Modül menüsündeki Manifest Günlüğü kartının açıklaması"
+  },
+  "manifestScreenTitle": "Manifest Günlüğü",
+  "@manifestScreenTitle": {
+    "description": "Manifest Günlüğü sayfasının AppBar başlığı"
+  },
+  "manifestPhotoPickerHint": "Bir fotoğraf seç",
+  "@manifestPhotoPickerHint": {
+    "description": "Henüz fotoğraf seçilmemişken fotoğraf alanında gösterilen ipucu metni"
+  },
+  "manifestPhotoSemanticLabel": "Yüklenen fotoğraf",
+  "@manifestPhotoSemanticLabel": {
+    "description": "Kullanıcının yüklediği fotoğrafın erişilebilirlik (ekran okuyucu) etiketi"
+  },
+  "manifestIntentionHint": "Bugün ne manifest etmek istiyorsun?",
+  "@manifestIntentionHint": {
+    "description": "Niyet metni alanının etiketi"
+  },
+  "manifestSaveButton": "Kaydet",
+  "@manifestSaveButton": {
+    "description": "Manifest Günlüğü formundaki kaydet butonunun etiketi"
+  },
+  "manifestSavedMessage": "Bugünün girişi kaydedildi.",
+  "@manifestSavedMessage": {
+    "description": "Bugün zaten tamamlanmışken (coin tekrar verilmeden) tekrar kaydedilince gösterilen kısa mesaj"
+  },
+  "manifestCoinRewardMessage": "+2 Zibo Coin kazandın!",
+  "@manifestCoinRewardMessage": {
+    "description": "Bugünün girişi İLK KEZ tamamlanıp coin kazanılınca gösterilen kısa kutlama mesajı"
+  },
+  "manifestHistoryTitle": "Geçmiş Kayıtlar",
+  "@manifestHistoryTitle": {
+    "description": "Geçmiş manifest kayıtları galerisinin başlığı"
+  },
+  "manifestHistoryEmpty": "Henüz bir kayıt yok. Bugün ilk vizyonunu ekle!",
+  "@manifestHistoryEmpty": {
+    "description": "Geçmiş kayıt listesi boşken gösterilen metin"
+  },
+  "manifestDetailCloseButton": "Kapat",
+  "@manifestDetailCloseButton": {
+    "description": "Geçmiş kayıt detay diyaloğunu kapatan butonun etiketi"
+  },
+  "profileScreenTitle": "Profil",
+  "@profileScreenTitle": {
+    "description": "Profil sayfasının AppBar başlığı ve modül menüsündeki kart başlığı"
+  },
+  "profileModuleDescription": "Fotoğrafını, ismini ve alışkanlık istatistiklerini gör",
+  "@profileModuleDescription": {
+    "description": "Modül menüsündeki Profil kartının açıklaması"
+  },
+  "profilePhotoSemanticLabel": "Profil fotoğrafı, değiştirmek için dokun",
+  "@profilePhotoSemanticLabel": {
+    "description": "Profil fotoğrafı alanının erişilebilirlik (ekran okuyucu) etiketi"
+  },
+  "profileNameHint": "İsmini yaz",
+  "@profileNameHint": {
+    "description": "İsim alanı boşken gösterilen ipucu metni"
+  },
+  "profileStatsSectionTitle": "İstatistiklerim",
+  "@profileStatsSectionTitle": {
+    "description": "Profil sayfasındaki istatistik kartları bölümünün başlığı"
+  },
+  "profileStatMoneyTitle": "Para Yönetimi",
+  "@profileStatMoneyTitle": {
+    "description": "Para Yönetimi istatistik kartının başlığı"
+  },
+  "profileStatGratitudeManifestTitle": "Şükür ve Manifest",
+  "@profileStatGratitudeManifestTitle": {
+    "description": "Şükür ve Manifest istatistik kartının başlığı"
+  },
+  "profileStatConsistencyTitle": "İstikrar",
+  "@profileStatConsistencyTitle": {
+    "description": "İstikrar istatistik kartının başlığı"
+  },
+  "profileStatSelfCareTitle": "Öz Saygı ve Sağlık",
+  "@profileStatSelfCareTitle": {
+    "description": "Öz Saygı ve Sağlık istatistik kartının başlığı"
+  },
+  "profileStatMoneyEmpty": "Henüz veri yok — Para ve Birikim'i kullanmaya başla!",
+  "@profileStatMoneyEmpty": {
+    "description": "Para Yönetimi kartında hiç veri yokken gösterilen teşvik mesajı"
+  },
+  "profileStatGratitudeManifestEmpty": "Henüz veri yok — Şükran Günlüğü veya Manifest Günlüğü'nü kullanmaya başla!",
+  "@profileStatGratitudeManifestEmpty": {
+    "description": "Şükür ve Manifest kartında hiç veri yokken gösterilen teşvik mesajı"
+  },
+  "profileStatConsistencyEmpty": "Henüz veri yok — Hedef Takibi'ni kullanmaya başla!",
+  "@profileStatConsistencyEmpty": {
+    "description": "İstikrar kartında hiç veri yokken gösterilen teşvik mesajı"
+  },
+  "profileStatSelfCareEmpty": "Henüz veri yok — Su Takibi'ni kullanmaya başla!",
+  "@profileStatSelfCareEmpty": {
+    "description": "Öz Saygı ve Sağlık kartında hiç veri yokken gösterilen teşvik mesajı"
+  },
+  "profileBondSectionTitle": "Zibo ile Bağın",
+  "@profileBondSectionTitle": {
+    "description": "Profil sayfasındaki 7 satırlık liste bölümünün başlığı"
+  },
+  "bondLevelScreenTitle": "Zibo ile Bağ Seviyesi",
+  "@bondLevelScreenTitle": {
+    "description": "Bağ Seviyesi satırının başlığı VE açtığı sayfanın AppBar başlığı"
+  },
+  "profileBondLevelRowSubtitle": "Zibo ile {days} gündür kankasın",
+  "@profileBondLevelRowSubtitle": {
+    "description": "Bağ Seviyesi satırının/sayfasının gün sayısını gösteren alt metni — 'kanka' kelimesi hitap tercihine göre değiştirilir (bkz. applyAddressTerm)",
+    "placeholders": {
+      "days": {"type": "int"}
+    }
+  },
+  "profileBondNextLevelHint": "{days} gün sonra {tier} olacaksın",
+  "@profileBondNextLevelHint": {
+    "description": "Bağ Seviyesi sayfasında bir sonraki kademeye kaç gün kaldığını gösteren metin",
+    "placeholders": {
+      "days": {"type": "int"},
+      "tier": {"type": "String"}
+    }
+  },
+  "profileBondMaxLevelHint": "Zaten en üst kademedesin, tebrikler!",
+  "@profileBondMaxLevelHint": {
+    "description": "Bağ Seviyesi sayfasında kullanıcı en üst kademedeyken (bir sonraki yok) gösterilen metin"
+  },
+  "bondLevelNewBuddy": "Yeni Kanka",
+  "@bondLevelNewBuddy": {
+    "description": "Bağ Seviyesi kademesi: 7 günden az"
+  },
+  "bondLevelGettingClose": "Yakınlaşan Dost",
+  "@bondLevelGettingClose": {
+    "description": "Bağ Seviyesi kademesi: 7-29 gün"
+  },
+  "bondLevelOldFriend": "Eski Dost",
+  "@bondLevelOldFriend": {
+    "description": "Bağ Seviyesi kademesi: 30-89 gün"
+  },
+  "bondLevelSoulBuddy": "Can Kanka",
+  "@bondLevelSoulBuddy": {
+    "description": "Bağ Seviyesi kademesi: 90-364 gün"
+  },
+  "bondLevelLifetimeBuddy": "Ömür Boyu Dost",
+  "@bondLevelLifetimeBuddy": {
+    "description": "Bağ Seviyesi kademesi: 365+ gün"
+  },
+  "longestStreakScreenTitle": "En Uzun Seri Rekoru",
+  "@longestStreakScreenTitle": {
+    "description": "En Uzun Seri satırının başlığı VE açtığı sayfanın AppBar başlığı"
+  },
+  "profileStreakRowSubtitle": "En uzun serin: {days} gün",
+  "@profileStreakRowSubtitle": {
+    "description": "En Uzun Seri satırının alt metni",
+    "placeholders": {
+      "days": {"type": "int"}
+    }
+  },
+  "longestStreakScreenSubtitle": "Hedef Takibi'ndeki en uzun kesintisiz serin",
+  "@longestStreakScreenSubtitle": {
+    "description": "En Uzun Seri sayfasındaki büyük rakamın altındaki açıklama"
+  },
+  "longestStreakEncouragement": "Bu rekoru geçmek için bugün de bir hedefini işaretle!",
+  "@longestStreakEncouragement": {
+    "description": "En Uzun Seri sayfasındaki teşvik kartı metni"
+  },
+  "profileCostumeClosetRowTitle": "Kostüm Dolabı",
+  "@profileCostumeClosetRowTitle": {
+    "description": "Kostüm Dolabı Önizlemesi satırının başlığı"
+  },
+  "profileCostumeClosetEmpty": "Henüz bir kostümün yok — Mağaza'dan birini seç!",
+  "@profileCostumeClosetEmpty": {
+    "description": "Kostüm Dolabı Önizlemesi'nde hiç sahip olunan kostüm yokken gösterilen teşvik mesajı"
+  },
+  "coinSummaryScreenTitle": "Zibo Coin Özeti",
+  "@coinSummaryScreenTitle": {
+    "description": "Zibo Coin Özeti satırının başlığı VE açtığı sayfanın AppBar başlığı"
+  },
+  "coinSummaryTotalEarnedLabel": "Toplam Kazanılan",
+  "@coinSummaryTotalEarnedLabel": {
+    "description": "Coin Özeti sayfasında ömür boyu kazanılan ZC kartının etiketi"
+  },
+  "coinSummaryTotalSpentLabel": "Toplam Harcanan",
+  "@coinSummaryTotalSpentLabel": {
+    "description": "Coin Özeti sayfasında ömür boyu harcanan ZC kartının etiketi"
+  },
+  "coinSummaryAmount": "{amount} ZC",
+  "@coinSummaryAmount": {
+    "description": "Coin Özeti sayfasındaki bir tutarın gösterimi",
+    "placeholders": {
+      "amount": {"type": "int"}
+    }
+  },
+  "profileCoinSummaryRowSubtitle": "Kazanılan {earned} ZC · Harcanan {spent} ZC",
+  "@profileCoinSummaryRowSubtitle": {
+    "description": "Profil'deki Zibo Coin Özeti satırının alt metni",
+    "placeholders": {
+      "earned": {"type": "int"},
+      "spent": {"type": "int"}
+    }
+  },
+  "addressTermScreenTitle": "Hitap Tercihi",
+  "@addressTermScreenTitle": {
+    "description": "Hitap Tercihi satırının başlığı VE açtığı sayfanın AppBar başlığı"
+  },
+  "addressTermScreenDescription": "Zibo sana nasıl seslensin? Yazdığın kelime, sözlerinde \"kanka\" geçen yerlerde kullanılır.",
+  "@addressTermScreenDescription": {
+    "description": "Hitap Tercihi sayfasındaki açıklama metni"
+  },
+  "addressTermFieldHint": "Zibo sana nasıl seslensin? Örn: Kanka, Reis, Aslanım...",
+  "@addressTermFieldHint": {
+    "description": "Hitap Tercihi sayfasındaki serbest metin kutusunun placeholder'ı"
+  },
+  "profileAddressTermRowSubtitle": "Zibo sana \"{term}\" diyor",
+  "@profileAddressTermRowSubtitle": {
+    "description": "Profil'deki Hitap Tercihi satırının, o an seçili terimi gösteren alt metni",
+    "placeholders": {
+      "term": {"type": "String"}
+    }
+  },
+  "favoriteQuotesScreenTitle": "Favori Sözler",
+  "@favoriteQuotesScreenTitle": {
+    "description": "Favori Sözler satırının başlığı VE açtığı sayfanın AppBar başlığı"
+  },
+  "favoriteQuotesEmpty": "Henüz favori sözün yok — Ana Sayfa'daki kalp ikonuyla sevdiğin sözleri kaydet!",
+  "@favoriteQuotesEmpty": {
+    "description": "Favori Sözler sayfasında hiç favori yokken gösterilen teşvik mesajı"
+  },
+  "profileFavoriteQuotesRowSubtitle": "{count} favori söz",
+  "@profileFavoriteQuotesRowSubtitle": {
+    "description": "Profil'deki Favori Sözler satırının alt metni",
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "profileShareCardRowTitle": "Profil Kartını Paylaş",
+  "@profileShareCardRowTitle": {
+    "description": "Profil Kartı Paylaşımı satırının başlığı"
+  },
+  "profileShareCardRowSubtitle": "Bağ seviyeni ve istatistiklerini bir kartta paylaş",
+  "@profileShareCardRowSubtitle": {
+    "description": "Profil Kartı Paylaşımı satırının alt metni"
+  },
+  "profileShareCardTitle": "🐣 Zibo ile Bağım",
+  "@profileShareCardTitle": {
+    "description": "Paylaşılan profil kartı metninin başlığı (ZiboShareSheet'e geçirilen mesajın ilk satırı)"
+  },
+  "onboardingNameStepTitle": "Sana ne diyelim?",
+  "@onboardingNameStepTitle": {
+    "description": "Onboarding akışının ilk (isim) adımının başlığı"
+  },
+  "onboardingNameStepSubtitle": "Zibo seninle bu isimle konuşacak — istersen sonra Profil'den değiştirebilirsin.",
+  "@onboardingNameStepSubtitle": {
+    "description": "Onboarding akışının ilk (isim) adımının alt başlığı"
+  },
+  "onboardingContinueButton": "Devam Et",
+  "@onboardingContinueButton": {
+    "description": "Onboarding isim adımındaki devam butonu"
+  },
+  "onboardingNextButton": "İleri",
+  "@onboardingNextButton": {
+    "description": "Onboarding modül tanıtım adımlarındaki ileri butonu"
+  },
+  "onboardingSkipButton": "Geç",
+  "@onboardingSkipButton": {
+    "description": "Onboarding akışını atlayıp doğrudan Ana Sayfa'ya geçen buton"
+  },
+  "onboardingStartButton": "Hadi Başlayalım!",
+  "@onboardingStartButton": {
+    "description": "Onboarding akışının son (kapanış) adımındaki bitirme butonu"
+  },
+  "onboardingGoalsDescription": "Kendi hedeflerini belirle, her gün işaretle — 7 günlük bir seriyi tamamladığında Zibo Coin kazanırsın.",
+  "@onboardingGoalsDescription": {
+    "description": "Onboarding'de Hedef Takibi modülünü tanıtan 1-2 cümlelik açıklama"
+  },
+  "onboardingWaterDescription": "Günlük su hedefini takip et, bardak bardak ilerlemeni gör — hedefi tamamlayınca ödül seni bekliyor.",
+  "@onboardingWaterDescription": {
+    "description": "Onboarding'de Su Takibi modülünü tanıtan 1-2 cümlelik açıklama"
+  },
+  "onboardingGratitudeDescription": "Her gün 3 şeye şükret, küçük anları yazıya dök — hem içini rahatlatır hem de bakış açını değiştirir.",
+  "@onboardingGratitudeDescription": {
+    "description": "Onboarding'de Şükran Günlüğü modülünü tanıtan 1-2 cümlelik açıklama"
+  },
+  "onboardingMoodDescription": "Bugün nasıl hissettiğini tek dokunuşla kaydet, zamanla ruh halinin nasıl değiştiğini gör.",
+  "@onboardingMoodDescription": {
+    "description": "Onboarding'de Günlük Ruh Hali Takibi modülünü tanıtan 1-2 cümlelik açıklama"
+  },
+  "onboardingManifestDescription": "Hayallerine bir fotoğraf ve niyet ekle — kendi vizyon panonu zamanla büyüt.",
+  "@onboardingManifestDescription": {
+    "description": "Onboarding'de Manifest Günlüğü modülünü tanıtan 1-2 cümlelik açıklama"
+  },
+  "onboardingStoreDescription": "Zibo Coin biriktir, yeni kostümler ve renkli temalar satın al — Zibo'yu istediğin gibi giydir.",
+  "@onboardingStoreDescription": {
+    "description": "Onboarding'de Mağaza modülünü tanıtan 1-2 cümlelik açıklama"
+  },
+  "onboardingProfileDescription": "İstatistiklerini gör, Zibo ile bağını takip et, favori sözlerini biriktir — hepsi tek bir yerde.",
+  "@onboardingProfileDescription": {
+    "description": "Onboarding'de Profil modülünü tanıtan 1-2 cümlelik açıklama"
+  },
+  "onboardingClosingTitle": "Zibo ile Yolculuğun Başlıyor!",
+  "@onboardingClosingTitle": {
+    "description": "Onboarding akışının son (kapanış) adımının başlığı"
+  },
+  "onboardingClosingMessage": "Artık hazırsın, {name}! Küçük adımlarla büyük değişimler yaratacağız — hedeflerini takip et, kendine iyi bak, ben hep yanındayım. Hadi başlayalım kanka!",
+  "@onboardingClosingMessage": {
+    "description": "Onboarding akışının son adımındaki, Zibo'nun ağzından motive edici kapanış mesajı",
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  }
+}

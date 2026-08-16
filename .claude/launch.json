@@ -1,0 +1,14 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "dijital_kanka_web",
+      "runtimeExecutable": "cmd.exe",
+      "runtimeArgs": [
+        "/c",
+        "cd /d C:\\dev\\ZIBODK~1\\DIJITA~1 && C:\\flutter\\bin\\flutter.bat run -d web-server --web-port 8765"
+      ],
+      "port": 8765
+    }
+  ]
+}

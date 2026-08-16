@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Zibo markalı native splash (koyu mod) — main.dart'taki _darkBackground
+     (#17140F) ile aynı renk, bkz. drawable/launch_background.xml -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@color/zibo_splash_dark" />
+    <item>
+        <bitmap
+            android:gravity="center"
+            android:src="@drawable/zibo_splash_logo" />
+    </item>
+</layer-list>

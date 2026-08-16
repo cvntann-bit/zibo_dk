@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "855986625717",
+    "project_id": "zibo-dijital-kankan",
+    "storage_bucket": "zibo-dijital-kankan.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:855986625717:android:3560f525b17050ceb032fc",
+        "android_client_info": {
+          "package_name": "com.dijitalkanka.dijital_kanka"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDgzC47A0VUCKhhU1oUQpi1s0LwKatOCgg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
