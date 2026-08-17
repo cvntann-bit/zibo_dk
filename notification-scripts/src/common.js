@@ -26,22 +26,6 @@ const app = initAdmin();
 const db = app.firestore();
 const messaging = app.messaging();
 
-/** `uid`+`dateKey` (YYYY-MM-DD, Europe/Istanbul) → 0..slotCount-1 arası
- * deterministik bir dilim. Her kullanıcı her GÜN AYNI (ama kullanıcıdan
- * kullanıcıya FARKLI) dilimi seçer — GitHub Actions cron'u tek bir sabit
- * UTC zamanında çalıştığı için "her kullanıcıya günde 1 kez, rastgele bir
- * saatte" isteği bu hash + "workflow'u pencere boyunca birden çok kez
- * tetikle, yalnızca o anki dilime denk gelenlere gönder" deseniyle
- * karşılanıyor (bkz. daily-motivation.yml'nin cron listesi). */
-function pickSlot(uid, dateKey, slotCount) {
-  const input = `${uid}:${dateKey}`;
-  let hash = 0;
-  for (let i = 0; i < input.length; i++) {
-    hash = (hash * 31 + input.charCodeAt(i)) >>> 0;
-  }
-  return hash % slotCount;
-}
-
 /** Şu anki UTC zamanını Europe/Istanbul (sabit UTC+3, Türkiye 2016'dan beri
  * yaz/kış saati uygulamıyor) gün anahtarına (`YYYY-MM-DD`) çevirir. */
 function istanbulDateKey(date) {
@@ -94,7 +78,21 @@ async function sendToUser(user, type, title, body) {
       token: user.fcmToken,
       notification: { title, body },
       data: { type },
-      android: { priority: 'high' },
+      android: {
+        priority: 'high',
+        notification: {
+          // Uygulama içindeki `push_notifications` kanalıyla (bkz.
+          // lib/services/notification_service.dart) BİREBİR aynı id —
+          // Android O+'ta bildirim, kanal ADI/ID'sine göre o kanalın kayıtlı
+          // özel sesini (zibo_notification.wav, res/raw/) kullanır. Kanal
+          // önceden (uygulama ilk açıldığında) oluşturulmamışsa bildirim
+          // SESSİZCE düşer — bkz. PushNotificationService.initialize().
+          channelId: 'push_notifications',
+          // Yalnızca ÇOK eski (Android 7 ve altı, kanal kavramı olmayan)
+          // cihazlar için geri düşüş — kanal varsa bu alan yok sayılır.
+          sound: 'zibo_notification',
+        },
+      },
     });
     console.log(`Gönderildi: uid=${user.uid} type=${type}`);
   } catch (error) {
@@ -108,7 +106,6 @@ async function sendToUser(user, type, title, body) {
 module.exports = {
   db,
   messaging,
-  pickSlot,
   istanbulDateKey,
   istanbulMinutesOfDay,
   fetchAllUsers,

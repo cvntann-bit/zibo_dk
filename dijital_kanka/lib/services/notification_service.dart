@@ -146,6 +146,26 @@ class LocalNotificationService extends NotificationService {
   static const _channelDescription =
       'Zibo\'dan günde birkaç kez motivasyon sözü';
 
+  /// **2026 yeni özellik.** FCM push bildirimleri (bkz. `PushNotificationService`)
+  /// İÇİN ayrı, özel sesli bir kanal — eski `daily_reminders` kanalından
+  /// BİLEREK AYRI tutuldu (o kanal hâlâ rafta olan yerel hatırlatma sistemine
+  /// ait, bkz. "Bildirimler" bölümü). Ses dosyası
+  /// `android/app/src/main/res/raw/zibo_notification.wav`'dan geliyor —
+  /// Android'in RAW KAYNAK adlandırma kısıtlaması yüzünden (yalnızca küçük
+  /// harf/rakam/alt çizgi, boşluk/büyük harf YASAK) kullanıcının verdiği
+  /// orijinal "Zibo notification new.wav" dosyası `zibo_notification.wav`
+  /// olarak KOPYALANDI (Flutter asset'i DEĞİL — `assets/sounds/`'taki
+  /// orijinal dosya bu özellik için KULLANILMIYOR, Android bildirim kanalı
+  /// sesleri yalnızca native `res/raw/` kaynaklarından veya `content://`
+  /// URI'lerinden atanabiliyor, Flutter asset yolundan DEĞİL).
+  static const _pushChannelId = 'push_notifications';
+  static const _pushChannelName = 'Push Bildirimleri';
+  static const _pushChannelDescription =
+      'Zibo\'dan gelen push bildirimleri (motivasyon, streak, ödül, geri kazanma)';
+  static const _pushChannelSound = RawResourceAndroidNotificationSound(
+    'zibo_notification',
+  );
+
   final _plugin = FlutterLocalNotificationsPlugin();
   bool _initialized = false;
 
@@ -175,6 +195,22 @@ class LocalNotificationService extends NotificationService {
           _channelId,
           _channelName,
           description: _channelDescription,
+        ),
+      );
+      // Push kanalı da BURADA (eski yerel hatırlatma sistemi kapalı olsa
+      // bile) oluşturuluyor — `PushNotificationService.initialize()` her
+      // uygulama başlangıcında `initialize()`'ı ÇAĞIRIYOR (bkz. o dosya),
+      // bu yüzden kanal + özel ses, uygulama arka planda/kapalıyken gelen
+      // İLK push bildiriminden ÖNCE bile Android'de kayıtlı olur — Android
+      // O+'ta FCM mesajının `android.notification.channel_id`'si HENÜZ
+      // OLUŞTURULMAMIŞ bir kanala işaret ederse bildirim SESSİZCE
+      // DÜŞÜRÜLÜR, bu yüzden erken/koşulsuz oluşturmak kritik.
+      await androidImpl?.createNotificationChannel(
+        const AndroidNotificationChannel(
+          _pushChannelId,
+          _pushChannelName,
+          description: _pushChannelDescription,
+          sound: _pushChannelSound,
         ),
       );
 
@@ -350,12 +386,25 @@ class LocalNotificationService extends NotificationService {
   @override
   Future<void> showNow({required String title, required String body}) async {
     try {
+      // `PushNotificationService` (ön plandaki FCM mesajlarını göstermek
+      // için) bu metodu `initialize()`'ı hiç çağırmadan kullanabiliyordu —
+      // eski yerel hatırlatma sistemi kapalıyken (`notificationsFeatureEnabled
+      // == false`, bkz. "Bildirimler" bölümü) `_plugin.initialize()` HİÇBİR
+      // ZAMAN çalışmıyor, bu da `_plugin.show()`'un (ve dolayısıyla push
+      // bildirimlerinin ön planda hiç görünmemesinin) SESSİZCE başarısız
+      // olmasına yol açan gerçek bir bug'dı. Artık burada da idempotent
+      // şekilde (zaten initialize edilmişse no-op) çağrılıyor.
+      await initialize(onNotificationTap: () {});
       await _plugin.show(
         id: DateTime.now().millisecondsSinceEpoch.remainder(100000),
         title: title,
         body: body,
         notificationDetails: const NotificationDetails(
-          android: AndroidNotificationDetails(_channelId, _channelName),
+          android: AndroidNotificationDetails(
+            _pushChannelId,
+            _pushChannelName,
+            sound: _pushChannelSound,
+          ),
         ),
       );
     } catch (_) {

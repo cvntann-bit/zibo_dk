@@ -50,6 +50,16 @@ class FirebaseMessagingPushNotificationService extends PushNotificationService {
   }) async {
     if (uid == null) return;
     try {
+      // Push bildirim kanalını (özel sesiyle birlikte, bkz.
+      // NotificationService.initialize) uygulama HER başlangıçta erkenden
+      // oluşturur — eski yerel hatırlatma sistemi kapalı olsa bile
+      // (`notificationsFeatureEnabled == false`) bu çağrı GEREKLİ: Android
+      // O+'ta bir FCM mesajı henüz var olmayan bir kanala işaret ederse
+      // (`android.notification.channel_id`) bildirim SESSİZCE düşürülür —
+      // uygulama arka planda/kapalıyken gelen İLK bildirimden önce bile
+      // kanalın kayıtlı olması gerekiyor.
+      await localNotificationService.initialize(onNotificationTap: () {});
+
       final messaging = FirebaseMessaging.instance;
       await messaging.requestPermission();
 

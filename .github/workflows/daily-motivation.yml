@@ -1,11 +1,17 @@
 name: Günlük Motivasyon Bildirimi
 
 on:
-  # 09:00-10:45 (Europe/Istanbul = UTC+3) arası 15 dakikada bir — script her
-  # kullanıcı için o günkü rastgele dilime denk gelip gelmediğini kendisi
-  # kontrol ediyor (bkz. notification-scripts/src/dailyMotivation.js).
+  # GÜNDE TEK tetikleme, 09:07 Europe/Istanbul (=06:07 UTC) — BİLEREK
+  # :00/:15/:30/:45 DIŞINDA bir dakika (GitHub'ın kendi dokümantasyonu bu
+  # dakikaları "yoğun" olarak işaretliyor, gecikme riski en yüksek).
+  # Önceki tasarım (09:00-10:45 arası 15dk'da bir, 8 tetikleme) gerçek bir
+  # olayla test edildi: GitHub o gün 8 tetiklemeden yalnızca 1'ini
+  # gerçekleştirdi, 22 dakika GECİKMEYLE — script'in pencere kontrolü
+  # yüzünden hiç gönderim yapılmadı (bkz. notification-scripts/src/
+  # dailyMotivation.js'deki tam açıklama). Tek, yoğun-olmayan bir
+  # tetikleme çok daha güvenilir.
   schedule:
-    - cron: '0,15,30,45 6-7 * * *'
+    - cron: '7 6 * * *'
   workflow_dispatch: {}
 
 jobs:

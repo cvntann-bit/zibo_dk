@@ -1,9 +1,11 @@
 name: Günlük Ödül Hatırlatması Bildirimi
 
 on:
-  # 15:00 Europe/Istanbul = 12:00 UTC.
+  # ~15:00 Europe/Istanbul = ~12:00 UTC. Dakika bilerek 07 (:00 DEĞİL) —
+  # GitHub'ın schedule gecikmeleri özellikle :00/:15/:30/:45'te yoğunlaşıyor
+  # (bkz. daily-motivation.yml'deki gerçek olayla doğrulanmış not).
   schedule:
-    - cron: '0 12 * * *'
+    - cron: '7 12 * * *'
   workflow_dispatch: {}
 
 jobs:

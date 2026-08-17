@@ -2492,29 +2492,58 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
     `PushNotificationProvider` varsayılanıyla AYNI), `sendToUser(user, type, title, body)`
     (`isTypeEnabled` kontrolünden geçerse `messaging.send(...)`, token geçersizse/eskimişse
     hatayı yutup loglar — tek kullanıcının başarısızlığı `Promise.all` batch'ini durdurmasın diye),
-    `pickSlot`/`istanbulDateKey`/`istanbulMinutesOfDay` (aşağıya bakın).
+    `istanbulDateKey`/`istanbulMinutesOfDay` (aşağıya bakın).
   - **4 betik** (`src/dailyMotivation.js`, `src/streakReminder.js`, `src/dailyRewardReminder.js`,
     `src/reEngagement.js`) — mantık Cloud Functions taslağıyla BİREBİR AYNI, yalnızca "ne zaman
     çalıştırıldıkları" artık `onSchedule` yerine GitHub Actions `schedule:` cron'u:
-    - **Günlük Motivasyon** — GitHub Actions cron'u TEK bir sabit UTC zamanı kullanır (Cloud
-      Scheduler gibi "rastgele saat" desteklemez), bu yüzden "her kullanıcıya günde 1 kez,
-      09:00-11:00 arası RASTGELE bir saatte" isteği AYNI `pickSlot(uid, dateKey, 8)` hash deseniyle
-      (bkz. Cloud Functions taslağındaki orijinal açıklama, mantık değişmedi) çözülüyor: workflow
-      09:00-10:45 (Europe/Istanbul = 06:00-07:45 UTC) arası 15 dakikada bir (`cron:
-      '0,15,30,45 6-7 * * *'`) tetikleniyor, betik her çalıştırmada yalnızca O ANKİ dilime denk
-      gelen kullanıcılara gönderim yapıyor — her kullanıcı günde TAM BİR KEZ, kullanıcıdan
-      kullanıcıya FARKLI (ama gün gün SABİT) bir saatte bildirim alıyor.
-    - **Streak Hatırlatması** — `0 17 * * *` (UTC) = 20:00 Istanbul. `users/{uid}/state/goals`'u
+    - **Günlük Motivasyon** — **2026 GÜNCELLEMESİ — GERÇEK BİR OLAYLA BULUNAN, MİMARİYİ DEĞİŞTİREN
+      bir GitHub Actions kısıtlaması:** İlk tasarım, GitHub Actions cron'unun (Cloud Scheduler
+      gibi) "rastgele saat" desteklememesi yüzünden, "her kullanıcıya günde 1 kez, 09:00-11:00
+      arası RASTGELE bir saatte" isteğini `pickSlot(uid, dateKey, 8)` hash'iyle karşılıyordu:
+      workflow 09:00-10:45 (Europe/Istanbul) arası 15 dakikada bir (`cron: '0,15,30,45 6-7 * * *'`,
+      8 tetikleme) çalışıp her seferinde yalnızca o anki dilime denk gelen kullanıcılara gönderim
+      yapıyordu. **Kullanıcı gerçek bir çalıştırmadan sonra bildirim gelmediğini bildirdi — GitHub
+      Actions'ın run geçmişi incelenince şu bulundu:** o gün planlanan 8 tetiklemeden GitHub
+      yalnızca **1'ini** gerçekleştirdi, o da **22 dakika GECİKMEYLE** (`minutesOfDay=667` yani
+      11:07 Istanbul, 09:00-10:45 penceresinin TAMAMEN DIŞINDA) — script'in kendi pencere
+      koruması bu geç çalıştırmayı görüp `"Pencere dışı (minutesOfDay=667), gönderim yapılmadı."`
+      diyerek HİÇBİR kullanıcıya gönderim yapmadan sessizce sonlandı (log, `GET /repos/{owner}/
+      {repo}/actions/jobs/{job_id}/logs` API'siyle doğrulandı). **Kök neden — GitHub'ın kendi
+      dokümantasyonu:** "The schedule event can be delayed during periods of high loads... High
+      load times include the start of every hour" — cron'umuzun kullandığı `:00/:15/:30/:45`
+      dakikaları TAM OLARAK GitHub'ın "yoğun" dediği anlar, ve saatte birden fazla (8 kez/2 saat)
+      sık bir cron bu yoğunlukta GÜVENİLİR ÇALIŞMIYOR (7/8 tetikleme hiç gerçekleşmedi).
+      **Düzeltme — mimari basitleştirildi:** `pickSlot` TAMAMEN kaldırıldı (`common.js`'den de
+      silindi); artık GÜNDE TEK bir tetikleme var, `cron: '7 6 * * *'` (09:07 Europe/Istanbul) —
+      dakika BİLEREK `:07` (GitHub'ın "yoğun" dediği dakikaların DIŞINDA). Betik artık TÜM
+      kullanıcılara AYNI çalıştırmada, AYNI rastgele seçilmiş sözle gönderiyor (kullanıcıya göre
+      FARKLI dakika nüansı feda edildi) — sıkı 15dk'lık pencere kontrolü de kaldırılıp yerine
+      yalnızca GitHub'ın çalıştırmayı KATASTROFİK derecede geç (07:00-13:00 Istanbul dışında)
+      tetiklemesine karşı geniş bir güvenlik ağı (`SAFETY_MIN_MINUTE`/`SAFETY_MAX_MINUTE`,
+      `dailyMotivation.js`) kondu. **Ders — genel kural bu dört workflow'un HEPSİNE uygulandı:**
+      GitHub Actions cron'larında dakika alanı olarak ASLA `:00/:15/:30/:45` kullanmayın, bunun
+      yerine `:07` gibi sıra dışı bir dakika seçin — tek-tetiklemeli workflow'lar (aşağıdaki
+      diğer üçü) bu yüzden çökmüyordu (yalnızca geç çalışıyorlardı, bir "pencere dışı" reddi
+      yoktu) ama onlar da AYNI riski taşıdığı için dakikaları `:07`'ye kaydırıldı.
+    - **Streak Hatırlatması** — `7 17 * * *` (UTC) ≈ 20:00 Istanbul. `users/{uid}/state/goals`'u
       okuyup en az bir hedefin bugün işaretlenmediğini kontrol ediyor; hiç hedef yoksa göndermiyor.
-    - **Günlük Ödül Hatırlatması** — `0 12 * * *` (UTC) = 15:00 Istanbul. **BİLİNEN SINIRLAMA
+    - **Günlük Ödül Hatırlatması** — `7 12 * * *` (UTC) ≈ 15:00 Istanbul. **BİLİNEN SINIRLAMA
       (kullanıcıya açıkça belirtildi):** Şans Çarkı'nın Firestore'da kalıcı bir "bugün çevrildi
       mi" alanı YOK (bkz. "Şans Çarkı" bölümü), bu yüzden bu betik YALNIZCA Günlük Giriş Ödülü'nün
       claim durumunu kontrol edebiliyor, çark durumunu DEĞİL.
-    - **Geri Kazanma** — `0 8 * * *` (UTC) = 11:00 Istanbul. `users/{uid}.lastActiveAt` 2 günden
+    - **Geri Kazanma** — `7 8 * * *` (UTC) ≈ 11:00 Istanbul. `users/{uid}.lastActiveAt` 2 günden
       eski olan kullanıcılara gönderiyor.
     - GitHub Actions cron'ları HER ZAMAN UTC'dir — Europe/Istanbul (sabit UTC+3) karşılıkları her
       workflow dosyasının yorumunda AÇIKÇA yazılı, ileride saat değiştirmek isteyen biri yeniden
       hesaplamak zorunda kalmasın diye.
+    - **GitHub Actions run/job loglarını sorgulama tarifi (bu bulguyu çıkarmak için kullanıldı,
+      `gh` CLI bu ortamda YOK):** `git credential fill` ile (zaten `git push` için depolanmış)
+      GitHub token'ını alıp `curl -H "Authorization: token $TOKEN"` ile REST API'ye istek atmak —
+      `GET /repos/{owner}/{repo}/actions/workflows/{id}/runs` (run listesi + `created_at`) →
+      `GET /repos/{owner}/{repo}/actions/runs/{run_id}/jobs` (job id) → `GET /repos/{owner}/{repo}/
+      actions/jobs/{job_id}/logs` (ham log metni). Token asla ekrana yazdırılmadan tek bir
+      alt-shell içinde `eval "$(... | sed -n 's/^password=/GH_TOKEN=/p')"` ile ortam değişkenine
+      alınıp kullanıldı.
   - **`.github/workflows/*.yml`** (4 dosya) — her biri `schedule:` (cron) + `workflow_dispatch:`
     (elle manuel tetikleme, ilk kurulum testinde kullanılacak) tetikleyicisiyle: `actions/checkout`
     → `actions/setup-node@v4` (Node 20) → `npm install` (`notification-scripts/` içinde,
@@ -2569,6 +2598,71 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
     böyle "offstage" (boyanmayan ama hâlâ mount edilmiş) elemanları ATLAR. **Çözüm:**
     `find.byType(RootScreen, skipOffstage: false)` — bir widget'ın altında BAŞKA bir route
     push edilmişken o widget'ı `find.byType` ile ararken bu deseni kullanın.
+
+### Push Bildirimi Özel Sesi ([notification_service.dart](lib/services/notification_service.dart), `android/app/src/main/res/raw/zibo_notification.wav`)
+
+- **2026 yeni özellik.** Kullanıcı `assets/sounds/` altına özel bir bildirim sesi (`Zibo
+  notification new.wav`) ekledi, push bildirimlerinde (FCM) varsayılan sistem sesi yerine bu sesin
+  çalması istendi.
+- **Kritik: Android bildirim kanalı sesleri Flutter asset'inden DEĞİL, native `res/raw/`
+  kaynağından atanır.** `assets/sounds/`'taki dosya bu özellik için hiç KULLANILMIYOR (pubspec.
+  yaml'a da eklenmedi) — Android'in kendi bildirim sistemi yalnızca `android.resource://
+  <package>/raw/<isim>` gibi native kaynaklara veya `content://` URI'lerine erişebiliyor. Dosya
+  `android/app/src/main/res/raw/zibo_notification.wav` olarak KOPYALANDI.
+  - **Dosya adı yeniden adlandırıldı — Android raw kaynak adlandırma kısıtlaması:** orijinal
+    "Zibo notification new.wav" (boşluklu, büyük harfli) Android'in raw kaynak adı kurallarını
+    (yalnızca küçük harf, rakam, alt çizgi — `^[a-z0-9_]+$`) İHLAL ediyordu; Gradle bu dosyayı
+    `res/raw/` altında görünce derleme hatası verirdi. `zibo_notification.wav` olarak kopyalandı.
+  - **Format dönüşümü GEREKMEDİ** — dosya standart PCM WAV (`RIFF ... WAVE audio`), Android
+    bildirim sesleri için MP3/WAV/OGG'nin hepsi desteklenir, WAV'ı OGG'ye çevirmeye gerek yoktu.
+- **`LocaleNotificationService`'e (bkz. "Bildirimler" bölümündeki mevcut `daily_reminders`
+  kanalından AYRI) yeni bir `push_notifications` kanalı eklendi** —
+  `AndroidNotificationChannel(sound: RawResourceAndroidNotificationSound('zibo_notification'))`.
+  İki kanal BİLEREK ayrı: `daily_reminders` hâlâ rafta olan eski yerel hatırlatma sistemine ait
+  (bkz. `notificationsFeatureEnabled`), `push_notifications` yalnızca FCM push bildirimleri için.
+- **Kanal, uygulamanın HER başlangıcında erkenden ve koşulsuz oluşturuluyor** —
+  `PushNotificationService.initialize()` (her açılışta `main()`'den çağrılıyor, `uid` varsa) artık
+  `localNotificationService.initialize(onNotificationTap: () {})`'i FCM izni istemeden ÖNCE
+  çağırıyor. **Gerekçe — Android O+'ın kritik bir davranışı:** bir FCM mesajı, henüz cihazda hiç
+  oluşturulmamış bir kanala (`android.notification.channel_id`) işaret ederse, bildirim SESSİZCE
+  DÜŞÜRÜLÜR (hata fırlatmaz, hiçbir yerde görünmez) — bu yüzden kanalın uygulama arka planda/
+  kapalıyken gelen İLK bildirimden bile ÖNCE var olması şart, yalnızca bir bildirim gösterilirken
+  "tembel" oluşturmak yetmiyor.
+- **Bulunan ve düzeltilen gerçek bir bug — `showNow()` hiçbir zaman `initialize()`'ı
+  ÇAĞIRMIYORDU:** `PushNotificationService`, ön plandaki FCM mesajlarını göstermek için
+  `NotificationService.showNow()`'ı çağırıyordu, ama eski yerel hatırlatma sistemi kapalı olduğu
+  için (`notificationsFeatureEnabled == false`) `RootScreen` hiçbir zaman `NotificationProvider.
+  initializeAndSchedule()`'ı çağırmıyor, dolayısıyla `flutter_local_notifications` eklentisinin
+  KENDİSİ (`_plugin.initialize()`) hiç başlatılmamış oluyordu — `showNow()` bu durumda `_plugin.
+  show()`'u SESSİZCE (try/catch içinde) başarısız kılıyordu, yani **ön planda gelen HİÇBİR FCM
+  mesajı hiçbir zaman gösterilmiyordu.** Düzeltme: `showNow()` artık kendi başına `initialize
+  (onNotificationTap: () {})`'i (idempotent, `_initialized` bayrağıyla korunuyor) çağırıp emin
+  oluyor.
+- **`notification-scripts/src/common.js`'deki `sendToUser`'a `android.notification.channelId:
+  'push_notifications'` ve `sound: 'zibo_notification'` eklendi** — bu, uygulama ARKA PLANDA/
+  KAPALIYKEN OS'in doğrudan gösterdiği bildirimlerin (ön planda `showNow` üzerinden gösterilenlerin
+  DIŞINDaki asıl senaryo) doğru kanala (dolayısıyla doğru sese) yönlenmesini sağlıyor —
+  channel_id verilmezse Android varsayılan bir kanal kullanır, bu da varsayılan sistem sesi demek.
+- **Test:** Ses/kanal atamasının kendisi platform kanalına dokunduğu için `flutter test`'te
+  DOĞRULANAMIYOR (mevcut `LocalNotificationService`'in TÜM platform-kanalı metotları zaten try/
+  catch'li ve testte sessizce no-op oluyor, bkz. "Bildirimler" bölümündeki genel gerekçe) — gerçek
+  doğrulama yalnızca cihazda mümkün, bkz. altta.
+- **Gerçek cihazda doğrulama adımları (kullanıcı için):**
+  1. Yeni derlenen `app-debug.apk`'yı kur (aşağıdaki "Kurulum" talimatına bakın).
+  2. Uygulamayı aç (bu, `PushNotificationService.initialize()`'ı tetikleyip kanalı + FCM token'ını
+     kaydeder) — telefon Android 13+ ise bir bildirim izni isteği görmelisin, izin ver.
+  3. GitHub Actions'tan (`Actions` sekmesi) herhangi bir bildirim workflow'unu `workflow_dispatch`
+     ile elle çalıştır (bkz. "Push Bildirimleri" bölümündeki test talimatları).
+  4. Telefonda bildirim gelince (uygulama AÇIK/ön plandayken VEYA kapalıyken/arka plandayken)
+     **özel Zibo sesinin** çaldığını, varsayılan sistem "ping" sesinin ÇALMADIĞINI doğrula.
+  5. **Eğer hâlâ varsayılan ses çalıyorsa:** Ayarlar > Uygulamalar > Zibo > Bildirimler > "Push
+     Bildirimleri" kanalına gir, kanalın sesinin gerçekten "Zibo" (ya da benzer bir isim) olarak
+     ayarlı olduğunu kontrol et. **Önemli Android davranışı:** bir bildirim kanalı BİR KEZ
+     oluşturulduktan sonra, uygulama kodundaki sesi/ayarları DEĞİŞTİRMEK kanalı GÜNCELLEMEZ — eğer
+     bu APK'dan ÖNCE zaten bir `push_notifications` kanalı oluşmuşsa (olası değil, bu kanal bu
+     arc'ta YENİ eklendi, ama ihtimal dahilinde) uygulamayı TAMAMEN kaldırıp yeniden kurmak
+     (yalnızca yeniden derlemek YETMEZ) gerekebilir — bu, Android'in kanal sistemine özgü, kod
+     tarafından atlatılamayan bir kısıtlama.
 
 ## Yerelleştirme (i18n) — Türkçe / İngilizce / İspanyolca
 

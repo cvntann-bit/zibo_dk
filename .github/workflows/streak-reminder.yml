@@ -1,9 +1,11 @@
 name: Streak Hatırlatması Bildirimi
 
 on:
-  # 20:00 Europe/Istanbul = 17:00 UTC.
+  # ~20:00 Europe/Istanbul = ~17:00 UTC. Dakika bilerek 07 (:00 DEĞİL) —
+  # GitHub'ın schedule gecikmeleri özellikle :00/:15/:30/:45'te yoğunlaşıyor
+  # (bkz. daily-motivation.yml'deki gerçek olayla doğrulanmış not).
   schedule:
-    - cron: '0 17 * * *'
+    - cron: '7 17 * * *'
   workflow_dispatch: {}
 
 jobs:
