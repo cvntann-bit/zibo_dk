@@ -861,6 +861,19 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
   eklendi — böylece bu davranış artık somut bir regresyon testiyle garanti altında, yalnızca elle/
   görsel doğrulamaya bağlı değil. Kullanıcının gördüğü sorun büyük olasılıkla ESKİ bir APK
   sürümüydü — güncel kaynak koda göre hiçbir düzeltme GEREKMEDİ.
+- **2026 güncellemesi — Standart/Premium ayrımı kaldırıldı, TEK fiyata-göre-sıralı liste.**
+  Kullanıcı isteği: Mağaza/Temalar'da tüm temaları (statik + premium/animasyonlu, kategori
+  ayrımı OLMADAN) tek bir listede ucuzdan pahalıya sırala. `store_screen.dart`'taki
+  `_ThemesSection`, iki ayrı başlıklı `_ThemesGrid` (Standart Temalar + Premium/Animasyonlu)
+  render eden ~40 satırlık kod yerine `[...appThemes]..sort((a, b) => a.price.compareTo(b.price))`
+  ile TEK bir sıralı liste üretip TEK bir `_ThemesGrid`'e veriyor — `storeThemesStandardSectionTitle`/
+  `storeThemesPremiumSectionTitle`/`storeThemesPremiumSectionSubtitle` ARB anahtarları artık
+  KULLANILMIYOR (silinmedi, bkz. proje geneli "kullanılmayan ARB anahtarını silme" convansiyonu).
+  **Hangi temaların premium/animasyonlu olduğu bilgisi KAYBOLMADI** — `ThemeOptionCard`'ın kendi
+  üstündeki "Premium" rozeti (bkz. `theme.isPremiumAnimated`) KART SEVİYESİNDE göstermeye devam
+  ediyor, yalnızca üst düzey grup başlığı/ayrımı kalktı. `widget_test.dart`'taki "Kış Teması"
+  testindeki `find.text('Standart Temalar')`/`find.text('Premium / Animasyonlu')`
+  assertion'ları kaldırıldı (artık bu başlıklar hiç render edilmiyor).
 
 ### Şans Çarkı ([wheel_prize.dart](lib/models/wheel_prize.dart), [wheel_prizes.dart](lib/data/wheel_prizes.dart), [prize_wheel.dart](lib/widgets/prize_wheel.dart), [wheel_trigger_button.dart](lib/widgets/wheel_trigger_button.dart), [wheel_screen.dart](lib/screens/wheel_screen.dart), [tool/split_wheel_layers.dart](tool/split_wheel_layers.dart))
 - `WheelTriggerButton._size` 72px (60'tan büyütüldü, kullanıcı isteğiyle daha dikkat çekici olsun
@@ -2082,15 +2095,9 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
          suni şekilde şişirirdi (`HomeScreen._pickNextIndex`'in "art arda aynı söz gelmesin"
          garantisi ayrı kayıtlar arasında ayrım yapmadığı için, iki AYNI metin art arda gelme
          riskini de artırırdı).
-       - **YALNIZCA `ziboMessagesTr`'ye eklendi — `ziboMessagesEn`/`ziboMessagesEs` BİLEREK
-         genişletilmedi.** Kullanıcı yalnızca Türkçe metin verdi, çeviri istemedi; dosyanın
-         üstündeki "üç dilde de aynı sayıda öğe" belgesi artık TR için geçerli değil (279 vs.
-         101) — bu BİLİNÇLİ bir sapma, otomatik bir testle ZORUNLU KILINMIYOR (yalnızca elle/awk
-         ile bir kereliğine doğrulanmış bir kural pratiğiydi). `ziboMessagesForLocale` zaten her
-         dili KENDİ listesinin uzunluğuna göre bağımsız `%` alıyor, bu yüzden asimetri
-         FONKSİYONEL bir soruna yol açmıyor. **İleride EN/ES için eşdeğer bir genişleme
-         istenirse bu ayrı bir çeviri görevi olarak ele alınmalı** — bu arc'ta kapsam dışı
-         bırakıldı.
+       - **İlk sürümde YALNIZCA `ziboMessagesTr`'ye eklenmişti** — kullanıcı o an yalnızca Türkçe
+         metin vermişti, çeviri istenmemişti. **Bu asimetri SONRADAN (aşağıdaki 2026 güncellemesi)
+         GİDERİLDİ** — bkz. hemen altındaki madde, artık üç dil de 279/279/279.
        - **Test:** `address_term_test.dart`'a iki yeni test eklendi — yeni pool'dan bir örneğin
          `applyAddressTerm` ile doğru dönüştüğü, VE `ziboMessagesTr`'de artık birebir tekrar
          KALMADIĞI (`.toSet().length == .length`).
@@ -2098,6 +2105,54 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
          tercihiyle Ana Sayfa'da Zibo'ya art arda dokunulup yeni pool'dan bir söz
          ("Kanka dün de zorlanmıştın ama başardın.") ekranda **"Mehmet Can dün de zorlanmıştın
          ama başardın."** olarak doğru dönüştürülmüş hâliyle görüldü.
+     - **2026 İKİNCİ güncelleme — 179 yeni söz EN/ES'e uyarlandı, hitap sistemi ÜÇ dilde de
+       işlevsel hale getirildi.** Kullanıcı isteği: "179 sözü İngilizce/İspanyolca'ya çevir/uyarla
+       (kelimesi kelimesine değil, Zibo'nun tonunu koruyarak), dinamik hitap sistemini EN/ES'te de
+       koru." İnceleme sırasında **gerçek, önemli bir eksik bulundu:** `applyAddressTerm` o ana
+       kadar YALNIZCA Türkçe metinlerdeki "Kanka"yı değiştiriyordu — İngilizce/İspanyolca söz
+       havuzları "Buddy"/"Amigo" kullandığı için bu fonksiyon o iki dilde TAMAMEN ETKİSİZDİ
+       (kullanıcı İngilizce/İspanyolca arayüzdeyken hitap tercihi HİÇBİR ZAMAN kişiselleşmiyordu —
+       bu, dokümantasyonda "bilerek" diye işaretlenmiş bir kapsam sınırlamasıydı, ama kullanıcının
+       bu turdaki isteğiyle artık geçerliliğini yitirdi).
+       - **`applyAddressTerm` locale-aware yapıldı** (`utils/address_term.dart`) — üçüncü,
+         opsiyonel bir `Locale` parametresi (varsayılan `Locale('tr')`, geriye dönük uyumluluk
+         için) alıp `_placeholderFor(locale)` ile hangi kelimenin değiştirileceğini seçiyor: TR
+         "Kanka", EN "Buddy", ES "Amigo". `defaultAddressTerm` karşılaştırması (`term ==
+         'Kanka'`) HİÇ değişmedi — kullanıcı hitabı özelleştirmediyse (hangi arayüz dilinde
+         olursa olsun) metin aynen kalıyor, tıpkı öncesinde olduğu gibi.
+       - **8 ekranın HEPSİ güncellendi** (`home_screen.dart` + 7 modül ekranı) — her biri artık
+         `Localizations.localeOf(context)`'i bir `locale` değişkenine alıp hem `xQuotesForLocale
+         (locale)` hem `applyAddressTerm(..., addressTerm, locale)` çağrısında kullanıyor (önceden
+         `Localizations.localeOf(context)` iki kez, ayrı ayrı çağrılıyordu — küçük bir temizlik).
+         Bu, yalnızca `ziboMessagesEn/Es`'i DEĞİL, `goalQuotesEn/Es`/`moneyQuotesEn/Es`/
+         `waterQuotesEn/Es`/vb. TÜM diğer 7 söz havuzunun İngilizce/İspanyolca sürümlerini de
+         (hepsi zaten "Buddy"/"Amigo" kullanıyordu, bkz. `grep` doğrulaması) aynı anda düzeltti —
+         kullanıcı yalnızca Ana Sayfa'nın 179 yeni sözünü kastetmiş olsa da, paylaşılan fonksiyonu
+         düzeltmek TÜM ekranlara otomatik yayıldı.
+       - **179 sözün İngilizce/İspanyolca uyarlaması** — kelimesi kelimesine ÇEVİRİ değil, Zibo'nun
+         sıcak/samimi tonunu o dilde doğal duracak şekilde koruyan bir UYARLAMA (orijinal 100
+         sözlük havuzla AYNI felsefe, bkz. dosyanın en üstündeki yorum). `ziboMessagesEn`/
+         `ziboMessagesEs` artık TR ile AYNI uzunlukta: **279/279/279.**
+       - **Kalite kontrolü — iki ayrı duplicate turu gerekti:** İlk taslakta hem YENİ 179 satırın
+         KENDİ İÇİNDE (TR kaynağın kendisi de tekrar-yakın cümleler içeriyordu, bkz. yukarıdaki
+         "71'i elendi" notu) hem de yeni çevirilerin ESKİ 100'lük havuzla ÇAKIŞTIĞI birkaç satır
+         bulundu (toplam TR 279 + EN 279 + ES 279, hepsi elle bir Dart testiyle sıfır tekrara
+         indirildi). **Gotcha — basit `grep`/`sort | uniq -d` YETERSİZ kaldı:** bazı satırlar aynı
+         metni taşısa da biri çift tırnak (`"..."`, apostrof içerdiği için) biri tek tırnak
+         (`'...'`) ile yazılmıştı — ham metin satırları FARKLI görünüyordu (tırnak karakteri
+         farklı) ama Dart STRING DEĞERİ olarak birebir aynıydı. Bu yüzden nihai doğrulama
+         `flutter test` içinde geçici bir betikle (`ziboMessagesEn[i] == ziboMessagesEn[j]`
+         karşılaştırması, GERÇEK Dart string eşitliği) yapıldı — yalnızca metin tabanlı `grep`
+         kontrolüne güvenmeyin, kaçırabilir.
+       - **Test:** `address_term_test.dart`'a yeni bir `group` eklendi — İngilizce/İspanyolca
+         locale ile `applyAddressTerm` çağrıları, varsayılan terimde hiçbir dilde değişmeme,
+         `locale` verilmeden çağrılınca Türkçe'ye düşme (geriye dönük uyumluluk), yeni EN/ES
+         sözlerin doğru dönüştüğü, VE üç havuzun da (TR/EN/ES) 279 uzunlukta + tekrarsız olduğu.
+       - **Gerçek cihazda doğrulama:** APK yeniden derlenip telefona kurulup çöküş izi olmadan
+         açıldığı doğrulandı (`adb shell monkey` + `pidof`) — İngilizce/İspanyolca arayüzde hitap
+         tercihinin görsel olarak doğru kişiselleştiğinin TAM doğrulaması (dil değiştirip Zibo'ya
+         dokunarak) kullanıcının kendi cihazında yapılması gerekiyor, bu arc'ta yalnızca kod
+         seviyesinde (`flutter test`, 244 test) doğrulandı.
   6. **Favori Sözler** (`favorite_quotes_screen.dart` + `favorite_quotes_provider.dart` +
      `favorite_quote_button.dart`) — Ana Sayfa'nın konuşma balonunun sol üst köşesine (sağ üstteki
      `ShareZiboButton`'ın SİMETRİĞİ, `Positioned(top: -6, left: -6)`) `FavoriteQuoteButton` eklendi:
@@ -2236,6 +2291,27 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
   `l10n.adFreePromoComingSoon` ("Yakında! Reklamsız deneyim çok yakında sunulacak.") metniyle bir
   `SnackBar` gösterilir — gerçek bir satın alma/coin harcaması YOK. "Belki Sonra" veya sürükleme
   tutamacı/dışarı dokunma ile sheet hiçbir yan etki olmadan kapanır (zorunlu değil).
+  - **2026 güncellemesi — buton YAZISI yerine gerçek fiyat gösteriliyor (159,90 ₺).** Kullanıcı
+    isteği: "Satın Al" metni yerine `adFreePromoPrice` (YENİ, `ad_free_promo_sheet.dart`'ta
+    top-level `const` — `CoinPackage`'ın zaten var olan `PackagePrice` modeli YENİDEN
+    KULLANILDI, ayrı bir fiyat tipi icat edilmedi) gösterilsin, arayüz diline göre sayı formatı
+    uyarlanabilsin (gerçek çoklu para birimi DEĞİL, "şimdilik format olarak" — kullanıcının kendi
+    ifadesi). `PackagePrice`'a `formattedForLocale(String languageCode)` metodu eklendi
+    (`formatted` getter'ı DOKUNULMADAN kaldı — Mağaza'daki mevcut coin paketi kartları hâlâ onu
+    kullanıyor, geriye dönük uyumluluk). `formatCurrencyAmount`'a (`utils/currency_format.dart`)
+    opsiyonel bir `languageCode` parametresi eklendi: `'en'` iken nokta-ondalık/virgül-binlik
+    (`"159.90 ₺"`), aksi halde (varsayılan, `'tr'`/`'es'`) virgül-ondalık/nokta-binlik
+    (`"159,90 ₺"`) — **para birimi sembolü (`₺`) HİÇBİR dilde değişmiyor**, yalnızca sayının
+    yazım biçimi. `showAdFreePromoSheet`, `Localizations.localeOf(context).languageCode`'u
+    okuyup `adFreePromoPrice.formattedForLocale(...)`'i butonun `child`'ı olarak kullanıyor —
+    `l10n.adFreePromoBuyButton` ARB anahtarı artık KULLANILMIYOR (silinmedi, proje geneli
+    convansiyon). **İleride gerçek çoklu para birimi eklenmek istenirse** yalnızca
+    `PackagePrice.currencyCode`'u (ör. `'USD'`) locale'e göre seçip `formatCurrencyAmount`'a yeni
+    bir `case` eklemek yeterli olacak — `showAdFreePromoSheet`/UI kodu değişmeyecek.
+  - **Test:** `currency_format_test.dart`'a `languageCode` parametresini kapsayan 3 yeni test
+    eklendi (`'en'` iken nokta-ondalık, varsayılan/`'es'` iken virgül-ondalık). Mevcut Zibo ADS
+    uçtan uca senaryoları (aşağıda) bu değişiklikten etkilenmedi — hâlâ `Key`'e göre buton buluyor,
+    metne göre DEĞİL.
   - **Butonlara `Key` eklenmesi kasıtlı:** "Satın Al" metni Mağaza'daki kostüm/tema kartlarının
     "Satın Al" butonlarıyla AYNI (bkz. "Kostümler" bölümü) — `find.text('Satın Al')` testte
     BİRDEN FAZLA widget bulup `tap()`'i belirsiz hale getiriyordu (gerçekten yaşandı, ilk test
@@ -2553,6 +2629,34 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
     ÇALIŞTIRILIP TEST EDİLEMEDİ. `workflow_dispatch` sayesinde kullanıcı ilk kurulumdan sonra her
     workflow'u GitHub Actions sekmesinden ELLE bir kez tetikleyip loglardan doğrulayabilir (bkz.
     altta "Kullanıcının tamamlaması gereken adımlar").
+- **2026 GÜNCELLEMESİ — bildirimler artık kullanıcının arayüz diline göre gönderiliyor (TR/EN/ES),
+  eskiden HER ZAMAN Türkçe gidiyordu.** Kullanıcı raporu (verbatim özet): "admoba geçmeden önce
+  bildirimler sadece Türkçe gidiyor, yabancı biri (ör. İspanyolca) kullanıyorsa bildirimler de o
+  dilde gitmeli." İnceleme sonucu kök neden doğrulandı: `dailyMotivation.js` TEK bir Türkçe
+  `MOTIVATION_QUOTES` dizisinden TÜM kullanıcılara aynı sözü gönderiyordu, `streakReminder.js`/
+  `dailyRewardReminder.js`/`reEngagement.js` üçü de `sendToUser(...)`'a doğrudan sabit bir Türkçe
+  string literal geçiriyordu — DÖRDÜNDE de hiçbir dil-farkındalığı YOKTU.
+  - **`common.js`'e YENİ `getLanguageCode(uid)` eklendi** — istemcideki `LocaleProvider`'ın AYNI
+    şemasını okuyor (`users/{uid}/state/languageCode` dokümanı, `value` alanı,
+    `['tr','en','es']` dışında/eksik/hatalıysa varsayılan `'tr'` — istemcinin kendi varsayılanıyla
+    BİREBİR aynı). `db` çağrısı `isTypeEnabled`'daki AYNI desende try/catch'e sarılı — Firestore
+    hatası/ağ sorunu olursa sessizce `'tr'`'ye düşer, tüm çalıştırmayı bozmaz.
+  - **YENİ `notification-scripts/src/content.js`** — 4 türün TR/EN/ES içeriğini TEK yerde
+    toplayan bir modül (Günlük Motivasyon: 8'er söz/dil; diğer üçü: tek body string/dil).
+    Çeviriler `lib/data/zibo_messages.dart`'taki AYNI felsefeyle (birebir çeviri değil, Zibo'nun
+    sıcak tonu o dilde doğal duracak şekilde uyarlama — TR "Kanka"/EN "Buddy"/ES "Amigo")
+    yazıldı. Üç dil de Günlük Motivasyon'da BİREBİR aynı sayıda (8) söz içeriyor.
+  - **4 betiğin HEPSİ** artık `sendToUser(...)`'ı çağırmadan ÖNCE ilgili kullanıcı(lar) için
+    `getLanguageCode(uid)`'i çözüp `content.js`'teki doğru dildeki metni seçiyor —
+    `dailyMotivation.js`'de bu, ESKİDEN "tüm kullanıcılara aynı çalıştırmada aynı rastgele söz"
+    olan tasarımı "her kullanıcı KENDİ dilinde, kendi rastgele sözünü alır" hâline getirdi (hâlâ
+    aynı çalıştırmada, `Promise.all` ile paralel); diğer üçünde zaten per-user bir döngü/filtre
+    olduğu için yalnızca `sendToUser` çağrısından hemen önce bir `getLanguageCode` eklemek yeterli
+    oldu.
+  - **Bu ortamda Node.js YOK, betikler yalnızca dikkatli kod incelemesiyle doğrulandı** (aynı
+    "yerel olarak çalıştırılamıyor" sınırlaması, bkz. yukarı) — kullanıcının GitHub Actions'tan
+    `workflow_dispatch` ile elle tetikleyip (ideal olarak EN/ES `languageCode`'lu bir test
+    kullanıcısıyla) doğrulaması gerekiyor.
 - **`firestore.rules` — DEĞİŞİKLİK GEREKMEDİ (Cloud Functions taslağındaki gerekçeyle AYNI).**
   Mevcut kural zaten `match /users/{userId}/{document=**}` (bkz. "Firestore Veri Kalıcılığı"
   bölümü) ile `users/{uid}` dokümanının TÜM alanlarını (`fcmToken`/`lastActiveAt` dahil) sahibine
@@ -2605,10 +2709,15 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
   notification new.wav`) ekledi, push bildirimlerinde (FCM) varsayılan sistem sesi yerine bu sesin
   çalması istendi.
 - **Kritik: Android bildirim kanalı sesleri Flutter asset'inden DEĞİL, native `res/raw/`
-  kaynağından atanır.** `assets/sounds/`'taki dosya bu özellik için hiç KULLANILMIYOR (pubspec.
-  yaml'a da eklenmedi) — Android'in kendi bildirim sistemi yalnızca `android.resource://
-  <package>/raw/<isim>` gibi native kaynaklara veya `content://` URI'lerine erişebiliyor. Dosya
-  `android/app/src/main/res/raw/zibo_notification.wav` olarak KOPYALANDI.
+  kaynağından atanır.** `assets/sounds/`'taki dosya bu özellik için hiç KULLANILMIYOR — Android'in
+  kendi bildirim sistemi yalnızca `android.resource://<package>/raw/<isim>` gibi native
+  kaynaklara veya `content://` URI'lerine erişebiliyor. Dosya
+  `android/app/src/main/res/raw/zibo_notification.wav` olarak KOPYALANDI (orijinali
+  `assets/sounds/`'ta da duruyor — **2026 İKİNCİ güncelleme**: `assets/sounds/` klasörü SONRADAN
+  Zibo dokunma sesi özelliği için `pubspec.yaml`'ın `flutter: assets:` listesine eklendi, bkz.
+  "Zibo Dokunma Sesi" bölümü — bu, o klasördeki `zibo_notification.wav`'ı da bir Flutter asset'i
+  haline getirdi ama bu YİNE de bildirim kanalı sesi için KULLANILMIYOR, yalnızca zararsız bir
+  yan etki).
   - **Dosya adı yeniden adlandırıldı — Android raw kaynak adlandırma kısıtlaması:** orijinal
     "Zibo notification new.wav" (boşluklu, büyük harfli) Android'in raw kaynak adı kurallarını
     (yalnızca küçük harf, rakam, alt çizgi — `^[a-z0-9_]+$`) İHLAL ediyordu; Gradle bu dosyayı
@@ -2663,6 +2772,83 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
      arc'ta YENİ eklendi, ama ihtimal dahilinde) uygulamayı TAMAMEN kaldırıp yeniden kurmak
      (yalnızca yeniden derlemek YETMEZ) gerekebilir — bu, Android'in kanal sistemine özgü, kod
      tarafından atlatılamayan bir kısıtlama.
+- **2026 İKİNCİ güncelleme — 4 bildirim türünün TÜMÜ tek sese/kanala bağlı olduğu doğrulandı,
+  KOD DEĞİŞİKLİĞİ GEREKMEDİ.** Kullanıcı isteği: "Günlük Motivasyon/Streak Hatırlatması/Günlük
+  Ödül Hatırlatması/Geri Kazanma bildirimlerinin HEPSİ aynı `zibo_notification.wav` sesini
+  çalsın." İnceleme sonucu: `notification-scripts/src/*.js`'teki 4 betiğin (`dailyMotivation.js`,
+  `streakReminder.js`, `dailyRewardReminder.js`, `reEngagement.js`) HEPSİ ZATEN `common.js`'teki
+  TEK bir paylaşılan `sendToUser(...)` fonksiyonunu çağırıyordu (bkz. "Push Bildirimleri"
+  bölümü) — `channelId: 'push_notifications'`/`sound: 'zibo_notification'` bu TEK fonksiyonda
+  bir önceki oturumda zaten ayarlanmıştı, dolayısıyla 4 türün hepsi otomatik olarak AYNI kanala/
+  sese bağlıydı. Bu istek, bir önceki arc'ta zaten tam olarak tamamlanmış bir işin
+  DOĞRULANMASIYDI — hiçbir dosya değişmedi.
+
+### Zibo Dokunma Sesi ([sound_effects_service.dart](lib/services/sound_effects_service.dart), [sound_effects_provider.dart](lib/providers/sound_effects_provider.dart), `assets/sounds/zibo_tap_sound.wav`)
+
+- **2026 yeni özellik.** Kullanıcı `assets/sounds/zibo_tap_sound.wav` ekledi, Ana Sayfa'da Zibo'ya
+  her dokunuşta (mevcut poz/söz değişim animasyonuyla AYNI anda) bu sesin çalmasını istedi —
+  art arda hızlı dokunuşlarda seslerin üst üste binmemesi ve Ayarlar'da bir "Ses Efektleri"
+  anahtarına bağlı olması şartıyla.
+- **`audioplayers: ^6.0.0`** (pubspec.yaml, `flutter pub get` ile `6.8.1`'e çözüldü) — projede
+  daha önce hiçbir ses ÇALMA paketi yoktu (yalnızca `flutter_local_notifications`'ın kendi dahili
+  ses mekanizması vardı, bkz. yukarıdaki "Push Bildirimi Özel Sesi" bölümü — bu TAMAMEN AYRI bir
+  ihtiyaç, native bildirim kanalı değil, uygulama İÇİNDE anlık bir ses efekti). `assets/sounds/`
+  klasörü `pubspec.yaml`'ın `flutter: assets:` listesine eklendi (önceden yalnızca
+  `assets/images/` vardı) — `AudioPlayer.play(AssetSource(...))` Flutter asset bundle'ından
+  okuduğu için (native `res/raw/`'dan DEĞİL, bkz. yukarıdaki bildirim sesi bölümündeki AYNI ayrım
+  ama TERSİ yönde) bu adım gerekliydi.
+- **`SoundEffectsService`** (`AdService`/`NotificationService` ile AYNI "gerçek + fake, testte
+  enjekte edilebilir" desen — `audioplayers` da bir platform kanalı kullandığı için
+  `flutter_local_notifications` gibi `flutter_test`'te doğrudan kullanılamaz):
+  - `AudioPlayersSoundEffectsService` — tek bir `AudioPlayer` örneği (`ReleaseMode.stop`).
+    `playZiboTap()` her çağrıldığında ÖNCE `_player.stop()` SONRA `_player.play(AssetSource
+    ('sounds/zibo_tap_sound.wav'))` çağırıyor — kullanıcının "art arda hızlı tıklamalarda önceki
+    sesi kesip yeniden başlat" isteği bu TEK `stop()`+`play()` çiftiyle karşılanıyor, ayrı bir
+    debounce zamanlayıcısına gerek KALMADI (daha basit, daha az durum yönetimi).
+  - `FakeSoundEffectsService` — `const`, no-op (diğer Fake* servislerle AYNI desen).
+- **`SoundEffectsProvider`** — `ThemeProvider` ile BİREBİR AYNI Varyant C (`CloudStateStore`, tek
+  bool, `{'value': ...}` sarmalı) deseni; `enabled` varsayılan `true`. Bilerek genel/soyut
+  isimlendirildi ("Ses Efektleri", tekil "Zibo dokunma sesi" DEĞİL) — şu an tek bir ses efekti
+  kontrol ediyor olsa da, ileride başka UI ses efektleri (ör. coin kazanma sesi) eklenirse AYNI
+  anahtarı paylaşabilsin diye.
+- **`HomeScreen`'e enjeksiyon** — `RootScreen.pushNotificationService` ile AYNI desen:
+  `HomeScreen({this.soundEffectsService})` opsiyonel bir constructor parametresi (varsayılan
+  gerçek `AudioPlayersSoundEffectsService()`), `_HomeScreenState` bunu `late final` bir alanda
+  tutup `dispose()`'ta serbest bırakıyor. `_onZiboTap()` (poz/söz değişiminin olduğu AYNI metot)
+  artık `context.read<SoundEffectsProvider>().enabled` kontrolünden geçerse
+  `_soundEffectsService.playZiboTap()`'i de çağırıyor — poz/söz değişimiyle TAM OLARAK aynı anda
+  tetikleniyor (kullanıcının açık isteği).
+  - **Yalnızca Ana Sayfa'da — kapsam bilinçli olarak dar tutuldu.** Kullanıcı "Zibo'nun
+    tıklanabilir olduğu diğer yerlerde de" dedi, ama incelemede diğer 7 modül ekranının HİÇBİRİNDE
+    Zibo görseli tıklanabilir DEĞİL (`GestureDetector`/`onTap` yok, bkz. "Zibo Poz/Animasyon
+    Sistemi" bölümü — yalnızca Ana Sayfa'nın `_onZiboTap`'i poz/söz ilerletiyor) — bu yüzden
+    şu an fiilen yalnızca Ana Sayfa'da ses çalıyor, kapsam eksiksiz. **İleride başka bir ekranda
+    Zibo tıklanabilir hale getirilirse, aynı `_soundEffectsService.playZiboTap()` deseni oraya da
+    eklenmeli.**
+- **Ayarlar'a yeni "Ses Efektleri" anahtarı** — `settings_screen.dart`'taki "Genel" kartında,
+  "Koyu Tema" satırının HEMEN ALTINDA (`Icons.volume_up_outlined`, yeni `settingsSoundEffects`
+  ARB anahtarı, TR/EN/ES üçünde de eklendi). Kart artık ÜÇ satır (Koyu Tema/Ses Efektleri/Dil) —
+  bu, `settings_screen.dart`'ın "yeni içerik eklerken altındaki testler `scrollUntilVisible`
+  gerektirebilir" gotcha'sını (bkz. "Test kalıpları" bölümü) TEKRAR tetikledi: "Gizlilik
+  Politikası"/"Kullanım Koşulları" testindeki `tester.tap(find.text(...))` çağrıları artık
+  hit-test uyuşmazlığı yaşıyordu (kaydırma sonrası satır AppBar'a çok yakın kalıyordu) —
+  `tester.widget<ListTile>(...).onTap!()` ile DOĞRUDAN çağrıya çevrildi (GridView/hit-test
+  uyuşmazlığı deseniyle AYNI çözüm, bkz. "Test kalıpları").
+- **Test:** YENİ `test/sound_effects_provider_test.dart` (`ThemeProvider` testleriyle AYNI desen:
+  varsayılan açık, `setEnabled` hem durumu hem kalıcı depoyu günceller, yeniden başlatmada
+  hatırlanır) + YENİ `test/home_screen_sound_test.dart` (`manifest_journal_screen_test.dart`'taki
+  "bağımsız test uygulaması + sahte servis enjeksiyonu" deseniyle: Ses Efektleri açıkken Zibo'ya
+  dokununca `playZiboTap` çağrılır, kapalıyken ÇAĞRILMAZ). **Gotcha (tekrar yaşandı):**
+  `Image.asset()` providers boot olduktan hemen sonra yükseklik=0 raporlayıp `tester.tap()`'in
+  hit-test'ini şaşırtabiliyor (bkz. "Test kalıpları" bölümündeki aynı gotcha) — çözüm yine
+  `pumpAndSettle()`'dan sonra `tester.runAsync(() => Future.delayed(Duration(milliseconds:
+  100)))` + bir `pumpAndSettle()` daha. `widget_test.dart`'ın `_buildAppWithClock()`'una da
+  `SoundEffectsProvider` eklendi (RootScreen'in ihtiyaç duyduğu HER provider kuralı, bkz. "Test
+  kalıpları").
+- **Gerçek cihazda doğrulama:** APK yeniden derlenip telefona kurulup çöküş izi olmadan açıldığı
+  doğrulandı (`adb shell monkey`/`pidof`) — sesin GERÇEKTEN duyulup duyulmadığı (ve Ayarlar'daki
+  anahtarın gerçekten sesi açıp kapattığı) kullanıcının kendi cihazında dinleyerek doğrulaması
+  gerekiyor, bu arc'ta yalnızca kod seviyesinde (`flutter test`, 244 test) doğrulandı.
 
 ## Yerelleştirme (i18n) — Türkçe / İngilizce / İspanyolca
 
@@ -2782,8 +2968,9 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
   `profile_provider_test.dart`, `profile_stats_test.dart`, `profile_screen_test.dart`,
   `manifest_journal_screen_test.dart`, `address_term_test.dart`, `bond_level_test.dart`,
   `favorite_quotes_provider_test.dart`, `onboarding_provider_test.dart`,
-  `zibo_animated_image_test.dart` (YENİ, 2026 — bkz. "Zibo Poz/Animasyon Sistemi" bölümü).
-  **Toplam: 228 test.**
+  `zibo_animated_image_test.dart`, `sound_effects_provider_test.dart` (YENİ, 2026 — bkz. "Zibo
+  Dokunma Sesi" bölümü), `home_screen_sound_test.dart` (YENİ, aynı bölüm).
+  **Toplam: 244 test.**
 - `widget_test.dart` içindeki `_buildAppWithClock()` yardımcı fonksiyonu enjekte edilebilir saatli
   testler için — **`RootScreen`'in ihtiyaç duyduğu HER provider'ı içermeli** (`AppThemeProvider`,
   `CoinProvider`, `CostumeProvider`, `DailyRewardsProvider`, `FavoriteQuotesProvider`,

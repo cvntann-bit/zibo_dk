@@ -1,8 +1,14 @@
 // 4. GERİ KAZANMA — her gün 11:00 (Europe/Istanbul) tetiklenir (bkz.
 // .github/workflows/re-engagement.yml). `lastActiveAt` 2 günden eski olan
 // kullanıcılara Zibo'nun sıcak tonunda özel bir mesaj gönderilir.
+//
+// 2026 GÜNCELLEMESİ — kullanıcı raporu: bildirim her zaman Türkçe gidiyordu,
+// kullanıcının arayüz diline göre değişmiyordu. Artık `getLanguageCode` ile
+// kullanıcının dili çözülüp `content.js`'teki TR/EN/ES metinlerinden doğru
+// olanı gönderiliyor.
 
-const { fetchAllUsers, sendToUser } = require('./common');
+const { fetchAllUsers, sendToUser, getLanguageCode } = require('./common');
+const { re_engagement: RE_ENGAGEMENT_BODY } = require('./content');
 
 async function main() {
   const twoDaysAgoMs = Date.now() - 2 * 24 * 60 * 60 * 1000;
@@ -18,9 +24,15 @@ async function main() {
   });
 
   await Promise.all(
-    eligible.map((u) =>
-      sendToUser(u, 're_engagement', 'Zibo', 'Seni özledim kanka, bir bakıver ne yaptığına 🧡'),
-    ),
+    eligible.map(async (u) => {
+      const lang = await getLanguageCode(u.uid);
+      await sendToUser(
+        u,
+        're_engagement',
+        'Zibo',
+        RE_ENGAGEMENT_BODY[lang] || RE_ENGAGEMENT_BODY.tr,
+      );
+    }),
   );
 }
 

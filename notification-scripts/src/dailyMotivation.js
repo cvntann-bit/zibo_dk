@@ -24,21 +24,20 @@
 // önceliğine göre BİLİNÇLİ bir ödünleşim — daha önceki tasarım GÖRÜNÜŞTE
 // daha kişiselleştirilmişti ama pratikte hiç çalışmıyordu.
 
-const { istanbulDateKey, istanbulMinutesOfDay, fetchAllUsers, sendToUser } = require('./common');
+const {
+  istanbulDateKey,
+  istanbulMinutesOfDay,
+  fetchAllUsers,
+  sendToUser,
+  getLanguageCode,
+} = require('./common');
+const { daily_motivation: MOTIVATION_QUOTES } = require('./content');
 
-// Ana Sayfa'nın Türkçe söz havuzundan küçük, bağımsız bir örnek (bkz.
-// lib/data/zibo_messages.dart — tam havuz 279 söz; burada sunucu tarafında
-// tam havuzla senkron tutmak yerine küçük, temsili bir alt küme kullanılıyor).
-const MOTIVATION_QUOTES = [
-  'Kanka bugün küçük bir adım at, yeter.',
-  'Kanka dünden daha güçlüsün, biliyorsun değil mi?',
-  'Kanka bugün de yanındayım, hadi başlayalım.',
-  'Kanka en zor kısım başlamak, gerisi kolay.',
-  'Kanka bugün kendine bir teşekkür borçlusun.',
-  'Kanka pes etmek yok, bir adım daha!',
-  'Kanka bugün de harika bir gün olacak, inan buna.',
-  'Kanka küçük ilerlemeler büyük değişimlere dönüşür.',
-];
+// 2026 İKİNCİ GÜNCELLEMESİ — kullanıcı raporu: bildirimler kullanıcının arayüz dilinden
+// BAĞIMSIZ, her zaman Türkçe gidiyordu. Artık HER kullanıcı için ayrı ayrı `getLanguageCode`
+// ile dil çözülüp o dildeki söz havuzundan (bkz. content.js — TR/EN/ES, 8'er söz) rastgele
+// bir söz seçiliyor — "tüm kullanıcılara aynı çalıştırmada aynı söz" tasarımı artık yalnızca
+// "aynı çalıştırma" kısmında geçerli, söz her kullanıcının kendi dilinde.
 
 // Sıkı bir "9:00-10:45" penceresi ARTIK YOK (tek tetikleme olduğu için
 // gerek kalmadı) — yalnızca GitHub'ın çalıştırmayı KATASTROFİK şekilde geç
@@ -61,10 +60,16 @@ async function main() {
   }
 
   const users = await fetchAllUsers();
-  const quote = MOTIVATION_QUOTES[Math.floor(Math.random() * MOTIVATION_QUOTES.length)];
-  console.log(`${users.length} kullanıcıya "${quote}" gönderiliyor (minutesOfDay=${minutesOfDay}).`);
+  console.log(`${users.length} kullanıcıya günlük motivasyon gönderiliyor (minutesOfDay=${minutesOfDay}).`);
 
-  await Promise.all(users.map((u) => sendToUser(u, 'daily_motivation', 'Zibo', quote)));
+  await Promise.all(
+    users.map(async (u) => {
+      const lang = await getLanguageCode(u.uid);
+      const quotes = MOTIVATION_QUOTES[lang] || MOTIVATION_QUOTES.tr;
+      const quote = quotes[Math.floor(Math.random() * quotes.length)];
+      await sendToUser(u, 'daily_motivation', 'Zibo', quote);
+    }),
+  );
 }
 
 main()

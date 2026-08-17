@@ -44,6 +44,30 @@ async function fetchAllUsers() {
   return snap.docs.map((doc) => ({ uid: doc.id, ...doc.data() }));
 }
 
+const SUPPORTED_LANGUAGE_CODES = ['tr', 'en', 'es'];
+
+/** `users/{uid}/state/languageCode` — bkz. lib/providers/locale_provider.dart. Doküman/alan
+ * yoksa veya değer tanınmıyorsa varsayılan `'tr'` (istemcideki varsayılanla AYNI). Bildirim
+ * içeriğini kullanıcının seçtiği arayüz diline göre göndermek için kullanılıyor (bkz.
+ * content.js) — daha önce TÜM bildirimler dilden bağımsız hep Türkçe gidiyordu, kullanıcı
+ * raporuyla düzeltildi. */
+async function getLanguageCode(uid) {
+  try {
+    const doc = await db
+      .collection('users')
+      .doc(uid)
+      .collection('state')
+      .doc('languageCode')
+      .get();
+    if (!doc.exists) return 'tr';
+    const value = doc.data().value;
+    return SUPPORTED_LANGUAGE_CODES.includes(value) ? value : 'tr';
+  } catch (error) {
+    console.warn(`getLanguageCode başarısız: uid=${uid}`, error.message || error);
+    return 'tr';
+  }
+}
+
 /** `users/{uid}/state/pushNotificationState` — bkz.
  * lib/providers/push_notification_provider.dart. Doküman/alan yoksa
  * varsayılan `true` (istemcideki varsayılanla AYNI). */
@@ -110,4 +134,5 @@ module.exports = {
   istanbulMinutesOfDay,
   fetchAllUsers,
   sendToUser,
+  getLanguageCode,
 };
