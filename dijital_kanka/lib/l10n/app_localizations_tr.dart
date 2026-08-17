@@ -250,6 +250,15 @@ class AppLocalizationsTr extends AppLocalizations {
   String get storeTitle => 'Mağaza';
 
   @override
+  String get storeAdFreeSectionTitle => 'Reklamsız Zibo';
+
+  @override
+  String get storeAdFreeCardTitle => 'Reklamları Kaldır';
+
+  @override
+  String get storeAdFreeCardSubtitle => 'Tüm reklamları kalıcı olarak kapat';
+
+  @override
   String get storePackagesSectionTitle => 'Coin Paketleri';
 
   @override

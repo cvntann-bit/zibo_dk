@@ -252,6 +252,16 @@ class AppLocalizationsEs extends AppLocalizations {
   String get storeTitle => 'Tienda';
 
   @override
+  String get storeAdFreeSectionTitle => 'Zibo sin Anuncios';
+
+  @override
+  String get storeAdFreeCardTitle => 'Quitar Anuncios';
+
+  @override
+  String get storeAdFreeCardSubtitle =>
+      'Desactiva todos los anuncios para siempre';
+
+  @override
   String get storePackagesSectionTitle => 'Paquetes de Monedas';
 
   @override

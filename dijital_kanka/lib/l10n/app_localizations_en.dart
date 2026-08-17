@@ -250,6 +250,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get storeTitle => 'Store';
 
   @override
+  String get storeAdFreeSectionTitle => 'Ad-Free Zibo';
+
+  @override
+  String get storeAdFreeCardTitle => 'Remove Ads';
+
+  @override
+  String get storeAdFreeCardSubtitle => 'Turn off all ads for good';
+
+  @override
   String get storePackagesSectionTitle => 'Coin Packages';
 
   @override

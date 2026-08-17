@@ -526,6 +526,24 @@ abstract class AppLocalizations {
   /// **'Mağaza'**
   String get storeTitle;
 
+  /// Mağaza sayfasında reklamsız deneyim satın alma bölümünün başlığı
+  ///
+  /// In tr, this message translates to:
+  /// **'Reklamsız Zibo'**
+  String get storeAdFreeSectionTitle;
+
+  /// Mağaza'daki kalıcı 'Reklamsız Zibo' satın alma kartının başlığı — 'Zibo ADS' tanıtım sheet'inin kendi başlığından (aynı metni testte ayırt edebilmek için) BİLEREK FARKLI
+  ///
+  /// In tr, this message translates to:
+  /// **'Reklamları Kaldır'**
+  String get storeAdFreeCardTitle;
+
+  /// Mağaza'daki kalıcı 'Reklamsız Zibo' satın alma kartının alt metni
+  ///
+  /// In tr, this message translates to:
+  /// **'Tüm reklamları kalıcı olarak kapat'**
+  String get storeAdFreeCardSubtitle;
+
   /// Mağaza sayfasında satın alınabilir coin paketleri bölümünün başlığı
   ///
   /// In tr, this message translates to:

@@ -2428,6 +2428,39 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
   cooldown'ın gerçek cihazda GÜNLER SÜREN bir bekleme gerektirmesi yüzünden bu spesifik davranış
   ayrıca elle telefonda doğrulanmadı (mantığı test edilen, saf/deterministik bir fonksiyon olduğu
   için risk düşük).
+- **2026 üçüncü güncelleme — Mağaza'da KALICI bir "Reklamsız Zibo" kartı** ([store_screen.dart](lib/screens/store_screen.dart)).
+  Kullanıcı isteği (verbatim özet): reklamsız paketin yalnızca ara sıra çıkan bildirimle değil,
+  kullanıcı istediğinde Mağaza'dan da satın alınabilmesi — "no ads logosu kullanabilirsin eğer
+  yapamıyorsan bana söyle ben tasarlarım" notuyla. `_BuyCoinsSection.build()` artık "Coin Al"
+  sekmesinin EN ÜSTÜNE (mevcut "Ücretsiz" bölümünden ÖNCE) yeni bir "Reklamsız Zibo" başlığı + YENİ
+  `_AdFreeCard` widget'ı render ediyor.
+  - **İkon seçimi:** Bu ortamda özel görsel/logo üretme yeteneği YOK — kullanıcının kendi
+    önerdiği yedek plana göre `Icons.workspace_premium` (Material ikon, `_RedBanner`'ın kendi
+    ikonuyla AYNI marka rengi `0xFFD32F2F`) kullanıldı. Kullanıcı isterse kendi tasarladığı bir
+    PNG/SVG logo verip bunun yerine koydurabilir — bu değişiklik yalnızca `_AdFreeCard`'ın ikon
+    `Widget`'ını değiştirmeyi gerektirir, başka hiçbir yeri etkilemez.
+  - **Buton davranışı:** `_AdFreeCard`'ın fiyat etiketli (`159,90 ₺`) `FilledButton`'ı doğrudan
+    `showAdFreePromoSheet(context)`'i çağırıyor — `AdFreePromoTrigger`'ın periyodik
+    ziyaret-sayacı/cooldown kısıtlaması BU YOLDAN GEÇMİYOR (o kısıtlama yalnızca
+    `StoreScreen._maybeShowAdFreePromo()`'nun kendiliğinden/otomatik açılışına uygulanıyor) — bu,
+    "kullanıcı istediğinde açabilsin" isteğiyle KASITLI olarak uyumlu, ayrı bir bypass mekanizması
+    YAZILMADI, zaten mevcut olan `showAdFreePromoSheet` fonksiyonu başka bir yerden çağrıldı.
+  - **YENİ ARB anahtarları — mevcut sheet metniyle BİLEREK farklı:** `storeAdFreeSectionTitle`
+    ("Reklamsız Zibo"), `storeAdFreeCardTitle` ("Reklamları Kaldır"), `storeAdFreeCardSubtitle`
+    ("Tüm reklamları kalıcı olarak kapat") — sheet'in kendi `adFreePromoTitle`/`adFreePromoSubtitle`
+    ("Zibo ADS"/"Reklamsız Deneyim") metinleri YENİDEN KULLANILMADI. **Neden:**
+    `widget_test.dart`, periyodik promo sheet'in görünürlüğünü `find.text('Zibo ADS')` ile
+    (`findsNothing`/`findsOneWidget`) doğruluyor — kalıcı kart AYNI metni kullansaydı bu metin
+    Mağaza'da HER ZAMAN mevcut olurdu ve o testler yanlış geçer/kırılırdı. Farklı metin kullanmak
+    bu çakışmayı kökten önledi.
+  - **Test + doğrulama:** `flutter gen-l10n` çalıştırıldı, tam `flutter test` (249/249 geçti — yeni
+    kartın metniyle mevcut testler arasında çakışma YOK). `flutter build apk --debug` + cihaza kurulum
+    + ekran görüntüsüyle kartın "Coin Al" sekmesinde "Ücretsiz" bölümünden ÖNCE, doğru ikon/başlık/alt
+    metin/fiyatla render olduğu görsel olarak doğrulandı. Butona basınca sheet'in gerçekten açıldığını
+    dokunarak doğrulama, test cihazının o sırada kullanıcı tarafından eş zamanlı kullanılıyor olması
+    (Manifest Günlüğü'ne canlı metin girişi) nedeniyle YARIDA kesildi — veri kaybı riskini önlemek
+    için ek `adb input tap` gönderilmedi; kod yolu (`onPressed: () => showAdFreePromoSheet(context)`)
+    zaten aynı, kanıtlanmış fonksiyonu çağırdığından ek riski düşük kabul edildi.
 
 ## Tema ([main.dart](lib/main.dart), [theme_provider.dart](lib/providers/theme_provider.dart), [theme_fade_overlay.dart](lib/widgets/theme_fade_overlay.dart))
 
@@ -2858,12 +2891,17 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
   sese bağlıydı. Bu istek, bir önceki arc'ta zaten tam olarak tamamlanmış bir işin
   DOĞRULANMASIYDI — hiçbir dosya değişmedi.
 
-### Zibo Dokunma Sesi ([sound_effects_service.dart](lib/services/sound_effects_service.dart), [sound_effects_provider.dart](lib/providers/sound_effects_provider.dart), `assets/sounds/zibo_tap_sound.wav`)
+### Zibo Dokunma Sesi ([sound_effects_service.dart](lib/services/sound_effects_service.dart), [sound_effects_provider.dart](lib/providers/sound_effects_provider.dart), `assets/sounds/zibo_tap_new.wav`)
 
 - **2026 yeni özellik.** Kullanıcı `assets/sounds/zibo_tap_sound.wav` ekledi, Ana Sayfa'da Zibo'ya
   her dokunuşta (mevcut poz/söz değişim animasyonuyla AYNI anda) bu sesin çalmasını istedi —
   art arda hızlı dokunuşlarda seslerin üst üste binmemesi ve Ayarlar'da bir "Ses Efektleri"
   anahtarına bağlı olması şartıyla.
+- **2026 İKİNCİ güncelleme — ses dosyası değiştirildi.** Kullanıcı `zibo_tap_sound.wav`'ı iptal edip
+  yerine `zibo_tap_new.wav`'ı ekledi — `AudioPlayersSoundEffectsService.playZiboTap()`'teki
+  `AssetSource(...)` yolu güncellendi, eski dosya `assets/sounds/`'tan SİLİNDİ (artık hiçbir yerde
+  referans edilmiyor). Mekanizmanın kendisi (stop+play, `SoundEffectsProvider`, `HomeScreen`
+  enjeksiyonu) HİÇ değişmedi — yalnızca hangi ses dosyasının çalındığı değişti.
 - **`audioplayers: ^6.0.0`** (pubspec.yaml, `flutter pub get` ile `6.8.1`'e çözüldü) — projede
   daha önce hiçbir ses ÇALMA paketi yoktu (yalnızca `flutter_local_notifications`'ın kendi dahili
   ses mekanizması vardı, bkz. yukarıdaki "Push Bildirimi Özel Sesi" bölümü — bu TAMAMEN AYRI bir
@@ -2877,7 +2915,7 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
   `flutter_local_notifications` gibi `flutter_test`'te doğrudan kullanılamaz):
   - `AudioPlayersSoundEffectsService` — tek bir `AudioPlayer` örneği (`ReleaseMode.stop`).
     `playZiboTap()` her çağrıldığında ÖNCE `_player.stop()` SONRA `_player.play(AssetSource
-    ('sounds/zibo_tap_sound.wav'))` çağırıyor — kullanıcının "art arda hızlı tıklamalarda önceki
+    ('sounds/zibo_tap_new.wav'))` çağırıyor — kullanıcının "art arda hızlı tıklamalarda önceki
     sesi kesip yeniden başlat" isteği bu TEK `stop()`+`play()` çiftiyle karşılanıyor, ayrı bir
     debounce zamanlayıcısına gerek KALMADI (daha basit, daha az durum yönetimi).
   - `FakeSoundEffectsService` — `const`, no-op (diğer Fake* servislerle AYNI desen).

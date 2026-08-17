@@ -130,6 +130,22 @@ class _BuyCoinsSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // 2026 güncellemesi — kullanıcı isteği: "Zibo ADS" (reklamsız
+        // deneyim) yalnızca ARA SIRA çıkan bir tanıtım popup'ı (bkz.
+        // `AdFreePromoTrigger`/`StoreScreen._maybeShowAdFreePromo`) değil,
+        // kullanıcının istediği ZAMAN satın alabileceği KALICI bir giriş
+        // noktası da olsun. Bu kart AYNI `showAdFreePromoSheet(...)`'i açar
+        // (periyodik tetikleyicinin sayaç/cooldown mantığı burada
+        // ATLANIYOR — kullanıcı kendi isteğiyle geldiği için bekletmenin
+        // anlamı yok), tam sheet içeriği (fayda listesi + fiyat + mockup
+        // "Yakında!" akışı) HİÇ tekrarlanmadı.
+        Text(
+          l10n.storeAdFreeSectionTitle,
+          style: Theme.of(context).textTheme.titleMedium,
+        ),
+        const SizedBox(height: 8),
+        const _AdFreeCard(),
+        const SizedBox(height: 24),
         Text(
           l10n.storeFreeSectionTitle,
           style: Theme.of(context).textTheme.titleMedium,
@@ -217,6 +233,75 @@ class _ThemesGrid extends StatelessWidget {
       // manifest geçmiş kartlarındaki aynı overflow dersi).
       childAspectRatio: 0.62,
       children: [for (final theme in themes) ThemeOptionCard(theme: theme)],
+    );
+  }
+}
+
+/// Mağaza'nın "Reklamsız Zibo" bölümündeki kalıcı satın alma girişi —
+/// `_WatchAdCard` ile AYNI görsel dil (Card + ikon + başlık/alt metin +
+/// buton), ama "izleyip kazan" yerine "satın al" akışına bağlı. Basınca
+/// AYNI `showAdFreePromoSheet(...)`'i açar — periyodik tanıtımın kullandığı
+/// TAM fayda listesi + fiyat + mockup "Yakında!" akışı burada da birebir
+/// aynı, ikinci bir kopya YAZILMADI. **Kartın kendi başlığı/alt metni
+/// (`storeAdFreeCardTitle`/`storeAdFreeCardSubtitle`) BİLEREK sheet'in
+/// `adFreePromoTitle`/`adFreePromoSubtitle`'ından ("Zibo ADS"/"Reklamsız
+/// Deneyim") FARKLI** — aynı metni kullanmak `widget_test.dart`'taki
+/// periyodik tanıtımın görünürlüğünü `find.text('Zibo ADS')` ile kontrol
+/// eden testleri (kart HER ZAMAN ekranda dururken bu metin artık BİRDEN
+/// FAZLA yerde bulunurdu) bozardı.
+class _AdFreeCard extends StatelessWidget {
+  const _AdFreeCard();
+
+  /// "Zibo ADS" banner'ıyla AYNI sabit kırmızı (bkz. ad_free_promo_sheet.dart
+  /// — kullanıcı isteğiyle uygulamanın aktif temasından BİLEREK BAĞIMSIZ),
+  /// burada yalnızca ikonun rengi olarak kullanılıyor — kartın geri kalanı
+  /// Mağaza'nın normal kart stiliyle (varsayılan `Card` rengi) tutarlı kalsın
+  /// diye tüm kart kırmızıya boyanmadı.
+  static const _brandRed = Color(0xFFD32F2F);
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    // "Yakında!" mockup akışıyla AYNI fiyat kaynağı (bkz.
+    // ad_free_promo_sheet.dart) — gerçek IAP bağlandığında ikisi de AYNI
+    // anda güncellenecek, tek bir kaynak.
+    final priceLabel = adFreePromoPrice.formattedForLocale(
+      Localizations.localeOf(context).languageCode,
+    );
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          children: [
+            const Icon(Icons.workspace_premium, size: 36, color: _brandRed),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    l10n.storeAdFreeCardTitle,
+                    style: Theme.of(
+                      context,
+                    ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    l10n.storeAdFreeCardSubtitle,
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 12),
+            FilledButton(
+              onPressed: () => showAdFreePromoSheet(context),
+              child: Text(priceLabel),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

@@ -8,7 +8,7 @@ abstract class SoundEffectsService {
   const SoundEffectsService();
 
   /// Zibo'ya dokununca çalınan kısa "tık" sesi (bkz.
-  /// `assets/sounds/zibo_tap_sound.wav`).
+  /// `assets/sounds/zibo_tap_new.wav`).
   Future<void> playZiboTap();
 
   /// Uygulama kapanırken/widget dispose edilirken native oynatıcı
@@ -31,7 +31,7 @@ class AudioPlayersSoundEffectsService extends SoundEffectsService {
       // Ayrı bir debounce zamanlayıcısına gerek kalmadan bu tek `stop()` +
       // `play()` çifti yeterli.
       await _player.stop();
-      await _player.play(AssetSource('sounds/zibo_tap_sound.wav'));
+      await _player.play(AssetSource('sounds/zibo_tap_new.wav'));
     } catch (_) {
       // Ses çalma altyapısı bu ortamda/cihazda kullanılamıyor — sessizce
       // devre dışı kalır, dokunma etkileşiminin geri kalanı (poz/söz

@@ -331,6 +331,18 @@
   "@storeTitle": {
     "description": "Alt gezinme çubuğunda Mağaza sekmesinin etiketi ve Mağaza sekmesinin üst başlığı"
   },
+  "storeAdFreeSectionTitle": "Reklamsız Zibo",
+  "@storeAdFreeSectionTitle": {
+    "description": "Mağaza sayfasında reklamsız deneyim satın alma bölümünün başlığı"
+  },
+  "storeAdFreeCardTitle": "Reklamları Kaldır",
+  "@storeAdFreeCardTitle": {
+    "description": "Mağaza'daki kalıcı 'Reklamsız Zibo' satın alma kartının başlığı — 'Zibo ADS' tanıtım sheet'inin kendi başlığından (aynı metni testte ayırt edebilmek için) BİLEREK FARKLI"
+  },
+  "storeAdFreeCardSubtitle": "Tüm reklamları kalıcı olarak kapat",
+  "@storeAdFreeCardSubtitle": {
+    "description": "Mağaza'daki kalıcı 'Reklamsız Zibo' satın alma kartının alt metni"
+  },
   "storePackagesSectionTitle": "Coin Paketleri",
   "@storePackagesSectionTitle": {
     "description": "Mağaza sayfasında satın alınabilir coin paketleri bölümünün başlığı"
