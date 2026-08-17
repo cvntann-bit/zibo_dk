@@ -3100,27 +3100,73 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
   başlangıçta Google'ın HERKESE AÇIK, hesap gerektirmeyen resmi TEST App ID/Ad Unit ID'siyle
   yazıldı (onay bekleyen bir hesaba bağımlı kalmadan SDK'nın uçtan uca çalıştığını kanıtlamak
   için). **Kullanıcı AYNI oturumda AdMob Console'da hesap açıp "Zibo-Dijital Kankan" uygulamasını
-  ve bir Ödüllü Reklam birimini oluşturdu — kod tarafı ANINDA GERÇEK ID'lere geçirildi:**
-  - **App ID (Android, GERÇEK):** `ca-app-pub-7684383909235139~6676072606` —
-    `android/app/src/main/AndroidManifest.xml`'deki `com.google.android.gms.ads.APPLICATION_ID`
-    meta-data'sında (SDK bu alanı UYGULAMA BAŞLATILMADAN okur, eksikse eklenti çöker).
-  - **Rewarded Ad Unit ID (Android, GERÇEK):** `ca-app-pub-7684383909235139/2423439155` —
-    `main.dart`'taki top-level `_rewardedAdUnitId` sabitinde, `DijitalKankaApp.build()`'de
-    `AdMobAdService(rewardedAdUnitId: _rewardedAdUnitId)` olarak `CoinProvider`'a geçiriliyor.
-  - **Google App ID/Ad Unit ID'leri GİZLİ DEĞİL** — API anahtarı/sır DEĞİL, uygulamanın kendi
-    paketine/koduna gömülmesi normal (Google'ın kendi dokümantasyonu da bunları doğrudan
-    AndroidManifest.xml'e yazdırıyor) — bu yüzden doğrudan kaynak koduna ve bu dosyaya yazıldı.
-  - **Google'ın test App ID/Ad Unit ID'si** (`ca-app-pub-3940256099942544~3347511713` /
-    `ca-app-pub-3940256099942544/5224354917`) hâlâ `AdMobAdService.testRewardedAdUnitId`
-    sabitinde VE `rewardedAdUnitId` parametresi verilmediğinde servisin varsayılanı olarak kod
-    tabanında duruyor — dokümantasyon/geliştirme referansı (gerekirse test reklamına dönmek için).
-  - **Doğrulama — yeni oluşturulan reklam biriminin "no fill" (kod 3) dönmesi BEKLENEN bir
-    durum, hata DEĞİL:** AdMob Console'un kendisi "New ad units may take up to an hour to start
-    showing ads" uyarısını gösteriyor; gerçek cihazda APK kurulup açıldığında logcat'te
-    `Ads: Ad failed to load : 3` (ERROR_CODE_NO_FILL) görüldü — bu, App ID/Ad Unit ID'nin
-    DOĞRU okunduğunu (aksi halde farklı bir hata kodu — ör. `1`/ERROR_CODE_INVALID_REQUEST —
-    dönerdi) ama Google'ın reklam envanterinin bu YENİ birim için henüz hazır olmadığını
-    gösteriyor. Bir süre sonra (dakikalar-saatler) gerçek reklamlar dolmaya başlayacak.
+  ve bir Ödüllü Reklam birimini oluşturdu — kod tarafı ANINDA o hesabın GERÇEK ID'lerine
+  geçirildi** (App ID `ca-app-pub-7684383909235139~...`, Ad Unit ID `.../2423439155`) —
+  **AMA bu hesap SONRADAN TERK EDİLDİ** (bkz. altta "2026 İKİNCİ güncelleme — hesap değişikliği").
+- **Doğrulama — yeni oluşturulan bir reklam biriminin "no fill" (kod 3) dönmesi BEKLENEN bir
+  durum, hata DEĞİL:** AdMob Console'un kendisi "New ad units may take up to an hour to start
+  showing ads" uyarısını gösteriyor; gerçek cihazda APK kurulup açıldığında logcat'te
+  `Ads: Ad failed to load : 3` (ERROR_CODE_NO_FILL) görülmesi, App ID/Ad Unit ID'nin DOĞRU
+  okunduğunu (aksi halde farklı bir hata kodu — ör. `1`/ERROR_CODE_INVALID_REQUEST — dönerdi) ama
+  Google'ın reklam envanterinin bu YENİ birim için henüz hazır olmadığını gösteriyor.
+- **2026 İKİNCİ güncelleme — hesap değişikliği: `lib/config/admob_config.dart` config dosyası
+  eklendi, gerçek ID'ler koddan ÇIKARILIP test ID'sine geri düşüldü.** Kullanıcı raporu: ilk
+  "Zibo-Dijital Kankan" AdMob hesabı **Kuruluş (Organization)** türünde açılmıştı, ödeme profilini
+  tamamlarken bir **VAT ID sorunu** çıktı — kullanıcı bu hesabı terk edip yeni bir **Bireysel
+  (Individual)** AdMob hesabı açıyor. Kullanıcının isteği: (a) yeni hesaptan tam olarak hangi
+  ID'lerin gerekeceği net olsun, (b) bu ID'lerin gireceği yer ÖNCEDEN hazırlansın (tek bir dosya
+  doldurup kodun başka hiçbir yerine dokunmadan geçiş yapılabilsin), (c) gerçek bağlantı HENÜZ
+  KURULMASIN — yalnızca yapı hazır olsun.
+  - **Yeni hesaptan gereken ID'ler — YALNIZCA İKİ tane, uygulamanın kullandığı TEK reklam
+    formatına (rewarded) göre:** (1) **App ID** (`ca-app-pub-XXXXXXXXXXXXXXXX~YYYYYYYYYY`
+    biçiminde, AdMob Console > Uygulamalar > [uygulama] altında), (2) **Ödüllü Reklam birimi Ad
+    Unit ID** (`ca-app-pub-XXXXXXXXXXXXXXXX/ZZZZZZZZZZ` biçiminde, o uygulamanın Reklam Birimleri
+    sekmesinde, tür "Rewarded"). Banner/interstitial ID'sine gerek YOK — uygulamada o formatlar
+    hiç kullanılmıyor (bkz. yukarıdaki "TEK reklam formatı" notu); ileride eklenirse o zaman
+    `admob_config.dart`'a yeni bir alan eklenir.
+  - **`lib/config/admob_config.dart`** (YENİ) — `AdMobConfig.rewardedAdUnitId`, tek bir
+    `static const`. **Aynı oturumda kullanıcı yeni Bireysel hesabı açıp ID'leri iletti — bu sabit
+    ARTIK o hesabın GERÇEK Ad Unit ID'sini taşıyor**, bkz. altta "ÜÇÜNCÜ güncelleme".
+  - **KRİTİK sınırlama — App ID bu dosyadan OKUNAMAZ, İKİNCİ bir dosya da gerekiyor:**
+    `google_mobile_ads` SDK'sı App ID'yi native Android `Application.onCreate()` sırasında
+    (Flutter/Dart kodu DAHA ÇALIŞMADAN) `AndroidManifest.xml`'deki
+    `com.google.android.gms.ads.APPLICATION_ID` meta-data'sından okuyor — bu SDK'nın kendi
+    KATI kısıtlaması, Dart tarafından hiçbir şekilde enjekte edilemiyor (build-time Gradle
+    manifest placeholder'ları ile teorik olarak mümkün ama bu boyuttaki bir projede gereksiz bir
+    dolaylılık eklerdi). **Bu yüzden "tek dosya" isteği tam anlamıyla karşılanamadı — gerçekte
+    değiştirilecek İKİ nokta var, ama HER İKİSİ de tek satırlık, `TODO(admob)` ile açıkça
+    işaretlenmiş, birbirine çapraz referans veren değerler:**
+    1. `lib/config/admob_config.dart`'taki `rewardedAdUnitId` sabiti.
+    2. `android/app/src/main/AndroidManifest.xml`'deki `APPLICATION_ID` meta-data'sının
+       `android:value`'su (TODO yorumu `admob_config.dart`'a işaret ediyor).
+  - **`main.dart`, `AdMobConfig.rewardedAdUnitId`'i kullanıyor** — eski (VAT ID sorunlu hesabın
+    gerçek ID'sini taşıyan) top-level `_rewardedAdUnitId` sabiti TAMAMEN KALDIRILDI, yerine
+    `AdMobAdService(rewardedAdUnitId: AdMobConfig.rewardedAdUnitId)` geçti.
+  - Bu ara adımda AndroidManifest.xml'in App ID'si geçici olarak Google'ın test App ID'sine
+    geri döndürülmüştü — bkz. altta "ÜÇÜNCÜ güncelleme", aynı oturumda gerçek yeni ID ile
+    değiştirildi.
+- **2026 ÜÇÜNCÜ güncelleme — yeni Bireysel hesabın GERÇEK ID'leri alındı, kod tarafına işlendi.**
+  Kullanıcı AdMob Console'da yeni uygulamayı (`com.dijitalkanka.dijital_kanka`) kaydedip bir
+  Ödüllü Reklam birimi oluşturdu, ekran görüntüsüyle iki ID'yi iletti:
+  - **App ID (Android, GERÇEK, YENİ hesap):** `ca-app-pub-2881957853109429~2442148274` —
+    `AndroidManifest.xml`'deki `APPLICATION_ID` meta-data'sına yazıldı.
+  - **Rewarded Ad Unit ID (Android, GERÇEK, YENİ hesap):** `ca-app-pub-2881957853109429/1933318716`
+    — `lib/config/admob_config.dart`'taki `AdMobConfig.rewardedAdUnitId`'e yazıldı (`TODO`
+    yorumu kaldırıldı, artık kalıcı gerçek değer).
+  - **Değiştirilen TAM OLARAK iki satır** — yukarıdaki "hesap değişikliği" bölümünde tarif edilen
+    tam senaryo: kullanıcı iki ID'yi verdi, asistan yalnızca bu iki dosyadaki birer satırı
+    güncelledi, başka HİÇBİR kod dosyasına dokunulmadı.
+  - **Doğrulama:** `flutter test` (244/244 geçti) + APK yeniden derlenip telefona kurulup
+    `adb shell monkey` ile başlatıldı — çöküş izi YOK, logcat'te AdMob SDK'sının yeni App ID'yi
+    sorunsuz okuduğu (farklı bir hata koduna DÜŞMEDİĞİ) VE yeni Ad Unit ID'ye istek attığı
+    doğrulandı (`Ads: Ad failed to load : 3` — ERROR_CODE_NO_FILL, bkz. yukarıdaki "no fill
+    beklenen bir durum" notu — bu YENİ reklam biriminin henüz doldurulmamış olması + Ödemeler
+    profilinin muhtemelen hâlâ tamamlanmamış olması nedeniyle bekleniyor, App ID/Ad Unit ID'nin
+    KENDİSİNİN yanlış olduğu anlamına GELMİYOR).
+  - **Kalan adım hâlâ Google'ın envanter/inceleme süreci** (bkz. önceki oturumdaki "Ödeme kurulumu
+    tamamlanmadı" banner'ı notu) — kullanıcının AdMob Console'da Ödemeler > Ödeme bilgileri
+    formunu tamamlaması gerekiyor, bu ASİSTANIN yapamayacağı (kimlik/vergi bilgisi girişi
+    içeren) bir adım.
 - **`AdMobAdService`** — `AdService`'i uygulayan gerçek implementasyon, `NotificationService`/
   `ShareService` ile AYNI "gerçek servis varsayılan, test'te sahte enjekte edilir" felsefesi (bkz.
   altta test/CoinProvider notu). Ön-yükleme (preload) deseni kullanıyor: ödüllü reklamlar AdMob'da
@@ -3142,8 +3188,8 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
 - **`main.dart`'a bağlama:**
   - `main()`'e Firebase'den TAMAMEN BAĞIMSIZ (ayrı try/catch — biri başarısız olursa diğerini
     etkilemesin diye) `await MobileAds.instance.initialize();` eklendi, `runApp`'tan ÖNCE.
-  - `DijitalKankaApp`, `CoinProvider(uid: uid, adService: adService ?? AdMobAdService(rewardedAdUnitId: _rewardedAdUnitId))`
-    kullanıyor (`_rewardedAdUnitId` — GERÇEK Ad Unit ID, main.dart'ta top-level `const`) —
+  - `DijitalKankaApp`, `CoinProvider(uid: uid, adService: adService ?? AdMobAdService(rewardedAdUnitId: AdMobConfig.rewardedAdUnitId))`
+    kullanıyor (`AdMobConfig.rewardedAdUnitId` — bkz. yukarıdaki "hesap değişikliği" bölümü) —
     `RootScreen.pushNotificationService`/`HomeScreen.soundEffectsService` ile AYNI "test
     enjeksiyonu için opsiyonel constructor parametresi" deseni: `DijitalKankaApp`'in YENİ
     `adService` alanı `null` ise (üretimde HER ZAMAN) gerçek `AdMobAdService` kullanılır.
@@ -3174,19 +3220,21 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
   verilir, erken kapatılırsa verilmez) — bu kod seviyesinde `flutter test`'teki 244 testle (reklam
   akışını Mock ile simüle ederek) kapsanıyor ama gerçek bir reklam GÖRÜNTÜSÜNÜN doğrulanması
   gerçek cihaz gerektiriyor.
-- **AdMob Console kurulumu TAMAMLANDI** (kullanıcı kendisi yaptı — asistan Console'a giremiyor):
-  hesap açıldı, "Zibo-Dijital Kankan" uygulaması `com.dijitalkanka.dijital_kanka` paket adıyla
-  kaydedildi, bir Ödüllü Reklam birimi oluşturuldu — App ID/Ad Unit ID yukarıda belgeli, kod
-  tarafına ANINDA işlendi.
-  - **Kalan tek adım — Google'ın envanter/inceleme süreci:** yeni bir reklam birimi Google'ın
-    kendi ifadesiyle "bir saate kadar" sürede reklam sunmaya başlıyor (bkz. yukarıdaki "no fill"
-    notu) — bu ASİSTANIN veya kullanıcının kontrolünde DEĞİL, yalnızca beklemek/Console'dan takip
-    etmek gerekiyor. Bir süre sonra Mağaza'daki "İzle" butonuna veya Şans Çarkı'na basılınca
-    gerçek (artık "Test Ad" etiketi OLMAYAN) bir reklam gösterilmeye başlamalı.
-  - **Gerçek Play Store yayınından ÖNCE:** AdMob Console'da bu uygulamanın "Google Play'de
-    yayınlandı mı?" durumunu güncellemek (şu an "Hayır" olarak kaydedildi) VE ödeme profilini
-    tamamlamak (gerçek gelir alınabilmesi için) hâlâ kullanıcının Console'da yapması gereken,
-    kod tarafını ETKİLEMEYEN adımlar.
+- **GÜNCEL DURUM (bu bölümün en son hâli): kod tarafı GERÇEK ID'lerle bağlı, kalan tek adım
+  Google'ın envanter/inceleme süreci.** Yeni Bireysel hesabın App ID + Rewarded Ad Unit ID'si
+  (bkz. yukarıdaki "ÜÇÜNCÜ güncelleme") koda işlendi, `flutter test` (244/244) + gerçek cihaz
+  derleme/kurulumla doğrulandı, çöküş YOK.
+  - **Kullanıcının AdMob Console'da hâlâ tamamlaması gereken adım — Ödeme profili:**
+    **Ödemeler > Ödeme bilgileri** formunu (ülke, hesap türü — Bireysel, ad/adres, vergi kimlik
+    bilgisi) doldurması gerekiyor — bu tamamlanmadan Google uygulamayı incelemiyor ve reklamlar
+    "no fill" dönmeye devam ediyor (bkz. önceki oturumdaki "Ödeme kurulumu tamamlanmadı"
+    banner'ı notu). **Bu, kimlik/vergi bilgisi girişi olduğu için kullanıcının KENDİSİNİN
+    yapması gereken bir adım** — asistan bunu hiçbir şekilde (form doldurma dahil) kullanıcı
+    adına yapmıyor.
+  - Ödeme profili tamamlanıp Google incelemeyi bitirdikten sonra (dakikalar-saatler) Mağaza'daki
+    "İzle" butonuna veya Şans Çarkı'na basılınca gerçek (artık "Test Ad" etiketi OLMAYAN) bir
+    reklam gösterilmeye başlamalı — bu noktada ayrıca bir kod değişikliği GEREKMİYOR, yalnızca
+    Google tarafının hazır olmasını bekliyoruz.
 
 ## Firestore veri kalıcılığı, Anonymous Auth ve güvenilir zaman ([cloud_state_store.dart](lib/services/cloud_state_store.dart), [trusted_time_service.dart](lib/services/trusted_time_service.dart), [trusted_time_provider.dart](lib/providers/trusted_time_provider.dart))
 

@@ -55,12 +55,13 @@
             android:value="2" />
         <!-- AdMob SDK'sının UYGULAMA BAŞLATILMADAN önce okuduğu zorunlu alan
              (google_mobile_ads eklentisi bu meta-data yoksa çöker).
-             "Zibo-Dijital Kankan" AdMob uygulamasının GERÇEK App ID'si (bkz.
-             CLAUDE.md "AdMob Entegrasyonu" bölümü — Google Play/App ID
-             değerleri gizli DEĞİL, uygulama paketine gömülmesi normal). -->
+             Yeni Bireysel AdMob hesabının ("Zibo-Dijital Kankan" — eski
+             Kuruluş türündeki hesap VAT ID sorunu yüzünden terk edildi)
+             GERÇEK App ID'si (bkz. lib/config/admob_config.dart + CLAUDE.md
+             "AdMob Entegrasyonu" bölümü). -->
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
-            android:value="ca-app-pub-7684383909235139~6676072606"/>
+            android:value="ca-app-pub-2881957853109429~2442148274"/>
     </application>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and

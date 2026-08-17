@@ -7,6 +7,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:provider/provider.dart';
 
+import 'config/admob_config.dart';
 import 'data/app_themes.dart';
 import 'l10n/app_localizations.dart';
 import 'providers/app_theme_provider.dart';
@@ -244,15 +245,6 @@ void main() async {
   runApp(DijitalKankaApp(uid: uid));
 }
 
-// "Zibo-Dijital Kankan" AdMob uygulamasının GERÇEK Ödüllü Reklam birimi
-// (bkz. CLAUDE.md "AdMob Entegrasyonu" bölümü) — Ad Unit ID'ler gizli DEĞİL,
-// uygulama koduna gömülmesi normal (App ID gibi). `AdMobAdService`'in
-// kendi `testRewardedAdUnitId` sabiti (Google'ın herkese açık test birimi)
-// dokümantasyon/geliştirme referansı olarak dosyada kalmaya devam ediyor —
-// gerekirse (ör. test reklamına dönmek istenirse) `_rewardedAdUnitId`
-// yerine ona geçmek yeterli.
-const _rewardedAdUnitId = 'ca-app-pub-7684383909235139/2423439155';
-
 class DijitalKankaApp extends StatelessWidget {
   const DijitalKankaApp({super.key, this.uid, this.adService});
 
@@ -287,7 +279,7 @@ class DijitalKankaApp extends StatelessWidget {
             uid: uid,
             adService:
                 adService ??
-                AdMobAdService(rewardedAdUnitId: _rewardedAdUnitId),
+                AdMobAdService(rewardedAdUnitId: AdMobConfig.rewardedAdUnitId),
           ),
         ),
         ChangeNotifierProvider(create: (_) => CostumeProvider(uid: uid)),
