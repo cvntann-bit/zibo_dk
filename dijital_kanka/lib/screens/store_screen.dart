@@ -433,7 +433,14 @@ class _PackageCardState extends State<_PackageCard> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Image.asset(widget.package.imageAsset, width: 48, height: 48),
+            SizedBox(
+              width: 48,
+              height: 48,
+              child: Image.asset(
+                widget.package.imageAsset,
+                fit: BoxFit.contain,
+              ),
+            ),
             const SizedBox(height: 8),
             Text(
               l10n.storeCoinAmount(widget.package.coinAmount),

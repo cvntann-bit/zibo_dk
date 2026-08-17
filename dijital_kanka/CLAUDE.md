@@ -320,9 +320,30 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
   aynı girişten ulaşılabilir kalsın, alt gezinme çubuğu da 4 öğede sabit kalsın diye ayrı bir sekme/
   sayfa yerine böyle tasarlandı (`_StoreScreenState._section`, `StatefulWidget`).
 - Coin Al: ücretsiz reklam izleme kartı (üstte) + 5 coin paketi grid'i (100/250/500/1000/10000 ZC).
-- `CoinPackage.imageAsset` veri modelinin bir parçası (şu an hepsi `zibo_coin.png` kullanıyor) —
-  ileride pakete özel görsel eklemek yalnızca `coin_packages.dart`'taki ilgili satırı değiştirmek
-  kadar kolay olsun diye böyle tasarlandı.
+- `CoinPackage.imageAsset` veri modelinin bir parçası — ileride pakete özel görsel eklemek yalnızca
+  `coin_packages.dart`'taki ilgili satırı değiştirmek kadar kolay olsun diye böyle tasarlandı.
+  **2026 güncellemesi — 5 pakete özel gerçek görsel.** Kullanıcı `assets/images/` klasörüne
+  `zibo_coin_100.png`/`zibo_coin_250.png`/`zibo_coin_500.png`/`zibo_coin_1000.png`/
+  `zibo_coin_10000.png` dosyalarını ekledi (dosya adı ↔ paket miktarı eşlemesi kasıtlı — 100 ZC
+  tek bozuk para, 10000 ZC ise taşan bir hazine sandığı gibi miktar arttıkça daha "zengin" bir
+  sahne). `coin_packages.dart`'taki eski tek `_defaultCoinImage` (`zibo_coin.png`, tüm paketler
+  aynı ikonu kullanıyordu) sabiti kaldırıldı, her `CoinPackage.imageAsset` kendi dosyasına
+  eşlendi — veri modelinin kendisi zaten bu değişikliği tek satırlık bir güncellemeyle
+  destekleyecek şekilde tasarlanmıştı, `CoinPackage`/UI kodunda bir değişiklik GEREKMEDİ.
+  - **Tutarlı çerçeve — `_PackageCard`'ta (`store_screen.dart`)** görsel artık sabit `SizedBox
+    (width: 48, height: 48)` içinde `Image.asset(..., fit: BoxFit.contain)` ile render ediliyor
+    (önceden yalnızca `Image.asset(..., width: 48, height: 48)` — `fit` BELİRTİLMEMİŞTİ). Yeni
+    5 görsel piksel boyutu olarak zaten hemen hemen kare (1053×1024) ama içerdikleri "sahne"
+    (tek madeni para vs. dolu bir sandık) görsel olarak farklı yoğunlukta — `BoxFit.contain`
+    her görseli kırpmadan/gerilmeden AYNI 48×48 çerçeveye sığdırıyor, kartlar arasında ani
+    boyut sıçraması olmuyor. **Denenip geri alındı:** çerçeveyi 64×64'e büyütmek `_PackageCard`
+    içindeki `Column`'da 6.5 piksellik bir `RenderFlex overflow`'a yol açtı (`childAspectRatio:
+    0.95`'lik 2 sütunlu grid'in dar dikey alanı yüzünden) — bu yüzden 48×48 (mevcut tasarım)
+    korundu.
+  - **Test + doğrulama:** tam `flutter test` (249/249 geçti). `flutter build apk --debug` +
+    cihaza kurulum + Mağaza > "Coin Al" ekran görüntüsüyle beş kartın da kendi görseliyle
+    (100/250/500/1000/10000 ZC sırasıyla artan görsel karmaşıklıkla), kırpılmadan/gerilmeden,
+    fiyat ve ZC miktarı hâlâ net okunur şekilde render olduğu doğrulandı.
 - **2026 güncellemesi — paket kartlarında "Satın Al" yerine gerçek TL fiyatları.** Kullanıcı isteği:
   butonda genel "Satın Al" metni yerine gerçek (şimdilik sabit/görsel — gerçek bir IAP işlemi
   TETİKLEMİYOR, `MockPurchaseService` hâlâ kullanılıyor) fiyatlar gösterilsin: 100 ZC → 19,99 ₺,
