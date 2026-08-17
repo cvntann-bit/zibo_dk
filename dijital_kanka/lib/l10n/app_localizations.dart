@@ -568,6 +568,12 @@ abstract class AppLocalizations {
   /// **'İzle'**
   String get storeWatchAdButton;
 
+  /// Günlük reklam karşılığı hak (Mağaza'nın Ücretsiz kartı VEYA Şans Çarkı) tükendiğinde gösterilen mesaj — ikisi de aynı metni paylaşıyor
+  ///
+  /// In tr, this message translates to:
+  /// **'Bugünkü hakların bitti, yarın tekrar gel!'**
+  String get dailyAdLimitReachedMessage;
+
   /// Bir satın alma veya reklam ödülü tamamlanıp coin eklendiğinde gösterilen mesaj
   ///
   /// In tr, this message translates to:

@@ -238,6 +238,80 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
   [settings_screen.dart](lib/screens/settings_screen.dart), açıkça "GEÇİCİ" yorumuyla işaretli).
   Her kazanma/harcama mekaniğini denemek için var; gerçek check-in/görev akışları geldiğinde
   tamamen kaldırılacak.
+- **2026 güncellemesi — reklam karşılığı günlük hak sınırı eklendi (Şans Çarkı + Mağaza'nın
+  Ücretsiz kartı).** Kullanıcı isteği: gerçek AdMob entegrasyonu tamamlandıktan sonra (bkz. "AdMob
+  Entegrasyonu" bölümü) reklam gösterimlerinin sınırsız tekrarlanmasını önlemek için — kullanıcı
+  günde en fazla **3 kez** reklam izleyerek Şans Çarkı'nı çevirebilir, en fazla **2 kez** Mağaza'nın
+  "Ücretsiz" kartından ekstra coin kazanabilir. Hak tükendiğinde ilgili buton/kart, `TrustedTimeProvider`
+  günü ilerleyene kadar `dailyAdLimitReachedMessage` ("Bugünkü hakların bitti, yarın tekrar gel!")
+  mesajıyla pasif görünür.
+  - **`CoinProvider.maxDailyWheelSpins`/`maxDailyAdWatches`** — sabitler tek yerde. Günlük sayaçlar
+    (`_dailyLimitsDate`, `_wheelSpinsUsedToday`, `_adWatchesUsedToday`) `WaterProvider._today`
+    getter'ıyla AYNI "her erişimde `_now()`'a göre yeniden hesapla" deseninde: kayıtlı sayacın ait
+    olduğu gün bugünden FARKLIYSA `wheelSpinsUsedToday`/`adWatchesUsedToday` getter'ları otomatik
+    `0` döner — `GoalsProvider`/`WaterProvider` gibi ayrı bir "reconcile" adımına GEREK YOK.
+    `remainingWheelSpinsToday`/`remainingAdWatchesToday`/`canSpinWheelToday`/
+    `canWatchAdForCoinsToday` bu getter'ların üzerine kurulu, arayüz bunları `context.watch` ile
+    izliyor.
+  - **`CoinProvider` artık `GoalsProvider`/`WaterProvider` ile AYNI `DateTime Function() now`
+    constructor parametresine sahip** (varsayılan `DateTime.now`, `main.dart`'ta
+    `context.read<TrustedTimeProvider>().now()` ile enjekte ediliyor — CoinProvider,
+    `MultiProvider` listesinde `TrustedTimeProvider`'dan HEMEN SONRA geldiği için bu `context.read`
+    güvenli). **Kullanıcının açık isteği** "gerçek takvim tarihine bağlı, cihaz saatine değil"
+    idi — bu, projenin diğer TÜM "güne bağlı" mekanizmalarıyla (Günlük Giriş Ödülleri/Hedefler/Su
+    Takibi vb.) aynı güvenlik garantisini veriyor: kullanıcı telefonun tarihini ileri alarak günlük
+    hakları erken sıfırlayamaz.
+  - **Hak, YALNIZCA reklam GERÇEKTEN ödül verdiğinde (kullanıcı sonuna kadar izlediğinde)
+    tüketilir — reklam yüklenemez/erken kapatılırsa hak HİÇ düşmez.** `earnAdWatch()`/
+    `watchAdAndSpinWheel()`'in ikisi de ÖNCE `_adService.showRewardedAd()`'ı `await`liyor, `_consumeDailyLimit(...)`
+    yalnızca `rewarded == true` iken çağrılıyor. Bu, kullanıcının "günde 3/2 hakkı" beklentisinin
+    gerçek başarılı izlemeler için olduğu, ağ/envanter sorunuyla başarısız olan denemelerin
+    cezalandırılmaması gerektiği yönündeki doğal beklentiyle örtüşüyor.
+  - **İki metot da hakkı KENDİSİ de kontrol ediyor** (`if (!canSpinWheelToday) return null;` /
+    `if (!canWatchAdForCoinsToday) return false;`, reklamı hiç GÖSTERMEDEN) — arayüz zaten butonu
+    devre dışı bıraktığı için normalde bu yola hiç girilmiyor, ama çift bir güvenlik katmanı
+    (ör. hızlı art arda iki dokunuş arasındaki yarış durumu) için provider seviyesinde de var.
+  - **Günlük sayaçlar `_earn(...)`'ün ZATEN tetiklediği `_save()`'e (aynı `CloudStateStore`
+    belgesine, `coinState`) eklendi** — ayrı bir kalıcılık çağrısı GEREKMEDİ, `_consumeDailyLimit(...)`
+    `_earn(...)`'den HEMEN ÖNCE çağrılıp aynı bildirim/kayıt turunda birlikte gidiyor. **Yan
+    not (bu turda kullanılmadı ama gelecekte faydalı olabilir):** bu sayaçlar artık `uid` varsa
+    Firestore'a da (`users/{uid}/state/coinState`) senkronize oluyor — `notification-scripts/src/
+    dailyRewardReminder.js`'teki "Şans Çarkı'nın Firestore'da kalıcı bir 'bugün çevrildi mi' alanı
+    YOK" sınırlaması (bkz. "Push Bildirimleri" bölümü) artık TEKNİK olarak çözülebilir (`coinState.
+    wheelSpinsUsedToday`/`dailyLimitsDate` okunarak), ama script bu turda GÜNCELLENMEDİ — kapsam
+    dışı bırakıldı.
+  - **UI — pasif görünüm:**
+    - `StoreScreen._WatchAdCard`: `context.watch<CoinProvider>().canWatchAdForCoinsToday` `false`
+      iken alt metin `dailyAdLimitReachedMessage`'a döner, `FilledButton.onPressed` `null` olur
+      (Material'ın kendi disabled stilini otomatik alır — ekstra bir "sönük" stil kodu YAZILMADI).
+    - `WheelScreen`: `canSpinWheelToday` `false` iken hub'ın dokunma alanı (`InkWell.onTap`) `null`
+      olur VE başlığın altında AYNI mesaj metni belirir (yeni bir `if (!canSpin) ...` bloğu).
+    - `WheelTriggerButton`: `AnimatedOpacity` ile (250ms) `0.45` opaklığa söner, tooltip/semantics
+      etiketi mesaja döner, VE `didChangeDependencies()`'teki animasyon başlatma/durdurma mantığı
+      (önceden yalnızca `MediaQuery.disableAnimations`'a bakıyordu) artık `canSpinWheelToday`'i de
+      kontrol ediyor — hak tükendiğinde buton "dinlenir" (sürekli dönme/nabız animasyonu durur),
+      dikkat çekmeye devam etmek yanıltıcı olurdu. **Tıklama BİLEREK devre dışı bırakılmadı** — sönük
+      durumda bile basılabilir, `WheelScreen`'i açıp orada net mesajı görebilsin diye (dokunulunca
+      hiçbir şey olmayan "ölü" bir buton kafa karıştırırdı).
+  - **ARB — `dailyAdLimitReachedMessage` (TEK anahtar, ÜÇ konumda paylaşılıyor):** Mağaza kartı,
+    Şans Çarkı ekranı ve Şans Çarkı tetikleyici tooltip'i AYNI metni gösteriyor (kullanıcının
+    verdiği örnek mesaj birebir aynıydı) — üç ayrı namespaced anahtar yerine TEK paylaşılan anahtar
+    (proje genelinde bazı yerlerde zaten kullanılan desen, ör. `tabMoney`), gereksiz çeviri
+    tekrarını önlüyor.
+  - **Test:** `coin_provider_test.dart`'a yeni bir grup (5 test) — Şans Çarkı tam
+    `maxDailyWheelSpins` kez çevrilebilir + fazlası reddedilir, reklam karşılığı coin
+    `maxDailyAdWatches` kez kazanılabilir + fazlası reddedilir, reklam BAŞARISIZ olursa
+    (`_RejectingAdService`, yeni test-only sınıf) hak HİÇ tüketilmez, gün değişince (enjekte
+    edilen `now` ile) her iki hak da sıfırlanır, günlük sayaçlar kalıcı depoya yazılıp AYNI gün
+    içinde yeniden başlatmada hatırlanır. `widget_test.dart`'ın `_buildAppWithClock()` yardımcısına
+    da (diğer TÜM güne bağlı provider'larla tutarlılık için) `CoinProvider(now: now)` eklendi —
+    daha önce parametresizdi. **Toplam: 249 test.**
+  - **Gerçek cihazda doğrulama:** APK yeniden derlenip telefona kurulup `adb shell monkey` ile
+    başlatıldı, çöküş izi yok. Görsel doğrulama (3 kez çevirip/2 kez izleyip butonların gerçekten
+    sönük göründüğü VE ertesi gün otomatik sıfırlandığı) kullanıcının kendi cihazında zaman
+    geçtikçe doğrulanmalı — bu, `flutter test`'teki 5 testte enjekte edilen sahte saatle KAPSANIYOR
+    ama gerçek zamanın geçmesini gerektiren bir senaryo olduğu için ek olarak gerçek cihazda uzun
+    süreli doğrulama YAPILMADI.
 
 ### Mağaza ([store_screen.dart](lib/screens/store_screen.dart), [coin_package.dart](lib/models/coin_package.dart), [coin_packages.dart](lib/data/coin_packages.dart))
 - Bir sekme (push edilen ayrı sayfa değil), RootScreen'in ortak AppBar'ını paylaşır.
@@ -881,8 +955,9 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
 - Ekranın sol kenarında, **yalnızca Ana Sayfa sekmesinde** (bkz. yukarıdaki `RootScreen`/Ana Sayfa
   notları — `RootScreen`'de `if (_selectedIndex == 0)` koşullu, dikey konumu `Alignment(-1, -0.5)`
   ile üst tarafa yakın) sürekli görünen dikkat çekici bir `WheelTriggerButton`; basılınca
-  `showDialog` ile tam ekran `WheelScreen` (`Dialog.fullscreen`) açılır. Günlük çevirme sınırı
-  **bilinçli olarak yok** (ileride ayrı ele alınacak).
+  `showDialog` ile tam ekran `WheelScreen` (`Dialog.fullscreen`) açılır. **Günlük çevirme sınırı
+  ARTIK VAR** (2026 güncellemesi, bkz. altta "Günlük reklam hakları" bölümü) — eski "bilinçli
+  olarak yok" kararı kullanıcı isteğiyle tersine çevrildi.
 - **Ağırlıklı ödül seçimi tek yerde, kolayca ayarlanabilir:** `wheel_prizes.dart`'taki `wheelPrizes`
   listesi 8 `WheelPrize(amount, weight)` içeriyor (2/5/10 ZC ~%27-28, 20 ZC ~%9, 50-250 ZC ~%1.5-3 —
   en büyük ödül 250 ZC en düşük ağırlıklı). Ağırlıkların 100'e tamamlanması zorunlu değil, yalnızca
@@ -2970,7 +3045,8 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
   `favorite_quotes_provider_test.dart`, `onboarding_provider_test.dart`,
   `zibo_animated_image_test.dart`, `sound_effects_provider_test.dart` (YENİ, 2026 — bkz. "Zibo
   Dokunma Sesi" bölümü), `home_screen_sound_test.dart` (YENİ, aynı bölüm).
-  **Toplam: 244 test.**
+  **Toplam: 249 test** (2026 — `coin_provider_test.dart`'a Şans Çarkı/Mağaza günlük reklam
+  hakları için 5 yeni test eklendi, bkz. "Zibo Coin ekonomisi" bölümü).
 - `widget_test.dart` içindeki `_buildAppWithClock()` yardımcı fonksiyonu enjekte edilebilir saatli
   testler için — **`RootScreen`'in ihtiyaç duyduğu HER provider'ı içermeli** (`AppThemeProvider`,
   `CoinProvider`, `CostumeProvider`, `DailyRewardsProvider`, `FavoriteQuotesProvider`,

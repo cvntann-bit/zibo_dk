@@ -4,8 +4,10 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:dijital_kanka/models/coin_economy.dart';
 import 'package:dijital_kanka/models/coin_package.dart';
 import 'package:dijital_kanka/providers/coin_provider.dart';
+import 'package:dijital_kanka/services/ad_service.dart';
 import 'package:dijital_kanka/services/purchase_service.dart';
 
 class _FailingPurchaseService extends PurchaseService {
@@ -13,6 +15,15 @@ class _FailingPurchaseService extends PurchaseService {
 
   @override
   Future<bool> purchaseCoinPackage(CoinPackage package) async => false;
+}
+
+/// Reklamın hiç tamamlanmadığı/kullanıcının erken kapattığı senaryoyu
+/// simüle eder — `MockAdService`'in tersi (her zaman `false`).
+class _RejectingAdService extends AdService {
+  const _RejectingAdService();
+
+  @override
+  Future<bool> showRewardedAd() async => false;
 }
 
 void main() {
@@ -78,6 +89,130 @@ void main() {
       expect(secondLaunch.totalEarned, 5 + 100);
       expect(secondLaunch.totalSpent, 0);
     });
+  });
+
+  group('CoinProvider - günlük reklam hakları (Şans Çarkı + Ücretsiz coin)', () {
+    test(
+      'Şans Çarkı günde en fazla maxDailyWheelSpins kez reklamla çevrilebilir',
+      () async {
+        final provider = CoinProvider(now: () => DateTime(2026, 8, 17));
+
+        for (var i = 0; i < CoinProvider.maxDailyWheelSpins; i++) {
+          expect(provider.canSpinWheelToday, isTrue);
+          final prize = await provider.watchAdAndSpinWheel();
+          expect(prize, isNotNull);
+        }
+
+        expect(provider.canSpinWheelToday, isFalse);
+        expect(provider.remainingWheelSpinsToday, 0);
+        final extraPrize = await provider.watchAdAndSpinWheel();
+        expect(extraPrize, isNull);
+      },
+    );
+
+    test(
+      'Reklam karşılığı coin kazanma günde en fazla maxDailyAdWatches kez '
+      'mümkün',
+      () async {
+        final provider = CoinProvider(now: () => DateTime(2026, 8, 17));
+
+        for (var i = 0; i < CoinProvider.maxDailyAdWatches; i++) {
+          final rewarded = await provider.earnAdWatch();
+          expect(rewarded, isTrue);
+        }
+
+        expect(provider.canWatchAdForCoinsToday, isFalse);
+        final extraRewarded = await provider.earnAdWatch();
+        expect(extraRewarded, isFalse);
+        expect(
+          provider.balance,
+          CoinEconomy.adWatch * CoinProvider.maxDailyAdWatches,
+        );
+      },
+    );
+
+    test(
+      'Reklam yüklenemez/erken kapatılırsa (kullanıcı ödülü kazanmazsa) '
+      'günlük hak tüketilmez',
+      () async {
+        final provider = CoinProvider(
+          adService: const _RejectingAdService(),
+          now: () => DateTime(2026, 8, 17),
+        );
+
+        final rewarded = await provider.earnAdWatch();
+        expect(rewarded, isFalse);
+        expect(
+          provider.remainingAdWatchesToday,
+          CoinProvider.maxDailyAdWatches,
+        );
+
+        final prize = await provider.watchAdAndSpinWheel();
+        expect(prize, isNull);
+        expect(
+          provider.remainingWheelSpinsToday,
+          CoinProvider.maxDailyWheelSpins,
+        );
+      },
+    );
+
+    test(
+      'Gün değişince Şans Çarkı ve reklam hakları sıfırlanır (cihaz saatine '
+      'değil enjekte edilen [now]a bağlı)',
+      () async {
+        var currentDate = DateTime(2026, 8, 17);
+        final provider = CoinProvider(now: () => currentDate);
+
+        for (var i = 0; i < CoinProvider.maxDailyWheelSpins; i++) {
+          await provider.watchAdAndSpinWheel();
+        }
+        for (var i = 0; i < CoinProvider.maxDailyAdWatches; i++) {
+          await provider.earnAdWatch();
+        }
+        expect(provider.canSpinWheelToday, isFalse);
+        expect(provider.canWatchAdForCoinsToday, isFalse);
+
+        currentDate = DateTime(2026, 8, 18); // ertesi gün
+
+        expect(provider.canSpinWheelToday, isTrue);
+        expect(provider.canWatchAdForCoinsToday, isTrue);
+        expect(
+          provider.remainingWheelSpinsToday,
+          CoinProvider.maxDailyWheelSpins,
+        );
+        expect(
+          provider.remainingAdWatchesToday,
+          CoinProvider.maxDailyAdWatches,
+        );
+
+        final prize = await provider.watchAdAndSpinWheel();
+        expect(prize, isNotNull);
+      },
+    );
+
+    test(
+      'Günlük sayaçlar kalıcı depoya yazılır; uygulama yeniden başlatılsa '
+      'bile (AYNI gün) hatırlanır',
+      () async {
+        final fixedNow = DateTime(2026, 8, 17);
+        final firstLaunch = CoinProvider(now: () => fixedNow);
+        await firstLaunch.watchAdAndSpinWheel();
+        await firstLaunch.earnAdWatch();
+        await Future<void>.delayed(Duration.zero);
+
+        final secondLaunch = CoinProvider(now: () => fixedNow);
+        await Future<void>.delayed(Duration.zero);
+
+        expect(
+          secondLaunch.remainingWheelSpinsToday,
+          CoinProvider.maxDailyWheelSpins - 1,
+        );
+        expect(
+          secondLaunch.remainingAdWatchesToday,
+          CoinProvider.maxDailyAdWatches - 1,
+        );
+      },
+    );
   });
 
   group('CoinProvider - kalıcılık', () {

@@ -1,8 +1,10 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../l10n/app_localizations.dart';
+import '../providers/coin_provider.dart';
 import '../screens/wheel_screen.dart';
 
 /// Ekranın sol kenarında, yalnızca Ana Sayfa'dayken görünen, dikkat çekici
@@ -48,13 +50,20 @@ class _WheelTriggerButtonState extends State<WheelTriggerButton>
     // Sürekli tekrar eden animasyonlar widget mount olduğu sürece asla
     // "settle" olmaz — kullanıcının OS düzeyindeki "hareketi azalt"
     // erişilebilirlik tercihine (ve flutter_test'in bunu true'ya
-    // sabitleyebilmesine, bkz. widget_test.dart) saygı duyuyoruz.
+    // sabitleyebilmesine, bkz. widget_test.dart) saygı duyuyoruz. AYRICA
+    // günlük çevirme hakkı tükendiyse (bkz. CoinProvider.
+    // maxDailyWheelSpins) buton "dinlenir" — dikkat çekmeye devam etmek
+    // yanıltıcı olurdu. `context.read` yeterli (bkz. build()'deki
+    // `context.watch` çağrısı zaten bu widget'ı CoinProvider'a abone
+    // ediyor, buradaki değişimi de tetikliyor).
     final reduceMotion = MediaQuery.of(context).disableAnimations;
-    if (reduceMotion && _animationsStarted) {
+    final canSpin = context.read<CoinProvider>().canSpinWheelToday;
+    final shouldAnimate = !reduceMotion && canSpin;
+    if (!shouldAnimate && _animationsStarted) {
       _animationsStarted = false;
       _spinController.stop();
       _pulseController.stop();
-    } else if (!reduceMotion && !_animationsStarted) {
+    } else if (shouldAnimate && !_animationsStarted) {
       _animationsStarted = true;
       _spinController.repeat();
       _pulseController.repeat();
@@ -71,6 +80,14 @@ class _WheelTriggerButtonState extends State<WheelTriggerButton>
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    // Günlük hak tükendiyse (bkz. CoinProvider.maxDailyWheelSpins) buton
+    // sönük görünür — bu `watch` çağrısı `didChangeDependencies()`'in de
+    // her CoinProvider bildirişinde yeniden çalışmasını sağlıyor (bkz. o
+    // metottaki animasyon durdurma mantığı).
+    final canSpin = context.watch<CoinProvider>().canSpinWheelToday;
+    final tooltip = canSpin
+        ? l10n.wheelTriggerTooltip
+        : l10n.dailyAdLimitReachedMessage;
 
     return Material(
       color: Colors.transparent,
@@ -85,47 +102,51 @@ class _WheelTriggerButtonState extends State<WheelTriggerButton>
           padding: const EdgeInsets.all(6),
           child: Semantics(
             button: true,
-            label: l10n.wheelTriggerTooltip,
+            label: tooltip,
             child: Tooltip(
-              message: l10n.wheelTriggerTooltip,
-              child: SizedBox(
-                width: _size,
-                height: _size,
-                child: Stack(
-                  alignment: Alignment.center,
-                  clipBehavior: Clip.none,
-                  children: [
-                    AnimatedBuilder(
-                      animation: _spinController,
-                      builder: (context, child) => Transform.rotate(
-                        angle: _spinController.value * 2 * pi,
-                        child: child,
+              message: tooltip,
+              child: AnimatedOpacity(
+                duration: const Duration(milliseconds: 250),
+                opacity: canSpin ? 1.0 : 0.45,
+                child: SizedBox(
+                  width: _size,
+                  height: _size,
+                  child: Stack(
+                    alignment: Alignment.center,
+                    clipBehavior: Clip.none,
+                    children: [
+                      AnimatedBuilder(
+                        animation: _spinController,
+                        builder: (context, child) => Transform.rotate(
+                          angle: _spinController.value * 2 * pi,
+                          child: child,
+                        ),
+                        child: Image.asset(
+                          'assets/images/zibo_cark_katman1.png',
+                          width: _size,
+                          height: _size,
+                        ),
                       ),
-                      child: Image.asset(
-                        'assets/images/zibo_cark_katman1.png',
-                        width: _size,
-                        height: _size,
+                      Positioned(
+                        top: 0,
+                        right: 2,
+                        child: _PulsingCoin(
+                          controller: _pulseController,
+                          size: 22,
+                          phase: 0,
+                        ),
                       ),
-                    ),
-                    Positioned(
-                      top: 0,
-                      right: 2,
-                      child: _PulsingCoin(
-                        controller: _pulseController,
-                        size: 22,
-                        phase: 0,
+                      Positioned(
+                        bottom: 2,
+                        left: 0,
+                        child: _PulsingCoin(
+                          controller: _pulseController,
+                          size: 18,
+                          phase: 0.45,
+                        ),
                       ),
-                    ),
-                    Positioned(
-                      bottom: 2,
-                      left: 0,
-                      child: _PulsingCoin(
-                        controller: _pulseController,
-                        size: 18,
-                        phase: 0.45,
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),

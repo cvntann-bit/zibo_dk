@@ -25,15 +25,25 @@ class CoinProvider extends ChangeNotifier {
     PurchaseService purchaseService = const MockPurchaseService(),
     Random? random,
     String? uid,
+    DateTime Function() now = DateTime.now,
   }) : _adService = adService,
        _purchaseService = purchaseService,
        _random = random ?? Random(),
+       _now = now,
        _store = CloudStateStore(prefsKey: _prefsKey, uid: uid) {
     _loadFromPrefs();
   }
 
   static const _prefsKey = 'coinState';
   static const _maxStoredTransactions = 200;
+
+  /// Şans Çarkı'nın reklam karşılığı günlük çevirme hakkı (bkz.
+  /// [remainingWheelSpinsToday]).
+  static const int maxDailyWheelSpins = 3;
+
+  /// Mağaza'nın "Ücretsiz" kartındaki reklam karşılığı günlük coin kazanma
+  /// hakkı (bkz. [remainingAdWatchesToday]).
+  static const int maxDailyAdWatches = 2;
 
   final AdService _adService;
   final PurchaseService _purchaseService;
@@ -43,8 +53,71 @@ class CoinProvider extends ChangeNotifier {
   /// sonuç enjekte edebilmek amacıyla constructor'dan verilebilir.
   final Random _random;
 
+  /// Günlük reklam haklarının (çark çevirme/ekstra coin) hangi takvim
+  /// gününe göre sıfırlanacağını belirler — `GoalsProvider`/`WaterProvider`
+  /// ile AYNI desen: cihazın DOĞRUDAN saatine değil, `TrustedTimeProvider.
+  /// now()`'a bağlı (main.dart'ta enjekte edilir) — kullanıcı telefonun
+  /// tarihini ileri alarak günlük hakları erken sıfırlayamaz.
+  final DateTime Function() _now;
+
   int _balance = 0;
   int get balance => _balance;
+
+  static DateTime _dateOnly(DateTime date) =>
+      DateTime(date.year, date.month, date.day);
+
+  /// Kayıtlı günlük sayaçların ait olduğu gün — bu, [_now]'ın bugünkü
+  /// tarihiyle FARKLIYSA sayaçlar "eski" sayılır ve okunurken 0 gibi
+  /// davranılır (bkz. altta [wheelSpinsUsedToday]/[adWatchesUsedToday]) —
+  /// `WaterProvider`'ın "her erişimde `_today`'i yeniden hesapla" deseniyle
+  /// aynı, ayrı bir "reconcile" adımına gerek yok.
+  DateTime? _dailyLimitsDate;
+  int _wheelSpinsUsedToday = 0;
+  int _adWatchesUsedToday = 0;
+
+  /// Bugün ZATEN kullanılmış Şans Çarkı hakkı — kayıtlı sayaç dünden
+  /// kalmışsa (gün değiştiyse) 0 döner, ayrı bir sıfırlama adımı GEREKMEZ.
+  int get wheelSpinsUsedToday =>
+      _dailyLimitsDate == _dateOnly(_now()) ? _wheelSpinsUsedToday : 0;
+
+  /// Bugün ZATEN kullanılmış "reklam izleyip coin kazan" hakkı — yukarıdaki
+  /// [wheelSpinsUsedToday] ile AYNI "gün değiştiyse 0" mantığı.
+  int get adWatchesUsedToday =>
+      _dailyLimitsDate == _dateOnly(_now()) ? _adWatchesUsedToday : 0;
+
+  /// Bugün kalan Şans Çarkı hakkı (0-[maxDailyWheelSpins]) — arayüz bunu
+  /// hem "kalan X hak" göstermek hem de 0 olduğunda butonu/kartı pasif
+  /// hâle getirmek için kullanır.
+  int get remainingWheelSpinsToday =>
+      (maxDailyWheelSpins - wheelSpinsUsedToday).clamp(0, maxDailyWheelSpins);
+
+  /// Bugün kalan "reklam izleyip coin kazan" hakkı (0-[maxDailyAdWatches]).
+  int get remainingAdWatchesToday =>
+      (maxDailyAdWatches - adWatchesUsedToday).clamp(0, maxDailyAdWatches);
+
+  bool get canSpinWheelToday => remainingWheelSpinsToday > 0;
+  bool get canWatchAdForCoinsToday => remainingAdWatchesToday > 0;
+
+  /// Bir reklamın GERÇEKTEN ödül verdiği (kullanıcı sonuna kadar izlediği)
+  /// anda çağrılır — reklam yüklenemez/erken kapatılırsa hak HİÇ
+  /// tüketilmez (kullanıcının "günde 3 hakkı" gerçek başarılı izlemeler
+  /// içindir, başarısız denemeler için değil). Gün değiştiyse önce
+  /// sayaçları sıfırlıyor. `notifyListeners`/kalıcı kayıt burada YAPILMIYOR
+  /// — hemen ardından çağrılan `_earn(...)` zaten ikisini de tetikliyor,
+  /// bu yüzden aynı bildirim/kayıt turunda birlikte gidiyorlar.
+  void _consumeDailyLimit({required bool isWheelSpin}) {
+    final today = _dateOnly(_now());
+    if (_dailyLimitsDate != today) {
+      _dailyLimitsDate = today;
+      _wheelSpinsUsedToday = 0;
+      _adWatchesUsedToday = 0;
+    }
+    if (isWheelSpin) {
+      _wheelSpinsUsedToday++;
+    } else {
+      _adWatchesUsedToday++;
+    }
+  }
 
   /// Şimdiye kadar kazanılan/harcanan TOPLAM ZC — bkz. "Profil > Zibo Coin
   /// Özeti". `transactions` listesinden HESAPLANMIYOR çünkü o liste yalnızca
@@ -89,6 +162,13 @@ class CoinProvider extends ChangeNotifier {
               );
             }),
           );
+        if (decoded['dailyLimitsDate'] != null) {
+          _dailyLimitsDate = DateTime.parse(
+            decoded['dailyLimitsDate'] as String,
+          );
+          _wheelSpinsUsedToday = decoded['wheelSpinsUsedToday'] as int? ?? 0;
+          _adWatchesUsedToday = decoded['adWatchesUsedToday'] as int? ?? 0;
+        }
         if (decoded.containsKey('totalEarned')) {
           _totalEarned = decoded['totalEarned'] as int;
           _totalSpent = decoded['totalSpent'] as int;
@@ -121,6 +201,9 @@ class CoinProvider extends ChangeNotifier {
       'balance': _balance,
       'totalEarned': _totalEarned,
       'totalSpent': _totalSpent,
+      'dailyLimitsDate': _dailyLimitsDate?.toIso8601String(),
+      'wheelSpinsUsedToday': _wheelSpinsUsedToday,
+      'adWatchesUsedToday': _adWatchesUsedToday,
       'transactions': _transactions
           .take(_maxStoredTransactions)
           .map(
@@ -172,10 +255,16 @@ class CoinProvider extends ChangeNotifier {
 
   /// Ödüllü reklam izletir (şimdilik [MockAdService] ile simüle edilir)
   /// ve kullanıcı ödülü hak ettiyse coin ekler. Reklam tamamlanmazsa
-  /// coin eklenmez.
+  /// coin eklenmez. Günlük hak ([maxDailyAdWatches]) zaten tükenmişse
+  /// reklamı hiç GÖSTERMEDEN `false` döner — arayüz normalde butonu
+  /// [canWatchAdForCoinsToday] `false`yken zaten devre dışı bırakıyor
+  /// (bkz. `StoreScreen._WatchAdCard`), bu kontrol yalnızca ek bir
+  /// güvenlik katmanı.
   Future<bool> earnAdWatch() async {
+    if (!canWatchAdForCoinsToday) return false;
     final rewarded = await _adService.showRewardedAd();
     if (rewarded) {
+      _consumeDailyLimit(isWheelSpin: false);
       _earn(CoinEconomy.adWatch, 'Reklam izleme');
     }
     return rewarded;
@@ -227,10 +316,15 @@ class CoinProvider extends ChangeNotifier {
   /// ekler. Reklam tamamlanmazsa hiçbir şey eklenmez ve `null` döner;
   /// tamamlanırsa kazanılan [WheelPrize]'ı döner — arayüz bunu hem çarkı
   /// doğru dilimde durdurmak hem de kutlama diyaloğunda göstermek için
-  /// kullanır.
+  /// kullanır. Günlük hak ([maxDailyWheelSpins]) zaten tükenmişse reklamı
+  /// hiç GÖSTERMEDEN `null` döner — `earnAdWatch()`'taki AYNI ek güvenlik
+  /// katmanı gerekçesi (arayüz zaten [canSpinWheelToday] `false`yken
+  /// çevirme dokunma alanını devre dışı bırakıyor, bkz. `WheelScreen`).
   Future<WheelPrize?> watchAdAndSpinWheel() async {
+    if (!canSpinWheelToday) return null;
     final rewarded = await _adService.showRewardedAd();
     if (!rewarded) return null;
+    _consumeDailyLimit(isWheelSpin: true);
     final prize = pickWeightedPrize(wheelPrizes, _random);
     _earn(prize.amount, 'Şans Çarkı');
     return prize;

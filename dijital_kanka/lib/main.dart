@@ -275,11 +275,12 @@ class DijitalKankaApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => TrustedTimeProvider(uid: uid)),
         ChangeNotifierProvider(create: (_) => AppThemeProvider(uid: uid)),
         ChangeNotifierProvider(
-          create: (_) => CoinProvider(
+          create: (context) => CoinProvider(
             uid: uid,
             adService:
                 adService ??
                 AdMobAdService(rewardedAdUnitId: AdMobConfig.rewardedAdUnitId),
+            now: () => context.read<TrustedTimeProvider>().now(),
           ),
         ),
         ChangeNotifierProvider(create: (_) => CostumeProvider(uid: uid)),

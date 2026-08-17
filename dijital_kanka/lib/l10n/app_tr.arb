@@ -369,6 +369,10 @@
   "@storeWatchAdButton": {
     "description": "Reklam izleme akışını başlatan butonun etiketi"
   },
+  "dailyAdLimitReachedMessage": "Bugünkü hakların bitti, yarın tekrar gel!",
+  "@dailyAdLimitReachedMessage": {
+    "description": "Günlük reklam karşılığı hak (Mağaza'nın Ücretsiz kartı VEYA Şans Çarkı) tükendiğinde gösterilen mesaj — ikisi de aynı metni paylaşıyor"
+  },
   "storeCoinsAdded": "{amount} Zibo Coin hesabına eklendi!",
   "@storeCoinsAdded": {
     "description": "Bir satın alma veya reklam ödülü tamamlanıp coin eklendiğinde gösterilen mesaj",

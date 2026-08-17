@@ -123,6 +123,10 @@ class _WheelScreenState extends State<WheelScreen>
     final l10n = AppLocalizations.of(context)!;
     final colorScheme = Theme.of(context).colorScheme;
     final hubSize = _wheelSize * _hubSizeFraction;
+    // Günlük hak tükendiyse (bkz. CoinProvider.maxDailyWheelSpins) hub'ın
+    // dokunma alanı devre dışı kalır + başlığın altında uyarı mesajı
+    // belirir — `_WatchAdCard`'daki AYNI "pasif görünüm" deseni.
+    final canSpin = context.watch<CoinProvider>().canSpinWheelToday;
 
     return Dialog.fullscreen(
       child: SafeArea(
@@ -142,6 +146,19 @@ class _WheelScreenState extends State<WheelScreen>
               l10n.wheelTitle,
               style: Theme.of(context).textTheme.headlineSmall,
             ),
+            if (!canSpin) ...[
+              const SizedBox(height: 4),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Text(
+                  l10n.dailyAdLimitReachedMessage,
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ),
+            ],
             Expanded(
               child: Center(
                 child: Stack(
@@ -167,7 +184,7 @@ class _WheelScreenState extends State<WheelScreen>
                         child: InkWell(
                           key: const Key('wheelSpinButton'),
                           customBorder: const CircleBorder(),
-                          onTap: _spinning ? null : _spin,
+                          onTap: (_spinning || !canSpin) ? null : _spin,
                           child: Semantics(
                             button: true,
                             label: l10n.wheelSpinButton,

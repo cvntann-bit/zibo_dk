@@ -275,6 +275,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get storeWatchAdButton => 'Watch';
 
   @override
+  String get dailyAdLimitReachedMessage =>
+      'You\'re out of chances for today, come back tomorrow!';
+
+  @override
   String storeCoinsAdded(int amount) {
     return '$amount Zibo Coin added to your balance!';
   }

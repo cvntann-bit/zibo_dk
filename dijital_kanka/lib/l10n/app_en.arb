@@ -78,6 +78,7 @@
   "storeWatchAdTitle": "Watch an Ad",
   "storeWatchAdSubtitle": "Earn {amount} Zibo Coin, completely free",
   "storeWatchAdButton": "Watch",
+  "dailyAdLimitReachedMessage": "You're out of chances for today, come back tomorrow!",
   "storeCoinsAdded": "{amount} Zibo Coin added to your balance!",
   "shareButtonTooltip": "Share this saying",
   "favoriteQuoteAddTooltip": "Favorite this saying",

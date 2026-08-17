@@ -48,7 +48,7 @@ Widget _buildAppWithClock(DateTime Function() now) {
     providers: [
       ChangeNotifierProvider(create: (_) => TrustedTimeProvider()),
       ChangeNotifierProvider(create: (_) => AppThemeProvider()),
-      ChangeNotifierProvider(create: (_) => CoinProvider()),
+      ChangeNotifierProvider(create: (_) => CoinProvider(now: now)),
       ChangeNotifierProvider(create: (_) => CostumeProvider()),
       ChangeNotifierProvider(create: (_) => DailyRewardsProvider(now: now)),
       ChangeNotifierProvider(create: (_) => FavoriteQuotesProvider()),

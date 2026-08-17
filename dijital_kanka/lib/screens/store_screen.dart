@@ -252,6 +252,12 @@ class _WatchAdCardState extends State<_WatchAdCard> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final colorScheme = Theme.of(context).colorScheme;
+    // Günlük hak tükendiyse (bkz. CoinProvider.maxDailyAdWatches) kart
+    // "pasif" görünür: alt metin uyarı mesajına döner, buton devre dışı
+    // kalır — kullanıcı `_WatchAdCardState` bunu her `build()`'de canlı
+    // izlediği için (context.watch) reklam izleyip hakkı tükettiği ANDA
+    // (ayrı bir sayfa yenilemeye gerek kalmadan) kart otomatik güncellenir.
+    final canWatch = context.watch<CoinProvider>().canWatchAdForCoinsToday;
 
     return Card(
       color: colorScheme.primaryContainer,
@@ -278,7 +284,9 @@ class _WatchAdCardState extends State<_WatchAdCard> {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    l10n.storeWatchAdSubtitle(CoinEconomy.adWatch),
+                    canWatch
+                        ? l10n.storeWatchAdSubtitle(CoinEconomy.adWatch)
+                        : l10n.dailyAdLimitReachedMessage,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       color: colorScheme.onPrimaryContainer,
                     ),
@@ -288,7 +296,9 @@ class _WatchAdCardState extends State<_WatchAdCard> {
             ),
             const SizedBox(width: 12),
             FilledButton(
-              onPressed: _loading ? null : () => _watchAd(context),
+              onPressed: (_loading || !canWatch)
+                  ? null
+                  : () => _watchAd(context),
               child: _loading
                   ? const SizedBox(
                       width: 16,
