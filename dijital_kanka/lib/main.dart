@@ -24,6 +24,7 @@ import 'providers/notification_provider.dart';
 import 'providers/onboarding_provider.dart';
 import 'providers/push_notification_provider.dart';
 import 'providers/profile_provider.dart';
+import 'providers/sound_effects_provider.dart';
 import 'providers/theme_provider.dart';
 import 'providers/trusted_time_provider.dart';
 import 'providers/water_provider.dart';
@@ -318,6 +319,7 @@ class DijitalKankaApp extends StatelessWidget {
             uid: uid,
           ),
         ),
+        ChangeNotifierProvider(create: (_) => SoundEffectsProvider(uid: uid)),
         ChangeNotifierProvider(create: (_) => ThemeProvider(uid: uid)),
         ChangeNotifierProvider(
           create: (context) => WaterProvider(

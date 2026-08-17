@@ -157,11 +157,13 @@ class _GoalTrackingScreenState extends State<GoalTrackingScreen>
     final goalsProvider = context.watch<GoalsProvider>();
     final goals = goalsProvider.goals;
     final today = goalsProvider.today;
-    final quotes = goalQuotesForLocale(Localizations.localeOf(context));
+    final locale = Localizations.localeOf(context);
+    final quotes = goalQuotesForLocale(locale);
     final addressTerm = context.watch<ProfileProvider>().addressTerm;
     final quote = applyAddressTerm(
       quotes[_quoteIndex % quotes.length],
       addressTerm,
+      locale,
     );
 
     // Mağaza > Kostümler'den giyilen bir kostüm varsa Zibo'nun görseli onunla

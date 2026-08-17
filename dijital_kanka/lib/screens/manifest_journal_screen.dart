@@ -210,11 +210,13 @@ class _ManifestJournalScreenState extends State<ManifestJournalScreen> {
     final colorScheme = Theme.of(context).colorScheme;
     final provider = context.watch<ManifestProvider>();
     final history = provider.history;
-    final quotes = manifestQuotesForLocale(Localizations.localeOf(context));
+    final locale = Localizations.localeOf(context);
+    final quotes = manifestQuotesForLocale(locale);
     final addressTerm = context.watch<ProfileProvider>().addressTerm;
     final quote = applyAddressTerm(
       quotes[_quoteIndex % quotes.length],
       addressTerm,
+      locale,
     );
 
     // Mağaza > Kostümler'den giyilen bir kostüm varsa Zibo'nun görseli onunla

@@ -162,6 +162,10 @@
   "@settingsDarkTheme": {
     "description": "Ayarlar listesindeki koyu/açık tema anahtarının başlığı"
   },
+  "settingsSoundEffects": "Ses Efektleri",
+  "@settingsSoundEffects": {
+    "description": "Ayarlar listesindeki uygulama içi ses efektleri (ör. Zibo dokunma sesi) anahtarının başlığı"
+  },
   "settingsSectionGeneral": "Genel",
   "@settingsSectionGeneral": {
     "description": "Ayarlar listesindeki 'Genel' bölüm başlığı (koyu tema/dil/bildirimler)"

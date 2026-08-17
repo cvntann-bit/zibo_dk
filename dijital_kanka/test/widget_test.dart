@@ -28,6 +28,7 @@ import 'package:dijital_kanka/providers/manifest_provider.dart';
 import 'package:dijital_kanka/providers/money_provider.dart';
 import 'package:dijital_kanka/providers/notification_provider.dart';
 import 'package:dijital_kanka/providers/profile_provider.dart';
+import 'package:dijital_kanka/providers/sound_effects_provider.dart';
 import 'package:dijital_kanka/providers/theme_provider.dart';
 import 'package:dijital_kanka/providers/trusted_time_provider.dart';
 import 'package:dijital_kanka/providers/water_provider.dart';
@@ -59,6 +60,7 @@ Widget _buildAppWithClock(DateTime Function() now) {
             NotificationProvider(notificationService: const FakeNotificationService()),
       ),
       ChangeNotifierProvider(create: (_) => ProfileProvider(now: now)),
+      ChangeNotifierProvider(create: (_) => SoundEffectsProvider()),
       ChangeNotifierProvider(create: (_) => ThemeProvider()),
       ChangeNotifierProvider(create: (_) => WaterProvider(now: now)),
       ChangeNotifierProvider(create: (_) => ZiboPoseProvider()),
@@ -715,11 +717,22 @@ void main() {
       await tester.tap(find.byTooltip('Ayarlar'));
       await tester.pumpAndSettle();
 
-      // 2026 güncellemesi — Push Bildirimleri kartı eklendi, "Gizlilik
-      // Politikası"/"Kullanım Koşulları" artık ilk lazy-build aralığının
-      // dışında kalabiliyor (bkz. yukarıdaki AYNI ders).
+      // 2026 güncellemesi — Push Bildirimleri + Ses Efektleri satırı
+      // eklendi, "Gizlilik Politikası"/"Kullanım Koşulları" artık ilk
+      // lazy-build aralığının dışında kalabiliyor (bkz. yukarıdaki AYNI
+      // ders). Kaydırma sonrası satır AppBar'a çok yakın kalıp koordinat
+      // tabanlı `tester.tap()`in hit-test'i şaşırabildiği için (bkz. "Test
+      // kalıpları" bölümündeki GridView/hit-test uyuşmazlığı deseni)
+      // `ListTile.onTap`'i DOĞRUDAN çağırıyoruz.
       await tester.scrollUntilVisible(find.text('Gizlilik Politikası'), 300);
-      await tester.tap(find.text('Gizlilik Politikası'));
+      tester
+          .widget<ListTile>(
+            find.ancestor(
+              of: find.text('Gizlilik Politikası'),
+              matching: find.byType(ListTile),
+            ),
+          )
+          .onTap!();
       await tester.pumpAndSettle();
       expect(
         find.text('Bu içerik yakında burada olacak.'),
@@ -729,7 +742,14 @@ void main() {
       await tester.pumpAndSettle();
 
       await tester.scrollUntilVisible(find.text('Kullanım Koşulları'), 300);
-      await tester.tap(find.text('Kullanım Koşulları'));
+      tester
+          .widget<ListTile>(
+            find.ancestor(
+              of: find.text('Kullanım Koşulları'),
+              matching: find.byType(ListTile),
+            ),
+          )
+          .onTap!();
       await tester.pumpAndSettle();
       expect(
         find.text('Bu içerik yakında burada olacak.'),
@@ -1138,9 +1158,8 @@ void main() {
       await tester.tap(find.text('Temalar'));
       await tester.pumpAndSettle();
 
-      // İki bölüm de görünüyor: Standart (statik) + Premium/Animasyonlu.
-      expect(find.text('Standart Temalar'), findsOneWidget);
-      expect(find.text('Premium / Animasyonlu'), findsOneWidget);
+      // 2026 güncellemesi — Standart/Premium ayrımı kaldırıldı, artık TEK
+      // bir fiyata-göre-sıralı liste (bkz. store_screen.dart _ThemesSection).
       expect(find.text('Kış Teması'), findsOneWidget);
 
       final winterCard = find.ancestor(

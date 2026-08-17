@@ -20,5 +20,31 @@ void main() {
     test('bilinmeyen para birimi kodu için genel geri düşüş', () {
       expect(formatCurrencyAmount(9.99, 'USD'), '9,99 USD');
     });
+
+    // 2026 güncellemesi — Zibo ADS fiyatının arayüz diline göre uyarlanması
+    // (bkz. CLAUDE.md "Zibo ADS" bölümü) için eklenen `languageCode`
+    // parametresi: yalnızca sayı biçimini (ondalık/binlik ayracı) değiştirir,
+    // para birimi/sembolü DEĞİŞMEZ.
+    test('languageCode: "en" iken ondalık nokta, binlik virgül kullanılır', () {
+      expect(
+        formatCurrencyAmount(159.90, 'TRY', languageCode: 'en'),
+        '159.90 ₺',
+      );
+      expect(
+        formatCurrencyAmount(1499.99, 'TRY', languageCode: 'en'),
+        '1,499.99 ₺',
+      );
+    });
+
+    test('languageCode verilmezse (varsayılan) Türkçe biçim kullanılır', () {
+      expect(formatCurrencyAmount(159.90, 'TRY'), '159,90 ₺');
+    });
+
+    test('languageCode: "es" iken Türkçe ile AYNI (virgül ondalık) biçim kullanılır', () {
+      expect(
+        formatCurrencyAmount(159.90, 'TRY', languageCode: 'es'),
+        '159,90 ₺',
+      );
+    });
   });
 }

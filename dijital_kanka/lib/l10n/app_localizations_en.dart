@@ -119,6 +119,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsDarkTheme => 'Dark Theme';
 
   @override
+  String get settingsSoundEffects => 'Sound Effects';
+
+  @override
   String get settingsSectionGeneral => 'General';
 
   @override

@@ -11,8 +11,10 @@ import '../l10n/app_localizations.dart';
 import '../providers/app_theme_provider.dart';
 import '../providers/costume_provider.dart';
 import '../providers/profile_provider.dart';
+import '../providers/sound_effects_provider.dart';
 import '../providers/theme_provider.dart';
 import '../providers/zibo_pose_provider.dart';
+import '../services/sound_effects_service.dart';
 import '../utils/address_term.dart';
 import '../widgets/favorite_quote_button.dart';
 import '../widgets/share_zibo_button.dart';
@@ -21,7 +23,12 @@ import '../widgets/starry_gradient_background.dart';
 import '../widgets/zibo_animated_image.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  const HomeScreen({super.key, this.soundEffectsService});
+
+  /// Testte sahte bir implementasyon enjekte edebilmek için — varsayılan
+  /// `AudioPlayersSoundEffectsService()` (`AdService`/`ShareService` ile
+  /// AYNI desen).
+  final SoundEffectsService? soundEffectsService;
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -30,6 +37,8 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen>
     with SingleTickerProviderStateMixin {
   final _random = Random();
+  late final SoundEffectsService _soundEffectsService =
+      widget.soundEffectsService ?? AudioPlayersSoundEffectsService();
   // Dizin tabanlı tutuluyor (metnin kendisi değil) ki dil değişince (bkz.
   // LocaleProvider) aynı "konum" korunarak build()'de doğru dildeki karşılığı
   // gösterilebilsin — bkz. `ziboMessagesForLocale`.
@@ -69,6 +78,7 @@ class _HomeScreenState extends State<HomeScreen>
   @override
   void dispose() {
     _bounceController.dispose();
+    _soundEffectsService.dispose();
     super.dispose();
   }
 
@@ -78,6 +88,13 @@ class _HomeScreenState extends State<HomeScreen>
     // Poz HER dokunuşta değil, rastgele 5-10 dokunuşta bir ilerler — bkz.
     // ZiboPoseProvider dokümantasyonu.
     context.read<ZiboPoseProvider>().registerZiboTap();
+    // Poz/söz değişimiyle AYNI ANDA, kullanıcının Ayarlar > Ses Efektleri
+    // tercihine bağlı kısa bir "tık" sesi (bkz. SoundEffectsService — art
+    // arda hızlı dokunuşlarda önceki ses kesilip yeniden başlıyor, üst üste
+    // binmiyor).
+    if (context.read<SoundEffectsProvider>().enabled) {
+      _soundEffectsService.playZiboTap();
+    }
   }
 
   int _pickNewMessageIndex() {
@@ -93,11 +110,13 @@ class _HomeScreenState extends State<HomeScreen>
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final messages = ziboMessagesForLocale(Localizations.localeOf(context));
+    final locale = Localizations.localeOf(context);
+    final messages = ziboMessagesForLocale(locale);
     final addressTerm = context.watch<ProfileProvider>().addressTerm;
     final message = applyAddressTerm(
       messages[_messageIndex % messages.length],
       addressTerm,
+      locale,
     );
     // Zibo, ekranın ortasında baskın dursun diye ekran yüksekliğinin bir
     // oranı kadar büyütülüyor; çok uzun ekranlarda aşırı büyümesin diye

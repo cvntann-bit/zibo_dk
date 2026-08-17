@@ -37,6 +37,15 @@ class PackagePrice {
   final String currencyCode;
 
   /// Kullanıcıya gösterilecek, para birimine göre biçimlendirilmiş metin
-  /// (ör. "44,99 ₺").
+  /// (ör. "44,99 ₺") — sayı formatı sabit Türkçe kuralına göre (varsayılan
+  /// `languageCode`, bkz. `formatCurrencyAmount`).
   String get formatted => formatCurrencyAmount(amount, currencyCode);
+
+  /// [formatted] ile AYNI ama sayı biçimini (ondalık/binlik ayracı) verilen
+  /// arayüz diline göre uyarlar (bkz. `formatCurrencyAmount`'taki
+  /// `languageCode` notu) — ör. Zibo ADS fiyatı gibi üç dilde de gösterilen
+  /// yerler için. `formatted` bilerek DEĞİŞTİRİLMEDİ (geriye dönük uyumluluk
+  /// — mevcut Mağaza paket kartları hâlâ onu kullanıyor).
+  String formattedForLocale(String languageCode) =>
+      formatCurrencyAmount(amount, currencyCode, languageCode: languageCode);
 }

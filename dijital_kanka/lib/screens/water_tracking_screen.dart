@@ -226,11 +226,13 @@ class _WaterTrackingScreenState extends State<WaterTrackingScreen> {
     final unit = provider.unit;
     final unitLabel = _unitLabel(l10n, unit);
     final history = provider.history;
-    final quotes = waterQuotesForLocale(Localizations.localeOf(context));
+    final locale = Localizations.localeOf(context);
+    final quotes = waterQuotesForLocale(locale);
     final addressTerm = context.watch<ProfileProvider>().addressTerm;
     final quote = applyAddressTerm(
       quotes[_quoteIndex % quotes.length],
       addressTerm,
+      locale,
     );
 
     // Mağaza > Kostümler'den giyilen bir kostüm varsa Zibo'nun görseli onunla

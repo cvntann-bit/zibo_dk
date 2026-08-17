@@ -101,11 +101,13 @@ class _MoodTrackingScreenState extends State<MoodTrackingScreen> {
     final provider = context.watch<MoodProvider>();
     final today = DateTime.now();
     final todayDateOnly = DateTime(today.year, today.month, today.day);
-    final quotes = moodQuotesForLocale(Localizations.localeOf(context));
+    final locale = Localizations.localeOf(context);
+    final quotes = moodQuotesForLocale(locale);
     final addressTerm = context.watch<ProfileProvider>().addressTerm;
     final quote = applyAddressTerm(
       quotes[_quoteIndex % quotes.length],
       addressTerm,
+      locale,
     );
 
     // Mağaza > Kostümler'den giyilen bir kostüm varsa Zibo'nun görseli onunla

@@ -185,49 +185,17 @@ class _ThemesSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    final colorScheme = Theme.of(context).colorScheme;
-    // Standart (statik gradyan) vs Premium/Animasyonlu (bkz.
-    // AppThemeOption.isPremiumAnimated) — AYRI bölümlerde, kullanıcı
-    // isteğiyle ("bu animasyonlu temaları ayrı bir bölüm altında göster").
-    final standardThemes = appThemes
-        .where((theme) => !theme.isPremiumAnimated)
-        .toList();
-    final premiumThemes = appThemes
-        .where((theme) => theme.isPremiumAnimated)
-        .toList();
+    // 2026 güncellemesi — kullanıcı isteğiyle Standart/Premium ayrımı
+    // (ayrı başlıklı iki `GridView`) KALDIRILDI: artık TÜM temalar (statik +
+    // premium/animasyonlu) kategori ayrımı olmadan TEK bir listede, ucuzdan
+    // pahalıya sıralı gösteriliyor. Her kartın kendi üstündeki "Premium"
+    // rozeti (bkz. ThemeOptionCard, `theme.isPremiumAnimated`) hangi
+    // temaların animasyonlu olduğunu KART SEVİYESİNDE göstermeye devam
+    // ediyor — yalnızca üst düzey grup başlığı kayboldu.
+    final sortedThemes = [...appThemes]
+      ..sort((a, b) => a.price.compareTo(b.price));
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          l10n.storeThemesStandardSectionTitle,
-          style: Theme.of(context).textTheme.titleMedium,
-        ),
-        const SizedBox(height: 8),
-        _ThemesGrid(themes: standardThemes),
-        const SizedBox(height: 24),
-        Row(
-          children: [
-            Icon(Icons.auto_awesome, size: 18, color: colorScheme.primary),
-            const SizedBox(width: 6),
-            Text(
-              l10n.storeThemesPremiumSectionTitle,
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-          ],
-        ),
-        const SizedBox(height: 4),
-        Text(
-          l10n.storeThemesPremiumSectionSubtitle,
-          style: Theme.of(
-            context,
-          ).textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
-        ),
-        const SizedBox(height: 8),
-        _ThemesGrid(themes: premiumThemes),
-      ],
-    );
+    return _ThemesGrid(themes: sortedThemes);
   }
 }
 

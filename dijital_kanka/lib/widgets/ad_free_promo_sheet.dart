@@ -1,6 +1,14 @@
 import 'package:flutter/material.dart';
 
 import '../l10n/app_localizations.dart';
+import '../models/coin_package.dart';
+
+/// Reklamsız Zibo'nun gösterilen fiyatı — `CoinPackage`'ın zaten taşıdığı
+/// [PackagePrice] modeli yeniden kullanılıyor (bkz. o dosyadaki "ileride
+/// ülkeye göre farklı para birimi" notu — AYNI genişletme yolu burada da
+/// geçerli, şimdilik tek bir sabit TRY değeri). 159,90 ₺ kullanıcının
+/// verdiği gerçek fiyat.
+const adFreePromoPrice = PackagePrice(amount: 159.90);
 
 /// **GÖRSEL MOCKUP** — "Zibo ADS" (reklamsız deneyim) tanıtım ekranı. Bkz.
 /// CLAUDE.md "Zibo ADS" bölümü: gerçek bir satın alma akışı YOK (henüz Play
@@ -10,6 +18,13 @@ import '../l10n/app_localizations.dart';
 /// tutamacı + kapatma butonu ikisi de var.
 Future<void> showAdFreePromoSheet(BuildContext context) {
   final l10n = AppLocalizations.of(context)!;
+  // 2026 güncellemesi — "Satın Al" buton YAZISI yerine gerçek fiyat
+  // gösteriliyor (kullanıcı isteği). Sayı biçimi arayüz diline göre uyarlanıyor
+  // (bkz. `PackagePrice.formattedForLocale`/`formatCurrencyAmount`) — para
+  // birimi henüz TRY'de sabit, yalnızca ondalık/binlik ayracı değişiyor.
+  final priceLabel = adFreePromoPrice.formattedForLocale(
+    Localizations.localeOf(context).languageCode,
+  );
 
   return showModalBottomSheet<void>(
     context: context,
@@ -56,7 +71,7 @@ Future<void> showAdFreePromoSheet(BuildContext context) {
                               ),
                             );
                         },
-                        child: Text(l10n.adFreePromoBuyButton),
+                        child: Text(priceLabel),
                       ),
                     ),
                     const SizedBox(height: 8),

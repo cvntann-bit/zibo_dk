@@ -8,6 +8,7 @@ import '../models/push_notification_type.dart';
 import '../providers/locale_provider.dart';
 import '../providers/notification_provider.dart';
 import '../providers/push_notification_provider.dart';
+import '../providers/sound_effects_provider.dart';
 import '../providers/theme_provider.dart';
 import 'legal_placeholder_screen.dart';
 
@@ -85,6 +86,7 @@ class SettingsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final isDarkMode = context.watch<ThemeProvider>().isDarkMode;
+    final soundEffectsEnabled = context.watch<SoundEffectsProvider>().enabled;
     final currentLanguageCode = context.watch<LocaleProvider>().locale.languageCode;
     final sectionTitleStyle = Theme.of(context).textTheme.labelLarge?.copyWith(
       color: Theme.of(context).colorScheme.primary,
@@ -111,6 +113,17 @@ class SettingsScreen extends StatelessWidget {
                   value: isDarkMode,
                   onChanged: (value) =>
                       context.read<ThemeProvider>().setDarkMode(value),
+                ),
+                const Divider(height: 1),
+                // 2026 yeni özellik — uygulama içi kısa ses efektlerini
+                // (şimdilik yalnızca Zibo dokunma sesi, bkz.
+                // SoundEffectsService) açıp kapatır.
+                SwitchListTile(
+                  secondary: const Icon(Icons.volume_up_outlined),
+                  title: Text(l10n.settingsSoundEffects),
+                  value: soundEffectsEnabled,
+                  onChanged: (value) =>
+                      context.read<SoundEffectsProvider>().setEnabled(value),
                 ),
                 const Divider(height: 1),
                 // Dil satırı: seçili dilin küçük yuvarlak bayrağı trailing'de

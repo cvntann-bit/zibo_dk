@@ -280,6 +280,12 @@ abstract class AppLocalizations {
   /// **'Koyu Tema'**
   String get settingsDarkTheme;
 
+  /// Ayarlar listesindeki uygulama içi ses efektleri (ör. Zibo dokunma sesi) anahtarının başlığı
+  ///
+  /// In tr, this message translates to:
+  /// **'Ses Efektleri'**
+  String get settingsSoundEffects;
+
   /// Ayarlar listesindeki 'Genel' bölüm başlığı (koyu tema/dil/bildirimler)
   ///
   /// In tr, this message translates to:

@@ -149,11 +149,13 @@ class _GratitudeJournalScreenState extends State<GratitudeJournalScreen> {
     // karttan sonra kendi şükranlarını burada da görüp düzenleyebilsin diye
     // (bkz. CLAUDE.md "Şükran Günlüğü" 2026 güncellemesi).
     final allEntries = provider.entries;
-    final quotes = gratitudeQuotesForLocale(Localizations.localeOf(context));
+    final locale = Localizations.localeOf(context);
+    final quotes = gratitudeQuotesForLocale(locale);
     final addressTerm = context.watch<ProfileProvider>().addressTerm;
     final quote = applyAddressTerm(
       quotes[_quoteIndex % quotes.length],
       addressTerm,
+      locale,
     );
 
     // Mağaza > Kostümler'den giyilen bir kostüm varsa Zibo'nun görseli onunla
