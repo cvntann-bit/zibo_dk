@@ -3054,7 +3054,9 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
 
 ## Şu an mock/placeholder olan şeyler (gerçek entegrasyon bekliyor)
 
-- `MockAdService` / `MockPurchaseService` — gerçek AdMob / IAP SDK'sı bağlanmadı.
+- `MockPurchaseService` — gerçek IAP (uygulama içi satın alma) SDK'sı hâlâ bağlanmadı. **AdMob
+  ARTIK gerçek** (bkz. altta "AdMob Entegrasyonu" bölümü) — `MockAdService` yalnızca testlerde
+  enjekte edilen bir sahte olarak kaldı.
 - Ayarlar'daki "Hakkında" satırı — `onTap` hâlâ no-op. **Dil satırı ARTIK no-op DEĞİL** (bkz.
   Yerelleştirme bölümü) — Coin Test Paneli de kullanıcı isteğiyle tamamen kaldırıldı, bu listede
   DEĞİL artık.
@@ -3085,6 +3087,106 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
     açılmaya devam etmesine izin veriyor.
   - `flutter test` bu koddan hiç etkilenmiyor çünkü testler `main()`'i hiç çalıştırmıyor
     (`DijitalKankaApp`'i doğrudan `pumpWidget` ediyorlar, `uid` varsayılan `null`).
+
+## AdMob Entegrasyonu ([ad_service.dart](lib/services/ad_service.dart), [admob_ad_service.dart](lib/services/admob_ad_service.dart))
+
+- **2026 yeni özellik — gerçek Google AdMob SDK'sı (`google_mobile_ads: ^9.1.0`) bağlandı.**
+  Kullanıcı isteği: "gerçek admob entegrasyonuna geçmeye başlayalım." Uygulamada YALNIZCA TEK bir
+  reklam formatı var — ödüllü reklam (rewarded video), `AdService.showRewardedAd()` arayüzünün
+  ARKASINDA, iki ayrı akıştan çağrılıyor (`CoinProvider.watchAdAndEarn()` — Mağaza'nın "Ücretsiz"
+  kartı, ve `CoinProvider.watchAdAndSpinWheel()` — Şans Çarkı). Banner/interstitial YOK, kapsam
+  bilinçli olarak dar (uygulamanın gerçekte ihtiyaç duyduğu TEK format).
+- **İlk yazımda kullanıcının AdMob hesabı/uygulaması/reklam birimi YOKTU** — bu yüzden kod tarafı
+  başlangıçta Google'ın HERKESE AÇIK, hesap gerektirmeyen resmi TEST App ID/Ad Unit ID'siyle
+  yazıldı (onay bekleyen bir hesaba bağımlı kalmadan SDK'nın uçtan uca çalıştığını kanıtlamak
+  için). **Kullanıcı AYNI oturumda AdMob Console'da hesap açıp "Zibo-Dijital Kankan" uygulamasını
+  ve bir Ödüllü Reklam birimini oluşturdu — kod tarafı ANINDA GERÇEK ID'lere geçirildi:**
+  - **App ID (Android, GERÇEK):** `ca-app-pub-7684383909235139~6676072606` —
+    `android/app/src/main/AndroidManifest.xml`'deki `com.google.android.gms.ads.APPLICATION_ID`
+    meta-data'sında (SDK bu alanı UYGULAMA BAŞLATILMADAN okur, eksikse eklenti çöker).
+  - **Rewarded Ad Unit ID (Android, GERÇEK):** `ca-app-pub-7684383909235139/2423439155` —
+    `main.dart`'taki top-level `_rewardedAdUnitId` sabitinde, `DijitalKankaApp.build()`'de
+    `AdMobAdService(rewardedAdUnitId: _rewardedAdUnitId)` olarak `CoinProvider`'a geçiriliyor.
+  - **Google App ID/Ad Unit ID'leri GİZLİ DEĞİL** — API anahtarı/sır DEĞİL, uygulamanın kendi
+    paketine/koduna gömülmesi normal (Google'ın kendi dokümantasyonu da bunları doğrudan
+    AndroidManifest.xml'e yazdırıyor) — bu yüzden doğrudan kaynak koduna ve bu dosyaya yazıldı.
+  - **Google'ın test App ID/Ad Unit ID'si** (`ca-app-pub-3940256099942544~3347511713` /
+    `ca-app-pub-3940256099942544/5224354917`) hâlâ `AdMobAdService.testRewardedAdUnitId`
+    sabitinde VE `rewardedAdUnitId` parametresi verilmediğinde servisin varsayılanı olarak kod
+    tabanında duruyor — dokümantasyon/geliştirme referansı (gerekirse test reklamına dönmek için).
+  - **Doğrulama — yeni oluşturulan reklam biriminin "no fill" (kod 3) dönmesi BEKLENEN bir
+    durum, hata DEĞİL:** AdMob Console'un kendisi "New ad units may take up to an hour to start
+    showing ads" uyarısını gösteriyor; gerçek cihazda APK kurulup açıldığında logcat'te
+    `Ads: Ad failed to load : 3` (ERROR_CODE_NO_FILL) görüldü — bu, App ID/Ad Unit ID'nin
+    DOĞRU okunduğunu (aksi halde farklı bir hata kodu — ör. `1`/ERROR_CODE_INVALID_REQUEST —
+    dönerdi) ama Google'ın reklam envanterinin bu YENİ birim için henüz hazır olmadığını
+    gösteriyor. Bir süre sonra (dakikalar-saatler) gerçek reklamlar dolmaya başlayacak.
+- **`AdMobAdService`** — `AdService`'i uygulayan gerçek implementasyon, `NotificationService`/
+  `ShareService` ile AYNI "gerçek servis varsayılan, test'te sahte enjekte edilir" felsefesi (bkz.
+  altta test/CoinProvider notu). Ön-yükleme (preload) deseni kullanıyor: ödüllü reklamlar AdMob'da
+  ÖNCEDEN yüklenmesi gereken bir format, `showRewardedAd()` çağrıldığı anda sıfırdan yüklemeye
+  başlamak kullanıcıyı saniyelerce bekletirdi — bu yüzden servis constructor'da VE her gösterimden
+  hemen sonra arka planda bir sonraki reklamı önceden yüklemeye başlıyor; `showRewardedAd()`
+  çağrıldığında genellikle zaten hazır bir reklam buluyor, yalnızca henüz yüklenmemişse 8sn'lik bir
+  zaman aşımıyla bekliyor.
+  - **Kritik gotcha — `RewardedAd.load(...)`'un döndürdüğü `Future`, `await`lenmeden ateşlenip
+    unutulursa (fire-and-forget) platform kanalı hatası "unhandled Future rejection" olarak
+    `flutter_test`'e SIZAR (senkron bir `try/catch` bunu YAKALAYAMAZ).** İlk yazımda bu Future
+    hiç yakalanmıyordu — `flutter test` çalıştırılınca herhangi bir görünür hata/timeout OLMADAN
+    (Flutter test framework'ü asenkron zone hatalarını bazen sessizce yutabiliyor) yalnızca iki
+    testin (reklam izleme akışını doğrudan test eden) beklenmedik şekilde başarısız olduğu
+    görüldü. **Çözüm:** `RewardedAd.load(...)`'un döndürdüğü `Future`'a `.catchError(...)`
+    eklenip hata sessizce yutuluyor (`_rewardedAd = null` bırakılıp `showRewardedAd()`'ın `false`
+    dönmesine izin veriliyor) — **bir platform-kanalı çağrısını `await`lemeden ateşlerken, hatasını
+    HER ZAMAN `.catchError(...)` ile (senkron `try/catch` YETMEZ) yakalayın.**
+- **`main.dart`'a bağlama:**
+  - `main()`'e Firebase'den TAMAMEN BAĞIMSIZ (ayrı try/catch — biri başarısız olursa diğerini
+    etkilemesin diye) `await MobileAds.instance.initialize();` eklendi, `runApp`'tan ÖNCE.
+  - `DijitalKankaApp`, `CoinProvider(uid: uid, adService: adService ?? AdMobAdService(rewardedAdUnitId: _rewardedAdUnitId))`
+    kullanıyor (`_rewardedAdUnitId` — GERÇEK Ad Unit ID, main.dart'ta top-level `const`) —
+    `RootScreen.pushNotificationService`/`HomeScreen.soundEffectsService` ile AYNI "test
+    enjeksiyonu için opsiyonel constructor parametresi" deseni: `DijitalKankaApp`'in YENİ
+    `adService` alanı `null` ise (üretimde HER ZAMAN) gerçek `AdMobAdService` kullanılır.
+  - **`CoinProvider`'ın KENDİ varsayılan parametresi (`AdService adService = const
+    MockAdService()`) BİLEREK DEĞİŞTİRİLMEDİ** — `CoinProvider()` çağıran ~10 test call site'ı
+    (bkz. `coin_provider_test.dart`, `manifest_journal_screen_test.dart`,
+    `profile_screen_test.dart`) hiçbirinin dokunulmasına GEREK KALMADI, hepsi sessizce Mock
+    kullanmaya devam ediyor. Yalnızca `main.dart`'ın kompozisyon kökü (composition root) gerçek
+    servisi override ediyor — `AdService` dokümantasyonundaki "gerçek AdMob geldiğinde
+    CoinProvider'a VERİLECEK" ifadesi tam olarak bunu kastediyordu.
+  - **`widget_test.dart`'ta `const DijitalKankaApp()` pump'layan İKİ senaryo** ("Mağazadan reklam
+    izleyince 20 Zibo Coin kazanılır", "Şans Çarkı: reklam izleyip çevirince...") reklam izleme
+    akışının KENDİSİNİ doğrudan test ettiği için (bakiyenin gerçekten arttığını doğruluyorlar) artık
+    `DijitalKankaApp(adService: const MockAdService())` kullanıyor — gerçek `AdMobAdService`
+    `flutter_test`'in platform kanalına dokunamadığı için reklam hiç "yüklenmez",
+    `showRewardedAd()` sessizce `false` döner, bu da bu İKİ testin (yalnızca bunların, diğer 242
+    test etkilenmedi) DEĞİŞMEDEN geçmesini engellerdi.
+- **AndroidManifest.xml** — `<application>` içine `com.google.android.gms.ads.APPLICATION_ID`
+  meta-data'sı eklendi (yukarıdaki test App ID ile) — `<queries>`/izin bloklarına DOKUNULMADI,
+  `google_mobile_ads` ek bir izin/queries girdisi gerektirmiyor.
+- **Gerçek cihazda doğrulama:** APK yeniden derlenip telefona kurulup `adb shell monkey` ile
+  başlatıldı — çöküş izi olmadan açıldığı VE logcat'te AdMob SDK'sının gerçekten devreye girdiği
+  doğrulandı (`Ads` etiketli loglar: `SDK version: afma-sdk-...`, GMS `ads.service.CACHE`/`START`
+  servislerine bağlanma, `tag=addon/rewarded_video` ile bir ödüllü reklam kaynağının aktif olarak
+  YÜKLENDİĞİ). **Kullanıcının kendi cihazında GÖRSEL olarak doğrulaması gereken kısım:** Mağaza'nın
+  "Ücretsiz" kartındaki "İzle" butonuna VEYA Şans Çarkı'na basınca köşesinde "Test Ad" etiketli
+  gerçek bir AdMob reklamının açılıp, izlenince/atlanınca doğru davrandığı (izlenirse coin/ödül
+  verilir, erken kapatılırsa verilmez) — bu kod seviyesinde `flutter test`'teki 244 testle (reklam
+  akışını Mock ile simüle ederek) kapsanıyor ama gerçek bir reklam GÖRÜNTÜSÜNÜN doğrulanması
+  gerçek cihaz gerektiriyor.
+- **AdMob Console kurulumu TAMAMLANDI** (kullanıcı kendisi yaptı — asistan Console'a giremiyor):
+  hesap açıldı, "Zibo-Dijital Kankan" uygulaması `com.dijitalkanka.dijital_kanka` paket adıyla
+  kaydedildi, bir Ödüllü Reklam birimi oluşturuldu — App ID/Ad Unit ID yukarıda belgeli, kod
+  tarafına ANINDA işlendi.
+  - **Kalan tek adım — Google'ın envanter/inceleme süreci:** yeni bir reklam birimi Google'ın
+    kendi ifadesiyle "bir saate kadar" sürede reklam sunmaya başlıyor (bkz. yukarıdaki "no fill"
+    notu) — bu ASİSTANIN veya kullanıcının kontrolünde DEĞİL, yalnızca beklemek/Console'dan takip
+    etmek gerekiyor. Bir süre sonra Mağaza'daki "İzle" butonuna veya Şans Çarkı'na basılınca
+    gerçek (artık "Test Ad" etiketi OLMAYAN) bir reklam gösterilmeye başlamalı.
+  - **Gerçek Play Store yayınından ÖNCE:** AdMob Console'da bu uygulamanın "Google Play'de
+    yayınlandı mı?" durumunu güncellemek (şu an "Hayır" olarak kaydedildi) VE ödeme profilini
+    tamamlamak (gerçek gelir alınabilmesi için) hâlâ kullanıcının Console'da yapması gereken,
+    kod tarafını ETKİLEMEYEN adımlar.
 
 ## Firestore veri kalıcılığı, Anonymous Auth ve güvenilir zaman ([cloud_state_store.dart](lib/services/cloud_state_store.dart), [trusted_time_service.dart](lib/services/trusted_time_service.dart), [trusted_time_provider.dart](lib/providers/trusted_time_provider.dart))
 

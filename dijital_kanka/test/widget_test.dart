@@ -36,6 +36,7 @@ import 'package:dijital_kanka/providers/zibo_pose_provider.dart';
 import 'package:dijital_kanka/screens/profile_screen.dart';
 import 'package:dijital_kanka/screens/root_screen.dart';
 import 'package:dijital_kanka/screens/wheel_screen.dart';
+import 'package:dijital_kanka/services/ad_service.dart';
 import 'package:dijital_kanka/services/notification_service.dart';
 import 'package:dijital_kanka/utils/ad_free_promo_trigger.dart';
 import 'package:dijital_kanka/utils/tab_navigation.dart';
@@ -553,7 +554,15 @@ void main() {
   testWidgets('Mağazadan reklam izleyince 20 Zibo Coin kazanılır', (
     WidgetTester tester,
   ) async {
-    await _pumpPastOnboarding(tester, const DijitalKankaApp());
+    // Gerçek AdMobAdService, flutter_test'in platform kanalına dokunamadığı
+    // bir ortamda reklam yükleyemez (bkz. main.dart'taki DijitalKankaApp.
+    // adService dokümantasyonu) — bu senaryo "reklam izlenince ödül
+    // veriliyor mu" akışını test ettiği için MockAdService (her zaman
+    // başarılı) enjekte ediliyor.
+    await _pumpPastOnboarding(
+      tester,
+      const DijitalKankaApp(adService: MockAdService()),
+    );
 
     await tester.tap(find.byTooltip('Coin satın al'));
     await tester.pumpAndSettle();
@@ -1246,7 +1255,12 @@ void main() {
   testWidgets(
     'Şans Çarkı: reklam izleyip çevirince ağırlıklı bir ödül kazanılır ve bakiyeye eklenir',
     (WidgetTester tester) async {
-      await _pumpPastOnboarding(tester, const DijitalKankaApp());
+      // bkz. yukarıdaki "Mağazadan reklam izleyince..." testindeki AYNI
+      // gerekçe — gerçek AdMobAdService testte reklam yükleyemez.
+      await _pumpPastOnboarding(
+        tester,
+        const DijitalKankaApp(adService: MockAdService()),
+      );
 
       // Sol kenardaki sürekli dönen tetikleyici yalnızca Ana Sayfa
       // sekmesinde görünür (varsayılan seçili sekme burada zaten Ana Sayfa).

@@ -4,6 +4,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:provider/provider.dart';
 
 import 'data/app_themes.dart';
@@ -33,6 +34,8 @@ import 'utils/ad_free_promo_trigger.dart';
 import 'models/app_theme_option.dart';
 import 'screens/onboarding/onboarding_screen.dart';
 import 'screens/root_screen.dart';
+import 'services/ad_service.dart';
+import 'services/admob_ad_service.dart';
 import 'services/push_notification_service.dart';
 import 'widgets/animated_theme_overlay.dart';
 import 'widgets/app_loading_screen.dart';
@@ -227,11 +230,31 @@ void main() async {
     // eksik) — `uid` `null` kalır, uygulama Firebase'e bağımlı olmadan
     // (tamamen yerel depoyla) sorunsuz çalışmaya devam eder.
   }
+  // AdMob SDK'sı — Firebase'den TAMAMEN BAĞIMSIZ bir try/catch (biri
+  // başarısız olursa diğerini etkilemesin diye). `MobileAds.instance.
+  // initialize()` çağrılmadan `RewardedAd.load(...)` (bkz.
+  // AdMobAdService) sessizce başarısız olur — bu yüzden `runApp`'tan ÖNCE
+  // tamamlanmalı. Web önizlemesinde veya platform desteklenmiyorsa
+  // (`flutter_test` dahil) hatayı yutup uygulamanın reklamsız (her
+  // `showRewardedAd()` çağrısı `false` dönerek) çalışmaya devam etmesine
+  // izin verir.
+  try {
+    await MobileAds.instance.initialize();
+  } catch (_) {}
   runApp(DijitalKankaApp(uid: uid));
 }
 
+// "Zibo-Dijital Kankan" AdMob uygulamasının GERÇEK Ödüllü Reklam birimi
+// (bkz. CLAUDE.md "AdMob Entegrasyonu" bölümü) — Ad Unit ID'ler gizli DEĞİL,
+// uygulama koduna gömülmesi normal (App ID gibi). `AdMobAdService`'in
+// kendi `testRewardedAdUnitId` sabiti (Google'ın herkese açık test birimi)
+// dokümantasyon/geliştirme referansı olarak dosyada kalmaya devam ediyor —
+// gerekirse (ör. test reklamına dönmek istenirse) `_rewardedAdUnitId`
+// yerine ona geçmek yeterli.
+const _rewardedAdUnitId = 'ca-app-pub-7684383909235139/2423439155';
+
 class DijitalKankaApp extends StatelessWidget {
-  const DijitalKankaApp({super.key, this.uid});
+  const DijitalKankaApp({super.key, this.uid, this.adService});
 
   /// Kullanıcının anonim Firebase kimliği (bkz. `main()`) — `null` ise
   /// (Firebase kullanılamıyor VEYA test ortamı) TÜM aşağıdaki provider'lar
@@ -239,6 +262,15 @@ class DijitalKankaApp extends StatelessWidget {
   /// provider testi bu alanı VERMEZ, bu yüzden mevcut tüm testler
   /// değişmeden çalışmaya devam eder (bkz. `CloudStateStore` dokümantasyonu).
   final String? uid;
+
+  /// Test enjeksiyonu için — `RootScreen.pushNotificationService`/
+  /// `HomeScreen.soundEffectsService` ile AYNI desen. `null` ise (üretimde
+  /// HER ZAMAN) gerçek [AdMobAdService] kullanılır; `flutter_test`'te gerçek
+  /// AdMob SDK'sı platform kanalına dokunamadığı için ("Reklam İzle"
+  /// bastığında reklam hiç "yüklenmez", `showRewardedAd()` sessizce `false`
+  /// döner) bunu doğrudan test eden senaryolar `const MockAdService()`
+  /// enjekte eder (bkz. widget_test.dart).
+  final AdService? adService;
 
   @override
   Widget build(BuildContext context) {
@@ -250,7 +282,14 @@ class DijitalKankaApp extends StatelessWidget {
         // ÖNCEKİ provider'ları SONRAKİlerin context'inden görünür kılar).
         ChangeNotifierProvider(create: (_) => TrustedTimeProvider(uid: uid)),
         ChangeNotifierProvider(create: (_) => AppThemeProvider(uid: uid)),
-        ChangeNotifierProvider(create: (_) => CoinProvider(uid: uid)),
+        ChangeNotifierProvider(
+          create: (_) => CoinProvider(
+            uid: uid,
+            adService:
+                adService ??
+                AdMobAdService(rewardedAdUnitId: _rewardedAdUnitId),
+          ),
+        ),
         ChangeNotifierProvider(create: (_) => CostumeProvider(uid: uid)),
         // Aşağıdaki altı provider "güne bağlı" mekanizmalar (günlük ödül/
         // streak/sıfırlanma) taşıyor — hepsi cihazın DOĞRUDAN `DateTime.
