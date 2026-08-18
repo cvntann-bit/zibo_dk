@@ -9,7 +9,6 @@ import '../data/costume_poses.dart';
 import '../data/costumes.dart';
 import '../data/goal_quotes.dart';
 import '../l10n/app_localizations.dart';
-import '../models/app_theme_option.dart';
 import '../providers/costume_provider.dart';
 import '../providers/goals_provider.dart';
 import '../providers/profile_provider.dart';
@@ -18,9 +17,9 @@ import '../providers/zibo_pose_provider.dart';
 import '../services/sound_effects_service.dart';
 import '../utils/address_term.dart';
 import '../widgets/goal_card.dart';
+import '../widgets/goal_confetti_burst.dart';
 import '../widgets/share_zibo_button.dart';
 import '../widgets/speech_bubble.dart';
-import '../widgets/theme_particle_effect.dart';
 import '../widgets/zibo_animated_image.dart';
 
 /// Hedef Takibi sayfası. [isActive], bu sekmenin şu anda görünen sekme olup
@@ -49,37 +48,51 @@ class _GoalTrackingScreenState extends State<GoalTrackingScreen>
   int _quoteIndex = 0;
   Timer? _quoteTimer;
 
-  /// Titreşimden 2 saniye sonra konfetiyi başlatan gecikme — `Timer` olarak
-  /// (bare `Future.delayed` DEĞİL) tutuluyor ki widget erken dispose
-  /// edilirse `dispose()`'ta iptal edilebilsin; aksi halde `flutter_test`
-  /// "A Timer is still pending even after the widget tree was disposed"
-  /// diye BAŞARISIZ oluyor (gerçekten yaşandı) — üretimde de kullanıcı bu
-  /// 2 saniye içinde ekrandan ayrılırsa gereksiz bir zamanlayıcının askıda
-  /// kalmasını önlüyor.
+  /// Titreşim bitince (dokunmadan TAM 2 saniye sonra) konfetiyi başlatan
+  /// gecikme — `Timer` olarak (bare `Future.delayed` DEĞİL) tutuluyor ki
+  /// widget erken dispose edilirse `dispose()`'ta iptal edilebilsin; aksi
+  /// halde `flutter_test` "A Timer is still pending even after the widget
+  /// tree was disposed" diye BAŞARISIZ oluyor (gerçekten yaşandı) —
+  /// üretimde de kullanıcı bu 2 saniye içinde ekrandan ayrılırsa gereksiz
+  /// bir zamanlayıcının askıda kalmasını önlüyor.
   Timer? _confettiDelayTimer;
 
   late final SoundEffectsService _soundEffectsService =
       widget.soundEffectsService ?? AudioPlayersSoundEffectsService();
 
-  /// Kullanıcı bugünün hedef kutucuğunu işaretleyince kısa bir "titreşim"
-  /// (shake) efekti için — bkz. [_triggerCompletionCelebration].
+  /// Kullanıcı bugünün hedef kutucuğunu işaretleyince TAM 2 saniye süren bir
+  /// "titreşim" (shake) efekti için — bkz. [_triggerCompletionCelebration].
+  /// **2026 güncellemesi — süre 400ms'ten TAM 2 saniyeye çıkarıldı**
+  /// (kullanıcı isteği: ses/konfeti zamanlamasıyla senkron olsun). Kısa,
+  /// sabit bir `TweenSequence`'i UZATMAK (aynı beş adımı 2 saniyeye
+  /// yaymak) yavaş/tembel tek bir sallanma gibi hissettirirdi — bunun
+  /// yerine [_shakeOffset] getter'ı `_shakeController.value`'dan DOĞRUDAN
+  /// sönümlenen (decaying) bir sinüs dalgası hesaplıyor: ~5Hz'lik gerçek
+  /// bir titreşim hissi süre boyunca devam ediyor, yalnızca SON %15'lik
+  /// dilimde (son 300ms) genlik yumuşakça sıfıra iniyor — ani bir
+  /// "kesilme" yerine akıcı bir bitiş, tam da konfetinin başladığı ana denk
+  /// geliyor.
   late final _shakeController = AnimationController(
     vsync: this,
-    duration: const Duration(milliseconds: 400),
+    duration: const Duration(milliseconds: 2000),
   );
-  late final _shakeAnimation = TweenSequence<double>([
-    TweenSequenceItem(weight: 1, tween: Tween(begin: 0.0, end: -8.0)),
-    TweenSequenceItem(weight: 1, tween: Tween(begin: -8.0, end: 8.0)),
-    TweenSequenceItem(weight: 1, tween: Tween(begin: 8.0, end: -6.0)),
-    TweenSequenceItem(weight: 1, tween: Tween(begin: -6.0, end: 4.0)),
-    TweenSequenceItem(weight: 1, tween: Tween(begin: 4.0, end: 0.0)),
-  ]).animate(CurvedAnimation(parent: _shakeController, curve: Curves.linear));
 
-  /// Titreşimden 2 saniye SONRA başlayan konfeti patlaması — Mağaza >
-  /// Temalar'daki `ThemeParticleEffect(type: confetti)` ile AYNI çizim kodu
-  /// yeniden kullanılıyor (bkz. o dosyadaki dokümantasyon), ama SÜREKLİ
-  /// `repeat()` yerine BİR KEZ `forward()` ile oynatılıp bitince kaldırılıyor
-  /// — sürekli ambians dekorasyonu değil, tek seferlik bir "patlama" efekti.
+  static const _shakeCycles = 10.0; // 2 saniyede toplam salınım sayısı (~5Hz)
+  static const _shakeAmplitude = 9.0;
+  static const _shakeDecayStart = 0.85; // sönümlenmenin başladığı an (t, 0..1)
+
+  double get _shakeOffset {
+    final t = _shakeController.value;
+    final decay = t < _shakeDecayStart
+        ? 1.0
+        : (1 - t) / (1 - _shakeDecayStart);
+    return sin(t * 2 * pi * _shakeCycles) * _shakeAmplitude * decay;
+  }
+
+  /// Titreşim bitince (dokunmadan TAM 2 saniye sonra) başlayan konfeti
+  /// patlaması — [GoalConfettiBurst] kendi tek seferlik "üstten patlayıp
+  /// yerçekimiyle düşme" fizik modelini kullanıyor (bkz. o dosyadaki
+  /// dokümantasyon); BİR KEZ `forward()` ile oynatılıp bitince kaldırılıyor.
   late final _confettiController = AnimationController(
     vsync: this,
     duration: const Duration(milliseconds: 2000),
@@ -130,21 +143,26 @@ class _GoalTrackingScreenState extends State<GoalTrackingScreen>
   }
 
   /// Kullanıcı bugünün hedef kutucuğunu YENİ işaretlediğinde
-  /// `GoalCard.onMarkedToday` üzerinden çağrılır. Kullanıcı isteği
-  /// (verbatim): "önce ekran kısa bir titreşim efekti yapsın, 2 saniye
-  /// sonra ekranda konfeti patlama animasyonu başlasın, bu konfeti anıyla
-  /// TAM EŞ ZAMANLI olarak zibo_target.wav çalsın."
+  /// `GoalCard.onMarkedToday` üzerinden çağrılır. **2026 güncellemesi —
+  /// zamanlama kullanıcı isteğiyle yeniden tasarlandı:** dokunma ANINDA
+  /// (0sn) titreşim (shake) VE `zibo_target.wav` AYNI ANDA başlar (ses
+  /// dosyası kendi kendine 4sn'de biter, 3. saniyede "Zibo!" kelimesi
+  /// geçiyor — buradan senkronize edilecek başka bir şey yok, yalnızca
+  /// BAŞLANGIÇ anının doğru olması yeterli); titreşim TAM 2 saniye sürüp
+  /// bitince (2sn) konfeti patlaması başlar. Konfeti (2sn) ile ses (4sn)
+  /// kasıtlı olarak AYRI zamanlanmış — ikisinin çakışması sorun değil
+  /// (kullanıcının kendi ifadesi).
   void _triggerCompletionCelebration() {
     _shakeController.forward(from: 0);
     HapticFeedback.mediumImpact();
+    if (context.read<SoundEffectsProvider>().enabled) {
+      _soundEffectsService.playGoalComplete();
+    }
     _confettiDelayTimer?.cancel();
     _confettiDelayTimer = Timer(const Duration(seconds: 2), () {
       if (!mounted) return;
       setState(() => _showConfetti = true);
       _confettiController.forward(from: 0);
-      if (context.read<SoundEffectsProvider>().enabled) {
-        _soundEffectsService.playGoalComplete();
-      }
     });
   }
 
@@ -299,20 +317,15 @@ class _GoalTrackingScreenState extends State<GoalTrackingScreen>
     return Stack(
       children: [
         AnimatedBuilder(
-          animation: _shakeAnimation,
+          animation: _shakeController,
           builder: (context, child) =>
-              Transform.translate(offset: Offset(_shakeAnimation.value, 0), child: child),
+              Transform.translate(offset: Offset(_shakeOffset, 0), child: child),
           child: listView,
         ),
         if (_showConfetti)
           Positioned.fill(
             child: IgnorePointer(
-              child: ThemeParticleEffect(
-                type: ThemeAnimationType.confetti,
-                progress: _confettiController,
-                isDark: Theme.of(context).brightness == Brightness.dark,
-                particleCount: 60,
-              ),
+              child: GoalConfettiBurst(progress: _confettiController),
             ),
           ),
       ],

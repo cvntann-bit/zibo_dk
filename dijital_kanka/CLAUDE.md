@@ -3095,13 +3095,13 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
     `playCoinPurchase` ÇALMAZ; satın alma tersi; `isSoundEnabled: () => false` iken HİÇBİRİ
     çalmaz).
 
-## Hedef Tamamlama Kutlaması — titreşim + konfeti + ses ([goal_tracking_screen.dart](lib/screens/goal_tracking_screen.dart), [goal_card.dart](lib/widgets/goal_card.dart), [theme_particle_effect.dart](lib/widgets/theme_particle_effect.dart))
+## Hedef Tamamlama Kutlaması — titreşim + konfeti + ses ([goal_tracking_screen.dart](lib/screens/goal_tracking_screen.dart), [goal_card.dart](lib/widgets/goal_card.dart), [goal_confetti_burst.dart](lib/widgets/goal_confetti_burst.dart))
 
-- **2026 yeni özellik.** Kullanıcı isteği (verbatim özet): kullanıcı Hedef Takibi'nde bir günün
-  kutucuğuna dokunduğunda ÖNCE ekranın kısa bir titreşim (shake) efekti yapması, 2 saniye SONRA
-  ekranda konfeti patlaması başlaması ve bu konfeti anıyla TAM EŞ ZAMANLI `zibo_target.wav`'ın
+- **2026 yeni özellik.** Kullanıcı isteği (verbatim özet, ilk sürüm): kullanıcı Hedef Takibi'nde bir
+  günün kutucuğuna dokunduğunda ÖNCE ekranın kısa bir titreşim (shake) efekti yapması, 2 saniye
+  SONRA ekranda konfeti patlaması başlaması ve bu konfeti anıyla TAM EŞ ZAMANLI `zibo_target.wav`'ın
   çalması.
-- **`GoalCard.onMarkedToday` (YENİ, opsiyonel `VoidCallback?`)** — `_onTodayTap`, `toggleToday()`
+- **`GoalCard.onMarkedToday` (opsiyonel `VoidCallback?`)** — `_onTodayTap`, `toggleToday()`
   çağrılmadan ÖNCE `goal.completedDates.contains(today)`'i kontrol edip bu dokunuşun bir "YENİ
   işaretleme" mi (`onMarkedToday?.call()`) yoksa "işaret KALDIRMA" mı olduğunu ayırt ediyor.
   **Neden gerekli:** `GoalsProvider.toggleToday()`'in dönüş değeri (`cycleCompleted`) YALNIZCA 7/7
@@ -3111,32 +3111,67 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
   TIKLANAMIYOR (`_DayBox.isTappable = status == GoalDayStatus.today`) — yani gerçek arayüzden
   "unmark" senaryosuna ERİŞİLEMİYOR, bu kontrol yalnızca `toggleToday()`'in kendi API'sinin (ileride
   başka bir yerden çağrılırsa) doğru davranmasını garanti eden savunmacı bir kod.
-- **`GoalTrackingScreen`'e titreşim + konfeti + ses makinesi eklendi:**
-  - **Titreşim (shake):** `_shakeController` (400ms, `TweenSequence` ile beş adımlı sağa-sola
-    salınıp sıfıra dönen bir `Transform.translate` ofseti) + `HapticFeedback.mediumImpact()` — kullanıcı
-    "görsel titreşim ya da cihaz titreşimi, istersen ikisi de olabilir" dediği için İKİSİ BİRDEN
-    uygulandı. Tüm ekran (döndürülen `ListView`) `AnimatedBuilder` ile sarmalandı.
-  - **Konfeti — YENİ bir painter YAZILMADI, Mağaza > Temalar'ın `ThemeParticleEffect(type: confetti)`
-    çizim kodu YENİDEN KULLANILDI** (bkz. "Animasyonlu Premium Temalar" bölümü). Fark: temadaki
-    kullanım SÜREKLİ `repeat()` eden bir `AnimationController`'la ambians dekorasyonu içindir; burada
-    `_confettiController` (2000ms) yalnızca BİR KEZ `forward(from: 0)` ile oynatılıp
-    `AnimationStatus.completed` olunca `setState(() => _showConfetti = false)` ile ağaçtan
-    KALDIRILIYOR — sürekli değil, tek seferlik bir "patlama". `particleCount: 60` (ambians temanın
-    35'inden fazla — tek seferlik özel bir an olduğu için daha yoğun).
+- **2026 GÜNCELLEMESİ — zamanlama YENİDEN TASARLANDI: ses artık dokunma ANINDA, konfeti şekli
+  "patlama" oldu.** Kullanıcının netleştirdiği kesin zamanlama: **0sn** dokunma ANINDA titreşim
+  (shake) VE `zibo_target.wav` AYNI ANDA başlar; **titreşim TAM 2 saniye** sürer; ses dosyası
+  kendi başına **toplam 4 saniye** (3. saniyede "Zibo!" kelimesi geçiyor — bu içeriğe
+  DOKUNULMADI, yalnızca başlangıç anı senkronize edildi); **2sn'de** (titreşim bitince) konfeti
+  patlaması başlar; konfeti (2sn sürüyor) ile ses (4sn sürüyor) KASITLI OLARAK AYRI zamanlanmış —
+  ikisinin çakışması (2-4sn arası hem ses hem konfeti aynı anda) sorun değil (kullanıcının kendi
+  ifadesi). Bu, İLK sürümdeki "titreşim(400ms)+2sn bekle+konfeti VE ses AYNI ANDA" tasarımından
+  farklı — ses artık konfetiyle değil, titreşimin BAŞLANGICIYLA senkron.
+  - **Titreşim (shake) — 400ms'ten TAM 2 saniyeye çıkarıldı, mekanizma da değişti.** Eski tasarım
+    sabit bir 5-adımlı `TweenSequence`'i (400ms) kullanıyordu — bunu doğrudan 2 saniyeye UZATMAK
+    (`duration` değiştirip aynı 5 adımı olduğu gibi bırakmak) tek, yavaş/tembel bir sallanma gibi
+    hissettirirdi, gerçek bir "titreşim" değil. Bunun yerine `_shakeController` (artık 2000ms) ile
+    `AnimatedBuilder`'ın `builder`'ında DOĞRUDAN `controller.value`'dan hesaplanan bir `_shakeOffset`
+    getter'ı kullanılıyor: `sin(t · 2π · 10) · 9.0 · decay` — 2 saniye boyunca ~5Hz'lik (10 tam
+    salınım) gerçek bir titreşim hissi sürüyor, yalnızca SON %15'lik dilimde (son 300ms) `decay`
+    genliği yumuşakça sıfıra indiriyor (ani bir "kesilme" yerine akıcı bir bitiş — tam da konfetinin
+    başladığı ana denk geliyor). `HapticFeedback.mediumImpact()` (cihaz titreşimi) DEĞİŞMEDİ, hâlâ
+    dokunma anında bir kez tetikleniyor.
+  - **Konfeti — artık AMBİANS "yağmur" DEĞİL, GERÇEK bir "patlama" görseli.** Kullanıcı isteği:
+    "konfetiler yukarıdan aşağıya doğru patlayan bir hareketle gelsin (üstten başlayıp ekrana
+    yağıyormuş gibi), rastgele yönlere infilak etsin." Eski sürüm Mağaza > Temalar'ın
+    `ThemeParticleEffect(type: confetti)` çizim kodunu (sürekli tekrarlanan, yukarıdan aşağı
+    SARILAN bir "yağmur" — `y = (startY + t·speed) % 1.0`) yeniden kullanıyordu — bu görsel bir
+    "patlama" hissi vermiyordu, her zaman aynı yoğunlukta düzgün bir yağmurdu. **Yeni
+    [goal_confetti_burst.dart](lib/widgets/goal_confetti_burst.dart) (YENİ dosya,
+    `GoalConfettiBurst` widget'ı) kendi ayrı, tek seferlik bir fizik modeli** kullanıyor: her
+    parçacığın ekranın üst kenarına yakın (birkaç ayrı "kaynak" noktasından, TEK bir merkez değil)
+    bir başlangıç konumu + üst yarım daire (0..π) içinde RASTGELE bir açıyla seçilen bir patlama
+    hız vektörü (`vx`/`vy`, `vy` çoğunlukla yukarı/negatif — gerçek bir patlama gibi) var;
+    `y(t) = originY + vy·t + 0.5·g·t²` (sabit yerçekimi `g=2.4`) ile parçacık zamanla yukarı
+    fırlayıp SONRA aşağı düşmeye başlıyor — "üstten patlayıp ekrana yağma" hissi TAM olarak bu
+    yerçekimi eğrisinden geliyor. Parçacıklar TAM aynı anda değil, ilk %15'lik dilimde kısa bir
+    "dalga" halinde art arda ateşleniyor (`_BurstPiece.delay`) — gerçek bir patlamanın anlık ama
+    biraz dağınık başlangıcını taklit ediyor. Ekranın alt kısmında (`y > 0.85`) yumuşak bir solma
+    var, sert bir "kesilme" yok.
+    - **Parçacık sayısı belirgin şekilde artırıldı: 60 → 150** (varsayılan `particleCount`) —
+      kullanıcı isteği "daha yoğun/kalabalık bir kutlama hissi versin."
+    - **Konfeti süresi (2000ms) DEĞİŞMEDİ** — yalnızca ŞEKLİ (ambians yağmur → tek seferlik
+      patlama) ve parçacık sayısı değişti, `_confettiController`'ın kendisi/BİR KEZ
+      `forward(from: 0)` + `AnimationStatus.completed` olunca `setState(() => _showConfetti =
+      false)` ile kaldırılma mantığı AYNI kaldı.
+  - **`_triggerCompletionCelebration()` artık İKİ ayrı anı tetikliyor, TEK bir "2sn sonra" bloğu
+    DEĞİL:** `_shakeController.forward(from: 0)` + `HapticFeedback.mediumImpact()` + (ses açıksa)
+    `_soundEffectsService.playGoalComplete()` ÜÇÜ de FONKSİYONUN BAŞINDA, senkron/ANINDA
+    çağrılıyor; `_confettiDelayTimer` (2 saniye, `Timer` olarak — bare `Future.delayed` DEĞİL, bkz.
+    altta) yalnızca `_showConfetti = true` + `_confettiController.forward(from: 0)`'ı tetikliyor,
+    SES ARTIK BU BLOKTA DEĞİL.
   - **2 saniyelik gecikme — `Timer` olarak tutuluyor, bare `Future.delayed` DEĞİL.** İlk denemede
     `Future.delayed` kullanıldı ve widget test dosyasında "A Timer is still pending even after the
     widget tree was disposed" hatasıyla BAŞARISIZ oldu (gerçekten yaşandı) — `_confettiDelayTimer`
     alanına taşınıp `dispose()`'ta `cancel()` edildi. Bu aynı zamanda üretimde de doğru: kullanıcı
     2 saniye içinde ekrandan ayrılırsa askıda bir zamanlayıcı kalmıyor.
-  - **Ses — `context.read<SoundEffectsProvider>().enabled` kontrolünden geçince** konfetinin
-    BAŞLADIĞI ANDA (`_confettiController.forward(from: 0)` ile AYNI satırda)
-    `_soundEffectsService.playGoalComplete()` çağrılıyor — "TAM EŞ ZAMANLI" isteği bu şekilde
-    karşılandı.
   - **`GoalTrackingScreen({this.soundEffectsService})`** — `HomeScreen` ile AYNI test-injection
-    deseni (varsayılan gerçek `AudioPlayersSoundEffectsService()`).
-- **Test:** YENİ `test/goal_completion_celebration_test.dart` — bugünün kutucuğu işaretlenince tam
-  2 saniye SONRA (ne önce ne asenkron bir race'le) `playGoalComplete()`'in çağrıldığını, konfeti
-  animasyonunun (2000ms) sorunsuz tamamlandığını doğruluyor.
+    deseni (varsayılan gerçek `AudioPlayersSoundEffectsService()`), DEĞİŞMEDİ.
+- **Test:** `test/goal_completion_celebration_test.dart` bu güncellemeyle YENİDEN yazıldı —
+  `playGoalComplete()`'in dokunma ANINDA (bir `pump()` sonrası, gecikme OLMADAN) çağrıldığını,
+  `GoalConfettiBurst` widget'ının 2 saniyeden ÖNCE ağaçta OLMADIĞINI, TAM 2 saniye dolunca
+  belirdiğini, ve konfeti animasyonu (2000ms) tamamlanınca ağaçtan kaldırıldığını doğruluyor
+  (`find.byType(GoalConfettiBurst)` — eski testin `sound.goalCompleteCallCount` yalnızca konfeti
+  anında kontrolünün YERİNE geçti, çünkü ses artık konfetiyle değil dokunmayla senkron).
 - **Gerçek cihazda doğrulama — kullanıcının GERÇEK "Yeme düzeni" hedefi (2/7 gün) bozulmadı.**
   Doğrulama için AYRI, geçici bir "GECICI_TEST_SIL" hedefi eklendi; cihaz eşzamanlı olarak kullanıcının
   kendisi tarafından da kullanılıyordu (bkz. CLAUDE.md genelindeki "gerçek cihaz paylaşım riski"
@@ -3149,6 +3184,12 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
   TEYİT EDİLEMEDİ (yalnızca otomatik testle kanıtlanmış durumda). **Kullanıcının kendisinin
   silmesi gereken bir kalıntı var: Hedef Takibi'nde "GECICI_TEST_SIL" adlı geçici test hedefi —
   kartın sağ üstündeki çöp kutusu ikonuyla tek dokunuşla silinebilir.**
+- **Yukarıdaki zamanlama/konfeti-şekli güncellemesi bu turda GERÇEK CİHAZDA GÖRSEL olarak
+  doğrulanmadı** — yalnızca `flutter test` (256/256, yeniden yazılan `goal_completion_celebration_
+  test.dart` dahil) + başarılı `flutter build apk --debug` ile doğrulandı. Kullanıcının kendi
+  cihazında kontrol etmesi gereken: sesin dokunma ANINDA (titreşimle aynı anda) başladığı, titreşimin
+  tam 2 saniye sürüp konfetinin TAM o an başladığı, ve konfetinin artık düzgün bir "yağmur" değil
+  gerçek bir "patlama" (üstten fışkırıp aşağı düşen, kalabalık) gibi göründüğü.
 
 ## Yerelleştirme (i18n) — Türkçe / İngilizce / İspanyolca
 
