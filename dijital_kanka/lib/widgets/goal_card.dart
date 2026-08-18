@@ -11,15 +11,31 @@ import '../providers/goals_provider.dart';
 /// gelen tıklanabilir; döngü tamamlandığında coin ödülünü verip kullanıcıya
 /// haber verir.
 class GoalCard extends StatelessWidget {
-  const GoalCard({super.key, required this.goal, required this.today});
+  const GoalCard({super.key, required this.goal, required this.today, this.onMarkedToday});
 
   final Goal goal;
   final DateTime today;
 
+  /// Kullanıcı bugünün kutucuğunu YENİ işaretlediğinde (işareti KALDIRMA
+  /// değil) çağrılır — `GoalTrackingScreen`'in ekran-genelinde titreşim +
+  /// konfeti + ses efektini tetiklemesi için (bkz. o dosyadaki
+  /// dokümantasyon). `null` ise (varsayılan) hiçbir şey tetiklenmez —
+  /// `flutter test`'teki `GoalCard(goal: ..., today: ...)` gibi doğrudan
+  /// kurulan mevcut testler etkilenmesin diye.
+  final VoidCallback? onMarkedToday;
+
   void _onTodayTap(BuildContext context) {
     final goalsProvider = context.read<GoalsProvider>();
     final l10n = AppLocalizations.of(context)!;
+    // Bu dokunuşun bir "işaretleme" mi yoksa "işaret kaldırma" mı olduğunu
+    // `toggleToday()` çağrılmadan ÖNCE belirlememiz gerekiyor —
+    // `toggleToday()`'in dönüş değeri (`cycleCompleted`) yalnızca 7/7
+    // tamamlanma anını ayırt ediyor, tek başına işaretleme/kaldırma
+    // yönünü DEĞİL (bkz. GoalsProvider.toggleToday dokümantasyonu).
+    final wasAlreadyMarkedToday = goal.completedDates.contains(today);
     final cycleCompleted = goalsProvider.toggleToday(goal.id);
+
+    if (!wasAlreadyMarkedToday) onMarkedToday?.call();
 
     if (cycleCompleted) {
       context.read<CoinProvider>().earnStreak7Bonus();

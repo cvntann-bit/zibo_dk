@@ -9,6 +9,30 @@ import 'package:dijital_kanka/models/coin_package.dart';
 import 'package:dijital_kanka/providers/coin_provider.dart';
 import 'package:dijital_kanka/services/ad_service.dart';
 import 'package:dijital_kanka/services/purchase_service.dart';
+import 'package:dijital_kanka/services/sound_effects_service.dart';
+
+/// Hangi ses efektinin kaç kez çağrıldığını sayan sahte servis —
+/// `home_screen_sound_test.dart`'taki `_RecordingSoundEffectsService` ile
+/// AYNI amaç, burada `_earn`/`purchaseCoinPackage` ayrımını doğrulamak için.
+class _RecordingSoundEffectsService extends SoundEffectsService {
+  int rewardCallCount = 0;
+  int purchaseCallCount = 0;
+
+  @override
+  Future<void> playZiboTap() async {}
+
+  @override
+  Future<void> playCoinReward() async => rewardCallCount++;
+
+  @override
+  Future<void> playCoinPurchase() async => purchaseCallCount++;
+
+  @override
+  Future<void> playGoalComplete() async {}
+
+  @override
+  void dispose() {}
+}
 
 class _FailingPurchaseService extends PurchaseService {
   const _FailingPurchaseService();
@@ -24,6 +48,9 @@ class _RejectingAdService extends AdService {
 
   @override
   Future<bool> showRewardedAd() async => false;
+
+  @override
+  Future<bool> showInterstitialAd() async => false;
 }
 
 void main() {
@@ -57,6 +84,55 @@ void main() {
 
       expect(success, isFalse);
       expect(provider.balance, 0);
+    });
+  });
+
+  group('CoinProvider - kazanma/satın alma sesleri', () {
+    const package = CoinPackage(
+      id: 'coins_500',
+      coinAmount: 500,
+      imageAsset: 'assets/images/zibo_coin.png',
+    );
+
+    test(
+      'Kazanma mekanikleri (check-in, referral, çark) playCoinReward çalar, playCoinPurchase ÇALMAZ',
+      () {
+        final sound = _RecordingSoundEffectsService();
+        final provider = CoinProvider(soundEffectsService: sound);
+
+        provider.earnDailyCheckIn();
+        provider.earnReferral();
+
+        expect(sound.rewardCallCount, 2);
+        expect(sound.purchaseCallCount, 0);
+      },
+    );
+
+    test(
+      'Satın alma playCoinPurchase çalar, playCoinReward ÇALMAZ',
+      () async {
+        final sound = _RecordingSoundEffectsService();
+        final provider = CoinProvider(soundEffectsService: sound);
+
+        await provider.purchaseCoinPackage(package);
+
+        expect(sound.purchaseCallCount, 1);
+        expect(sound.rewardCallCount, 0);
+      },
+    );
+
+    test('isSoundEnabled false iken hiçbir ses efekti çalınmaz', () async {
+      final sound = _RecordingSoundEffectsService();
+      final provider = CoinProvider(
+        soundEffectsService: sound,
+        isSoundEnabled: () => false,
+      );
+
+      provider.earnDailyCheckIn();
+      await provider.purchaseCoinPackage(package);
+
+      expect(sound.rewardCallCount, 0);
+      expect(sound.purchaseCallCount, 0);
     });
   });
 

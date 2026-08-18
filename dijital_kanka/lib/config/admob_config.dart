@@ -25,4 +25,14 @@ class AdMobConfig {
 
   /// Yeni Bireysel AdMob hesabının GERÇEK Ödüllü Reklam birimi ID'si.
   static const rewardedAdUnitId = 'ca-app-pub-2881957853109429/1933318716';
+
+  /// **2026 güncellemesi — Geçiş (interstitial) reklam birimi, HENÜZ
+  /// OLUŞTURULMADI.** Ana Sayfa'da Zibo'ya art arda hızlı dokunulunca
+  /// gösterilen reklam için (bkz. CLAUDE.md "AdMob Entegrasyonu" bölümü).
+  /// Kullanıcı AdMob Console'dan yeni bir "Geçiş" reklam birimi oluşturup
+  /// ID'sini verdiğinde `null` yerine gerçek ID buraya atanacak — o güne
+  /// kadar `AdMobAdService`, Google'ın herkese açık, hesap gerektirmeyen
+  /// test Geçiş reklam birimini (`AdMobAdService.testInterstitialAdUnitId`)
+  /// kullanır, tıpkı [rewardedAdUnitId]'nin ilk sürümündeki gibi.
+  static const String? interstitialAdUnitId = null;
 }

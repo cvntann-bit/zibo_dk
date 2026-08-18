@@ -10,6 +10,7 @@ import '../models/wheel_prize.dart';
 import '../services/ad_service.dart';
 import '../services/cloud_state_store.dart';
 import '../services/purchase_service.dart';
+import '../services/sound_effects_service.dart';
 
 /// Zibo Coin bakiyesini ve işlem geçmişini tutan tek kaynak (single source
 /// of truth). Tüm kazanma/harcama mekanikleri burada metod olarak
@@ -23,16 +24,22 @@ class CoinProvider extends ChangeNotifier {
   CoinProvider({
     AdService adService = const MockAdService(),
     PurchaseService purchaseService = const MockPurchaseService(),
+    SoundEffectsService? soundEffectsService,
     Random? random,
     String? uid,
     DateTime Function() now = DateTime.now,
+    bool Function() isSoundEnabled = _alwaysTrue,
   }) : _adService = adService,
        _purchaseService = purchaseService,
+       _soundEffectsService = soundEffectsService ?? const FakeSoundEffectsService(),
        _random = random ?? Random(),
        _now = now,
+       _isSoundEnabled = isSoundEnabled,
        _store = CloudStateStore(prefsKey: _prefsKey, uid: uid) {
     _loadFromPrefs();
   }
+
+  static bool _alwaysTrue() => true;
 
   static const _prefsKey = 'coinState';
   static const _maxStoredTransactions = 200;
@@ -47,7 +54,16 @@ class CoinProvider extends ChangeNotifier {
 
   final AdService _adService;
   final PurchaseService _purchaseService;
+  final SoundEffectsService _soundEffectsService;
   final CloudStateStore _store;
+
+  /// Ses efektlerinin şu an açık olup olmadığı — `main.dart`'ta
+  /// `SoundEffectsProvider.enabled`'a bağlanır (`_now`'ın `TrustedTimeProvider`
+  /// ile AYNI enjekte edilebilir callback deseni). `CoinProvider`'ın kendisi
+  /// bir widget olmadığı için `BuildContext`/`Provider.of` KULLANAMIYOR, bu
+  /// yüzden `HomeScreen`'in yaptığı gibi doğrudan `context.read<...>()`
+  /// çağıramıyor.
+  final bool Function() _isSoundEnabled;
 
   /// Şans Çarkı'nın ağırlıklı ödül seçimi için — testte sabit/kontrollü bir
   /// sonuç enjekte edebilmek amacıyla constructor'dan verilebilir.
@@ -232,10 +248,19 @@ class CoinProvider extends ChangeNotifier {
     _save();
   }
 
-  void _earn(int amount, String reason) {
+  /// [playRewardSound] yalnızca [purchaseCoinPackage] tarafından `false`
+  /// geçilir — o akış kendi ayrı satın alma sesini ([SoundEffectsService.
+  /// playCoinPurchase]) çalar, "kazanma" ([SoundEffectsService.
+  /// playCoinReward]) sesiyle ÇAKIŞMASIN diye. Bu tek istisna dışında TÜM
+  /// kazanma mekanikleri (aşağıdaki `earn*` metodları) buradan geçtiği için
+  /// ses efekti tek bir yerde, merkezi olarak tetikleniyor.
+  void _earn(int amount, String reason, {bool playRewardSound = true}) {
     _balance += amount;
     _totalEarned += amount;
     _record(CoinTransactionType.earn, amount, reason);
+    if (playRewardSound && _isSoundEnabled()) {
+      _soundEffectsService.playCoinReward();
+    }
   }
 
   /// Bakiye yetersizse false döner ve hiçbir şey değişmez; yeterliyse
@@ -337,7 +362,14 @@ class CoinProvider extends ChangeNotifier {
   Future<bool> purchaseCoinPackage(CoinPackage package) async {
     final success = await _purchaseService.purchaseCoinPackage(package);
     if (success) {
-      _earn(package.coinAmount, 'Satın alma: ${package.coinAmount} ZC');
+      // `playRewardSound: false` — bu bir "kazanma" değil "satın alma";
+      // kendi ayrı sesi aşağıda çalınıyor (bkz. _earn dokümantasyonu).
+      _earn(
+        package.coinAmount,
+        'Satın alma: ${package.coinAmount} ZC',
+        playRewardSound: false,
+      );
+      if (_isSoundEnabled()) _soundEffectsService.playCoinPurchase();
     }
     return success;
   }
@@ -360,4 +392,20 @@ class CoinProvider extends ChangeNotifier {
   /// Kod-tabanlı temalar parametrik fiyatlanır (bkz. lib/data/app_themes.dart).
   bool spendOnTheme({required String themeName, required int cost}) =>
       _spend(cost, 'Tema: $themeName');
+
+  // --- Reklam gösterimi (coin ekonomisiyle DOĞRUDAN ilgisiz) -----------
+
+  /// Ana Sayfa'da Zibo'ya art arda hızlı dokunulduğunda gösterilen geçiş
+  /// (interstitial) reklamı — bkz. `HomeScreen._RapidTapState`
+  /// dokümantasyonu. Coin bakiyesini/işlem geçmişini HİÇ etkilemiyor,
+  /// yalnızca zaten var olan (main.dart'ta gerçek AdMob ile kurulan)
+  /// [_adService] örneğini yeniden kullanmak için buradan geçiriliyor —
+  /// ayrı bir ikinci `AdService` örneği/kablolaması gerekmesin diye.
+  Future<bool> showInterstitialAd() => _adService.showInterstitialAd();
+
+  @override
+  void dispose() {
+    _soundEffectsService.dispose();
+    super.dispose();
+  }
 }

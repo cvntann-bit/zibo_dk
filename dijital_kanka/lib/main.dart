@@ -38,6 +38,7 @@ import 'screens/root_screen.dart';
 import 'services/ad_service.dart';
 import 'services/admob_ad_service.dart';
 import 'services/push_notification_service.dart';
+import 'services/sound_effects_service.dart';
 import 'widgets/animated_theme_overlay.dart';
 import 'widgets/app_loading_screen.dart';
 import 'widgets/theme_fade_overlay.dart';
@@ -274,12 +275,23 @@ class DijitalKankaApp extends StatelessWidget {
         // ÖNCEKİ provider'ları SONRAKİlerin context'inden görünür kılar).
         ChangeNotifierProvider(create: (_) => TrustedTimeProvider(uid: uid)),
         ChangeNotifierProvider(create: (_) => AppThemeProvider(uid: uid)),
+        // SoundEffectsProvider de CoinProvider'dan ÖNCE olmalı — AYNI
+        // gerekçe: CoinProvider'ın `create` callback'i coin kazanma/satın
+        // alma seslerini açık/kapalı tercihine bağlamak için `context.read<
+        // SoundEffectsProvider>()` kullanıyor (bkz. altta).
+        ChangeNotifierProvider(create: (_) => SoundEffectsProvider(uid: uid)),
         ChangeNotifierProvider(
           create: (context) => CoinProvider(
             uid: uid,
             adService:
                 adService ??
-                AdMobAdService(rewardedAdUnitId: AdMobConfig.rewardedAdUnitId),
+                AdMobAdService(
+                  rewardedAdUnitId: AdMobConfig.rewardedAdUnitId,
+                  interstitialAdUnitId: AdMobConfig.interstitialAdUnitId,
+                ),
+            soundEffectsService: AudioPlayersSoundEffectsService(),
+            isSoundEnabled: () =>
+                context.read<SoundEffectsProvider>().enabled,
             now: () => context.read<TrustedTimeProvider>().now(),
           ),
         ),
@@ -351,7 +363,6 @@ class DijitalKankaApp extends StatelessWidget {
             uid: uid,
           ),
         ),
-        ChangeNotifierProvider(create: (_) => SoundEffectsProvider(uid: uid)),
         ChangeNotifierProvider(create: (_) => ThemeProvider(uid: uid)),
         ChangeNotifierProvider(
           create: (context) => WaterProvider(

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -9,6 +10,7 @@ import '../data/costumes.dart';
 import '../data/zibo_messages.dart';
 import '../l10n/app_localizations.dart';
 import '../providers/app_theme_provider.dart';
+import '../providers/coin_provider.dart';
 import '../providers/costume_provider.dart';
 import '../providers/profile_provider.dart';
 import '../providers/sound_effects_provider.dart';
@@ -16,6 +18,7 @@ import '../providers/theme_provider.dart';
 import '../providers/zibo_pose_provider.dart';
 import '../services/sound_effects_service.dart';
 import '../utils/address_term.dart';
+import '../widgets/ad_free_promo_sheet.dart';
 import '../widgets/favorite_quote_button.dart';
 import '../widgets/share_zibo_button.dart';
 import '../widgets/speech_bubble.dart';
@@ -23,12 +26,22 @@ import '../widgets/starry_gradient_background.dart';
 import '../widgets/zibo_animated_image.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key, this.soundEffectsService});
+  const HomeScreen({super.key, this.soundEffectsService, this.adPromoRandom});
 
   /// Testte sahte bir implementasyon enjekte edebilmek için — varsayılan
   /// `AudioPlayersSoundEffectsService()` (`AdService`/`ShareService` ile
   /// AYNI desen).
   final SoundEffectsService? soundEffectsService;
+
+  /// Art arda dokunmada reklam/Reklamsız Zibo teklifi seçimini test
+  /// ortamında SABİT bir sonuca zorlayabilmek için — `wheel_prizes_test.
+  /// dart`'taki `_FixedRandom` deseniyle AYNI amaç. **BİLEREK [_random]'dan
+  /// (mesaj seçimi) AYRI bir alan** — `_pickNewMessageIndex()`'in "farklı
+  /// bir sonuç gelene kadar tekrar dene" `do-while` döngüsü, SABİT bir
+  /// `Random` (her zaman aynı değeri döndüren) ile beslenirse SONSUZ
+  /// DÖNGÜYE girer (gerçekten yaşandı, testte tespit edildi) — bu yüzden
+  /// test amaçlı sabit `Random` YALNIZCA bu alana enjekte edilebiliyor.
+  final Random? adPromoRandom;
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -37,12 +50,34 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen>
     with SingleTickerProviderStateMixin {
   final _random = Random();
+  late final Random _adPromoRandom = widget.adPromoRandom ?? Random();
   late final SoundEffectsService _soundEffectsService =
       widget.soundEffectsService ?? AudioPlayersSoundEffectsService();
   // Dizin tabanlı tutuluyor (metnin kendisi değil) ki dil değişince (bkz.
   // LocaleProvider) aynı "konum" korunarak build()'de doğru dildeki karşılığı
   // gösterilebilsin — bkz. `ziboMessagesForLocale`.
   int _messageIndex = 0;
+
+  /// 2026 güncellemesi — kullanıcı isteği: Zibo'ya art arda hızlı
+  /// dokunulunca (5-6 kez, birkaç saniye içinde) bir reklam VEYA (daha
+  /// düşük ihtimalle) Reklamsız Zibo teklifiyle karşılaşılsın. Gerçek
+  /// zaman damgası tutuluyor (`WheelTriggerButton`/`AdFreePromoTrigger`
+  /// ile AYNI `DateTime.now().difference(...)` deseni) — bu ekranda başka
+  /// yerde kalıcılık gerektirmeyen, saf/geçici bir "art arda dokunma"
+  /// penceresi olduğu için ayrı bir enjekte edilebilir saate gerek yok.
+  final List<DateTime> _recentZiboTaps = [];
+  static const _rapidTapThreshold = 5;
+  static const _rapidTapWindow = Duration(seconds: 3);
+
+  /// Art arda dokunma eşiği dolunca reklam yerine Reklamsız Zibo
+  /// teklifinin gösterilme ihtimali — kullanıcının kendi ifadesiyle
+  /// "%20-30 ihtimalle", ikisinin ortası seçildi.
+  static const _adFreePromoChanceOnRapidTap = 0.25;
+
+  /// Bir gösterim (reklam ya da promo) sürerken YENİ bir tetiklemeyi
+  /// engeller — kullanıcı gösterim kapanmadan tekrar hızlı dokunursa iki
+  /// gösterim üst üste binmesin diye.
+  bool _showingRapidTapPromo = false;
 
   late final _bounceController = AnimationController(
     vsync: this,
@@ -94,6 +129,38 @@ class _HomeScreenState extends State<HomeScreen>
     // binmiyor).
     if (context.read<SoundEffectsProvider>().enabled) {
       _soundEffectsService.playZiboTap();
+    }
+    _registerRapidTap();
+  }
+
+  /// Her dokunuşta çağrılır; son [_rapidTapWindow] içindeki dokunuş
+  /// sayısını izler, eşik dolunca [_showRapidTapPromoOrAd]'ı tetikleyip
+  /// sayacı sıfırlar (bkz. yukarıdaki alan dokümantasyonu).
+  void _registerRapidTap() {
+    final now = DateTime.now();
+    _recentZiboTaps.add(now);
+    _recentZiboTaps.removeWhere((t) => now.difference(t) > _rapidTapWindow);
+    if (_recentZiboTaps.length < _rapidTapThreshold || _showingRapidTapPromo) {
+      return;
+    }
+    _recentZiboTaps.clear();
+    unawaited(_showRapidTapPromoOrAd());
+  }
+
+  /// Reklam VEYA (kullanıcının bazen "reklamsız ol" teklifiyle de
+  /// karşılaşması için) Reklamsız Zibo tanıtım sheet'ini gösterir —
+  /// İKİSİ BİRDEN asla aynı tetiklemede olmuyor, `_adPromoRandom` her
+  /// seferinde tek bir yol seçiyor.
+  Future<void> _showRapidTapPromoOrAd() async {
+    _showingRapidTapPromo = true;
+    try {
+      if (_adPromoRandom.nextDouble() < _adFreePromoChanceOnRapidTap) {
+        if (mounted) await showAdFreePromoSheet(context);
+      } else {
+        await context.read<CoinProvider>().showInterstitialAd();
+      }
+    } finally {
+      _showingRapidTapPromo = false;
     }
   }
 

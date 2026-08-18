@@ -330,19 +330,22 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
   aynı ikonu kullanıyordu) sabiti kaldırıldı, her `CoinPackage.imageAsset` kendi dosyasına
   eşlendi — veri modelinin kendisi zaten bu değişikliği tek satırlık bir güncellemeyle
   destekleyecek şekilde tasarlanmıştı, `CoinPackage`/UI kodunda bir değişiklik GEREKMEDİ.
-  - **Tutarlı çerçeve — `_PackageCard`'ta (`store_screen.dart`)** görsel artık sabit `SizedBox
-    (width: 48, height: 48)` içinde `Image.asset(..., fit: BoxFit.contain)` ile render ediliyor
-    (önceden yalnızca `Image.asset(..., width: 48, height: 48)` — `fit` BELİRTİLMEMİŞTİ). Yeni
-    5 görsel piksel boyutu olarak zaten hemen hemen kare (1053×1024) ama içerdikleri "sahne"
-    (tek madeni para vs. dolu bir sandık) görsel olarak farklı yoğunlukta — `BoxFit.contain`
-    her görseli kırpmadan/gerilmeden AYNI 48×48 çerçeveye sığdırıyor, kartlar arasında ani
-    boyut sıçraması olmuyor. **Denenip geri alındı:** çerçeveyi 64×64'e büyütmek `_PackageCard`
-    içindeki `Column`'da 6.5 piksellik bir `RenderFlex overflow`'a yol açtı (`childAspectRatio:
-    0.95`'lik 2 sütunlu grid'in dar dikey alanı yüzünden) — bu yüzden 48×48 (mevcut tasarım)
-    korundu.
-  - **Test + doğrulama:** tam `flutter test` (249/249 geçti). `flutter build apk --debug` +
-    cihaza kurulum + Mağaza > "Coin Al" ekran görüntüsüyle beş kartın da kendi görseliyle
-    (100/250/500/1000/10000 ZC sırasıyla artan görsel karmaşıklıkla), kırpılmadan/gerilmeden,
+  - **Tutarlı çerçeve — `_PackageCard`'ta (`store_screen.dart`)** görsel sabit bir `SizedBox`
+    içinde `Image.asset(..., fit: BoxFit.contain)` ile render ediliyor. Yeni 5 görsel piksel
+    boyutu olarak zaten hemen hemen kare (1053×1024) ama içerdikleri "sahne" (tek madeni para vs.
+    dolu bir sandık) görsel olarak farklı yoğunlukta — `BoxFit.contain` her görseli
+    kırpmadan/gerilmeden AYNI çerçeveye sığdırıyor, kartlar arasında ani boyut sıçraması olmuyor.
+    **2026 güncellemesi — görseller belirgin şekilde büyütüldü: 48×48 → 76×76.** Kullanıcı
+    isteği: kartlarda daha "baskın/net" görünsünler. Doğrudan 48'den 64'e (+16px) çıkarmak daha
+    ÖNCE `_PackageCard`'ın `Column`'ında bir `RenderFlex overflow`'a yol açmıştı
+    (`childAspectRatio: 0.95`'lik 2 sütunlu grid'in dar dikey alanı yüzünden) — bu SEFER hem
+    görsel gerçekten büyütüldü (76×76) HEM DE `GridView.count`'un `childAspectRatio`'su `0.95`'ten
+    `0.8`'e düşürüldü (kartlara daha fazla dikey alan tanıyarak overflow'u kökten önledi, metin/
+    buton boşlukları da hafifçe daraltıldı: görsel↔metin `SizedBox(height: 8)`→`4`, metin↔buton
+    `10`→`6`). Sonuç: hiçbir overflow olmadan, belirgin şekilde büyümüş, net görünen görseller.
+  - **Test + doğrulama:** tam `flutter test` (256/256 geçti — overflow olmadığı doğrulandı).
+    `flutter build apk --debug` + cihaza kurulum + Mağaza > "Coin Al" ekran görüntüsüyle beş
+    kartın da kendi görseliyle, belirgin şekilde büyümüş, kırpılmadan/gerilmeden,
     fiyat ve ZC miktarı hâlâ net okunur şekilde render olduğu doğrulandı.
 - **2026 güncellemesi — paket kartlarında "Satın Al" yerine gerçek TL fiyatları.** Kullanıcı isteği:
   butonda genel "Satın Al" metni yerine gerçek (şimdilik sabit/görsel — gerçek bir IAP işlemi
@@ -2482,6 +2485,13 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
     (Manifest Günlüğü'ne canlı metin girişi) nedeniyle YARIDA kesildi — veri kaybı riskini önlemek
     için ek `adb input tap` gönderilmedi; kod yolu (`onPressed: () => showAdFreePromoSheet(context)`)
     zaten aynı, kanıtlanmış fonksiyonu çağırdığından ek riski düşük kabul edildi.
+- **2026 DÖRDÜNCÜ güncelleme — `showAdFreePromoSheet`'in ÜÇÜNCÜ tetikleme yolu.** Artık sheet üç
+  yerden açılabiliyor: (1) periyodik otomatik promo (`AdFreePromoTrigger`, sayaç+cooldown'lu), (2)
+  Mağaza'daki kalıcı "Reklamsız Zibo" kartı (yukarıda, sınırsız/anında), (3) Ana Sayfa'da Zibo'ya
+  art arda hızlı dokunulunca — bkz. "Zibo'ya Art Arda Dokunma → Geçiş Reklamı" bölümü — %20-30
+  ihtimalle interstitial reklam YERİNE. Fonksiyonun kendisi HİÇ değişmedi, yalnızca üçüncü bir
+  çağıran eklendi — bu da tasarımın "tek bir mockup fonksiyonu, birden fazla tetikleyici" ilkesinin
+  ne kadar iyi ölçeklendiğinin bir göstergesi.
 
 ## Tema ([main.dart](lib/main.dart), [theme_provider.dart](lib/providers/theme_provider.dart), [theme_fade_overlay.dart](lib/widgets/theme_fade_overlay.dart))
 
@@ -2983,6 +2993,99 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
   doğrulandı (`adb shell monkey`/`pidof`) — sesin GERÇEKTEN duyulup duyulmadığı (ve Ayarlar'daki
   anahtarın gerçekten sesi açıp kapattığı) kullanıcının kendi cihazında dinleyerek doğrulaması
   gerekiyor, bu arc'ta yalnızca kod seviyesinde (`flutter test`, 244 test) doğrulandı.
+- **2026 ÜÇÜNCÜ güncelleme — üç YENİ ses efekti: coin kazanma, coin satın alma, hedef tamamlama.**
+  Kullanıcı isteği (verbatim özet): `zc_reward.wav` coin kazanılan HER senaryoda (check-in, günlük
+  görev, streak bonusu, çark, günlük giriş ödülü, reklam karşılığı coin, su/şükran/manifest
+  hedefleri), `zc_buy.wav` Mağaza'dan gerçek para karşılığı coin paketi satın alınca, `zibo_target.
+  wav` Hedef Takibi'nde bugünün kutucuğu işaretlenince (bkz. altta "Hedef Tamamlama Kutlaması"
+  bölümü) çalsın. `SoundEffectsService`'in kapsamı yukarıdaki "yalnızca Zibo dokunma sesi"
+  yorumundan TAM OLARAK öngörüldüğü gibi genişletildi (bkz. `SoundEffectsProvider`'ın "ileride
+  başka ses efektleri eklenirse AYNI anahtarı paylaşsın" notu — GERÇEKTEN öyle oldu, tek "Ses
+  Efektleri" anahtarı hepsini birden açıp kapatıyor, ayrı bir anahtar EKLENMEDİ).
+  - **`SoundEffectsService`'e üç yeni soyut metot eklendi:** `playCoinReward()`, `playCoinPurchase()`,
+    `playGoalComplete()` — `playZiboTap()` ile AYNI imza deseni. `AudioPlayersSoundEffectsService`
+    içindeki tekrarlı stop+play mantığı ortak bir `_play(String assetPath)` yardımcı metoduna
+    çıkarıldı (dört genel metot da bunu çağırıyor) — TEK bir `AudioPlayer` örneği hâlâ yeterli
+    çünkü her tüketici (`HomeScreen`, `CoinProvider`, `GoalTrackingScreen`) KENDİ AYRI
+    `SoundEffectsService` örneğini oluşturuyor (bkz. altta), farklı bağlamlardaki sesler
+    birbirini KESMİYOR.
+  - **`CoinProvider`'a `SoundEffectsService`/`bool Function() isSoundEnabled` enjeksiyonu** —
+    `CoinProvider` bir widget OLMADIĞI için `HomeScreen`'in yaptığı gibi doğrudan
+    `context.read<SoundEffectsProvider>()` çağıramıyor; `now: DateTime Function()` (`TrustedTimeProvider`
+    için) ile AYNI enjekte edilebilir callback deseni `isSoundEnabled` için de kullanıldı.
+    `main.dart`'ta `SoundEffectsProvider` artık `CoinProvider`'dan ÖNCE listelendi (`MultiProvider`
+    listesinde ÖNCEKİ provider'lar SONRAKİlerin `context`'inden görünür olduğu için —
+    `TrustedTimeProvider`'ın EN BAŞTA olma gerekçesiyle AYNI) — `CoinProvider`'ın `create` callback'i
+    `() => context.read<SoundEffectsProvider>().enabled` geçiriyor.
+  - **Merkezi tetikleme noktası — `_earn()`.** `CoinProvider._earn(int amount, String reason,
+    {bool playRewardSound = true})` artık `playRewardSound && _isSoundEnabled()` iken
+    `playCoinReward()` çalıyor — bu, `_earn()`'ün ZATEN TÜM kazanma mekaniklerinin (yukarıdaki
+    kullanıcı listesinin tamamı) TEK geçiş noktası olması sayesinde HİÇBİR `earn*` metoduna elle
+    ses çağrısı eklemeden otomatik olarak kapsandı. **TEK istisna — `purchaseCoinPackage()`:**
+    `_earn(..., playRewardSound: false)` ile "kazanma" sesini BASTIRIP hemen ardından KENDİ ayrı
+    `playCoinPurchase()`'ini çalıyor — "kazanma" ile "satın alma" arasında işitsel bir ayrım olsun
+    diye kasıtlı.
+  - **`CoinProvider.dispose()` eklendi** — `_soundEffectsService.dispose()` çağırıyor (önceden
+    `CoinProvider`'ın hiç `dispose()` override'ı yoktu).
+  - **Test:** `coin_provider_test.dart`'a YENİ `_RecordingSoundEffectsService` + "CoinProvider -
+    kazanma/satın alma sesleri" grubu (3 test: kazanma mekanikleri `playCoinReward` çalar
+    `playCoinPurchase` ÇALMAZ; satın alma tersi; `isSoundEnabled: () => false` iken HİÇBİRİ
+    çalmaz).
+
+## Hedef Tamamlama Kutlaması — titreşim + konfeti + ses ([goal_tracking_screen.dart](lib/screens/goal_tracking_screen.dart), [goal_card.dart](lib/widgets/goal_card.dart), [theme_particle_effect.dart](lib/widgets/theme_particle_effect.dart))
+
+- **2026 yeni özellik.** Kullanıcı isteği (verbatim özet): kullanıcı Hedef Takibi'nde bir günün
+  kutucuğuna dokunduğunda ÖNCE ekranın kısa bir titreşim (shake) efekti yapması, 2 saniye SONRA
+  ekranda konfeti patlaması başlaması ve bu konfeti anıyla TAM EŞ ZAMANLI `zibo_target.wav`'ın
+  çalması.
+- **`GoalCard.onMarkedToday` (YENİ, opsiyonel `VoidCallback?`)** — `_onTodayTap`, `toggleToday()`
+  çağrılmadan ÖNCE `goal.completedDates.contains(today)`'i kontrol edip bu dokunuşun bir "YENİ
+  işaretleme" mi (`onMarkedToday?.call()`) yoksa "işaret KALDIRMA" mı olduğunu ayırt ediyor.
+  **Neden gerekli:** `GoalsProvider.toggleToday()`'in dönüş değeri (`cycleCompleted`) YALNIZCA 7/7
+  tamamlanma anını ayırt ediyor, işaretleme/kaldırma YÖNÜNÜ değil (hem mark hem unmark `false`
+  dönebiliyor) — bu yüzden yön, `toggleToday()` çağrılmadan ÖNCEki durumdan ayrıca hesaplanıyor.
+  **Not:** Mevcut UI'da bir kez işaretlenmiş bir kutucuk `GoalDayStatus.done`'a geçtiği için ARTIK
+  TIKLANAMIYOR (`_DayBox.isTappable = status == GoalDayStatus.today`) — yani gerçek arayüzden
+  "unmark" senaryosuna ERİŞİLEMİYOR, bu kontrol yalnızca `toggleToday()`'in kendi API'sinin (ileride
+  başka bir yerden çağrılırsa) doğru davranmasını garanti eden savunmacı bir kod.
+- **`GoalTrackingScreen`'e titreşim + konfeti + ses makinesi eklendi:**
+  - **Titreşim (shake):** `_shakeController` (400ms, `TweenSequence` ile beş adımlı sağa-sola
+    salınıp sıfıra dönen bir `Transform.translate` ofseti) + `HapticFeedback.mediumImpact()` — kullanıcı
+    "görsel titreşim ya da cihaz titreşimi, istersen ikisi de olabilir" dediği için İKİSİ BİRDEN
+    uygulandı. Tüm ekran (döndürülen `ListView`) `AnimatedBuilder` ile sarmalandı.
+  - **Konfeti — YENİ bir painter YAZILMADI, Mağaza > Temalar'ın `ThemeParticleEffect(type: confetti)`
+    çizim kodu YENİDEN KULLANILDI** (bkz. "Animasyonlu Premium Temalar" bölümü). Fark: temadaki
+    kullanım SÜREKLİ `repeat()` eden bir `AnimationController`'la ambians dekorasyonu içindir; burada
+    `_confettiController` (2000ms) yalnızca BİR KEZ `forward(from: 0)` ile oynatılıp
+    `AnimationStatus.completed` olunca `setState(() => _showConfetti = false)` ile ağaçtan
+    KALDIRILIYOR — sürekli değil, tek seferlik bir "patlama". `particleCount: 60` (ambians temanın
+    35'inden fazla — tek seferlik özel bir an olduğu için daha yoğun).
+  - **2 saniyelik gecikme — `Timer` olarak tutuluyor, bare `Future.delayed` DEĞİL.** İlk denemede
+    `Future.delayed` kullanıldı ve widget test dosyasında "A Timer is still pending even after the
+    widget tree was disposed" hatasıyla BAŞARISIZ oldu (gerçekten yaşandı) — `_confettiDelayTimer`
+    alanına taşınıp `dispose()`'ta `cancel()` edildi. Bu aynı zamanda üretimde de doğru: kullanıcı
+    2 saniye içinde ekrandan ayrılırsa askıda bir zamanlayıcı kalmıyor.
+  - **Ses — `context.read<SoundEffectsProvider>().enabled` kontrolünden geçince** konfetinin
+    BAŞLADIĞI ANDA (`_confettiController.forward(from: 0)` ile AYNI satırda)
+    `_soundEffectsService.playGoalComplete()` çağrılıyor — "TAM EŞ ZAMANLI" isteği bu şekilde
+    karşılandı.
+  - **`GoalTrackingScreen({this.soundEffectsService})`** — `HomeScreen` ile AYNI test-injection
+    deseni (varsayılan gerçek `AudioPlayersSoundEffectsService()`).
+- **Test:** YENİ `test/goal_completion_celebration_test.dart` — bugünün kutucuğu işaretlenince tam
+  2 saniye SONRA (ne önce ne asenkron bir race'le) `playGoalComplete()`'in çağrıldığını, konfeti
+  animasyonunun (2000ms) sorunsuz tamamlandığını doğruluyor.
+- **Gerçek cihazda doğrulama — kullanıcının GERÇEK "Yeme düzeni" hedefi (2/7 gün) bozulmadı.**
+  Doğrulama için AYRI, geçici bir "GECICI_TEST_SIL" hedefi eklendi; cihaz eşzamanlı olarak kullanıcının
+  kendisi tarafından da kullanılıyordu (bkz. CLAUDE.md genelindeki "gerçek cihaz paylaşım riski"
+  notu) — koordinat tahminleri birkaç kez ıskaladı (bir tıklama yanlışlıkla bildirim panelini açtı,
+  bir diğeri "Yeni Hedef" diyaloğunu tekrar açtı) ve bu YANLIŞLIKLA Ana Sayfa'da 5+ hızlı Zibo
+  dokunuşuna denk gelip **Feature 5'i (art arda dokunma reklamı) organik olarak tetikledi** — gerçek
+  bir AdMob test interstitial reklamı cihazda GÖRÜNTÜLENEREK doğrulandı (bkz. altta). Risk fark
+  edilince (kullanıcının gerçek telefonu, kişisel duvar kağıdı/uygulamaları görüldü) TÜM etkileşimli
+  dokunma otomasyonu HEMEN durduruldu; konfeti/titreşim/ses efektinin kendisi görsel olarak cihazda
+  TEYİT EDİLEMEDİ (yalnızca otomatik testle kanıtlanmış durumda). **Kullanıcının kendisinin
+  silmesi gereken bir kalıntı var: Hedef Takibi'nde "GECICI_TEST_SIL" adlı geçici test hedefi —
+  kartın sağ üstündeki çöp kutusu ikonuyla tek dokunuşla silinebilir.**
 
 ## Yerelleştirme (i18n) — Türkçe / İngilizce / İspanyolca
 
@@ -3370,6 +3473,70 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
     "İzle" butonuna veya Şans Çarkı'na basılınca gerçek (artık "Test Ad" etiketi OLMAYAN) bir
     reklam gösterilmeye başlamalı — bu noktada ayrıca bir kod değişikliği GEREKMİYOR, yalnızca
     Google tarafının hazır olmasını bekliyoruz.
+
+### Zibo'ya Art Arda Dokunma → Geçiş (Interstitial) Reklamı / Reklamsız Zibo Teklifi ([home_screen.dart](lib/screens/home_screen.dart), [ad_service.dart](lib/services/ad_service.dart), [admob_ad_service.dart](lib/services/admob_ad_service.dart))
+
+- **2026 yeni özellik.** Kullanıcı isteği (verbatim özet): Ana Sayfa'da Zibo'ya art arda 5-6 kez
+  (birkaç saniye içinde) dokunulursa bir AdMob geçiş (interstitial) reklamı gösterilsin;
+  gösterimlerin bir kısmında (%20-30 ihtimalle) reklam YERİNE Reklamsız Zibo (Zibo ADS) satın alma
+  teklifi gösterilsin — İKİSİ ASLA aynı tetiklemede birlikte olmasın, dengeli bir sıklıkla dönüşümlü
+  çalışsın.
+- **`AdService` genişletildi — `showInterstitialAd()` (YENİ soyut metot).** `showRewardedAd()`'dan
+  farkı: bir "ödül" kavramı yok, reklam GÖSTERİLEBİLDİYSE (kullanıcı erken kapatsa bile) `true`
+  döner. `MockAdService` kısa bir gecikmeyle `true` simüle ediyor; `AdMobAdService`
+  `showRewardedAd()`/`_loadAd()` ile BİREBİR AYNI ön-yükleme deseninin `InterstitialAd`
+  karşılığını (`_loadInterstitialAd()`) kullanıyor — SDK'da `RewardedAd`/`InterstitialAd` farklı
+  sınıflar/yükleme API'leri olduğu için ayrı bir alan seti gerekiyor ama mantık birebir aynı
+  (preload + 8sn zaman aşımı + gösterimden hemen sonra bir sonrakini arka planda yükleme).
+  - **`AdMobConfig.interstitialAdUnitId`** (YENİ, `null`) — kullanıcı henüz AdMob Console'dan gerçek
+    bir Geçiş reklam birimi OLUŞTURMADI; `null` olduğu sürece `AdMobAdService`, Google'ın herkese
+    açık test Geçiş reklam birimini (`AdMobAdService.testInterstitialAdUnitId`) kullanır —
+    `rewardedAdUnitId`'nin ilk sürümündeki AYNI geçici durum. Kullanıcı gerçek bir ID sağladığında
+    yalnızca bu TEK satır güncellenecek.
+  - **`CoinProvider.showInterstitialAd()`** (YENİ, `_adService.showInterstitialAd()`'a doğrudan
+    passthrough) — coin bakiyesini/işlem geçmişini HİÇ etkilemiyor, yalnızca `main.dart`'ta zaten
+    gerçek AdMob ile kurulan `_adService` örneğini `HomeScreen`'den erişilebilir kılmak için buraya
+    eklendi (ikinci bir `AdService` örneği/kablolaması gerekmesin diye — `HomeScreen`'in kendi ayrı
+    bir `AdMobAdService` kurması yerine `context.read<CoinProvider>().showInterstitialAd()`
+    çağrılıyor).
+- **`HomeScreen`'de art arda dokunma algılama:** `_recentZiboTaps` (`List<DateTime>`) her
+  `_onZiboTap()`'te güncellenip son 3 saniye dışına düşenler atılıyor
+  (`_rapidTapWindow = Duration(seconds: 3)`); listede `_rapidTapThreshold` (5) veya fazlası
+  birikince liste sıfırlanıp `_showRapidTapPromoOrAd()` tetikleniyor. `AdFreePromoTrigger`/
+  `WheelTriggerButton` ile AYNI `DateTime.now().difference(...)` gerçek-zaman deseni — bu ekranda
+  başka yerde kalıcılık gerektirmeyen saf/geçici bir pencere olduğu için ayrı bir enjekte edilebilir
+  saate gerek YOK.
+  - **`_showRapidTapPromoOrAd()`** — `_adPromoRandom.nextDouble() < 0.25` (kullanıcının "%20-30"
+    ifadesinin ortası) iken `showAdFreePromoSheet(context)` (Mağaza'daki kalıcı karttan da
+    kullanılan AYNI fonksiyon — bkz. "Zibo ADS" bölümü), aksi halde (yaklaşık %75)
+    `context.read<CoinProvider>().showInterstitialAd()` çağrılıyor — İKİSİ aynı `if/else` dalında,
+    ASLA birlikte tetiklenmiyor. `_showingRapidTapPromo` bool bayrağı bir gösterim sürerken YENİ
+    bir tetiklemeyi engelliyor (üst üste binme olmasın diye).
+  - **KRİTİK bug + düzeltme — `adPromoRandom` BİLEREK `_random`'dan (mesaj seçimi) AYRI bir alan.**
+    İlk yazımda TEK bir `_random` alanı hem mesaj seçimi (`_pickNewMessageIndex()`'in "farklı bir
+    sonuç gelene kadar tekrar dene" `do-while` döngüsü) HEM DE art arda dokunma kararı için
+    kullanılıyordu. Teste SABİT bir `Random` (`_FixedRandom`, her zaman aynı `nextDouble()`
+    değerini döndüren) enjekte edilince `_pickNewMessageIndex()`'in `do-while` döngüsü SONSUZA
+    kadar dönüp testi (ve potansiyel olarak üretimde de aynı senaryoyu) kilitledi — çünkü
+    `nextInt(...)` hep AYNI sabit değeri döndürüyor, `next == _messageIndex` hiç `false`
+    olamıyordu. **Çözüm:** `HomeScreen`'in `random` parametresi `adPromoRandom` olarak yeniden
+    adlandırılıp YALNIZCA `_showRapidTapPromoOrAd()`'a bağlandı; mesaj seçiminin kendi `_random`'ı
+    HİÇBİR ZAMAN test parametresiyle override edilemez hale getirildi (her zaman gerçek
+    `Random()`). **Ders:** bir `Random` alanını birden fazla, birbirinden bağımsız amaç için
+    paylaşmak, SABİT/deterministik bir `Random` test double'ı enjekte edildiğinde (`nextInt`'in HER
+    ZAMAN aynı değeri döndürdüğü senaryo) "farklı sonuç gelene kadar tekrar dene" tarzı herhangi bir
+    döngüyü sessizce sonsuz döngüye çevirebilir — ayrı amaçlar İÇİN ayrı `Random` alanları kullanın.
+- **Test:** YENİ `test/home_screen_rapid_tap_test.dart` (`_FixedRandom` + `_RecordingAdService` ile:
+  5 dokunuşta yüksek random değeriyle interstitial çağrılır/promo AÇILMAZ; düşük random değeriyle
+  promo açılır/interstitial ÇAĞRILMAZ; 4 dokunuşta — eşik dolmadan — HİÇBİRİ tetiklenmez).
+- **Gerçek cihazda doğrulama — organik/kazara.** Cihaz doğrulaması sırasında (bkz. "Hedef Tamamlama
+  Kutlaması" bölümündeki "gerçek cihaz paylaşım riski" notu) birkaç ıskalayan dokunma denemesi
+  YANLIŞLIKLA Ana Sayfa'da 5+ hızlı Zibo dokunuşuna denk geldi ve gerçek bir AdMob test interstitial
+  reklamı ("This is an interstitial test ad", Google AdMob logosu) cihazda GERÇEKTEN görüntülendi —
+  bu, uçtan uca entegrasyonun (gerçek `AdMobAdService.showInterstitialAd()` → gerçek SDK → gerçek
+  test reklamı) çalıştığının BEKLENMEDİK ama net bir kanıtı oldu. Reklamsız Zibo dalı (düşük
+  ihtimalli yol) cihazda AYRICA doğrulanmadı — yalnızca yukarıdaki otomatik testle kanıtlanmış
+  durumda.
 
 ## Firestore veri kalıcılığı, Anonymous Auth ve güvenilir zaman ([cloud_state_store.dart](lib/services/cloud_state_store.dart), [trusted_time_service.dart](lib/services/trusted_time_service.dart), [trusted_time_provider.dart](lib/providers/trusted_time_provider.dart))
 

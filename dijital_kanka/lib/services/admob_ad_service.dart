@@ -25,18 +25,33 @@ import 'ad_service.dart';
 /// (ör. ilk çağrı ya da çok hızlı art arda iki kez izlenirse) kısa bir
 /// zaman aşımıyla (8sn) bekler.
 class AdMobAdService extends AdService {
-  AdMobAdService({String? rewardedAdUnitId})
-    : _adUnitId = rewardedAdUnitId ?? testRewardedAdUnitId {
+  AdMobAdService({String? rewardedAdUnitId, String? interstitialAdUnitId})
+    : _adUnitId = rewardedAdUnitId ?? testRewardedAdUnitId,
+      _interstitialAdUnitId =
+          interstitialAdUnitId ?? testInterstitialAdUnitId {
     _loadAd();
+    _loadInterstitialAd();
   }
 
   /// Google'ın resmi, herkese açık Android Ödüllü Reklam test birimi —
   /// bkz. https://developers.google.com/admob/android/test-ads.
   static const testRewardedAdUnitId = 'ca-app-pub-3940256099942544/5224354917';
 
+  /// Google'ın resmi, herkese açık Android Geçiş (interstitial) reklam test
+  /// birimi — bkz. https://developers.google.com/admob/android/test-ads.
+  /// [interstitialAdUnitId] verilmediği sürece (kullanıcı henüz AdMob
+  /// Console'dan gerçek bir Geçiş reklam birimi OLUŞTURMADI) kullanılır —
+  /// `rewardedAdUnitId`'nin ilk sürümündeki AYNI geçici durum, bkz.
+  /// CLAUDE.md "AdMob Entegrasyonu" bölümü.
+  static const testInterstitialAdUnitId =
+      'ca-app-pub-3940256099942544/1033173712';
+
   final String _adUnitId;
+  final String _interstitialAdUnitId;
   RewardedAd? _rewardedAd;
   Completer<void>? _pendingLoad;
+  InterstitialAd? _interstitialAd;
+  Completer<void>? _pendingInterstitialLoad;
 
   Future<void> _loadAd() {
     final pending = _pendingLoad;
@@ -124,5 +139,82 @@ class AdMobAdService extends AdService {
     final earned = await rewardCompleter.future;
     unawaited(_loadAd());
     return earned;
+  }
+
+  /// `_loadAd()` ile AYNI ön-yükleme deseni, `RewardedAd` yerine
+  /// `InterstitialAd` için — ikisi SDK'da farklı sınıflar/yükleme API'leri
+  /// olduğu için ayrı bir alan seti gerekiyor, ama mantık birebir aynı.
+  Future<void> _loadInterstitialAd() {
+    final pending = _pendingInterstitialLoad;
+    if (pending != null) return pending.future;
+    if (_interstitialAd != null) return Future.value();
+
+    final completer = Completer<void>();
+    _pendingInterstitialLoad = completer;
+    void failSilently([Object? error, StackTrace? stackTrace]) {
+      _interstitialAd = null;
+      _pendingInterstitialLoad = null;
+      if (!completer.isCompleted) completer.complete();
+    }
+
+    try {
+      InterstitialAd.load(
+        adUnitId: _interstitialAdUnitId,
+        request: const AdRequest(),
+        adLoadCallback: InterstitialAdLoadCallback(
+          onAdLoaded: (ad) {
+            _interstitialAd = ad;
+            _pendingInterstitialLoad = null;
+            if (!completer.isCompleted) completer.complete();
+          },
+          onAdFailedToLoad: (error) {
+            _interstitialAd = null;
+            _pendingInterstitialLoad = null;
+            if (!completer.isCompleted) completer.complete();
+          },
+        ),
+      ).catchError(failSilently);
+    } catch (error, stackTrace) {
+      failSilently(error, stackTrace);
+    }
+    return completer.future;
+  }
+
+  @override
+  Future<bool> showInterstitialAd() async {
+    if (_interstitialAd == null) {
+      try {
+        await _loadInterstitialAd().timeout(const Duration(seconds: 8));
+      } catch (_) {
+        return false;
+      }
+    }
+    final ad = _interstitialAd;
+    if (ad == null) return false;
+    // Tek kullanımlık — bir sonraki gösterim için hemen arkadan yeni bir
+    // reklam yüklenmeye başlanacak (bkz. altta).
+    _interstitialAd = null;
+
+    final shownCompleter = Completer<bool>();
+    ad.fullScreenContentCallback = FullScreenContentCallback(
+      onAdDismissedFullScreenContent: (dismissedAd) {
+        dismissedAd.dispose();
+        if (!shownCompleter.isCompleted) shownCompleter.complete(true);
+      },
+      onAdFailedToShowFullScreenContent: (failedAd, error) {
+        failedAd.dispose();
+        if (!shownCompleter.isCompleted) shownCompleter.complete(false);
+      },
+    );
+
+    try {
+      await ad.show();
+    } catch (_) {
+      if (!shownCompleter.isCompleted) shownCompleter.complete(false);
+    }
+
+    final shown = await shownCompleter.future;
+    unawaited(_loadInterstitialAd());
+    return shown;
   }
 }

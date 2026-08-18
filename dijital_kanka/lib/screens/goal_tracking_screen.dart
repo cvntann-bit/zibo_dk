@@ -2,20 +2,25 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import '../data/costume_poses.dart';
 import '../data/costumes.dart';
 import '../data/goal_quotes.dart';
 import '../l10n/app_localizations.dart';
+import '../models/app_theme_option.dart';
 import '../providers/costume_provider.dart';
 import '../providers/goals_provider.dart';
 import '../providers/profile_provider.dart';
+import '../providers/sound_effects_provider.dart';
 import '../providers/zibo_pose_provider.dart';
+import '../services/sound_effects_service.dart';
 import '../utils/address_term.dart';
 import '../widgets/goal_card.dart';
 import '../widgets/share_zibo_button.dart';
 import '../widgets/speech_bubble.dart';
+import '../widgets/theme_particle_effect.dart';
 import '../widgets/zibo_animated_image.dart';
 
 /// Hedef Takibi sayfası. [isActive], bu sekmenin şu anda görünen sekme olup
@@ -24,21 +29,66 @@ import '../widgets/zibo_animated_image.dart';
 /// sekme gerçekten görünürken çalışmasını sağlamak için gerekli (bkz.
 /// MoneyScreen'deki aynı desen).
 class GoalTrackingScreen extends StatefulWidget {
-  const GoalTrackingScreen({super.key, required this.isActive});
+  const GoalTrackingScreen({super.key, required this.isActive, this.soundEffectsService});
 
   final bool isActive;
+
+  /// Testte sahte bir implementasyon enjekte edebilmek için — varsayılan
+  /// `AudioPlayersSoundEffectsService()` (`HomeScreen` ile AYNI desen).
+  final SoundEffectsService? soundEffectsService;
 
   @override
   State<GoalTrackingScreen> createState() => _GoalTrackingScreenState();
 }
 
 class _GoalTrackingScreenState extends State<GoalTrackingScreen>
-    with WidgetsBindingObserver {
+    with WidgetsBindingObserver, TickerProviderStateMixin {
   final _random = Random();
   // Dizin tabanlı (metin değil) — dil değişince (bkz. LocaleProvider) aynı
   // "konum" korunarak build()'de doğru dildeki karşılığı gösterebilmek için.
   int _quoteIndex = 0;
   Timer? _quoteTimer;
+
+  /// Titreşimden 2 saniye sonra konfetiyi başlatan gecikme — `Timer` olarak
+  /// (bare `Future.delayed` DEĞİL) tutuluyor ki widget erken dispose
+  /// edilirse `dispose()`'ta iptal edilebilsin; aksi halde `flutter_test`
+  /// "A Timer is still pending even after the widget tree was disposed"
+  /// diye BAŞARISIZ oluyor (gerçekten yaşandı) — üretimde de kullanıcı bu
+  /// 2 saniye içinde ekrandan ayrılırsa gereksiz bir zamanlayıcının askıda
+  /// kalmasını önlüyor.
+  Timer? _confettiDelayTimer;
+
+  late final SoundEffectsService _soundEffectsService =
+      widget.soundEffectsService ?? AudioPlayersSoundEffectsService();
+
+  /// Kullanıcı bugünün hedef kutucuğunu işaretleyince kısa bir "titreşim"
+  /// (shake) efekti için — bkz. [_triggerCompletionCelebration].
+  late final _shakeController = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 400),
+  );
+  late final _shakeAnimation = TweenSequence<double>([
+    TweenSequenceItem(weight: 1, tween: Tween(begin: 0.0, end: -8.0)),
+    TweenSequenceItem(weight: 1, tween: Tween(begin: -8.0, end: 8.0)),
+    TweenSequenceItem(weight: 1, tween: Tween(begin: 8.0, end: -6.0)),
+    TweenSequenceItem(weight: 1, tween: Tween(begin: -6.0, end: 4.0)),
+    TweenSequenceItem(weight: 1, tween: Tween(begin: 4.0, end: 0.0)),
+  ]).animate(CurvedAnimation(parent: _shakeController, curve: Curves.linear));
+
+  /// Titreşimden 2 saniye SONRA başlayan konfeti patlaması — Mağaza >
+  /// Temalar'daki `ThemeParticleEffect(type: confetti)` ile AYNI çizim kodu
+  /// yeniden kullanılıyor (bkz. o dosyadaki dokümantasyon), ama SÜREKLİ
+  /// `repeat()` yerine BİR KEZ `forward()` ile oynatılıp bitince kaldırılıyor
+  /// — sürekli ambians dekorasyonu değil, tek seferlik bir "patlama" efekti.
+  late final _confettiController = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 2000),
+  )..addStatusListener((status) {
+    if (status == AnimationStatus.completed && mounted) {
+      setState(() => _showConfetti = false);
+    }
+  });
+  bool _showConfetti = false;
 
   @override
   void initState() {
@@ -72,7 +122,30 @@ class _GoalTrackingScreenState extends State<GoalTrackingScreen>
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _stopQuoteTimer();
+    _confettiDelayTimer?.cancel();
+    _shakeController.dispose();
+    _confettiController.dispose();
+    _soundEffectsService.dispose();
     super.dispose();
+  }
+
+  /// Kullanıcı bugünün hedef kutucuğunu YENİ işaretlediğinde
+  /// `GoalCard.onMarkedToday` üzerinden çağrılır. Kullanıcı isteği
+  /// (verbatim): "önce ekran kısa bir titreşim efekti yapsın, 2 saniye
+  /// sonra ekranda konfeti patlama animasyonu başlasın, bu konfeti anıyla
+  /// TAM EŞ ZAMANLI olarak zibo_target.wav çalsın."
+  void _triggerCompletionCelebration() {
+    _shakeController.forward(from: 0);
+    HapticFeedback.mediumImpact();
+    _confettiDelayTimer?.cancel();
+    _confettiDelayTimer = Timer(const Duration(seconds: 2), () {
+      if (!mounted) return;
+      setState(() => _showConfetti = true);
+      _confettiController.forward(from: 0);
+      if (context.read<SoundEffectsProvider>().enabled) {
+        _soundEffectsService.playGoalComplete();
+      }
+    });
   }
 
   void _startQuoteTimer() {
@@ -175,7 +248,7 @@ class _GoalTrackingScreenState extends State<GoalTrackingScreen>
         : (findCostumeById(equippedId)?.imageAsset ?? defaultZiboImage);
     final poseStep = context.watch<ZiboPoseProvider>().poseStep;
 
-    return ListView(
+    final listView = ListView(
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
       children: [
         Column(
@@ -204,7 +277,11 @@ class _GoalTrackingScreenState extends State<GoalTrackingScreen>
         ),
         const SizedBox(height: 24),
         for (final goal in goals) ...[
-          GoalCard(goal: goal, today: today),
+          GoalCard(
+            goal: goal,
+            today: today,
+            onMarkedToday: _triggerCompletionCelebration,
+          ),
           const SizedBox(height: 12),
         ],
         OutlinedButton.icon(
@@ -212,6 +289,32 @@ class _GoalTrackingScreenState extends State<GoalTrackingScreen>
           icon: const Icon(Icons.add),
           label: Text(l10n.addGoalButton),
         ),
+      ],
+    );
+
+    // Titreşim (shake) + konfeti — bkz. `_triggerCompletionCelebration`
+    // dokümantasyonu. Konfeti `Positioned.fill` + `IgnorePointer` ile üstte
+    // duruyor, altındaki listeyle ETKİLEŞİMİ ENGELLEMEZ; yalnızca
+    // `_showConfetti` true iken (aktif patlama sırasında) ağaçta.
+    return Stack(
+      children: [
+        AnimatedBuilder(
+          animation: _shakeAnimation,
+          builder: (context, child) =>
+              Transform.translate(offset: Offset(_shakeAnimation.value, 0), child: child),
+          child: listView,
+        ),
+        if (_showConfetti)
+          Positioned.fill(
+            child: IgnorePointer(
+              child: ThemeParticleEffect(
+                type: ThemeAnimationType.confetti,
+                progress: _confettiController,
+                isDark: Theme.of(context).brightness == Brightness.dark,
+                particleCount: 60,
+              ),
+            ),
+          ),
       ],
     );
   }

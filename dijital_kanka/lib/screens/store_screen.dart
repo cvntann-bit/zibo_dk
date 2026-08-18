@@ -164,7 +164,7 @@ class _BuyCoinsSection extends StatelessWidget {
           crossAxisCount: 2,
           mainAxisSpacing: 12,
           crossAxisSpacing: 12,
-          childAspectRatio: 0.95,
+          childAspectRatio: 0.8,
           children: [
             for (final package in coinPackages) _PackageCard(package: package),
           ],
@@ -434,21 +434,21 @@ class _PackageCardState extends State<_PackageCard> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             SizedBox(
-              width: 48,
-              height: 48,
+              width: 76,
+              height: 76,
               child: Image.asset(
                 widget.package.imageAsset,
                 fit: BoxFit.contain,
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 4),
             Text(
               l10n.storeCoinAmount(widget.package.coinAmount),
               style: Theme.of(
                 context,
               ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 6),
             SizedBox(
               width: double.infinity,
               child: FilledButton(
