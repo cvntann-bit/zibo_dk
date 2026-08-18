@@ -39,6 +39,7 @@ import 'services/ad_service.dart';
 import 'services/admob_ad_service.dart';
 import 'services/push_notification_service.dart';
 import 'services/sound_effects_service.dart';
+import 'widgets/ad_blur_overlay.dart';
 import 'widgets/animated_theme_overlay.dart';
 import 'widgets/app_loading_screen.dart';
 import 'widgets/theme_fade_overlay.dart';
@@ -407,15 +408,20 @@ class DijitalKankaApp extends StatelessWidget {
             // yol açtığı için bilerek kullanılmıyor). AnimatedThemeOverlay
             // İÇERİDE (fade perdesinin ALTINDA) sarılıyor ki tema değişince
             // parçacık katmanı da aynı yumuşak geçişe dahil olsun, aniden
-            // belirip kaybolmasın.
-            builder: (context, child) => ThemeFadeOverlay(
-              themeMode: themeProvider.themeMode,
-              equippedThemeId: equippedId,
-              child: AnimatedThemeOverlay(
-                animationType:
-                    equippedTheme?.animationType ?? ThemeAnimationType.none,
-                isDark: themeProvider.isDarkMode,
-                child: child!,
+            // belirip kaybolmasın. AdBlurOverlay EN DIŞTA — AdMob reklamı
+            // gösterilirken (bkz. `AdMobAdService`) uygulamanın TAMAMININ
+            // (AppBar dahil) üzerine bir yedek bulanıklaştırma katmanı
+            // bindirebilsin diye (bkz. o dosyadaki dokümantasyon).
+            builder: (context, child) => AdBlurOverlay(
+              child: ThemeFadeOverlay(
+                themeMode: themeProvider.themeMode,
+                equippedThemeId: equippedId,
+                child: AnimatedThemeOverlay(
+                  animationType:
+                      equippedTheme?.animationType ?? ThemeAnimationType.none,
+                  isDark: themeProvider.isDarkMode,
+                  child: child!,
+                ),
               ),
             ),
             // Kullanıcının Ayarlar'dan seçtiği dil (bkz. LocaleProvider) —

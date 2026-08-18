@@ -19,4 +19,10 @@
         <item name="android:windowBackground">#17140F</item>
         <item name="android:windowOptOutEdgeToEdgeEnforcement" tools:targetApi="35">true</item>
     </style>
+    <!-- Bkz. values/styles.xml'deki AYNI öğenin tam dokümantasyonu — bu,
+         AdMob'un kendi AdActivity bileşenine `AndroidManifest.xml`'de
+         `tools:replace="android:theme"` ile AÇIKÇA atanan tema. -->
+    <style name="AdActivityTheme" parent="@android:style/Theme.Translucent.NoTitleBar">
+        <item name="android:windowOptOutEdgeToEdgeEnforcement" tools:targetApi="35">true</item>
+    </style>
 </resources>

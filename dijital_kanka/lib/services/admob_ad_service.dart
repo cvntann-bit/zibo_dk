@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
+import '../utils/ad_overlay_state.dart';
 import 'ad_service.dart';
 
 /// Google AdMob SDK'sı (`google_mobile_ads`) ile gerçek bir ödüllü reklam
@@ -115,17 +116,27 @@ class AdMobAdService extends AdService {
     final rewardCompleter = Completer<bool>();
     ad.fullScreenContentCallback = FullScreenContentCallback(
       onAdDismissedFullScreenContent: (dismissedAd) {
+        isAdShowing.value = false;
         dismissedAd.dispose();
         // Ödül zaten kazanılıp completer tamamlandıysa bu no-op'tur —
         // yalnızca kullanıcı ödülü kazanmadan (erken) kapatırsa false'a düşer.
         if (!rewardCompleter.isCompleted) rewardCompleter.complete(false);
       },
       onAdFailedToShowFullScreenContent: (failedAd, error) {
+        isAdShowing.value = false;
         failedAd.dispose();
         if (!rewardCompleter.isCompleted) rewardCompleter.complete(false);
       },
     );
 
+    // Reklam Activity'si açılmadan HEMEN ÖNCE `isAdShowing`'i true yapıp
+    // `AdBlurOverlay`'i (bkz. `main.dart`/`widgets/ad_blur_overlay.dart`)
+    // devreye sokuyoruz — reklamın kendisi tam ekranı düzgün kaplasa bile bu
+    // zararsız (blur, native Activity'nin ARKASINDA/ALTINDA kalır, üstüne
+    // ÇİZİLMEZ), kaplamazsa (bkz. o dosyadaki bug dokümantasyonu) kullanıcı
+    // en azından bulanık bir arka plan görür, net bir arayüz karışıklığı
+    // DEĞİL.
+    isAdShowing.value = true;
     try {
       await ad.show(
         onUserEarnedReward: (adWithReward, reward) {
@@ -133,10 +144,15 @@ class AdMobAdService extends AdService {
         },
       );
     } catch (_) {
+      isAdShowing.value = false;
       if (!rewardCompleter.isCompleted) rewardCompleter.complete(false);
     }
 
     final earned = await rewardCompleter.future;
+    // Güvenlik ağı — yukarıdaki iki `FullScreenContentCallback` yolundan
+    // biri normalde ZATEN `false`'a çevirmiş olmalı; bu, olası bir üçüncü/
+    // beklenmeyen çıkış yolunu da kapsıyor.
+    isAdShowing.value = false;
     unawaited(_loadAd());
     return earned;
   }
@@ -198,22 +214,29 @@ class AdMobAdService extends AdService {
     final shownCompleter = Completer<bool>();
     ad.fullScreenContentCallback = FullScreenContentCallback(
       onAdDismissedFullScreenContent: (dismissedAd) {
+        isAdShowing.value = false;
         dismissedAd.dispose();
         if (!shownCompleter.isCompleted) shownCompleter.complete(true);
       },
       onAdFailedToShowFullScreenContent: (failedAd, error) {
+        isAdShowing.value = false;
         failedAd.dispose();
         if (!shownCompleter.isCompleted) shownCompleter.complete(false);
       },
     );
 
+    // bkz. showRewardedAd()'daki AYNI `isAdShowing` notu.
+    isAdShowing.value = true;
     try {
       await ad.show();
     } catch (_) {
+      isAdShowing.value = false;
       if (!shownCompleter.isCompleted) shownCompleter.complete(false);
     }
 
     final shown = await shownCompleter.future;
+    // Güvenlik ağı — bkz. showRewardedAd()'daki AYNI not.
+    isAdShowing.value = false;
     unawaited(_loadInterstitialAd());
     return shown;
   }

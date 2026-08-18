@@ -1,4 +1,5 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
     <!-- Android 13+ (API 33) için çalışma zamanı bildirim izni gerekiyor —
          bkz. NotificationProvider.initializeAndSchedule(). -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
@@ -62,6 +63,29 @@
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
             android:value="ca-app-pub-2881957853109429~2442148274"/>
+        <!-- 2026 güncellemesi — "reklam tam ekranı kaplamıyor" bug'ının ASIL
+             (native/manifest seviyesindeki) düzeltmesi. `google_mobile_ads`/
+             Play Services Ads SDK'sının kendi manifest'i (bize bir AAR
+             üzerinden otomatik BİRLEŞEN) `com.google.android.gms.ads.
+             AdActivity` bileşenini KENDİ teması ile deklare ediyor — bizim
+             daha önce yalnızca `MainActivity`'ye (styles.xml'deki
+             `windowOptOutEdgeToEdgeEnforcement`) uyguladığımız düzeltme bu
+             yüzden AdActivity'nin KENDİSİNİ hiç ETKİLEMİYORDU (kullanıcı
+             gerçek cihazda ekran görüntüsüyle bildirdi: reklam gösterilirken
+             Zibo'nun kendi üst çubuğu hâlâ üstte görünüyordu). Google AdMob
+             destek ekibinin RESMİ önerisi (bkz. CLAUDE.md "AdMob
+             Entegrasyonu" bölümü, kaynak linkleri dahil): AdActivity'nin
+             temasını `tools:replace="android:theme"` ile KENDİ
+             `windowOptOutEdgeToEdgeEnforcement` içeren temamızla
+             DEĞİŞTİRMEK — `tools:replace` gerekiyor çünkü hem bizim
+             manifest'imiz hem SDK'nın kendi manifest'i AYNI bileşen için bir
+             `android:theme` deklare ediyor, birleştirici (merger) bunu
+             açıkça hangi tarafın KAZANACAĞI belirtilmeden çakışma HATASI
+             sayar. -->
+        <activity
+            android:name="com.google.android.gms.ads.AdActivity"
+            android:theme="@style/AdActivityTheme"
+            tools:replace="android:theme"/>
     </application>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and

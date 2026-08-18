@@ -3578,44 +3578,112 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
     reklam gösterilmeye başlamalı — bu noktada ayrıca bir kod değişikliği GEREKMİYOR, yalnızca
     Google tarafının hazır olmasını bekliyoruz.
 
-### Reklamlar tam ekranı kaplamıyor (bug düzeltmesi) — `windowOptOutEdgeToEdgeEnforcement`
+### Reklamlar tam ekranı kaplamıyor (bug düzeltmesi) — `AdActivity` tema override + blur yedek katmanı
 
-- **2026 bug raporu.** Kullanıcı bildirdi: AdMob reklamları (özellikle geçiş/interstitial)
-  gösterilirken ekranın üst kısmında hâlâ Zibo'nun kendi arayüzü (AppBar/status bar alanı)
-  görünüyor, reklam tam ekranı kaplamıyor.
-- **Kök neden — uygulama koduna AİT DEĞİL, Android 15'in ZORUNLU edge-to-edge davranışı.**
-  `MainActivity.kt` incelendiğinde herhangi bir özel pencere/inset kodu OLMADIĞI görüldü (saf
-  `class MainActivity : FlutterActivity()`) — bu, hipotezi uygulama tarafına değil platforma
-  yöneltti. `android/app/build.gradle.kts`'taki `compileSdk = 37` (daha önce
-  `permission_handler_android` için yükseltilmişti, bkz. dosya içindeki yorum) API 35'in ÜZERİNde
-  — Android 15 (API 35), `compileSdk`/`targetSdk` ≥ 35 olan uygulamalar için
-  `Window.setDecorFitsSystemWindows(false)`'u ARTIK OPSİYONEL değil ZORUNLU hale getiriyor. Bu,
-  yalnızca `MainActivity`'yi değil, `google_mobile_ads` SDK'sının KENDİ reklam Activity'sini de
-  etkiliyor — reklam Activity'si bu zorunlu edge-to-edge davranışına göre insetleri (status bar
-  alanı) doğru işlemediği için, altındaki eski arayüz (AppBar) reklamın ÜSTÜNDE/ARKASINDA görünür
-  kalıyordu. WebSearch ile doğrulandı: bu, AdMob SDK Support ekibinin kendisinin de bildiği,
-  Android 15'e geçen uygulamalarda yaygın görülen bir sorun.
-  - **Düzeltme — `android:windowOptOutEdgeToEdgeEnforcement="true"`** (Android 15/API 35'te
-    eklenen resmi opt-out bayrağı, Google'ın AdMob SDK Support ekibinin KENDİSİNİN önerdiği geçici
-    çözüm). `android/app/src/main/res/values/styles.xml` VE `values-night/styles.xml`'deki hem
-    `LaunchTheme` hem `NormalTheme`'e eklendi (dördü de — reklam Activity'si hangi tema/mod
-    altında açılırsa açılsın kapsansın diye). `tools:targetApi="35"` (Lint uyarısını bastırmak
-    için, `xmlns:tools="http://schemas.android.com/tools"` `<resources>` köküne eklendi) — eski
-    Android sürümlerinde bu öznitelik API 35'te eklendiği için sessizce YOK SAYILIR, zararsız.
+- **2026 bug raporu (İLK TUR — YETERSİZ KALDI).** Kullanıcı bildirdi: AdMob reklamları
+  (özellikle geçiş/interstitial) gösterilirken ekranın üst kısmında hâlâ Zibo'nun kendi arayüzü
+  (AppBar/status bar alanı) görünüyor, reklam tam ekranı kaplamıyor. İlk turda `styles.xml`'deki
+  `LaunchTheme`/`NormalTheme`'e (yalnızca `MainActivity`'nin KENDİ teması)
+  `windowOptOutEdgeToEdgeEnforcement` eklenmişti — kullanıcı bir ekran görüntüsüyle (Mağaza'nın
+  reklam-karşılığı coin kartından açılan bir reklam, üstte hâlâ Zibo'nun coin sayacı/+/ayarlar
+  ikonlarının göründüğü) bunun İŞE YARAMADIĞINI bildirdi.
+- **Gerçek kök neden bulundu — ilk turda ATLANAN parça: AdMob'un KENDİ `AdActivity`
+  bileşeninin ayrı bir teması var, biz hiç dokunmamıştık.** `google_mobile_ads`/Play Services
+  Ads SDK'sı kendi `AndroidManifest.xml`'inde `com.google.android.gms.ads.AdActivity`
+  bileşenini KENDİ teması ile deklare ediyor (bu, bizim uygulama manifest'imize bir AAR
+  üzerinden OTOMATİK BİRLEŞİYOR) — ilk turdaki düzeltme yalnızca `MainActivity`'nin (bizim
+  kendi Activity'miz) temasına `windowOptOutEdgeToEdgeEnforcement` eklemişti, AdActivity'nin
+  KENDİ (SDK'nın deklare ettiği, muhtemelen yarı saydam) temasını hiç ETKİLEMİYORDU — bu yüzden
+  Android 15'in ZORUNLU edge-to-edge davranışı AdActivity için hâlâ aktifti, reklam gösterilirken
+  altındaki `MainActivity`'nin içeriği (Zibo'nun AppBar'ı) durum çubuğu şeridinde görünür
+  kalmaya devam ediyordu. WebSearch ile bu, Google AdMob destek forumlarında YAYGIN olarak
+  raporlanan, "Interstitial Ads issue on Android 15" başlığıyla tartışılan, Google mühendislik
+  ekibinin KABUL ETTİĞİ bilinen bir bug olduğu doğrulandı — ve resmi çözüm TAM OLARAK
+  AdActivity'nin kendi temasını override etmek.
+  - **Asıl düzeltme (SDK/native seviyesinde) — `AdActivity`'nin teması
+    `tools:replace="android:theme"` ile AÇIKÇA değiştirildi.**
+    `android/app/src/main/AndroidManifest.xml`'e (kök öğeye `xmlns:tools` namespace'i eklenip)
+    şu deklarasyon eklendi:
+    ```xml
+    <activity
+        android:name="com.google.android.gms.ads.AdActivity"
+        android:theme="@style/AdActivityTheme"
+        tools:replace="android:theme"/>
+    ```
+    `tools:replace="android:theme"` ZORUNLU — hem bizim manifest'imiz hem SDK'nın kendi
+    manifest'i AYNI bileşen için bir `android:theme` deklare ettiği için, birleştirici (manifest
+    merger) bu çakışmayı hangi tarafın KAZANACAĞI açıkça belirtilmeden bir HATA sayıyor. Yeni
+    `AdActivityTheme` (hem `values/styles.xml` hem `values-night/styles.xml`'de, Google AdMob
+    destek ekibinin kendi önerdiği örnekle BİREBİR aynı ebeveynle) tanımlandı:
+    ```xml
+    <style name="AdActivityTheme" parent="@android:style/Theme.Translucent.NoTitleBar">
+        <item name="android:windowOptOutEdgeToEdgeEnforcement" tools:targetApi="35">true</item>
+    </style>
+    ```
+    **Doğrulama — Gradle'ın ÜRETTİĞİ birleştirilmiş manifest incelendi**
+    (`build/app/intermediates/merged_manifest/debug/processDebugMainManifest/AndroidManifest.xml`)
+    ve `AdActivity` bileşeninin gerçekten `android:theme="@style/AdActivityTheme"` ile
+    render edildiği (SDK'nın kendi `android:configChanges`/`android:enableOnBackInvokedCallback`
+    özniteliklerini KORUYARAK — yani tam bir birleşme, elemanın tamamının silinip yeniden
+    yazılması DEĞİL) doğrulandı — bu, `tools:replace`'in gerçekten beklenen şekilde çalıştığının
+    somut kanıtı.
+  - **İkinci, savunmacı bir katman — `MainActivity.kt`'ye açık bir `onCreate()` override'ı
+    eklendi.** Flutter'ın kendi motoru, Android 15+ hedefleyen uygulamalarda `Activity`
+    oluştururken `decorFitsSystemWindows`'u KENDİSİ çalışma zamanında `false`'a ayarlayabiliyor
+    (edge-to-edge desteği) — bu, `styles.xml`'deki manifest-tema düzeyindeki
+    `windowOptOutEdgeToEdgeEnforcement` bayrağının etkisini potansiyel olarak GEÇERSİZ
+    kılabiliyordu (kesin kanıtlanmadı ama olası bir ek faktör). `super.onCreate()`'ten HEMEN
+    SONRA `WindowCompat.setDecorFitsSystemWindows(window, true)` çağrılarak `MainActivity`'nin
+    KESİN olarak geleneksel (edge-to-edge OLMAYAN) davranışta kaldığı KOD SEVİYESİNDE garanti
+    edildi — manifest temasının tek başına yeterli olup olmadığından bağımsız.
   - **GEÇİCİ bir çözüm olduğu AÇIKÇA belgelendi (kod içi yorumlarda da):** Google, bu bayrağın
     `targetSdk` Android 16'ya yükseltilen uygulamalarda DEVRE DIŞI/kullanılamaz hale geleceğini
     duyurdu — o noktada AdMob SDK'sının kendisinin inset'leri doğru işlemesi (kendi güncellemesiyle)
-    beklenir, bizim tarafımızdan ek bir şey gerekmemesi lazım; ama `targetSdk` Android 16'ya
-    yükseltildiğinde bu bug'ın geri gelip gelmediği TEKRAR kontrol edilmeli.
-  - **Doğrulama:** `flutter build apk --debug` sorunsuz derlendi (`windowOptOutEdgeToEdgeEnforcement`
-    özniteliğinin `compileSdk=37`'de geçerli olduğunu doğruladı). Bu bug'ın kendisi yalnızca reklam
-    GÖSTERİLDİĞİNDE gözle görülür olduğu için (rapid-tap interstitial akışını TEKRAR cihazda
-    tetiklemek, önceki oturumda gerçek kullanıcının cihazını yanlışlıkla etkileyen olaylardan
-    dolayı BİLEREK denenmedi) canlı görsel doğrulama YAPILMADI — güven, başarılı derleme + resmi
-    Google/AdMob kaynağından doğrulanmış kök nedene dayanıyor. **Kullanıcının kendi cihazında
-    doğrulaması gereken:** yeni APK kurulup Mağaza/Şans Çarkı'ndan bir reklam tetiklendiğinde
-    reklamın artık GERÇEKTEN tam ekranı kapladığı, üst kısımda Zibo'nun AppBar'ının/arayüzünün
-    ARTIK görünmediği.
+    beklenir; ama `targetSdk` Android 16'ya yükseltildiğinde bu bug'ın geri gelip gelmediği
+    TEKRAR kontrol edilmeli.
+- **YEDEK (fallback) çözüm — Flutter tarafında, native davranıştan TAMAMEN BAĞIMSIZ bir blur
+  katmanı da EKLENDİ.** Kullanıcının açık isteği: native/SDK düzeltmesi %100 garanti değilse
+  (cihaz/OEM/Android sürümüne göre davranış değişebilir), reklam gösterilirken altındaki arayüzü
+  bulanıklaştırıp en azından net bir karışıklık görünmesin. Bu YEDEK olarak, native düzeltmenin
+  YANINDA (onun YERİNE değil) eklendi:
+  - **`lib/utils/ad_overlay_state.dart`** (YENİ) — `isAdShowing` adında global bir
+    `ValueNotifier<bool>` (`homeTabRequest`/`isHomeTabActive` ile AYNI "basit paylaşılan sinyal"
+    deseni, bkz. `tab_navigation.dart`) — `AdMobAdService` bir widget OLMADIĞI için
+    `Provider`/`context`'e erişemiyor, bu yüzden widget ağacının dışından da yazılabilen bu
+    global değişken kullanıldı.
+  - **`lib/widgets/ad_blur_overlay.dart`** (YENİ) — `AdBlurOverlay`, `isAdShowing`'i dinleyip
+    `true` iken `BackdropFilter(ImageFilter.blur(sigmaX: 24, sigmaY: 24))` + yarı saydam bir
+    `scrim` (`colorScheme.scrim`, `alpha: 0.55`) katmanını `Positioned.fill` + `AbsorbPointer`
+    ile TÜM uygulamanın üzerine bindiriyor. `main.dart`'ın `MaterialApp.builder`'ında EN DIŞTA
+    (`ThemeFadeOverlay`/`AnimatedThemeOverlay`'in DIŞINDA) sarılıyor — altındaki HER ŞEYİ (AppBar
+    dahil) kapsasın diye.
+  - **`AdMobAdService.showRewardedAd()`/`showInterstitialAd()`** artık `ad.show(...)`
+    çağrılmadan HEMEN ÖNCE `isAdShowing.value = true` yapıyor; `FullScreenContentCallback`'in
+    HER İKİ dalında (`onAdDismissedFullScreenContent`/`onAdFailedToShowFullScreenContent`) VE
+    `ad.show()` çevresindeki `catch` bloğunda `false`'a geri döndürülüyor, ayrıca metodun
+    SONUNDA bir güvenlik ağı olarak bir kez daha `false`'a ayarlanıyor (üç ayrı çıkış yolundan
+    biri kaçırılırsa diye). **Reklam kendisi tam ekranı düzgün kapladığında bu blur ZARARSIZ**
+    (native Activity'nin ARKASINDA/ALTINDA kalır, hiç GÖRÜNMEZ) — yalnızca bug tekrarlarsa devreye
+    giriyor.
+- **Doğrulama:** `flutter test` (256/256) + `flutter build apk --debug` sorunsuz derlendi,
+  birleştirilmiş manifest elle incelenip `AdActivity`'nin doğru temayı aldığı doğrulandı, APK
+  telefona kurulup uygulama çöküş olmadan açıldı (`adb shell monkey` + `pidof`). **Gerçek bir
+  reklam gösterilirken canlı GÖRSEL doğrulama bu turda YAPILMADI** (rapid-tap interstitial
+  akışını TEKRAR cihazda tetiklemek, önceki oturumda gerçek kullanıcının cihazını yanlışlıkla
+  etkileyen olaylar yüzünden BİLEREK denenmedi) — güven, (a) resmi Google/AdMob kaynağından
+  doğrulanmış, hedefe TAM isabet eden bir kök neden + düzeltme, VE (b) native düzeltme yetersiz
+  kalsa bile devreye girecek, native davranıştan bağımsız/garantili bir Flutter-taraflı yedek
+  katmana dayanıyor. **Kullanıcının kendi cihazında doğrulaması gereken:** Mağaza/Şans
+  Çarkı'ndan bir reklam tetiklendiğinde reklamın artık GERÇEKTEN tam ekranı kapladığı, üst
+  kısımda Zibo'nun AppBar'ının ARTIK görünmediği — eğer hâlâ (nadiren) görünürse, bu sefer net
+  bir arayüz karışıklığı yerine bulanıklaştırılmış bir arka plan görünmeli (yedek katmanın devreye
+  girdiğinin kanıtı).
+- **Özet — hangi çözüm uygulandı:** İKİSİ BİRDEN. (1) **Asıl/native düzeltme**:
+  `AdActivity`'nin manifest temasının `tools:replace` ile override edilmesi (+ `MainActivity`'ye
+  savunmacı bir kod satırı) — bu, kök nedeni doğrudan hedefleyen, resmi Google kaynağından
+  doğrulanmış düzeltme. (2) **Flutter-taraflı blur yedek katmanı** — native düzeltme herhangi bir
+  sebeple (cihaz/OEM/sürüm farkı) tam işe yaramazsa, kullanıcının en azından net bir arayüz
+  karışıklığı GÖRMEMESİNİ garanti eden, tamamen bizim kontrolümüzdeki ikinci bir savunma hattı.
 
 ### Zibo'ya Art Arda Dokunma → Geçiş (Interstitial) Reklamı / Reklamsız Zibo Teklifi ([home_screen.dart](lib/screens/home_screen.dart), [ad_service.dart](lib/services/ad_service.dart), [admob_ad_service.dart](lib/services/admob_ad_service.dart))
 
