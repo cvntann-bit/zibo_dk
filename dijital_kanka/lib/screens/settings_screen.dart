@@ -4,10 +4,8 @@ import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../l10n/app_localizations.dart';
-import '../models/push_notification_type.dart';
 import '../providers/locale_provider.dart';
 import '../providers/notification_provider.dart';
-import '../providers/push_notification_provider.dart';
 import '../providers/sound_effects_provider.dart';
 import '../providers/theme_provider.dart';
 import 'legal_placeholder_screen.dart';
@@ -151,15 +149,6 @@ class SettingsScreen extends StatelessWidget {
             const _NotificationSettingsCard(),
           ],
 
-          // --- Push Bildirimleri: FCM tabanlı, sunucu taraflı gönderim
-          // (bkz. CLAUDE.md "Push Bildirimleri" bölümü) — yukarıdaki ESKİ
-          // yerel sistemden TAMAMEN BAĞIMSIZ, `notificationsFeatureEnabled`
-          // ile gate'lenmiyor (her zaman görünür).
-          const SizedBox(height: 24),
-          Text(l10n.settingsSectionPushNotifications, style: sectionTitleStyle),
-          const SizedBox(height: 8),
-          const _PushNotificationSettingsCard(),
-
           // --- Destek: kullanıcının bir sorun/soru için bize ulaşabileceği
           // kanal.
           const SizedBox(height: 24),
@@ -278,75 +267,6 @@ class _AppVersionRowState extends State<_AppVersionRow> {
       trailing: Text(
         _version ?? '—',
         style: Theme.of(context).textTheme.bodyMedium,
-      ),
-    );
-  }
-}
-
-/// **2026 yeni özellik.** FCM push bildirim türlerinin (bkz.
-/// `PushNotificationType`) tek tek açma/kapama tercihi — dört
-/// `SwitchListTile`, `PushNotificationProvider`'a bağlı. Eski yerel
-/// bildirim sisteminin `_NotificationSettingsCard`'ından (pil optimizasyonu/
-/// otomatik başlatma satırları içeren) BİLEREK çok daha sade — push
-/// bildirimler sunucu taraflı olduğu için cihaza özel bir "güvenilirlik"
-/// sorun yok, yalnızca kullanıcının HANGİ türleri istediği önemli.
-class _PushNotificationSettingsCard extends StatelessWidget {
-  const _PushNotificationSettingsCard();
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    final push = context.watch<PushNotificationProvider>();
-
-    Widget tile(
-      PushNotificationType type,
-      IconData icon,
-      String title,
-      String subtitle,
-    ) {
-      return SwitchListTile(
-        secondary: Icon(icon),
-        title: Text(title),
-        subtitle: Text(subtitle),
-        value: push.isEnabled(type),
-        onChanged: (value) => context
-            .read<PushNotificationProvider>()
-            .setEnabled(type, value),
-      );
-    }
-
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      child: Column(
-        children: [
-          tile(
-            PushNotificationType.dailyMotivation,
-            Icons.wb_sunny_outlined,
-            l10n.pushNotificationDailyMotivationTitle,
-            l10n.pushNotificationDailyMotivationSubtitle,
-          ),
-          const Divider(height: 1),
-          tile(
-            PushNotificationType.streakReminder,
-            Icons.local_fire_department_outlined,
-            l10n.pushNotificationStreakReminderTitle,
-            l10n.pushNotificationStreakReminderSubtitle,
-          ),
-          const Divider(height: 1),
-          tile(
-            PushNotificationType.dailyReward,
-            Icons.card_giftcard_outlined,
-            l10n.pushNotificationDailyRewardTitle,
-            l10n.pushNotificationDailyRewardSubtitle,
-          ),
-          const Divider(height: 1),
-          tile(
-            PushNotificationType.reEngagement,
-            Icons.favorite_outline,
-            l10n.pushNotificationReEngagementTitle,
-            l10n.pushNotificationReEngagementSubtitle,
-          ),
-        ],
       ),
     );
   }

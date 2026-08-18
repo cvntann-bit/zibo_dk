@@ -36,11 +36,24 @@ import '../widgets/zibo_share_sheet.dart';
 /// gibi kendi Scaffold/AppBar'ı YOK, RootScreen'in ortak AppBar'ını
 /// paylaşıyor.
 class ProfileScreen extends StatefulWidget {
-  const ProfileScreen({super.key, this.photoService = const ImagePickerPhotoService()});
+  const ProfileScreen({
+    super.key,
+    this.photoService = const ImagePickerPhotoService(),
+    this.isActive = true,
+  });
 
   /// Galeri seçimi + kalıcı depolama — testte sahte bir implementasyon
   /// enjekte edilebilir (bkz. `PhotoPickerService` dokümantasyonu).
   final PhotoPickerService photoService;
+
+  /// `GoalTrackingScreen`/`StoreScreen` ile AYNI desen (bkz. `RootScreen`'in
+  /// `IndexedStack`'i, sekmeler hiç unmount edilmiyor) — 2026 güncellemesi:
+  /// "İstatistiklerim" bölümündeki dairesel puan göstergelerinin (bkz.
+  /// `CircularScoreGauge`) sekmeye HER girişte 0'dan tekrar dolma
+  /// animasyonu oynaması için gerekli, `IndexedStack` sekmeyi hiç
+  /// unmount etmediğinden bu sinyal olmadan animasyon yalnızca İLK
+  /// ziyarette çalışırdı.
+  final bool isActive;
 
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
@@ -51,6 +64,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final _nameFocusNode = FocusNode();
   bool _isPicking = false;
 
+  /// Her artışında "İstatistiklerim" alt ağacına YENİ bir `Key` verilip
+  /// (bkz. `build()`) o alt ağaç TAMAMEN yeniden kurdurulur — içindeki her
+  /// `CircularScoreGauge`'un `initState()`'i baştan çalışır, dolma+sayaç
+  /// animasyonu sıfırdan tekrar oynar. İlk yüklemede de (varsayılan `0`)
+  /// bir kez oynaması için ayrıca bir tetikleme GEREKMEZ.
+  int _statsReplayKey = 0;
+
   @override
   void initState() {
     super.initState();
@@ -59,6 +79,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
         context.read<ProfileProvider>().setName(_nameController.text);
       }
     });
+  }
+
+  @override
+  void didUpdateWidget(covariant ProfileScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.isActive && !oldWidget.isActive) {
+      setState(() => _statsReplayKey++);
+    }
   }
 
   @override
@@ -242,10 +270,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: 14),
-            for (final stat in stats) ...[
-              ProfileStatCard(stat: stat),
-              const SizedBox(height: 12),
-            ],
+            KeyedSubtree(
+              key: ValueKey(_statsReplayKey),
+              child: Column(
+                children: [
+                  for (final stat in stats) ...[
+                    ProfileStatCard(stat: stat),
+                    const SizedBox(height: 12),
+                  ],
+                ],
+              ),
+            ),
             const SizedBox(height: 20),
             Text(
               l10n.profileBondSectionTitle,

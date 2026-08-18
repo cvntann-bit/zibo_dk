@@ -434,8 +434,8 @@ class _PackageCardState extends State<_PackageCard> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             SizedBox(
-              width: 76,
-              height: 76,
+              width: 76 * widget.package.imageScale,
+              height: 76 * widget.package.imageScale,
               child: Image.asset(
                 widget.package.imageAsset,
                 fit: BoxFit.contain,

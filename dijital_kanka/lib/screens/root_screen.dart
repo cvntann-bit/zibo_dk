@@ -158,7 +158,7 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
     final tabs = [
       const HomeScreen(),
       GoalTrackingScreen(isActive: _selectedIndex == _goalTrackingTabIndex),
-      const ProfileScreen(),
+      ProfileScreen(isActive: _selectedIndex == _profileTabIndex),
       StoreScreen(isActive: _selectedIndex == _storeTabIndex),
     ];
 

@@ -693,18 +693,17 @@ void main() {
     // Coin Test Paneli (geçici) kullanıcı isteğiyle tamamen kaldırıldı.
     expect(find.text('Coin Test Paneli (geçici)'), findsNothing);
 
-    // Genel/Push Bildirimleri/Destek/Uygulama Hakkında bölüm başlıkları +
-    // içerikleri (bkz. CLAUDE.md "Ayarlar" bölümü). 2026 güncellemesi —
-    // Push Bildirimleri kartı Ayarlar sayfasını belirgin şekilde uzattığı
-    // için (bkz. "Alt Gezinme Çubuğu"/"Bildirimler" bölümlerindeki AYNI
-    // ders), alttaki içerik artık ListView'ın ilk lazy-build aralığının
-    // dışında kalabiliyor — `scrollUntilVisible` ile aşağı kaydırılıyor.
+    // Genel/Destek/Uygulama Hakkında bölüm başlıkları + içerikleri (bkz.
+    // CLAUDE.md "Ayarlar" bölümü). **2026 güncellemesi — "Push Bildirimleri"
+    // bölümü (başlık + dört tek tek anahtar) TAMAMEN kaldırıldı** — kullanıcı
+    // isteği: bu ayrı bir bölüm olarak gereksizdi (bkz. CLAUDE.md "Push
+    // Bildirimleri" bölümündeki not).
     expect(find.text('Genel'), findsOneWidget);
-    expect(find.text('Push Bildirimleri'), findsOneWidget);
-    expect(find.text('Günlük Motivasyon'), findsOneWidget);
-    expect(find.text('Streak Hatırlatması'), findsOneWidget);
-    expect(find.text('Günlük Ödül Hatırlatması'), findsOneWidget);
-    expect(find.text('Seni Özledik'), findsOneWidget);
+    expect(find.text('Push Bildirimleri'), findsNothing);
+    expect(find.text('Günlük Motivasyon'), findsNothing);
+    expect(find.text('Streak Hatırlatması'), findsNothing);
+    expect(find.text('Günlük Ödül Hatırlatması'), findsNothing);
+    expect(find.text('Seni Özledik'), findsNothing);
     await tester.scrollUntilVisible(find.text('Destek'), 300);
     expect(find.text('Destek'), findsOneWidget);
     expect(find.text('Bize Ulaşın'), findsOneWidget);
@@ -726,10 +725,9 @@ void main() {
       await tester.tap(find.byTooltip('Ayarlar'));
       await tester.pumpAndSettle();
 
-      // 2026 güncellemesi — Push Bildirimleri + Ses Efektleri satırı
-      // eklendi, "Gizlilik Politikası"/"Kullanım Koşulları" artık ilk
-      // lazy-build aralığının dışında kalabiliyor (bkz. yukarıdaki AYNI
-      // ders). Kaydırma sonrası satır AppBar'a çok yakın kalıp koordinat
+      // "Gizlilik Politikası"/"Kullanım Koşulları" ilk lazy-build aralığının
+      // dışında kalabiliyor (bkz. yukarıdaki AYNI ders). Kaydırma sonrası
+      // satır AppBar'a çok yakın kalıp koordinat
       // tabanlı `tester.tap()`in hit-test'i şaşırabildiği için (bkz. "Test
       // kalıpları" bölümündeki GridView/hit-test uyuşmazlığı deseni)
       // `ListTile.onTap`'i DOĞRUDAN çağırıyoruz.
@@ -813,10 +811,9 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Koyu Tema'), findsOneWidget);
-      // Ayarlar sayfasında artık birden fazla `Switch` var (2026 güncellemesi
-      // — Push Bildirimleri kartındaki dört tercih anahtarı), bu yüzden
-      // `find.byType(Switch)` ARTIK belirsiz — spesifik `SwitchListTile`'ı
-      // başlığından buluyoruz.
+      // Ayarlar sayfasında birden fazla `Switch` var (Koyu Tema/Ses
+      // Efektleri), bu yüzden `find.byType(Switch)` belirsiz — spesifik
+      // `SwitchListTile`'ı başlığından buluyoruz.
       await tester.tap(find.widgetWithText(SwitchListTile, 'Koyu Tema'));
       await tester.pumpAndSettle();
 

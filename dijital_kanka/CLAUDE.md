@@ -347,6 +347,23 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
     `flutter build apk --debug` + cihaza kurulum + Mağaza > "Coin Al" ekran görüntüsüyle beş
     kartın da kendi görseliyle, belirgin şekilde büyümüş, kırpılmadan/gerilmeden,
     fiyat ve ZC miktarı hâlâ net okunur şekilde render olduğu doğrulandı.
+  - **2026 güncellemesi — `CoinPackage.imageScale` (yeni alan, varsayılan `1.0`) ile 10000 ZC
+    görseli TEK BAŞINA büyütüldü.** Kullanıcı isteği: en yüksek paket olduğu için 10000 ZC görseli
+    diğerlerine oranla biraz daha "baskın" dursun, ama kart düzeni (grid, `childAspectRatio`)
+    bozulmasın. **Grid/kart genişliğini değiştirmek yerine yalnızca O TEK paketin görsel
+    çerçevesini büyütmek gerektiği için** `childAspectRatio`/ortak `SizedBox` sabitine
+    dokunulmadı — `CoinPackage`'a genel bir `double imageScale` alanı eklendi (veri modelinin
+    "data-driven, ileride pakete özel özelleştirme kolay olsun" felsefesiyle AYNI, bkz. yukarıdaki
+    `imageAsset` notu), `coin_packages.dart`'taki `coins_10000` girdisi `imageScale: 1.2` aldı,
+    diğer dört paket varsayılan `1.0`'da kaldı. `_PackageCard`'ın görsel `SizedBox`'ı artık
+    `width/height: 76 * widget.package.imageScale` — yalnızca 10000 ZC kartında görsel çerçevesi
+    ~%20 büyüyor (91.2×91.2), metin/fiyat/buton alanı VE kartın kendi dış boyutu (grid hücresi)
+    DEĞİŞMİYOR, `BoxFit.contain` sayesinde büyüyen görsel kartın içinde taşmadan ortalanıyor.
+  - **Test + doğrulama:** `flutter test` (256/256, mevcut testler etkilenmedi — `imageScale`
+    yalnızca görsel boyutunu değiştiriyor, layout/metin assertion'larını bozmadı).
+    `flutter build apk --debug` + cihaza kurulum + Mağaza ekran görüntüsüyle 10000 ZC kartının
+    görselinin diğer dört karta göre gözle görülür biçimde daha büyük, ama kartın kendisinin
+    (kenarlık/hizalama) diğerleriyle aynı boyutta kaldığı doğrulandı.
 - **2026 güncellemesi — paket kartlarında "Satın Al" yerine gerçek TL fiyatları.** Kullanıcı isteği:
   butonda genel "Satın Al" metni yerine gerçek (şimdilik sabit/görsel — gerçek bir IAP işlemi
   TETİKLEMİYOR, `MockPurchaseService` hâlâ kullanılıyor) fiyatlar gösterilsin: 100 ZC → 19,99 ₺,
@@ -2099,6 +2116,39 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
     genel eğilimi gösteren küçük bir sparkline.
   - **Veri yoksa** (`CategoryStat.hasData == false`) grafik+gösterge yerine teşvik edici bir
     mesaj gösteriliyor ("Henüz veri yok — {modül}'i kullanmaya başla!").
+  - **2026 güncellemesi — `CircularScoreGauge` artık dolma + sayaç animasyonuyla açılıyor,
+    Profil'e HER girişte tekrar oynuyor.** Kullanıcı isteği: halka sıfırdan gerçek puana doğru
+    dolsun, içindeki sayı (0-10) da AYNI ANDA 0'dan gerçek değere sayarak artsın, kısa/akıcı
+    (1-1.5sn) olsun, sayfaya her girişte TEKRAR oynasın.
+    - **`CircularScoreGauge`** (`StatelessWidget`'tan `StatefulWidget`'a çevrildi) artık kendi
+      `AnimationController`'ını (`initState`'te `forward()` çağrılan, 1200ms,
+      `Curves.easeOutCubic`) taşıyor — `Tween<double>(begin: 0, end: score)`'un `AnimatedBuilder`
+      ile beslediği TEK bir `value`, hem `CircularProgressIndicator.value`'yu (halka dolumu) hem
+      ortadaki `Text` (`value.toStringAsFixed(1)`, sayaç) hem halka rengini (`_ringColorFor(value)`
+      — kırmızı→amber→yeşil geçişi artık ANINDA değil, dolan değere göre CANLI hesaplanıyor)
+      besliyor — üç görsel efekt (dolum/sayaç/renk) TEK bir animasyon değerinden türediği için
+      birbirinden asla kopmuyor/senkronsuz kalmıyor.
+    - **"Her girişte tekrar oynasın" isteği — `initState`'te BİR KEZ çalışan bir
+      `AnimationController` kendi başına bunu SAĞLAMAZ** (`ProfileScreen` `IndexedStack` içinde
+      hiç dispose olmuyor, bkz. "Mimari özet" bölümündeki `IndexedStack` gotcha'sı — sekmeler
+      arası geçişte widget `initState`'i BİR DAHA çalıştırmaz). Çözüm, `GoalTrackingScreen`/
+      `StoreScreen`'in ZATEN kullandığı `isActive` deseninin AYNISI: `ProfileScreen` yeni bir
+      `isActive` parametresi kazandı (`root_screen.dart`'ta `_selectedIndex ==
+      _profileTabIndex`), `_ProfileScreenState.didUpdateWidget` `widget.isActive &&
+      !oldWidget.isActive` (sekme AZ ÖNCE aktif oldu) anında `_statsReplayKey++` ile
+      `setState` yapıyor.
+    - **Yeniden oynatma tekniği — "İstatistiklerim" kart listesi `KeyedSubtree(key:
+      ValueKey(_statsReplayKey), ...)` ile sarıldı.** `_statsReplayKey` her sekme
+      re-aktivasyonunda artınca Flutter bu `Key` değişikliğini "tamamen farklı bir widget" olarak
+      yorumlayıp TÜM alt ağacı (dolayısıyla içindeki her `CircularScoreGauge`'un `State`'ini VE
+      `AnimationController`'ını) söküp SIFIRDAN yeniden kuruyor — bu, `ProfileStatCard`/
+      `CircularScoreGauge`'un public API'sine dokunmadan, "replay tetikleyicisini" ara
+      widget'lardan geçirmeden animasyonu baştan başlatan en az invaziv yöntem (bir
+      `GlobalKey`+`resetAnimation()` çağrı zinciri kurmaktan çok daha basit).
+    - **Test + doğrulama:** `flutter test` (256/256) + Profil sekmesine ilk giriş VE
+      sekmeler arası geçip geri dönme (Ana Sayfa→Profil) senaryolarının İKİSİNDE de dört
+      `CircularScoreGauge`'un 0'dan gerçek puana dolarak/sayarak animasyonlandığı, ~1.2 saniye
+      sonra durup doğru nihai değerde kaldığı gerçek cihazda doğrulandı.
 - **"Zibo ile Bağın" bölümü (2026 güncellemesi) — istatistik kartlarının altında 7 satırlık bir
   liste.** Kullanıcı isteği (verbatim özet): bond seviyesi, en uzun seri, kostüm dolabı önizlemesi,
   coin özeti, hitap tercihi, favori sözler, profil kartı paylaşımı — "liste liste olsun basınca yeni
@@ -2666,9 +2716,22 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
     `streak_reminder`/`daily_reward`/`re_engagement`) Cloud Functions'ın gönderdiği
     `RemoteMessage.data['type']` ile birebir eşleşiyor.
   - `PushNotificationProvider` — `CloudStateStore` Varyant A (`pushNotificationState` doküman,
-    4 bool tercih), Ayarlar'daki yeni "Push Bildirimleri" kartındaki 4 `SwitchListTile` buna bağlı.
-    Kullanıcı bir türü kapatırsa Cloud Functions tarafı bunu (aşağıdaki `isTypeEnabled` kontrolü ile)
-    okuyup o türü GÖNDERMİYOR — istemci tarafında bir "bastırma" mantığı YOK, filtreleme SUNUCUDA.
+    4 bool tercih). **2026 güncellemesi — Ayarlar'daki "Push Bildirimleri" kartı (4 `SwitchListTile`)
+    KULLANICI İSTEĞİYLE TAMAMEN KALDIRILDI** ("bu gereksiz bir ayrım" — kullanıcının kendi ifadesi;
+    `settings_screen.dart`'taki `_PushNotificationSettingsCard` sınıfı SİLİNDİ, `PushNotificationProvider`/
+    `PushNotificationType` importları kullanılmadığı için kaldırıldı). **Provider'ın kendisi VE
+    sunucu tarafı filtreleme mantığı DOKUNULMADAN kaldı** — yalnızca kullanıcının bunu Ayarlar'dan
+    tek tek kapatabildiği arayüz gitti. Bunun PRATİK SONUCU: `PushNotificationProvider`'ın 4 alanı
+    da varsayılan `true` olarak kalıcı depoda takılı kalır (hiçbir kullanıcı arayüzden değiştiremez),
+    yani **tüm kullanıcılar artık fiilen dört bildirim türünün TAMAMINI alır, hiçbir opt-out yolu
+    YOK** (sistem düzeyinde OS'un kendi bildirim izni HARİÇ). Bu, kullanıcının açık isteğiydi ("türlere
+    göre ayrı seçenek gerekmiyor" gerekçesiyle) — provider/backend kodu SİLİNMEDİ ki ileride tekrar
+    bir arayüz eklenmek istenirse (ör. tek bir genel "bildirimleri kapat" anahtarı) `isEnabled`/
+    `setEnabled` API'si hâlâ hazır dursun.
+    Eskiden kullanıcı bir türü kapatırsa Cloud Functions/betik tarafı bunu (aşağıdaki `isTypeEnabled`
+    kontrolü ile) okuyup o türü GÖNDERMİYORDU — istemci tarafında bir "bastırma" mantığı YOK,
+    filtreleme SUNUCUDA; bu mekanizma HÂLÂ ÇALIŞIR durumda, yalnızca artık hiçbir kullanıcı `false`
+    değerine ERİŞEMEDİĞİ için pratikte hep `true` okunuyor.
   - `PushNotificationService` (`AdService`/`NotificationService` ile AYNI gerçek+fake desen) —
     `FirebaseMessagingPushNotificationService.initialize()`: izin ister, FCM token'ı alıp
     `users/{uid}.fcmToken`/`fcmTokenUpdatedAt`'e yazar (`onTokenRefresh` ile de senkron tutar),
@@ -3473,6 +3536,45 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
     "İzle" butonuna veya Şans Çarkı'na basılınca gerçek (artık "Test Ad" etiketi OLMAYAN) bir
     reklam gösterilmeye başlamalı — bu noktada ayrıca bir kod değişikliği GEREKMİYOR, yalnızca
     Google tarafının hazır olmasını bekliyoruz.
+
+### Reklamlar tam ekranı kaplamıyor (bug düzeltmesi) — `windowOptOutEdgeToEdgeEnforcement`
+
+- **2026 bug raporu.** Kullanıcı bildirdi: AdMob reklamları (özellikle geçiş/interstitial)
+  gösterilirken ekranın üst kısmında hâlâ Zibo'nun kendi arayüzü (AppBar/status bar alanı)
+  görünüyor, reklam tam ekranı kaplamıyor.
+- **Kök neden — uygulama koduna AİT DEĞİL, Android 15'in ZORUNLU edge-to-edge davranışı.**
+  `MainActivity.kt` incelendiğinde herhangi bir özel pencere/inset kodu OLMADIĞI görüldü (saf
+  `class MainActivity : FlutterActivity()`) — bu, hipotezi uygulama tarafına değil platforma
+  yöneltti. `android/app/build.gradle.kts`'taki `compileSdk = 37` (daha önce
+  `permission_handler_android` için yükseltilmişti, bkz. dosya içindeki yorum) API 35'in ÜZERİNde
+  — Android 15 (API 35), `compileSdk`/`targetSdk` ≥ 35 olan uygulamalar için
+  `Window.setDecorFitsSystemWindows(false)`'u ARTIK OPSİYONEL değil ZORUNLU hale getiriyor. Bu,
+  yalnızca `MainActivity`'yi değil, `google_mobile_ads` SDK'sının KENDİ reklam Activity'sini de
+  etkiliyor — reklam Activity'si bu zorunlu edge-to-edge davranışına göre insetleri (status bar
+  alanı) doğru işlemediği için, altındaki eski arayüz (AppBar) reklamın ÜSTÜNDE/ARKASINDA görünür
+  kalıyordu. WebSearch ile doğrulandı: bu, AdMob SDK Support ekibinin kendisinin de bildiği,
+  Android 15'e geçen uygulamalarda yaygın görülen bir sorun.
+  - **Düzeltme — `android:windowOptOutEdgeToEdgeEnforcement="true"`** (Android 15/API 35'te
+    eklenen resmi opt-out bayrağı, Google'ın AdMob SDK Support ekibinin KENDİSİNİN önerdiği geçici
+    çözüm). `android/app/src/main/res/values/styles.xml` VE `values-night/styles.xml`'deki hem
+    `LaunchTheme` hem `NormalTheme`'e eklendi (dördü de — reklam Activity'si hangi tema/mod
+    altında açılırsa açılsın kapsansın diye). `tools:targetApi="35"` (Lint uyarısını bastırmak
+    için, `xmlns:tools="http://schemas.android.com/tools"` `<resources>` köküne eklendi) — eski
+    Android sürümlerinde bu öznitelik API 35'te eklendiği için sessizce YOK SAYILIR, zararsız.
+  - **GEÇİCİ bir çözüm olduğu AÇIKÇA belgelendi (kod içi yorumlarda da):** Google, bu bayrağın
+    `targetSdk` Android 16'ya yükseltilen uygulamalarda DEVRE DIŞI/kullanılamaz hale geleceğini
+    duyurdu — o noktada AdMob SDK'sının kendisinin inset'leri doğru işlemesi (kendi güncellemesiyle)
+    beklenir, bizim tarafımızdan ek bir şey gerekmemesi lazım; ama `targetSdk` Android 16'ya
+    yükseltildiğinde bu bug'ın geri gelip gelmediği TEKRAR kontrol edilmeli.
+  - **Doğrulama:** `flutter build apk --debug` sorunsuz derlendi (`windowOptOutEdgeToEdgeEnforcement`
+    özniteliğinin `compileSdk=37`'de geçerli olduğunu doğruladı). Bu bug'ın kendisi yalnızca reklam
+    GÖSTERİLDİĞİNDE gözle görülür olduğu için (rapid-tap interstitial akışını TEKRAR cihazda
+    tetiklemek, önceki oturumda gerçek kullanıcının cihazını yanlışlıkla etkileyen olaylardan
+    dolayı BİLEREK denenmedi) canlı görsel doğrulama YAPILMADI — güven, başarılı derleme + resmi
+    Google/AdMob kaynağından doğrulanmış kök nedene dayanıyor. **Kullanıcının kendi cihazında
+    doğrulaması gereken:** yeni APK kurulup Mağaza/Şans Çarkı'ndan bir reklam tetiklendiğinde
+    reklamın artık GERÇEKTEN tam ekranı kapladığı, üst kısımda Zibo'nun AppBar'ının/arayüzünün
+    ARTIK görünmediği.
 
 ### Zibo'ya Art Arda Dokunma → Geçiş (Interstitial) Reklamı / Reklamsız Zibo Teklifi ([home_screen.dart](lib/screens/home_screen.dart), [ad_service.dart](lib/services/ad_service.dart), [admob_ad_service.dart](lib/services/admob_ad_service.dart))
 

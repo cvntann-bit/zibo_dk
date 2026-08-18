@@ -13,12 +13,21 @@ class CoinPackage {
     required this.coinAmount,
     required this.imageAsset,
     this.price,
+    this.imageScale = 1.0,
   });
 
   final String id;
   final int coinAmount;
   final String imageAsset;
   final PackagePrice? price;
+
+  /// `_PackageCard`'ın ortak görsel çerçevesine (bkz. `store_screen.dart`)
+  /// uygulanan çarpan — varsayılan `1.0` (tüm paketler AYNI çerçeve
+  /// boyutunda). **2026 güncellemesi:** en yüksek paket (10000 ZC) kullanıcı
+  /// isteğiyle diğerlerinden "biraz daha büyük" görünsün diye `1.2` olarak
+  /// ayarlandı — kart düzeni (`GridView`'ın `childAspectRatio`'su) BOZULMADAN,
+  /// yalnızca bu TEK paketin görsel çerçevesi büyütüldü.
+  final double imageScale;
 }
 
 /// Bir paketin gösterilen fiyatı. `currencyCode` (ISO 4217, ör. `'TRY'`)

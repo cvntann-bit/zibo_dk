@@ -37,5 +37,6 @@ const coinPackages = <CoinPackage>[
     coinAmount: 10000,
     imageAsset: 'assets/images/zibo_coin_10000.png',
     price: PackagePrice(amount: 1499.99),
+    imageScale: 1.2,
   ),
 ];
