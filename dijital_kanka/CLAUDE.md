@@ -2905,6 +2905,64 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
     `find.byType(RootScreen, skipOffstage: false)` — bir widget'ın altında BAŞKA bir route
     push edilmişken o widget'ı `find.byType` ile ararken bu deseni kullanın.
 
+### Firebase Anonymous Auth Temizliği — terkedilmiş test kullanıcılarını silme ([cleanupStaleAnonymousUsers.js](../notification-scripts/src/cleanupStaleAnonymousUsers.js), [.github/workflows/cleanup-stale-anonymous-users.yml](../.github/workflows/cleanup-stale-anonymous-users.yml))
+
+- **2026 bakım işi — BİR KERELİK, cron'a BAĞLI DEĞİL.** Kullanıcı isteği: geliştirme boyunca
+  yapılan onlarca test kurulumu/kaldırma (her taze kurulum, bkz. "Firestore veri kalıcılığı,
+  Anonymous Auth ve güvenilir zaman" bölümü, `main()`'de `signInAnonymously()` ile YENİ bir
+  anonim kimlik oluşturuyor) Firebase'de "boşuna" birikmiş, bir daha asla açılmayacak anonim
+  kullanıcılar bıraktı — bunlar hem Authentication hem Firestore'da (`users/{uid}/...`) yer
+  kaplıyor. Kullanıcı bunun **bir kerelik bir temizliğini** istedi, periyodik/otomatik bir
+  mekanizma İSTEMEDİ (bkz. altta "neden `schedule:` yok" notu).
+- **Bu ortamda Node.js/npm YOK** (diğer 4 bildirim betiğiyle AYNI sınırlama, bkz. "Push
+  Bildirimleri" bölümü) — betik dikkatle elle yazıldı ama YEREL OLARAK ÇALIŞTIRILIP TEST
+  EDİLEMEDİ. Kullanıcının GitHub Actions'tan `workflow_dispatch` ile elle tetikleyip
+  doğrulaması gerekiyor.
+- **`notification-scripts/src/common.js`'e `auth` (yalnızca bu betik için `app.auth()`)
+  eklendi** — diğer 4 betik bunu hiç kullanmıyor, yalnızca `db`/`messaging` yeterli oluyordu.
+- **`cleanupStaleAnonymousUsers.js` — "terkedilmiş" tanımı, İKİ sinyalden HANGİSİ daha
+  YENİYSE onu kullanan, KASITLI OLARAK temkinli bir hesaplama:**
+  1. Firestore `users/{uid}.lastActiveAt` (bkz. `PushNotificationService.touchLastActive` —
+     `RootScreen`'in her öne gelişinde tazelenir) — yalnızca push bildirimi özelliği
+     eklendikten SONRA en az bir kez açılmış kurulumlar için mevcut.
+  2. Firebase Auth'un KENDİ `metadata.lastRefreshTime`/`lastSignInTime`/`creationTime`'ı —
+     Firebase'in HER kullanıcı için OTOMATİK tuttuğu, bizim kodumuza bağımlı OLMAYAN bir
+     sinyal; push bildirimi eklenmeden ÖNCEki eski test kullanıcıları için TEK kaynak bu.
+  İki sinyalden İKİSİ de yoksa (teorik olarak imkansız — Auth her zaman `creationTime` taşır)
+  güvenlik gereği o kullanıcıya DOKUNULMUYOR, atlanıyor. Eşik `MIN_INACTIVE_DAYS` (varsayılan
+  **30 gün** — kullanıcının seçtiği değer, `AskUserQuestion` ile "3/7/30 gün" arasından
+  seçildi) — bu SÜREDİR hiç aktivite izi olmayan kullanıcılar silinmeye aday.
+- **GÜVENLİK — varsayılan DRY RUN.** Betik `DRY_RUN=false` AÇIKÇA verilmedikçe HİÇBİR ŞEY
+  SİLMEZ, yalnızca "şu uid'ler silinecekti" diye Actions log'una yazar. Workflow'un
+  `dry_run` girdisi VARSAYILAN `'true'` — kullanıcı ÖNCE dry-run ile listeyi gözden geçirip,
+  sonra emin olunca `dry_run: false` ile TEKRAR tetiklemeli. **Bu iki aşamalı onay bilerek
+  eklendi** — tersine çevrilemez bir silme işlemi (gerçek Auth kaydı + kullanıcı verisi) kör
+  bir şekilde tek seferde çalıştırılmasın diye.
+- **Silme işleminin kendisi — hem Auth HEM Firestore, TEK bir kullanıcı için birlikte:**
+  `deleteFirestoreUserData(uid)` önce `users/{uid}/state/*` alt koleksiyonundaki TÜM
+  dokümanları (`listDocuments()` ile enumere edilip) TEK bir `batch()` içinde `users/{uid}`
+  dokümanının kendisiyle BİRLİKTE siliyor (proje ölçeğinde bir kullanıcının `state`
+  koleksiyonu ~20 doküman, `WriteBatch`'in 500 yazma sınırına asla yaklaşmıyor) — SONRA
+  `auth.deleteUser(uid)` ile Authentication kaydı siliniyor. Yalnızca Firestore verisini
+  silip Auth kaydını BIRAKMAK (veya tersi) YARIM bir temizlik olurdu, ikisi BİRLİKTE
+  siliniyor.
+- **Neden `schedule:` (otomatik/periyodik tetikleyici) YOK — diğer 4 workflow'un AKSİNE:**
+  Kullanıcı `AskUserQuestion` ile açıkça "bir kerelik temizlik" seçeneğini seçti
+  ("bir kerelik + haftalık otomatik" veya "yalnızca otomatik" DEĞİL) — bu yüzden
+  `.github/workflows/cleanup-stale-anonymous-users.yml`'de yalnızca `workflow_dispatch`
+  var, `schedule:` YOK. İleride tekrar gerekirse (ör. birkaç ay sonra yeniden birikirse)
+  kullanıcı Actions sekmesinden elle tekrar tetikleyebilir — betiğin/workflow'un kendisi
+  KALICI olarak repoda duruyor, tek seferlik kullanılıp silinen bir şey DEĞİL.
+- **Doğrulama YAPILAMADI (yerel Node.js yokluğu) — kullanıcının GitHub Actions'tan
+  tamamlaması gereken adımlar:**
+  1. Actions sekmesi → "Terkedilmiş Anonim Kullanıcıları Temizle" → **Run workflow** →
+     `dry_run: true` (varsayılan) ile çalıştır.
+  2. Log'u aç, "SİLİNECEK" satırlarını gözden geçir — özellikle KENDİ telefonundaki AKTİF
+     kurulumun uid'sinin listede OLMADIĞINDAN emin ol (30 gündür açılmamış olması gerekirdi,
+     aktif kullanımda olan bir kurulum bu listede görünmemeli).
+  3. Liste doğru görünüyorsa, **Run workflow**'u bu sefer `dry_run: false` ile TEKRAR
+     tetikle — bu sefer GERÇEKTEN silinir.
+
 ### Push Bildirimi Özel Sesi ([notification_service.dart](lib/services/notification_service.dart), `android/app/src/main/res/raw/zibo_notification.wav`)
 
 - **2026 yeni özellik.** Kullanıcı `assets/sounds/` altına özel bir bildirim sesi (`Zibo

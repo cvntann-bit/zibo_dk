@@ -10,7 +10,8 @@
     "daily-motivation": "node src/dailyMotivation.js",
     "streak-reminder": "node src/streakReminder.js",
     "daily-reward-reminder": "node src/dailyRewardReminder.js",
-    "re-engagement": "node src/reEngagement.js"
+    "re-engagement": "node src/reEngagement.js",
+    "cleanup-stale-anonymous-users": "node src/cleanupStaleAnonymousUsers.js"
   },
   "dependencies": {
     "firebase-admin": "^12.7.0"

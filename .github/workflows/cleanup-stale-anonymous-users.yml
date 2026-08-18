@@ -1,0 +1,47 @@
+name: Terkedilmiş Anonim Kullanıcıları Temizle
+
+# BİR KERELİK bakım işi — kullanıcı isteği: geçmiş test/geliştirme
+# oturumlarında Firebase'e "boşuna" kaydedilmiş, uzun süredir kullanılmayan
+# anonim kullanıcıları (Auth kaydı + Firestore verisi) temizle. Diğer 4
+# bildirim workflow'unun AKSİNE bir `schedule:` tetikleyicisi YOK — yalnızca
+# elle (`workflow_dispatch`) tetiklenir, otomatik tekrarlanmaz (bkz.
+# notification-scripts/src/cleanupStaleAnonymousUsers.js dokümantasyonu).
+#
+# GÜVENLİK: `dry_run` girdisi VARSAYILAN `true` — önce çalıştırıp Actions
+# log'unda NEYİN silineceğini gözden geçirin, sonra emin olunca `dry_run`ı
+# `false` yaparak TEKRAR tetikleyin.
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'true: yalnızca ne silineceğini logla (varsayılan, güvenli). false: GERÇEKTEN sil.'
+        required: true
+        default: 'true'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+      min_inactive_days:
+        description: 'Kaç gündür hiç aktivite izi olmayan kullanıcılar "terkedilmiş" sayılsın.'
+        required: false
+        default: '30'
+        type: string
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: notification-scripts
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm install
+      - run: npm run cleanup-stale-anonymous-users
+        env:
+          FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
+          DRY_RUN: ${{ inputs.dry_run }}
+          MIN_INACTIVE_DAYS: ${{ inputs.min_inactive_days }}

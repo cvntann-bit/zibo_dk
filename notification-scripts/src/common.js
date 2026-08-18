@@ -25,6 +25,9 @@ function initAdmin() {
 const app = initAdmin();
 const db = app.firestore();
 const messaging = app.messaging();
+// `auth` — yalnızca bakım betikleri (bkz. cleanupStaleAnonymousUsers.js)
+// için; 4 bildirim betiğinin hiçbiri Auth'a dokunmuyor.
+const auth = app.auth();
 
 /** Şu anki UTC zamanını Europe/Istanbul (sabit UTC+3, Türkiye 2016'dan beri
  * yaz/kış saati uygulamıyor) gün anahtarına (`YYYY-MM-DD`) çevirir. */
@@ -130,6 +133,7 @@ async function sendToUser(user, type, title, body) {
 module.exports = {
   db,
   messaging,
+  auth,
   istanbulDateKey,
   istanbulMinutesOfDay,
   fetchAllUsers,
