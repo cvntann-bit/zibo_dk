@@ -1089,4 +1089,50 @@ class AppLocalizationsTr extends AppLocalizations {
   String onboardingClosingMessage(String name) {
     return 'Artık hazırsın, $name! Küçük adımlarla büyük değişimler yaratacağız — hedeflerini takip et, kendine iyi bak, ben hep yanındayım. Hadi başlayalım kanka!';
   }
+
+  @override
+  String get googleLinkRowTitleUnlinked => 'Google ile Bağla';
+
+  @override
+  String get googleLinkRowTitleLinked => 'Google Hesabın';
+
+  @override
+  String get googleLinkRowSubtitle =>
+      'Satın alımlarını ve verilerini güvende tut';
+
+  @override
+  String get googleLinkSuccessMessage => 'Google hesabına başarıyla bağlandı!';
+
+  @override
+  String get googleLinkFailedMessage =>
+      'Bağlanırken bir sorun oluştu, tekrar dene.';
+
+  @override
+  String get googleAlreadyLinkedDialogTitle =>
+      'Bu hesap başka bir cihaza bağlı';
+
+  @override
+  String get googleAlreadyLinkedDialogBody =>
+      'Bu Google hesabı zaten başka bir cihazdaki verilerle ilişkili. O hesaba geçip verilerine ulaşmak istersen, bu cihazdaki mevcut ilerleme kaybolur.';
+
+  @override
+  String get googleSignInInsteadButton => 'Google ile Giriş Yap';
+
+  @override
+  String get googleSignInSuccessMessage =>
+      'Google hesabınla giriş yapıldı, verilerin geri yüklendi!';
+
+  @override
+  String get googleSignInFailedMessage =>
+      'Giriş yapılırken bir sorun oluştu, tekrar dene.';
+
+  @override
+  String get googleLinkPromoTitle => 'Satın Alımlarını Güvende Tut';
+
+  @override
+  String get googleLinkPromoBody =>
+      'Google hesabınla bağlanırsan, Zibo Coin\'lerin ve tüm ilerlemen cihaz değişse bile kaybolmaz.';
+
+  @override
+  String get googleLinkPromoSkipButton => 'Şimdilik Atla';
 }

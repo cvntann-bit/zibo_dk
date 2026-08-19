@@ -1995,6 +1995,84 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'Artık hazırsın, {name}! Küçük adımlarla büyük değişimler yaratacağız — hedeflerini takip et, kendine iyi bak, ben hep yanındayım. Hadi başlayalım kanka!'**
   String onboardingClosingMessage(String name);
+
+  /// Profil/Ayarlar'daki Google hesap bağlama satırının başlığı — hesap HENÜZ bağlı değilken
+  ///
+  /// In tr, this message translates to:
+  /// **'Google ile Bağla'**
+  String get googleLinkRowTitleUnlinked;
+
+  /// Profil/Ayarlar'daki Google hesap bağlama satırının başlığı — hesap ZATEN bağlıyken
+  ///
+  /// In tr, this message translates to:
+  /// **'Google Hesabın'**
+  String get googleLinkRowTitleLinked;
+
+  /// Google hesap bağlama satırının alt metni — hesap bağlı DEĞİLKEN gösterilen teşvik metni
+  ///
+  /// In tr, this message translates to:
+  /// **'Satın alımlarını ve verilerini güvende tut'**
+  String get googleLinkRowSubtitle;
+
+  /// Google hesabı bağlama başarılı olunca gösterilen SnackBar mesajı
+  ///
+  /// In tr, this message translates to:
+  /// **'Google hesabına başarıyla bağlandı!'**
+  String get googleLinkSuccessMessage;
+
+  /// Google hesabı bağlama beklenmeyen bir hatayla başarısız olunca gösterilen SnackBar mesajı
+  ///
+  /// In tr, this message translates to:
+  /// **'Bağlanırken bir sorun oluştu, tekrar dene.'**
+  String get googleLinkFailedMessage;
+
+  /// Seçilen Google hesabı zaten BAŞKA bir Firebase kullanıcısına bağlıyken açılan uyarı diyaloğunun başlığı
+  ///
+  /// In tr, this message translates to:
+  /// **'Bu hesap başka bir cihaza bağlı'**
+  String get googleAlreadyLinkedDialogTitle;
+
+  /// Google hesabı başka bir cihaza bağlıyken açılan uyarı diyaloğunun gövde metni
+  ///
+  /// In tr, this message translates to:
+  /// **'Bu Google hesabı zaten başka bir cihazdaki verilerle ilişkili. O hesaba geçip verilerine ulaşmak istersen, bu cihazdaki mevcut ilerleme kaybolur.'**
+  String get googleAlreadyLinkedDialogBody;
+
+  /// Google hesabı başka bir cihaza bağlıyken, o hesaba GEÇMEK için sunulan butonun metni
+  ///
+  /// In tr, this message translates to:
+  /// **'Google ile Giriş Yap'**
+  String get googleSignInInsteadButton;
+
+  /// Yeni cihazda Google ile giriş yapıp eski hesap kurtarıldığında gösterilen SnackBar mesajı
+  ///
+  /// In tr, this message translates to:
+  /// **'Google hesabınla giriş yapıldı, verilerin geri yüklendi!'**
+  String get googleSignInSuccessMessage;
+
+  /// Google ile giriş yapma beklenmeyen bir hatayla başarısız olunca gösterilen SnackBar mesajı
+  ///
+  /// In tr, this message translates to:
+  /// **'Giriş yapılırken bir sorun oluştu, tekrar dene.'**
+  String get googleSignInFailedMessage;
+
+  /// Mağaza'da ilk gerçek coin satın alma denemesinde gösterilen Google bağlama teşvik sheet'inin başlığı
+  ///
+  /// In tr, this message translates to:
+  /// **'Satın Alımlarını Güvende Tut'**
+  String get googleLinkPromoTitle;
+
+  /// Google bağlama teşvik sheet'inin gövde metni
+  ///
+  /// In tr, this message translates to:
+  /// **'Google hesabınla bağlanırsan, Zibo Coin\'lerin ve tüm ilerlemen cihaz değişse bile kaybolmaz.'**
+  String get googleLinkPromoBody;
+
+  /// Google bağlama teşvik sheet'inde bağlamadan devam etmek için sunulan butonun metni — zorunlu değil
+  ///
+  /// In tr, this message translates to:
+  /// **'Şimdilik Atla'**
+  String get googleLinkPromoSkipButton;
 }
 
 class _AppLocalizationsDelegate

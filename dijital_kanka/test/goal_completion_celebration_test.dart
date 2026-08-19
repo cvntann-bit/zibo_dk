@@ -37,6 +37,15 @@ class _RecordingSoundEffectsService extends SoundEffectsService {
   Future<void> playGoalComplete() async => goalCompleteCallCount++;
 
   @override
+  Future<void> playCostumeBuy() async {}
+
+  @override
+  Future<void> playThemeBuy() async {}
+
+  @override
+  Future<void> playWaterDrop() async {}
+
+  @override
   void dispose() {}
 }
 

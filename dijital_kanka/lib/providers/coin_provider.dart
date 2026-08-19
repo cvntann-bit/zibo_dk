@@ -385,13 +385,25 @@ class CoinProvider extends ChangeNotifier {
   bool spendSpecialReplyPack() =>
       _spend(CoinEconomy.specialReplyPack, 'Özel replik paketi');
 
-  /// Kostümler parametrik fiyatlanır (bkz. lib/data/costumes.dart).
-  bool spendOnCostume({required String costumeName, required int cost}) =>
-      _spend(cost, 'Kostüm: $costumeName');
+  /// Kostümler parametrik fiyatlanır (bkz. lib/data/costumes.dart). Başarılı
+  /// satın almada [SoundEffectsService.playCostumeBuy] çalar — [_spend]'in
+  /// diğer çağıranlarından (streak freeze vb.) BİLEREK AYRI tutuldu, o
+  /// generik metoda ses eklemek istenmeyen bir yan etki (ör. kişilik modu
+  /// kilidi açma) için de aynı sesi çaldırırdı.
+  bool spendOnCostume({required String costumeName, required int cost}) {
+    final success = _spend(cost, 'Kostüm: $costumeName');
+    if (success && _isSoundEnabled()) _soundEffectsService.playCostumeBuy();
+    return success;
+  }
 
   /// Kod-tabanlı temalar parametrik fiyatlanır (bkz. lib/data/app_themes.dart).
-  bool spendOnTheme({required String themeName, required int cost}) =>
-      _spend(cost, 'Tema: $themeName');
+  /// Başarılı satın almada [SoundEffectsService.playThemeBuy] çalar — bkz.
+  /// [spendOnCostume]'daki AYNI gerekçe.
+  bool spendOnTheme({required String themeName, required int cost}) {
+    final success = _spend(cost, 'Tema: $themeName');
+    if (success && _isSoundEnabled()) _soundEffectsService.playThemeBuy();
+    return success;
+  }
 
   // --- Reklam gösterimi (coin ekonomisiyle DOĞRUDAN ilgisiz) -----------
 

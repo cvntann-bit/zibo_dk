@@ -17,6 +17,8 @@ import 'package:dijital_kanka/services/sound_effects_service.dart';
 class _RecordingSoundEffectsService extends SoundEffectsService {
   int rewardCallCount = 0;
   int purchaseCallCount = 0;
+  int costumeBuyCallCount = 0;
+  int themeBuyCallCount = 0;
 
   @override
   Future<void> playZiboTap() async {}
@@ -29,6 +31,15 @@ class _RecordingSoundEffectsService extends SoundEffectsService {
 
   @override
   Future<void> playGoalComplete() async {}
+
+  @override
+  Future<void> playCostumeBuy() async => costumeBuyCallCount++;
+
+  @override
+  Future<void> playThemeBuy() async => themeBuyCallCount++;
+
+  @override
+  Future<void> playWaterDrop() async {}
 
   @override
   void dispose() {}
@@ -130,10 +141,79 @@ void main() {
 
       provider.earnDailyCheckIn();
       await provider.purchaseCoinPackage(package);
+      provider.earnReferral();
+      provider.spendOnCostume(costumeName: 'Test Kostüm', cost: 50);
+      provider.spendOnTheme(themeName: 'Test Tema', cost: 50);
 
       expect(sound.rewardCallCount, 0);
       expect(sound.purchaseCallCount, 0);
+      expect(sound.costumeBuyCallCount, 0);
+      expect(sound.themeBuyCallCount, 0);
     });
+
+    test(
+      'Kostüm satın alma playCostumeBuy çalar, diğer üç ses ÇALMAZ',
+      () {
+        final sound = _RecordingSoundEffectsService();
+        final provider = CoinProvider(soundEffectsService: sound);
+        provider.earnReferral(); // yeterli bakiye (100 ZC)
+        sound.rewardCallCount = 0; // yukarıdaki earnReferral'ın kendi sesini sıfırla
+
+        final success = provider.spendOnCostume(
+          costumeName: 'Test Kostüm',
+          cost: 50,
+        );
+
+        expect(success, true);
+        expect(sound.costumeBuyCallCount, 1);
+        expect(sound.themeBuyCallCount, 0);
+        expect(sound.rewardCallCount, 0);
+        expect(sound.purchaseCallCount, 0);
+      },
+    );
+
+    test(
+      'Tema satın alma playThemeBuy çalar, diğer üç ses ÇALMAZ',
+      () {
+        final sound = _RecordingSoundEffectsService();
+        final provider = CoinProvider(soundEffectsService: sound);
+        provider.earnReferral();
+        sound.rewardCallCount = 0;
+
+        final success = provider.spendOnTheme(
+          themeName: 'Test Tema',
+          cost: 50,
+        );
+
+        expect(success, true);
+        expect(sound.themeBuyCallCount, 1);
+        expect(sound.costumeBuyCallCount, 0);
+        expect(sound.rewardCallCount, 0);
+        expect(sound.purchaseCallCount, 0);
+      },
+    );
+
+    test(
+      'Bakiye yetersizken kostüm/tema satın alma başarısız olur, HİÇBİR ses çalmaz',
+      () {
+        final sound = _RecordingSoundEffectsService();
+        final provider = CoinProvider(soundEffectsService: sound);
+
+        final costumeSuccess = provider.spendOnCostume(
+          costumeName: 'Test Kostüm',
+          cost: 50,
+        );
+        final themeSuccess = provider.spendOnTheme(
+          themeName: 'Test Tema',
+          cost: 50,
+        );
+
+        expect(costumeSuccess, false);
+        expect(themeSuccess, false);
+        expect(sound.costumeBuyCallCount, 0);
+        expect(sound.themeBuyCallCount, 0);
+      },
+    );
   });
 
   group('CoinProvider - ömür boyu toplamlar', () {

@@ -1089,4 +1089,50 @@ class AppLocalizationsEn extends AppLocalizations {
   String onboardingClosingMessage(String name) {
     return 'You\'re all set, $name! We\'ll make big changes with small steps — track your goals, take care of yourself, I\'ve got your back. Let\'s get started, buddy!';
   }
+
+  @override
+  String get googleLinkRowTitleUnlinked => 'Link Google Account';
+
+  @override
+  String get googleLinkRowTitleLinked => 'Your Google Account';
+
+  @override
+  String get googleLinkRowSubtitle => 'Keep your purchases and data safe';
+
+  @override
+  String get googleLinkSuccessMessage =>
+      'Successfully linked to your Google account!';
+
+  @override
+  String get googleLinkFailedMessage =>
+      'Something went wrong linking your account, try again.';
+
+  @override
+  String get googleAlreadyLinkedDialogTitle =>
+      'This account is linked to another device';
+
+  @override
+  String get googleAlreadyLinkedDialogBody =>
+      'This Google account is already associated with data on another device. If you switch to that account, your current progress on this device will be lost.';
+
+  @override
+  String get googleSignInInsteadButton => 'Sign in with Google';
+
+  @override
+  String get googleSignInSuccessMessage =>
+      'Signed in with Google — your data has been restored!';
+
+  @override
+  String get googleSignInFailedMessage =>
+      'Something went wrong signing in, try again.';
+
+  @override
+  String get googleLinkPromoTitle => 'Keep Your Purchases Safe';
+
+  @override
+  String get googleLinkPromoBody =>
+      'Link your Google account so your Zibo Coins and progress don\'t get lost if you switch devices.';
+
+  @override
+  String get googleLinkPromoSkipButton => 'Skip for Now';
 }

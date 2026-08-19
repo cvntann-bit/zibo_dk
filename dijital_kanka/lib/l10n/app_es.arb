@@ -322,5 +322,18 @@
   "onboardingStoreDescription": "Ahorra Zibo Coin, compra nuevos disfraces y temas de colores — viste a Zibo como quieras.",
   "onboardingProfileDescription": "Mira tus estadísticas, sigue tu vínculo con Zibo y guarda tus frases favoritas — todo en un solo lugar.",
   "onboardingClosingTitle": "¡Tu Viaje con Zibo Comienza!",
-  "onboardingClosingMessage": "¡Ya estás listo, {name}! Haremos grandes cambios con pequeños pasos — sigue tus metas, cuídate, siempre estoy contigo. ¡Empecemos, amigo!"
+  "onboardingClosingMessage": "¡Ya estás listo, {name}! Haremos grandes cambios con pequeños pasos — sigue tus metas, cuídate, siempre estoy contigo. ¡Empecemos, amigo!",
+  "googleLinkRowTitleUnlinked": "Vincular con Google",
+  "googleLinkRowTitleLinked": "Tu cuenta de Google",
+  "googleLinkRowSubtitle": "Mantén seguras tus compras y datos",
+  "googleLinkSuccessMessage": "¡Vinculado con tu cuenta de Google!",
+  "googleLinkFailedMessage": "Hubo un problema al vincular tu cuenta, inténtalo de nuevo.",
+  "googleAlreadyLinkedDialogTitle": "Esta cuenta está vinculada a otro dispositivo",
+  "googleAlreadyLinkedDialogBody": "Esta cuenta de Google ya está asociada con datos en otro dispositivo. Si cambias a esa cuenta, tu progreso actual en este dispositivo se perderá.",
+  "googleSignInInsteadButton": "Iniciar sesión con Google",
+  "googleSignInSuccessMessage": "¡Sesión iniciada con Google, tus datos se han restaurado!",
+  "googleSignInFailedMessage": "Hubo un problema al iniciar sesión, inténtalo de nuevo.",
+  "googleLinkPromoTitle": "Mantén Seguras Tus Compras",
+  "googleLinkPromoBody": "Vincula tu cuenta de Google para que tus Zibo Coins y tu progreso no se pierdan si cambias de dispositivo.",
+  "googleLinkPromoSkipButton": "Omitir por Ahora"
 }

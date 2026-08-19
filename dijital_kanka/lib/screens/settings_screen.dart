@@ -4,10 +4,12 @@ import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../l10n/app_localizations.dart';
+import '../providers/auth_link_provider.dart';
 import '../providers/locale_provider.dart';
 import '../providers/notification_provider.dart';
 import '../providers/sound_effects_provider.dart';
 import '../providers/theme_provider.dart';
+import '../utils/google_link_action.dart';
 import 'legal_placeholder_screen.dart';
 
 /// Destek e-postası — Ayarlar > Destek > "Bize Ulaşın" satırında hem
@@ -86,6 +88,7 @@ class SettingsScreen extends StatelessWidget {
     final isDarkMode = context.watch<ThemeProvider>().isDarkMode;
     final soundEffectsEnabled = context.watch<SoundEffectsProvider>().enabled;
     final currentLanguageCode = context.watch<LocaleProvider>().locale.languageCode;
+    final authLink = context.watch<AuthLinkProvider>();
     final sectionTitleStyle = Theme.of(context).textTheme.labelLarge?.copyWith(
       color: Theme.of(context).colorScheme.primary,
       fontWeight: FontWeight.bold,
@@ -140,6 +143,31 @@ class SettingsScreen extends StatelessWidget {
                     ],
                   ),
                   onTap: () => _showLanguagePicker(context),
+                ),
+                const Divider(height: 1),
+                // 2026 yeni özellik — mevcut (anonim) hesabı Google'a
+                // bağlayıp cihaz değişikliğinde veri kaybını önler (bkz.
+                // AuthLinkProvider/utils/google_link_action.dart). Profil
+                // sayfasındaki "Zibo ile Bağın" satırıyla AYNI onTap
+                // mantığı.
+                ListTile(
+                  leading: Icon(
+                    authLink.isLinked
+                        ? Icons.verified_user_rounded
+                        : Icons.link_rounded,
+                  ),
+                  title: Text(
+                    authLink.isLinked
+                        ? l10n.googleLinkRowTitleLinked
+                        : l10n.googleLinkRowTitleUnlinked,
+                  ),
+                  subtitle: Text(
+                    authLink.isLinked
+                        ? (authLink.linkedEmail ?? '')
+                        : l10n.googleLinkRowSubtitle,
+                  ),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => handleGoogleLinkTap(context),
                 ),
               ],
             ),

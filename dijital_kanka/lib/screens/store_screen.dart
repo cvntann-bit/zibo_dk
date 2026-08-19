@@ -8,10 +8,12 @@ import '../l10n/app_localizations.dart';
 import '../models/app_theme_option.dart';
 import '../models/coin_economy.dart';
 import '../models/coin_package.dart';
+import '../providers/auth_link_provider.dart';
 import '../providers/coin_provider.dart';
 import '../utils/ad_free_promo_trigger.dart';
 import '../widgets/ad_free_promo_sheet.dart';
 import '../widgets/costume_card.dart';
+import '../widgets/google_link_promo_sheet.dart';
 import '../widgets/theme_option_card.dart';
 
 /// Mağaza'nın üç segmenti — dışarıdan (ör. Profil > Kostüm Dolabı
@@ -412,6 +414,20 @@ class _PackageCardState extends State<_PackageCard> {
   bool _loading = false;
 
   Future<void> _buy(BuildContext context) async {
+    // Kullanıcı isteği: İLK gerçek coin satın alma DENEMESİNDE, hesap
+    // henüz Google'a bağlı değilse önce bir teşvik sheet'i göster (zorunlu
+    // DEĞİL — "Şimdilik Atla" ile atlanabilir, ne yapılırsa yapılsın
+    // aşağıdaki satın alma normal şekilde devam eder). `hasSeenLinkPrompt`
+    // sayesinde bu YALNIZCA bir kez (ilk denemede) gösteriliyor — sonraki
+    // satın almalarda tekrar sormuyor.
+    final authLink = context.read<AuthLinkProvider>();
+    if (!authLink.isLinked && !authLink.hasSeenLinkPrompt) {
+      await authLink.markLinkPromptSeen();
+      if (!context.mounted) return;
+      await showGoogleLinkPromoSheet(context);
+      if (!context.mounted) return;
+    }
+
     setState(() => _loading = true);
     final success = await context.read<CoinProvider>().purchaseCoinPackage(
       widget.package,

@@ -58,6 +58,7 @@ dependencies:
   package_info_plus: ^10.2.1
   audioplayers: ^6.0.0
   google_mobile_ads: ^9.1.0
+  google_sign_in: ^7.0.0
 
 dev_dependencies:
   flutter_test:

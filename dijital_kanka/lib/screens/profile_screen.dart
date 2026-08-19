@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 
 import '../l10n/app_localizations.dart';
 import '../models/bond_level.dart';
+import '../providers/auth_link_provider.dart';
 import '../providers/coin_provider.dart';
 import '../providers/favorite_quotes_provider.dart';
 import '../providers/goals_provider.dart';
@@ -21,6 +22,7 @@ import '../screens/coin_summary_screen.dart';
 import '../screens/favorite_quotes_screen.dart';
 import '../screens/longest_streak_screen.dart';
 import '../services/photo_picker_service.dart';
+import '../utils/google_link_action.dart';
 import '../utils/profile_stats.dart';
 import '../widgets/costume_closet_preview.dart';
 import '../widgets/profile_stat_card.dart';
@@ -178,6 +180,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final water = context.watch<WaterProvider>();
     final coin = context.watch<CoinProvider>();
     final favoriteQuotes = context.watch<FavoriteQuotesProvider>();
+    final authLink = context.watch<AuthLinkProvider>();
     final now = context.watch<TrustedTimeProvider>().now();
 
     final stats = ProfileStats.compute(
@@ -349,6 +352,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
               title: l10n.profileShareCardRowTitle,
               subtitle: l10n.profileShareCardRowSubtitle,
               onTap: () => _openShareCard(context, l10n, profile, stats),
+            ),
+            const SizedBox(height: 12),
+            _ProfileLinkRow(
+              icon: authLink.isLinked
+                  ? Icons.verified_user_rounded
+                  : Icons.link_rounded,
+              title: authLink.isLinked
+                  ? l10n.googleLinkRowTitleLinked
+                  : l10n.googleLinkRowTitleUnlinked,
+              subtitle: authLink.isLinked
+                  ? (authLink.linkedEmail ?? '')
+                  : l10n.googleLinkRowSubtitle,
+              onTap: () => handleGoogleLinkTap(context),
             ),
       ],
     );

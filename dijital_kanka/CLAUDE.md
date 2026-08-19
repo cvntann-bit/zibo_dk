@@ -48,8 +48,9 @@ bölümündeki `clean_app_icon.dart` notu).
 
 ## Mimari özet
 
-- **State management:** `provider` paketi. On dokuz adet `ChangeNotifier`, `main.dart`'ta
-  `MultiProvider` ile uygulama köküne bağlanıyor: `TrustedTimeProvider`, `AppThemeProvider`,
+- **State management:** `provider` paketi. Yirmi adet `ChangeNotifier`, `main.dart`'ta
+  `MultiProvider` ile uygulama köküne bağlanıyor: `TrustedTimeProvider`, `AuthLinkProvider`
+  (2026 yeni özellik — bkz. "Google Hesap Bağlama" bölümü), `AppThemeProvider`,
   `CoinProvider`, `CostumeProvider`, `DailyRewardsProvider`, `DreamJournalProvider`,
   `FavoriteQuotesProvider`, `GoalsProvider`, `GratitudeProvider`, `LocaleProvider`,
   `ManifestProvider`, `MoneyProvider`, `MoodProvider`, `NotificationProvider`,
@@ -57,7 +58,9 @@ bölümündeki `clean_app_icon.dart` notu).
   `ZiboPoseProvider`. Kullanıcı verisi taşıyanların tamamı (`TrustedTimeProvider` VE
   `ZiboPoseProvider` HARİÇ — ikisi de kalıcı değil, saf UI/görsel durum, bkz. o sınıfların kendi
   dokümantasyonu) `CloudStateStore` üzerinden Firestore'a da senkronize oluyor — bkz. "Firestore
-  veri kalıcılığı, Anonymous Auth ve güvenilir zaman" bölümü.
+  veri kalıcılığı, Anonymous Auth ve güvenilir zaman" bölümü. `AuthLinkProvider` kendi `hasSeenLinkPrompt`
+  alanı için AYNI `CloudStateStore`'u kullanıyor ama `isLinked`/`linkedEmail` Firebase Auth'un
+  KENDİSİNDEN canlı okunuyor (ayrı bir kopya tutulmuyor) — bkz. "Google Hesap Bağlama" bölümü.
   **`_AppStartupGate`'in yedi provider'ı (`ThemeProvider`/`AppThemeProvider`/`LocaleProvider`/
   `CoinProvider`/`CostumeProvider`/`OnboardingProvider`/`ProfileProvider`) `isReady` olana kadar
   `RootScreen`/`OnboardingScreen` hiç GÖSTERİLMEZ** — bkz. "Açılış yükleme ekranı" ve "Onboarding
@@ -3152,6 +3155,42 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
     kazanma/satın alma sesleri" grubu (3 test: kazanma mekanikleri `playCoinReward` çalar
     `playCoinPurchase` ÇALMAZ; satın alma tersi; `isSoundEnabled: () => false` iken HİÇBİRİ
     çalmaz).
+- **2026 DÖRDÜNCÜ güncelleme — üç YENİ ses efekti: kostüm satın alma, tema satın alma, su damlası.**
+  Kullanıcı `assets/sounds/` klasörüne üç yeni dosya ekledi: `zibo_costume_buy.wav` (Mağaza'da bir
+  kostüm satın alınca), `theme_buy.wav` (bir tema satın alınca — kostümden BİLEREK AYRI bir ses,
+  kullanıcının açık isteği), `water_drop.wav` (Su Takibi'nde bir bardak/şişe dolum kutucuğuna
+  dokunup su içildiği işaretlenince, dolma animasyonuyla EŞ ZAMANLI). Hepsi mevcut "Ses Efektleri"
+  anahtarına bağlı (`SoundEffectsProvider.enabled`) ve mevcut stop+play deseni sayesinde üst üste
+  binmiyor — yeni bir mimari GEREKMEDİ, yalnızca mevcut `SoundEffectsService` sözleşmesine üç yeni
+  metot eklendi.
+  - **`SoundEffectsService`'e üç yeni soyut metot: `playCostumeBuy()`, `playThemeBuy()`,
+    `playWaterDrop()`** — `playCoinReward()`/`playCoinPurchase()`/`playGoalComplete()` ile AYNI
+    imza deseni, `AudioPlayersSoundEffectsService` içindeki ortak `_play(String assetPath)`
+    yardımcısını çağırıyor (stop+play, üst üste binmeyi engelliyor). `FakeSoundEffectsService`'te
+    üçü de no-op.
+  - **`CoinProvider.spendOnCostume`/`spendOnTheme`** artık harcama BAŞARILI olduğunda (yetersiz
+    bakiye durumunda `_spend` `false` döndüğü için ses HİÇ çalınmıyor) kendi sesini çalıyor —
+    `playCoinReward`'ın aksine bunlar `_earn()`'ün merkezi ses yoluna GİRMİYOR (bunlar birer
+    HARCAMA, kazanma değil), `spendOnCostume`/`spendOnTheme` gövdelerinde doğrudan
+    `_soundEffectsService.playCostumeBuy()`/`playThemeBuy()` çağrılıyor (ikisi de
+    `_isSoundEnabled()` kontrolünden geçtikten sonra).
+  - **`WaterTrackingScreen`** yeni bir opsiyonel `soundEffectsService` constructor parametresi
+    kazandı (`HomeScreen`/`GoalTrackingScreen` ile AYNI test-injection deseni, varsayılan gerçek
+    `AudioPlayersSoundEffectsService()`). `_tapGlass` yalnızca ARTIŞ (bardağı/şişeyi DOLDURMA)
+    dalında `playWaterDrop()` çağırıyor, azaltma (geri alma/undo) dalında ÇAĞIRMIYOR — kullanıcının
+    "kullanıcı... su içtiğini işaretlediğinde çalsın" isteğiyle birebir örtüşüyor.
+  - **Test:** `coin_provider_test.dart`'ın "kazanma/satın alma sesleri" grubuna 3 yeni test eklendi
+    (kostüm satın alma sesi çalar, tema satın alma sesi çalar, yetersiz bakiyede İKİSİ de
+    çalmaz) + mevcut "isSoundEnabled false" testi kostüm/tema seslerinin de susturulduğunu
+    doğruyacak şekilde genişletildi. YENİ `test/water_tracking_sound_test.dart` (Ses Efektleri
+    açıkken bir birim işaretlenince `playWaterDrop` çağrılır) — `find.byIcon(Icons.
+    water_drop_outlined)`/`find.byIcon(Icons.water_drop)` ile bulunuyor (`_WaterGlass` yalnızca
+    ikon render ediyor, görünür bir sayı metni YOK — `find.text('1')` gibi bir finder işe
+    yaramaz). `goal_completion_celebration_test.dart`/`home_screen_sound_test.dart`'taki yerel
+    `_RecordingSoundEffectsService` sınıflarına da (bu dosyalar kostüm/tema/su sesini test
+    ETMİYOR ama Dart'ın soyut sınıf sözleşmesini karşılamak için) üç yeni metodun no-op override'ı
+    eklendi.
+  - **Test suite'i tam yeşil:** 262/262 geçti.
 
 ## Hedef Tamamlama Kutlaması — titreşim + konfeti + ses ([goal_tracking_screen.dart](lib/screens/goal_tracking_screen.dart), [goal_card.dart](lib/widgets/goal_card.dart), [goal_confetti_burst.dart](lib/widgets/goal_confetti_burst.dart))
 
@@ -3367,16 +3406,16 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
   `profile_provider_test.dart`, `profile_stats_test.dart`, `profile_screen_test.dart`,
   `manifest_journal_screen_test.dart`, `address_term_test.dart`, `bond_level_test.dart`,
   `favorite_quotes_provider_test.dart`, `onboarding_provider_test.dart`,
-  `zibo_animated_image_test.dart`, `sound_effects_provider_test.dart` (YENİ, 2026 — bkz. "Zibo
-  Dokunma Sesi" bölümü), `home_screen_sound_test.dart` (YENİ, aynı bölüm).
-  **Toplam: 249 test** (2026 — `coin_provider_test.dart`'a Şans Çarkı/Mağaza günlük reklam
-  hakları için 5 yeni test eklendi, bkz. "Zibo Coin ekonomisi" bölümü).
+  `zibo_animated_image_test.dart`, `sound_effects_provider_test.dart` (2026 — bkz. "Zibo
+  Dokunma Sesi" bölümü), `home_screen_sound_test.dart` (aynı bölüm),
+  `water_tracking_sound_test.dart` (YENİ, 2026 — kostüm/tema/su damlası sesleri, aynı bölüm).
+  **Toplam: 262 test.**
 - `widget_test.dart` içindeki `_buildAppWithClock()` yardımcı fonksiyonu enjekte edilebilir saatli
   testler için — **`RootScreen`'in ihtiyaç duyduğu HER provider'ı içermeli** (`AppThemeProvider`,
-  `CoinProvider`, `CostumeProvider`, `DailyRewardsProvider`, `FavoriteQuotesProvider`,
-  `GoalsProvider`, `GratitudeProvider`, `ManifestProvider`, `MoneyProvider`, `NotificationProvider`,
-  `ProfileProvider`, `ThemeProvider`, `TrustedTimeProvider`, `WaterProvider`, `ZiboPoseProvider`),
-  çünkü `RootScreen`
+  `AuthLinkProvider`, `CoinProvider`, `CostumeProvider`, `DailyRewardsProvider`,
+  `FavoriteQuotesProvider`, `GoalsProvider`, `GratitudeProvider`, `ManifestProvider`,
+  `MoneyProvider`, `NotificationProvider`, `ProfileProvider`, `SoundEffectsProvider`,
+  `ThemeProvider`, `TrustedTimeProvider`, `WaterProvider`, `ZiboPoseProvider`), çünkü `RootScreen`
   tüm sekmeleri hemen kuruyor (artık `ProfileScreen` de bir sekme olduğu için onun transitif olarak
   izlediği TÜM provider'lar da burada olmalı — bkz. "Alt Gezinme Çubuğu" bölümündeki Profil↔Birikim
   yer değiştirme notu). **Gotcha (gerçekten yaşandı):**
@@ -3419,6 +3458,20 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
   - Düz `ListView(children: ...)` viewport dışındaki öğeleri erken (eager) inşa etmez (Sliver lazy
     realize eder) — uzun bir listede aşağıda kalan bir öğeye erişmek için
     `tester.scrollUntilVisible()` kullanılmalı.
+  - **`tester.scrollUntilVisible()` YALNIZCA TEK YÖNDE kaydırabilir — `delta`nın işareti +
+    `Scrollable.axisDirection`'a göre SABİT bir `moveStep` hesaplanır, önceki bir kaydırmayı asla
+    "geri alamaz".** (`flutter_test`'in kendi `controller.dart` kaynağı: pozitif `delta`, dikey-aşağı
+    bir listede İÇERİĞİ YUKARI sürükleyip listenin SONUNA doğru ilerler — asla başa dönmez.) Bir
+    `find.text(...)` hedefi hâlâ ağaçta (offstage de olsa) MEVCUTSA ve daha önce o hedefin
+    GERİSİNDEKİ bir noktaya kadar kaydırılmışsa, `dragUntilVisible` 50 deneme boyunca YANLIŞ yöne
+    kaydırıp sonunda `Bad state: No element` ile çöker (gerçekten yaşandı — `profile_screen.dart`'a
+    listenin SONUNA yeni bir satır eklenip toplam içerik artık tek ekrana sığmayınca, testin ÖNCEDEN
+    karışık sırada [alttaki bir satır → üstteki bir satır] ziyaret ettiği satırlar bu yüzden
+    kırıldı, bkz. "Google Hesap Bağlama" bölümü). **Bir dikey `ListView`/`Column` içindeki birden
+    fazla satırı `scrollUntilVisible` ile ziyaret eden bir testte, satırları HER ZAMAN ekrandaki
+    GERÇEK sırayla (yukarıdan aşağıya) ziyaret edin — geriye dönük bir sıralama önceden çalışıyor
+    olsa bile (içerik henüz tek ekrana sığdığı için tesadüfen geçiyor olabilir), yeni içerik
+    eklenince sessizce kırılabilir.**
   - `Timer.periodic` içeren widget'lar (örn. `MoneyScreen`) `isActive`-tarzı korumaya sahip
     olmalı, yoksa `IndexedStack` sekmeleri hiç dispose etmediği için testler "pending timer"
     hatasıyla başarısız olur.
@@ -3924,3 +3977,192 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
      (yeni bir gün AÇILMAMALI). Tarihi geri al.
   6. **Offline testi:** Uçak modunu aç, uygulamayı aç → önceki veriler (Firestore'un kendi yerel
      önbelleği + bizim `SharedPreferences` yedeğimiz sayesinde) görünmeye devam etmeli.
+
+## Google Hesap Bağlama ([google_auth_service.dart](lib/services/google_auth_service.dart), [auth_link_provider.dart](lib/providers/auth_link_provider.dart), [auth_switch.dart](lib/utils/auth_switch.dart), [google_link_action.dart](lib/utils/google_link_action.dart), [google_link_promo_sheet.dart](lib/widgets/google_link_promo_sheet.dart))
+
+- **2026 yeni özellik.** Kullanıcı isteği: Anonymous Auth'a dayalı kullanıcı verisi (özellikle
+  satın alınan Zibo Coin'ler) cihaz değişikliğinde/uygulama silinip yeniden kurulduğunda kaybolmasın
+  diye, kullanıcı isteğe bağlı olarak anonim hesabını bir Google hesabına BAĞLAYABİLSİN — sonra yeni
+  bir cihazda aynı Google hesabıyla GİRİŞ YAPIP eski verisini kurtarabilsin. Dört parça: (1) Firebase
+  Authentication'a Google Sign-In sağlayıcısı, (2) Profil + Ayarlar'da bir "Google ile Bağla" satırı,
+  (3) Mağaza'da İLK gerçek coin satın alma denemesinde gösterilen (zorunlu OLMAYAN) bir teşvik
+  sheet'i, (4) yeni cihazda "Google ile Giriş Yap" ile eski hesabı kurtarma.
+- **`google_sign_in: ^7.0.0`** (`flutter pub get` ile `7.2.0`'a çözüldü) — bu sürüm paketin
+  Credential Manager tabanlı, TAMAMEN yeniden yazılmış v7 API'si (eski `signIn()`/`signInSilently()`
+  metotları YOK). Singleton `GoogleSignIn.instance`, kullanılmadan ÖNCE `await GoogleSignIn.instance.
+  initialize()`'ın TAM OLARAK bir kez tamamlanmış olması ŞART (paketin kendi dokümantasyonu).
+  `authenticate()` `null` DÖNMEZ — başarısız/iptal olursa `GoogleSignInException` (kod
+  `GoogleSignInExceptionCode.canceled` dahil) FIRLATIR. `idToken` (nullable `String?`,
+  `account.authentication.idToken`) — temel akışta expose edilen TEK token, ayrı bir
+  `authorizeScopes()` çağrısı GEREKMEDİ (uygulama Google'dan yalnızca kimlik doğrulaması istiyor,
+  ekstra bir Google API kapsamı değil).
+- **`GoogleAuthService`** (`AdService`/`NotificationService` ile AYNI "gerçek + fake, testte
+  enjekte edilebilir" desen — hem `google_sign_in` hem `firebase_auth`'un `link`/`signInWith`
+  çağrıları platform kanalına/ağa dokunduğu için `flutter_test`'te KULLANILAMAZ):
+  - `linkCurrentUser()` — şu an oturum açık (genelde anonim) kullanıcıyı Google hesabına
+    **`user.linkWithCredential(credential)`** ile bağlar — bu, AYNI Firebase uid'ini KORUR, tüm
+    mevcut veri (`users/{uid}/...` altında) hiç dokunulmadan kalır. `signInWithCredential`'DAN
+    (ki bu SESSİON'U DEĞİŞTİRİR, farklı bir uid'e geçebilir) BİLEREK FARKLI — "bağlama" akışının
+    kullanıcının MEVCUT verisini KORUMASI gerektiği için doğru API budur.
+  - Bu Google hesabı ZATEN başka bir Firebase kullanıcısına bağlıysa (`credential-already-in-use`/
+    `email-already-in-use` Firebase hata kodları) `GoogleAccountAlreadyLinkedElsewhereException`
+    fırlatılır — Firebase'in kendi dokümantasyonu buradan kurtarmanın yolunun `signInWithCredential`
+    ile O HESABA GEÇMEK olduğunu söylüyor; arayüz bunu yakalayıp kullanıcıya sorar (bkz. altta
+    `handleGoogleLinkTap`).
+  - `signIn()` — Google ile GİRİŞ yapar (mevcut anonim oturumun YERİNE geçer,
+    `FirebaseAuth.instance.signInWithCredential`) — yeni bir cihazda önceden bağlanmış bir hesabı
+    KURTARMAK için. Bu Google hesabı daha önce HİÇ kullanılmadıysa tamamen yeni/boş bir Firebase
+    kullanıcısı oluşur (kullanıcının "önceden bağlıydıysa" beklentisiyle tutarlı — bağlı DEĞİLSE
+    zaten kurtarılacak bir şey yok).
+  - `isCurrentUserLinked`/`linkedEmail` — SENKRON getter'lar, `FirebaseAuth.instance.currentUser.
+    providerData`'da `google.com` sağlayıcısını arıyor.
+  - `FirebaseGoogleAuthService` gerçek implementasyon; `FakeGoogleAuthService` (const, HER ZAMAN
+    "bağlı değil", tüm çağrılar no-op) test/güvenli-varsayılan implementasyonu.
+- **`AuthLinkProvider` — KRİTİK güvenlik deseni, `CoinProvider`'ın `adService` varsayılanıyla
+  BİREBİR AYNI mantık.** Constructor'ın `googleAuthService` parametresi verilMEZse varsayılan
+  **`FakeGoogleAuthService`** (GERÇEK `FirebaseGoogleAuthService` DEĞİL). **Neden kritik:**
+  `flutter_test` `Firebase.initializeApp()`'i HİÇ çağırmıyor — eğer varsayılan gerçek servis
+  olsaydı, `AuthLinkProvider`'ın constructor'ı `_refreshLinkStatus()` içinde SENKRON olarak
+  `FirebaseAuth.instance.currentUser`'ı okuyup `[core/no-app]` fırlatır, `DijitalKankaApp` kuran
+  HER TEK test ANINDA çökerdi. Üç katmanlı savunma: (1) `AuthLinkProvider`'ın KENDİ varsayılanı
+  `FakeGoogleAuthService`; (2) `main.dart`'ın `DijitalKankaApp.build()`'i yalnızca ÜRETİMDE açıkça
+  `FirebaseGoogleAuthService()` veriyor (`CoinProvider`/`AdMobAdService` ile AYNI "sağlam varsayılan,
+  kompozisyon kökünde override" deseni); (3) `FirebaseGoogleAuthService.isCurrentUserLinked`/
+  `linkedEmail` getter'ları KENDİLERİ de try/catch'e sarılı (ikinci güvenlik ağı — `main.dart`'ın
+  gerçek servisi HER ZAMAN kullanması yüzünden, servisin kendisi de Firebase'siz bir ortamda güvenle
+  "bağlı değil" dönebilmeli).
+  - `isLinked`/`linkedEmail` Firebase Auth'un KENDİSİNDEN canlı okunuyor (ayrı bir yerel kopya
+    TUTULMUYOR — Firebase Auth zaten tek gerçek kaynak).
+  - `hasSeenLinkPrompt` (bool) — Mağaza'daki ilk-satın-alma teşvik sheet'inin BİR KEZ (kabul
+    edilsin ya da "Şimdilik Atla" densin FARK ETMEZ) gösterilip gösterilmediği —
+    `CloudStateStore(prefsKey: 'googleLinkPromptState', uid: uid)` ile `ThemeProvider.isDarkMode`
+    ile AYNI Varyant C ("tek skaler değer, `{'value': ...}` sarmalı") deseninde kalıcı.
+  - `linkWithGoogle()`/`signInWithGoogle()` — `isLinking` bool'unu (arayüzün bir yükleniyor
+    göstergesi için izleyebileceği) yönetiyor, ikisi de `GoogleAuthService`'e ince bir sarmalayıcı.
+- **`main.dart`'a bağlama:** `AuthLinkProvider`, `MultiProvider` listesinde `TrustedTimeProvider`'dan
+  HEMEN SONRA (diğer HİÇBİR provider ona `create:` callback'inden bağımlı olmadığı için konumu
+  esnek, ama erken tutuldu) `AuthLinkProvider(uid: uid, googleAuthService: FirebaseGoogleAuthService())`
+  ile ekleniyor.
+- **Uid-değiştirme mekanizması — yeni cihazda "Google ile Giriş Yap" TÜM uygulamayı yeni bir uid'le
+  yeniden kurmalı.** Kullanıcı `signInWithGoogle()` çağırdığında dönen `GoogleSignInOutcome.uid`
+  eski (mevcut cihazın anonim) uid'den FARKLI bir Firebase kullanıcısı olabilir — bu durumda TÜM
+  `MultiProvider` ağacının (coin/hedefler/kostümler/vb. HEPSİ `uid`'e göre `CloudStateStore`
+  kuruyor) yeni uid ile SIFIRDAN kurulması gerekiyor, tek bir provider'ın state'ini değiştirmek
+  yetmez.
+  - **`lib/utils/auth_switch.dart`** — `final ValueNotifier<String?> switchToUid = ValueNotifier
+    <String?>(null);` — `homeTabRequest`/`isHomeTabActive` ile AYNI "basit paylaşılan global sinyal"
+    deseni (widget ağacının dışından da yazılabilmesi gerekiyor, `AuthLinkProvider`/
+    `GoogleAuthService` bir widget değil).
+  - **`main.dart`'ta YENİ `_AppRoot` (StatefulWidget)`** — `runApp(DijitalKankaApp(uid: uid))`
+    yerine artık `runApp(_AppRoot(initialUid: uid))` çağrılıyor. `_AppRoot.build()`:
+    ```dart
+    return KeyedSubtree(key: ValueKey(_uid), child: DijitalKankaApp(uid: _uid));
+    ```
+    `initState`'te `switchToUid.addListener(...)` ile dinliyor; sinyal `null`-olmayan bir değere
+    değişince `setState(() => _uid = newUid)` yapıyor. **`KeyedSubtree`'nin DEĞİŞEN `Key`'i** —
+    projede zaten `ProfileScreen`'in "İstatistiklerim" bölümünün sekmeye HER girişte yeniden
+    animasyonlanması için kullanılan AYNI teknik (bkz. "Profil" bölümündeki `_statsReplayKey`
+    notu) — burada TEPEDE uygulanıyor: Flutter, `Key` değişince TÜM alt ağacı (dolayısıyla
+    `DijitalKankaApp`'in kurduğu HER provider'ı) söküp SIFIRDAN yeniden kuruyor, yeni `uid` ile.
+    Bu, "yeni cihazda Google ile giriş yapınca eski hesabın TÜM verisi (coin, hedefler, kostümler)
+    görünsün" isteğini TEK bir mekanizmayla karşılıyor — 19 provider'ın hiçbirine elle bir
+    "uid değişti, yeniden yükle" metodu eklemeye GEREK KALMADI.
+  - **`lib/utils/google_link_action.dart`'taki `handleGoogleLinkTap(context)`** (Profil VE
+    Ayarlar'daki satırların PAYLAŞTIĞI ortak handler) — `linkWithGoogle()`'ı çağırır; eğer
+    `GoogleAccountAlreadyLinkedElsewhereException` fırlatılırsa (bu Google hesabı zaten BAŞKA bir
+    Firebase kullanıcısına bağlıysa) bir `AlertDialog` ile kullanıcıya "bu hesap zaten bağlı, o
+    hesaba GEÇMEK ister misin?" diye sorar — onaylanırsa `signInWithGoogle()` çağrılıp dönen
+    `outcome.uid`, `switchToUid.value`'ya yazılır (yukarıdaki mekanizmayı tetikler).
+- **UI giriş noktaları — Profil VE Ayarlar'da AYNI satır, İKİ AYRI konumdan erişilebilir olsun diye
+  bilerek TEKRARLANDI** (kullanıcı isteği "Profil sayfasına VE ayarlar kısmına" — TEK bir yere değil):
+  - **`profile_screen.dart`** — "Zibo ile Bağın" listesinin SEKİZİNCİ (son) satırı, "Profil Kartını
+    Paylaş"ın hemen ardından. Diğer 7 satırla AYNI `_ProfileLinkRow` görsel dili (ikon + başlık +
+    canlı alt metin + sağ ok), ama `onTap` yeni bir sayfa PUSH ETMİYOR — doğrudan
+    `handleGoogleLinkTap(context)` çağırıyor (diyalog/SnackBar geri bildirimini kendisi yönetiyor).
+    İkon/başlık/alt metin `authLink.isLinked`'e göre koşullu: bağlı değilse `Icons.link_rounded` +
+    "Google ile Bağla" + genel teşvik metni; bağlıysa `Icons.verified_user_rounded` + "Google Hesabın
+    Bağlı" (`googleLinkRowTitleLinked`) + bağlı e-posta.
+  - **`settings_screen.dart`** — "Genel" kartına, Dil satırının hemen ardına (bir `Divider`'la
+    ayrılmış) DÖRDÜNCÜ bir `ListTile` — AYNI koşullu ikon/başlık/alt metin, AYNI
+    `handleGoogleLinkTap(context)` çağrısı.
+- **Mağaza'daki ilk-satın-alma teşvik sheet'i (`google_link_promo_sheet.dart`)** —
+  `store_screen.dart`'ın `_PackageCardState._buy(BuildContext context)`'i, GERÇEK satın alma
+  çağrısından (`purchaseCoinPackage`) ÖNCE `!authLink.isLinked && !authLink.hasSeenLinkPrompt`
+  kontrolü yapıyor; ikisi de doğruysa ÖNCE `markLinkPromptSeen()` (bir daha hiç gösterilmesin),
+  SONRA `showGoogleLinkPromoSheet(context)` — `ad_free_promo_sheet.dart` ile AYNI
+  `showModalBottomSheet` deseni. **Kullanıcının açık isteği "zorunlu tutma, güçlü şekilde teşvik
+  et"** — sheet "Şimdilik Atla" (`Key('googleLinkPromoSkipButton')`) ile HER ZAMAN atlanabilir,
+  dışarı dokunma/sürükleme tutamacıyla da kapanabilir; sheet HANGİ yolla kapanırsa kapansın
+  (bağlandı/atlandı/iptal), asıl satın alma akışı sheet kapandıktan SONRA NORMAL ŞEKİLDE devam
+  ediyor — satın alma sheet'in sonucuna hiç bağlı değil. "Google ile Bağla" butonuna
+  (`Key('googleLinkPromoLinkButton')`) basınca sheet kapanıp `handleGoogleLinkTap(context)`
+  çağrılıyor (Profil/Ayarlar'daki satırla AYNI handler, aynı "zaten başka hesaba bağlı" akışı dahil).
+- **ARB — 13 yeni anahtar (TR/EN/ES), `onboardingClosingMessage`'dan hemen sonra:**
+  `googleLinkRowTitleUnlinked`, `googleLinkRowTitleLinked`, `googleLinkRowSubtitle`,
+  `googleLinkSuccessMessage`, `googleLinkFailedMessage`, `googleAlreadyLinkedDialogTitle`,
+  `googleAlreadyLinkedDialogBody`, `googleSignInInsteadButton`, `googleSignInSuccessMessage`,
+  `googleSignInFailedMessage`, `googleLinkPromoTitle`, `googleLinkPromoBody`,
+  `googleLinkPromoSkipButton`. `flutter gen-l10n` çalıştırıldı.
+- **Test:** `profile_screen_test.dart`/`widget_test.dart`'ın `_buildAppWithClock()` yardımcı
+  fonksiyonlarına `AuthLinkProvider` eklendi (`RootScreen`'in ihtiyaç duyduğu HER provider kuralı,
+  bkz. "Test kalıpları" bölümü — `ProfileScreen`/`SettingsScreen` artık `context.watch<
+  AuthLinkProvider>()` çağırdığı için eklenmezse `ProviderNotFoundException` o testten SONRAKİ
+  TÜM testleri kademeli olarak kırar). Mağaza'daki İLK coin paketi satın alma testi
+  (`widget_test.dart`, "Mağazadan paket satın alınca bakiye artar") artık yeni teşvik sheet'ini
+  `Key('googleLinkPromoSkipButton')` ile atlayıp SONRA satın alma başarısını doğruluyor — sheet
+  taze bir `AuthLinkProvider`'ın (bağlı değil, `hasSeenLinkPrompt: false`) İLK satın alma denemesini
+  YAKALADIĞI için bu adım gerekli, aksi halde satın alma akışı sheet açıkken beklemede kalıp
+  başarı SnackBar'ı hiç görünmüyordu. `flutter test` tam yeşil: **262/262.**
+- **Kullanıcının YAPMASI gereken Firebase Console ön koşulları** (asistan yapamaz — konsol erişimi
+  gerektiriyor):
+  1. **Google sağlayıcısını aç:** Firebase Console > Authentication > Sign-in method > Google >
+     Enable (bir destek e-postası seçmen istenecek).
+  2. **SHA-1/SHA-256 parmak izini ekle:** Firebase Console > Project settings > (uygulamanın
+     Android girdisi) > "Add fingerprint". `google_sign_in`'in Credential Manager tabanlı akışı
+     Android'de bu parmak izine göre `google-services.json`'a otomatik gömülen bir OAuth istemci
+     yapılandırmasına dayanıyor — parmak izi eklenmeden Google ile bağlama/giriş SESSİZCE
+     başarısız olur (kullanıcıya `null`/iptal olarak görünür, gerçek bir hata mesajı gelmez).
+     Bu makinedeki **DEBUG** anahtarın (yalnızca `flutter run`/`flutter build apk --debug` ile
+     üretilen APK'lar için geçerli) parmak izleri:
+     - SHA-1: `AD:E5:CB:35:ED:DF:E0:C0:EE:44:25:2A:A8:C1:50:5D:7E:81:55:5B`
+     - SHA-256: `30:36:63:CF:68:C7:81:F5:3D:CE:A3:90:DA:F0:21:30:42:A1:BE:47:E0:31:36:B5:56:77:7A:3E:35:65:71:F6`
+     (`keytool -list -v -keystore %USERPROFILE%\.android\debug.keystore -alias androiddebugkey
+     -storepass android -keypass android` ile yeniden üretilebilir — DEĞİŞMEZ, aynı makinede her
+     zaman aynı çıkar.) **Release (Play Store'a yüklenecek) bir APK/AAB için AYRI bir release
+     keystore'un KENDİ parmak izini de EKLEMEK gerekecek** — bu adım henüz yapılmadı, release
+     imzalama süreci kurulunca (ayrı bir görev) tekrar ele alınmalı.
+  3. **`google-services.json`'ı yeniden indir (parmak izi eklendikten SONRA)** ve
+     `android/app/google-services.json`'ın ÜZERİNE yaz — parmak izi eklemek dosyanın içeriğini
+     (OAuth istemci bilgisini) değiştiriyor, eski dosyayla devam etmek bağlamayı yine sessizce
+     başarısız kılar.
+- **Kullanıcının kendi cihazında doğrulaması gereken adımlar (asistan gerçek Google hesap
+  kimlik doğrulamasını KENDİ ADINA YAPAMAZ — hesap seçme/parola/2FA ekranları kullanıcının kendi
+  etkileşimini gerektiriyor):**
+  1. Yukarıdaki üç Firebase Console adımını tamamla.
+  2. Uygulamayı aç, Profil (veya Ayarlar) > "Google ile Bağla"ya dokun → Google hesap seçici
+     açılmalı → bir hesap seç → satır "Google Hesabın Bağlı — {email}" olarak güncellenmeli.
+  3. Firebase Console > Authentication'da o kullanıcının artık `Anonymous` DEĞİL, hem anonim hem
+     `Google` sağlayıcısını (bağlı, aynı uid) gösterdiğini doğrula.
+  4. Mağaza'dan (henüz hesap bağlanmamış TAZE bir kurulumda) bir coin paketi satın almayı dene →
+     bağlama teşvik sheet'i açılmalı, "Şimdilik Atla" ile satın alma normal devam etmeli; sheet'i
+     tekrar tetiklemek için Mağaza'ya İKİNCİ kez girip satın almayı denemeli — bu sefer sheet
+     GÖRÜNMEMELİ (`hasSeenLinkPrompt` artık `true`).
+  5. **Asıl kurtarma testi:** Bağlanmış hesapla bir miktar coin/kostüm/hedef biriktir → uygulamayı
+     TAMAMEN kaldır → yeniden kur (veya ikinci bir cihaz kullan) → ilk açılışta Onboarding'i geç →
+     Profil/Ayarlar'dan "Google ile Giriş Yap"a dokun (henüz bağlı olmayan taze bir anonim hesapta
+     bu seçenek `handleGoogleLinkTap` yerine `signInWithGoogle` akışını mı yoksa aynı satırı mı
+     kullanacağı — bkz. altta "bilinen sınırlama" — netleştirilmeli) → AYNI Google hesabını seç →
+     uygulama TÜM eski veriyle (coin bakiyesi, kostümler, hedefler) yeniden açılmalı.
+- **Bilinen sınırlama/netleştirilmesi gereken nokta:** Profil/Ayarlar'daki TEK satır şu an yalnızca
+  `linkWithGoogle()` (bağlama) akışını çağırıyor — "yeni bir cihazda, hesap HENÜZ anonim VE hiç
+  bağlı değilken, kullanıcı bilerek ESKİ bir hesabı KURTARMAK istiyorsa" senaryosu (`signInWithGoogle`)
+  şu an YALNIZCA `handleGoogleLinkTap`'in `GoogleAccountAlreadyLinkedElsewhereException` yakalama
+  dalı üzerinden DOLAYLI olarak erişilebilir (kullanıcı "Bağla"ya basar, Google hesabı ZATEN başka
+  bir yerde bağlıysa "o hesaba geçmek ister misin?" diyaloğu çıkar). **Kullanıcının orijinal isteği**
+  ("yeni bir cihazda... 'Google ile Giriş Yap' seçeneğiyle eski verisine erişebilsin") AYRI, HER ZAMAN
+  görünen bir "Google ile Giriş Yap" girişi de ima ediyor olabilir — mevcut uygulamada bu akış
+  TEKNİK OLARAK ÇALIŞIYOR (yukarıdaki dolaylı yoldan) ama kullanıcı deneyimi olarak DAHA AÇIK bir
+  giriş noktası (ör. "zaten bir hesabın var mı? Google ile giriş yap" ayrı bir buton) istenirse
+  bu, `AuthLinkProvider.signInWithGoogle()`'ı doğrudan çağıran YENİ bir UI elemanı eklemek kadar
+  kolay olacak — altyapı (`signInWithGoogle`, `switchToUid` mekanizması) ZATEN hazır, yalnızca
+  ayrı bir giriş noktası EKLENMEDİ. Kullanıcı geri bildirimi bekleniyor.

@@ -1481,5 +1481,57 @@
     "placeholders": {
       "name": {"type": "String"}
     }
+  },
+  "googleLinkRowTitleUnlinked": "Google ile Bağla",
+  "@googleLinkRowTitleUnlinked": {
+    "description": "Profil/Ayarlar'daki Google hesap bağlama satırının başlığı — hesap HENÜZ bağlı değilken"
+  },
+  "googleLinkRowTitleLinked": "Google Hesabın",
+  "@googleLinkRowTitleLinked": {
+    "description": "Profil/Ayarlar'daki Google hesap bağlama satırının başlığı — hesap ZATEN bağlıyken"
+  },
+  "googleLinkRowSubtitle": "Satın alımlarını ve verilerini güvende tut",
+  "@googleLinkRowSubtitle": {
+    "description": "Google hesap bağlama satırının alt metni — hesap bağlı DEĞİLKEN gösterilen teşvik metni"
+  },
+  "googleLinkSuccessMessage": "Google hesabına başarıyla bağlandı!",
+  "@googleLinkSuccessMessage": {
+    "description": "Google hesabı bağlama başarılı olunca gösterilen SnackBar mesajı"
+  },
+  "googleLinkFailedMessage": "Bağlanırken bir sorun oluştu, tekrar dene.",
+  "@googleLinkFailedMessage": {
+    "description": "Google hesabı bağlama beklenmeyen bir hatayla başarısız olunca gösterilen SnackBar mesajı"
+  },
+  "googleAlreadyLinkedDialogTitle": "Bu hesap başka bir cihaza bağlı",
+  "@googleAlreadyLinkedDialogTitle": {
+    "description": "Seçilen Google hesabı zaten BAŞKA bir Firebase kullanıcısına bağlıyken açılan uyarı diyaloğunun başlığı"
+  },
+  "googleAlreadyLinkedDialogBody": "Bu Google hesabı zaten başka bir cihazdaki verilerle ilişkili. O hesaba geçip verilerine ulaşmak istersen, bu cihazdaki mevcut ilerleme kaybolur.",
+  "@googleAlreadyLinkedDialogBody": {
+    "description": "Google hesabı başka bir cihaza bağlıyken açılan uyarı diyaloğunun gövde metni"
+  },
+  "googleSignInInsteadButton": "Google ile Giriş Yap",
+  "@googleSignInInsteadButton": {
+    "description": "Google hesabı başka bir cihaza bağlıyken, o hesaba GEÇMEK için sunulan butonun metni"
+  },
+  "googleSignInSuccessMessage": "Google hesabınla giriş yapıldı, verilerin geri yüklendi!",
+  "@googleSignInSuccessMessage": {
+    "description": "Yeni cihazda Google ile giriş yapıp eski hesap kurtarıldığında gösterilen SnackBar mesajı"
+  },
+  "googleSignInFailedMessage": "Giriş yapılırken bir sorun oluştu, tekrar dene.",
+  "@googleSignInFailedMessage": {
+    "description": "Google ile giriş yapma beklenmeyen bir hatayla başarısız olunca gösterilen SnackBar mesajı"
+  },
+  "googleLinkPromoTitle": "Satın Alımlarını Güvende Tut",
+  "@googleLinkPromoTitle": {
+    "description": "Mağaza'da ilk gerçek coin satın alma denemesinde gösterilen Google bağlama teşvik sheet'inin başlığı"
+  },
+  "googleLinkPromoBody": "Google hesabınla bağlanırsan, Zibo Coin'lerin ve tüm ilerlemen cihaz değişse bile kaybolmaz.",
+  "@googleLinkPromoBody": {
+    "description": "Google bağlama teşvik sheet'inin gövde metni"
+  },
+  "googleLinkPromoSkipButton": "Şimdilik Atla",
+  "@googleLinkPromoSkipButton": {
+    "description": "Google bağlama teşvik sheet'inde bağlamadan devam etmek için sunulan butonun metni — zorunlu değil"
   }
 }

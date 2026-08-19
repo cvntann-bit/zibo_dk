@@ -12,8 +12,10 @@ import '../models/water_entry.dart';
 import '../providers/coin_provider.dart';
 import '../providers/costume_provider.dart';
 import '../providers/profile_provider.dart';
+import '../providers/sound_effects_provider.dart';
 import '../providers/water_provider.dart';
 import '../providers/zibo_pose_provider.dart';
+import '../services/sound_effects_service.dart';
 import '../utils/address_term.dart';
 import '../widgets/speech_bubble.dart';
 import '../widgets/zibo_animated_image.dart';
@@ -37,7 +39,12 @@ String _unitLabel(AppLocalizations l10n, WaterUnit unit) =>
 /// (Rüya/Şükran/Ruh Hali) gibi sekme değil, Z butonunun açtığı modül
 /// menüsünden push ediliyor.
 class WaterTrackingScreen extends StatefulWidget {
-  const WaterTrackingScreen({super.key});
+  const WaterTrackingScreen({super.key, this.soundEffectsService});
+
+  /// Testte sahte bir implementasyon enjekte edebilmek için — varsayılan
+  /// `AudioPlayersSoundEffectsService()` (`GoalTrackingScreen`/`HomeScreen`
+  /// ile AYNI desen).
+  final SoundEffectsService? soundEffectsService;
 
   @override
   State<WaterTrackingScreen> createState() => _WaterTrackingScreenState();
@@ -50,6 +57,9 @@ class _WaterTrackingScreenState extends State<WaterTrackingScreen> {
   int _quoteIndex = 0;
   Timer? _timer;
 
+  late final SoundEffectsService _soundEffectsService =
+      widget.soundEffectsService ?? AudioPlayersSoundEffectsService();
+
   @override
   void initState() {
     super.initState();
@@ -61,6 +71,7 @@ class _WaterTrackingScreenState extends State<WaterTrackingScreen> {
   @override
   void dispose() {
     _timer?.cancel();
+    _soundEffectsService.dispose();
     super.dispose();
   }
 
@@ -205,6 +216,12 @@ class _WaterTrackingScreenState extends State<WaterTrackingScreen> {
     if (index < provider.todayCount) {
       provider.decrementUnit();
       return;
+    }
+    // "Su içtim" işaretlemesi — dolma animasyonuyla (bkz. `_WaterGlass`'ın
+    // `AnimatedContainer` geçişi) TAM EŞ ZAMANLI, geri alma (yukarıdaki dal)
+    // İÇİN ÇALINMAZ.
+    if (context.read<SoundEffectsProvider>().enabled) {
+      _soundEffectsService.playWaterDrop();
     }
     final justCompleted = provider.incrementUnit();
     if (justCompleted) {

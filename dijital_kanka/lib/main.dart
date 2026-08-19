@@ -11,6 +11,7 @@ import 'config/admob_config.dart';
 import 'data/app_themes.dart';
 import 'l10n/app_localizations.dart';
 import 'providers/app_theme_provider.dart';
+import 'providers/auth_link_provider.dart';
 import 'providers/coin_provider.dart';
 import 'providers/costume_provider.dart';
 import 'providers/daily_rewards_provider.dart';
@@ -32,11 +33,13 @@ import 'providers/trusted_time_provider.dart';
 import 'providers/water_provider.dart';
 import 'providers/zibo_pose_provider.dart';
 import 'utils/ad_free_promo_trigger.dart';
+import 'utils/auth_switch.dart';
 import 'models/app_theme_option.dart';
 import 'screens/onboarding/onboarding_screen.dart';
 import 'screens/root_screen.dart';
 import 'services/ad_service.dart';
 import 'services/admob_ad_service.dart';
+import 'services/google_auth_service.dart';
 import 'services/push_notification_service.dart';
 import 'services/sound_effects_service.dart';
 import 'widgets/ad_blur_overlay.dart';
@@ -244,7 +247,64 @@ void main() async {
   try {
     await MobileAds.instance.initialize();
   } catch (_) {}
-  runApp(DijitalKankaApp(uid: uid));
+  runApp(_AppRoot(initialUid: uid));
+}
+
+/// `DijitalKankaApp`'i (dolayısıyla TÜM `MultiProvider` ağacını) hangi
+/// `uid`'in yönettiğini tutan, uygulamanın GERÇEK kök widget'ı.
+///
+/// **2026 yeni özellik — Google ile hesap bağlama/kurtarma.** Bir hesap
+/// BAĞLANDIĞINDA (`AuthLinkProvider.linkWithGoogle`) Firebase uid'i
+/// DEĞİŞMEZ (anonim hesap Google'a "yükseltiliyor", aynı kimlik kalıyor) —
+/// bu yüzden o akış için `_AppRoot`'un hiçbir şey yapmasına gerek YOK.
+/// Ama bir kullanıcı YENİ bir cihazda "Google ile Giriş Yap" ile ESKİ bir
+/// hesabı KURTARDIĞINDA (`AuthLinkProvider.signInWithGoogle`), dönen uid bu
+/// cihazın o ana kadar kullandığı (taze/boş) anonim uid'den FARKLI olur —
+/// TÜM `MultiProvider` ağacının (coin/hedefler/kostümler/her şey) o YENİ
+/// uid ile SIFIRDAN kurulması gerekir. `switchToUid` (bkz. `utils/
+/// auth_switch.dart`) sinyali geldiğinde `_uid`'i güncelleyip
+/// `KeyedSubtree(key: ValueKey(_uid))` ile `DijitalKankaApp`'i SIFIRDAN
+/// yeniden kurduruyoruz — `ProfileScreen`'in istatistik kartı animasyonunu
+/// her girişte yeniden oynatmak için kullandığı AYNI "değişen Key ile
+/// zorla yeniden kurdurma" tekniği (bkz. CLAUDE.md).
+class _AppRoot extends StatefulWidget {
+  const _AppRoot({required this.initialUid});
+
+  final String? initialUid;
+
+  @override
+  State<_AppRoot> createState() => _AppRootState();
+}
+
+class _AppRootState extends State<_AppRoot> {
+  late String? _uid = widget.initialUid;
+
+  @override
+  void initState() {
+    super.initState();
+    switchToUid.addListener(_onSwitchRequested);
+  }
+
+  void _onSwitchRequested() {
+    final newUid = switchToUid.value;
+    if (newUid != null && newUid != _uid && mounted) {
+      setState(() => _uid = newUid);
+    }
+  }
+
+  @override
+  void dispose() {
+    switchToUid.removeListener(_onSwitchRequested);
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return KeyedSubtree(
+      key: ValueKey(_uid),
+      child: DijitalKankaApp(uid: _uid),
+    );
+  }
 }
 
 class DijitalKankaApp extends StatelessWidget {
@@ -275,6 +335,19 @@ class DijitalKankaApp extends StatelessWidget {
         // TrustedTimeProvider>()` ile buna erişiyor (MultiProvider listede
         // ÖNCEKİ provider'ları SONRAKİlerin context'inden görünür kılar).
         ChangeNotifierProvider(create: (_) => TrustedTimeProvider(uid: uid)),
+        // 2026 yeni özellik — Google hesap bağlama (bkz. AuthLinkProvider
+        // dokümantasyonu). Diğer provider'lardan BAĞIMSIZ, kendi `uid`'ini
+        // doğrudan `main()`'den alıyor. `googleAuthService` BURADA AÇIKÇA
+        // gerçek `FirebaseGoogleAuthService()` ile veriliyor —
+        // `AuthLinkProvider`'ın KENDİ varsayılanı bilerek `FakeGoogleAuthService`
+        // (bkz. o dosyadaki "Kritik" notu — `CoinProvider`/`adService` ile
+        // AYNI "sağlam varsayılan, üretimde açıkça override" deseni).
+        ChangeNotifierProvider(
+          create: (_) => AuthLinkProvider(
+            uid: uid,
+            googleAuthService: FirebaseGoogleAuthService(),
+          ),
+        ),
         ChangeNotifierProvider(create: (_) => AppThemeProvider(uid: uid)),
         // SoundEffectsProvider de CoinProvider'dan ÖNCE olmalı — AYNI
         // gerekçe: CoinProvider'ın `create` callback'i coin kazanma/satın

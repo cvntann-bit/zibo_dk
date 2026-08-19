@@ -13,6 +13,11 @@ import 'package:audioplayers/audioplayers.dart';
 /// örneğini oluşturup çağırıyor (bkz. o dosyalardaki dokümantasyon), bu
 /// yüzden tek bir `AudioPlayer`'ın farklı bağlamlardaki sesleri birbirini
 /// KESMESİ riski yok.
+///
+/// **2026 İKİNCİ güncelleme — üç DAHA yeni ses efekti.** Kostüm satın alma
+/// ([playCostumeBuy]), tema satın alma ([playThemeBuy]) ve Su Takibi'nde bir
+/// birim işaretleme ([playWaterDrop]) — AYNI desen (`CoinProvider`/
+/// `WaterTrackingScreen` KENDİ ayrı örneklerini çağırıyor).
 abstract class SoundEffectsService {
   const SoundEffectsService();
 
@@ -40,6 +45,25 @@ abstract class SoundEffectsService {
   /// TAM EŞ ZAMANLI çalınan kutlama sesi (bkz.
   /// `assets/sounds/zibo_target.wav`, `GoalTrackingScreen`).
   Future<void> playGoalComplete();
+
+  /// Mağaza'da bir kostüm Zibo Coin karşılığı satın alındığında (bkz.
+  /// `CoinProvider.spendOnCostume`) çalınan ses (bkz.
+  /// `assets/sounds/zibo_costume_buy.wav`) — tema satın almadan
+  /// ([playThemeBuy]) KASITLI OLARAK farklı, ikisi ayrı bir "satın alma"
+  /// hissi versin diye.
+  Future<void> playCostumeBuy();
+
+  /// Mağaza'da bir tema Zibo Coin karşılığı satın alındığında (bkz.
+  /// `CoinProvider.spendOnTheme`) çalınan ses (bkz.
+  /// `assets/sounds/theme_buy.wav`) — [playCostumeBuy]'dan KASITLI OLARAK
+  /// farklı.
+  Future<void> playThemeBuy();
+
+  /// Su Takibi'nde kullanıcı bir bardak/şişe birimini YENİ işaretlediğinde
+  /// (geri alma DEĞİL), dolma animasyonuyla (bkz. `_WaterGlass`'ın
+  /// `AnimatedContainer` geçişi) TAM EŞ ZAMANLI çalınan ses (bkz.
+  /// `assets/sounds/water_drop.wav`, `WaterTrackingScreen`).
+  Future<void> playWaterDrop();
 
   /// Uygulama kapanırken/widget dispose edilirken native oynatıcı
   /// kaynaklarını serbest bırakır.
@@ -79,6 +103,15 @@ class AudioPlayersSoundEffectsService extends SoundEffectsService {
   Future<void> playGoalComplete() => _play('sounds/zibo_target.wav');
 
   @override
+  Future<void> playCostumeBuy() => _play('sounds/zibo_costume_buy.wav');
+
+  @override
+  Future<void> playThemeBuy() => _play('sounds/theme_buy.wav');
+
+  @override
+  Future<void> playWaterDrop() => _play('sounds/water_drop.wav');
+
+  @override
   void dispose() => _player.dispose();
 }
 
@@ -96,6 +129,15 @@ class FakeSoundEffectsService extends SoundEffectsService {
 
   @override
   Future<void> playGoalComplete() async {}
+
+  @override
+  Future<void> playCostumeBuy() async {}
+
+  @override
+  Future<void> playThemeBuy() async {}
+
+  @override
+  Future<void> playWaterDrop() async {}
 
   @override
   void dispose() {}

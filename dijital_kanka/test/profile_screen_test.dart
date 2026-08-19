@@ -12,6 +12,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:dijital_kanka/l10n/app_localizations.dart';
+import 'package:dijital_kanka/providers/auth_link_provider.dart';
 import 'package:dijital_kanka/providers/coin_provider.dart';
 import 'package:dijital_kanka/providers/costume_provider.dart';
 import 'package:dijital_kanka/providers/favorite_quotes_provider.dart';
@@ -61,6 +62,7 @@ Widget _buildTestApp(PhotoPickerService photoService) {
       ChangeNotifierProvider(
         create: (_) => TrustedTimeProvider(timeService: const _NeverSyncTimeService()),
       ),
+      ChangeNotifierProvider(create: (_) => AuthLinkProvider()),
       ChangeNotifierProvider(create: (_) => ProfileProvider()),
       ChangeNotifierProvider(create: (_) => MoneyProvider()),
       ChangeNotifierProvider(create: (_) => GratitudeProvider()),

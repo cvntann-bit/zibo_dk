@@ -18,6 +18,7 @@ import 'package:dijital_kanka/data/zibo_messages.dart';
 import 'package:dijital_kanka/l10n/app_localizations.dart';
 import 'package:dijital_kanka/main.dart';
 import 'package:dijital_kanka/providers/app_theme_provider.dart';
+import 'package:dijital_kanka/providers/auth_link_provider.dart';
 import 'package:dijital_kanka/providers/coin_provider.dart';
 import 'package:dijital_kanka/providers/costume_provider.dart';
 import 'package:dijital_kanka/providers/daily_rewards_provider.dart';
@@ -48,6 +49,7 @@ Widget _buildAppWithClock(DateTime Function() now) {
     providers: [
       ChangeNotifierProvider(create: (_) => TrustedTimeProvider()),
       ChangeNotifierProvider(create: (_) => AppThemeProvider()),
+      ChangeNotifierProvider(create: (_) => AuthLinkProvider()),
       ChangeNotifierProvider(create: (_) => CoinProvider(now: now)),
       ChangeNotifierProvider(create: (_) => CostumeProvider()),
       ChangeNotifierProvider(create: (_) => DailyRewardsProvider(now: now)),
@@ -543,6 +545,15 @@ void main() {
       find.descendant(of: package100Card, matching: find.byType(FilledButton)),
     );
     buyButton.onPressed!();
+    await tester.pumpAndSettle();
+
+    // İLK gerçek satın alma denemesi olduğu için (hesap Google'a henüz
+    // bağlı değil) önce Google-bağlama teşvik sheet'i açılıyor (bkz.
+    // `StoreScreen._PackageCardState._buy`) — asıl satın alma bu sheet
+    // kapanana kadar beklemede kalıyor, "Şimdilik Atla"ya basıp devam
+    // ettiriyoruz.
+    expect(find.byKey(const Key('googleLinkPromoSkipButton')), findsOneWidget);
+    await tester.tap(find.byKey(const Key('googleLinkPromoSkipButton')));
     await tester.pumpAndSettle();
 
     expect(find.textContaining('100 Zibo Coin hesabına eklendi'), findsOneWidget);
@@ -1654,35 +1665,18 @@ void main() {
       await tester.tap(find.bySemanticsLabel('Profil'));
       await tester.pumpAndSettle();
 
-      // Favori Sözler satırı canlı sayacı gösterir; dokununca söz listede
-      // görünür.
-      await tester.scrollUntilVisible(
-        find.text('1 favori söz'),
-        200,
-        scrollable: profileScrollable(),
-      );
-      tapRow('Favori Sözler');
-      await tester.pumpAndSettle();
-      expect(find.text(firstQuote), findsOneWidget);
-      await tester.tap(find.byTooltip('Geri'));
-      await tester.pumpAndSettle();
-
-      // Hitap Tercihi: serbest metin kutusuna "Reis" yazılınca satırın alt
-      // metni anında güncellenir (bkz. 2026 güncellemesi — hazır seçenekler
-      // yerine serbest metin kutusu).
-      await tester.scrollUntilVisible(
-        find.text('Hitap Tercihi'),
-        200,
-        scrollable: profileScrollable(),
-      );
-      tapRow('Hitap Tercihi');
-      await tester.pumpAndSettle();
-      await tester.enterText(find.byType(TextField), 'Reis');
-      await tester.testTextInput.receiveAction(TextInputAction.done);
-      await tester.pumpAndSettle();
-      await tester.tap(find.byTooltip('Geri'));
-      await tester.pumpAndSettle();
-      expect(find.text('Zibo sana "Reis" diyor'), findsOneWidget);
+      // NOT: `scrollUntilVisible` yalnızca TEK yönde (aşağı) kaydırabiliyor
+      // (bkz. flutter_test kaynağı — `delta`nın işareti ile `Scrollable.
+      // axisDirection`'a göre sabit bir `moveStep` hesaplanıyor, öncekine geri
+      // dönemiyor) — bu yüzden aşağıdaki satırlar "Zibo ile Bağın"
+      // bölümündeki GERÇEK sırayla (Bağ Seviyesi → En Uzun Seri → Kostüm
+      // Dolabı → Coin Özeti → Hitap Tercihi → Favori Sözler) YUKARIDAN
+      // AŞAĞIYA ziyaret ediliyor; sıralama karıştırılırsa (ör. önce alttaki
+      // bir satıra gidip SONRA üstteki bir satırı aramak) `dragUntilVisible`
+      // 50 deneme boyunca YANLIŞ yöne kaydırıp `Bad state: No element`
+      // hatasıyla çöker (gerçekten yaşandı — Google hesap bağlama satırı
+      // listenin SONUNA eklenince toplam içerik artık tek ekrana sığmıyor,
+      // önceki karışık sıralama bu yüzden kırıldı).
 
       // Zibo ile Bağ Seviyesi: taze bir kurulumda 0 gün → "Yeni Kanka".
       await tester.scrollUntilVisible(
@@ -1708,18 +1702,6 @@ void main() {
       await tester.tap(find.byTooltip('Geri'));
       await tester.pumpAndSettle();
 
-      // Zibo Coin Özeti: taze bir kurulumda ikisi de 0 ZC.
-      await tester.scrollUntilVisible(
-        find.text('Zibo Coin Özeti'),
-        200,
-        scrollable: profileScrollable(),
-      );
-      tapRow('Zibo Coin Özeti');
-      await tester.pumpAndSettle();
-      expect(find.text('0 ZC'), findsNWidgets(2));
-      await tester.tap(find.byTooltip('Geri'));
-      await tester.pumpAndSettle();
-
       // Kostüm Dolabı: hiç kostüm sahiplenilmemişken teşvik mesajı gösterir,
       // dokununca Mağaza'nın Kostümler segmentine gider (kullanıcının
       // istediği istisna davranış — yeni sayfa AÇMAK yerine önizleme).
@@ -1738,6 +1720,50 @@ void main() {
           .onTap!();
       await tester.pumpAndSettle();
       expect(find.text('Hippi Zibo'), findsOneWidget);
+      await tester.tap(find.byTooltip('Geri'));
+      await tester.pumpAndSettle();
+
+      // Zibo Coin Özeti: taze bir kurulumda ikisi de 0 ZC.
+      await tester.scrollUntilVisible(
+        find.text('Zibo Coin Özeti'),
+        200,
+        scrollable: profileScrollable(),
+      );
+      tapRow('Zibo Coin Özeti');
+      await tester.pumpAndSettle();
+      expect(find.text('0 ZC'), findsNWidgets(2));
+      await tester.tap(find.byTooltip('Geri'));
+      await tester.pumpAndSettle();
+
+      // Hitap Tercihi: serbest metin kutusuna "Reis" yazılınca satırın alt
+      // metni anında güncellenir (bkz. 2026 güncellemesi — hazır seçenekler
+      // yerine serbest metin kutusu).
+      await tester.scrollUntilVisible(
+        find.text('Hitap Tercihi'),
+        200,
+        scrollable: profileScrollable(),
+      );
+      tapRow('Hitap Tercihi');
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField), 'Reis');
+      await tester.testTextInput.receiveAction(TextInputAction.done);
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('Geri'));
+      await tester.pumpAndSettle();
+      expect(find.text('Zibo sana "Reis" diyor'), findsOneWidget);
+
+      // Favori Sözler satırı canlı sayacı gösterir; dokununca söz listede
+      // görünür.
+      await tester.scrollUntilVisible(
+        find.text('1 favori söz'),
+        200,
+        scrollable: profileScrollable(),
+      );
+      tapRow('Favori Sözler');
+      await tester.pumpAndSettle();
+      expect(find.text(firstQuote), findsOneWidget);
+      await tester.tap(find.byTooltip('Geri'));
+      await tester.pumpAndSettle();
     },
   );
 }

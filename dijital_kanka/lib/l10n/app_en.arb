@@ -322,5 +322,18 @@
   "onboardingStoreDescription": "Save up Zibo Coin, buy new costumes and colorful themes — dress Zibo however you like.",
   "onboardingProfileDescription": "See your stats, track your bond with Zibo, and collect your favorite sayings — all in one place.",
   "onboardingClosingTitle": "Your Journey with Zibo Begins!",
-  "onboardingClosingMessage": "You're all set, {name}! We'll make big changes with small steps — track your goals, take care of yourself, I've got your back. Let's get started, buddy!"
+  "onboardingClosingMessage": "You're all set, {name}! We'll make big changes with small steps — track your goals, take care of yourself, I've got your back. Let's get started, buddy!",
+  "googleLinkRowTitleUnlinked": "Link Google Account",
+  "googleLinkRowTitleLinked": "Your Google Account",
+  "googleLinkRowSubtitle": "Keep your purchases and data safe",
+  "googleLinkSuccessMessage": "Successfully linked to your Google account!",
+  "googleLinkFailedMessage": "Something went wrong linking your account, try again.",
+  "googleAlreadyLinkedDialogTitle": "This account is linked to another device",
+  "googleAlreadyLinkedDialogBody": "This Google account is already associated with data on another device. If you switch to that account, your current progress on this device will be lost.",
+  "googleSignInInsteadButton": "Sign in with Google",
+  "googleSignInSuccessMessage": "Signed in with Google — your data has been restored!",
+  "googleSignInFailedMessage": "Something went wrong signing in, try again.",
+  "googleLinkPromoTitle": "Keep Your Purchases Safe",
+  "googleLinkPromoBody": "Link your Google account so your Zibo Coins and progress don't get lost if you switch devices.",
+  "googleLinkPromoSkipButton": "Skip for Now"
 }
