@@ -1135,4 +1135,21 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get googleLinkPromoSkipButton => 'Skip for Now';
+
+  @override
+  String get googleSignOutButton => 'Sign Out';
+
+  @override
+  String get googleSwitchAccountButton => 'Switch Account';
+
+  @override
+  String get googleSignOutConfirmTitle => 'Sign Out';
+
+  @override
+  String get googleSignOutConfirmBody =>
+      'Are you sure you want to sign out? Your data tied to this account won\'t be lost — it\'ll be restored the next time you sign in with the same Google account.';
+
+  @override
+  String get googleSignOutFailedMessage =>
+      'Something went wrong signing out, try again.';
 }

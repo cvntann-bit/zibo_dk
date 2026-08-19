@@ -1533,5 +1533,25 @@
   "googleLinkPromoSkipButton": "Şimdilik Atla",
   "@googleLinkPromoSkipButton": {
     "description": "Google bağlama teşvik sheet'inde bağlamadan devam etmek için sunulan butonun metni — zorunlu değil"
+  },
+  "googleSignOutButton": "Çıkış Yap",
+  "@googleSignOutButton": {
+    "description": "Ayarlar'da bağlı bir Google hesabından çıkış yapmak için sunulan butonun metni"
+  },
+  "googleSwitchAccountButton": "Hesap Değiştir",
+  "@googleSwitchAccountButton": {
+    "description": "Ayarlar'da farklı bir Google hesabına geçmek için sunulan butonun metni"
+  },
+  "googleSignOutConfirmTitle": "Çıkış Yap",
+  "@googleSignOutConfirmTitle": {
+    "description": "Çıkış yapmadan önce sorulan onay diyaloğunun başlığı"
+  },
+  "googleSignOutConfirmBody": "Çıkış yapmak istediğine emin misin? Bu hesaba bağlı verilerin kaybolmaz — aynı Google hesabıyla tekrar giriş yaptığında geri yüklenir.",
+  "@googleSignOutConfirmBody": {
+    "description": "Çıkış yapmadan önce sorulan onay diyaloğunun gövde metni"
+  },
+  "googleSignOutFailedMessage": "Çıkış yapılırken bir sorun oluştu, tekrar dene.",
+  "@googleSignOutFailedMessage": {
+    "description": "Çıkış yapma beklenmeyen bir hatayla başarısız olunca gösterilen SnackBar mesajı"
   }
 }

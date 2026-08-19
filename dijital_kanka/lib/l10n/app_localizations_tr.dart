@@ -1135,4 +1135,21 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get googleLinkPromoSkipButton => 'Şimdilik Atla';
+
+  @override
+  String get googleSignOutButton => 'Çıkış Yap';
+
+  @override
+  String get googleSwitchAccountButton => 'Hesap Değiştir';
+
+  @override
+  String get googleSignOutConfirmTitle => 'Çıkış Yap';
+
+  @override
+  String get googleSignOutConfirmBody =>
+      'Çıkış yapmak istediğine emin misin? Bu hesaba bağlı verilerin kaybolmaz — aynı Google hesabıyla tekrar giriş yaptığında geri yüklenir.';
+
+  @override
+  String get googleSignOutFailedMessage =>
+      'Çıkış yapılırken bir sorun oluştu, tekrar dene.';
 }

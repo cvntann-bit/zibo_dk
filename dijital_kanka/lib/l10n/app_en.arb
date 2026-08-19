@@ -335,5 +335,10 @@
   "googleSignInFailedMessage": "Something went wrong signing in, try again.",
   "googleLinkPromoTitle": "Keep Your Purchases Safe",
   "googleLinkPromoBody": "Link your Google account so your Zibo Coins and progress don't get lost if you switch devices.",
-  "googleLinkPromoSkipButton": "Skip for Now"
+  "googleLinkPromoSkipButton": "Skip for Now",
+  "googleSignOutButton": "Sign Out",
+  "googleSwitchAccountButton": "Switch Account",
+  "googleSignOutConfirmTitle": "Sign Out",
+  "googleSignOutConfirmBody": "Are you sure you want to sign out? Your data tied to this account won't be lost — it'll be restored the next time you sign in with the same Google account.",
+  "googleSignOutFailedMessage": "Something went wrong signing out, try again."
 }

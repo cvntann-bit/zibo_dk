@@ -3408,8 +3408,10 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
   `favorite_quotes_provider_test.dart`, `onboarding_provider_test.dart`,
   `zibo_animated_image_test.dart`, `sound_effects_provider_test.dart` (2026 — bkz. "Zibo
   Dokunma Sesi" bölümü), `home_screen_sound_test.dart` (aynı bölüm),
-  `water_tracking_sound_test.dart` (YENİ, 2026 — kostüm/tema/su damlası sesleri, aynı bölüm).
-  **Toplam: 262 test.**
+  `water_tracking_sound_test.dart` (2026 — kostüm/tema/su damlası sesleri, "Zibo Dokunma Sesi"
+  bölümü), `auth_link_provider_test.dart` (YENİ, 2026 — bkz. "Google Hesap Bağlama" bölümü),
+  `settings_screen_test.dart` (YENİ, aynı bölüm).
+  **Toplam: 275 test.**
 - `widget_test.dart` içindeki `_buildAppWithClock()` yardımcı fonksiyonu enjekte edilebilir saatli
   testler için — **`RootScreen`'in ihtiyaç duyduğu HER provider'ı içermeli** (`AppThemeProvider`,
   `AuthLinkProvider`, `CoinProvider`, `CostumeProvider`, `DailyRewardsProvider`,
@@ -3510,6 +3512,17 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
 - `MockPurchaseService` — gerçek IAP (uygulama içi satın alma) SDK'sı hâlâ bağlanmadı. **AdMob
   ARTIK gerçek** (bkz. altta "AdMob Entegrasyonu" bölümü) — `MockAdService` yalnızca testlerde
   enjekte edilen bir sahte olarak kaldı.
+  - **YAPILMASI GEREKENLER (gerçek IAP bağlanırken ASLA atlanmamalı — bkz. "Coin Ekonomisi
+    Güvenliği" bölümü):** `IapPurchaseService.purchaseCoinPackage()` gerçek bir satın alma akışı
+    tamamlandığında coin'i DOĞRUDAN EKLEMEMELİ — makbuz (receipt/purchase token), Google Play
+    Developer API'ye karşı SUNUCU TARAFINDA (Cloud Function veya eşdeğer bir backend, İSTEMCİDE
+    DEĞİL) doğrulanmadan `CoinProvider._earn()` ÇAĞRILMAMALI. İstemci tarafı `in_app_purchase`
+    paketinin "satın alma başarılı" callback'i TEK BAŞINA yeterli GÜVEN kaynağı DEĞİL — bir mod
+    APK bu callback'i doğrudan sahte tetikleyebilir. Doğru akış: istemci satın almayı başlatır →
+    Play Store makbuzu döner → istemci bu makbuzu (coin miktarıyla BİRLİKTE) bir Cloud
+    Function'a gönderir → Function, Google Play Developer API (`purchases.products.get`) ile
+    makbuzun GERÇEKTEN GEÇERLİ ve BU UYGULAMAYA ait olduğunu doğrular → yalnızca DOĞRULANMIŞSA
+    Function Admin SDK ile `coinState`'i (rules'u bypass ederek) günceller.
 - Ayarlar'daki "Hakkında" satırı — `onTap` hâlâ no-op. **Dil satırı ARTIK no-op DEĞİL** (bkz.
   Yerelleştirme bölümü) — Coin Test Paneli de kullanıcı isteğiyle tamamen kaldırıldı, bu listede
   DEĞİL artık.
@@ -3549,6 +3562,17 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
   ARKASINDA, iki ayrı akıştan çağrılıyor (`CoinProvider.watchAdAndEarn()` — Mağaza'nın "Ücretsiz"
   kartı, ve `CoinProvider.watchAdAndSpinWheel()` — Şans Çarkı). Banner/interstitial YOK, kapsam
   bilinçli olarak dar (uygulamanın gerçekte ihtiyaç duyduğu TEK format).
+  - **YAPILMASI GEREKENLER — mod APK/hile koruması (bkz. "Coin Ekonomisi Güvenliği" bölümü):**
+    Şu an `AdMobAdService.showRewardedAd()`'ın `onUserEarnedReward` callback'i TAMAMEN İSTEMCİ
+    TARAFINDA değerlendiriliyor — `ServerSideVerificationOptions` (AdMob'un `setServerSideVerificationOptions`
+    API'si, `RewardedAd`'a bir `customData` + kullanıcı kimliği geçirip Google'ın ödül olayını
+    KENDİ sunucularınıza bir SSV callback URL'i ile doğrulayarak bildirmesini sağlıyor)
+    KURULMADI. Gerçek para değeri taşıyan bir ödül miktarına geçilirse (şu anki 20 ZC/çevirme
+    başına ödül düşükse risk düşük, ama miktar büyürse veya reklam sıklığı artarsa) AdMob'un
+    server-side verification'ına geçilip `notification-scripts/`'teki AYNI Admin SDK + GitHub
+    Actions altyapısı (veya bir Cloud Function) kullanılarak SSV callback'in coin'i EKLEMESİ,
+    istemcinin `onUserEarnedReward`'unun YALNIZCA bir "UI geri bildirimi" (animasyon/mesaj)
+    göstermesi, coin'i KENDİSİ EKLEMEMESİ gerekir.
 - **İlk yazımda kullanıcının AdMob hesabı/uygulaması/reklam birimi YOKTU** — bu yüzden kod tarafı
   başlangıçta Google'ın HERKESE AÇIK, hesap gerektirmeyen resmi TEST App ID/Ad Unit ID'siyle
   yazıldı (onay bekleyen bir hesaba bağımlı kalmadan SDK'nın uçtan uca çalıştığını kanıtlamak
@@ -4153,16 +4177,254 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
      bu seçenek `handleGoogleLinkTap` yerine `signInWithGoogle` akışını mı yoksa aynı satırı mı
      kullanacağı — bkz. altta "bilinen sınırlama" — netleştirilmeli) → AYNI Google hesabını seç →
      uygulama TÜM eski veriyle (coin bakiyesi, kostümler, hedefler) yeniden açılmalı.
-- **Bilinen sınırlama/netleştirilmesi gereken nokta:** Profil/Ayarlar'daki TEK satır şu an yalnızca
-  `linkWithGoogle()` (bağlama) akışını çağırıyor — "yeni bir cihazda, hesap HENÜZ anonim VE hiç
-  bağlı değilken, kullanıcı bilerek ESKİ bir hesabı KURTARMAK istiyorsa" senaryosu (`signInWithGoogle`)
-  şu an YALNIZCA `handleGoogleLinkTap`'in `GoogleAccountAlreadyLinkedElsewhereException` yakalama
-  dalı üzerinden DOLAYLI olarak erişilebilir (kullanıcı "Bağla"ya basar, Google hesabı ZATEN başka
-  bir yerde bağlıysa "o hesaba geçmek ister misin?" diyaloğu çıkar). **Kullanıcının orijinal isteği**
-  ("yeni bir cihazda... 'Google ile Giriş Yap' seçeneğiyle eski verisine erişebilsin") AYRI, HER ZAMAN
-  görünen bir "Google ile Giriş Yap" girişi de ima ediyor olabilir — mevcut uygulamada bu akış
-  TEKNİK OLARAK ÇALIŞIYOR (yukarıdaki dolaylı yoldan) ama kullanıcı deneyimi olarak DAHA AÇIK bir
-  giriş noktası (ör. "zaten bir hesabın var mı? Google ile giriş yap" ayrı bir buton) istenirse
-  bu, `AuthLinkProvider.signInWithGoogle()`'ı doğrudan çağıran YENİ bir UI elemanı eklemek kadar
-  kolay olacak — altyapı (`signInWithGoogle`, `switchToUid` mekanizması) ZATEN hazır, yalnızca
-  ayrı bir giriş noktası EKLENMEDİ. Kullanıcı geri bildirimi bekleniyor.
+- **Eski "bilinen sınırlama" notu — 2026 İKİNCİ güncellemeyle ÇÖZÜLDÜ (bkz. hemen altta):** Bu
+  bölümün önceki hâli, "her zaman görünen, açık bir 'Google ile Giriş Yap' girişi yok, yalnızca
+  dolaylı yoldan (bağlamayı dene → zaten bağlı → geç?) erişilebiliyor" diye not düşmüştü.
+  Kullanıcının bu turda istediği "Hesap Değiştir" butonu TAM OLARAK bu boşluğu dolduruyor — artık
+  HER ZAMAN görünen, doğrudan `signInWithGoogle()`'ı tetikleyen bir giriş noktası var.
+- **2026 İKİNCİ güncelleme — Ayarlar'a Google logosu + "Çıkış Yap"/"Hesap Değiştir" butonları.**
+  Kullanıcı isteği (verbatim özet): (1) bağlı hesabın yanında `assets/images/Google__G__logo.svg`
+  ikonu görünsün, (2) "Çıkış Yap" ve "Hesap Değiştir" butonları eklensin, (3) Çıkış Yap onay
+  diyaloğundan sonra Firebase Auth oturumunu kapatıp kullanıcıyı Google giriş ekranına
+  yönlendirsin, uygulama arayüzü başlangıç haline dönsün, aynı hesapla tekrar girişte veri geri
+  gelsin, (4) Hesap Değiştir doğrudan Google hesap seçiciyi açsın — yeni hesap boş profil, eski
+  hesap kayıtlı verisiyle açılsın, (5) linkWithCredential mantığı korunsun (veri kaybı yok), (6)
+  işlemler sırasında kısa bir yükleniyor göstergesi.
+  - **`flutter_svg: ^2.2.1`** (`2.3.0`'a çözüldü) eklendi — `Image.asset` SVG render EDEMEZ,
+    `assets/images/` glob'u zaten SVG'yi de kapsıyordu (yalnızca PNG'ler için değil), ek bir
+    pubspec `assets:` girdisi GEREKMEDİ.
+  - **`settings_screen.dart`'taki Google ListTile'ının `leading`'i artık KOŞULLU:** bağlıyken
+    `SvgPicture.asset('assets/images/Google__G__logo.svg')`, bağlı DEĞİLKEN eskisi gibi
+    `Icons.link_rounded` — logo YALNIZCA gerçekten bağlı bir hesabı temsil etsin diye.
+  - **"Çıkış Yap"/"Hesap Değiştir" butonları BİLEREK YALNIZCA `authLink.isLinked` iken
+    gösteriliyor** — SAF anonim (hiç bağlanmamış) bir hesapta "çıkış yapmak" GERİ DÖNÜŞSÜZ veri
+    kaybı olurdu: anonim kimlik bilgileri taşınabilir/tekrar kullanılabilir DEĞİL, bu yüzden o
+    hesaba bir daha ASLA giriş yapılamaz. Bu, kullanıcının isteğinde AÇIKÇA belirtilmemişti ama
+    veri kaybını önlemek için gerekli bir güvenlik kısıtlaması olarak eklendi.
+  - **Yalnızca Ayarlar'a eklendi, Profil'e EKLENMEDİ** — kullanıcının isteği kelimesi kelimesine
+    "Ayarlar sayfasındaki Google hesabı bölümüne" diyordu; Profil'deki "Zibo ile Bağın" satırı
+    HİÇ değişmedi (hâlâ yalnızca `handleGoogleLinkTap`, tek satır, buton yok) — bilinçli bir
+    asimetri, kullanıcı isterse aynı butonlar Profil'e de eklenebilir.
+  - **`GoogleAuthService`'e YENİ `Future<String?> signOut()` eklendi** — `linkCurrentUser()`/
+    `signIn()`'in aksine `null` DÖNMÜYOR: Firebase Auth'u kapatıp HEMEN ardından
+    `FirebaseAuth.instance.signInAnonymously()` ile TAZE bir anonim oturum açıyor ve o oturumun
+    uid'ini dönüyor — "çıkış yaptıktan sonra uygulama HER ZAMAN geçerli bir oturumla devam
+    etmeli" gerekçesiyle (`main()`'in soğuk başlangıçta zaten yaptığı "kullanıcı yoksa anonim
+    oluştur" adımının BİREBİR aynısı). `FakeGoogleAuthService.signOut()` no-op, `null` döner.
+  - **KRİTİK teknik keşif — `_authenticate()` artık `authenticate()`'ten ÖNCE `_signIn.
+    signOut()` çağırıyor.** `google_sign_in` v7'nin (Credential Manager tabanlı) `GoogleSignIn.
+    instance.authenticate()` metodu paketin KENDİ önbelleğinde bir "şu an oturum açık kullanıcı"
+    varsa bunu SESSİZCE yeniden kullanabiliyor — "Hesap Değiştir" butonunun asıl amacı (FARKLI bir
+    hesap seçebilmek) bu önbellek temizlenmeden GÜVENİLİR ÇALIŞMAZDI (kullanıcı "değiştir"e basıp
+    hiçbir seçici GÖRMEDEN aynı hesaba geri dönebilirdi). Paketin kaynak kodu okunup (`google_sign_in-
+    7.2.0/lib/google_sign_in.dart`) `authenticate()`'ten AYRI, gerçekten "sessiz/lightweight" bir
+    `attemptLightweightAuthentication()` metodu OLDUĞU doğrulandı — bu, `authenticate()`'in KENDİSİNİN
+    her zaman etkileşimli/UI-gösteren bir akış OLMASI gerektiğini teyit ediyor, ama pratikte
+    Android'in Credential Manager'ı yine de "tek hesap varsa" otomatik seçebiliyor; `_signIn.
+    signOut()` bu riski ortadan kaldırıyor. Bu değişiklik `_authenticate()`'in PAYLAŞILAN özel bir
+    yardımcı olması sayesinde `linkCurrentUser()`/`signIn()`'in (dolayısıyla "Google ile Bağla" VE
+    "zaten bağlı, o hesaba geç" akışlarının) ÜÇÜNÜN de hesap seçicisini artık HER ZAMAN taze
+    gösteriyor — zararsız, arguably daha doğru bir yan etki.
+  - **`AuthLinkProvider.signOut()`** — `linkWithGoogle()`/`signInWithGoogle()` ile AYNI
+    `isLinking` bool'unu (işlem sırasında `true`) paylaşıyor, `_service.signOut()`'a ince bir
+    sarmalayıcı, dönen YENİ uid'i aynen geçiriyor.
+  - **`utils/google_link_action.dart`'a İKİ yeni fonksiyon:**
+    - `handleSignOutTap(context)` — onay diyaloğu (`googleSignOutConfirmTitle`/`Body`, "İptal"/
+      "Çıkış Yap" butonları) → onaylanırsa `authLink.signOut()` → dönen uid'i `switchToUid`'e
+      yazar. **Başarı SnackBar'ı BİLEREK YOK** — `switchToUid` ataması TÜM `MultiProvider`
+      ağacını (`main.dart`'taki `_AppRoot`) ANINDA söküp yeniden kurduğu için gösterilecek bir
+      SnackBar'ın widget'ı zaten anında yok oluyor; kullanıcı Onboarding'in yeniden görünmesiyle
+      zaten "çıkış yapıldığını" net anlıyor ("uygulama arayüzü başlangıç haline dönsün" isteği
+      TAM OLARAK bu — taze anonim uid'in Firestore'da hiç `onboardingState` belgesi olmadığı
+      için `_AppStartupGate` Onboarding'i BAŞTAN gösteriyor).
+    - `handleSwitchAccountTap(context)` — onay diyaloğu YOK (kullanıcı isteğinde yalnızca Çıkış
+      Yap için istenmişti) — doğrudan `authLink.signInWithGoogle()`'ı çağırıp `_offerSignInInstead`
+      ile BİREBİR aynı başarı/hata SnackBar mesajlarını (`googleSignInSuccessMessage`/
+      `googleSignInFailedMessage` — YENİ anahtar EKLENMEDİ, zaten var olan mesajlar aynı
+      operasyonu (`signIn()`) tanımladığı için yeniden kullanıldı) paylaşıyor.
+  - **Veri kaybı YOK — `linkWithCredential` mantığına hiç dokunulmadı.** Kullanıcının isteği
+    "sıfırdan yeni kullanıcı oluşturma" demişti — bu zaten önceki oturumda `linkCurrentUser()`'ın
+    (`user.linkWithCredential`) AYNI uid'i koruyarak yaptığı şeydi, bu turda DEĞİŞMEDİ. "Çıkış
+    Yap"/"Hesap Değiştir" ikisi de `signInWithCredential`/`signInAnonymously` kullanıyor
+    (SESSİON DEĞİŞTİRME), `linkWithCredential` (SESSİON KORUMA) DEĞİL — bu ayrım bilinçli: ikisi
+    de kullanıcının BİLEREK farklı bir kimliğe GEÇMEK istediği senaryolar, "mevcut anonim veriyi
+    koru" senaryosu DEĞİL.
+  - **Yükleniyor göstergesi** — `authLink.isLinking` `true` iken buton `Row`'unun YERİNE küçük
+    bir `CircularProgressIndicator` render ediliyor (`ThemeProvider`/diğer provider'ların
+    `context.watch` ile canlı izlenmesiyle AYNI reaktif desen) — ayrı bir state/dialog GEREKMEDİ.
+  - **Test:** YENİ `test/auth_link_provider_test.dart` (mutable/kontrol edilebilir bir sahte
+    `GoogleAuthService` ile: varsayılan durum, `linkWithGoogle` başarı/iptal/"zaten bağlı"
+    istisnası, `signInWithGoogle` outcome geçişi, YENİ `signOut` — `isLinking`'in işlem
+    SIRASINDA `true`, sonra `false` olduğu dahil —, `hasSeenLinkPrompt` kalıcılığı) + YENİ
+    `test/settings_screen_test.dart` (`profile_screen_test.dart`'taki "bağımsız test uygulaması +
+    enjekte edilebilir sahte servis" deseniyle: bağlı DEĞİLKEN SVG/butonlar HİÇ görünmez;
+    bağlıyken SVG + iki buton görünür VE gerçekçi dar viewport'ta [412×915, bkz. "Test kalıpları"
+    bölümündeki genel gotcha] `RenderFlex overflow` OLMADIĞI `tester.takeException()` ile açıkça
+    doğrulanıyor; Çıkış Yap iptal edilirse `signOut` ÇAĞRILMAZ; onaylanırsa çağrılır VE
+    `switchToUid` güncellenir; Hesap Değiştir `signIn`'i çağırıp `switchToUid`'i seçilen hesabın
+    uid'ine günceller; Hesap Değiştir iptal edilirse (seçici `null` döner) `switchToUid` DEĞİŞMEZ).
+    `switchToUid` global `ValueNotifier`'ı `setUp()`'ta `null`'a sıfırlanıyor (`AdFreePromoTrigger.
+    resetForTest()` ile AYNI "paylaşılan global sinyali testler arası izole et" gerekçesi — bu,
+    `switchToUid`'i test eden İLK dosya, önceden hiç test edilmemişti). **Toplam: 275 test.**
+  - **Doğrulama:** `flutter build apk --debug` + cihaza kurulum + `adb shell monkey`/`pidof` ile
+    çöküş olmadan açıldığı doğrulandı. **Web preview'da CanvasKit tıklama etkileşimi bu ortamda
+    güvenilir çalışmadığı için** (bkz. "Temalar"/"Su Takibi" bölümlerindeki AYNI önceden belgelenmiş
+    gotcha) Onboarding'den geçip Ayarlar'a gerçekten dokunarak GÖRSEL doğrulama YAPILAMADI — bunun
+    yerine widget testindeki gerçekçi-viewport `RenderFlex overflow` kontrolüne güvenildi.
+    **Kullanıcının kendi cihazında GÖRSEL olarak doğrulaması + tamamlaması gereken (asistan
+    gerçek Google hesap kimlik doğrulamasını/hesap seçimini KENDİ ADINA YAPAMAZ):**
+    1. Ayarlar'da bağlı bir hesapla Google logosunun + iki butonun doğru göründüğü, iki buton
+       yan yana metinlerinin (özellikle "Hesap Değiştir") KIRPILMADAN/TAŞMADAN sığdığı.
+    2. "Çıkış Yap" → onay diyaloğu → onayla → uygulamanın GERÇEKTEN Onboarding'e (taze/boş
+       duruma) döndüğü.
+    3. Aynı Google hesabıyla Ayarlar/Profil'den "Google ile Bağla"ya tekrar dokunup "o hesaba
+       geçmek ister misin?" diyaloğunu onaylayınca ESKİ verinin (coin, hedefler, kostümler)
+       GERÇEKTEN geri geldiği.
+    4. "Hesap Değiştir"e basınca GERÇEKTEN bir Google hesap seçicinin açıldığı (önceki hesabı
+       sessizce ATLAMADAN) ve farklı bir hesap seçilince o hesabın (yeni ise boş, eskiyse kayıtlı)
+       verisiyle uygulamanın yeniden açıldığı.
+
+## Coin Ekonomisi Güvenliği (Mod APK / Hile Koruması) ([firestore.rules](firestore.rules))
+
+- **2026 — kullanıcı isteği: coin ekonomisini mod APK/hile koruması için sağlamlaştır.** Bu
+  bölüm dört ayrı sorunun (rapor + kısmi düzeltme + iki YAPILMASI GEREKENLER notu) sonucu.
+- **1) MEVCUT DURUM RAPORU — coin mantığı %100 İSTEMCİ TARAFINDA çalışıyor, hiçbir sunucu tarafı
+  doğrulama YOK.** İncelemenin sonucu net:
+  - `CoinProvider` (bir `ChangeNotifier`, sunucu değil) TÜM kazanma/harcama mantığını
+    (`_earn`/`_spend` ve bunları çağıran `earnX()`/`spendX()`/`purchaseCoinPackage()`/
+    `watchAdAndSpinWheel()` metotlarının HEPSİ) doğrudan cihazda çalıştırıyor, sonucu
+    (`{balance, totalEarned, totalSpent, transactions, ...}`) `CloudStateStore.save()` ile
+    OLDUĞU GİBİ Firestore'a yazıyor.
+  - **Satın alma:** `purchaseCoinPackage()` → `MockPurchaseService.purchaseCoinPackage()` — gerçek
+    bir ödeme SDK'sı/makbuz doğrulaması YOK, yalnızca 600ms gecikmeyle HER ZAMAN `true` dönen bir
+    sahte (bkz. "Şu an mock/placeholder olan şeyler" bölümü). Gerçek IAP henüz bağlanmadığı için
+    bugün İTİBARİYLE doğrulanacak gerçek bir makbuz da YOK — ama gerçek IAP bağlandığında bu
+    boşluk KRİTİK hale gelecek (bkz. altta 3. madde).
+  - **Reklam karşılığı coin (Şans Çarkı + Mağaza'nın Ücretsiz kartı):** `AdMobAdService.
+    showRewardedAd()`'ın `onUserEarnedReward` callback'i gerçek AdMob SDK'sından geliyor (bu, saf
+    bir istemci-tarafı flag'den daha güvenilir — Google'ın kendi reklam gösterim mantığına bağlı)
+    ama YİNE DE istemci tarafında değerlendiriliyor, sunucu tarafı doğrulama (SSV) YOK (bkz. altta
+    4. madde).
+  - **Eskiden Firestore güvenlik kuralları (`firestore.rules`) `coinState` dahil TÜM
+    `users/{uid}/state/**` belgelerine `request.auth.uid == uid` sağlandığı sürece SINIRSIZ
+    okuma/yazma izni veriyordu** — yani kimliği doğrulanmış (anonim dahil) HERHANGİ bir istemci,
+    kendi `coinState` belgesini Firestore SDK'sı/REST API'siyle DOĞRUDAN, uygulamanın kendi UI'ından
+    hiç geçmeden, istediği HERHANGİ bir değere ayarlayabiliyordu — bu, APK'yı modlamaya bile GEREK
+    KALMADAN (bir proxy/REST çağrısıyla) mümkün bir saldırı yüzeyiydi. **Bu, `flutter test`'te
+    kapsanan bir şey DEĞİL** (testler `FakeFirebaseFirestore` kullanıyor, GERÇEK rules motorunu
+    hiç çalıştırmıyor) — yalnızca kod okuması + `firestore.rules` dosyasının kendisi incelenerek
+    tespit edildi.
+  - **Sonuç:** coin bakiyesi bugün itibariyle **tamamen istemciye güvenilen (client-authoritative)**
+    bir sistem. Bu, Firestore migrasyonundan ÖNCE zaten (yalnızca yerel `SharedPreferences`'ta,
+    kök erişimiyle/kayıt düzenleyicilerle değiştirilebilir) DOĞRUYDU — Firestore'a taşınması bunu
+    KÖTÜLEŞTİRMEDİ (yerel veri her zaman değiştirilebilirdi) ama İYİLEŞTİRMEDİ de: rules hiçbir ek
+    doğrulama yapmıyordu.
+- **2) YAPILAN — `firestore.rules`'a `coinState`'e özel bir doğrulama katmanı eklendi (KISMİ
+  düzeltme, TAM çözüm DEĞİL).** Kullanıcının 1. maddedeki "istemcinin doğrudan yazma iznini
+  kaldır, yalnızca sunucu tarafı mutasyona izin ver" isteği **HARFİYEN uygulanmadı** — bunun
+  yerine gerçekçi bir ORTA YOL seçildi, gerekçesiyle:
+  - **Neden TAM lockdown (coinState'e HİÇBİR istemci yazma izni vermemek) ŞİMDİ yapılamaz/
+    yapılmadı:** Projenin bugünkü mimarisinde coin verisini Firestore'a yazan TEK yol
+    `CoinProvider` → `CloudStateStore.save()` → doğrudan `_doc.set(data)`. Sunucu tarafı bir
+    mutasyon yolu (Cloud Function) YOK — proje kullanıcının kendi tercihiyle Blaze (ücretli) plana
+    GEÇMEDİ (bkz. "Push Bildirimleri" bölümündeki "Blaze plan GEREKMİYOR" kararı, GitHub Actions +
+    Admin SDK'ya geçilme gerekçesi). `coinState`'e `allow write: if false` yazıp bunun YERİNE
+    KOYACAK bir Cloud Function OLMADAN yayınlamak, TÜM kazanma/harcama işlemlerinin Firestore'a
+    yazımını SESSİZCE engellerdi (`CloudStateStore.save()`'in try/catch'i `PERMISSION_DENIED`
+    hatasını yutar, yerel `SharedPreferences` yine de güncellenir — yani oyun İÇİNDE hiçbir hata
+    GÖRÜNMEZ, yalnızca coin verisi bir daha ASLA Firestore'a senkronize OLMAZ). **Bunun en somut,
+    en zararlı sonucu:** bir önceki oturumda eklenen Google Hesap Bağlama özelliğinin TAM OLARAK
+    var oluş sebebi — "coin bakiyesi cihaz değişince kaybolmasın" — SESSİZCE BOZULURDU: kullanıcı
+    Google ile bağlanıp yeni bir cihazda giriş yapsa bile, o andan sonraki HİÇBİR coin
+    kazanma/harcama Firestore'a yansımayacağı için cihazlar arası bakiye SENKRONİZE OLMAKTAN
+    çıkardı (yalnızca bağlama ANINDAKİ dondurulmuş bir bakiye kurtarılabilirdi). Bu yüzden TAM
+    lockdown, YALNIZCA bir Cloud Function ile BİRLİKTE (aynı anda) yapılmalı — tek başına asla.
+  - **Bunun yerine yapılan — `firestore.rules`'daki `match /users/{userId}/state/coinState`
+    bloğu:** İstemcinin coinState'e YAZABİLECEĞİ değerleri KISITLIYOR (tam olarak
+    ENGELLEMİYOR):
+    1. **Şekil doğrulaması** — `balance`/`totalEarned`/`totalSpent` negatif olmayan tam sayı
+       OLMAK ZORUNDA (`is int && >= 0`).
+    2. **Monotonluk** — bir `update`'te `totalEarned`/`totalSpent` yalnızca ARTABİLİR, asla
+       AZALAMAZ (CoinProvider'ın gerçek kodunun `_earn`/`_spend`'in ikisinin de bu alanları
+       yalnızca `+=` ile değiştirdiği, hiçbir yolun `-=` yapmadığı gerçeğinin bir yansıması).
+    3. **Matematiksel tutarlılık** — `Δbalance == ΔtotalEarned - ΔtotalSpent` (yine
+       `_earn`/`_spend`'in gerçek davranışının rules'a kodlanmış hali — biri BALANCE'ı VE ilgili
+       total'i HER ZAMAN AYNI miktarda birlikte değiştiriyor).
+    4. **Tek-yazım tutar sınırı** — bir TEK `update`'te kazanılabilecek miktar ≤ 10000 (en büyük
+       coin paketi), harcanabilecek miktar ≤ 33000 (en pahalı kostüm, Elmas Kaplama) — her
+       `earn*`/`spend*` çağrısı KENDİ `_save()`'ini ANINDA tetiklediği için (bkz.
+       `CoinProvider._record`) bu sınırlar HER ZAMAN tam olarak "bir mekanik = bir yazım"a
+       karşılık geliyor, birikmiş/toplu bir yazım asla olmuyor.
+    5. **İLK senkronizasyon (`create`, `CloudStateStore`'un yerelden Firestore'a TEK SEFERLİK
+       göçü)** delta kuralına TABİ DEĞİL (geçmiş bilinmiyor) — yalnızca şekil + gevşek bir üst
+       sınır (≤200000, bugünkü test ölçeğinin çok üzerinde, yalnızca bariz fabrikasyonu engelleyen
+       bir "akıl sağlığı" kontrolü).
+    6. **`delete` tamamen YASAK** — bir istemcinin `coinState`'i silip SIFIRDAN, gevşek `create`
+       kuralına göre yeniden yaratarak delta kısıtlamasını "resetlemesi" engellendi.
+  - **Bu KISMİ bir düzeltme — KESİNLİKLE "sunucu tarafı yetki" DEĞİL, bir HIZ ENGELLEYİCİ (speed
+    bump).** Açıkça neyi ÇÖZMEDİĞİ:
+    - **Sürdürülen/scripted saldırıya karşı KORUMASIZ:** Bir saldırgan, rules'un izin verdiği
+      "kural dostu" küçük artışları (ör. `dailyCheckIn` = 5 ZC'lik bir yazım deseni) bir betikle
+      SINIRSIZ SAYIDA TEKRARLAYARAK zamanla İSTEDİĞİ kadar büyük bir bakiyeye ulaşabilir —
+      rules'un HİÇBİR "zaman/sıklık" hafızası YOK (her istek bağımsız değerlendirilir), bu yüzden
+      "günde en fazla X kez" gibi bir sınırı rules TEK BAŞINA UYGULAYAMAZ (uygulamanın kendi
+      `wheelSpinsUsedToday`/`adWatchesUsedToday`/`hasSeenLinkPrompt` gibi sayaçları da AYNI
+      `coinState` belgesinin İÇİNDE, yani İSTEMCİNİN kontrolündeki alanlar — bir saldırgan bu
+      sayaçları da her yazımda "bugün henüz hiç kullanmadım" gösterecek şekilde sıfırlayabilir).
+    - **Kostüm/tema SAHİPLİK listeleri (`ownedCostumeIds`/`ownedAppThemeIds`) hâlâ TAMAMEN
+      korumasız** — bir istemci ödeme yapmadan doğrudan bir id ekleyip "sahip" olabilir. Bunun
+      rules-only bir çözümü (`costumes.dart`/`app_themes.dart`'taki id listesiyle SÜREKLİ senkron
+      tutulması gereken bir izin listesi) BİLEREK YAZILMADI — hem kırılgan (yeni bir kostüm
+      eklendiğinde rules'u güncellemeyi unutmak sessizce ya YENİ kostümü kilitli bırakır ya da
+      HİÇBİR koruma sağlamaz) hem de asıl sorunu (client-authoritative mimari) çözmüyor.
+    - **TEK gerçek/tam çözüm: coin mutasyon mantığının TAMAMEN sunucu tarafına (Cloud Functions)
+      taşınması** — istemci yalnızca "check-in yaptım"/"reklamı izledim"/"bu kostümü satın almak
+      istiyorum" gibi bir NİYET bildirir, gerçek bakiye değişimini bir Cloud Function (Admin SDK
+      ile, rules'u BYPASS ederek) yapar ve istemci coinState'e ARTIK HİÇ YAZAMAZ (yalnızca okur).
+      **Bu, Blaze (ücretli) plana geçiş GEREKTİRİYOR** — projenin şu anki mimarisi (bkz. "Push
+      Bildirimleri" bölümü) kullanıcının BİLEREK Blaze'den kaçınıp GitHub Actions'a geçtiği bir
+      karar üzerine kurulu. **Bu, yalnızca kullanıcının verebileceği bir maliyet/mimari kararı** —
+      asistan bu kararı kullanıcı adına VERMEDİ, yalnızca yukarıdaki ücretsiz/rules-only kısmi
+      önlemi uyguladı.
+  - **DOĞRULANMADI — bu ortamda Firebase CLI/emulator YOK** (bkz. "Push Bildirimleri" bölümündeki
+    aynı sınırlama), rules dosyasının SÖZ DİZİMİ/MANTIĞI gerçek bir Firestore rules motorunda hiç
+    ÇALIŞTIRILMADI. `flutter test`'teki `cloud_state_store_test.dart`/`coin_provider_test.dart`
+    `FakeFirebaseFirestore` kullandığı için (rules'ı hiç değerlendirmez) bu testler rules
+    değişikliğinden ETKİLENMEDİ ve HİÇBİR ŞEY DOĞRULAMIYOR. **Kullanıcının Console'a yapıştırıp
+    yayınlamadan ÖNCE Firebase Console > Firestore Database > Rules > "Rules Playground"
+    simülatörüyle en az şu senaryoları test etmesi ÖNERİLİR:** (a) kendi uid'inle normal bir
+    coin kazanma/harcama yazımı hâlâ İZİN VERİLİYOR mu, (b) `balance`'ı doğrudan (totalEarned/
+    totalSpent'e uymayan) rastgele büyük bir değere ayarlamaya çalışan bir yazım REDDEDİLİYOR mu.
+    Yayınladıktan SONRA da uygulamada gerçek bir coin kazanma/harcama işlemi yapıp Firestore
+    Console'da `coinState` belgesinin GERÇEKTEN güncellendiğini doğrulamak (bkz. "Firestore veri
+    kalıcılığı" bölümündeki test adımları) — rules'ta bir mantık hatası varsa bu, coin
+    senkronizasyonunun SESSİZCE durmasına yol açabilir, aynı yukarıdaki "TAM lockdown" riskiyle
+    AYNI sınıf bir tehlike.
+- **3) YAPILMASI GEREKENLER — gerçek IAP bağlanırken:** bkz. "Şu an mock/placeholder olan şeyler"
+  bölümündeki `MockPurchaseService` maddesine eklenen YAPILMASI GEREKENLER notu — ÖZET: satın alma
+  makbuzu Google Play Developer API'ye karşı SUNUCU TARAFINDA doğrulanmadan `CoinProvider._earn()`
+  ÇAĞRILMAMALI, istemcinin "satın alma başarılı" callback'i TEK BAŞINA yeterli değil.
+- **4) YAPILMASI GEREKENLER — reklam karşılığı coin için AdMob SSV:** bkz. "AdMob Entegrasyonu"
+  bölümüne eklenen YAPILMASI GEREKENLER notu — ÖZET: `ServerSideVerificationOptions` kurulup
+  ödülün coin'e çevrilmesi bir SSV callback'e (istemciye DEĞİL) taşınmalı, özellikle ödül
+  miktarı/reklam sıklığı büyürse.
+- **ŞİMDİ (mock/test aşamasında) yapılabilenler vs. GERÇEK IAP/AdMob'u bekleyenler — kullanıcının
+  sorduğu ayrım:**
+  - **ŞİMDİ yapılabilir ve yapıldı:** `firestore.rules`'daki şekil/monotonluk/delta doğrulaması
+    (2. madde) — Cloud Functions'a veya gerçek IAP/AdMob'a bağımlı DEĞİL, salt Firestore rules
+    dili ile, ücretsiz (Spark plan) yazılabilir bir kod-seviyesi kısıtlama.
+  - **ŞİMDİ yapılamaz, gerçek IAP'ı BEKLİYOR:** IAP makbuz doğrulaması (3. madde) — doğrulanacak
+    gerçek bir makbuz, gerçek IAP SDK'sı bağlanmadan YOK; bugün yazılacak bir "doğrulama" kodu
+    test edilemez/anlamsız olurdu.
+  - **ŞİMDİ yapılamaz ama AdMob ZATEN gerçek, yalnızca SSV'ye geçilmedi:** AdMob SSV (4. madde) —
+    teknik olarak ŞİMDİ de yazılabilir (AdMob hesabı zaten gerçek) ama kendi bir backend endpoint'i
+    (SSV callback'ini karşılayacak bir sunucu — yine Cloud Function veya GitHub Actions'ın
+    gerçek-zamanlı olmayan doğasına UYMAYAN bir gerçek-zamanlı HTTP endpoint'i) gerektiriyor —
+    bu da aynı "Blaze plan mı, başka bir backend mi" kararına bağlı, bu yüzden pratikte 2. madde
+    ile AYNI mimari karara (Cloud Functions) kadar ERTELENMESİ öneriliyor (ikisini AYRI AYRI değil
+    aynı backend çalışmasıyla BİRLİKTE çözmek daha verimli).
+  - **Kullanıcının kararı bekleniyor:** Blaze plana geçip coin mutasyonunu (VE IAP/AdMob
+    doğrulamasını) tam olarak Cloud Functions'a taşımak mı, yoksa şimdilik yalnızca bu rules-only
+    kısmi önlemle (+ launch öncesi gerçek IAP/AdMob geldiğinde zorunlu olarak eklenecek doğrulama)
+    devam etmek mi — asistan bu maliyet/mimari kararını veremez, yalnızca seçenekleri VE her
+    birinin ne sağlayıp ne sağlamadığını belgeliyor.

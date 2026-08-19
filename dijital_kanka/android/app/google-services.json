@@ -12,7 +12,20 @@
           "package_name": "com.dijitalkanka.dijital_kanka"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "855986625717-q28imp8uvrrp8l8lfrfo2u1mqnhi50f0.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.dijitalkanka.dijital_kanka",
+            "certificate_hash": "ade5cb35eddfe0c0ee44252aa8c1505d7e81555b"
+          }
+        },
+        {
+          "client_id": "855986625717-mh3dbtmiqkih8c1lufr8gac6jn6oep4v.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyDgzC47A0VUCKhhU1oUQpi1s0LwKatOCgg"
@@ -20,7 +33,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "855986625717-mh3dbtmiqkih8c1lufr8gac6jn6oep4v.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

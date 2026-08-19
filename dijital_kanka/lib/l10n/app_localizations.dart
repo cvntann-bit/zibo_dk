@@ -2073,6 +2073,36 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'Şimdilik Atla'**
   String get googleLinkPromoSkipButton;
+
+  /// Ayarlar'da bağlı bir Google hesabından çıkış yapmak için sunulan butonun metni
+  ///
+  /// In tr, this message translates to:
+  /// **'Çıkış Yap'**
+  String get googleSignOutButton;
+
+  /// Ayarlar'da farklı bir Google hesabına geçmek için sunulan butonun metni
+  ///
+  /// In tr, this message translates to:
+  /// **'Hesap Değiştir'**
+  String get googleSwitchAccountButton;
+
+  /// Çıkış yapmadan önce sorulan onay diyaloğunun başlığı
+  ///
+  /// In tr, this message translates to:
+  /// **'Çıkış Yap'**
+  String get googleSignOutConfirmTitle;
+
+  /// Çıkış yapmadan önce sorulan onay diyaloğunun gövde metni
+  ///
+  /// In tr, this message translates to:
+  /// **'Çıkış yapmak istediğine emin misin? Bu hesaba bağlı verilerin kaybolmaz — aynı Google hesabıyla tekrar giriş yaptığında geri yüklenir.'**
+  String get googleSignOutConfirmBody;
+
+  /// Çıkış yapma beklenmeyen bir hatayla başarısız olunca gösterilen SnackBar mesajı
+  ///
+  /// In tr, this message translates to:
+  /// **'Çıkış yapılırken bir sorun oluştu, tekrar dene.'**
+  String get googleSignOutFailedMessage;
 }
 
 class _AppLocalizationsDelegate

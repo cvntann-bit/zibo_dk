@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -151,11 +152,17 @@ class SettingsScreen extends StatelessWidget {
                 // sayfasındaki "Zibo ile Bağın" satırıyla AYNI onTap
                 // mantığı.
                 ListTile(
-                  leading: Icon(
-                    authLink.isLinked
-                        ? Icons.verified_user_rounded
-                        : Icons.link_rounded,
-                  ),
+                  // Bağlıyken bağlı hesabın kendi Google logosuyla (SVG,
+                  // kullanıcının sağladığı `Google__G__logo.svg`) gösterilir
+                  // — bağlı DEĞİLKEN jenerik "link" ikonuna geri düşülür
+                  // (logo yalnızca GERÇEKTEN bağlı bir hesabı temsil etmeli).
+                  leading: authLink.isLinked
+                      ? SvgPicture.asset(
+                          'assets/images/Google__G__logo.svg',
+                          width: 24,
+                          height: 24,
+                        )
+                      : const Icon(Icons.link_rounded),
                   title: Text(
                     authLink.isLinked
                         ? l10n.googleLinkRowTitleLinked
@@ -169,6 +176,57 @@ class SettingsScreen extends StatelessWidget {
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => handleGoogleLinkTap(context),
                 ),
+                // 2026 güncellemesi — hesap ZATEN bağlıyken "Çıkış Yap"/
+                // "Hesap Değiştir" butonları. Bilerek yalnızca `isLinked`
+                // iken gösteriliyor: SAF anonim (bağlanmamış) bir hesapta
+                // "çıkış yapmak", o hesaba bir daha ASLA geri dönülemeyeceği
+                // (anonim kimlik bilgileri taşınabilir/tekrar
+                // kullanılabilir DEĞİL) için verinin GERİ DÖNÜŞSÜZ
+                // terkedilmesi anlamına gelirdi — bkz. CLAUDE.md "Google
+                // Hesap Bağlama" bölümü.
+                if (authLink.isLinked) ...[
+                  const Divider(height: 1),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+                    child: authLink.isLinking
+                        ? const Center(
+                            child: SizedBox(
+                              width: 22,
+                              height: 22,
+                              child: CircularProgressIndicator(strokeWidth: 2.5),
+                            ),
+                          )
+                        : Row(
+                            children: [
+                              Expanded(
+                                child: OutlinedButton.icon(
+                                  onPressed: () => handleSignOutTap(context),
+                                  icon: const Icon(Icons.logout_rounded, size: 18),
+                                  label: Text(
+                                    l10n.googleSignOutButton,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: OutlinedButton.icon(
+                                  onPressed: () =>
+                                      handleSwitchAccountTap(context),
+                                  icon: const Icon(
+                                    Icons.swap_horiz_rounded,
+                                    size: 18,
+                                  ),
+                                  label: Text(
+                                    l10n.googleSwitchAccountButton,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                  ),
+                ],
               ],
             ),
           ),

@@ -55,6 +55,18 @@ abstract class GoogleAuthService {
 
   /// Bağlıysa Google hesabının email'i, değilse `null`.
   String? get linkedEmail;
+
+  /// Firebase Auth oturumunu VE Google Sign-In eklentisinin kendi
+  /// önbelleğini kapatıp YENİ bir anonim oturum açar — "Çıkış Yap" akışı
+  /// (bkz. `utils/google_link_action.dart`'taki `handleSignOutTap`).
+  /// Bilerek `linkCurrentUser`/`signIn` gibi `null` DÖNMÜYOR — çıkış
+  /// yapıldıktan sonra uygulamanın HER ZAMAN geçerli (boş/taze) bir
+  /// oturumla devam etmesi gerektiği için (bu, `main()`'in soğuk
+  /// başlangıçta zaten yaptığı "kullanıcı yoksa anonim oluştur" adımının
+  /// aynısı). Başarılıysa YENİ anonim kullanıcının uid'ini döner; çağıran
+  /// taraf bunu `switchToUid` sinyaline verip TÜM uygulamanın taze bir
+  /// başlangıç durumuyla yeniden kurulmasını tetiklemeli.
+  Future<String?> signOut();
 }
 
 class FirebaseGoogleAuthService extends GoogleAuthService {
@@ -84,8 +96,24 @@ class FirebaseGoogleAuthService extends GoogleAuthService {
   /// [linkCurrentUser]/[signIn] çağıranları TEK bir "vazgeçme" sinyaliyle
   /// (`null` dönüş) uğraşsın, `GoogleSignInException`'ın kendi ayrıntılı
   /// hata kodu enum'uyla DEĞİL.
+  ///
+  /// **`_signIn.signOut()` ÖNCE çağrılır** — eklentinin kendi "şu an
+  /// oturum açık kullanıcı" önbelleğini temizler ki `authenticate()` HER
+  /// ZAMAN gerçek bir hesap seçici gösterisin, önceki çağrıdan kalan bir
+  /// hesabı sessizce yeniden KULLANMASIN. Bu, "Hesap Değiştir" akışının
+  /// (bkz. `AuthLinkProvider.signInWithGoogle`) güvenilir çalışması için
+  /// GEREKLİ — aksi halde kullanıcı zaten bağlı bir hesaptan "hesap
+  /// değiştirmek" istediğinde eklenti aynı hesabı hiç sormadan geri
+  /// dönebilirdi. Bağlama (`linkCurrentUser`) akışını da AYNI şekilde
+  /// (zararsızca) daha öngörülebilir hale getiriyor.
   Future<fb_auth.AuthCredential?> _authenticate() async {
     await _ensureInitialized();
+    try {
+      await _signIn.signOut();
+    } catch (_) {
+      // Önbellek zaten boşsa/eklenti bunu desteklemiyorsa sessizce devam —
+      // asıl kritik olan aşağıdaki authenticate() çağrısı.
+    }
     try {
       final account = await _signIn.authenticate();
       final idToken = account.authentication.idToken;
@@ -163,6 +191,22 @@ class FirebaseGoogleAuthService extends GoogleAuthService {
       return null;
     }
   }
+
+  @override
+  Future<String?> signOut() async {
+    try {
+      await _ensureInitialized();
+      await _signIn.signOut();
+    } catch (_) {
+      // Eklentinin kendi önbelleğini temizleyemesek bile Firebase Auth
+      // tarafını kapatmaya/yeniden anonim oturum açmaya devam ediyoruz —
+      // kritik olan Firebase oturumu, Google eklentisinin önbelleği
+      // yalnızca "bir sonraki hesap seçicinin taze görünmesi" için.
+    }
+    await fb_auth.FirebaseAuth.instance.signOut();
+    final result = await fb_auth.FirebaseAuth.instance.signInAnonymously();
+    return result.user?.uid;
+  }
 }
 
 /// Test/geliştirme için sahte implementasyon — HİÇBİR ZAMAN bağlı DEĞİL,
@@ -182,4 +226,7 @@ class FakeGoogleAuthService extends GoogleAuthService {
 
   @override
   String? get linkedEmail => null;
+
+  @override
+  Future<String?> signOut() async => null;
 }

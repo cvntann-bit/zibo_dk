@@ -49,6 +49,90 @@ Future<void> handleGoogleLinkTap(BuildContext context) async {
   }
 }
 
+/// Ayarlar'daki "Hesap Değiştir" butonunun `onPressed`'i — mevcut oturumu
+/// (Google'a bağlı olsun ya da olmasın) doğrudan
+/// [AuthLinkProvider.signInWithGoogle]'a devrederek Google'ın hesap
+/// seçicisini AÇAR (bkz. `GoogleAuthService._authenticate`'in artık
+/// `authenticate()`'ten ÖNCE eklentinin kendi önbelleğini temizlemesi —
+/// bu yüzden seçici HER ZAMAN taze görünür, önceki hesabı sessizce
+/// yeniden KULLANMAZ). Seçilen hesap DAHA ÖNCE hiç kullanılmadıysa
+/// `signInWithCredential` otomatik olarak yeni/boş bir Firebase kullanıcısı
+/// oluşturur; DAHA ÖNCE kullanılmışsa o hesabın kayıtlı verilerine döner —
+/// [GoogleAuthService.signIn]'in KENDİ davranışı, burada AYRICA bir dallanma
+/// GEREKMEDİ.
+Future<void> handleSwitchAccountTap(BuildContext context) async {
+  final l10n = AppLocalizations.of(context)!;
+  final authLink = context.read<AuthLinkProvider>();
+
+  try {
+    final outcome = await authLink.signInWithGoogle();
+    if (!context.mounted) return;
+    if (outcome != null) {
+      // TÜM uygulamayı (main.dart'taki _AppRoot) seçilen hesabın uid'i ile
+      // yeniden kurdurur — bkz. utils/auth_switch.dart.
+      switchToUid.value = outcome.uid;
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(content: Text(l10n.googleSignInSuccessMessage)));
+    }
+  } catch (_) {
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(l10n.googleSignInFailedMessage)));
+  }
+}
+
+/// Ayarlar'daki "Çıkış Yap" butonunun `onPressed`'i — onay diyaloğu
+/// (kullanıcı isteği: zorunlu bir onay adımı) sonrası
+/// [AuthLinkProvider.signOut]'u çağırıp dönen TAZE anonim uid'i
+/// `switchToUid`'e verir. Bu, TÜM uygulamanın (main.dart'taki `_AppRoot`)
+/// taze/boş bir başlangıç durumuyla yeniden kurulmasını tetikler —
+/// başarı SnackBar'ı BİLEREK YOK, çünkü bu yeniden kurulum eski widget
+/// ağacını (dolayısıyla her SnackBar'ı) anında söküyor; kullanıcı zaten
+/// Onboarding'in yeniden görünmesiyle "çıkış yapıldığını" net şekilde
+/// anlıyor.
+Future<void> handleSignOutTap(BuildContext context) async {
+  final l10n = AppLocalizations.of(context)!;
+  final authLink = context.read<AuthLinkProvider>();
+
+  final confirmed = await showDialog<bool>(
+    context: context,
+    builder: (dialogContext) => AlertDialog(
+      title: Text(l10n.googleSignOutConfirmTitle),
+      content: Text(l10n.googleSignOutConfirmBody),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(dialogContext).pop(false),
+          child: Text(MaterialLocalizations.of(dialogContext).cancelButtonLabel),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.of(dialogContext).pop(true),
+          child: Text(l10n.googleSignOutButton),
+        ),
+      ],
+    ),
+  );
+  if (confirmed != true || !context.mounted) return;
+
+  try {
+    final newUid = await authLink.signOut();
+    if (!context.mounted) return;
+    if (newUid != null) {
+      switchToUid.value = newUid;
+    } else {
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(content: Text(l10n.googleSignOutFailedMessage)));
+    }
+  } catch (_) {
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(l10n.googleSignOutFailedMessage)));
+  }
+}
+
 Future<void> _offerSignInInstead(
   BuildContext context,
   AppLocalizations l10n,

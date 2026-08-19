@@ -335,5 +335,10 @@
   "googleSignInFailedMessage": "Hubo un problema al iniciar sesión, inténtalo de nuevo.",
   "googleLinkPromoTitle": "Mantén Seguras Tus Compras",
   "googleLinkPromoBody": "Vincula tu cuenta de Google para que tus Zibo Coins y tu progreso no se pierdan si cambias de dispositivo.",
-  "googleLinkPromoSkipButton": "Omitir por Ahora"
+  "googleLinkPromoSkipButton": "Omitir por Ahora",
+  "googleSignOutButton": "Cerrar Sesión",
+  "googleSwitchAccountButton": "Cambiar de Cuenta",
+  "googleSignOutConfirmTitle": "Cerrar Sesión",
+  "googleSignOutConfirmBody": "¿Seguro que quieres cerrar sesión? Los datos vinculados a esta cuenta no se perderán — se restaurarán la próxima vez que inicies sesión con la misma cuenta de Google.",
+  "googleSignOutFailedMessage": "Hubo un problema al cerrar sesión, inténtalo de nuevo."
 }

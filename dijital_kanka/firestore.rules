@@ -1,11 +1,102 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Her kullanıcı yalnızca KENDİ verisine (users/{uid}/state/{prefsKey})
-    // erişebilir — bkz. CloudStateStore. Anonim Auth dahil, kimliği
-    // doğrulanmamış hiçbir istek hiçbir veriye erişemez.
-    match /users/{userId}/{document=**} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+
+    match /users/{userId} {
+      function isOwner() {
+        return request.auth != null && request.auth.uid == userId;
+      }
+
+      // Kök doküman (users/{uid}) — bir alt-koleksiyon DEĞİL. PushNotification
+      // Service.touchLastActive()/initialize() buraya doğrudan `fcmToken`/
+      // `lastActiveAt` yazıyor (bkz. push_notification_service.dart). Coin
+      // verisiyle ilgisi yok, dokunulmadı.
+      allow read, write: if isOwner();
+
+      // --- coinState: coin ekonomisinin EN KRİTİK dokümanı ------------------
+      // Mod APK/hile koruması İÇİN eklendi (bkz. CLAUDE.md "Coin Ekonomisi
+      // Güvenliği" bölümü — orada bu kuralın NE YAPIP NE YAPAMADIĞI, ve
+      // gerçek/tam koruma için neden Cloud Functions (Blaze plan) gerektiği
+      // UZUN UZUN açıklanıyor). ÖZET: bu, istemcinin Firestore'a YAZABİLECEĞİ
+      // coinState belgesinin ŞEKLİNİ ve TEK BİR YAZIMDA değişebilecek miktarı
+      // kısıtlıyor — "sunucu tarafı yetki" DEĞİL, yalnızca bir hız
+      // engelleyici (speed bump). Sunucu tarafı mutasyon mantığı (Cloud
+      // Functions) OLMADAN, kararlı bir betikle tekrarlanan KÜÇÜK, kural
+      // dostu yazımlarla bakiye yine de zamanla şişirilebilir.
+      match /state/coinState {
+        function isValidShape(d) {
+          return d.balance is int && d.balance >= 0
+            && d.totalEarned is int && d.totalEarned >= 0
+            && d.totalSpent is int && d.totalSpent >= 0;
+        }
+
+        allow read: if isOwner();
+
+        // İLK senkronizasyon (yerel veriden Firestore'a TEK SEFERLİK göç,
+        // bkz. CloudStateStore.load()) — bu andan ÖNCEki gerçek işlem
+        // geçmişi rules'a hiç görünmüyor, bu yüzden delta kısıtlaması
+        // UYGULANAMAZ. Yalnızca şekil + gevşek bir üst sınır ("akıl
+        // sağlığı" kontrolü — bugünkü test ölçeğinin ÇOK üzerinde, gerçekçi
+        // hiçbir test bakiyesini reddetmez, yalnızca "999999999" tarzı
+        // bariz bir fabrikasyonu engeller).
+        allow create: if isOwner() && isValidShape(request.resource.data)
+          && request.resource.data.balance <= 200000
+          && request.resource.data.totalEarned <= 200000
+          && request.resource.data.totalSpent <= 200000;
+
+        // Sonraki HER yazım — asıl koruma burada:
+        //   (1) totalEarned/totalSpent ASLA azalamaz (yalnızca artabilir) —
+        //       CoinProvider._earn()/_spend()'in her ikisi de bu iki alanı
+        //       yalnızca ARTIRIYOR, hiçbir kod yolu AZALTMIYOR.
+        //   (2) bakiye değişimi HER ZAMAN (totalEarned artışı) - (totalSpent
+        //       artışı)'na TAM EŞİT olmalı — _earn()/_spend()'in gerçek
+        //       davranışının matematiksel bir yansıması (ikisi de balance'ı
+        //       VE ilgili total'i AYNI miktarda, TEK bir çağrıda değiştirir).
+        //   (3) TEK bir yazımda kazanılan/harcanan miktar, uygulamadaki EN
+        //       BÜYÜK gerçek tek-işlem tutarını AŞAMAZ — her `earn*`/`spend*`
+        //       çağrısı KENDİ `_save()`'ini ANINDA tetikliyor (bkz.
+        //       CoinProvider._record), yani tek bir Firestore yazımı HER
+        //       ZAMAN TEK bir mekaniğe karşılık gelir, asla birden fazlası
+        //       birikmiş olarak gelmez.
+        //       - Kazanma üst sınırı 10000 = en büyük coin paketi
+        //         (coin_packages.dart, `coins_10000`).
+        //       - Harcama üst sınırı 33000 = en pahalı kostüm
+        //         (costumes.dart, Elmas Kaplama).
+        //       **BU İKİ SAYI, ileride daha pahalı bir paket/kostüm/tema
+        //       eklenirse ELLE YÜKSELTİLMELİ** — aksi halde o TEK satın alma
+        //       Firestore'a YAZILAMAZ (CloudStateStore.save()'in try/catch'i
+        //       hatayı sessizce yutar, yerel SharedPreferences'a yine de
+        //       yazılır — yani oyun İÇİNDE hiçbir hata GÖRÜNMEZ, yalnızca o
+        //       spesifik işlem sonrasında bulut senkronizasyonu sessizce
+        //       durur; bu YAVAŞ/GÖRÜNMEZ bir bug sınıfı, dikkatli olun).
+        allow update: if isOwner() && isValidShape(request.resource.data)
+          && request.resource.data.totalEarned
+             >= resource.data.get('totalEarned', 0)
+          && request.resource.data.totalSpent
+             >= resource.data.get('totalSpent', 0)
+          && (request.resource.data.balance - resource.data.get('balance', 0))
+             == (request.resource.data.totalEarned
+                 - resource.data.get('totalEarned', 0))
+              - (request.resource.data.totalSpent
+                 - resource.data.get('totalSpent', 0))
+          && (request.resource.data.totalEarned
+              - resource.data.get('totalEarned', 0)) <= 10000
+          && (request.resource.data.totalSpent
+              - resource.data.get('totalSpent', 0)) <= 33000;
+
+        allow delete: if false;
+      }
+
+      // Diğer TÜM durum belgeleri (hedefler, günlükler, kostüm/tema
+      // SAHİPLİK listeleri, tercihler vb.) — coinState HARİÇ, eskisi gibi
+      // tam yetkili kalıyor. Kostüm/tema `ownedIds` listeleri DE aynı sınıf
+      // riski taşıyor (istemci doğrudan bir id ekleyip ödemeden "sahip"
+      // olabilir) ama rules-only bir liste doğrulaması costumes.dart/
+      // app_themes.dart ile SÜREKLİ senkron tutulması gereken, kırılgan bir
+      // bakım yükü olurdu — bilerek kapsam DIŞI bırakıldı (bkz. CLAUDE.md).
+      match /state/{stateDoc} {
+        allow read, write: if isOwner() && stateDoc != 'coinState';
+      }
     }
 
     // TrustedTimeProvider'ın FirestoreTrustedTimeService'i sunucu zaman

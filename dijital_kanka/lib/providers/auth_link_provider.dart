@@ -113,4 +113,30 @@ class AuthLinkProvider extends ChangeNotifier {
       notifyListeners();
     }
   }
+
+  /// "Çıkış Yap" — mevcut oturumu (Google'a bağlı olsun ya da olmasın)
+  /// kapatıp TAZE bir anonim oturum açar. Döner: yeni anonim kullanıcının
+  /// uid'i (başarısızsa `null`) — çağıran taraf bunu `switchToUid`
+  /// sinyaline (bkz. `utils/auth_switch.dart`) vermeli, bu da TÜM
+  /// uygulamanın (coin/hedefler/kostümler/vb. HER provider) o taze uid ile
+  /// SIFIRDAN kurulmasını tetikler — "uygulama arayüzü başlangıç haline
+  /// döner" isteği TAM OLARAK bu (taze bir uid'in Firestore'da hiç
+  /// `onboardingState` belgesi olmadığı için `_AppStartupGate` Onboarding'i
+  /// bile yeniden gösterir).
+  ///
+  /// **Veri kaybı YOK:** yalnızca oturum değişiyor, ESKİ hesabın verisi
+  /// Firestore'da (`users/{eskiUid}/...`) OLDUĞU GİBİ duruyor — kullanıcı
+  /// AYNI Google hesabıyla (bkz. `google_link_action.dart`'taki
+  /// `handleGoogleLinkTap`'in "zaten bağlı, o hesaba geçmek ister misin?"
+  /// akışı) tekrar giriş yaptığında bu veri geri yüklenir.
+  Future<String?> signOut() async {
+    _isLinking = true;
+    notifyListeners();
+    try {
+      return await _service.signOut();
+    } finally {
+      _isLinking = false;
+      notifyListeners();
+    }
+  }
 }

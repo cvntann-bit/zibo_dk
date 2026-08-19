@@ -1139,4 +1139,21 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get googleLinkPromoSkipButton => 'Omitir por Ahora';
+
+  @override
+  String get googleSignOutButton => 'Cerrar Sesión';
+
+  @override
+  String get googleSwitchAccountButton => 'Cambiar de Cuenta';
+
+  @override
+  String get googleSignOutConfirmTitle => 'Cerrar Sesión';
+
+  @override
+  String get googleSignOutConfirmBody =>
+      '¿Seguro que quieres cerrar sesión? Los datos vinculados a esta cuenta no se perderán — se restaurarán la próxima vez que inicies sesión con la misma cuenta de Google.';
+
+  @override
+  String get googleSignOutFailedMessage =>
+      'Hubo un problema al cerrar sesión, inténtalo de nuevo.';
 }
