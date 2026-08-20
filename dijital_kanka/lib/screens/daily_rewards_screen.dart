@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -35,7 +37,15 @@ class _DailyRewardsScreenState extends State<DailyRewardsScreen> {
     final provider = context.read<DailyRewardsProvider>();
     final amount = provider.claimToday();
     if (amount == null) return;
-    context.read<CoinProvider>().earnDailyLoginReward(amount);
+    final coin = context.read<CoinProvider>();
+    coin.earnDailyLoginReward(amount);
+    // Kullanıcı isteği: günlük giriş ödülü alınınca geçilebilir (interstitial,
+    // ÖDÜLLÜ DEĞİL) bir reklam gösterilsin — HomeScreen'in art arda dokunma
+    // reklamıyla (bkz. `_showRapidTapPromoOrAd`) AYNI `CoinProvider.
+    // showInterstitialAd()` çağrısı; coin bakiyesini/işlem geçmişini HİÇ
+    // etkilemiyor, günde en fazla bir kez tetiklenir (ödül zaten günde bir
+    // kez alınabildiği için).
+    unawaited(coin.showInterstitialAd());
   }
 
   @override

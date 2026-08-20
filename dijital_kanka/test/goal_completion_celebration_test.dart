@@ -12,14 +12,29 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:dijital_kanka/l10n/app_localizations.dart';
+import 'package:dijital_kanka/providers/coin_provider.dart';
 import 'package:dijital_kanka/providers/costume_provider.dart';
 import 'package:dijital_kanka/providers/goals_provider.dart';
 import 'package:dijital_kanka/providers/profile_provider.dart';
 import 'package:dijital_kanka/providers/sound_effects_provider.dart';
 import 'package:dijital_kanka/providers/zibo_pose_provider.dart';
 import 'package:dijital_kanka/screens/goal_tracking_screen.dart';
+import 'package:dijital_kanka/services/ad_service.dart';
 import 'package:dijital_kanka/services/sound_effects_service.dart';
 import 'package:dijital_kanka/widgets/goal_confetti_burst.dart';
+
+class _RecordingAdService extends AdService {
+  int interstitialCallCount = 0;
+
+  @override
+  Future<bool> showRewardedAd() async => true;
+
+  @override
+  Future<bool> showInterstitialAd() async {
+    interstitialCallCount++;
+    return true;
+  }
+}
 
 class _RecordingSoundEffectsService extends SoundEffectsService {
   int goalCompleteCallCount = 0;
@@ -49,14 +64,22 @@ class _RecordingSoundEffectsService extends SoundEffectsService {
   void dispose() {}
 }
 
-Widget _buildTestApp(SoundEffectsService soundEffectsService) {
+Widget _buildTestApp(
+  SoundEffectsService soundEffectsService, {
+  AdService? adService,
+  DateTime Function()? now,
+}) {
   return MultiProvider(
     providers: [
       ChangeNotifierProvider(create: (_) => CostumeProvider()),
-      ChangeNotifierProvider(create: (_) => GoalsProvider()),
+      ChangeNotifierProvider(
+        create: (_) => GoalsProvider(now: now ?? DateTime.now),
+      ),
       ChangeNotifierProvider(create: (_) => ProfileProvider()),
       ChangeNotifierProvider(create: (_) => SoundEffectsProvider()),
       ChangeNotifierProvider(create: (_) => ZiboPoseProvider()),
+      if (adService != null)
+        ChangeNotifierProvider(create: (_) => CoinProvider(adService: adService)),
     ],
     child: MaterialApp(
       debugShowCheckedModeBanner: false,
@@ -122,6 +145,63 @@ void main() {
       // olmadığından emin olmak için) — konfeti kaldırılmış olmalı.
       await tester.pumpAndSettle(const Duration(milliseconds: 2500));
       expect(find.byType(GoalConfettiBurst), findsNothing);
+    },
+  );
+
+  testWidgets(
+    '7 günlük döngü TAMAMLANINCA geçilebilir reklam yalnızca kutlama '
+    '(titreşim+konfeti) BİTTİKTEN SONRA gösterilir, ara günlerde HİÇ '
+    'gösterilmez',
+    (tester) async {
+      var currentDate = DateTime(2026, 1, 5);
+      final ads = _RecordingAdService();
+      await tester.pumpWidget(
+        _buildTestApp(
+          _RecordingSoundEffectsService(),
+          adService: ads,
+          now: () => currentDate,
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final element = tester.element(find.byType(GoalTrackingScreen));
+      final goalsProvider = Provider.of<GoalsProvider>(element, listen: false);
+      goalsProvider.addGoal('Günde 30 dakika kitap oku');
+      await tester.pumpAndSettle();
+
+      // Gün 1-6: hiçbiri döngüyü TAMAMLAMIYOR, reklam HİÇ tetiklenmemeli.
+      for (var day = 1; day <= 6; day++) {
+        await tester.tap(find.text('$day'));
+        // Kutlama animasyonunu (titreşim+konfeti, ~4sn) tamamen bitirip
+        // bir sonraki güne geçiyoruz.
+        await tester.pumpAndSettle(const Duration(seconds: 5));
+        expect(ads.interstitialCallCount, 0);
+        currentDate = currentDate.add(const Duration(days: 1));
+        goalsProvider.reconcileForToday();
+        await tester.pumpAndSettle();
+      }
+
+      // Gün 7 — döngüyü TAMAMLAYAN dokunuş.
+      await tester.tap(find.text('7'));
+      await tester.pump(); // titreşim ANINDA başlar
+      expect(ads.interstitialCallCount, 0);
+
+      // Titreşimin (2sn) TAM ortasında — kutlama hâlâ sürüyor, reklam HENÜZ
+      // gösterilmemeli (tam ekran reklam kutlamayı KESMEMELİ).
+      await tester.pump(const Duration(milliseconds: 1000));
+      expect(ads.interstitialCallCount, 0);
+
+      // Titreşim bitip (2sn) konfeti başladı, ama konfeti (2sn) HENÜZ
+      // bitmedi — reklam hâlâ gösterilmemeli.
+      await tester.pump(const Duration(milliseconds: 1500));
+      expect(find.byType(GoalConfettiBurst), findsOneWidget);
+      expect(ads.interstitialCallCount, 0);
+
+      // Konfeti (toplam ~4sn) tamamen bitti — reklam TAM ŞİMDİ, tam bir
+      // kez gösterilmiş olmalı.
+      await tester.pumpAndSettle(const Duration(seconds: 2));
+      expect(find.byType(GoalConfettiBurst), findsNothing);
+      expect(ads.interstitialCallCount, 1);
     },
   );
 }

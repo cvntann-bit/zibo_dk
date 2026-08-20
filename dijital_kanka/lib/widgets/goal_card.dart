@@ -11,7 +11,13 @@ import '../providers/goals_provider.dart';
 /// gelen tıklanabilir; döngü tamamlandığında coin ödülünü verip kullanıcıya
 /// haber verir.
 class GoalCard extends StatelessWidget {
-  const GoalCard({super.key, required this.goal, required this.today, this.onMarkedToday});
+  const GoalCard({
+    super.key,
+    required this.goal,
+    required this.today,
+    this.onMarkedToday,
+    this.onCycleCompleted,
+  });
 
   final Goal goal;
   final DateTime today;
@@ -23,6 +29,14 @@ class GoalCard extends StatelessWidget {
   /// `flutter test`'teki `GoalCard(goal: ..., today: ...)` gibi doğrudan
   /// kurulan mevcut testler etkilenmesin diye.
   final VoidCallback? onMarkedToday;
+
+  /// [onMarkedToday]'DEN AYRI, BİLEREK farklı bir sinyal — bu YALNIZCA
+  /// döngü GERÇEKTEN 7/7 tamamlanınca (`cycleCompleted == true`) çağrılır,
+  /// `onMarkedToday` her gün işaretlemede çağrılır. `GoalTrackingScreen`
+  /// bunu, kutlama animasyonu (titreşim+konfeti) BİTTİKTEN SONRA bir geçiş
+  /// reklamı göstermek için kullanıyor (bkz. o dosyadaki dokümantasyon) —
+  /// reklamın kutlamayı KESMEMESİ için iki sinyal AYRI tutuldu.
+  final VoidCallback? onCycleCompleted;
 
   void _onTodayTap(BuildContext context) {
     final goalsProvider = context.read<GoalsProvider>();
@@ -42,6 +56,7 @@ class GoalCard extends StatelessWidget {
       ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
         ..showSnackBar(SnackBar(content: Text(l10n.goalCycleCompleted)));
+      onCycleCompleted?.call();
     }
   }
 

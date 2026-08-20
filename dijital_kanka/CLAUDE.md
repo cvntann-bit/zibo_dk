@@ -1106,6 +1106,26 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
   bu provider'ın işi değil — `GoalsProvider`/`WaterProvider` ile aynı gerekçeyle coin sistemine
   bağımlı değil; `claimToday()` o günün miktarını (veya `null`) döner, gerçekten eklemek
   (`CoinProvider.earnDailyLoginReward(amount)`) çağıran ekranın sorumluluğunda.
+- **2026 güncellemesi — ödül alınınca bir geçiş (interstitial) reklamı da gösteriliyor.** Kullanıcı
+  isteği: "kişi günlük giriş ödülünü alınca da geçilebilir reklam olsun" — BİLEREK ÖDÜLLÜ
+  (rewarded) DEĞİL, "Zibo'ya Art Arda Dokunma" bölümündeki AYNI `CoinProvider.
+  showInterstitialAd()` çağrısı (bkz. o bölüm). `_DailyRewardsScreenState._claimDay()`,
+  `earnDailyLoginReward(amount)`'tan HEMEN SONRA `unawaited(coin.showInterstitialAd())`
+  çağırıyor — coin bakiyesini/işlem geçmişini HİÇ etkilemiyor, günde en fazla BİR kez tetiklenir
+  (ödül zaten günde bir kez alınabildiği için ayrı bir sınırlama koduna gerek YOK). Reklam
+  yüklenemezse (ağ yok, envanter boş) `showInterstitialAd()` sessizce `false` döner, ödülün
+  kendisi HİÇ etkilenmez — coin zaten reklamdan ÖNCE eklenmiş durumda.
+  - **Test gotcha'sı — gerçek `AdMobAdService` kullanan bir teste YENİ bir reklam çağrısı
+    eklemek "A Timer is still pending" hatasına yol açtı:** `widget_test.dart`'taki "Günlük Giriş
+    Ödülleri: bugünün kutucuğuna dokununca ödül alınır..." testi `const DijitalKankaApp()`
+    (varsayılan, gerçek `AdMobAdService`) kullanıyordu — `showInterstitialAd()`'ın `flutter_test`
+    ortamında hiç tamamlanmayan 8sn'lik yükleme zaman aşımı Timer'ı, test biterken hâlâ askıda
+    kalıp assertion'ı tetikledi (`showRewardedAd()`'ın Mağaza'daki reklam testinde ZATEN bilinen
+    AYNI sorun). **Çözüm:** Mağaza'nın reklam testindeki AYNI desen — bu test de artık
+    `DijitalKankaApp(adService: const MockAdService())` kullanıyor. **Ders (tekrar):** bir ekrana
+    `CoinProvider.showRewardedAd()`/`showInterstitialAd()` çağrısı eklerken, o ekranı `const
+    DijitalKankaApp()` (varsayılan gerçek AdMob) ile test eden HERHANGİ bir mevcut widget testi
+    varsa, `MockAdService` enjekte etmeye çevrilmesi GEREKEBİLİR.
 - **`reconcileForToday()` — TEK bir metotta İKİ gereksinimi birleştiriyor:** (1) "bir gün kaçırılırsa
   döngü Gün 1'den yeniden başlasın" VE (2) "Gün 7 alındıktan sonra ertesi gün otomatik yeni döngü
   başlasın". `GoalsProvider._reconcileGoal`'da bu ikisi AYRI ele alınıyordu (2. durum `toggleToday`
@@ -3409,9 +3429,12 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
   `zibo_animated_image_test.dart`, `sound_effects_provider_test.dart` (2026 — bkz. "Zibo
   Dokunma Sesi" bölümü), `home_screen_sound_test.dart` (aynı bölüm),
   `water_tracking_sound_test.dart` (2026 — kostüm/tema/su damlası sesleri, "Zibo Dokunma Sesi"
-  bölümü), `auth_link_provider_test.dart` (YENİ, 2026 — bkz. "Google Hesap Bağlama" bölümü),
-  `settings_screen_test.dart` (YENİ, aynı bölüm).
-  **Toplam: 275 test.**
+  bölümü), `auth_link_provider_test.dart` (2026 — bkz. "Google Hesap Bağlama" bölümü),
+  `settings_screen_test.dart` (aynı bölüm). **`test/wheel_screen_test.dart` KISA SÜRE var oldu,
+  SONRA SİLİNDİ** — Şans Çarkı sonrası reklam denemesiyle birlikte geldi, kullanıcı o özelliği
+  istemeyince (bkz. "Zibo'ya Art Arda Dokunma → Geçiş Reklamı" bölümündeki geri alma notu) testi
+  de anlamsızlaştığı için kaldırıldı.
+  **Toplam: 276 test.**
 - `widget_test.dart` içindeki `_buildAppWithClock()` yardımcı fonksiyonu enjekte edilebilir saatli
   testler için — **`RootScreen`'in ihtiyaç duyduğu HER provider'ı içermeli** (`AppThemeProvider`,
   `AuthLinkProvider`, `CoinProvider`, `CostumeProvider`, `DailyRewardsProvider`,
@@ -3883,6 +3906,62 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
   test reklamı) çalıştığının BEKLENMEDİK ama net bir kanıtı oldu. Reklamsız Zibo dalı (düşük
   ihtimalli yol) cihazda AYRICA doğrulanmadı — yalnızca yukarıdaki otomatik testle kanıtlanmış
   durumda.
+- **2026 güncellemesi — `showInterstitialAd()`'ın İKİNCİ kullanım yeri: Günlük Giriş Ödülleri.**
+  Kullanıcı isteği "birkaç aksiyondan sonra geçilebilir reklam daha ekleyelim" ile bkz. "Günlük
+  Giriş Ödülleri" bölümündeki yeni bullet — ödül alınınca (`_DailyRewardsScreenState._claimDay`)
+  AYNI `CoinProvider.showInterstitialAd()` çağrılıyor, %100 (probabilistik DEĞİL — art arda
+  dokunma akışının aksine burada bir "ihtimal" kavramı YOK, ödül zaten günde bir kez alınabildiği
+  için ek bir sıklık sınırlamasına gerek duyulmadı).
+- **2026 İKİNCİ güncelleme — kullanıcı `AskUserQuestion` ile "Şans Çarkı sonucu" ve "Hedef
+  tamamlama (7 gün)"nü seçti; İKİSİ de denendi, Şans Çarkı'nınki SONRADAN (bkz. altta ÜÇÜNCÜ
+  güncelleme) GERİ ALINDI, Hedef Tamamlama'nınki KALICI.** İlk turda "birkaç aksiyondan sonra...
+  daha ekleyelim" derken kullanıcı HANGİ diğer aksiyonları kastettiğini belirtmemişti — TAHMİN
+  etmek yerine soruldu.
+  - **Hedef Tamamlama (`goal_tracking_screen.dart`/`goal_card.dart`) — ÜÇÜNCÜ kullanım yeri,
+    KALICI.** **BİLEREK `onMarkedToday`'e (HER gün işaretlemede tetiklenen titreşim+konfeti+ses
+    kutlamasına) DEĞİL, YENİ ayrı bir `GoalCard.onCycleCompleted` callback'ine bağlandı** — bu,
+    YALNIZCA 7/7 tamamlanan (`cycleCompleted == true`) dokunuşta çağrılıyor
+    (`GoalCard._onTodayTap`'in zaten hesapladığı, `earnStreak7Bonus()`'u tetikleyen AYNI koşul).
+    İki sinyalin AYRI tutulmasının nedeni: 7. gün dokunuşu HEM `onMarkedToday` (kutlama) HEM
+    `onCycleCompleted` (reklam bayrağı) aynı anda tetikliyor — reklamı ANINDA göstermek, tam ekran
+    native reklam Activity'sinin kullanıcının az önce tetiklediği titreşim/konfeti/ses
+    kutlamasının ÜSTÜNE binip onu KESMESİNE yol açardı (bu kutlama CLAUDE.md'de belgeli onca ince
+    ayardan sonra kullanıcının en çok önem verdiği detaylardan biri — bir reklamla yarıda kesmek
+    büyük bir gerileme olurdu).
+    - **`_GoalTrackingScreenState._pendingCycleCompletionAd`** (bool) — `_onCycleCompleted()`
+      tarafından `true` yapılır; `_confettiController`'ın VAR OLAN `addStatusListener`'ı
+      (`AnimationStatus.completed` — konfeti patlaması TAM bittiğinde, dokunuştan ~4 saniye
+      sonra: 2sn titreşim + 2sn konfeti) bu bayrağı görürse `false`'a döndürüp
+      `unawaited(context.read<CoinProvider>().showInterstitialAd())` çağırıyor. Reklam TAM
+      kutlamanın gerçek bitiş anına (mevcut bir animasyon status listener'ına, YENİ bir
+      Timer/gecikme EKLEMEDEN) bağlandığı için zamanlama otomatik doğru kalıyor.
+    - **Test:** `goal_completion_celebration_test.dart`'a YENİ bir test eklendi
+      (`_RecordingAdService` + enjekte edilebilir saatle: gün 1-6'da reklam HİÇ tetiklenmez; gün
+      7'de dokunma ANINDA VE titreşimin ortasında VE konfeti sürerken reklam HÂLÂ `0` çağrı —
+      konfeti TAM bitince `1` çağrı).
+  - **Şans Çarkı sonucu (`wheel_screen.dart`) — DENENDİ, KULLANICI İSTEMEDİ, TAMAMEN GERİ
+    ALINDI (bkz. hemen altta ÜÇÜNCÜ güncelleme).**
+- **2026 ÜÇÜNCÜ güncelleme — Şans Çarkı sonrası reklam kaldırıldı.** İlk yazımda `_spin()`,
+  `_showResultDialog(prize)` KAPANDIKTAN SONRA `showInterstitialAd()` çağırıyordu (kullanıcı
+  zaten çevirmek için BİR ödüllü reklam izlemişti — `watchAdAndSpinWheel` — bu, sonuç mesajının
+  ÜSTÜNE binmesin diye diyalog kapanana kadar bekletilen, coin ekonomisinden bağımsız İKİNCİ bir
+  reklamdı). **Kullanıcı gerçek cihazda deneyip "hoşuma gitmedi, kaldıralım" dedi** — muhtemel
+  gerekçe: çevirmek için zaten bir ödüllü reklam izlemiş kullanıcıya sonuç ekranının HEMEN
+  ardından ikinci bir tam ekran reklam daha göstermek, arka arkaya iki reklam gibi hissettirip
+  rahatsız edici geldi (Günlük Giriş Ödülü/Hedef Tamamlama'nın aksine, Şans Çarkı akışının
+  KENDİSİ zaten BİR reklam içeriyor — "reklam üstüne reklam" hissi yalnızca bu akışa özgüydü).
+  **Geri alma tamamen temiz** — `wheel_screen.dart`'taki çağrı + kullanılmayan `dart:async`
+  import'u kaldırıldı, `test/wheel_screen_test.dart` (bu davranışı doğrulayan tek dosya) SİLİNDİ.
+  `CoinProvider.showInterstitialAd()`'ın KENDİSİ dokunulmadı (Günlük Giriş Ödülü/Hedef Tamamlama
+  hâlâ kullanıyor). **Ders:** yeni bir reklam yerleşimi eklerken, aynı akışın KENDİSİ zaten bir
+  reklam içeriyorsa (Şans Çarkı'nın ödüllü çevirme reklamı gibi) ikinci bir reklam eklemek diğer
+  (reklamsız) akışlardan (Günlük Giriş Ödülü, Hedef Tamamlama) FARKLI bir kullanıcı algısı
+  yaratabilir — "birkaç yer daha ekleyelim" gibi genel bir istekte her yer eşit derecede uygun
+  olmayabilir, kullanıcı geri bildirimiyle teker teker doğrulanmalı.
+- **Doğrulama (Hedef Tamamlama, KALICI özellik):** `flutter build apk --debug` + cihaza kurulum +
+  `adb shell monkey`/`pidof` ile çöküş olmadan açıldığı doğrulandı — reklamın gerçek cihazda
+  GÖRSEL olarak (özellikle kutlama animasyonunun gerçekten KESİLMEDİĞİ, reklamın tam ~4 saniye
+  SONRA geldiği) doğrulanması kullanıcının kendi cihazında yapılmalı.
 
 ## Firestore veri kalıcılığı, Anonymous Auth ve güvenilir zaman ([cloud_state_store.dart](lib/services/cloud_state_store.dart), [trusted_time_service.dart](lib/services/trusted_time_service.dart), [trusted_time_provider.dart](lib/providers/trusted_time_provider.dart))
 

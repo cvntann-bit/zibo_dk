@@ -9,6 +9,7 @@ import '../data/costume_poses.dart';
 import '../data/costumes.dart';
 import '../data/goal_quotes.dart';
 import '../l10n/app_localizations.dart';
+import '../providers/coin_provider.dart';
 import '../providers/costume_provider.dart';
 import '../providers/goals_provider.dart';
 import '../providers/profile_provider.dart';
@@ -99,9 +100,30 @@ class _GoalTrackingScreenState extends State<GoalTrackingScreen>
   )..addStatusListener((status) {
     if (status == AnimationStatus.completed && mounted) {
       setState(() => _showConfetti = false);
+      // Kutlama (titreşim+konfeti) TAM BİTTİKTEN SONRA — bkz.
+      // [_onCycleCompleted] — bekleyen bir 7/7 tamamlama reklamı varsa
+      // ŞİMDİ gösteriliyor; reklam kutlamanın ÜSTÜNE binip onu KESMESİN
+      // diye bilerek buraya (animasyonun GERÇEK bitiş anına) bağlandı.
+      if (_pendingCycleCompletionAd) {
+        _pendingCycleCompletionAd = false;
+        unawaited(context.read<CoinProvider>().showInterstitialAd());
+      }
     }
   });
   bool _showConfetti = false;
+
+  /// [GoalCard.onCycleCompleted] tarafından (7/7 tamamlanınca) `true`
+  /// yapılır — kullanıcı isteği "hedef tamamlama (7 gün)" sonrası geçilebilir
+  /// (interstitial, ÖDÜLLÜ DEĞİL) bir reklam göstermek. Konfeti kutlaması
+  /// bu SIRADA zaten oynamaya BAŞLAMIŞ oluyor (aynı tıklama `onMarkedToday`'i
+  /// de tetikliyor, bkz. `GoalCard._onTodayTap`) — reklamı ANINDA göstermek
+  /// yerine `_confettiController`'ın `completed` durumuna kadar (~4sn)
+  /// BEKLETİLİYOR ki tam ekran reklam kutlama animasyonunu KESMESİN.
+  bool _pendingCycleCompletionAd = false;
+
+  void _onCycleCompleted() {
+    _pendingCycleCompletionAd = true;
+  }
 
   @override
   void initState() {
@@ -299,6 +321,7 @@ class _GoalTrackingScreenState extends State<GoalTrackingScreen>
             goal: goal,
             today: today,
             onMarkedToday: _triggerCompletionCelebration,
+            onCycleCompleted: _onCycleCompleted,
           ),
           const SizedBox(height: 12),
         ],

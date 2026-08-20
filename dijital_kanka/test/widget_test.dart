@@ -1331,7 +1331,17 @@ void main() {
   testWidgets(
     'Günlük Giriş Ödülleri: bugünün kutucuğuna dokununca ödül alınır ve bakiyeye eklenir',
     (WidgetTester tester) async {
-      await _pumpPastOnboarding(tester, const DijitalKankaApp());
+      // Gerçek AdMobAdService, flutter_test'in platform kanalına dokunamadığı
+      // bir ortamda reklam yükleyemez ve `showInterstitialAd()`'ın kendi
+      // 8sn'lik zaman aşımı Timer'ı test bitiminde hâlâ askıda kalıp
+      // "A Timer is still pending" hatasına yol açar (bkz. CLAUDE.md "Zibo
+      // Coin ekonomisi" — günlük giriş ödülü artık claim sonrası bir geçiş
+      // reklamı tetikliyor) — bu yüzden burada da (Mağaza'nın reklam izleme
+      // testindeki AYNI gerekçeyle) MockAdService enjekte ediliyor.
+      await _pumpPastOnboarding(
+        tester,
+        const DijitalKankaApp(adService: MockAdService()),
+      );
 
       // Sağ kenardaki tetikleyici, Şans Çarkı'nın simetriği — yalnızca Ana
       // Sayfa sekmesinde (varsayılan seçili sekme burada zaten Ana Sayfa).
