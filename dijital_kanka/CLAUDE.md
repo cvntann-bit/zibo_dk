@@ -4544,11 +4544,12 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
     parmak izi notuyla KARIŞTIRMAYIN):
     - SHA-1: `CD:E6:95:44:D1:5A:5D:9E:2C:B6:F4:BC:2B:E5:CD:E6:12:53:44:A3`
     - SHA-256: `1E:5E:9C:F5:AC:00:43:5C:21:74:0E:9E:A8:2F:E3:A5:DB:B3:FD:00:B7:16:87:2C:FD:E0:2E:63:79:7F:00:56`
-    **YAPILMASI GEREKEN:** Firebase Console > Project settings > (Android uygulaması) > "Add
-    fingerprint" ile bu ikisini de EKLEYİP `google-services.json`'ı YENİDEN İNDİRİP projeye
-    koymak — aksi halde release (Play Store) build'inde Google ile Bağlama/Giriş SESSİZCE
-    başarısız olur (debug build'de çalışıyor olması release'de de çalışacağı anlamına GELMEZ,
-    Credential Manager OAuth istemci eşleşmesi imzalama sertifikasına göre yapılıyor).
+    **YAPILDI** — kullanıcı Firebase Console'a bu iki parmak izini AÇIKÇA (Console UI'daki "Add
+    fingerprint" ile, buradan yalnızca talimat verildi, asistan Console'a erişemez) ekleyip
+    `google-services.json`'ı yeniden indirdi; `android/app/google-services.json`'a yeni bir
+    `oauth_client` girdisi (`certificate_hash: cde69544d15a5d9e2cb6f4bc2be5cde6125344a3` — yukarıdaki
+    release SHA-1'in tire'siz/küçük harfli hâli) olarak yansıdığı diff'te doğrulandı. Release AAB
+    bu güncel dosyayla yeniden derlenip imza doğrulaması tekrarlandı.
 - **`android/key.properties`** (YENİ, git'e GİRMİYOR) — `storePassword`/`keyPassword`/`keyAlias`/
   `storeFile` (mutlak yol) taşıyor. `build.gradle.kts` bu dosyayı `rootProject.file("key.
   properties")` ile okuyup `signingConfigs.create("release")`'i dolduruyor.
@@ -4558,10 +4559,64 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
     ÖNCE `android/key.properties`'in GERÇEKTEN var olduğunu kontrol edin).
 - **Doğrulama:** `flutter build appbundle --release` çalıştırılıp imzalamanın GERÇEKTEN release
   keystore'unu kullandığı doğrulandı (bkz. build çıktısı/`bundletool`/`apksigner` ile sertifika
-  kontrolü). **Sonraki adımlar (henüz YAPILMADI, kullanıcıyla birlikte sırayla ele alınacak):**
-  yukarıdaki Firebase SHA parmak izi ekleme adımı, IAP kararı (gerçek Google Play Billing mi,
-  yoksa launch'ta Mağaza'nın gerçek-para paketlerini gizlemek mi), Gizlilik Politikası/Kullanım
-  Koşulları'nın yer tutucu metinden gerçek içeriğe geçmesi (Play Console Data Safety formu
-  barındırılan bir URL istiyor), Play Console'daki mağaza listeleme/içerik derecelendirme/veri
-  güvenliği formları (bkz. "Coin Ekonomisi Güvenliği" bölümündeki hâlâ açık istemci-taraflı risk
-  notu — gerçek IAP bağlanmadan ÖNCE ele alınmalı).
+  kontrolü).
+- **`android/app/proguard-rules.pro` (YENİ) + `buildTypes.release`'e `isMinifyEnabled = true`/
+  `isShrinkResources = true`.** İlk yazımda release build'i (Flutter'ın kendi varsayılan şablonu
+  gibi) küçültme AÇIK DEĞİLDİ — `isMinifyEnabled`/`isShrinkResources` hiç ayarlanmamıştı (Android
+  Gradle Plugin'in varsayılanı `false`), bu yüzden ilk `app-release.aab` (130MB) hiç R8/kaynak
+  küçültmesi görmemişti.
+  - **Kritik bağlam (dosyanın kendi başındaki yorumla AYNI, tekrar altı çizilerek):** R8 YALNIZCA
+    bu projenin Android/Kotlin/Java katmanını (plugin'lerin native platform-channel köprü kodu +
+    Firebase/Google Play Services/AdMob) işliyor — uygulamanın GERÇEK iş mantığı (`CoinProvider`,
+    `AuthLinkProvider` vb. TÜM Dart kodu) AOT derleyiciyle ayrı bir `libapp.so`'ya derleniyor ve
+    R8'in hiç görmediği bir katman. Yani bu değişikliğin riski yalnızca "native plugin köprüsü"nde,
+    uygulamanın kendi Dart mantığında DEĞİL.
+  - **`proguard-rules.pro` içeriği bilinçli olarak MİNİMAL** — Flutter'ın kendi embedding
+    sınıfları için `-keep`, Play Core için `-dontwarn` (Flutter'ın "deferred components" desteği
+    kullanılmasa bile bu sınıflara derleme zamanında referans veriyor), Credential Manager
+    (`androidx.credentials.**`) için `-keep`/`-dontwarn`, ve genel reflection/serialization
+    meta-verisini koruyan `-keepattributes` satırları. Firebase/AdMob/google_sign_in gibi çoğu
+    modern kütüphane KENDİ "consumer proguard rules"ını AAR'ının içinde taşıyor (AGP bunları
+    `minifyEnabled` açıkken OTOMATİK birleştiriyor) — bu yüzden buraya HER olası sınıf için elle
+    kural eklemek GEREKMEDİ, yalnızca bilinen/sık karşılaşılan boşluklar kapatıldı.
+  - **GERÇEK doğrulama derleme BAŞARISI değil — gerçek cihazda test etmek GERÇEKTEN bir çökme
+    yakaladı.** `flutter build apk --release` (AAB değil, doğrudan cihaza kurulabilir APK) ile
+    derlenip telefona kurulunca uygulama `main()`'e HİÇ ulaşmadan, açılışta çöktü:
+    ```
+    Unable to get provider androidx.startup.InitializationProvider:
+    Failed to create an instance of androidx.work.impl.WorkDatabase
+    ```
+    **Kök neden:** R8, AndroidX WorkManager'ın Room tabanlı `WorkDatabase`sinin ÜRETİLMİŞ
+    (generated) `_Impl` sınıflarını (yalnızca reflection/SPI ile referans edildikleri için R8'in
+    statik analizinin GÖREMEDİĞİ sınıflar) silmişti — WorkManager'ı DOĞRUDAN kullanan bir kod
+    YAZILMADI, bu bir plugin'in (Firebase Messaging arka plan işleme veya benzeri) TRANSİTİF
+    bağımlılığı. **Düzeltme:** `proguard-rules.pro`'ya `androidx.work.**`/`androidx.room.**` için
+    kapsamlı `-keep` kuralları eklendi (hangi plugin'in tetiklediğini izole etmek yerine
+    WorkManager/Room'un TAMAMI korundu — daha güvenli/kalıcı). Yeniden derlenip telefona kurulunca
+    Onboarding ekranı (Zibo logosu, Türkçe metinler/fontlar) sorunsuz render edildi, `pidof` ile
+    süreç canlı, logcat'te çökme izi yok. **Bu, bu bölümün başındaki "gerçek doğrulama derleme
+    başarısı değil" uyarısının SOMUT kanıtı** — ilk derleme de hatasız TAMAMLANMIŞTI, çökme yalnızca
+    cihazda uygulamayı GERÇEKTEN açınca ortaya çıktı.
+- **Sürüm numarası stratejisi.** `pubspec.yaml`'daki `version: 1.0.0+1` (`X.Y.Z+N`) zaten
+  `android/app/build.gradle.kts`'teki `flutter.versionCode`/`flutter.versionName`'e OTOMATİK
+  eşleniyor — mekanizma DEĞİŞMEDİ/EK KOD GEREKMEDİ, yalnızca İZLENECEK POLİTİKA burada
+  belgeleniyor:
+  - **`+N` (versionCode, `1.0.0+1`'deki `1`) her Play Console'a YÜKLEME'de (internal testing dahil,
+    yalnızca production DEĞİL) bir ÖNCEKİ yüklemeden STRIKTLY BÜYÜK olmak ZORUNDA** — Google Play
+    bunu TÜM track'ler (internal/closed/open/production) genelinde, SONSUZA kadar takip ediyor;
+    aynı `+N` ile İKİNCİ bir yükleme REDDEDİLİR. **Kural: `flutter build appbundle --release`
+    çalıştırıp Play Console'a yüklemeden ÖNCE `pubspec.yaml`'daki `+N`'i HER SEFERİNDE artırın**
+    (test amaçlı yerel bir derleme için artırmaya gerek YOK, yalnızca GERÇEKTEN Console'a
+    yüklenecek bir derleme için).
+  - **`X.Y.Z` (versionName, kullanıcıya GÖRÜNEN sürüm) için önerilen kural (standart semver):**
+    yalnızca bug fix → `Z`'yi artır (`1.0.1`), yeni özellik → `Y`'yi artır ve `Z`'yi sıfırla
+    (`1.1.0`), büyük/köklü bir değişiklik → `X`'i artır (`2.0.0`). İlk yayın için `1.0.0` zaten
+    doğru/olduğu gibi kalabilir.
+- **Sonraki adımlar (henüz YAPILMADI, kullanıcıyla birlikte sırayla ele alınacak):** IAP kararı
+  (gerçek Google Play Billing mi, yoksa launch'ta Mağaza'nın gerçek-para paketlerini gizlemek mi),
+  Gizlilik Politikası/Kullanım Koşulları'nın yer tutucu metinden gerçek içeriğe geçmesi (Play
+  Console Data Safety formu barındırılan bir URL istiyor), Çökme/hata izleme (Crashlytics) —
+  şu an YOK, canlıda sorun çıkarsa görebilmek için önerilir, Play Console'daki mağaza listeleme/
+  içerik derecelendirme/veri güvenliği formları, farklı cihaz/Android sürümünde test (şu an
+  yalnızca kullanıcının kendi test telefonunda doğrulandı) (bkz. "Coin Ekonomisi Güvenliği"
+  bölümündeki hâlâ açık istemci-taraflı risk notu — gerçek IAP bağlanmadan ÖNCE ele alınmalı).

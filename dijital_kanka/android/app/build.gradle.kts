@@ -72,6 +72,16 @@ android {
             } else {
                 signingConfigs.getByName("debug")
             }
+            // R8 kod küçültme + kaynak küçültme — bkz. CLAUDE.md "Release
+            // İmzalama" bölümü VE proguard-rules.pro'nun başındaki
+            // dokümantasyon (R8'in yalnızca native plugin katmanını
+            // etkilediği, Dart/Flutter iş mantığına DOKUNMADIĞI notu).
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro",
+            )
         }
     }
 }
