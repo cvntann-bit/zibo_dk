@@ -729,7 +729,7 @@ void main() {
   });
 
   testWidgets(
-    'Ayarlar > Gizlilik Politikası ve Kullanım Koşulları yer tutucu sayfa açar',
+    'Ayarlar > Gizlilik Politikası ve Kullanım Koşulları kendi gerçek içeriğini gösterir',
     (WidgetTester tester) async {
       await _pumpPastOnboarding(tester, const DijitalKankaApp());
 
@@ -752,10 +752,7 @@ void main() {
           )
           .onTap!();
       await tester.pumpAndSettle();
-      expect(
-        find.text('Bu içerik yakında burada olacak.'),
-        findsOneWidget,
-      );
+      expect(find.textContaining('Veri Sorumlusu'), findsOneWidget);
       await tester.tap(find.byTooltip('Geri'));
       await tester.pumpAndSettle();
 
@@ -770,7 +767,7 @@ void main() {
           .onTap!();
       await tester.pumpAndSettle();
       expect(
-        find.text('Bu içerik yakında burada olacak.'),
+        find.textContaining('Sanal Para Birimi'),
         findsOneWidget,
       );
     },

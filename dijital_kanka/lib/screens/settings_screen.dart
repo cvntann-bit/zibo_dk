@@ -4,6 +4,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../data/legal_texts.dart';
 import '../l10n/app_localizations.dart';
 import '../providers/auth_link_provider.dart';
 import '../providers/locale_provider.dart';
@@ -283,7 +284,7 @@ class SettingsScreen extends StatelessWidget {
                     MaterialPageRoute<void>(
                       builder: (_) => LegalPlaceholderScreen(
                         title: l10n.settingsPrivacyPolicy,
-                        body: l10n.settingsLegalPlaceholderBody,
+                        body: privacyPolicyTr,
                       ),
                     ),
                   ),
@@ -297,7 +298,7 @@ class SettingsScreen extends StatelessWidget {
                     MaterialPageRoute<void>(
                       builder: (_) => LegalPlaceholderScreen(
                         title: l10n.settingsTermsOfService,
-                        body: l10n.settingsLegalPlaceholderBody,
+                        body: termsOfServiceTr,
                       ),
                     ),
                   ),

@@ -1289,12 +1289,12 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
       sarılı (`.catchError((_) {})`) — `flutter_test` ortamında platform channel'ı olmadığı için,
       aksi halde widget testleri çökerdi; hata durumunda sessizce "—" gösterip devam eder.
     - **Web Sitesi** (`getzibo.com`, `Uri.https()` ile açılır) + **Gizlilik Politikası**/
-      **Kullanım Koşulları** — ikisi de `LegalPlaceholderScreen`'e (YENİ, tek parametreli
-      `title`/`body` alan paylaşımlı bir widget — iki AYRI ekran dosyası yerine, ikisi de yapısal
-      olarak birebir aynı olduğu için) push ediliyor, şu an `settingsLegalPlaceholderBody` ARB
-      metnini ("Bu içerik yakında burada olacak.") gösteriyor — gerçek hukuki metinler hazır
-      olduğunda yalnızca bu iki `LegalPlaceholderScreen(body: ...)` çağrısındaki `body` parametresi
-      güncellenecek, yeni bir ekran/route GEREKMİYOR.
+      **Kullanım Koşulları** — ikisi de `LegalPlaceholderScreen`'e (tek parametreli `title`/`body`
+      alan paylaşımlı bir widget — iki AYRI ekran dosyası yerine, ikisi de yapısal olarak birebir
+      aynı olduğu için) push ediliyor. **2026 güncellemesi — artık GERÇEK içerik gösteriyor**
+      (bkz. altta "Gizlilik Politikası / Kullanım Koşulları içeriği" notu) — eski ortak
+      `settingsLegalPlaceholderBody` ARB metni ("Bu içerik yakında burada olacak.") KULLANILMIYOR
+      artık (silinmedi, proje geneli convansiyon), her ekran KENDİ gerçek metnini alıyor.
   - **`url_launcher` ile açma başarısız olursa** (ör. cihazda hiç mail istemcisi kurulu değilse)
     `_launchOrShowError` sessizce yutmak yerine `settingsCouldNotOpenLink` metniyle bir SnackBar
     gösterir. **`AndroidManifest.xml`'in `<queries>` bloğuna `mailto:`/`https:` intent'leri
@@ -1305,6 +1305,34 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
     alıcısıyla açtı, Gizlilik Politikası/Kullanım Koşulları yer tutucu ekranları doğru başlık/gövdeyle
     push edildi. `widget_test.dart`'taki mevcut Ayarlar testi yeni bölüm başlıklarını/satırlarını
     doğrulayacak şekilde güncellendi, yer tutucu sayfalar için yeni bir uçtan uca senaryo eklendi.
+  - **2026 — Gizlilik Politikası / Kullanım Koşulları içeriği yazıldı (Play Console "Teknik Yayın
+    Hazırlığı" fazının Faz 3 maddesi — roadmap'te "Beraber" etiketli).** `lib/data/legal_texts.dart`
+    (YENİ) — `privacyPolicyTr`/`termsOfServiceTr`, `zibo_messages.dart` gibi diğer büyük içerik
+    havuzlarıyla AYNI gerekçeyle (bkz. "Yerelleştirme" bölümü) ARB'YE DEĞİL ayrı bir Dart veri
+    dosyasına konuldu.
+    - **Bilinçli sınırlama — YALNIZCA Türkçe, uygulama diline göre DEĞİŞMİYOR** (diğer içerik
+      havuzlarından FARKLI bir karar): bir hukuki belgeyi üç dile çevirmek, çeviri
+      belirsizliğinin/hatasının GERÇEK hukuki sonuç doğurabileceği bir alan — şimdilik TEK, yetkili
+      bir Türkçe sürüm var (uygulamanın asıl pazarı/dili). EN/ES çevirisi istenirse profesyonel bir
+      çeviri turu olarak AYRICA ele alınmalı, otomatik/hızlı çeviri YAPILMADI.
+    - **`LegalPlaceholderScreen`'in `body`'si artık `SingleChildScrollView` içinde** — eski kısa
+      yer tutucu metin (`Padding` + düz `Text`, kaydırma YOK) taşmıyordu, ama gerçek hukuki
+      metinler çok daha uzun olduğu için kaydırma eklenmedi taşardı (bu proje genelindeki tekrarlayan
+      "yeni içerik eski dar container'ı taşırıyor" ders sınıfının bir örneği daha).
+    - **KRİTİK — bu bir hukuk danışmanlığı DEĞİL, uygulamanın GERÇEKTEN ne yaptığına (Firebase
+      Auth/Firestore/Analytics/Messaging, AdMob, Google Sign-In, yerel fotoğraf depolama, Zibo
+      Coin'in gerçek parasal değeri olmadığı) dayanan bir TASLAK.** İçerikte `[AD SOYAD / ŞİRKET
+      UNVANI]` köşeli parantezli İKİ yer var (Veri Sorumlusu + Fikri Mülkiyet maddeleri) —
+      kullanıcının KENDİ kimlik bilgisini doldurması GEREKİYOR, asistanın elinde bu bilgi YOK,
+      uydurulmadı.
+    - **YAPILMASI GEREKEN — Play Console'un Data Safety formu barındırılan bir URL istiyor,
+      uygulama İÇİ metin TEK BAŞINA yeterli DEĞİL.** Bu metnin `getzibo.com` (kullanıcının AYRI bir
+      Claude Code oturumunda çalıştığı `zibo-website` projesi — bu oturumun ERİŞEMEDİĞİ bir proje)
+      üzerinde gerçek bir sayfa olarak (ör. `getzibo.com/privacy`, `getzibo.com/terms`)
+      yayınlanması gerekiyor — asistan bunu buradan YAPAMADI, yalnızca içeriği üretti.
+    - **Test:** `widget_test.dart`'taki Ayarlar testi artık yer tutucu metni DEĞİL, her iki
+      belgeden ayırt edici birer ibareyi (`find.textContaining('Veri Sorumlusu')`/
+      `find.textContaining('Sanal Para Birimi')`) doğruluyor.
 - **Coin Test Paneli kullanıcı isteğiyle tamamen kaldırıldı** (bkz. Yerelleştirme bölümü — bu, dil
   desteğiyle AYNI değişiklik setinde yapıldı). **Su Takibi'nin günlük hedef ayarı BURADA DEĞİL** —
   Su Takibi'nin kendi ekranındaki AppBar ayar ikonunda yaşıyor (bkz. "Su Takibi" bölümündeki

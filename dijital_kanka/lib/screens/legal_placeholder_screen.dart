@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 
-/// "Gizlilik Politikası"/"Kullanım Koşulları" gibi henüz gerçek içeriği
-/// olmayan hukuki sayfalar için paylaşılan, minimal bir yer tutucu ekran —
-/// Ayarlar > Hakkında bölümündeki ilgili satırdan push edilir. Gerçek metin
-/// hazır olduğunda [body] burada güncellenecek (bkz. CLAUDE.md "Ayarlar"
-/// bölümü) — ayrı bir ekrana ihtiyaç yok, tek widget'ın parametreleri
-/// değişecek.
+/// "Gizlilik Politikası"/"Kullanım Koşulları" için paylaşılan, minimal bir
+/// ekran — Ayarlar > Hakkında bölümündeki ilgili satırdan push edilir,
+/// gerçek metin `lib/data/legal_texts.dart`'tan geliyor (bkz. CLAUDE.md
+/// "Ayarlar" bölümü — eskiden ikisi de aynı kısa yer tutucu metni
+/// gösteriyordu, artık her biri kendi gerçek içeriğini alıyor).
 class LegalPlaceholderScreen extends StatelessWidget {
   const LegalPlaceholderScreen({
     super.key,
@@ -20,7 +19,11 @@ class LegalPlaceholderScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text(title)),
-      body: Padding(
+      // Gerçek hukuki metinler (bkz. legal_texts.dart) yer tutucudan ÇOK
+      // daha uzun — SingleChildScrollView OLMADAN taşardı (bir önceki
+      // sürümde yalnızca tek satırlık bir yer tutucu metin olduğu için bu
+      // hiç sorun değildi).
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Text(body, style: Theme.of(context).textTheme.bodyMedium),
       ),
