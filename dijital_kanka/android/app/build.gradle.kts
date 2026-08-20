@@ -1,3 +1,6 @@
+import java.io.FileInputStream
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
@@ -5,6 +8,18 @@ plugins {
     // Firebase (google-services.json'ı okuyup gerekli kaynak/manifest
     // girdilerini üretir) — en sonda uygulanmalı.
     id("com.google.gms.google-services")
+}
+
+// Release imzalama — bkz. CLAUDE.md "Release İmzalama" bölümü. `key.
+// properties` (android/key.properties, KESİNLİKLE .gitignore'da) gerçek
+// upload keystore'un yolunu/şifrelerini taşıyor; bu dosya yoksa (ör. CI'da
+// henüz kurulmamışsa) release build'i SESSİZCE debug imzasına düşer —
+// build'i hemen kırmak yerine, en azından `flutter build`'in çalışmaya
+// devam etmesi tercih edildi (aşağıdaki signingConfig seçimine bakın).
+val keystorePropertiesFile = rootProject.file("key.properties")
+val keystoreProperties = Properties()
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(FileInputStream(keystorePropertiesFile))
 }
 
 android {
@@ -33,11 +48,30 @@ android {
         versionName = flutter.versionName
     }
 
+    signingConfigs {
+        if (keystorePropertiesFile.exists()) {
+            create("release") {
+                keyAlias = keystoreProperties["keyAlias"] as String?
+                keyPassword = keystoreProperties["keyPassword"] as String?
+                storeFile = keystoreProperties["storeFile"]?.let { file(it) }
+                storePassword = keystoreProperties["storePassword"] as String?
+            }
+        }
+    }
+
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            // `android/key.properties` (gerçek upload keystore) varsa onu
+            // kullan — YOKSA (ör. bu dosyayı hiç almamış bir CI/klon)
+            // debug imzasına DÜŞ, build en azından ÇALIŞMAYA devam etsin
+            // (Play Store'a debug-imzalı bir paket YÜKLENEMEZ — bu yalnızca
+            // build'in kırılmaması için bir güvenlik ağı, gerçek yayın
+            // ASLA bu dalı kullanmamalı).
+            signingConfig = if (keystorePropertiesFile.exists()) {
+                signingConfigs.getByName("release")
+            } else {
+                signingConfigs.getByName("debug")
+            }
         }
     }
 }

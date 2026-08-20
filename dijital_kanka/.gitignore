@@ -43,3 +43,10 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Release imzalama sırrı — KESİNLİKLE commit edilmemeli (bkz. CLAUDE.md
+# "Release İmzalama" bölümü). Keystore dosyası + şifreleri kaybolursa/sızarsa
+# ciddi sonuçlar doğurur.
+/android/key.properties
+*.jks
+*.keystore

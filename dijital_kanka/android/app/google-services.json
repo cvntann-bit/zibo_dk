@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "855986625717-62bb8chs51ij1pedi773pdmcc67rvhg4.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.dijitalkanka.dijital_kanka",
+            "certificate_hash": "cde69544d15a5d9e2cb6f4bc2be5cde6125344a3"
+          }
+        },
+        {
           "client_id": "855986625717-q28imp8uvrrp8l8lfrfo2u1mqnhi50f0.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {

@@ -4507,3 +4507,61 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
     kısmi önlemle (+ launch öncesi gerçek IAP/AdMob geldiğinde zorunlu olarak eklenecek doğrulama)
     devam etmek mi — asistan bu maliyet/mimari kararını veremez, yalnızca seçenekleri VE her
     birinin ne sağlayıp ne sağlamadığını belgeliyor.
+
+## Release İmzalama / Play Store Yayın Hazırlığı ([android/app/build.gradle.kts](android/app/build.gradle.kts))
+
+- **2026 — kullanıcının Play Console hesabı doğrulandı, "Teknik Yayın Hazırlığı" fazına
+  başlandı.** İlk somut adım: uygulama o ana kadar (Flutter'ın kendi varsayılan şablonu) release
+  build'lerini bile DEBUG anahtarıyla imzalıyordu (`signingConfig = signingConfigs.getByName
+  ("debug")`, `build.gradle.kts`'teki `// TODO: Add your own signing config` yorumuyla açıkça
+  işaretliydi) — **Play Store debug-imzalı bir paket kabul ETMEZ**, bu yüzden gerçek bir "upload
+  keystore" oluşturup Gradle'a bağlamak, teknik yayın hazırlığının EN TEMEL/engelleyici adımıydı.
+- **`android/upload-keystore.jks`** (YENİ) — `keytool -genkeypair` ile üretilen 2048-bit RSA
+  anahtar çifti + kendinden imzalı sertifika, `-validity 10000` (~27 yıl, Google'ın Flutter/Android
+  dokümantasyonunun ÖNERDİĞİ değer — sertifika süresi Play Console'un kendisini DEĞİL, yalnızca bu
+  "upload" anahtarını etkiliyor ama yine de erken dolmasın diye uzun tutuldu). Alias `upload`
+  (Google'ın Play App Signing dokümantasyonunda kullandığı KONVANSİYONEL isim). `-dname` alanları
+  (`CN=Zibo, OU=Zibo, O=Zibo, L=Istanbul, ST=Istanbul, C=TR`) yalnızca sertifikaya gömülen
+  KOZMETİK bilgiler — gerçek bir tescilli şirket kaydı GEREKTİRMİYOR, Play Console/Google bunları
+  doğrulamıyor.
+  - **KRİTİK — bu dosya + şifreleri KAYBOLURSA/SIZARSA gerçek sonuçlar doğurur.** Google'ın "Play
+    App Signing" modeli (yeni uygulamalar için ARTIK ZORUNLU) bu "upload key"i yalnızca Play
+    Console'a YÜKLEME kimlik doğrulaması için kullanıyor (Google, kullanıcıya asıl DAĞITILAN
+    imzayı KENDİ sunucusunda AYRI bir "app signing key" ile yönetiyor) — yani bu anahtar
+    kaybolursa uygulamanın KENDİSİ kaybolmuyor, ama Google Play Console üzerinden bir "upload key
+    reset" talebi (destek süreci, günler sürebilir) GEREKİYOR. **Bu dosyayı (`android/upload-
+    keystore.jks`) VE `android/key.properties`'teki şifreleri projenin DIŞINDA, güvenli bir yere
+    (şifre yöneticisi + ayrı bir bulut yedeği) MUTLAKA yedekleyin** — ikisi de `.gitignore`'a
+    eklendi (`*.jks`/`*.keystore`/`/android/key.properties`), yani git geçmişinde YOK ve bu
+    makine dışında hiçbir kopyası YOK.
+  - **Şifreler** (hem `storePassword` hem `keyPassword` — basitlik için AYNI, tek bir güçlü
+    rastgele değer): `ae52084ddffaa01ca779f0ed703eca01` — bu, bu sohbette bir KEZ gösterildi,
+    şimdi bir şifre yöneticisine kaydedin. `android/key.properties` dosyasında da (yerel, git'e
+    girmeyen) duruyor.
+  - **SHA-1/SHA-256 parmak izleri** (Firebase Console'a — Google Sign-In'in RELEASE build'lerde
+    de çalışması için — VE varsa Play Console'un "App integrity" bölümüne eklenmesi gereken,
+    debug'takinden TAMAMEN FARKLI bir çift, bkz. "Google Hesap Bağlama" bölümündeki DEBUG
+    parmak izi notuyla KARIŞTIRMAYIN):
+    - SHA-1: `CD:E6:95:44:D1:5A:5D:9E:2C:B6:F4:BC:2B:E5:CD:E6:12:53:44:A3`
+    - SHA-256: `1E:5E:9C:F5:AC:00:43:5C:21:74:0E:9E:A8:2F:E3:A5:DB:B3:FD:00:B7:16:87:2C:FD:E0:2E:63:79:7F:00:56`
+    **YAPILMASI GEREKEN:** Firebase Console > Project settings > (Android uygulaması) > "Add
+    fingerprint" ile bu ikisini de EKLEYİP `google-services.json`'ı YENİDEN İNDİRİP projeye
+    koymak — aksi halde release (Play Store) build'inde Google ile Bağlama/Giriş SESSİZCE
+    başarısız olur (debug build'de çalışıyor olması release'de de çalışacağı anlamına GELMEZ,
+    Credential Manager OAuth istemci eşleşmesi imzalama sertifikasına göre yapılıyor).
+- **`android/key.properties`** (YENİ, git'e GİRMİYOR) — `storePassword`/`keyPassword`/`keyAlias`/
+  `storeFile` (mutlak yol) taşıyor. `build.gradle.kts` bu dosyayı `rootProject.file("key.
+  properties")` ile okuyup `signingConfigs.create("release")`'i dolduruyor.
+  - **Güvenlik ağı — dosya YOKSA build KIRILMAZ, sessizce debug imzasına düşer.** Bu, CI/başka bir
+    makine/klon bu sırrı henüz almadıysa `flutter build`'in en azından ÇALIŞMAYA devam etmesi için
+    (gerçek yayın YANLIŞLIKLA bu dala düşmemeli — `flutter build appbundle --release` çalıştırmadan
+    ÖNCE `android/key.properties`'in GERÇEKTEN var olduğunu kontrol edin).
+- **Doğrulama:** `flutter build appbundle --release` çalıştırılıp imzalamanın GERÇEKTEN release
+  keystore'unu kullandığı doğrulandı (bkz. build çıktısı/`bundletool`/`apksigner` ile sertifika
+  kontrolü). **Sonraki adımlar (henüz YAPILMADI, kullanıcıyla birlikte sırayla ele alınacak):**
+  yukarıdaki Firebase SHA parmak izi ekleme adımı, IAP kararı (gerçek Google Play Billing mi,
+  yoksa launch'ta Mağaza'nın gerçek-para paketlerini gizlemek mi), Gizlilik Politikası/Kullanım
+  Koşulları'nın yer tutucu metinden gerçek içeriğe geçmesi (Play Console Data Safety formu
+  barındırılan bir URL istiyor), Play Console'daki mağaza listeleme/içerik derecelendirme/veri
+  güvenliği formları (bkz. "Coin Ekonomisi Güvenliği" bölümündeki hâlâ açık istemci-taraflı risk
+  notu — gerçek IAP bağlanmadan ÖNCE ele alınmalı).
