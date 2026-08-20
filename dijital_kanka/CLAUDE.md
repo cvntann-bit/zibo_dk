@@ -4641,10 +4641,82 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
     (`1.1.0`), büyük/köklü bir değişiklik → `X`'i artır (`2.0.0`). İlk yayın için `1.0.0` zaten
     doğru/olduğu gibi kalabilir.
 - **Sonraki adımlar (henüz YAPILMADI, kullanıcıyla birlikte sırayla ele alınacak):** IAP kararı
-  (gerçek Google Play Billing mi, yoksa launch'ta Mağaza'nın gerçek-para paketlerini gizlemek mi),
-  Gizlilik Politikası/Kullanım Koşulları'nın yer tutucu metinden gerçek içeriğe geçmesi (Play
-  Console Data Safety formu barındırılan bir URL istiyor), Çökme/hata izleme (Crashlytics) —
-  şu an YOK, canlıda sorun çıkarsa görebilmek için önerilir, Play Console'daki mağaza listeleme/
-  içerik derecelendirme/veri güvenliği formları, farklı cihaz/Android sürümünde test (şu an
-  yalnızca kullanıcının kendi test telefonunda doğrulandı) (bkz. "Coin Ekonomisi Güvenliği"
-  bölümündeki hâlâ açık istemci-taraflı risk notu — gerçek IAP bağlanmadan ÖNCE ele alınmalı).
+  (gerçek Google Play Billing mi, yoksa launch'ta Mağaza'nın gerçek-para paketlerini gizlemek mi —
+  bkz. "Google Play Billing (IAP) Entegrasyonu" bölümü, bu ŞİMDİ ele alınıyor), Gizlilik
+  Politikası/Kullanım Koşulları'nın yer tutucu metinden gerçek içeriğe geçmesi (Play Console Data
+  Safety formu barındırılan bir URL istiyor), Play Console'daki mağaza listeleme/içerik
+  derecelendirme/veri güvenliği formları, farklı cihaz/Android sürümünde test (şu an yalnızca
+  kullanıcının kendi test telefonunda doğrulandı) (bkz. "Coin Ekonomisi Güvenliği" bölümündeki
+  hâlâ açık istemci-taraflı risk notu — gerçek IAP bağlanmadan ÖNCE ele alınmalı). **Çökme/hata
+  izleme (Crashlytics) ARTIK KURULU** — bkz. "Crashlytics" bölümü, bu liste eski/güncellenmemiş
+  bir anını yansıtıyordu.
+
+## Crashlytics ([main.dart](lib/main.dart), [android/app/build.gradle.kts](android/app/build.gradle.kts), [android/settings.gradle.kts](android/settings.gradle.kts))
+
+- **2026 — kullanıcı isteği: "crashlytics ile devam et."** Release imzalama tamamlandıktan hemen
+  sonra ele alınan ikinci Faz 2 maddesi — canlıda bir kullanıcı çökme yaşarsa bunu Play Console'a
+  değil doğrudan Firebase Console'a (zaten kurulu olan AYNI Firebase projesi) raporlayan bir
+  çökme/hata izleme katmanı.
+- **Paket:** `firebase_crashlytics: ^5.2.0` (`flutter pub get` ile `5.2.7`'ye çözüldü). Gradle
+  tarafı: `android/settings.gradle.kts`'in `plugins {}` bloğuna `id("com.google.firebase.
+  crashlytics") version "3.0.8" apply false` eklendi, `android/app/build.gradle.kts`'in
+  `plugins {}` bloğuna (google-services'ten SONRA, `google-services.json`'ı okuyup gerekli
+  kaynakları ürettikten sonra Crashlytics'in devreye girmesi için) sürüm belirtmeden
+  `id("com.google.firebase.crashlytics")` eklendi.
+  - **AGP 9.0 "yeni DSL" gotcha'sı — `firebaseCrashlytics { mappingFileUploadEnabled = true }`
+    DSL uzantısı DERLENMİYOR.** İlk denemede bu blok `buildTypes.release`'e eklenince
+    `Unresolved reference 'firebaseCrashlytics'`/`Unresolved reference
+    'mappingFileUploadEnabled'` hatasıyla derleme BAŞARISIZ oldu. Kök neden: `android.newDsl=true`
+    (AGP 9.0'ın varsayılanı, bkz. "Release İmzalama" bölümündeki `proguard-rules.pro`
+    dokümantasyonuyla AYNI AGP sürümü) ile Crashlytics Gradle plugin'i (3.0.8) arasındaki bu
+    extension-function kayıt biçimi UYUMSUZ. **Çözüm — blok TAMAMEN kaldırıldı**, yerine
+    açıklayıcı bir yorum bırakıldı: bu explicit yapılandırmaya hiç gerek YOKTU, çünkü Crashlytics
+    Gradle plugin'i `isMinifyEnabled = true` iken (bkz. "Release İmzalama" bölümündeki R8/ProGuard
+    notu) mapping dosyasını (obfuscated → gerçek isim eşlemesi, R8 ile küçültülmüş release
+    build'lerin stack trace'lerini Firebase Console'da OKUNABİLİR göstermek için) zaten
+    VARSAYILAN olarak, her `assembleRelease`/`bundleRelease` SONRASI otomatik yüklüyor.
+- **Dart tarafı bağlama — `main.dart`'ın MEVCUT Firebase try/catch bloğunun İÇİNE eklendi**
+  (`Firebase.initializeApp()` + Anonymous Auth + `FirebaseAnalytics.instance.logAppOpen()`'dan
+  HEMEN SONRA), YENİ bir try/catch AÇILMADI — bu bilinçli: Crashlytics GEREKTİREN global hata
+  yakalayıcılar Firebase kullanılamayan bir ortamda (web önizlemesi, `flutter test`, config eksik)
+  hiçbir zaman KURULMAMALI, projenin "Firebase'siz de sorunsuz çalışmaya devam et" ilkesiyle
+  (bkz. "Şu an mock/placeholder olan şeyler" bölümündeki Firebase notu) tutarlı.
+  ```dart
+  FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
+  PlatformDispatcher.instance.onError = (error, stack) {
+    FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+    return true;
+  };
+  ```
+  (1) Flutter FRAMEWORK'ünün kendi hata mekanizması (widget build/layout/paint hataları) —
+  varsayılan davranış (konsola yazdırıp devam etmek) yerine ARTIK Crashlytics'e de FATAL olarak
+  bildiriliyor. (2) Flutter'ın KENDİ hata bölgesinin (error zone) DIŞINDA kalan hatalar (ör.
+  yakalanmamış bir `Future` hatası, bir platform kanalı callback'inde fırlatılan istisna) —
+  `true` dönmek platformun varsayılan davranışını (uygulamayı sonlandırma) TETİKLEMİYOR,
+  Crashlytics'e kaydettikten sonra uygulama MÜMKÜNSE çalışmaya devam ediyor.
+- **Doğrulama — gerçek bir zorla-çökme testi, GEÇİCİ bir kod satırıyla yapıldı ve SONRA
+  kaldırıldı.** `main()`'e geçici olarak `FirebaseCrashlytics.instance.crash();` eklendi (SDK'nın
+  resmi test API'si — gerçek bir native/fatal çökme tetikliyor), release APK derlenip cihaza
+  kuruldu:
+  1. **İlk açılış → çökme.** `adb shell monkey` ile başlatılınca uygulama ANINDA çöktü
+     (beklenen/istenen davranış — bu seferki tek test amacı, önceki oturumlardaki "çökme AVCILIĞI"
+     senaryolarının TERSİ). `pidof` süreç bulamadı, doğrulandı.
+  2. **İkinci açılış → rapor yükleme.** Uygulama tekrar açılınca (bu arada arka planda bir
+     WorkManager/Firebase job'ı da kendiliğinden bir süreç başlatıp aynı yükleme adımını bir kez
+     daha tetikledi) logcat'te ÖNCEKİ oturumun çökme kaydının işlendiği (`DigestGenerator`/MiSight
+     olay akışında `"CrashType":"...FirebaseCrashlyticsTestCrash"`, `"Stacktrace":"...This is a
+     test crash caused by calling .crash() in Dart."`) VE Crashlytics'in GERÇEKTEN bir ağ isteği
+     attığı (`TRuntime.CctTransportBackend: Making request to: https://
+     crashlyticsreports-pa.googleapis.com/v1/firelog/legacy/batchlog`) doğrulandı — bu, çökme
+     raporunun Firebase'in sunucularına GERÇEKTEN ULAŞTIĞININ somut kanıtı.
+  3. **Test satırı kaldırıldı.** `FirebaseCrashlytics.instance.crash();` + açıklayıcı yorumu
+     `main.dart`'tan SİLİNDİ, `flutter test` (276/276) ile regresyon olmadığı doğrulandı, TEMİZ
+     bir release APK yeniden derlenip cihaza kuruldu.
+- **Kullanıcının Firebase Console'da doğrulaması gereken:** Console > Crashlytics sekmesinde
+  yukarıdaki test çökmesinin (`FirebaseCrashlyticsTestCrash: This is a test crash caused by
+  calling .crash() in Dart.`) birkaç dakika içinde bir rapor olarak BELİRMESİ gerekiyor — rapor
+  işleme genelde ANINDA değil, kısa bir gecikmeyle Console'a yansıyor.
+- **Mapping dosyası (deobfuscation) otomatik yükleniyor** (bkz. yukarıdaki AGP gotcha notu) —
+  gerçek bir kullanıcı çökmesi geldiğinde Console'daki stack trace, R8'in obfuscate ettiği
+  sınıf/metot adları yerine GERÇEK Dart/Kotlin isimlerini göstermeli; bu henüz gerçek (test
+  DIŞI) bir çökmeyle doğrulanmadı, ilk gerçek rapor geldiğinde kontrol edilmeli.

@@ -8,6 +8,13 @@ plugins {
     // Firebase (google-services.json'ı okuyup gerekli kaynak/manifest
     // girdilerini üretir) — en sonda uygulanmalı.
     id("com.google.gms.google-services")
+    // Çökme/hata izleme (Crashlytics) — bkz. CLAUDE.md "Crashlytics"
+    // bölümü. R8 ile küçültülmüş (bkz. "Release İmzalama" bölümü) release
+    // build'lerin gerçek stack trace'lerini Firebase Console'da OKUNABİLİR
+    // göstermek için her `assembleRelease`/`bundleRelease` SONRASI mapping
+    // dosyasını (obfuscated → gerçek isim eşlemesi) OTOMATİK Firebase'e
+    // yüklüyor — elle bir adım GEREKMİYOR.
+    id("com.google.firebase.crashlytics")
 }
 
 // Release imzalama — bkz. CLAUDE.md "Release İmzalama" bölümü. `key.
@@ -82,6 +89,13 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
             )
+            // NOT: `firebaseCrashlytics { mappingFileUploadEnabled = true }`
+            // DSL uzantısı bu AGP 9.0 "yeni DSL" + Crashlytics 3.0.8
+            // kombinasyonunda "Unresolved reference" hatasıyla derlenmiyordu
+            // (bkz. CLAUDE.md "Crashlytics" bölümü) — KALDIRILDI, çünkü
+            // Crashlytics Gradle plugin'i `isMinifyEnabled = true` iken
+            // mapping dosyası yüklemeyi zaten VARSAYILAN olarak yapıyor,
+            // bu bloğa hiç gerek YOKTU.
         }
     }
 }

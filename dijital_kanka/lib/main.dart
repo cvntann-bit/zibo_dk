@@ -1,6 +1,9 @@
+import 'dart:ui';
+
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -231,6 +234,27 @@ void main() async {
     // için standart `app_open` olayını logluyoruz — özel bir olay şeması
     // YOK, yalnızca bağlantıyı kanıtlayan minimum çağrı.
     await FirebaseAnalytics.instance.logAppOpen();
+    // Çökme/hata izleme (Crashlytics) — bkz. CLAUDE.md "Crashlytics"
+    // bölümü. Firebase kullanılamıyorsa (web önizlemesi, test ortamı) bu
+    // blok hiç ÇALIŞMIYOR (aynı try/catch'in İÇİNDE) — Crashlytics'i
+    // GEREKTİREN bir global hata yakalayıcı asla Firebase'siz bir ortamda
+    // KURULMUYOR.
+    //
+    // (1) Flutter FRAMEWORK'ünün kendi hata mekanizması (widget build/
+    // layout/paint hataları) — varsayılan davranış (konsola yazdırıp devam
+    // etmek) yerine ARTIK Crashlytics'e de FATAL olarak bildiriliyor.
+    FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
+    // (2) Flutter'ın KENDİ hata bölgesinin (error zone) DIŞINDA kalan
+    // hatalar — ör. bir `Future` içinde yakalanmamış (unhandled) asenkron
+    // bir hata, veya bir platform kanalı callback'inde fırlatılan bir
+    // istisna. `true` dönmek "bu hatayı BEN halloştim, platformun kendi
+    // varsayılan davranışını (uygulamayı sonlandırma) TETİKLEME" demek —
+    // Crashlytics'e KAYDETTİKTEN sonra uygulamanın MÜMKÜNSE çalışmaya
+    // devam etmesi tercih edildi.
+    PlatformDispatcher.instance.onError = (error, stack) {
+      FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+      return true;
+    };
   } catch (_) {
     // Firebase/Auth başlatılamadı (ör. web önizlemesi, ağ yok, yapılandırma
     // eksik) — `uid` `null` kalır, uygulama Firebase'e bağımlı olmadan
