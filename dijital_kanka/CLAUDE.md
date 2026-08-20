@@ -3560,20 +3560,16 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
 
 ## Şu an mock/placeholder olan şeyler (gerçek entegrasyon bekliyor)
 
-- `MockPurchaseService` — gerçek IAP (uygulama içi satın alma) SDK'sı hâlâ bağlanmadı. **AdMob
-  ARTIK gerçek** (bkz. altta "AdMob Entegrasyonu" bölümü) — `MockAdService` yalnızca testlerde
-  enjekte edilen bir sahte olarak kaldı.
-  - **YAPILMASI GEREKENLER (gerçek IAP bağlanırken ASLA atlanmamalı — bkz. "Coin Ekonomisi
-    Güvenliği" bölümü):** `IapPurchaseService.purchaseCoinPackage()` gerçek bir satın alma akışı
-    tamamlandığında coin'i DOĞRUDAN EKLEMEMELİ — makbuz (receipt/purchase token), Google Play
-    Developer API'ye karşı SUNUCU TARAFINDA (Cloud Function veya eşdeğer bir backend, İSTEMCİDE
-    DEĞİL) doğrulanmadan `CoinProvider._earn()` ÇAĞRILMAMALI. İstemci tarafı `in_app_purchase`
-    paketinin "satın alma başarılı" callback'i TEK BAŞINA yeterli GÜVEN kaynağı DEĞİL — bir mod
-    APK bu callback'i doğrudan sahte tetikleyebilir. Doğru akış: istemci satın almayı başlatır →
-    Play Store makbuzu döner → istemci bu makbuzu (coin miktarıyla BİRLİKTE) bir Cloud
-    Function'a gönderir → Function, Google Play Developer API (`purchases.products.get`) ile
-    makbuzun GERÇEKTEN GEÇERLİ ve BU UYGULAMAYA ait olduğunu doğrular → yalnızca DOĞRULANMIŞSA
-    Function Admin SDK ile `coinState`'i (rules'u bypass ederek) günceller.
+- **`MockPurchaseService` ARTIK gerçek Play Billing'e bağlandı** (bkz. altta "Google Play Billing
+  (IAP) Entegrasyonu" bölümü) — `MockPurchaseService` yalnızca testlerde enjekte edilen bir sahte
+  olarak kaldı, `AdMob`/`MockAdService` ile AYNI geçiş.
+  - **AÇIK KALAN GÜVENLİK BOŞLUĞU (henüz YAPILMADI — bkz. "Coin Ekonomisi Güvenliği" VE "Google
+    Play Billing" bölümlerindeki AYNI not):** `InAppPurchasePurchaseService.purchaseCoinPackage()`
+    hâlâ Google'ın SDK'sının "satın alma başarılı" (`PurchaseStatus.purchased`) durumuna GÜVENİYOR
+    — makbuz Google Play Developer API'ye karşı SUNUCU TARAFINDA (Cloud Function/eşdeğer bir
+    backend) doğrulanmıyor. Bu, "Coin Ekonomisi Güvenliği" bölümündeki `coinState` rules'unun
+    KISMİ (şekil/monotonluk/delta) doğrulamasıyla AYNI mimari kısıtlamaya bağlı — TAM çözüm
+    (Cloud Functions) kullanıcının henüz vermediği bir Blaze plan kararını gerektiriyor.
 - Ayarlar'daki "Hakkında" satırı — `onTap` hâlâ no-op. **Dil satırı ARTIK no-op DEĞİL** (bkz.
   Yerelleştirme bölümü) — Coin Test Paneli de kullanıcı isteğiyle tamamen kaldırıldı, bu listede
   DEĞİL artık.
@@ -4535,6 +4531,125 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
     kısmi önlemle (+ launch öncesi gerçek IAP/AdMob geldiğinde zorunlu olarak eklenecek doğrulama)
     devam etmek mi — asistan bu maliyet/mimari kararını veremez, yalnızca seçenekleri VE her
     birinin ne sağlayıp ne sağlamadığını belgeliyor.
+
+## Google Play Billing (IAP) Entegrasyonu ([purchase_service.dart](lib/services/purchase_service.dart), [iap_purchase_service.dart](lib/services/iap_purchase_service.dart))
+
+- **2026 — kullanıcı isteği: "gerçek pay billingle devam edelim."** Crashlytics'in HEMEN ardından
+  ele alınan üçüncü Faz 1 maddesi — `MockPurchaseService` (600ms gecikmeyle her zaman başarı dönen
+  sahte) yerine gerçek `in_app_purchase: ^3.3.0` paketi bağlandı. Uygulamada TEK bir satın alma
+  türü var: 5 `coinPackages` (`coins_100`/`coins_250`/`coins_500`/`coins_1000`/`coins_10000`, bkz.
+  `coin_packages.dart`) — hepsi Play Console'da **TÜKETİLEBİLİR (consumable)** ürün olarak
+  tanımlanmalı, `CoinPackage.id` BİREBİR Play Console'daki ürün id'siyle eşleşiyor (id'ler zaten bu
+  amaçla uygun bir adlandırmayla yazılmıştı — ek bir eşleme tablosu gerekmedi).
+- **Mimari — basit istek/yanıt sözleşmesi ile `in_app_purchase`'ın stream-tabanlı API'si arasında
+  köprü.** `PurchaseService.purchaseCoinPackage(package)` hâlâ `Future<bool>` döndüren tek bir
+  metot (`AdService.showRewardedAd()` ile AYNI basitlik) — ama Play Billing'in gerçek API'si
+  `buyConsumable()` (satın almayı BAŞLATIR, hemen dönmez) + ayrı bir `purchaseStream` (sonucun
+  ASENKRON olarak geldiği yer) ikilisinden oluşuyor. `InAppPurchasePurchaseService`, constructor'da
+  `purchaseStream`'i BİR KEZ dinlemeye başlıyor; `_pending` (`Map<String, Completer<bool>>`) o an
+  AKTİF bir `purchaseCoinPackage()` çağrısının hangi ürün id'sini beklediğini tutuyor —
+  `purchaseStream`'den gelen her olay bu haritada eşleşen bir `Completer`'ı bulup tamamlıyor.
+  - **`buyConsumable(autoConsume: true)`** kullanılıyor — Android'de bu, satın alma başarılı
+    olduğunda native tarafın `consumeAsync`'i OTOMATİK çağırmasını sağlıyor (elle
+    `InAppPurchaseAndroidPlatformAddition.consumePurchase()` çağırmaya GEREK KALMADI) — coin
+    paketleri gerçek anlamda tüketilebilir olduğu (aynı ürün SINIRSIZ kez satın alınabilmeli) için
+    doğru seçim.
+  - **`completePurchase(purchase)`** her `pendingCompletePurchase == true` olan olayda (yalnızca
+    başarılı değil, HATA/iptal dahil TÜM sonlanmış durumlarda) çağrılıyor — resmi `in_app_purchase`
+    örneğindeki AYNI desen; bu, Dart-taraflı plugin state'ini "işlem bitti" olarak işaretliyor.
+- **Orphaned purchase (yetim satın alma) — gerçek bir "para alındı, ürün verilmedi" riskini kapatan
+  ek bir katman.** `buyConsumable()` başlatıldıktan SONRA ama `purchaseStream`'in `purchased`
+  olayı BU SERVİSE ulaşmadan ÖNCE uygulama çökerse/kapanırsa, ödeme Google'da GERÇEKLEŞMİŞ ama coin
+  hiç teslim EDİLMEMİŞ olur. Google Play, tamamlanmamış (henüz `completePurchase` ile
+  "acknowledge" edilmemiş) satın almaları BİR SONRAKİ `purchaseStream` dinlemesi başladığında
+  (yani bir sonraki uygulama açılışında) OTOMATİK olarak tekrar oynatıyor — bu servis
+  constructor'da hemen dinlemeye başladığı için bu "yetim" olayı yakalıyor.
+  - **`PurchaseService.orphanedPurchaseProductIds` (YENİ, `Stream<String>`, varsayılan boş
+    stream)** — `_onPurchaseUpdate`'te eşleşen bir `Completer` YOKSA (yani bu olay AKTİF bir
+    `purchaseCoinPackage()` çağrısından değil, bir önceki oturumdan kalan bir replay'den geliyorsa)
+    olay buraya yayınlanıyor.
+  - **`CoinProvider`, constructor'da bu stream'i doğrudan dinliyor** (`_orphanedPurchaseSub`,
+    `dispose()`'ta iptal ediliyor) — `_onOrphanedPurchase(productId)` `coinPackages`'ta (veri
+    dosyası) eşleşen paketi bulup coin'i GEÇ de olsa teslim ediyor
+    (`playRewardSound: false` + kendi `playCoinPurchase()` sesi, normal satın almayla AYNI
+    ses/işlem-geçmişi deseni). **Bu katman `PurchaseService` arayüzüne eklendiği için** —
+    `CoinProvider`'ın `create` callback'i `main.dart`'ta değişmeden kaldı, yalnızca servisin
+    KENDİSİ (`InAppPurchasePurchaseService`) bu stream'i gerçek anlamda doldurur, `MockPurchaseService`
+    varsayılan (boş) implementasyonu miras alır — testler etkilenmedi.
+- **Canlı fiyat gösterimi — `CoinPackage.price` (sabit/görsel TRY fiyatı) artık YALNIZCA bir
+  YEDEK.** `PurchaseService.queryLocalizedPrice(package)` (YENİ, varsayılan `null` döner) Play
+  Store'dan ÜRÜNÜN GERÇEK, platformun kendi para birimi/bölge/vergi biçimlendirmesiyle
+  hazırladığı fiyat metnini (`ProductDetails.price` — ASLA elle inşa EDİLMEMİŞ, Play politikası
+  gereği fiyatlar her zaman mağazanın kendi biçimlendirmesiyle gösterilmeli) sorguluyor.
+  `CoinProvider.queryLocalizedPrice()` bu servise ince bir passthrough. `_PackageCardState`
+  (`store_screen.dart`) `initState`'te bunu sessizce (yükleniyor göstergesi YOK) sorgulayıp
+  `_livePrice` state alanına yazıyor; buton metni `_livePrice ?? package.price?.formatted ??
+  l10n.storeBuyButton` — mağaza henüz kullanılamıyorsa (emülatör, ürün Play Console'da henüz
+  AKTİF değil, ağ yok, `MockPurchaseService` testte) sessizce sabit fiyata düşülüyor, HİÇBİR görsel
+  fark YOK.
+- **Satın alma başarısızlığında artık bir SnackBar gösteriliyor** (`storePurchaseFailedMessage`,
+  TR/EN/ES) — `MockPurchaseService` HER ZAMAN başarılı döndüğü için eskiden bu dal hiç
+  ÇALIŞMIYORDU/görünmüyordu; gerçek bir mağaza ile iptal/hata/"ürün henüz aktif değil" YAYGIN bir
+  senaryo, kullanıcı butona basıp hiçbir şey olmadığını görmemeli.
+- **Test gotcha'sı (gerçekten yaşandı) — `const DijitalKankaApp()` artık GERÇEK
+  `InAppPurchasePurchaseService`'i kullanıyor, `AdMobAdService` geçişindeki AYNI riski taşıyor.**
+  `main.dart`'a `purchaseService: purchaseService ?? InAppPurchasePurchaseService()` eklenince,
+  bunu AÇIKÇA override ETMEYEN `const DijitalKankaApp()` çağrıları artık `CoinProvider`'ın KENDİ
+  varsayılanı (`const MockPurchaseService()`) yerine GERÇEK servisi alıyor — "Mağazadan paket
+  satın alınca bakiye artar" testi bu yüzden `pumpAndSettle timed out` ile BAŞARISIZ oldu
+  (platform kanalına dokunan `_iap.isAvailable()` `flutter_test`/Windows ortamında hiçbir zaman
+  tamamlanmıyor). **Çözüm — `AdMobAdService` geçişindeki AYNI desen:** satın alma akışının
+  KENDİSİNİ doğrudan test eden bu TEK senaryo `DijitalKankaApp(purchaseService: const
+  MockPurchaseService())` kullanacak şekilde güncellendi; diğer testler (yalnızca Mağaza'yı açıp
+  kartları gören, satın almayan) etkilenmedi çünkü `queryLocalizedPrice` her yerde try/catch'li
+  (mağaza kullanılamıyorsa sessizce `null`). **Ders (tekrar):** bir servisin `main.dart`'taki
+  varsayılanı Mock'tan gerçek bir platform-kanalı implementasyonuna geçirilirken, o servisi
+  DOĞRUDAN egzersiz eden HER mevcut widget testi gözden geçirilip gerekiyorsa Mock enjekte etmeye
+  çevrilmeli.
+- **`InAppPurchasePurchaseService.purchaseCoinPackage()`'ın TÜM gövdesi tek bir try/catch'e
+  sarılı** (`AdMobAdService`'in `RewardedAd.load(...)` fire-and-forget gotcha'sıyla AYNI
+  gerekçe — bkz. "AdMob Entegrasyonu" bölümü) — `isAvailable()`/`queryProductDetails()`/
+  `buyConsumable()`'ın HERHANGİ biri beklenmedik şekilde fırlatırsa (desteklenmeyen platform,
+  mağaza hesabı bağlı değil vb.) istisna DIŞARI SIZMADAN `false` dönüyor.
+- **AndroidManifest.xml'e HİÇBİR yeni izin/queries GEREKMEDİ** — `in_app_purchase_android`'in
+  kendi manifest'i boş (doğrulandı, pub cache'teki paket kaynağı okunarak); modern Play Billing
+  Library (v4+) artık eski `com.android.vending.BILLING` iznini GEREKTİRMİYOR (bu, AIDL tabanlı
+  eski `IInAppBillingService` yaklaşımının bir kalıntısıydı) — bağlantı Play Store'un kendi
+  bound-service keşfi üzerinden kuruluyor.
+- **YAPILMASI GEREKENLER — bu KRİTİK bir açık güvenlik boşluğu, "Coin Ekonomisi Güvenliği"
+  bölümündeki AYNI mimari kısıtlamaya bağlı:** `purchaseStream`'in `PurchaseStatus.purchased`
+  olayı TEK BAŞINA yeterli güven kaynağı DEĞİL — bir mod APK bu durumu istemci tarafında sahte
+  tetikleyebilir. Gerçek/tam çözüm: istemci satın almayı başlatır → Play Store makbuzu
+  (`PurchaseDetails.verificationData`) döner → istemci bu makbuzu bir Cloud Function'a gönderir →
+  Function, Google Play Developer API (`purchases.products.get`) ile makbuzun GERÇEKTEN GEÇERLİ ve
+  BU UYGULAMAYA ait olduğunu doğrular → yalnızca DOĞRULANMIŞSA Function Admin SDK ile
+  `coinState`'i (rules'u bypass ederek) günceller — İSTEMCİ ARTIK coin EKLEMEZ. Bu, kullanıcının
+  henüz vermediği Blaze plan kararını gerektiriyor (bkz. "Coin Ekonomisi Güvenliği" bölümündeki
+  aynı karar noktası) — şimdilik istemci-taraflı doğrulamayla devam ediliyor, launch ÖNCESİ (özellikle
+  paket fiyatları yükseldikçe/gerçek kullanıcı trafiği başladıkça) ele alınmalı.
+- **Kullanıcının Play Console'da yapması gereken ön koşullar (asistan yapamaz — konsol erişimi
+  gerektiriyor):**
+  1. **5 tüketilebilir (managed) ürün oluştur** — Play Console > uygulama > Ürünler (Monetize) >
+     Uygulama içi ürünler: `coins_100`/`coins_250`/`coins_500`/`coins_1000`/`coins_10000` (id'ler
+     BİREBİR bu şekilde, `coin_packages.dart`'taki `CoinPackage.id` alanlarıyla eşleşmeli),
+     her biri "Aktif" durumda, önerilen başlangıç fiyatları (uygulama içi sabit/yedek fiyatlarla
+     AYNI, Google otomatik bölgesel dönüşüm yapar): 100 ZC → 19,99 ₺, 250 ZC → 44,99 ₺, 500 ZC →
+     84,99 ₺, 1000 ZC → 159,99 ₺, 10000 ZC → 1.499,99 ₺.
+  2. **Uygulamayı en az bir test track'ine (Internal testing) yükle** — Play Billing, Play
+     Console'a HİÇ yüklenmemiş bir uygulamada (yalnızca `adb install` ile yan yüklenmiş bir APK'da)
+     ÇALIŞMAZ; `queryProductDetails()` her zaman boş/hatalı dönecektir. Bu, roadmap'in Faz 4
+     ("Internal testing") maddesiyle DOĞRUDAN bağlantılı — bu Faz'a ulaşılmadan gerçek bir satın
+     alma UÇTAN UCA test edilemez.
+  3. **Lisans test kullanıcısı ekle** (Play Console > Kurulum > Lisans testi) — gerçek para
+     çekmeden test satın alması yapabilmek için kendi Google hesabını buraya ekle.
+- **Bu oturumda GERÇEK bir satın alma UÇTAN UCA test EDİLEMEDİ** (yukarıdaki 3 ön koşul kullanıcı
+  tarafında henüz tamamlanmadı) — yalnızca şunlar doğrulandı: `flutter test` (279/279, orphaned
+  purchase + canlı fiyat passthrough için yeni testler dahil), `flutter build apk --release`
+  sorunsuz derlendi, gerçek cihazda kurulup çöküş olmadan açıldığı (`adb shell monkey`/`pidof`)
+  teyit edildi. Ürünler Play Console'da henüz TANIMLANMADIĞI için Mağaza'da "Satın Al"a basmak
+  şu an için (beklenen/doğru davranış) `storePurchaseFailedMessage` SnackBar'ını gösterir —
+  yukarıdaki 3 ön koşul tamamlanınca bu, gerçek bir Play ödeme akışına dönüşecek, KOD TARAFINDA
+  hiçbir değişiklik GEREKMEYECEK.
 
 ## Release İmzalama / Play Store Yayın Hazırlığı ([android/app/build.gradle.kts](android/app/build.gradle.kts))
 

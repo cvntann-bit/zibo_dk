@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -413,6 +415,27 @@ class _PackageCard extends StatefulWidget {
 class _PackageCardState extends State<_PackageCard> {
   bool _loading = false;
 
+  /// Play Store'dan sorgulanan canlı fiyat metni (bkz.
+  /// `CoinProvider.queryLocalizedPrice`) — `null` kaldığı sürece (mağaza
+  /// henüz yanıt vermedi, ürün Play Console'da aktif değil, testte
+  /// `MockPurchaseService` her zaman `null` döner) [CoinPackage.price]'taki
+  /// sabit fiyat gösterilmeye devam eder, ekranda hiçbir "yükleniyor"
+  /// durumu YOK — bu tamamen sessiz bir arka plan iyileştirmesi.
+  String? _livePrice;
+
+  @override
+  void initState() {
+    super.initState();
+    unawaited(_loadLivePrice());
+  }
+
+  Future<void> _loadLivePrice() async {
+    final price = await context.read<CoinProvider>().queryLocalizedPrice(
+      widget.package,
+    );
+    if (mounted && price != null) setState(() => _livePrice = price);
+  }
+
   Future<void> _buy(BuildContext context) async {
     // Kullanıcı isteği: İLK gerçek coin satın alma DENEMESİNDE, hesap
     // henüz Google'a bağlı değilse önce bir teşvik sheet'i göster (zorunlu
@@ -434,8 +457,16 @@ class _PackageCardState extends State<_PackageCard> {
     );
     if (!mounted) return;
     setState(() => _loading = false);
-    if (success && context.mounted) {
+    if (!context.mounted) return;
+    if (success) {
       _showCoinsAddedSnackBar(context, widget.package.coinAmount);
+    } else {
+      final l10n = AppLocalizations.of(context)!;
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(content: Text(l10n.storePurchaseFailedMessage)),
+        );
     }
   }
 
@@ -475,7 +506,11 @@ class _PackageCardState extends State<_PackageCard> {
                         height: 16,
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
-                    : Text(widget.package.price?.formatted ?? l10n.storeBuyButton),
+                    : Text(
+                        _livePrice ??
+                            widget.package.price?.formatted ??
+                            l10n.storeBuyButton,
+                      ),
               ),
             ),
           ],

@@ -394,6 +394,10 @@
       }
     }
   },
+  "storePurchaseFailedMessage": "Satın alma tamamlanamadı. Lütfen tekrar dene.",
+  "@storePurchaseFailedMessage": {
+    "description": "Gerçek bir Play Billing satın alma başarısız olduğunda (iptal, ödeme hatası, ürün mağazada henüz aktif değil vb.) gösterilen mesaj"
+  },
   "shareButtonTooltip": "Bu sözü paylaş",
   "@shareButtonTooltip": {
     "description": "Bir Zibo sözünün yanındaki paylaş ikonunun erişilebilirlik ipucu"

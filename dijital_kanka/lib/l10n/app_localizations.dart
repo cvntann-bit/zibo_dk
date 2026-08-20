@@ -598,6 +598,12 @@ abstract class AppLocalizations {
   /// **'{amount} Zibo Coin hesabına eklendi!'**
   String storeCoinsAdded(int amount);
 
+  /// Gerçek bir Play Billing satın alma başarısız olduğunda (iptal, ödeme hatası, ürün mağazada henüz aktif değil vb.) gösterilen mesaj
+  ///
+  /// In tr, this message translates to:
+  /// **'Satın alma tamamlanamadı. Lütfen tekrar dene.'**
+  String get storePurchaseFailedMessage;
+
   /// Bir Zibo sözünün yanındaki paylaş ikonunun erişilebilirlik ipucu
   ///
   /// In tr, this message translates to:

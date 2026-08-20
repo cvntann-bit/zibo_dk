@@ -293,6 +293,10 @@ class AppLocalizationsTr extends AppLocalizations {
   }
 
   @override
+  String get storePurchaseFailedMessage =>
+      'Satın alma tamamlanamadı. Lütfen tekrar dene.';
+
+  @override
   String get shareButtonTooltip => 'Bu sözü paylaş';
 
   @override

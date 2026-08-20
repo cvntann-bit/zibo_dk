@@ -1,7 +1,9 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/foundation.dart';
 
+import '../data/coin_packages.dart';
 import '../data/wheel_prizes.dart';
 import '../models/coin_economy.dart';
 import '../models/coin_package.dart';
@@ -37,6 +39,9 @@ class CoinProvider extends ChangeNotifier {
        _isSoundEnabled = isSoundEnabled,
        _store = CloudStateStore(prefsKey: _prefsKey, uid: uid) {
     _loadFromPrefs();
+    _orphanedPurchaseSub = _purchaseService.orphanedPurchaseProductIds.listen(
+      _onOrphanedPurchase,
+    );
   }
 
   static bool _alwaysTrue() => true;
@@ -56,6 +61,10 @@ class CoinProvider extends ChangeNotifier {
   final PurchaseService _purchaseService;
   final SoundEffectsService _soundEffectsService;
   final CloudStateStore _store;
+
+  /// [PurchaseService.orphanedPurchaseProductIds]'i dinler — bkz.
+  /// [_onOrphanedPurchase].
+  late final StreamSubscription<String> _orphanedPurchaseSub;
 
   /// Ses efektlerinin şu an açık olup olmadığı — `main.dart`'ta
   /// `SoundEffectsProvider.enabled`'a bağlanır (`_now`'ın `TrustedTimeProvider`
@@ -374,6 +383,34 @@ class CoinProvider extends ChangeNotifier {
     return success;
   }
 
+  /// Play Store'dan bu paketin canlı fiyat metnini sorgular (bkz.
+  /// [PurchaseService.queryLocalizedPrice]) — `null` dönerse çağıran taraf
+  /// [CoinPackage.price]'taki sabit fiyata düşer.
+  Future<String?> queryLocalizedPrice(CoinPackage package) =>
+      _purchaseService.queryLocalizedPrice(package);
+
+  /// [PurchaseService.orphanedPurchaseProductIds]'ten gelen, bir önceki
+  /// oturumdan kalan teslim edilmemiş bir satın alma — coin'i GEÇ de olsa
+  /// teslim eder (bkz. `iap_purchase_service.dart`'taki "orphaned purchase"
+  /// dokümantasyonu). Eşleşen bir [CoinPackage] bulunamazsa (ör. ürün id'si
+  /// artık listede yok) sessizce yok sayılır.
+  void _onOrphanedPurchase(String productId) {
+    CoinPackage? package;
+    for (final candidate in coinPackages) {
+      if (candidate.id == productId) {
+        package = candidate;
+        break;
+      }
+    }
+    if (package == null) return;
+    _earn(
+      package.coinAmount,
+      'Satın alma (gecikmeli teslim): ${package.coinAmount} ZC',
+      playRewardSound: false,
+    );
+    if (_isSoundEnabled()) _soundEffectsService.playCoinPurchase();
+  }
+
   // --- Harcama mekanikleri ---------------------------------------------
 
   bool spendStreakFreeze() =>
@@ -417,6 +454,7 @@ class CoinProvider extends ChangeNotifier {
 
   @override
   void dispose() {
+    _orphanedPurchaseSub.cancel();
     _soundEffectsService.dispose();
     super.dispose();
   }

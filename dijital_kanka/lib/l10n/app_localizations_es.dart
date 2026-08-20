@@ -296,6 +296,10 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
+  String get storePurchaseFailedMessage =>
+      'No se pudo completar la compra. Inténtalo de nuevo.';
+
+  @override
   String get shareButtonTooltip => 'Compartir esta frase';
 
   @override

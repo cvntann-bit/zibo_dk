@@ -83,6 +83,7 @@
   "storeWatchAdButton": "Ver",
   "dailyAdLimitReachedMessage": "Se acabaron tus oportunidades de hoy, ¡vuelve mañana!",
   "storeCoinsAdded": "¡Se añadieron {amount} Zibo Coin a tu saldo!",
+  "storePurchaseFailedMessage": "No se pudo completar la compra. Inténtalo de nuevo.",
   "shareButtonTooltip": "Compartir esta frase",
   "favoriteQuoteAddTooltip": "Marcar esta frase como favorita",
   "favoriteQuoteRemoveTooltip": "Quitar de favoritos",

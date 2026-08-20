@@ -39,6 +39,7 @@ import 'package:dijital_kanka/screens/root_screen.dart';
 import 'package:dijital_kanka/screens/wheel_screen.dart';
 import 'package:dijital_kanka/services/ad_service.dart';
 import 'package:dijital_kanka/services/notification_service.dart';
+import 'package:dijital_kanka/services/purchase_service.dart';
 import 'package:dijital_kanka/utils/ad_free_promo_trigger.dart';
 import 'package:dijital_kanka/utils/tab_navigation.dart';
 
@@ -527,7 +528,10 @@ void main() {
   testWidgets('Mağazadan paket satın alınca bakiye artar', (
     WidgetTester tester,
   ) async {
-    await _pumpPastOnboarding(tester, const DijitalKankaApp());
+    await _pumpPastOnboarding(
+      tester,
+      const DijitalKankaApp(purchaseService: MockPurchaseService()),
+    );
 
     await tester.tap(find.byTooltip('Coin satın al'));
     await tester.pumpAndSettle();

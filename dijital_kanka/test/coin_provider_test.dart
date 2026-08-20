@@ -1,6 +1,8 @@
 // CoinProvider.purchaseCoinPackage'ı doğrudan (widget pump'lamadan) test
 // eder: başarılı satın alma bakiyeyi paket miktarı kadar artırmalı.
 
+import 'dart:async';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -52,6 +54,28 @@ class _FailingPurchaseService extends PurchaseService {
   Future<bool> purchaseCoinPackage(CoinPackage package) async => false;
 }
 
+/// Gerçek `InAppPurchasePurchaseService`'in platform-kanalı-bağımlı iki
+/// özelliğini (canlı fiyat sorgusu + yetim satın alma teslimi) sahte olarak
+/// simüle eder — `orphanedPurchaseProductIds` stream'ine `emitOrphaned(...)`
+/// ile elle bir olay ENJEKTE edilebilir.
+class _OrphanedPurchaseService extends PurchaseService {
+  _OrphanedPurchaseService({this.livePrice});
+
+  final String? livePrice;
+  final _controller = StreamController<String>.broadcast();
+
+  @override
+  Future<bool> purchaseCoinPackage(CoinPackage package) async => false;
+
+  @override
+  Future<String?> queryLocalizedPrice(CoinPackage package) async => livePrice;
+
+  @override
+  Stream<String> get orphanedPurchaseProductIds => _controller.stream;
+
+  void emitOrphaned(String productId) => _controller.add(productId);
+}
+
 /// Reklamın hiç tamamlanmadığı/kullanıcının erken kapattığı senaryoyu
 /// simüle eder — `MockAdService`'in tersi (her zaman `false`).
 class _RejectingAdService extends AdService {
@@ -94,6 +118,51 @@ void main() {
       final success = await provider.purchaseCoinPackage(package);
 
       expect(success, isFalse);
+      expect(provider.balance, 0);
+    });
+  });
+
+  group('CoinProvider - gerçek IAP: canlı fiyat + yetim satın alma teslimi', () {
+    test(
+      'queryLocalizedPrice, PurchaseService.queryLocalizedPrice sonucuna geçer',
+      () async {
+        final provider = CoinProvider(
+          purchaseService: _OrphanedPurchaseService(livePrice: '₺19,99'),
+        );
+        const package = CoinPackage(
+          id: 'coins_100',
+          coinAmount: 100,
+          imageAsset: 'assets/images/zibo_coin.png',
+        );
+
+        final price = await provider.queryLocalizedPrice(package);
+
+        expect(price, '₺19,99');
+      },
+    );
+
+    test(
+      'Yetim (bir önceki oturumdan kalan) satın alma coin\'i geç de olsa teslim eder',
+      () async {
+        final service = _OrphanedPurchaseService();
+        final provider = CoinProvider(purchaseService: service);
+        expect(provider.balance, 0);
+
+        service.emitOrphaned('coins_100'); // gerçek bir coinPackages id'si
+        await Future<void>.delayed(Duration.zero);
+
+        expect(provider.balance, 100);
+        expect(provider.totalEarned, 100);
+      },
+    );
+
+    test('Bilinmeyen bir ürün id\'si için yetim olay sessizce yok sayılır', () async {
+      final service = _OrphanedPurchaseService();
+      final provider = CoinProvider(purchaseService: service);
+
+      service.emitOrphaned('bilinmeyen_urun');
+      await Future<void>.delayed(Duration.zero);
+
       expect(provider.balance, 0);
     });
   });

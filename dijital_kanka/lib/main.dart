@@ -43,6 +43,8 @@ import 'screens/root_screen.dart';
 import 'services/ad_service.dart';
 import 'services/admob_ad_service.dart';
 import 'services/google_auth_service.dart';
+import 'services/iap_purchase_service.dart';
+import 'services/purchase_service.dart';
 import 'services/push_notification_service.dart';
 import 'services/sound_effects_service.dart';
 import 'widgets/ad_blur_overlay.dart';
@@ -332,7 +334,12 @@ class _AppRootState extends State<_AppRoot> {
 }
 
 class DijitalKankaApp extends StatelessWidget {
-  const DijitalKankaApp({super.key, this.uid, this.adService});
+  const DijitalKankaApp({
+    super.key,
+    this.uid,
+    this.adService,
+    this.purchaseService,
+  });
 
   /// Kullanıcının anonim Firebase kimliği (bkz. `main()`) — `null` ise
   /// (Firebase kullanılamıyor VEYA test ortamı) TÜM aşağıdaki provider'lar
@@ -349,6 +356,13 @@ class DijitalKankaApp extends StatelessWidget {
   /// döner) bunu doğrudan test eden senaryolar `const MockAdService()`
   /// enjekte eder (bkz. widget_test.dart).
   final AdService? adService;
+
+  /// Test enjeksiyonu için — [adService] ile AYNI desen. `null` ise
+  /// (üretimde HER ZAMAN) gerçek [InAppPurchasePurchaseService] kullanılır;
+  /// `flutter_test`'te gerçek Play Billing platform kanalına dokunamadığı
+  /// için bunu doğrudan test eden senaryolar `const MockPurchaseService()`
+  /// enjekte eder.
+  final PurchaseService? purchaseService;
 
   @override
   Widget build(BuildContext context) {
@@ -387,6 +401,7 @@ class DijitalKankaApp extends StatelessWidget {
                   rewardedAdUnitId: AdMobConfig.rewardedAdUnitId,
                   interstitialAdUnitId: AdMobConfig.interstitialAdUnitId,
                 ),
+            purchaseService: purchaseService ?? InAppPurchasePurchaseService(),
             soundEffectsService: AudioPlayersSoundEffectsService(),
             isSoundEnabled: () =>
                 context.read<SoundEffectsProvider>().enabled,
