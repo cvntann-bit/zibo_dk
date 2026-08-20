@@ -15,9 +15,9 @@
 /// **KRİTİK — bu metin bir taslak, nihai hukuki danışmanlık DEĞİL.**
 /// İçerik, uygulamanın GERÇEKTEN ne yaptığına (bkz. CLAUDE.md — Firebase
 /// Auth/Firestore/Analytics/Messaging, AdMob, Google Sign-In, yerel
-/// fotoğraf depolama) birebir dayanarak yazıldı, ama köşeli parantezli
-/// alanlar (`[...]`) kullanıcının KENDİ kimlik/iletişim bilgisiyle
-/// doldurması gerekiyor — bu bilgi asistanın elinde YOK, uydurulmadı.
+/// fotoğraf depolama) birebir dayanarak yazıldı. Veri Sorumlusu/Fikri
+/// Mülkiyet maddelerindeki kimlik bilgisi (Mehmet Can Tan) kullanıcının
+/// KENDİSİ tarafından AÇIKÇA verildi — asistan tarafından UYDURULMADI.
 library;
 
 const String privacyPolicyTr = '''
@@ -27,7 +27,7 @@ Bu Gizlilik Politikası, Zibo mobil uygulamasını ("Zibo", "uygulama") kullanı
 
 1. Veri Sorumlusu
 
-Zibo uygulamasının geliştiricisi [AD SOYAD / ŞİRKET UNVANI] ("biz")'dir. Sorularınız için contact@getzibo.com adresinden bize ulaşabilirsiniz.
+Zibo uygulamasının geliştiricisi Mehmet Can Tan ("biz")'dir. Sorularınız için contact@getzibo.com adresinden bize ulaşabilirsiniz.
 
 2. Topladığımız Veriler
 
@@ -127,7 +127,7 @@ Bu koşulları ihlal eden hesaplar önceden bildirim yapılmaksızın askıya al
 
 7. Fikri Mülkiyet
 
-Zibo uygulaması, "Zibo" karakteri/maskotu, logosu, tasarımı ve tüm görsel/işitsel içerikleri [AD SOYAD / ŞİRKET UNVANI]'a aittir ve telif hakkı ile korunmaktadır. Uygulamayı kullanmanız, size bu içerikler üzerinde hiçbir mülkiyet hakkı vermez.
+Zibo uygulaması, "Zibo" karakteri/maskotu, logosu, tasarımı ve tüm görsel/işitsel içerikleri Mehmet Can Tan'a aittir ve telif hakkı ile korunmaktadır. Uygulamayı kullanmanız, size bu içerikler üzerinde hiçbir mülkiyet hakkı vermez.
 
 8. Garanti Reddi
 

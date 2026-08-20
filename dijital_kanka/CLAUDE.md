@@ -1321,10 +1321,10 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
       "yeni içerik eski dar container'ı taşırıyor" ders sınıfının bir örneği daha).
     - **KRİTİK — bu bir hukuk danışmanlığı DEĞİL, uygulamanın GERÇEKTEN ne yaptığına (Firebase
       Auth/Firestore/Analytics/Messaging, AdMob, Google Sign-In, yerel fotoğraf depolama, Zibo
-      Coin'in gerçek parasal değeri olmadığı) dayanan bir TASLAK.** İçerikte `[AD SOYAD / ŞİRKET
-      UNVANI]` köşeli parantezli İKİ yer var (Veri Sorumlusu + Fikri Mülkiyet maddeleri) —
-      kullanıcının KENDİ kimlik bilgisini doldurması GEREKİYOR, asistanın elinde bu bilgi YOK,
-      uydurulmadı.
+      Coin'in gerçek parasal değeri olmadığı) dayanan bir TASLAK.** Veri Sorumlusu + Fikri Mülkiyet
+      maddelerindeki kimlik bilgisi (**Mehmet Can Tan**) kullanıcının KENDİSİ tarafından AÇIKÇA
+      verildi — başlangıçta `[AD SOYAD / ŞİRKET UNVANI]` köşeli parantezli yer tutucuydu, asistan
+      UYDURMADI.
     - **YAPILMASI GEREKEN — Play Console'un Data Safety formu barındırılan bir URL istiyor,
       uygulama İÇİ metin TEK BAŞINA yeterli DEĞİL.** Bu metnin `getzibo.com` (kullanıcının AYRI bir
       Claude Code oturumunda çalıştığı `zibo-website` projesi — bu oturumun ERİŞEMEDİĞİ bir proje)
