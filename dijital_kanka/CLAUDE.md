@@ -3760,6 +3760,48 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
     reklam gösterilmeye başlamalı — bu noktada ayrıca bir kod değişikliği GEREKMİYOR, yalnızca
     Google tarafının hazır olmasını bekliyoruz.
 
+### AdMob/AdSense hesabı devre dışı bırakıldı — itiraz süreci (2026-08-21)
+
+- **Kullanıcının `cvntann@gmail.com` ile açtığı AdMob hesabı (Publisher ID `pub-2881957853109429`,
+  App ID `ca-app-pub-2881957853109429~2442148274`) Google tarafından DEVRE DIŞI BIRAKILDI** —
+  gelen resmi e-postadaki sebep AÇIKÇA **"Account related to a disabled account"** (daha önce
+  politika ihlali nedeniyle devre dışı bırakılmış BAŞKA bir hesapla ilişkili bulunması), "geçersiz
+  trafik" DEĞİL.
+  - **Kök neden — mükerrer hesap kaydı:** Kullanıcı bu proje için önce KURUMSAL e-postasıyla
+    (`contact@getzibo.com`) kayıt olmuştu — Google bunu işletme/kurum hesabı sayıp VAT (vergi)
+    kimlik numarası istedi, kullanıcıda bu olmadığı için o hesabın kimlik doğrulamasını HİÇ
+    tamamlamadı, hiç kullanmadı (sıfır reklam, sıfır gelir) ve yerine kişisel e-postasıyla
+    (`cvntann@gmail.com`) SIFIRDAN yeni bir hesap açıp kimlik doğrulamasını ORADA tamamladı. Aynı
+    kişinin aynı uygulama için iki ayrı hesap açması (ilkini hiç kapatmadan), Google'ın en yaygın
+    "ilişkili/mükerrer hesap" tespit sebeplerinden biri — kimlik belgeleri/cihaz/muhtemelen ödeme
+    bilgisi üzerinden iki hesabın AYNI kişiye ait olduğu tespit edilip ikincisi otomatik engellendi.
+  - **Olası bileşen faktör:** Kullanıcı geliştirme sırasında GERÇEK (test etiketsiz) reklam
+    birimiyle kendi cihazından birkaç kez reklam izleyip panelde ~3-4 TL "gelir" oluşturduğunu
+    belirtti — bu, resmi bildirimde AÇIKÇA belirtilen birincil sebep DEĞİL ama Google'ın risk
+    değerlendirmesine ek bir sinyal olarak katkıda bulunmuş olabilir. Bu rakam muhtemelen zaten
+    ödenmeyecekti — hesapta "Ödeme kurulumu tamamlanmadı" uyarısı vardı, panelde görünen tutarlar
+    bu aşamada yalnızca TAHMİNİ, kesinleşmiş/ödenebilir değil.
+  - **İtiraz gönderildi (2026-08-21), sonuç BEKLENİYOR.** Resmi AdSense "policy disabled appeal"
+    formu (`support.google.com/adsense/contact/policy_disabled_appeal`) üzerinden, kurumsal
+    e-postayla başlayıp VAT ID sorunundan dolayı yarım bırakılan ilk kaydın, ardından kişisel
+    e-postayla doğru şekilde açılan ikinci hesabın hikayesini dürüstçe anlatan bir metinle
+    gönderildi. Google'ın onay e-postası: incelemenin bir hafta veya daha uzun sürebileceğini,
+    yeniden etkinleştirmenin GARANTİ EDİLMEDİĞİNİ, ve bir itiraz sonuçlandıktan sonra yeni bir
+    itiraz için 90 gün beklenmesi gerektiğini (ilk itiraz için geçerli değil) belirtiyor.
+  - **Ders — bundan sonra geliştirme/test sırasında ASLA gerçek Ad Unit ID kullanılmamalı,
+    HER ZAMAN Google'ın resmi test ID'lerine düşülmeli** (debug/test build'lerde otomatik
+    geçiş — henüz UYGULANMADI, kullanıcıya teklif edildi ama başlanmadı) — bu tam olarak yukarıdaki
+    "olası bileşen faktör"ün bir daha yaşanmaması için.
+  - **Zibo'nun asıl gelir modeli AdMob'a bağımlı DEĞİL — bu olay Play Billing'i (coin satışları)
+    HİÇ etkilemiyor.** İki gelir kanalı tamamen ayrı: coin satın almaları Google Play'in KENDİ
+    ödeme altyapısını (bkz. "Google Play Billing" bölümü) kullanıyor, AdSense/AdMob kimlik
+    sorunlarından bağımsız. AdMob kalıcı olarak geri gelmezse, reklam tarafı için **AppLovin
+    (MAX)** — Google/AdSense ekosisteminden tamamen bağımsız, resmi Flutter paketi olan
+    (`applovin_max`), rewarded+interstitial destekleyen bir alternatif olarak konuşuldu (henüz
+    ENTEGRE EDİLMEDİ, yalnızca bir yedek plan olarak not düşüldü). `AdService` soyutlaması
+    sayesinde geçiş (AdMob'a dönmek DAHİL) tek bir servis sınıfı yazıp `main.dart`'ta bağlamaktan
+    ibaret olacak, `CoinProvider`/ekranlar hiç değişmeyecek.
+
 ### Reklamlar tam ekranı kaplamıyor (bug düzeltmesi) — `AdActivity` tema override + blur yedek katmanı
 
 - **2026 bug raporu (İLK TUR — YETERSİZ KALDI).** Kullanıcı bildirdi: AdMob reklamları
@@ -4611,11 +4653,27 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
   gerekçe — bkz. "AdMob Entegrasyonu" bölümü) — `isAvailable()`/`queryProductDetails()`/
   `buyConsumable()`'ın HERHANGİ biri beklenmedik şekilde fırlatırsa (desteklenmeyen platform,
   mağaza hesabı bağlı değil vb.) istisna DIŞARI SIZMADAN `false` dönüyor.
-- **AndroidManifest.xml'e HİÇBİR yeni izin/queries GEREKMEDİ** — `in_app_purchase_android`'in
-  kendi manifest'i boş (doğrulandı, pub cache'teki paket kaynağı okunarak); modern Play Billing
-  Library (v4+) artık eski `com.android.vending.BILLING` iznini GEREKTİRMİYOR (bu, AIDL tabanlı
-  eski `IInAppBillingService` yaklaşımının bir kalıntısıydı) — bağlantı Play Store'un kendi
-  bound-service keşfi üzerinden kuruluyor.
+- **AndroidManifest.xml'e HİÇBİR yeni izin/queries GEREKMEDİ (elle) — ama `com.android.vending.
+  BILLING` izni yine de nihai APK'da VAR, düzeltilmiş bir önceki not.** İlk yazımda
+  `in_app_purchase_android`'in KENDİ manifest'i boş olduğu için ("modern Billing Library artık bu
+  izni gerektirmiyor" diye) yanlış bir sonuca varılmıştı — **bu yanlıştı.** Gerçek release build'in
+  BİRLEŞTİRİLMİŞ manifest'i (`build/app/intermediates/merged_manifest/release/
+  processReleaseMainManifest/AndroidManifest.xml`) elle incelenince `<uses-permission android:name=
+  "com.android.vending.BILLING" />` satırının GERÇEKTEN orada olduğu görüldü — yalnızca
+  `in_app_purchase_android`'in İNCE sarmalayıcı manifest'inden DEĞİL, onun bağımlı olduğu Google'ın
+  KENDİ `com.android.billingclient:billing` (Play Billing Library çekirdeği) AAR'ından Gradle
+  manifest merge ile geliyor. **Sonuç DEĞİŞMEDİ** (elle bir şey eklemeye gerek YOK, izin zaten
+  otomatik geliyor) ama GEREKÇE yanlış yazılmıştı — düzeltildi. **Ders:** bir plugin'in kendi ince
+  sarmalayıcı paketinin (`in_app_purchase_android` gibi) manifest'ini incelemek yeterli değil,
+  asıl kanıt her zaman GERÇEK BİRLEŞTİRİLMİŞ (merged) manifest — `build/<module>/intermediates/
+  merged_manifest/<variant>/.../AndroidManifest.xml` — bir bağımlılığın transitif olarak neler
+  eklediğini gösterir, tek bir paketin kendi manifest dosyasına bakmak yanıltıcı olabilir.
+  - **Bu, Play Console'un "Uygulamanızda henüz tek seferlik ürün yok... APK'nıza FATURALANDIRMA
+    izni eklemeniz gerekir" mesajının NEDEN yanıltıcı bir uyarı olduğunu da açıklıyor** —
+    kullanıcı bu mesajı henüz HİÇ bir sürüm yüklemeden gördü; Play Console bu izni ARAMAK için
+    kontrol edecek bir binary bulamadığı için genel bir "gerekiyor" mesajı gösteriyor, bizim
+    build'imizde eksik olduğu için DEĞİL. İlk `.aab` bir test track'ine (Internal testing)
+    yüklenince bu uyarı kaybolup "Uygulama içi ürün ekle" akışı açılmalı.
 - **YAPILMASI GEREKENLER — bu KRİTİK bir açık güvenlik boşluğu, "Coin Ekonomisi Güvenliği"
   bölümündeki AYNI mimari kısıtlamaya bağlı:** `purchaseStream`'in `PurchaseStatus.purchased`
   olayı TEK BAŞINA yeterli güven kaynağı DEĞİL — bir mod APK bu durumu istemci tarafında sahte
@@ -4627,29 +4685,48 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
   henüz vermediği Blaze plan kararını gerektiriyor (bkz. "Coin Ekonomisi Güvenliği" bölümündeki
   aynı karar noktası) — şimdilik istemci-taraflı doğrulamayla devam ediliyor, launch ÖNCESİ (özellikle
   paket fiyatları yükseldikçe/gerçek kullanıcı trafiği başladıkça) ele alınmalı.
-- **Kullanıcının Play Console'da yapması gereken ön koşullar (asistan yapamaz — konsol erişimi
-  gerektiriyor):**
-  1. **5 tüketilebilir (managed) ürün oluştur** — Play Console > uygulama > Ürünler (Monetize) >
-     Uygulama içi ürünler: `coins_100`/`coins_250`/`coins_500`/`coins_1000`/`coins_10000` (id'ler
-     BİREBİR bu şekilde, `coin_packages.dart`'taki `CoinPackage.id` alanlarıyla eşleşmeli),
-     her biri "Aktif" durumda, önerilen başlangıç fiyatları (uygulama içi sabit/yedek fiyatlarla
-     AYNI, Google otomatik bölgesel dönüşüm yapar): 100 ZC → 19,99 ₺, 250 ZC → 44,99 ₺, 500 ZC →
-     84,99 ₺, 1000 ZC → 159,99 ₺, 10000 ZC → 1.499,99 ₺.
-  2. **Uygulamayı en az bir test track'ine (Internal testing) yükle** — Play Billing, Play
-     Console'a HİÇ yüklenmemiş bir uygulamada (yalnızca `adb install` ile yan yüklenmiş bir APK'da)
-     ÇALIŞMAZ; `queryProductDetails()` her zaman boş/hatalı dönecektir. Bu, roadmap'in Faz 4
-     ("Internal testing") maddesiyle DOĞRUDAN bağlantılı — bu Faz'a ulaşılmadan gerçek bir satın
-     alma UÇTAN UCA test edilemez.
-  3. **Lisans test kullanıcısı ekle** (Play Console > Kurulum > Lisans testi) — gerçek para
-     çekmeden test satın alması yapabilmek için kendi Google hesabını buraya ekle.
-- **Bu oturumda GERÇEK bir satın alma UÇTAN UCA test EDİLEMEDİ** (yukarıdaki 3 ön koşul kullanıcı
-  tarafında henüz tamamlanmadı) — yalnızca şunlar doğrulandı: `flutter test` (279/279, orphaned
-  purchase + canlı fiyat passthrough için yeni testler dahil), `flutter build apk --release`
-  sorunsuz derlendi, gerçek cihazda kurulup çöküş olmadan açıldığı (`adb shell monkey`/`pidof`)
-  teyit edildi. Ürünler Play Console'da henüz TANIMLANMADIĞI için Mağaza'da "Satın Al"a basmak
-  şu an için (beklenen/doğru davranış) `storePurchaseFailedMessage` SnackBar'ını gösterir —
-  yukarıdaki 3 ön koşul tamamlanınca bu, gerçek bir Play ödeme akışına dönüşecek, KOD TARAFINDA
-  hiçbir değişiklik GEREKMEYECEK.
+- **2026-08-21 güncellemesi — kullanıcının Play Console tarafındaki ön koşulların ÇOĞU
+  TAMAMLANDI.** Bkz. "Release İmzalama" bölümündeki "Play Console'da uygulama oluşturma" notu —
+  aynı oturumda hem uygulama hem ürünler hem ilk test sürümü kuruldu:
+  1. **5 tüketilebilir ürün OLUŞTURULDU** — Play Console > Google Play ile para kazanın > Ürünler
+     > **"Tek seferlik ürünler"** (Play Console'un YENİ arayüzde "Yönetilen ürünler"e verdiği isim)
+     altında `coins_100`/`coins_250`/`coins_500`/`coins_1000`/`coins_10000` oluşturuldu, fiyatları
+     `coin_packages.dart`'taki sabit değerlerle eşleşecek şekilde (100 ZC → 19,99 ₺, 250 ZC →
+     44,99 ₺, 500 ZC → 84,99 ₺, 1000 ZC → 159,99 ₺, 10000 ZC → 1.499,99 ₺) girildi.
+     - **Yeni öğrenilen bir Play Console gotcha'sı — her ürünün İKİ AYRI kimliği var, farklı
+       karakter kısıtlamalarıyla.** "Ürün Kimliği" (Product ID, `coin_packages.dart`'taki
+       `CoinPackage.id` ile BİREBİR eşleşmeli — `coins_100` gibi, alt çizgiye izin veriyor,
+       oluşturulduktan sonra DEĞİŞTİRİLEMEZ) TAMAMEN AYRI bir alan; 2. adımda ("Kullanılabilirlik
+       ve fiyatlandırma") ayrıca bir **"Satın alma seçeneği kimliği"** (Purchase option ID)
+       istiyor — bu alan **alt çizgiye İZİN VERMİYOR, yalnızca tire (-)** kabul ediyor, bu yüzden
+       `coins-100` gibi tire'li bir varyant kullanıldı. `in_app_purchase` paketinin
+       `queryProductDetails()`/`buyConsumable()` çağrıları YALNIZCA "Ürün Kimliği"ni (alt çizgili
+       olanı) kullanıyor — "Satın alma seçeneği kimliği" yalnızca Play Console'un kendi iç
+       organizasyonu için, kodda hiçbir yerde referans EDİLMİYOR, bu yüzden hangi tire'li ismi
+       seçtiğinin (`coins-100` vb.) fonksiyonel bir önemi YOK.
+     - **Fiyat girişi — ülke bazlı dev bir tabloya düşüyor, ama TEK bir temel fiyat girip
+       otomatik doldurmak yeterli.** Türkiye için girilen `19,99 ₺` temel fiyat, listede
+       `TRY 23,99` olarak göründü — bu bir hata DEĞİL, Türkiye'nin %20 KDV'sini dahil eden
+       vergi-dahil PERAKENDE fiyatı (`19,99 × 1,20 ≈ 23,99`), Play Console'un kendi standart
+       davranışı.
+  2. **Play Console'da "ZiboDk" hesabı altında uygulama OLUŞTURULDU** (Kişisel hesap, Hesap
+     Kimliği `7407892887987832616`) — Uygulama adı "Zibo", Ücretsiz + IAP, Türkçe varsayılan dil.
+     **Ödeme profili DOLDURULDU** (İşletme adı, adres, banka hesabı) — doğrulama BEKLENİYOR,
+     kesinleşmesi biraz sürebilir.
+  3. **İlk sürüm Internal testing'e YÜKLENDİ.** `pubspec.yaml`'daki sürüm `1.0.0+1` → `1.0.0+2`'ye
+     artırıldı (ilk yüklemede "1 sürüm kodu daha önce kullanıldı" hatası alındı — muhtemelen daha
+     önce başarısız/boş bırakılan bir taslak sürüm zaten `versionCode 1`'i "kullanılmış" olarak
+     işaretlemişti, bkz. "Sürüm numarası stratejisi"ndeki genel kural) — `flutter build appbundle
+     --release` ile yeniden derlenip `app-release.aab` (versionCode 2, versionName 1.0.0) Internal
+     testing kanalına yüklendi, "Dahili test kullanıcıları tarafından kullanılabilir" durumuna
+     geçti. **Test kullanıcısı ekleme adımı (kendi Google hesabını "Test kullanıcıları" sekmesine
+     ekleme) bu oturumda TAMAMLANDIĞI DOĞRULANMADI** — bir sonraki oturumda kontrol edilmeli.
+  - **HÂLÂ AÇIK — gerçek uçtan uca satın alma testi bu oturumda YAPILAMADI**, çünkü (a) test
+    kullanıcısı eklemenin tamamlandığı teyit edilmedi, (b) ödeme profili doğrulaması bekleniyor —
+    ikisi tamamlanmadan Play Store gerçek bir satın alma akışını göstermez. Bir sonraki oturumda
+    önce bu ikisinin durumu kontrol edilmeli.
+  - `flutter test` (279/279), `flutter build apk --release` VE `flutter build appbundle --release`
+    sorunsuz derlendi, gerçek cihazda kurulup çöküş olmadan açıldığı doğrulandı.
 
 ## Release İmzalama / Play Store Yayın Hazırlığı ([android/app/build.gradle.kts](android/app/build.gradle.kts))
 
@@ -4755,16 +4832,18 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
     yalnızca bug fix → `Z`'yi artır (`1.0.1`), yeni özellik → `Y`'yi artır ve `Z`'yi sıfırla
     (`1.1.0`), büyük/köklü bir değişiklik → `X`'i artır (`2.0.0`). İlk yayın için `1.0.0` zaten
     doğru/olduğu gibi kalabilir.
-- **Sonraki adımlar (henüz YAPILMADI, kullanıcıyla birlikte sırayla ele alınacak):** IAP kararı
-  (gerçek Google Play Billing mi, yoksa launch'ta Mağaza'nın gerçek-para paketlerini gizlemek mi —
-  bkz. "Google Play Billing (IAP) Entegrasyonu" bölümü, bu ŞİMDİ ele alınıyor), Gizlilik
-  Politikası/Kullanım Koşulları'nın yer tutucu metinden gerçek içeriğe geçmesi (Play Console Data
-  Safety formu barındırılan bir URL istiyor), Play Console'daki mağaza listeleme/içerik
-  derecelendirme/veri güvenliği formları, farklı cihaz/Android sürümünde test (şu an yalnızca
-  kullanıcının kendi test telefonunda doğrulandı) (bkz. "Coin Ekonomisi Güvenliği" bölümündeki
-  hâlâ açık istemci-taraflı risk notu — gerçek IAP bağlanmadan ÖNCE ele alınmalı). **Çökme/hata
-  izleme (Crashlytics) ARTIK KURULU** — bkz. "Crashlytics" bölümü, bu liste eski/güncellenmemiş
-  bir anını yansıtıyordu.
+- **Sonraki adımlar (bu liste zamanla eskiyor, en güncel durum için "Google Play Billing (IAP)
+  Entegrasyonu" bölümündeki 2026-08-21 notuna bakın):** **Çökme/hata izleme (Crashlytics) ARTIK
+  KURULU**, **gerçek Google Play Billing ARTIK BAĞLI** (bkz. "Google Play Billing" bölümü — 5
+  ürün Play Console'da oluşturuldu, ilk Internal testing sürümü yüklendi), **Play Console'da
+  uygulama oluşturuldu + ödeme profili dolduruldu** (doğrulama bekleniyor). **HÂLÂ AÇIK:** Gizlilik
+  Politikası/Kullanım Koşulları'nın yer tutucu metinden gerçek içeriğe geçmesi (bir URL'de
+  yayınlanması gerekiyor), Play Console'daki mağaza listeleme/içerik derecelendirme/veri güvenliği
+  formları, test kullanıcısı eklemenin tamamlandığının doğrulanması, farklı cihaz/Android
+  sürümünde test, ve AYRICA **2026-08-21'de ortaya çıkan yeni bir engel: AdMob hesabı devre dışı
+  bırakıldı, itiraz sonucu bekleniyor** (bkz. "AdMob Entegrasyonu" bölümündeki "AdMob/AdSense
+  hesabı devre dışı bırakıldı" notu) — reklam geliri bu netleşene kadar askıda, ama Play Billing
+  (coin satışları) bundan bağımsız çalışmaya devam ediyor.
 
 ## Crashlytics ([main.dart](lib/main.dart), [android/app/build.gradle.kts](android/app/build.gradle.kts), [android/settings.gradle.kts](android/settings.gradle.kts))
 
