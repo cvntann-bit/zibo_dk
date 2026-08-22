@@ -47,7 +47,7 @@ c) Uygulama içinde girdiğiniz veriler
 d) Otomatik teknik veriler
 - Firebase Analytics aracılığıyla genel kullanım istatistikleri (hangi özelliklerin kullanıldığı, oturum süresi gibi anonimleştirilmiş/toplulaştırılmış veriler)
 - Bildirim gönderebilmek için bir cihaz belirteci (FCM token)
-- Google AdMob aracılığıyla gösterilen reklamlarla ilgili reklam kimliği ve etkileşim verileri (bkz. Madde 5)
+- Google AdMob ve benzeri reklam ortakları aracılığıyla gösterilen reklamlarla ilgili reklam kimliği ve etkileşim verileri (bkz. Madde 5)
 
 3. Verileri Neden Kullanıyoruz
 
@@ -62,9 +62,9 @@ Verilerinizi hiçbir zaman satmıyoruz veya pazarlama amacıyla üçüncü taraf
 
 Verileriniz Google'ın Firebase altyapısında (Cloud Firestore, Authentication) saklanır. Her kullanıcı yalnızca KENDİ verisine erişebilecek şekilde güvenlik kuralları uygulanmıştır. Google'ın kendi gizlilik uygulamaları için: https://policies.google.com/privacy
 
-5. Reklamlar (Google AdMob)
+5. Reklamlar
 
-Uygulamada Google AdMob aracılığıyla reklamlar gösterilir. AdMob, reklam kişiselleştirmesi için cihazınızın reklam kimliği gibi verileri kullanabilir. Google'ın reklam politikaları hakkında bilgi için: https://policies.google.com/technologies/ads
+Uygulamada Google AdMob ve benzeri reklam ortakları aracılığıyla reklamlar gösterilir. Bu ortaklar, reklam kişiselleştirmesi için cihazınızın reklam kimliği gibi verileri kullanabilir. Google'ın reklam politikaları hakkında bilgi için: https://policies.google.com/technologies/ads
 
 6. Verilerinizin Saklanma Süresi
 
