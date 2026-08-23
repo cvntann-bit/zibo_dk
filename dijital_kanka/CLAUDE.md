@@ -3176,10 +3176,11 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
   <resources xmlns:tools="http://schemas.android.com/tools"
       tools:keep="@raw/zibo_notification" />
   ```
-  Bu, küçültücüye bu KAYNAĞA DOKUNMAMASINI açıkça söylüyor — `aapt2 dump resources` ile yeniden
-  derlenip `raw/zibo_notification`'ın artık APK'da GERÇEKTEN var olduğu doğrulandı, doğrulama
-  cihaz üzerinde YAPILACAK (bu not, cihazda henüz test EDİLMEDEN yazıldı — bir sonraki oturumda
-  gerçek ses çıkışı teyit edilmeli). **Ders — genelleştirilebilir bir Android/R8 kalıbı:** bir
+  Bu, küçültücüye bu KAYNAĞA DOKUNMAMASINI açıkça söylüyor. **Doğrulama İKİ aşamalı yapıldı:**
+  önce statik olarak, `aapt2 dump resources` ile yeniden derlenen APK'da `raw/zibo_notification`'ın
+  artık GERÇEKTEN var olduğu teyit edildi; sonra gerçek cihazda kurulup **kullanıcı bildirim
+  sesinin GERÇEKTEN çaldığını doğruladı** — sorun KALICI olarak çözüldü. **Ders — genelleştirilebilir
+  bir Android/R8 kalıbı:** bir
   native platform eklentisinin (herhangi bir Flutter eklentisi) bir Android kaynağına yalnızca
   bir STRING/isim üzerinden ÇALIŞMA ZAMANINDA referans verdiği HER durumda (raw ses/video
   dosyaları, drawable'lar vb. — `R.xxx.yyy` gibi statik bir Java/Kotlin/XML referansı yerine),
