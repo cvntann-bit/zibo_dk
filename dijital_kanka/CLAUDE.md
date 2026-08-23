@@ -2822,9 +2822,9 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
     (`isTypeEnabled` kontrolünden geçerse `messaging.send(...)`, token geçersizse/eskimişse
     hatayı yutup loglar — tek kullanıcının başarısızlığı `Promise.all` batch'ini durdurmasın diye),
     `istanbulDateKey`/`istanbulMinutesOfDay` (aşağıya bakın).
-  - **4 betik** (`src/dailyMotivation.js`, `src/streakReminder.js`, `src/dailyRewardReminder.js`,
-    `src/reEngagement.js`) — mantık Cloud Functions taslağıyla BİREBİR AYNI, yalnızca "ne zaman
-    çalıştırıldıkları" artık `onSchedule` yerine GitHub Actions `schedule:` cron'u:
+  - **5 betik** (`src/dailyMotivation.js`, `src/streakReminder.js`, `src/dailyRewardReminder.js`,
+    `src/reEngagement.js`, `src/waterReminder.js`) — mantık Cloud Functions taslağıyla BİREBİR AYNI,
+    yalnızca "ne zaman çalıştırıldıkları" artık `onSchedule` yerine GitHub Actions `schedule:` cron'u:
     - **Günlük Motivasyon** — **2026 GÜNCELLEMESİ — GERÇEK BİR OLAYLA BULUNAN, MİMARİYİ DEĞİŞTİREN
       bir GitHub Actions kısıtlaması:** İlk tasarım, GitHub Actions cron'unun (Cloud Scheduler
       gibi) "rastgele saat" desteklememesi yüzünden, "her kullanıcıya günde 1 kez, 09:00-11:00
@@ -2843,23 +2843,40 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
       dakikaları TAM OLARAK GitHub'ın "yoğun" dediği anlar, ve saatte birden fazla (8 kez/2 saat)
       sık bir cron bu yoğunlukta GÜVENİLİR ÇALIŞMIYOR (7/8 tetikleme hiç gerçekleşmedi).
       **Düzeltme — mimari basitleştirildi:** `pickSlot` TAMAMEN kaldırıldı (`common.js`'den de
-      silindi); artık GÜNDE TEK bir tetikleme var, `cron: '7 6 * * *'` (09:07 Europe/Istanbul) —
-      dakika BİLEREK `:07` (GitHub'ın "yoğun" dediği dakikaların DIŞINDA). Betik artık TÜM
+      silindi); GÜNDE TEK bir tetikleme kondu, `cron: '7 6 * * *'` (09:07 Europe/Istanbul) —
+      dakika BİLEREK `:07` (GitHub'ın "yoğun" dediği dakikaların DIŞINDA). Betik TÜM
       kullanıcılara AYNI çalıştırmada, AYNI rastgele seçilmiş sözle gönderiyor (kullanıcıya göre
       FARKLI dakika nüansı feda edildi) — sıkı 15dk'lık pencere kontrolü de kaldırılıp yerine
-      yalnızca GitHub'ın çalıştırmayı KATASTROFİK derecede geç (07:00-13:00 Istanbul dışında)
-      tetiklemesine karşı geniş bir güvenlik ağı (`SAFETY_MIN_MINUTE`/`SAFETY_MAX_MINUTE`,
-      `dailyMotivation.js`) kondu. **Ders — genel kural bu dört workflow'un HEPSİNE uygulandı:**
-      GitHub Actions cron'larında dakika alanı olarak ASLA `:00/:15/:30/:45` kullanmayın, bunun
-      yerine `:07` gibi sıra dışı bir dakika seçin — tek-tetiklemeli workflow'lar (aşağıdaki
-      diğer üçü) bu yüzden çökmüyordu (yalnızca geç çalışıyorlardı, bir "pencere dışı" reddi
-      yoktu) ama onlar da AYNI riski taşıdığı için dakikaları `:07`'ye kaydırıldı.
+      yalnızca GitHub'ın çalıştırmayı KATASTROFİK derecede geç tetiklemesine karşı geniş bir
+      güvenlik ağı (`SAFETY_MIN_MINUTE`/`SAFETY_MAX_MINUTE`, `dailyMotivation.js`) kondu. **Ders
+      — genel kural bu betiklerin HEPSİNE uygulandı:** GitHub Actions cron'larında dakika alanı
+      olarak ASLA `:00/:15/:30/:45` kullanmayın, bunun yerine `:07` gibi sıra dışı bir dakika
+      seçin — sıklık değil, DAKİKA SEÇİMİ asıl risk faktörü.
+      - **2026 İKİNCİ güncelleme — kullanıcı isteğiyle günde 1 → 4 tetiklemeye çıkarıldı.**
+        Kullanıcı raporu: sabah 11'de gelen tek motivasyon sözü yetersiz geldi, günde 3-4 kez
+        istendi. Yukarıdaki dersten (SIKLIK değil DAKİKA SEÇİMİ asıl risk) hareketle, `pickSlot`
+        tarzı "kullanıcıya göre farklı dakika" karmaşıklığına GERİ DÖNÜLMEDİ — bunun yerine DÖRT
+        BAĞIMSIZ, birbirinden habersiz basit çalıştırma eklendi, HER BİRİ kendi sabit ve
+        yoğun-olmayan dakikasında: `7 6 * * *` (09:07), `22 9 * * *` (12:22), `37 13 * * *`
+        (16:37), `52 17 * * *` (20:52) — hepsi Europe/Istanbul. Her çalıştırma TÜM kullanıcılara
+        kendi rastgele seçtiği sözle gönderiyor, yani bir kullanıcı günde 4 FARKLI söz alıyor.
+        `SAFETY_MIN_MINUTE`/`SAFETY_MAX_MINUTE` de dört tetiklemenin hepsini kapsayacak şekilde
+        07:00-23:00'e genişletildi (eskiden yalnızca 07:00-13:00'ü kapsıyordu, tek tetikleme
+        olduğu için yeterliydi).
     - **Streak Hatırlatması** — `7 17 * * *` (UTC) ≈ 20:00 Istanbul. `users/{uid}/state/goals`'u
       okuyup en az bir hedefin bugün işaretlenmediğini kontrol ediyor; hiç hedef yoksa göndermiyor.
     - **Günlük Ödül Hatırlatması** — `7 12 * * *` (UTC) ≈ 15:00 Istanbul. **BİLİNEN SINIRLAMA
       (kullanıcıya açıkça belirtildi):** Şans Çarkı'nın Firestore'da kalıcı bir "bugün çevrildi
       mi" alanı YOK (bkz. "Şans Çarkı" bölümü), bu yüzden bu betik YALNIZCA Günlük Giriş Ödülü'nün
       claim durumunu kontrol edebiliyor, çark durumunu DEĞİL.
+    - **Su Hatırlatması (2026 yeni özellik)** — `7 13 * * *` (UTC) ≈ 16:07 Istanbul.
+      `users/{uid}/state/waterState`'i (bkz. `water_provider.dart`) okuyup bugüne ait bir `entries`
+      kaydı YOKSA (hiç başlanmamış) veya varsa ama `unitCount < goalUnitCount`'sa (yarım kalmış)
+      gönderiyor; `waterState` dokümanı hiç yoksa (kullanıcı su takibini hiç kullanmamışsa)
+      `streakReminder.js`'in "hiç hedef yoksa gönderme" deseniyle AYNI gerekçeyle HİÇ göndermiyor
+      (kullanılmayan bir özelliği push ile "reklamını yapmak" yerine yalnızca zaten kullanan
+      kullanıcılara hatırlatma). Mesaj: "Suyunu içtin mi kanka? Hemen bir bardak iç, hedefine bir
+      adım daha yaklaş! 💧" (TR/EN/ES, `content.js`).
     - **Geri Kazanma** — `7 8 * * *` (UTC) ≈ 11:00 Istanbul. `users/{uid}.lastActiveAt` 2 günden
       eski olan kullanıcılara gönderiyor.
     - GitHub Actions cron'ları HER ZAMAN UTC'dir — Europe/Istanbul (sabit UTC+3) karşılıkları her
@@ -3093,6 +3110,22 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
   bir önceki oturumda zaten ayarlanmıştı, dolayısıyla 4 türün hepsi otomatik olarak AYNI kanala/
   sese bağlıydı. Bu istek, bir önceki arc'ta zaten tam olarak tamamlanmış bir işin
   DOĞRULANMASIYDI — hiçbir dosya değişmedi.
+- **2026 ÜÇÜNCÜ güncelleme — kullanıcı raporu: gerçek cihazda özel ses HİÇ çalmıyor, varsayılan
+  sistem sesi geliyor.** Kod tekrar incelendi — `push_notifications` kanalının oluşturma kodu
+  (`LocalNotificationService.initialize()`) VE `zibo_notification.wav` dosyası (`android/app/
+  src/main/res/raw/`) ikisi de doğru/eksiksiz. **Teşhis — bu yukarıdaki "Önemli Android
+  davranışı" notunda BAHSEDİLEN, o zaman "olası değil ama ihtimal dahilinde" diye işaretlenmiş
+  senaryonun TAM OLARAK gerçekleştiği durum:** kullanıcının cihazında Ayarlar > Uygulamalar >
+  Zibo > Bildirimler > "Push Bildirimleri" kanalı kontrol edildiğinde ses "Varsayılan" görünüyordu
+  — yani bu kanal, ses doğru şekilde bağlanmadan ÖNCEki bir APK sürümünde (bu proje boyunca aynı
+  cihaza onlarca kez kurulup kaldırılmıştı) zaten oluşmuş ve Android'e "yapışmış". **Kod
+  tarafında YAPILACAK HİÇBİR ŞEY YOK** — çözüm KESİNLİKLE uygulamayı cihazdan TAMAMEN kaldırıp
+  (yalnızca `adb install -r` ile üzerine kurmak YETMEZ) yeniden kurmak, bu Android'in kanal
+  sistemine özgü, programatik olarak atlatılamayan bir kısıtlama. **Bu ders genelleştirilebilir:**
+  bir bildirim kanalının sesi/adı/açıklaması ile ilgili "kod doğru ama cihazda çalışmıyor"
+  raporu alındığında, İLK yapılacak şey kodu şüphelenmek DEĞİL, kullanıcıdan cihazın Ayarlar
+  uygulamasında o kanalın GERÇEKTE ne gösterdiğini sormak — kanal zaten yanlış konfigürasyonla
+  cihaza kaydolmuşsa hiçbir kod değişikliği bunu düzeltmez, yalnızca kaldır+yeniden kur düzeltir.
 
 ### Zibo Dokunma Sesi ([sound_effects_service.dart](lib/services/sound_effects_service.dart), [sound_effects_provider.dart](lib/providers/sound_effects_provider.dart), `assets/sounds/zibo_tap_new.wav`)
 

@@ -1,17 +1,21 @@
 name: Günlük Motivasyon Bildirimi
 
 on:
-  # GÜNDE TEK tetikleme, 09:07 Europe/Istanbul (=06:07 UTC) — BİLEREK
-  # :00/:15/:30/:45 DIŞINDA bir dakika (GitHub'ın kendi dokümantasyonu bu
-  # dakikaları "yoğun" olarak işaretliyor, gecikme riski en yüksek).
-  # Önceki tasarım (09:00-10:45 arası 15dk'da bir, 8 tetikleme) gerçek bir
-  # olayla test edildi: GitHub o gün 8 tetiklemeden yalnızca 1'ini
-  # gerçekleştirdi, 22 dakika GECİKMEYLE — script'in pencere kontrolü
-  # yüzünden hiç gönderim yapılmadı (bkz. notification-scripts/src/
-  # dailyMotivation.js'deki tam açıklama). Tek, yoğun-olmayan bir
-  # tetikleme çok daha güvenilir.
+  # GÜNDE DÖRT tetikleme (09:07/12:22/16:37/20:52 Europe/Istanbul), HER
+  # BİRİ BİLEREK :00/:15/:30/:45 DIŞINDA bir dakika (GitHub'ın kendi
+  # dokümantasyonu bu dakikaları "yoğun" olarak işaretliyor, gecikme riski
+  # en yüksek). İlk tasarım (09:00-10:45 arası 15dk'da bir, 8 tetikleme,
+  # HEPSİ yuvarlak dakikalarda) gerçek bir olayla test edildi: GitHub o gün
+  # 8 tetiklemeden yalnızca 1'ini gerçekleştirdi, 22 dakika GECİKMEYLE —
+  # script'in pencere kontrolü yüzünden hiç gönderim yapılmadı (bkz.
+  # notification-scripts/src/dailyMotivation.js'deki tam açıklama). O
+  # olaydan çıkan ders SIKLIK değil, DAKİKA SEÇİMİYDİ — bu yüzden dörde
+  # çıkarken de her tetikleme yine yoğun-olmayan bir dakikada.
   schedule:
-    - cron: '7 6 * * *'
+    - cron: '7 6 * * *' # 09:07 İstanbul
+    - cron: '22 9 * * *' # 12:22 İstanbul
+    - cron: '37 13 * * *' # 16:37 İstanbul
+    - cron: '52 17 * * *' # 20:52 İstanbul
   workflow_dispatch: {}
 
 jobs:

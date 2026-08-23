@@ -11,6 +11,7 @@
     "streak-reminder": "node src/streakReminder.js",
     "daily-reward-reminder": "node src/dailyRewardReminder.js",
     "re-engagement": "node src/reEngagement.js",
+    "water-reminder": "node src/waterReminder.js",
     "cleanup-stale-anonymous-users": "node src/cleanupStaleAnonymousUsers.js"
   },
   "dependencies": {

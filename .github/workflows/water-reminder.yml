@@ -1,0 +1,25 @@
+name: Su Hatırlatması Bildirimi
+
+on:
+  # ~16:00 Europe/Istanbul = ~13:00 UTC. Dakika bilerek 07 (:00 DEĞİL) —
+  # GitHub'ın schedule gecikmeleri özellikle :00/:15/:30/:45'te yoğunlaşıyor
+  # (bkz. daily-motivation.yml'deki gerçek olayla doğrulanmış not).
+  schedule:
+    - cron: '7 13 * * *'
+  workflow_dispatch: {}
+
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: notification-scripts
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm install
+      - run: npm run water-reminder
+        env:
+          FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}

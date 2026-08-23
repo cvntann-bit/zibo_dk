@@ -1,6 +1,8 @@
-/// FCM (Firebase Cloud Messaging) tabanlı push bildirim türleri — Cloud
-/// Functions tarafında (bkz. `functions/src/index.ts`) gönderilen her
-/// `RemoteMessage`'ın `data['type']` alanına yazılan değerlerle BİREBİR
+/// FCM (Firebase Cloud Messaging) tabanlı push bildirim türleri — workspace
+/// kökündeki `notification-scripts/` (GitHub Actions cron'larından çalışan
+/// bağımsız Node.js betikleri, bkz. `common.js`'teki `sendToUser`)
+/// tarafından gönderilen her `RemoteMessage`'ın `data['type']` alanına
+/// yazılan değerlerle BİREBİR
 /// eşleşir. Hem Ayarlar'daki açma/kapama tercihlerini (bkz.
 /// `PushNotificationProvider`) hem de bildirime dokununca hangi sayfaya
 /// yönlendirileceğini (bkz. `PushNotificationService`'in tap handler'ı)
@@ -21,7 +23,11 @@ enum PushNotificationType {
 
   /// Kullanıcı 2+ gündür uygulamayı hiç açmadıysa gönderilen, Zibo'nun sıcak
   /// tonunda özel bir "seni özledim" bildirimi.
-  reEngagement;
+  reEngagement,
+
+  /// Kullanıcının bugünkü su hedefi henüz tamamlanmadıysa öğleden sonra
+  /// (~16:00) gönderilen "suyunu içtin mi" hatırlatması.
+  waterReminder;
 
   /// Cloud Functions tarafının gönderdiği ham `data['type']` string'ini
   /// enum değerine çevirir; tanınmayan/eksik bir değer için `null` döner
@@ -40,5 +46,6 @@ enum PushNotificationType {
     PushNotificationType.streakReminder => 'streak_reminder',
     PushNotificationType.dailyReward => 'daily_reward',
     PushNotificationType.reEngagement => 're_engagement',
+    PushNotificationType.waterReminder => 'water_reminder',
   };
 }

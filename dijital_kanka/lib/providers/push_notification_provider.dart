@@ -9,17 +9,18 @@ import '../services/cloud_state_store.dart';
 /// (`AlarmManager` + `flutter_local_notifications`) bir mekanizmaydı ve
 /// üreticiye özel arka plan kısıtlamaları yüzünden güvenilir çalışmıyordu —
 /// bu yeni sistem bunun YERİNE değil, YANINA eklendi: gönderim artık
-/// Firebase Cloud Functions'tan (bkz. `functions/src/index.ts`) sunucu
-/// tarafında, Cloud Scheduler ile tetikleniyor; cihazın kendi arka plan
+/// workspace kökündeki `notification-scripts/` (GitHub Actions cron'larından
+/// çalışan bağımsız Node.js betikleri, Cloud Functions/Scheduler GEREKMEZ)
+/// tarafında, sunucu tarafında tetikleniyor; cihazın kendi arka plan
 /// alarmına hiç bağımlı değil.
 ///
-/// Bu provider yalnızca DÖRT push bildirim türünün açık/kapalı tercihini
-/// tutar (bkz. `PushNotificationType`) — gerçek token kaydı/dinleme
+/// Bu provider BEŞ push bildirim türünün açık/kapalı tercihini tutar (bkz.
+/// `PushNotificationType`) — gerçek token kaydı/dinleme
 /// `PushNotificationService`'te. `CloudStateStore` ile kalıcı (`uid` varsa
-/// Firestore'a da yazılır) — Cloud Functions bu tercihleri Admin SDK ile
+/// Firestore'a da yazılır) — `notification-scripts/src/common.js`'teki
+/// `isTypeEnabled` bu tercihleri Admin SDK ile
 /// `users/{uid}/state/pushNotificationState` dokümanından OKUYUP her
-/// zamanlanmış fonksiyonda filtreleme yapıyor (bkz. CLAUDE.md "Push
-/// Bildirimleri" bölümü).
+/// betikte filtreleme yapıyor (bkz. CLAUDE.md "Push Bildirimleri" bölümü).
 class PushNotificationProvider extends ChangeNotifier {
   PushNotificationProvider({String? uid})
     : _store = CloudStateStore(prefsKey: _prefsKey, uid: uid) {
@@ -38,12 +39,14 @@ class PushNotificationProvider extends ChangeNotifier {
   bool _streakReminder = true;
   bool _dailyReward = true;
   bool _reEngagement = true;
+  bool _waterReminder = true;
 
   bool isEnabled(PushNotificationType type) => switch (type) {
     PushNotificationType.dailyMotivation => _dailyMotivation,
     PushNotificationType.streakReminder => _streakReminder,
     PushNotificationType.dailyReward => _dailyReward,
     PushNotificationType.reEngagement => _reEngagement,
+    PushNotificationType.waterReminder => _waterReminder,
   };
 
   Future<void> _loadFromPrefs() async {
@@ -53,6 +56,7 @@ class PushNotificationProvider extends ChangeNotifier {
       _streakReminder = data['streakReminder'] as bool? ?? true;
       _dailyReward = data['dailyReward'] as bool? ?? true;
       _reEngagement = data['reEngagement'] as bool? ?? true;
+      _waterReminder = data['waterReminder'] as bool? ?? true;
     }
     notifyListeners();
   }
@@ -71,6 +75,9 @@ class PushNotificationProvider extends ChangeNotifier {
       case PushNotificationType.reEngagement:
         if (_reEngagement == value) return;
         _reEngagement = value;
+      case PushNotificationType.waterReminder:
+        if (_waterReminder == value) return;
+        _waterReminder = value;
     }
     notifyListeners();
     await _store.save({
@@ -78,6 +85,7 @@ class PushNotificationProvider extends ChangeNotifier {
       'streakReminder': _streakReminder,
       'dailyReward': _dailyReward,
       'reEngagement': _reEngagement,
+      'waterReminder': _waterReminder,
     });
   }
 }

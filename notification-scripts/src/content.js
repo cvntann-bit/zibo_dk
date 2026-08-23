@@ -59,9 +59,16 @@ const re_engagement = {
   es: 'Te extraño amigo, ven a ver qué has estado haciendo 🧡',
 };
 
+const water_reminder = {
+  tr: 'Suyunu içtin mi kanka? Hemen bir bardak iç, hedefine bir adım daha yaklaş! 💧',
+  en: 'Did you drink your water, buddy? Have a glass now, one step closer to your goal! 💧',
+  es: '¿Tomaste agua, amigo? Bebe un vaso ahora, un paso más cerca de tu meta! 💧',
+};
+
 module.exports = {
   daily_motivation,
   streak_reminder,
   daily_reward,
   re_engagement,
+  water_reminder,
 };

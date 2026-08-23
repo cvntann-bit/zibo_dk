@@ -129,6 +129,12 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
     switch (type) {
       case PushNotificationType.dailyMotivation:
       case PushNotificationType.reEngagement:
+      case PushNotificationType.waterReminder:
+        // Su Takibi bir alt sekme değil, Z-butonu modül menüsünden push
+        // edilen bir ekran (bkz. "Alt Gezinme Çubuğu" bölümü) — global bir
+        // "şu ekranı aç" sinyali yok, bu yüzden `dailyMotivation`/
+        // `reEngagement` ile AYNI en basit düşüşe (Ana Sayfa'yı öne getir)
+        // düşülüyor, kullanıcı oradan iki dokunuşla Su Takibi'ne ulaşabilir.
         homeTabRequest.value++;
       case PushNotificationType.streakReminder:
         goalsTabRequest.value++;

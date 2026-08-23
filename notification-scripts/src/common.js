@@ -94,6 +94,7 @@ const TYPE_INFO = {
   streak_reminder: { field: 'streakReminder' },
   daily_reward: { field: 'dailyReward' },
   re_engagement: { field: 'reEngagement' },
+  water_reminder: { field: 'waterReminder' },
 };
 
 async function sendToUser(user, type, title, body) {
