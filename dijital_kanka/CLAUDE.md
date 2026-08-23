@@ -3148,6 +3148,45 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
   durumunun diğerinin yan etkilerini (burada: kullanılmayan bir Android kanalının kalıcı olarak
   cihaza kaydolması) engellemeyebilir — her alt kurulum adımı kendi özelliğinin açık/kapalı
   bayrağına göre AYRI AYRI kapılanmalı.
+- **2026 BEŞİNCİ güncelleme — ASIL kök neden bulundu: `res/raw/zibo_notification.wav`
+  RELEASE APK'DAN TAMAMEN SİLİNMİŞTİ (kaynak küçültücü tarafından).** Yukarıdaki İKİ düzeltmeden
+  (kanal önbelleği + ölü ikinci kanal) SONRA bile kullanıcı sesin HÂLÂ çalmadığını bildirdi —
+  kanal Ayarlar'da doğru isimle ("zibo_notification") görünmeye devam ediyordu ama gerçek çalma
+  anında HİÇBİR ses çıkmıyordu. Sistemli bir şekilde elenen ihtimaller: (1) ses dosyasının
+  kendisi sessiz/bozuk mu? — PowerShell ile `.wav`'ın PCM örneklerini elle okuyup tepe genliğini
+  ölçtük (%100, sağlıklı), DEĞİL; (2) kullanıcının yeni eklediği `assets/sounds/
+  zibo_notification_new.wav` farklı bir dosya mı? — `md5sum` ile karşılaştırıldı, mevcut
+  `res/raw/zibo_notification.wav` ile BİREBİR AYNI, DEĞİL; (3) `adb uninstall`in SESSİZCE
+  başarısız olup (`DELETE_FAILED_INTERNAL_ERROR`) eski/bozuk kanalın kalıntısını bırakmış olması
+  mı? — telefonun KENDİ arayüzünden (adb değil) kaldırılıp `adb shell pm list packages` ile
+  paketin GERÇEKTEN gittiği doğrulandıktan sonra tertemiz yeniden kurulum yapıldı, DEĞİL (sorun
+  aynen devam etti). **Asıl kanıt — derlenen release APK'nın kendisi `aapt2 dump resources` ile
+  incelendi:** `raw/zibo_notification` kaynağı APK'da HİÇ YOKTU (yalnızca AGP'nin kendi
+  ürettiği, boş bir `raw/keep` girdisi vardı) — **kaynak küçültücü (`isShrinkResources = true`,
+  bkz. "Release İmzalama" bölümü) dosyayı "kullanılmıyor" sanıp APK'dan SİLMİŞTİ.** Kök neden:
+  `flutter_local_notifications`'ın `RawResourceAndroidNotificationSound('zibo_notification')`'ı
+  bu kaynağa yalnızca ÇALIŞMA ZAMANINDA bir METİN İSMİYLE (platform kanalı üzerinden) referans
+  veriyor — Java/Kotlin/XML'de statik bir `R.raw.zibo_notification` referansı YOK, bu yüzden
+  kaynak küçültücünün statik kullanım analizi bu dosyayı hiç "görmüyor" ve güvenle silinebilir
+  sanıyor. **Kanal OLUŞTURMA kodu bu yüzden hiç hata VERMİYORDU** (yalnızca bir Uri/isim
+  kaydediyor, dosyanın var olup olmadığını kontrol etmiyor) — hata yalnızca gerçek ÇALMA anında,
+  sessizce ortaya çıkıyordu. **Düzeltme — Android'in resmi/standart mekanizması:**
+  [android/app/src/main/res/raw/keep.xml](android/app/src/main/res/raw/keep.xml) (YENİ) eklendi:
+  ```xml
+  <resources xmlns:tools="http://schemas.android.com/tools"
+      tools:keep="@raw/zibo_notification" />
+  ```
+  Bu, küçültücüye bu KAYNAĞA DOKUNMAMASINI açıkça söylüyor — `aapt2 dump resources` ile yeniden
+  derlenip `raw/zibo_notification`'ın artık APK'da GERÇEKTEN var olduğu doğrulandı, doğrulama
+  cihaz üzerinde YAPILACAK (bu not, cihazda henüz test EDİLMEDEN yazıldı — bir sonraki oturumda
+  gerçek ses çıkışı teyit edilmeli). **Ders — genelleştirilebilir bir Android/R8 kalıbı:** bir
+  native platform eklentisinin (herhangi bir Flutter eklentisi) bir Android kaynağına yalnızca
+  bir STRING/isim üzerinden ÇALIŞMA ZAMANINDA referans verdiği HER durumda (raw ses/video
+  dosyaları, drawable'lar vb. — `R.xxx.yyy` gibi statik bir Java/Kotlin/XML referansı yerine),
+  release build'de kaynak küçültme AÇIKSA (`isShrinkResources = true`) bu kaynak SESSİZCE
+  silinme riski taşır — kanıt/hata YOK, yalnızca çalışma zamanında sessiz bir eksiklik. Bu tür
+  bir kaynak eklerken PROAKTİF olarak `res/raw/keep.xml`'e (veya ilgili kaynak türü için
+  benzerine) eklemek, sorunu TESPİT ETMEK için saatler harcamaktan çok daha ucuz.
 
 ### Zibo Dokunma Sesi ([sound_effects_service.dart](lib/services/sound_effects_service.dart), [sound_effects_provider.dart](lib/providers/sound_effects_provider.dart), `assets/sounds/zibo_tap_new.wav`)
 

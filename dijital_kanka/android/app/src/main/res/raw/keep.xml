@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Release build'in kaynak küçültücüsüne (isShrinkResources = true, bkz.
+  build.gradle.kts / CLAUDE.md "Release İmzalama" bölümü) `res/raw/`
+  altındaki ses dosyalarının SİLİNMEMESİNİ söylüyor.
+
+  Neden gerekli: bu dosyalar Java/Kotlin/XML'den DOĞRUDAN (R.raw.x gibi)
+  referans EDİLMİYOR — flutter_local_notifications, bildirim kanalı sesini
+  `RawResourceAndroidNotificationSound('zibo_notification')` ile yalnızca
+  bir METİN İSMİ olarak, platform kanalı üzerinden ÇALIŞMA ZAMANINDA
+  çözüyor. Kaynak küçültücünün statik analizi bunu GÖREMEDİĞİ için
+  `zibo_notification.wav`'ı "kullanılmıyor" sanıp APK'dan siliyordu — kanal
+  OLUŞTURMA kodu buna rağmen sorunsuz çalışıyordu (yalnızca bir isim
+  kaydediyor), ama gerçek ÇALMA anında dosya APK'da olmadığı için SESSİZCE
+  hiçbir ses çalmıyordu (gerçek cihazda bulunan bir bug — bkz. CLAUDE.md
+  "Push Bildirimi Özel Sesi" bölümü).
+-->
+<resources xmlns:tools="http://schemas.android.com/tools"
+    tools:keep="@raw/zibo_notification" />
