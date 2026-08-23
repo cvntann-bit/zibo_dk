@@ -6,6 +6,8 @@ import 'package:permission_handler/permission_handler.dart' as ph;
 import 'package:timezone/data/latest.dart' as tz_data;
 import 'package:timezone/timezone.dart' as tz;
 
+import '../config/notification_config.dart';
+
 /// Bilinen agresif Android üreticilerinin kendi "otomatik başlatma" izin
 /// ekranının component adı — bkz. [LocalNotificationService.openAutostartSettings]
 /// dokümantasyonu. Sürümler arası değişebildiği için her üretici için birden
@@ -190,13 +192,26 @@ class LocalNotificationService extends NotificationService {
           .resolvePlatformSpecificImplementation<
             AndroidFlutterLocalNotificationsPlugin
           >();
-      await androidImpl?.createNotificationChannel(
-        const AndroidNotificationChannel(
-          _channelId,
-          _channelName,
-          description: _channelDescription,
-        ),
-      );
+      // `daily_reminders` kanalı YALNIZCA eski yerel hatırlatma özelliği
+      // GERÇEKTEN aktifken oluşturuluyor — bu metot (push kanalı için)
+      // `notificationsFeatureEnabled == false` iken de HER uygulama
+      // başlangıcında çalıştığı için, bu `if` olmadan kullanılmayan bir
+      // kanal Android'in bildirim ayarlarında kalıcı olarak görünmeye devam
+      // ederdi (gerçekten yaşandı — kullanıcı "Push Bildirimleri" ile
+      // "Günlük Hatırlatmalar" adında, hangisinin gerçek/aktif olduğu belli
+      // olmayan iki kanal görüp kafası karıştı). Özellik yeniden
+      // etkinleştirilirse (`notificationsFeatureEnabled = true`) kanal bir
+      // sonraki `initialize()` çağrısında (her uygulama açılışı) otomatik
+      // oluşur, elle bir adım gerekmez.
+      if (notificationsFeatureEnabled) {
+        await androidImpl?.createNotificationChannel(
+          const AndroidNotificationChannel(
+            _channelId,
+            _channelName,
+            description: _channelDescription,
+          ),
+        );
+      }
       // Push kanalı da BURADA (eski yerel hatırlatma sistemi kapalı olsa
       // bile) oluşturuluyor — `PushNotificationService.initialize()` her
       // uygulama başlangıcında `initialize()`'ı ÇAĞIRIYOR (bkz. o dosya),

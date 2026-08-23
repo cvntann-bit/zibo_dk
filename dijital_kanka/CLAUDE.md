@@ -3126,6 +3126,28 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
   raporu alındığında, İLK yapılacak şey kodu şüphelenmek DEĞİL, kullanıcıdan cihazın Ayarlar
   uygulamasında o kanalın GERÇEKTE ne gösterdiğini sormak — kanal zaten yanlış konfigürasyonla
   cihaza kaydolmuşsa hiçbir kod değişikliği bunu düzeltmez, yalnızca kaldır+yeniden kur düzeltir.
+- **2026 DÖRDÜNCÜ güncelleme — kaldır+yeniden kurulumdan SONRA bulunan, AYRI bir kafa karıştırıcı
+  durum: Android bildirim ayarlarında İKİ kanal görünüyordu.** Yeniden kurulum "Push Bildirimleri"
+  kanalının sesini düzeltti (ÖNCEKİ madde), ama kullanıcı Ayarlar'da BİR DE **"Günlük
+  Hatırlatmalar"** adında, "Varsayılan" ses gösteren İKİNCİ bir kanal olduğunu fark etti — bu,
+  push bildirimleriyle İLGİSİZ, `notificationsFeatureEnabled = false` ile rafa kaldırılmış ESKİ
+  yerel hatırlatma sisteminin kanalı (bkz. "Bildirimler" bölümü). **Kök neden:**
+  `LocalNotificationService.initialize()` HER İKİ kanalı da (push + eski yerel) KOŞULSUZ
+  oluşturuyordu — `PushNotificationService.initialize()` her uygulama açılışında bu metodu
+  çağırdığı için, özellik devre dışı olsa bile `daily_reminders` kanalı yine de Android'e
+  kaydoluyordu, yalnızca hiçbir zaman KULLANILMIYORDU (zararsız ama kafa karıştırıcı — kullanıcı
+  hangisinin "gerçek" motivasyon kanalı olduğunu ayırt edemedi). **Düzeltme:** `notificationsFeatureEnabled`
+  sabiti dairesel import olmadan hem `NotificationProvider` hem `NotificationService` tarafından
+  okunabilsin diye YENİ [notification_config.dart](lib/config/notification_config.dart) dosyasına
+  taşındı (`notification_provider.dart` geriye dönük uyumluluk için onu `export` ediyor, mevcut
+  importlar DEĞİŞMEDİ); `daily_reminders` kanalının oluşturulması artık `if
+  (notificationsFeatureEnabled)` ile SARILI — özellik kapalıyken bu kanal ARTIK HİÇ oluşmuyor,
+  yeniden etkinleştirilirse bir sonraki `initialize()` çağrısında (her açılış) otomatik geri
+  gelir. **Ders:** iki BAĞIMSIZ özelliğin (aktif push sistemi + rafa kaldırılmış eski yerel
+  sistem) altyapı kurulumunu (`initialize()`) TEK bir metotta birleştirmek, birinin "kapalı"
+  durumunun diğerinin yan etkilerini (burada: kullanılmayan bir Android kanalının kalıcı olarak
+  cihaza kaydolması) engellemeyebilir — her alt kurulum adımı kendi özelliğinin açık/kapalı
+  bayrağına göre AYRI AYRI kapılanmalı.
 
 ### Zibo Dokunma Sesi ([sound_effects_service.dart](lib/services/sound_effects_service.dart), [sound_effects_provider.dart](lib/providers/sound_effects_provider.dart), `assets/sounds/zibo_tap_new.wav`)
 

@@ -3,27 +3,25 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../config/notification_config.dart';
 import '../data/goal_quotes.dart';
 import '../data/zibo_messages.dart';
 import '../services/cloud_state_store.dart';
 import '../services/notification_service.dart';
 import '../utils/tab_navigation.dart';
 
-/// GEÇİCİ: Bildirim özelliği rafa kaldırıldı — gerçek bir MIUI/HyperOS
-/// cihazında canlı `adb` tanısıyla doğrulandı ki `AlarmManager` alarmı tam
-/// zamanında (saniyesi saniyesine) tetikliyor, ama `flutter_local_notifications`
-/// alıcısı (`ScheduledNotificationReceiver`) hiçbir log/hata izi bırakmadan
-/// bildirimi hiç göstermiyor — ne bir istisna, ne bir "alıcı başlatılamadı"
-/// hatası, hiçbir şey. Pil optimizasyonu istisnası, MIUI otomatik başlatma VE
-/// Android'in "kullanılmıyorsa duraklat" (auto-revoke) ayarı ÜÇÜ DE açıkça
-/// doğrulanmış/kapatılmışken bile sorun sürüyor — bu, üçüncü parti bir
-/// uygulamanın kod içinden ne sorgulayabildiği ne de güvenilir şekilde
-/// atlatabildiği, MIUI'ye özel, belgelenmemiş bir arka plan kısıtlaması
-/// olduğuna işaret ediyor (bkz. CLAUDE.md "Bildirimler" bölümündeki tam tanı
-/// günlüğü). Kullanıcı isteğiyle özellik şimdilik `false`'a çekildi;
-/// provider/servis kodu OLDUĞU GİBİ duruyor, yeniden etkinleştirmek için tek
-/// yapılması gereken bunu `true` yapıp yeniden derlemek.
-const notificationsFeatureEnabled = false;
+// `notificationsFeatureEnabled` — GEÇİCİ: bildirim özelliği rafa kaldırıldı,
+// gerçek bir MIUI/HyperOS cihazında canlı `adb` tanısıyla doğrulandı ki
+// `AlarmManager` alarmı tam zamanında tetikliyor ama `flutter_local_notifications`
+// alıcısı hiçbir iz bırakmadan bildirimi hiç göstermiyor (bkz. CLAUDE.md
+// "Bildirimler" bölümündeki tam tanı günlüğü). Sabitin kendisi artık
+// `config/notification_config.dart`'ta (bkz. o dosyadaki "neden ayrı bir
+// dosyaya taşındı" notu — `NotificationService`'in de aynı sabiti dairesel
+// import olmadan okuyabilmesi için); burada `export` ediliyor ki bu dosyayı
+// zaten import eden `root_screen.dart`/`settings_screen.dart` hiçbir
+// değişiklik gerektirmeden `notificationsFeatureEnabled`'a erişmeye devam
+// etsin.
+export '../config/notification_config.dart';
 
 /// Kullanıcının günlük hatırlatma bildirimi sıklığı tercihi.
 enum NotificationFrequency {
