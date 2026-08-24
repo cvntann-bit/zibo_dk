@@ -514,10 +514,22 @@ abstract class AppLocalizations {
   /// **'Kaydı sil'**
   String get moneyDeleteEntryTooltip;
 
+  /// Para ve Birikim AppBar'ındaki para birimi seçme ikonunun erişilebilirlik ipucu
+  ///
+  /// In tr, this message translates to:
+  /// **'Para birimi'**
+  String get moneyCurrencyTooltip;
+
+  /// Para birimi seçim sayfasının başlığı
+  ///
+  /// In tr, this message translates to:
+  /// **'Para Birimi Seç'**
+  String get moneyCurrencyPickerTitle;
+
   /// Bir kategorideki kayıtların toplam tutarını gösteren metin
   ///
   /// In tr, this message translates to:
-  /// **'Toplam: ₺{amount}'**
+  /// **'Toplam: {amount}'**
   String moneyCategoryTotal(String amount);
 
   /// Başlık çubuğunda coin bakiyesinin yanındaki, Mağaza'yı açan '+' ikonunun erişilebilirlik ipucu

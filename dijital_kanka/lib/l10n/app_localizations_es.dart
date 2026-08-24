@@ -244,8 +244,14 @@ class AppLocalizationsEs extends AppLocalizations {
   String get moneyDeleteEntryTooltip => 'Eliminar registro';
 
   @override
+  String get moneyCurrencyTooltip => 'Moneda';
+
+  @override
+  String get moneyCurrencyPickerTitle => 'Elegir Moneda';
+
+  @override
   String moneyCategoryTotal(String amount) {
-    return 'Total: ₺$amount';
+    return 'Total: $amount';
   }
 
   @override

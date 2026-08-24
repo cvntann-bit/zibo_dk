@@ -26,11 +26,16 @@ class MoneyTrendChart extends StatefulWidget {
     required this.expenses,
     required this.savings,
     required this.incomes,
+    required this.currencySymbol,
   });
 
   final List<MoneyEntry> expenses;
   final List<MoneyEntry> savings;
   final List<MoneyEntry> incomes;
+
+  /// Bkz. `MoneyCategoryCard.currencySymbol` dokümantasyonu — aynı seçili
+  /// para birimi, eksen etiketlerinde ve dokunma tooltip'inde kullanılır.
+  final String currencySymbol;
 
   @override
   State<MoneyTrendChart> createState() => _MoneyTrendChartState();
@@ -129,7 +134,7 @@ class _MoneyTrendChartState extends State<MoneyTrendChart> {
                     getTitlesWidget: (value, meta) => Padding(
                       padding: const EdgeInsets.only(right: 4),
                       child: Text(
-                        _formatAxisAmount(value),
+                        _formatAxisAmount(value, widget.currencySymbol),
                         style: TextStyle(fontSize: 10, color: colorScheme.onSurfaceVariant),
                       ),
                     ),
@@ -162,7 +167,7 @@ class _MoneyTrendChartState extends State<MoneyTrendChart> {
                   getTooltipItems: (touchedSpots) => touchedSpots
                       .map(
                         (spot) => LineTooltipItem(
-                          '₺${spot.y.toStringAsFixed(0)}',
+                          '${widget.currencySymbol}${spot.y.toStringAsFixed(0)}',
                           TextStyle(
                             color: spot.bar.color,
                             fontWeight: FontWeight.bold,
@@ -205,16 +210,16 @@ class _MoneyTrendChartState extends State<MoneyTrendChart> {
   );
 }
 
-String _formatAxisAmount(double value) {
+String _formatAxisAmount(double value, String currencySymbol) {
   if (value >= 1000) {
     final thousands = value / 1000;
     final rounded = thousands.roundToDouble();
     final text = (thousands - rounded).abs() < 0.05
         ? rounded.toStringAsFixed(0)
         : thousands.toStringAsFixed(1);
-    return '₺${text}k';
+    return '$currencySymbol${text}k';
   }
-  return '₺${value.round()}';
+  return '$currencySymbol${value.round()}';
 }
 
 class _MoneyTrendSeries {

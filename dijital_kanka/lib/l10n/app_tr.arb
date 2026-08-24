@@ -318,7 +318,15 @@
   "@moneyDeleteEntryTooltip": {
     "description": "Bir para kaydının yanındaki silme ikonunun erişilebilirlik ipucu"
   },
-  "moneyCategoryTotal": "Toplam: ₺{amount}",
+  "moneyCurrencyTooltip": "Para birimi",
+  "@moneyCurrencyTooltip": {
+    "description": "Para ve Birikim AppBar'ındaki para birimi seçme ikonunun erişilebilirlik ipucu"
+  },
+  "moneyCurrencyPickerTitle": "Para Birimi Seç",
+  "@moneyCurrencyPickerTitle": {
+    "description": "Para birimi seçim sayfasının başlığı"
+  },
+  "moneyCategoryTotal": "Toplam: {amount}",
   "@moneyCategoryTotal": {
     "description": "Bir kategorideki kayıtların toplam tutarını gösteren metin",
     "placeholders": {

@@ -17,6 +17,7 @@ class MoneyCategoryCard extends StatelessWidget {
     required this.title,
     required this.accentColor,
     required this.amountSign,
+    required this.currencySymbol,
   });
 
   final MoneyCategory category;
@@ -24,6 +25,10 @@ class MoneyCategoryCard extends StatelessWidget {
   final String title;
   final Color accentColor;
   final String amountSign;
+
+  /// Kullanıcının Para ve Birikim modülü için seçtiği para birimi sembolü
+  /// (bkz. `CurrencyProvider`) — modül genelinde tutarların yanında gösterilir.
+  final String currencySymbol;
 
   Future<void> _showEntryDialog(BuildContext context, {MoneyEntry? existing}) async {
     final l10n = AppLocalizations.of(context)!;
@@ -67,7 +72,7 @@ class MoneyCategoryCard extends StatelessWidget {
                 ),
                 decoration: InputDecoration(
                   labelText: l10n.moneyEntryAmountHint,
-                  prefixText: '₺',
+                  prefixText: currencySymbol,
                 ),
                 onSubmitted: (_) => submit(),
               ),
@@ -131,7 +136,7 @@ class MoneyCategoryCard extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  l10n.moneyCategoryTotal(total.toStringAsFixed(2)),
+                  l10n.moneyCategoryTotal('$currencySymbol${total.toStringAsFixed(2)}'),
                   style: Theme.of(context).textTheme.labelLarge?.copyWith(
                     color: accentColor,
                     fontWeight: FontWeight.bold,
@@ -168,7 +173,7 @@ class MoneyCategoryCard extends StatelessWidget {
                             ),
                           ),
                           Text(
-                            '$amountSign₺${entry.amount.toStringAsFixed(2)}',
+                            '$amountSign$currencySymbol${entry.amount.toStringAsFixed(2)}',
                             style: TextStyle(color: accentColor, fontWeight: FontWeight.w600),
                           ),
                           IconButton(

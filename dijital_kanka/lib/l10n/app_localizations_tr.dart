@@ -242,8 +242,14 @@ class AppLocalizationsTr extends AppLocalizations {
   String get moneyDeleteEntryTooltip => 'Kaydı sil';
 
   @override
+  String get moneyCurrencyTooltip => 'Para birimi';
+
+  @override
+  String get moneyCurrencyPickerTitle => 'Para Birimi Seç';
+
+  @override
   String moneyCategoryTotal(String amount) {
-    return 'Toplam: ₺$amount';
+    return 'Toplam: $amount';
   }
 
   @override

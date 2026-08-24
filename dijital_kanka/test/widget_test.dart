@@ -515,6 +515,51 @@ void main() {
   );
 
   testWidgets(
+    'Para ve Birikim: para birimi değiştirilince modül genelinde yeni sembol kullanılır',
+    (WidgetTester tester) async {
+      await _pumpPastOnboarding(tester, const DijitalKankaApp());
+
+      await _openModulesMenu(tester);
+      await tester.scrollUntilVisible(
+        find.text('Harcamalar ve Birikimler'),
+        100,
+        scrollable: find.byType(Scrollable).last,
+      );
+      await tester.tap(find.text('Harcamalar ve Birikimler'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byTooltip('Para birimi'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Para Birimi Seç'), findsOneWidget);
+      await tester.tap(find.text('USD — US Dollar'));
+      await tester.pumpAndSettle();
+
+      final expenseCard = find.ancestor(
+        of: find.text('💸 Harcamalar'),
+        matching: find.byType(Card),
+      );
+      await tester.tap(
+        find.descendant(of: expenseCard, matching: find.text('Ekle')),
+      );
+      await tester.pumpAndSettle();
+
+      final textFields = find.byType(TextField);
+      await tester.enterText(textFields.at(0), 'Kahve');
+      await tester.enterText(textFields.at(1), '5');
+      expect(find.text('\$'), findsOneWidget); // Tutar alanının prefix'i.
+      await tester.tap(find.text('Tamam'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('-\$5.00'), findsOneWidget);
+      expect(find.text('Toplam: \$5.00'), findsOneWidget);
+
+      await tester.tap(find.byTooltip('Geri'));
+      await tester.pumpAndSettle();
+    },
+  );
+
+  testWidgets(
     'Para ve Birikim konuşma balonundaki söz 5 saniyede bir otomatik değişir',
     (WidgetTester tester) async {
       await _pumpPastOnboarding(tester, const DijitalKankaApp());

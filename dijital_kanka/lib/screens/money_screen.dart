@@ -6,10 +6,12 @@ import 'package:provider/provider.dart';
 
 import '../data/costume_poses.dart';
 import '../data/costumes.dart';
+import '../data/currencies.dart';
 import '../data/money_quotes.dart';
 import '../l10n/app_localizations.dart';
 import '../models/money_entry.dart';
 import '../providers/costume_provider.dart';
+import '../providers/currency_provider.dart';
 import '../providers/money_provider.dart';
 import '../providers/profile_provider.dart';
 import '../providers/zibo_pose_provider.dart';
@@ -95,6 +97,66 @@ class _MoneyScreenState extends State<MoneyScreen> {
     });
   }
 
+  Future<void> _showCurrencyPicker(BuildContext context) async {
+    final l10n = AppLocalizations.of(context)!;
+    final currencyProvider = context.read<CurrencyProvider>();
+
+    await showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      isScrollControlled: true,
+      builder: (sheetContext) => SafeArea(
+        child: SizedBox(
+          height: MediaQuery.of(sheetContext).size.height * 0.7,
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 4, 20, 8),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    l10n.moneyCurrencyPickerTitle,
+                    style: Theme.of(sheetContext).textTheme.titleMedium,
+                  ),
+                ),
+              ),
+              Expanded(
+                child: ListView.builder(
+                  itemCount: currencies.length,
+                  itemBuilder: (listContext, index) {
+                    final currency = currencies[index];
+                    final isSelected = currencyProvider.currencyCode == currency.code;
+                    return ListTile(
+                      leading: SizedBox(
+                        width: 36,
+                        child: Text(
+                          currency.symbol,
+                          textAlign: TextAlign.center,
+                          style: Theme.of(listContext).textTheme.titleMedium,
+                        ),
+                      ),
+                      title: Text('${currency.code} — ${currency.name}'),
+                      trailing: isSelected
+                          ? Icon(
+                              Icons.check,
+                              color: Theme.of(listContext).colorScheme.primary,
+                            )
+                          : null,
+                      onTap: () {
+                        currencyProvider.setCurrencyCode(currency.code);
+                        Navigator.of(sheetContext).pop();
+                      },
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -116,9 +178,19 @@ class _MoneyScreenState extends State<MoneyScreen> {
         : (findCostumeById(equippedId)?.imageAsset ?? defaultZiboImage);
     final poseStep = context.watch<ZiboPoseProvider>().poseStep;
     final moneyProvider = context.watch<MoneyProvider>();
+    final currencySymbol = context.watch<CurrencyProvider>().currency.symbol;
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.moneyScreenTitle)),
+      appBar: AppBar(
+        title: Text(l10n.moneyScreenTitle),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.currency_exchange),
+            tooltip: l10n.moneyCurrencyTooltip,
+            onPressed: () => _showCurrencyPicker(context),
+          ),
+        ],
+      ),
       body: SafeArea(
         child: _buildBody(
           context,
@@ -128,6 +200,7 @@ class _MoneyScreenState extends State<MoneyScreen> {
           poseStep,
           equippedImageAsset,
           moneyProvider,
+          currencySymbol,
         ),
       ),
     );
@@ -141,6 +214,7 @@ class _MoneyScreenState extends State<MoneyScreen> {
     int poseStep,
     String equippedImageAsset,
     MoneyProvider moneyProvider,
+    String currencySymbol,
   ) {
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
@@ -176,6 +250,7 @@ class _MoneyScreenState extends State<MoneyScreen> {
           title: l10n.moneyExpenses,
           accentColor: _expenseRed,
           amountSign: '-',
+          currencySymbol: currencySymbol,
         ),
         const SizedBox(height: 12),
         MoneyCategoryCard(
@@ -184,6 +259,7 @@ class _MoneyScreenState extends State<MoneyScreen> {
           title: l10n.moneySavings,
           accentColor: _savingGreen,
           amountSign: '+',
+          currencySymbol: currencySymbol,
         ),
         const SizedBox(height: 12),
         MoneyCategoryCard(
@@ -192,6 +268,7 @@ class _MoneyScreenState extends State<MoneyScreen> {
           title: l10n.moneyIncome,
           accentColor: _incomeBlue,
           amountSign: '+',
+          currencySymbol: currencySymbol,
         ),
         const SizedBox(height: 24),
         Text(l10n.moneyTrendSectionTitle, style: Theme.of(context).textTheme.titleMedium),
@@ -203,6 +280,7 @@ class _MoneyScreenState extends State<MoneyScreen> {
               expenses: moneyProvider.entriesFor(MoneyCategory.expense),
               savings: moneyProvider.entriesFor(MoneyCategory.saving),
               incomes: moneyProvider.entriesFor(MoneyCategory.income),
+              currencySymbol: currencySymbol,
             ),
           ),
         ),
