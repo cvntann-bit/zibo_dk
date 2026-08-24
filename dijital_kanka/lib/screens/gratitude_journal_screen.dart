@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import '../data/costume_poses.dart';
 import '../data/costumes.dart';
 import '../data/gratitude_quotes.dart';
+import '../data/localized_calendar_names.dart';
 import '../l10n/app_localizations.dart';
 import '../models/gratitude_entry.dart';
 import '../providers/coin_provider.dart';
@@ -19,24 +20,6 @@ import '../widgets/speech_bubble.dart';
 import '../widgets/zibo_animated_image.dart';
 
 const _gratitudeGreen = Color(0xFF4CAF50);
-
-const _turkishMonths = [
-  'Ocak',
-  'Şubat',
-  'Mart',
-  'Nisan',
-  'Mayıs',
-  'Haziran',
-  'Temmuz',
-  'Ağustos',
-  'Eylül',
-  'Ekim',
-  'Kasım',
-  'Aralık',
-];
-
-String _formatDate(DateTime date) =>
-    '${date.day} ${_turkishMonths[date.month - 1]} ${date.year}';
 
 /// Şükran Günlüğü sayfası: bugünün 3 şükran cümlesi formu (henüz
 /// tamamlanmadıysa) veya "tamamlandı" özeti (tamamlandıysa) + geçmiş
@@ -242,7 +225,7 @@ class _GratitudeJournalScreenState extends State<GratitudeJournalScreen> {
                     clipBehavior: Clip.antiAlias,
                     child: ListTile(
                       leading: const Icon(Icons.check_circle, color: _gratitudeGreen),
-                      title: Text(_formatDate(entry.date)),
+                      title: Text(formatLongDate(entry.date, locale)),
                       trailing: const Icon(Icons.chevron_right),
                       onTap: () => _showEntryDetail(entry),
                     ),
@@ -351,7 +334,7 @@ class _GratitudeEditDialogContentState extends State<_GratitudeEditDialogContent
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return AlertDialog(
-      title: Text(_formatDate(widget.entry.date)),
+      title: Text(formatLongDate(widget.entry.date, Localizations.localeOf(context))),
       content: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

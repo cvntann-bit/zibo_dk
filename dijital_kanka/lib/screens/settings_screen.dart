@@ -12,6 +12,7 @@ import '../providers/notification_provider.dart';
 import '../providers/sound_effects_provider.dart';
 import '../providers/theme_provider.dart';
 import '../utils/google_link_action.dart';
+import '../widgets/language_flag_circle.dart';
 import 'legal_placeholder_screen.dart';
 
 /// Destek e-postası — Ayarlar > Destek > "Bize Ulaşın" satırında hem
@@ -64,8 +65,8 @@ class SettingsScreen extends StatelessWidget {
             ),
             for (final code in supportedLanguageCodes)
               ListTile(
-                leading: _LanguageFlagCircle(languageCode: code, size: 30),
-                title: Text(_languageAutonym(code)),
+                leading: LanguageFlagCircle(languageCode: code, size: 30),
+                title: Text(languageAutonym(code)),
                 trailing: localeProvider.locale.languageCode == code
                     ? Icon(
                         Icons.check,
@@ -135,11 +136,11 @@ class SettingsScreen extends StatelessWidget {
                 ListTile(
                   leading: const Icon(Icons.language_outlined),
                   title: Text(l10n.settingsLanguage),
-                  subtitle: Text(_languageAutonym(currentLanguageCode)),
+                  subtitle: Text(languageAutonym(currentLanguageCode)),
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      _LanguageFlagCircle(languageCode: currentLanguageCode),
+                      LanguageFlagCircle(languageCode: currentLanguageCode),
                       const SizedBox(width: 6),
                       const Icon(Icons.chevron_right),
                     ],
@@ -354,63 +355,6 @@ class _AppVersionRowState extends State<_AppVersionRow> {
       trailing: Text(
         _version ?? '—',
         style: Theme.of(context).textTheme.bodyMedium,
-      ),
-    );
-  }
-}
-
-/// Dil kodunun görünen adı (autonym) — bir dilin kendi adı ne UI dilinden
-/// bağımsızdır, bu yüzden ARB'ye taşınmadı (İngilizce arayüzde bile
-/// "Türkçe" hep "Türkçe" görünmeli, "Turkish" değil).
-String _languageAutonym(String code) => switch (code) {
-  'en' => 'English',
-  'es' => 'Español',
-  _ => 'Türkçe',
-};
-
-String _languageFlagEmoji(String code) => switch (code) {
-  'en' => '🇬🇧',
-  'es' => '🇪🇸',
-  _ => '🇹🇷',
-};
-
-/// Bir dil koduna karşılık gelen küçük, YUVARLAK bayrak rozeti — bayrak
-/// emoji glifleri doğası gereği dikdörtgen olduğu için `ClipOval` ile
-/// yuvarlatılıyor (kullanıcı isteği: dil seçince yanında küçük yuvarlak
-/// bayrak görünsün).
-class _LanguageFlagCircle extends StatelessWidget {
-  const _LanguageFlagCircle({required this.languageCode, this.size = 22});
-
-  final String languageCode;
-  final double size;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        border: Border.all(
-          color: Theme.of(context).colorScheme.outlineVariant,
-          width: 1,
-        ),
-      ),
-      // ClipOval kırpar, ama bayrak emoji glifi kutudan KÜÇÜK kalırsa
-      // kırpma hiçbir şeye dokunmaz ve rozet yuvarlak değil, düz bir bayrak
-      // gibi görünür. Bu yüzden glif bilerek kutudan biraz BÜYÜK çiziliyor
-      // (fontSize > size) ki köşeleri gerçekten yuvarlanıp kırpılsın.
-      child: ClipOval(
-        child: OverflowBox(
-          maxWidth: size * 1.3,
-          maxHeight: size * 1.3,
-          child: Center(
-            child: Text(
-              _languageFlagEmoji(languageCode),
-              style: TextStyle(fontSize: size * 1.05),
-            ),
-          ),
-        ),
       ),
     );
   }

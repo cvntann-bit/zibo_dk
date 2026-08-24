@@ -302,6 +302,10 @@
   "@moneyAddEntryTitle": {
     "description": "Yeni kayıt ekleme diyalog kutusunun başlığı"
   },
+  "moneyEditEntryTitle": "Kaydı Düzenle",
+  "@moneyEditEntryTitle": {
+    "description": "Mevcut bir kaydı düzenleme diyalog kutusunun başlığı"
+  },
   "moneyEntryNameHint": "Ad",
   "@moneyEntryNameHint": {
     "description": "Yeni kayıt ekleme diyalog kutusundaki ad alanının etiketi"
@@ -1404,6 +1408,42 @@
   "@favoriteQuotesEmpty": {
     "description": "Favori Sözler sayfasında hiç favori yokken gösterilen teşvik mesajı"
   },
+  "customMessagesButtonTooltip": "Kendi mesajını ekle",
+  "@customMessagesButtonTooltip": {
+    "description": "Ana Sayfa'daki konuşma balonunun yanındaki, özel mesaj ekranını açan ikonun erişilebilirlik ipucu"
+  },
+  "customMessagesScreenTitle": "Özel Mesajlarım",
+  "@customMessagesScreenTitle": {
+    "description": "Özel mesajlar sayfasının AppBar başlığı"
+  },
+  "customMessagesSubtitle": "Zibo'nun sana ara sıra söylemesini istediğin kendi cümlelerini ekle — standart sözlerle karışık, rastgele gösterilirler.",
+  "@customMessagesSubtitle": {
+    "description": "Özel mesajlar sayfasının üstündeki açıklama metni"
+  },
+  "customMessagesEmpty": "Henüz özel mesaj eklemedin.",
+  "@customMessagesEmpty": {
+    "description": "Özel mesajlar sayfasında hiç mesaj yokken gösterilen teşvik mesajı"
+  },
+  "customMessagesAddButton": "Yeni Mesaj Ekle",
+  "@customMessagesAddButton": {
+    "description": "Özel mesajlar sayfasındaki yeni mesaj ekleme butonu"
+  },
+  "customMessagesFieldHint": "Zibo bunu sana söylesin...",
+  "@customMessagesFieldHint": {
+    "description": "Yeni özel mesaj metin alanının placeholder'ı"
+  },
+  "customMessagesSaveButton": "Kaydet",
+  "@customMessagesSaveButton": {
+    "description": "Yeni özel mesaj ekleme diyaloğundaki kaydet butonu"
+  },
+  "customMessagesCancelButton": "İptal",
+  "@customMessagesCancelButton": {
+    "description": "Yeni özel mesaj ekleme diyaloğundaki iptal butonu"
+  },
+  "customMessagesDeleteTooltip": "Sil",
+  "@customMessagesDeleteTooltip": {
+    "description": "Özel mesaj listesindeki her satırın silme ikonunun erişilebilirlik ipucu"
+  },
   "profileFavoriteQuotesRowSubtitle": "{count} favori söz",
   "@profileFavoriteQuotesRowSubtitle": {
     "description": "Profil'deki Favori Sözler satırının alt metni",
@@ -1422,6 +1462,14 @@
   "profileShareCardTitle": "🐣 Zibo ile Bağım",
   "@profileShareCardTitle": {
     "description": "Paylaşılan profil kartı metninin başlığı (ZiboShareSheet'e geçirilen mesajın ilk satırı)"
+  },
+  "onboardingLanguageStepTitle": "Hangi dili konuşalım?",
+  "@onboardingLanguageStepTitle": {
+    "description": "Onboarding akışının en ilk (dil seçimi) adımının başlığı"
+  },
+  "onboardingLanguageStepSubtitle": "Uygulamanın geri kalanı seçtiğin dilde açılacak — istersen sonra Ayarlar'dan değiştirebilirsin.",
+  "@onboardingLanguageStepSubtitle": {
+    "description": "Onboarding akışının dil seçimi adımının alt başlığı"
   },
   "onboardingNameStepTitle": "Sana ne diyelim?",
   "@onboardingNameStepTitle": {

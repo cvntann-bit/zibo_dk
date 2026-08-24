@@ -230,6 +230,9 @@ class AppLocalizationsTr extends AppLocalizations {
   String get moneyAddEntryTitle => 'Yeni Kayıt';
 
   @override
+  String get moneyEditEntryTitle => 'Kaydı Düzenle';
+
+  @override
   String get moneyEntryNameHint => 'Ad';
 
   @override
@@ -1025,6 +1028,34 @@ class AppLocalizationsTr extends AppLocalizations {
       'Henüz favori sözün yok — Ana Sayfa\'daki kalp ikonuyla sevdiğin sözleri kaydet!';
 
   @override
+  String get customMessagesButtonTooltip => 'Kendi mesajını ekle';
+
+  @override
+  String get customMessagesScreenTitle => 'Özel Mesajlarım';
+
+  @override
+  String get customMessagesSubtitle =>
+      'Zibo\'nun sana ara sıra söylemesini istediğin kendi cümlelerini ekle — standart sözlerle karışık, rastgele gösterilirler.';
+
+  @override
+  String get customMessagesEmpty => 'Henüz özel mesaj eklemedin.';
+
+  @override
+  String get customMessagesAddButton => 'Yeni Mesaj Ekle';
+
+  @override
+  String get customMessagesFieldHint => 'Zibo bunu sana söylesin...';
+
+  @override
+  String get customMessagesSaveButton => 'Kaydet';
+
+  @override
+  String get customMessagesCancelButton => 'İptal';
+
+  @override
+  String get customMessagesDeleteTooltip => 'Sil';
+
+  @override
   String profileFavoriteQuotesRowSubtitle(int count) {
     return '$count favori söz';
   }
@@ -1038,6 +1069,13 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get profileShareCardTitle => '🐣 Zibo ile Bağım';
+
+  @override
+  String get onboardingLanguageStepTitle => 'Hangi dili konuşalım?';
+
+  @override
+  String get onboardingLanguageStepSubtitle =>
+      'Uygulamanın geri kalanı seçtiğin dilde açılacak — istersen sonra Ayarlar\'dan değiştirebilirsin.';
 
   @override
   String get onboardingNameStepTitle => 'Sana ne diyelim?';

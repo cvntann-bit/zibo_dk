@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 
 import '../data/costume_poses.dart';
 import '../data/costumes.dart';
+import '../data/localized_calendar_names.dart';
 import '../data/water_quotes.dart';
 import '../l10n/app_localizations.dart';
 import '../models/water_entry.dart';
@@ -19,14 +20,6 @@ import '../services/sound_effects_service.dart';
 import '../utils/address_term.dart';
 import '../widgets/speech_bubble.dart';
 import '../widgets/zibo_animated_image.dart';
-
-const _turkishMonths = [
-  'Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran',
-  'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık',
-];
-
-String _formatDate(DateTime date) =>
-    '${date.day} ${_turkishMonths[date.month - 1]} ${date.year}';
 
 String _unitLabel(AppLocalizations l10n, WaterUnit unit) =>
     unit == WaterUnit.glass ? l10n.waterUnitGlass : l10n.waterUnitBottle;
@@ -381,9 +374,9 @@ class _WaterTrackingScreenState extends State<WaterTrackingScreen> {
                       ),
                       title: Text(
                         entry.isCompleted
-                            ? l10n.waterHistoryCompletedEntry(_formatDate(entry.date))
+                            ? l10n.waterHistoryCompletedEntry(formatLongDate(entry.date, locale))
                             : l10n.waterHistoryPartialEntry(
-                                _formatDate(entry.date),
+                                formatLongDate(entry.date, locale),
                                 entry.unitCount,
                                 entry.goalUnitCount,
                               ),

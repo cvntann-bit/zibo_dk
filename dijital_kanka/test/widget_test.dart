@@ -21,6 +21,7 @@ import 'package:dijital_kanka/providers/app_theme_provider.dart';
 import 'package:dijital_kanka/providers/auth_link_provider.dart';
 import 'package:dijital_kanka/providers/coin_provider.dart';
 import 'package:dijital_kanka/providers/costume_provider.dart';
+import 'package:dijital_kanka/providers/custom_messages_provider.dart';
 import 'package:dijital_kanka/providers/daily_rewards_provider.dart';
 import 'package:dijital_kanka/providers/favorite_quotes_provider.dart';
 import 'package:dijital_kanka/providers/goals_provider.dart';
@@ -53,6 +54,7 @@ Widget _buildAppWithClock(DateTime Function() now) {
       ChangeNotifierProvider(create: (_) => AuthLinkProvider()),
       ChangeNotifierProvider(create: (_) => CoinProvider(now: now)),
       ChangeNotifierProvider(create: (_) => CostumeProvider()),
+      ChangeNotifierProvider(create: (_) => CustomMessagesProvider()),
       ChangeNotifierProvider(create: (_) => DailyRewardsProvider(now: now)),
       ChangeNotifierProvider(create: (_) => FavoriteQuotesProvider()),
       ChangeNotifierProvider(create: (_) => GoalsProvider(now: now)),
@@ -92,6 +94,14 @@ Widget _buildAppWithClock(DateTime Function() now) {
 /// tetiklenir, `_AppStartupGate` doğrudan `RootScreen`'e geçer).
 Future<void> _pumpPastOnboarding(WidgetTester tester, Widget app) async {
   await tester.pumpWidget(app);
+  await tester.pumpAndSettle();
+
+  // YENİ ilk adım — dil seçimi (bkz. onboarding_screen.dart _LanguageStep).
+  // Varsayılan zaten Türkçe olduğu için "Türkçe" kartına dokunmak diğer
+  // testlerin beklentilerini (Türkçe metinler) DEĞİŞTİRMEZ.
+  await tester.tap(find.text('Türkçe'));
+  await tester.pump();
+  await tester.tap(find.text('Devam Et'));
   await tester.pumpAndSettle();
 
   await tester.enterText(find.byType(TextField), 'Test Kullanıcı');
@@ -165,8 +175,20 @@ void main() {
       await tester.pumpWidget(const DijitalKankaApp());
       await tester.pumpAndSettle();
 
-      // İsim adımı: alan boşken "Devam Et" devre dışı.
+      // YENİ ilk adım — dil seçimi: hiçbir dil seçilmeden "Devam Et" devre
+      // dışı, "Türkçe" kartına dokununca aktifleşir.
       final continueButton = find.widgetWithText(FilledButton, 'Devam Et');
+      expect(tester.widget<FilledButton>(continueButton).onPressed, isNull);
+
+      await tester.tap(find.text('Türkçe'));
+      await tester.pump();
+      expect(tester.widget<FilledButton>(continueButton).onPressed, isNotNull);
+
+      await tester.tap(continueButton);
+      await tester.pumpAndSettle();
+
+      // İsim adımı: alan boşken "Devam Et" (aynı buton, yeni bir sayfada)
+      // yine devre dışı.
       expect(tester.widget<FilledButton>(continueButton).onPressed, isNull);
 
       await tester.enterText(find.byType(TextField), 'Ayşe');
@@ -466,6 +488,26 @@ void main() {
       // Harcamalar kırmızı renkte "-" işaretiyle gösteriliyor.
       expect(find.text('-₺150.50'), findsOneWidget);
       expect(find.text('Toplam: ₺150.50'), findsOneWidget);
+
+      // Kayda (silme ikonu DIŞINDaki bir noktaya) dokununca düzenleme
+      // diyaloğu, mevcut ad/tutarla ÖNCEDEN doldurulmuş olarak açılmalı.
+      await tester.tap(find.text('Market'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Kaydı Düzenle'), findsOneWidget);
+      final editFields = find.byType(TextField);
+      expect(tester.widget<TextField>(editFields.at(0)).controller!.text, 'Market');
+      expect(tester.widget<TextField>(editFields.at(1)).controller!.text, '150.50');
+
+      await tester.enterText(editFields.at(0), 'Süpermarket');
+      await tester.enterText(editFields.at(1), '200');
+      await tester.tap(find.text('Tamam'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Süpermarket'), findsOneWidget);
+      expect(find.text('Market'), findsNothing);
+      expect(find.text('-₺200.00'), findsOneWidget);
+      expect(find.text('Toplam: ₺200.00'), findsOneWidget);
 
       await tester.tap(find.byTooltip('Geri'));
       await tester.pumpAndSettle();

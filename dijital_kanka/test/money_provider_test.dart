@@ -65,6 +65,49 @@ void main() {
       expect(provider.totalFor(MoneyCategory.income), 1000);
     });
 
+    test('updateEntry ad/tutarı günceller, id/date korunur', () {
+      final provider = MoneyProvider();
+      provider.addEntry(MoneyCategory.expense, name: 'Market', amount: 250.5);
+      final original = provider.entriesFor(MoneyCategory.expense).first;
+
+      provider.updateEntry(
+        MoneyCategory.expense,
+        id: original.id,
+        name: 'Süpermarket',
+        amount: 300,
+      );
+
+      final updated = provider.entriesFor(MoneyCategory.expense).first;
+      expect(updated.id, original.id);
+      expect(updated.name, 'Süpermarket');
+      expect(updated.amount, 300);
+      expect(updated.date, original.date);
+      expect(provider.totalFor(MoneyCategory.expense), 300);
+    });
+
+    test('updateEntry boş ad veya sıfır/negatif tutarla hiçbir şey değiştirmez', () {
+      final provider = MoneyProvider();
+      provider.addEntry(MoneyCategory.expense, name: 'Market', amount: 250.5);
+      final original = provider.entriesFor(MoneyCategory.expense).first;
+
+      provider.updateEntry(MoneyCategory.expense, id: original.id, name: '  ', amount: 300);
+      provider.updateEntry(MoneyCategory.expense, id: original.id, name: 'Yeni', amount: 0);
+
+      final unchanged = provider.entriesFor(MoneyCategory.expense).first;
+      expect(unchanged.name, 'Market');
+      expect(unchanged.amount, 250.5);
+    });
+
+    test('updateEntry var olmayan bir id için hiçbir şey yapmaz', () {
+      final provider = MoneyProvider();
+      provider.addEntry(MoneyCategory.expense, name: 'Market', amount: 250.5);
+
+      provider.updateEntry(MoneyCategory.expense, id: 'yok', name: 'Yeni', amount: 300);
+
+      expect(provider.entriesFor(MoneyCategory.expense), hasLength(1));
+      expect(provider.entriesFor(MoneyCategory.expense).first.name, 'Market');
+    });
+
     test(
       'Kayıt eklemek kalıcı depoya yazar; uygulama yeniden başlatılsa bile '
       '(yeni MoneyProvider) hatırlanır',

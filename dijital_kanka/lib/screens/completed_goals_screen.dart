@@ -1,17 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../data/localized_calendar_names.dart';
 import '../l10n/app_localizations.dart';
 import '../models/goal_completion.dart';
 import '../providers/goals_provider.dart';
-
-const _turkishMonths = [
-  'Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran',
-  'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık',
-];
-
-String _formatDate(DateTime date) =>
-    '${date.day} ${_turkishMonths[date.month - 1]} ${date.year}';
 
 /// Tamamlanan tüm 7 günlük hedef döngülerini hedef ADINA göre gruplayıp
 /// gösteren ekran — `GoalTrackingScreen`'in aksine sekme değil, Hedefler
@@ -121,6 +114,7 @@ class _GoalCompletionRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final colorScheme = Theme.of(context).colorScheme;
+    final locale = Localizations.localeOf(context);
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -151,8 +145,8 @@ class _GoalCompletionRow extends StatelessWidget {
             padding: const EdgeInsets.only(top: 4),
             child: Text(
               l10n.completedGoalsDateRange(
-                _formatDate(completion.cycleStartDate),
-                _formatDate(completion.completionDate),
+                formatLongDate(completion.cycleStartDate, locale),
+                formatLongDate(completion.completionDate, locale),
               ),
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                 color: colorScheme.onSurfaceVariant,

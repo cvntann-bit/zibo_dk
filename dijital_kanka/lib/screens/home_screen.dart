@@ -12,6 +12,7 @@ import '../l10n/app_localizations.dart';
 import '../providers/app_theme_provider.dart';
 import '../providers/coin_provider.dart';
 import '../providers/costume_provider.dart';
+import '../providers/custom_messages_provider.dart';
 import '../providers/profile_provider.dart';
 import '../providers/sound_effects_provider.dart';
 import '../providers/theme_provider.dart';
@@ -19,6 +20,7 @@ import '../providers/zibo_pose_provider.dart';
 import '../services/sound_effects_service.dart';
 import '../utils/address_term.dart';
 import '../widgets/ad_free_promo_sheet.dart';
+import '../widgets/custom_messages_button.dart';
 import '../widgets/favorite_quote_button.dart';
 import '../widgets/share_zibo_button.dart';
 import '../widgets/speech_bubble.dart';
@@ -166,10 +168,12 @@ class _HomeScreenState extends State<HomeScreen>
 
   int _pickNewMessageIndex() {
     final messages = ziboMessagesForLocale(Localizations.localeOf(context));
-    if (messages.length <= 1) return 0;
+    final customMessages = context.read<CustomMessagesProvider>().messages;
+    final poolLength = messages.length + customMessages.length;
+    if (poolLength <= 1) return 0;
     int next;
     do {
-      next = _random.nextInt(messages.length);
+      next = _random.nextInt(poolLength);
     } while (next == _messageIndex);
     return next;
   }
@@ -179,9 +183,13 @@ class _HomeScreenState extends State<HomeScreen>
     final l10n = AppLocalizations.of(context)!;
     final locale = Localizations.localeOf(context);
     final messages = ziboMessagesForLocale(locale);
+    // Kullanıcının kendi eklediği özel mesajlar, standart söz havuzunun
+    // SONUNA eklenip aynı havuzdan seçiliyor — bkz. `_pickNewMessageIndex`.
+    final customMessages = context.watch<CustomMessagesProvider>().messages;
+    final messagePool = [...messages, ...customMessages];
     final addressTerm = context.watch<ProfileProvider>().addressTerm;
     final message = applyAddressTerm(
-      messages[_messageIndex % messages.length],
+      messagePool[_messageIndex % messagePool.length],
       addressTerm,
       locale,
     );
@@ -265,6 +273,11 @@ class _HomeScreenState extends State<HomeScreen>
                   top: -6,
                   left: -6,
                   child: FavoriteQuoteButton(message: message),
+                ),
+                const Positioned(
+                  bottom: -6,
+                  right: -6,
+                  child: CustomMessagesButton(),
                 ),
               ],
             ),

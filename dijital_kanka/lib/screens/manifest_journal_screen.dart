@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 
 import '../data/costume_poses.dart';
 import '../data/costumes.dart';
+import '../data/localized_calendar_names.dart';
 import '../data/manifest_quotes.dart';
 import '../l10n/app_localizations.dart';
 import '../models/manifest_entry.dart';
@@ -21,24 +22,6 @@ import '../widgets/speech_bubble.dart';
 import '../widgets/zibo_animated_image.dart';
 
 const _intentionMaxLength = 280;
-
-const _turkishMonths = [
-  'Ocak',
-  'Şubat',
-  'Mart',
-  'Nisan',
-  'Mayıs',
-  'Haziran',
-  'Temmuz',
-  'Ağustos',
-  'Eylül',
-  'Ekim',
-  'Kasım',
-  'Aralık',
-];
-
-String _formatDate(DateTime date) =>
-    '${date.day} ${_turkishMonths[date.month - 1]} ${date.year}';
 
 /// Manifest Günlüğü sayfası: bugünün fotoğrafı + niyet metni formu (bugün
 /// zaten bir kayıt varsa önceden doldurulur — üzerine yazma senaryosu) +
@@ -171,7 +154,7 @@ class _ManifestJournalScreenState extends State<ManifestJournalScreen> {
     showDialog<void>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: Text(_formatDate(entry.date)),
+        title: Text(formatLongDate(entry.date, Localizations.localeOf(context))),
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -451,7 +434,7 @@ class _HistoryCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    _formatDate(entry.date),
+                    formatLongDate(entry.date, Localizations.localeOf(context)),
                     style: Theme.of(context).textTheme.labelSmall?.copyWith(
                       color: colorScheme.onSurfaceVariant,
                     ),

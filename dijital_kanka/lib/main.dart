@@ -17,6 +17,7 @@ import 'providers/app_theme_provider.dart';
 import 'providers/auth_link_provider.dart';
 import 'providers/coin_provider.dart';
 import 'providers/costume_provider.dart';
+import 'providers/custom_messages_provider.dart';
 import 'providers/daily_rewards_provider.dart';
 import 'providers/dream_journal_provider.dart';
 import 'providers/favorite_quotes_provider.dart';
@@ -409,6 +410,9 @@ class DijitalKankaApp extends StatelessWidget {
           ),
         ),
         ChangeNotifierProvider(create: (_) => CostumeProvider(uid: uid)),
+        ChangeNotifierProvider(
+          create: (_) => CustomMessagesProvider(uid: uid),
+        ),
         // Aşağıdaki altı provider "güne bağlı" mekanizmalar (günlük ödül/
         // streak/sıfırlanma) taşıyor — hepsi cihazın DOĞRUDAN `DateTime.
         // now()`'u yerine `TrustedTimeProvider.now()`'u kullanıyor (bkz. o

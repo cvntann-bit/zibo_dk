@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 
 import '../data/costume_poses.dart';
 import '../data/costumes.dart';
+import '../data/localized_calendar_names.dart';
 import '../data/mood_quotes.dart';
 import '../l10n/app_localizations.dart';
 import '../models/mood.dart';
@@ -16,26 +17,6 @@ import '../providers/zibo_pose_provider.dart';
 import '../utils/address_term.dart';
 import '../widgets/speech_bubble.dart';
 import '../widgets/zibo_animated_image.dart';
-
-const _turkishMonths = [
-  'Ocak',
-  'Şubat',
-  'Mart',
-  'Nisan',
-  'Mayıs',
-  'Haziran',
-  'Temmuz',
-  'Ağustos',
-  'Eylül',
-  'Ekim',
-  'Kasım',
-  'Aralık',
-];
-
-const _turkishWeekdaysShort = ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'];
-
-String _formatDate(DateTime date) =>
-    '${date.day} ${_turkishMonths[date.month - 1]} ${date.year}';
 
 String _moodLabel(AppLocalizations l10n, Mood mood) => switch (mood) {
   Mood.veryUnhappy => l10n.moodLabelVeryUnhappy,
@@ -172,6 +153,7 @@ class _MoodTrackingScreenState extends State<MoodTrackingScreen> {
                         entry: provider.entryForDate(
                           todayDateOnly.subtract(Duration(days: i)),
                         ),
+                        locale: locale,
                       ),
                   ],
                 ),
@@ -201,7 +183,7 @@ class _MoodTrackingScreenState extends State<MoodTrackingScreen> {
                         backgroundColor: entry.mood.color.withValues(alpha: 0.25),
                         child: Text(entry.mood.emoji, style: const TextStyle(fontSize: 20)),
                       ),
-                      title: Text(_formatDate(entry.date)),
+                      title: Text(formatLongDate(entry.date, locale)),
                       subtitle: Text(_moodLabel(l10n, entry.mood)),
                     ),
                   ),
@@ -273,10 +255,11 @@ class _MoodEmojiButton extends StatelessWidget {
 /// görsel dil (daire, kenarlık, dolu/boş durum), ama renk duruma göre değil
 /// o günün ruh haline göre belirleniyor.
 class _WeekDayDot extends StatelessWidget {
-  const _WeekDayDot({required this.date, required this.entry});
+  const _WeekDayDot({required this.date, required this.entry, required this.locale});
 
   final DateTime date;
   final MoodEntry? entry;
+  final Locale locale;
 
   @override
   Widget build(BuildContext context) {
@@ -287,7 +270,7 @@ class _WeekDayDot extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(
-          _turkishWeekdaysShort[date.weekday - 1],
+          weekdayShortName(date, locale),
           style: Theme.of(context).textTheme.labelSmall?.copyWith(
             color: colorScheme.onSurfaceVariant,
           ),

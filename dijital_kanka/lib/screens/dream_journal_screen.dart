@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import '../data/costume_poses.dart';
 import '../data/costumes.dart';
 import '../data/dream_quotes.dart';
+import '../data/localized_calendar_names.dart';
 import '../l10n/app_localizations.dart';
 import '../models/dream_entry.dart';
 import '../providers/costume_provider.dart';
@@ -17,24 +18,6 @@ import '../utils/address_term.dart';
 import '../widgets/speech_bubble.dart';
 import '../widgets/zibo_animated_image.dart';
 import 'dream_entry_form_screen.dart';
-
-const _turkishMonths = [
-  'Ocak',
-  'Şubat',
-  'Mart',
-  'Nisan',
-  'Mayıs',
-  'Haziran',
-  'Temmuz',
-  'Ağustos',
-  'Eylül',
-  'Ekim',
-  'Kasım',
-  'Aralık',
-];
-
-String _formatDate(DateTime date) =>
-    '${date.day} ${_turkishMonths[date.month - 1]} ${date.year}';
 
 /// Rüya Günlüğü sayfası: kaydedilen rüyaların (en yeni en üstte) listesi +
 /// yeni rüya ekleme girişi. Sekmelerden biri değil, ana başlık çubuğundaki
@@ -168,7 +151,7 @@ class _DreamJournalScreenState extends State<DreamJournalScreen> {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      subtitle: Text(_formatDate(dream.date)),
+                      subtitle: Text(formatLongDate(dream.date, locale)),
                       trailing: const Icon(Icons.chevron_right),
                       onTap: () => _openForm(context, existing: dream),
                     ),

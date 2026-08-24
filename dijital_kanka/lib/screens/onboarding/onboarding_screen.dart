@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../l10n/app_localizations.dart';
+import '../../providers/locale_provider.dart';
 import '../../providers/onboarding_provider.dart';
 import '../../providers/profile_provider.dart';
+import '../../widgets/language_flag_circle.dart';
 
 class _ModuleIntro {
   const _ModuleIntro({
@@ -91,13 +93,15 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   final _pageController = PageController();
   final _nameController = TextEditingController();
   int _pageIndex = 0;
+  Locale? _selectedLocale;
 
   // Dart'ta `List.length` const bir bağlamda kullanılamıyor (const bir
-  // listede bile) — bu yüzden elle sabitlendi: 1 (isim) + 7 (modül
-  // tanıtımları) + 1 (kapanış) = 9. `_moduleIntros` listesine yeni bir
+  // listede bile) — bu yüzden elle sabitlendi: 1 (dil) + 1 (isim) + 7 (modül
+  // tanıtımları) + 1 (kapanış) = 10. `_moduleIntros` listesine yeni bir
   // modül eklenirse bu sayı da güncellenmeli.
-  static const _totalPages = 9;
-  bool get _isNamePage => _pageIndex == 0;
+  static const _totalPages = 10;
+  bool get _isLanguagePage => _pageIndex == 0;
+  bool get _isNamePage => _pageIndex == 1;
   bool get _isClosingPage => _pageIndex == _totalPages - 1;
 
   @override
@@ -111,7 +115,16 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     context.read<OnboardingProvider>().completeOnboarding();
   }
 
+  void _selectLanguage(Locale locale) {
+    setState(() => _selectedLocale = locale);
+    // Seçimle ANINDA uygula — kalan onboarding adımları (modül tanıtımları,
+    // kapanış mesajı) da yeni dilde görünsün diye "Devam Et"e basmayı
+    // beklemiyoruz.
+    context.read<LocaleProvider>().setLocale(locale);
+  }
+
   void _goNext() {
+    if (_isLanguagePage && _selectedLocale == null) return;
     if (_isNamePage) {
       final name = _nameController.text.trim();
       if (name.isEmpty) return;
@@ -143,7 +156,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           children: [
             SizedBox(
               height: 48,
-              child: _isNamePage
+              child: (_isLanguagePage || _isNamePage)
                   ? null
                   : Align(
                       alignment: Alignment.centerRight,
@@ -159,6 +172,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 physics: const NeverScrollableScrollPhysics(),
                 onPageChanged: (index) => setState(() => _pageIndex = index),
                 children: [
+                  _LanguageStep(selected: _selectedLocale, onSelect: _selectLanguage),
                   _NameStep(controller: _nameController),
                   for (final module in _moduleIntros)
                     _ModuleIntroStep(module: module),
@@ -196,12 +210,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   valueListenable: _nameController,
                   builder: (context, value, _) {
                     final nameEmpty = _isNamePage && value.text.trim().isEmpty;
+                    final languageUnset = _isLanguagePage && _selectedLocale == null;
                     return FilledButton(
-                      onPressed: nameEmpty ? null : _goNext,
+                      onPressed: (nameEmpty || languageUnset) ? null : _goNext,
                       child: Text(
                         _isClosingPage
                             ? l10n.onboardingStartButton
-                            : (_isNamePage
+                            : ((_isNamePage || _isLanguagePage)
                                   ? l10n.onboardingContinueButton
                                   : l10n.onboardingNextButton),
                       ),
@@ -211,6 +226,99 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _LanguageStep extends StatelessWidget {
+  const _LanguageStep({required this.selected, required this.onSelect});
+
+  final Locale? selected;
+  final ValueChanged<Locale> onSelect;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 32),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Image.asset('assets/images/zibo_logo_new.png', height: 56),
+          const SizedBox(height: 32),
+          Text(
+            l10n.onboardingLanguageStepTitle,
+            textAlign: TextAlign.center,
+            style: Theme.of(
+              context,
+            ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            l10n.onboardingLanguageStepSubtitle,
+            textAlign: TextAlign.center,
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: colorScheme.onSurfaceVariant),
+          ),
+          const SizedBox(height: 28),
+          for (final code in supportedLanguageCodes) ...[
+            _LanguageOptionCard(
+              code: code,
+              isSelected: selected?.languageCode == code,
+              onTap: () => onSelect(Locale(code)),
+            ),
+            const SizedBox(height: 12),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _LanguageOptionCard extends StatelessWidget {
+  const _LanguageOptionCard({
+    required this.code,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  final String code;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Material(
+      color: isSelected ? colorScheme.primaryContainer : colorScheme.surfaceContainerHigh,
+      borderRadius: BorderRadius.circular(16),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          child: Row(
+            children: [
+              LanguageFlagCircle(languageCode: code, size: 28),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Text(
+                  languageAutonym(code),
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    color: isSelected ? colorScheme.onPrimaryContainer : null,
+                    fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                  ),
+                ),
+              ),
+              if (isSelected)
+                Icon(Icons.check_circle, color: colorScheme.onPrimaryContainer),
+            ],
+          ),
         ),
       ),
     );

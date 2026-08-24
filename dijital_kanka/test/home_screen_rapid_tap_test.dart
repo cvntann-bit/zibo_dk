@@ -17,6 +17,7 @@ import 'package:dijital_kanka/l10n/app_localizations.dart';
 import 'package:dijital_kanka/providers/app_theme_provider.dart';
 import 'package:dijital_kanka/providers/coin_provider.dart';
 import 'package:dijital_kanka/providers/costume_provider.dart';
+import 'package:dijital_kanka/providers/custom_messages_provider.dart';
 import 'package:dijital_kanka/providers/favorite_quotes_provider.dart';
 import 'package:dijital_kanka/providers/profile_provider.dart';
 import 'package:dijital_kanka/providers/sound_effects_provider.dart';
@@ -61,6 +62,7 @@ Widget _buildTestApp({required Random random, required AdService adService}) {
       ChangeNotifierProvider(create: (_) => AppThemeProvider()),
       ChangeNotifierProvider(create: (_) => CoinProvider(adService: adService)),
       ChangeNotifierProvider(create: (_) => CostumeProvider()),
+      ChangeNotifierProvider(create: (_) => CustomMessagesProvider()),
       ChangeNotifierProvider(create: (_) => FavoriteQuotesProvider()),
       ChangeNotifierProvider(create: (_) => ProfileProvider()),
       ChangeNotifierProvider(create: (_) => SoundEffectsProvider()),

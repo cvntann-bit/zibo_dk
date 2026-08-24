@@ -1,17 +1,13 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
+import '../data/localized_calendar_names.dart';
 import '../l10n/app_localizations.dart';
 import '../models/money_entry.dart';
 
 const _expenseRed = Color(0xFFE53935);
 const _savingGreen = Color(0xFF43A047);
 const _incomeBlue = Color(0xFF1E88E5);
-
-const _shortMonths = [
-  'Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz',
-  'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara',
-];
 
 enum _Granularity { daily, weekly }
 
@@ -47,6 +43,7 @@ class _MoneyTrendChartState extends State<MoneyTrendChart> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final colorScheme = Theme.of(context).colorScheme;
+    final locale = Localizations.localeOf(context);
 
     if (widget.expenses.isEmpty && widget.savings.isEmpty && widget.incomes.isEmpty) {
       return Text(
@@ -151,7 +148,7 @@ class _MoneyTrendChartState extends State<MoneyTrendChart> {
                       return Padding(
                         padding: const EdgeInsets.only(top: 4),
                         child: Text(
-                          _formatAxisDate(series.buckets[index - 1]),
+                          formatShortAxisDate(series.buckets[index - 1], locale),
                           style: TextStyle(fontSize: 10, color: colorScheme.onSurfaceVariant),
                         ),
                       );
@@ -219,8 +216,6 @@ String _formatAxisAmount(double value) {
   }
   return '₺${value.round()}';
 }
-
-String _formatAxisDate(DateTime date) => '${date.day} ${_shortMonths[date.month - 1]}';
 
 class _MoneyTrendSeries {
   const _MoneyTrendSeries({

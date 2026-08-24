@@ -110,4 +110,26 @@ class MoneyProvider extends ChangeNotifier {
     notifyListeners();
     _save();
   }
+
+  /// Mevcut bir kaydın adını/tutarını günceller — `date`/`id` korunur.
+  void updateEntry(
+    MoneyCategory category, {
+    required String id,
+    required String name,
+    required double amount,
+  }) {
+    final trimmed = name.trim();
+    if (trimmed.isEmpty || amount <= 0) return;
+    final entries = _entries[category]!;
+    final index = entries.indexWhere((entry) => entry.id == id);
+    if (index == -1) return;
+    entries[index] = MoneyEntry(
+      id: id,
+      name: trimmed,
+      amount: amount,
+      date: entries[index].date,
+    );
+    notifyListeners();
+    _save();
+  }
 }

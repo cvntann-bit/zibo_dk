@@ -25,10 +25,12 @@ class MoneyCategoryCard extends StatelessWidget {
   final Color accentColor;
   final String amountSign;
 
-  Future<void> _showAddEntryDialog(BuildContext context) async {
+  Future<void> _showEntryDialog(BuildContext context, {MoneyEntry? existing}) async {
     final l10n = AppLocalizations.of(context)!;
-    final nameController = TextEditingController();
-    final amountController = TextEditingController();
+    final nameController = TextEditingController(text: existing?.name);
+    final amountController = TextEditingController(
+      text: existing != null ? existing.amount.toStringAsFixed(2) : null,
+    );
 
     final result = await showDialog<(String, double)>(
       context: context,
@@ -48,7 +50,7 @@ class MoneyCategoryCard extends StatelessWidget {
         }
 
         return AlertDialog(
-          title: Text(l10n.moneyAddEntryTitle),
+          title: Text(existing == null ? l10n.moneyAddEntryTitle : l10n.moneyEditEntryTitle),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -89,9 +91,17 @@ class MoneyCategoryCard extends StatelessWidget {
       },
     );
 
-    if (result != null && context.mounted) {
+    if (result == null || !context.mounted) return;
+    if (existing == null) {
       context.read<MoneyProvider>().addEntry(
         category,
+        name: result.$1,
+        amount: result.$2,
+      );
+    } else {
+      context.read<MoneyProvider>().updateEntry(
+        category,
+        id: existing.id,
         name: result.$1,
         amount: result.$2,
       );
@@ -142,33 +152,40 @@ class MoneyCategoryCard extends StatelessWidget {
               )
             else
               for (final entry in entries)
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 2),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          entry.name,
-                          overflow: TextOverflow.ellipsis,
-                        ),
+                Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(8),
+                    onTap: () => _showEntryDialog(context, existing: entry),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 2),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              entry.name,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          Text(
+                            '$amountSign₺${entry.amount.toStringAsFixed(2)}',
+                            style: TextStyle(color: accentColor, fontWeight: FontWeight.w600),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.close, size: 18),
+                            tooltip: l10n.moneyDeleteEntryTooltip,
+                            onPressed: () => context
+                                .read<MoneyProvider>()
+                                .removeEntry(category, entry.id),
+                          ),
+                        ],
                       ),
-                      Text(
-                        '$amountSign₺${entry.amount.toStringAsFixed(2)}',
-                        style: TextStyle(color: accentColor, fontWeight: FontWeight.w600),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.close, size: 18),
-                        tooltip: l10n.moneyDeleteEntryTooltip,
-                        onPressed: () => context
-                            .read<MoneyProvider>()
-                            .removeEntry(category, entry.id),
-                      ),
-                    ],
+                    ),
                   ),
                 ),
             const SizedBox(height: 4),
             OutlinedButton.icon(
-              onPressed: () => _showAddEntryDialog(context),
+              onPressed: () => _showEntryDialog(context),
               icon: const Icon(Icons.add),
               label: Text(l10n.moneyAddEntryButton),
             ),

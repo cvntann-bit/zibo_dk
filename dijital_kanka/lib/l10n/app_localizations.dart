@@ -490,6 +490,12 @@ abstract class AppLocalizations {
   /// **'Yeni Kayıt'**
   String get moneyAddEntryTitle;
 
+  /// Mevcut bir kaydı düzenleme diyalog kutusunun başlığı
+  ///
+  /// In tr, this message translates to:
+  /// **'Kaydı Düzenle'**
+  String get moneyEditEntryTitle;
+
   /// Yeni kayıt ekleme diyalog kutusundaki ad alanının etiketi
   ///
   /// In tr, this message translates to:
@@ -1888,6 +1894,60 @@ abstract class AppLocalizations {
   /// **'Henüz favori sözün yok — Ana Sayfa\'daki kalp ikonuyla sevdiğin sözleri kaydet!'**
   String get favoriteQuotesEmpty;
 
+  /// Ana Sayfa'daki konuşma balonunun yanındaki, özel mesaj ekranını açan ikonun erişilebilirlik ipucu
+  ///
+  /// In tr, this message translates to:
+  /// **'Kendi mesajını ekle'**
+  String get customMessagesButtonTooltip;
+
+  /// Özel mesajlar sayfasının AppBar başlığı
+  ///
+  /// In tr, this message translates to:
+  /// **'Özel Mesajlarım'**
+  String get customMessagesScreenTitle;
+
+  /// Özel mesajlar sayfasının üstündeki açıklama metni
+  ///
+  /// In tr, this message translates to:
+  /// **'Zibo\'nun sana ara sıra söylemesini istediğin kendi cümlelerini ekle — standart sözlerle karışık, rastgele gösterilirler.'**
+  String get customMessagesSubtitle;
+
+  /// Özel mesajlar sayfasında hiç mesaj yokken gösterilen teşvik mesajı
+  ///
+  /// In tr, this message translates to:
+  /// **'Henüz özel mesaj eklemedin.'**
+  String get customMessagesEmpty;
+
+  /// Özel mesajlar sayfasındaki yeni mesaj ekleme butonu
+  ///
+  /// In tr, this message translates to:
+  /// **'Yeni Mesaj Ekle'**
+  String get customMessagesAddButton;
+
+  /// Yeni özel mesaj metin alanının placeholder'ı
+  ///
+  /// In tr, this message translates to:
+  /// **'Zibo bunu sana söylesin...'**
+  String get customMessagesFieldHint;
+
+  /// Yeni özel mesaj ekleme diyaloğundaki kaydet butonu
+  ///
+  /// In tr, this message translates to:
+  /// **'Kaydet'**
+  String get customMessagesSaveButton;
+
+  /// Yeni özel mesaj ekleme diyaloğundaki iptal butonu
+  ///
+  /// In tr, this message translates to:
+  /// **'İptal'**
+  String get customMessagesCancelButton;
+
+  /// Özel mesaj listesindeki her satırın silme ikonunun erişilebilirlik ipucu
+  ///
+  /// In tr, this message translates to:
+  /// **'Sil'**
+  String get customMessagesDeleteTooltip;
+
   /// Profil'deki Favori Sözler satırının alt metni
   ///
   /// In tr, this message translates to:
@@ -1911,6 +1971,18 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'🐣 Zibo ile Bağım'**
   String get profileShareCardTitle;
+
+  /// Onboarding akışının en ilk (dil seçimi) adımının başlığı
+  ///
+  /// In tr, this message translates to:
+  /// **'Hangi dili konuşalım?'**
+  String get onboardingLanguageStepTitle;
+
+  /// Onboarding akışının dil seçimi adımının alt başlığı
+  ///
+  /// In tr, this message translates to:
+  /// **'Uygulamanın geri kalanı seçtiğin dilde açılacak — istersen sonra Ayarlar\'dan değiştirebilirsin.'**
+  String get onboardingLanguageStepSubtitle;
 
   /// Onboarding akışının ilk (isim) adımının başlığı
   ///

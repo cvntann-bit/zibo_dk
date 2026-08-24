@@ -232,6 +232,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get moneyAddEntryTitle => 'Nuevo Registro';
 
   @override
+  String get moneyEditEntryTitle => 'Editar Registro';
+
+  @override
   String get moneyEntryNameHint => 'Nombre';
 
   @override
@@ -1030,6 +1033,35 @@ class AppLocalizationsEs extends AppLocalizations {
       'Aún no tienes frases favoritas — ¡toca el ícono de corazón en la Pantalla Principal para guardar las que te gusten!';
 
   @override
+  String get customMessagesButtonTooltip => 'Agrega tu propio mensaje';
+
+  @override
+  String get customMessagesScreenTitle => 'Mis Mensajes Personalizados';
+
+  @override
+  String get customMessagesSubtitle =>
+      'Agrega tus propias frases para que Zibo te las diga de vez en cuando — se mezclan con las frases estándar y aparecen al azar.';
+
+  @override
+  String get customMessagesEmpty =>
+      'Aún no has agregado ningún mensaje personalizado.';
+
+  @override
+  String get customMessagesAddButton => 'Agregar Nuevo Mensaje';
+
+  @override
+  String get customMessagesFieldHint => 'Que Zibo diga...';
+
+  @override
+  String get customMessagesSaveButton => 'Guardar';
+
+  @override
+  String get customMessagesCancelButton => 'Cancelar';
+
+  @override
+  String get customMessagesDeleteTooltip => 'Eliminar';
+
+  @override
   String profileFavoriteQuotesRowSubtitle(int count) {
     return '$count frases favoritas';
   }
@@ -1043,6 +1075,13 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get profileShareCardTitle => '🐣 Mi Vínculo con Zibo';
+
+  @override
+  String get onboardingLanguageStepTitle => '¿Qué idioma prefieres?';
+
+  @override
+  String get onboardingLanguageStepSubtitle =>
+      'El resto de la app se abrirá en el idioma que elijas — puedes cambiarlo después desde Ajustes.';
 
   @override
   String get onboardingNameStepTitle => '¿Cómo te llamamos?';
