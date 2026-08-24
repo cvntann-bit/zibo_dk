@@ -14,6 +14,7 @@ import '../providers/gratitude_provider.dart';
 import '../providers/manifest_provider.dart';
 import '../providers/money_provider.dart';
 import '../providers/profile_provider.dart';
+import '../providers/profile_stats_archive_provider.dart';
 import '../providers/trusted_time_provider.dart';
 import '../providers/water_provider.dart';
 import '../screens/address_term_screen.dart';
@@ -21,6 +22,7 @@ import '../screens/bond_level_screen.dart';
 import '../screens/coin_summary_screen.dart';
 import '../screens/favorite_quotes_screen.dart';
 import '../screens/longest_streak_screen.dart';
+import '../screens/monthly_stats_history_screen.dart';
 import '../services/photo_picker_service.dart';
 import '../utils/google_link_action.dart';
 import '../utils/profile_stats.dart';
@@ -181,6 +183,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final coin = context.watch<CoinProvider>();
     final favoriteQuotes = context.watch<FavoriteQuotesProvider>();
     final authLink = context.watch<AuthLinkProvider>();
+    final statsArchive = context.watch<ProfileStatsArchiveProvider>();
     final now = context.watch<TrustedTimeProvider>().now();
 
     final stats = ProfileStats.compute(
@@ -191,6 +194,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
       water: water,
       now: now,
     );
+
+    // Takvim ayı değiştiyse (bkz. `ProfileStatsArchiveProvider` dokümantasyonu)
+    // az önce hesaplanan `stats`'ı önceki ayın arşiv kaydı olarak sakla — aynı
+    // ay içindeki tekrar çağrılar ucuz bir no-op, `build()` sırasında
+    // `notifyListeners()` tetiklenmesin diye bir sonraki kareye erteleniyor.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      statsArchive.archiveIfMonthChanged(stats, now);
+    });
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 24, 20, 32),
@@ -282,6 +294,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     const SizedBox(height: 12),
                   ],
                 ],
+              ),
+            ),
+            _ProfileLinkRow(
+              icon: Icons.calendar_month_rounded,
+              title: l10n.monthlyStatsRowTitle,
+              subtitle: l10n.monthlyStatsRowSubtitle(statsArchive.snapshots.length),
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const MonthlyStatsHistoryScreen()),
               ),
             ),
             const SizedBox(height: 20),

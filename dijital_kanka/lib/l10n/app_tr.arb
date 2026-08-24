@@ -1467,6 +1467,25 @@
   "@profileShareCardRowSubtitle": {
     "description": "Profil Kartı Paylaşımı satırının alt metni"
   },
+  "monthlyStatsRowTitle": "Geçmiş Ay İstatistikleri",
+  "@monthlyStatsRowTitle": {
+    "description": "Profil'deki Geçmiş Ay İstatistikleri satırının başlığı"
+  },
+  "monthlyStatsRowSubtitle": "{count} ay arşivlendi",
+  "@monthlyStatsRowSubtitle": {
+    "description": "Profil'deki Geçmiş Ay İstatistikleri satırının alt metni",
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "monthlyStatsScreenTitle": "Geçmiş Ay İstatistikleri",
+  "@monthlyStatsScreenTitle": {
+    "description": "Geçmiş Ay İstatistikleri sayfasının AppBar başlığı"
+  },
+  "monthlyStatsEmpty": "Henüz arşivlenmiş bir ay yok. İlk ay sonunda burada görünmeye başlayacak.",
+  "@monthlyStatsEmpty": {
+    "description": "Geçmiş Ay İstatistikleri sayfasında henüz arşiv yokken gösterilen mesaj"
+  },
   "profileShareCardTitle": "🐣 Zibo ile Bağım",
   "@profileShareCardTitle": {
     "description": "Paylaşılan profil kartı metninin başlığı (ZiboShareSheet'e geçirilen mesajın ilk satırı)"

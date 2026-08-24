@@ -1080,6 +1080,21 @@ class AppLocalizationsEs extends AppLocalizations {
       'Comparte tu nivel de vínculo y estadísticas en una tarjeta';
 
   @override
+  String get monthlyStatsRowTitle => 'Estadísticas de Meses Anteriores';
+
+  @override
+  String monthlyStatsRowSubtitle(int count) {
+    return '$count meses archivados';
+  }
+
+  @override
+  String get monthlyStatsScreenTitle => 'Estadísticas de Meses Anteriores';
+
+  @override
+  String get monthlyStatsEmpty =>
+      'Aún no hay meses archivados. Aparecerán aquí al final del primer mes.';
+
+  @override
   String get profileShareCardTitle => '🐣 Mi Vínculo con Zibo';
 
   @override

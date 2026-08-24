@@ -30,6 +30,7 @@ import 'package:dijital_kanka/providers/manifest_provider.dart';
 import 'package:dijital_kanka/providers/money_provider.dart';
 import 'package:dijital_kanka/providers/notification_provider.dart';
 import 'package:dijital_kanka/providers/profile_provider.dart';
+import 'package:dijital_kanka/providers/profile_stats_archive_provider.dart';
 import 'package:dijital_kanka/providers/sound_effects_provider.dart';
 import 'package:dijital_kanka/providers/theme_provider.dart';
 import 'package:dijital_kanka/providers/trusted_time_provider.dart';
@@ -66,6 +67,7 @@ Widget _buildAppWithClock(DateTime Function() now) {
             NotificationProvider(notificationService: const FakeNotificationService()),
       ),
       ChangeNotifierProvider(create: (_) => ProfileProvider(now: now)),
+      ChangeNotifierProvider(create: (_) => ProfileStatsArchiveProvider()),
       ChangeNotifierProvider(create: (_) => SoundEffectsProvider()),
       ChangeNotifierProvider(create: (_) => ThemeProvider()),
       ChangeNotifierProvider(create: (_) => WaterProvider(now: now)),
@@ -1761,6 +1763,26 @@ void main() {
       }
 
       await tester.tap(find.bySemanticsLabel('Profil'));
+      await tester.pumpAndSettle();
+
+      // Geçmiş Ay İstatistikleri: taze bir kurulumda henüz arşiv YOK —
+      // istatistik kartlarının hemen altında, "Zibo ile Bağın" başlığından
+      // ÖNCE gelir; satır "0 ay arşivlendi" gösterir, dokununca boş durum
+      // mesajı görünür.
+      await tester.scrollUntilVisible(
+        find.text('0 ay arşivlendi'),
+        200,
+        scrollable: profileScrollable(),
+      );
+      tapRow('Geçmiş Ay İstatistikleri');
+      await tester.pumpAndSettle();
+      expect(
+        find.text(
+          'Henüz arşivlenmiş bir ay yok. İlk ay sonunda burada görünmeye başlayacak.',
+        ),
+        findsOneWidget,
+      );
+      await tester.tap(find.byTooltip('Geri'));
       await tester.pumpAndSettle();
 
       // NOT: `scrollUntilVisible` yalnızca TEK yönde (aşağı) kaydırabiliyor

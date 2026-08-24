@@ -1074,6 +1074,21 @@ class AppLocalizationsTr extends AppLocalizations {
       'Bağ seviyeni ve istatistiklerini bir kartta paylaş';
 
   @override
+  String get monthlyStatsRowTitle => 'Geçmiş Ay İstatistikleri';
+
+  @override
+  String monthlyStatsRowSubtitle(int count) {
+    return '$count ay arşivlendi';
+  }
+
+  @override
+  String get monthlyStatsScreenTitle => 'Geçmiş Ay İstatistikleri';
+
+  @override
+  String get monthlyStatsEmpty =>
+      'Henüz arşivlenmiş bir ay yok. İlk ay sonunda burada görünmeye başlayacak.';
+
+  @override
   String get profileShareCardTitle => '🐣 Zibo ile Bağım';
 
   @override

@@ -1075,6 +1075,21 @@ class AppLocalizationsEn extends AppLocalizations {
       'Share your bond level and stats in one card';
 
   @override
+  String get monthlyStatsRowTitle => 'Past Months\' Stats';
+
+  @override
+  String monthlyStatsRowSubtitle(int count) {
+    return '$count months archived';
+  }
+
+  @override
+  String get monthlyStatsScreenTitle => 'Past Months\' Stats';
+
+  @override
+  String get monthlyStatsEmpty =>
+      'No archived months yet. They\'ll start appearing here at the end of the first month.';
+
+  @override
   String get profileShareCardTitle => '🐣 My Bond with Zibo';
 
   @override

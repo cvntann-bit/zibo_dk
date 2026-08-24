@@ -1978,6 +1978,30 @@ abstract class AppLocalizations {
   /// **'Bağ seviyeni ve istatistiklerini bir kartta paylaş'**
   String get profileShareCardRowSubtitle;
 
+  /// Profil'deki Geçmiş Ay İstatistikleri satırının başlığı
+  ///
+  /// In tr, this message translates to:
+  /// **'Geçmiş Ay İstatistikleri'**
+  String get monthlyStatsRowTitle;
+
+  /// Profil'deki Geçmiş Ay İstatistikleri satırının alt metni
+  ///
+  /// In tr, this message translates to:
+  /// **'{count} ay arşivlendi'**
+  String monthlyStatsRowSubtitle(int count);
+
+  /// Geçmiş Ay İstatistikleri sayfasının AppBar başlığı
+  ///
+  /// In tr, this message translates to:
+  /// **'Geçmiş Ay İstatistikleri'**
+  String get monthlyStatsScreenTitle;
+
+  /// Geçmiş Ay İstatistikleri sayfasında henüz arşiv yokken gösterilen mesaj
+  ///
+  /// In tr, this message translates to:
+  /// **'Henüz arşivlenmiş bir ay yok. İlk ay sonunda burada görünmeye başlayacak.'**
+  String get monthlyStatsEmpty;
+
   /// Paylaşılan profil kartı metninin başlığı (ZiboShareSheet'e geçirilen mesajın ilk satırı)
   ///
   /// In tr, this message translates to:

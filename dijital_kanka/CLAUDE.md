@@ -48,13 +48,15 @@ bölümündeki `clean_app_icon.dart` notu).
 
 ## Mimari özet
 
-- **State management:** `provider` paketi. Yirmi adet `ChangeNotifier`, `main.dart`'ta
+- **State management:** `provider` paketi. Yirmi üç adet `ChangeNotifier`, `main.dart`'ta
   `MultiProvider` ile uygulama köküne bağlanıyor: `TrustedTimeProvider`, `AuthLinkProvider`
   (2026 yeni özellik — bkz. "Google Hesap Bağlama" bölümü), `AppThemeProvider`,
-  `CoinProvider`, `CostumeProvider`, `DailyRewardsProvider`, `DreamJournalProvider`,
-  `FavoriteQuotesProvider`, `GoalsProvider`, `GratitudeProvider`, `LocaleProvider`,
-  `ManifestProvider`, `MoneyProvider`, `MoodProvider`, `NotificationProvider`,
-  `OnboardingProvider`, `ProfileProvider`, `ThemeProvider`, `WaterProvider`,
+  `CoinProvider`, `CostumeProvider`, `CurrencyProvider` (2026 — Para ve Birikim çoklu para birimi),
+  `CustomMessagesProvider` (2026 — Ana Sayfa özel mesajlar), `DailyRewardsProvider`,
+  `DreamJournalProvider`, `FavoriteQuotesProvider`, `GoalsProvider`, `GratitudeProvider`,
+  `LocaleProvider`, `ManifestProvider`, `MoneyProvider`, `MoodProvider`, `NotificationProvider`,
+  `OnboardingProvider`, `ProfileProvider`, `ProfileStatsArchiveProvider` (2026 — "Geçmiş Ay
+  İstatistikleri" arşivi, bkz. "Profil" bölümü), `ThemeProvider`, `WaterProvider`,
   `ZiboPoseProvider`. Kullanıcı verisi taşıyanların tamamı (`TrustedTimeProvider` VE
   `ZiboPoseProvider` HARİÇ — ikisi de kalıcı değil, saf UI/görsel durum, bkz. o sınıfların kendi
   dokümantasyonu) `CloudStateStore` üzerinden Firestore'a da senkronize oluyor — bkz. "Firestore
@@ -2442,6 +2444,60 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
   koyu temada tüm yeni ekranların (Bağ Seviyesi/En Uzun Seri/Coin Özeti/Hitap Tercihi/Favori Sözler)
   doğru render olduğu — kod tarafı `flutter test`'teki 183 testle (bu arc'ta eklenen ~25'i dahil)
   kapsanıyor.
+- **2026 güncellemesi — "Geçmiş Ay İstatistikleri" arşivi**
+  ([monthly_stats_snapshot.dart](lib/models/monthly_stats_snapshot.dart),
+  [profile_stats_archive_provider.dart](lib/providers/profile_stats_archive_provider.dart),
+  [monthly_stats_history_screen.dart](lib/screens/monthly_stats_history_screen.dart)). Kullanıcı
+  isteği: "İstatistiklerim" bölümü her ay sonunda sıfırlansın, o ayın istatistikleri arşive
+  kaydedilsin; Profil'de küçük bir "Geçmiş Ay İstatistikleri" bağlantısı olsun, tıklanınca önceki
+  ayların istatistikleri ay ay listelensin.
+  - **Bilinçli mimari karar — `ProfileStats.compute()`'un rolling-window formülleri HİÇ
+    DEĞİŞTİRİLMEDİ.** Bu fonksiyon zaten kapsamlı test kapsamına sahip (`profile_stats_test.dart`)
+    ve "canlı, o ANKİ duruma göre" hesaplanan saf bir fonksiyon — "ay sonunda sıfırlanma" kavramı
+    bu mimariye doğal olarak uymuyor (kalıcı bir sayaç değil, son N gün/haftanın kayan penceresi).
+    Formülleri "aya özel" kalıcı sayaçlara çevirmek hem riskli (mevcut test kapsamını bozar) hem
+    de gereksiz bir karmaşıklık olurdu. Bunun yerine YENİ, tamamen AYRI bir "arşiv" katmanı eklendi:
+    `ProfileStatsArchiveProvider`, `ProfileScreen` her `build()`'de hesapladığı CANLI `stats`'ı bir
+    `addPostFrameCallback` ile `archiveIfMonthChanged(stats, now)`'a geçiriyor — bu metot yalnızca
+    takvim ayı SON kontrolden beri DEĞİŞTİYSE bir şey yapar (aksi halde ucuz bir string
+    karşılaştırmasıyla no-op), değiştiyse ÖNCEKİ ayı o anki canlı `stats` değerleriyle
+    (`MonthlyStatsSnapshot`) arşivleyip yeni ayı işaretler. **`build()` sırasında `notifyListeners()`
+    tetiklenmesin diye** çağrı bir sonraki kareye (`addPostFrameCallback`) ertelendi.
+  - **Bilinçli yaklaşıklık:** rolling-window hesaplamanın geçmiş bir anını kalıcı tutmadığımız için,
+    arşivlenen değer "geçen ayın TAM son günündeki" değer değil, "kullanıcının yeni ayda uygulamayı
+    İLK açtığı anda" görülen canlı değer — pratikte neredeyse her zaman aynı gün/çok yakın bir
+    yaklaşıklık. Kullanıcı bir veya daha fazla ayı hiç açmadan atlarsa yalnızca EN SON görülen ay
+    arşivlenir (atlanan ara ayların verisi rolling-window'dan zaten geri getirilemez) — bu, kod
+    içinde ve dokümantasyonda açıkça belirtilmiş bilinen bir sınırlama.
+  - **`ProfileStatsArchiveProvider`** diğer TÜM provider'larla AYNI `CloudStateStore` Varyant A
+    deseni (`profileStatsArchive` anahtarı, `{lastSeenMonthKey, snapshots: [...]}`). `hasData ==
+    false` olan bir kategori arşive HİÇ girmiyor (`MonthlyStatsSnapshot.scores` map'inde o
+    kategorinin anahtarı yok) — `MonthlyStatsHistoryScreen` bunu `–` ile gösteriyor
+    (`ProfileScreen._openShareCard`'daki AYNI "veri yoksa tire" convansiyonu).
+  - **"Geçmiş Ay İstatistikleri" satırı** İstatistiklerim kartlarının HEMEN ALTINA, "Zibo ile
+    Bağın" bölüm başlığından ÖNCE eklendi (bağ/streak/coin gibi diğer satırlardan ayrı bir kavramsal
+    grup olduğu için) — `_ProfileLinkRow` ile AYNI görsel dil, canlı alt metin arşivlenen ay
+    sayısını gösteriyor (`{count} ay arşivlendi`).
+  - **`MonthlyStatsHistoryScreen`** — `CoinSummaryScreen` ile benzer basit bir kart-listesi ekranı;
+    her kart bir ayı (`localized_calendar_names.dart`'taki `monthNamesForLocale` ile yerelleştirilmiş
+    ay adı + yıl) ve dört kategorinin o aydaki puanını gösterir. Arşiv boşsa teşvik/bilgi mesajı.
+  - **Test:** YENİ `profile_stats_archive_provider_test.dart` (ilk çağrı arşivlemez/yalnızca temel
+    ayı işaretler, aynı ay içi tekrar çağrılar no-op, ay değişince önceki ay doğru puanlarla
+    arşivlenir, `hasData == false` kategori arşive girmez, birden fazla ay en-yeni-önce sıralanır,
+    kalıcılık round-trip, JSON şekli) + `profile_screen_test.dart`/`widget_test.dart`'ın
+    `_buildAppWithClock()` yardımcılarına `ProfileStatsArchiveProvider` eklendi (`ProfileScreen`
+    artık onu da `context.watch` ettiği için, bkz. "Test kalıpları" bölümündeki genel provider
+    kuralı) + `widget_test.dart`'taki "Zibo ile Bağın" senaryosuna, satır sıralamasını (yukarıdaki
+    tek-yönlü `scrollUntilVisible` gotcha'sı gereği) BOZMAYACAK şekilde en başa (Bağ Seviyesi'nden
+    ÖNCE) bir kontrol eklendi: taze kurulumda satır "0 ay arşivlendi" gösterir, dokununca boş durum
+    mesajı görünür.
+  - **Gerçek cihazda GÖRSEL doğrulama bu arc'ta YAPILMADI** (ay değişimini gerçek zamanda tetiklemek
+    günler/ay gerektirir, mantığı test edilen saf/deterministik bir fonksiyon olduğu için risk
+    düşük) — yalnızca `flutter test` (299/299) ile doğrulandı. **Kullanıcının ileride doğrulayabileceği
+    gerçek senaryo:** cihazın tarihini bir sonraki aya ileri alıp uygulamayı açmak (bkz. CLAUDE.md
+    "Firestore veri kalıcılığı" bölümündeki güvenilir zaman notu — bu ARŞİV kontrolü `TrustedTimeProvider.
+    now()`'u kullanıyor, cihaz saatini değil, bu yüzden yalnızca cihaz saatini ileri almak YETMEZ,
+    gerçek zamanın geçmesi VEYA test ortamında `now` enjekte edilmesi gerekir).
 
 ### Zibo ADS (reklamsız deneyim mockup'ı) ([ad_free_promo_trigger.dart](lib/utils/ad_free_promo_trigger.dart), [ad_free_promo_sheet.dart](lib/widgets/ad_free_promo_sheet.dart))
 - **2026 yeni özellik — TAMAMEN GÖRSEL BİR MOCKUP, gerçek bir satın alma akışı YOK.** Kullanıcı
@@ -3553,20 +3609,27 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
   Dokunma Sesi" bölümü), `home_screen_sound_test.dart` (aynı bölüm),
   `water_tracking_sound_test.dart` (2026 — kostüm/tema/su damlası sesleri, "Zibo Dokunma Sesi"
   bölümü), `auth_link_provider_test.dart` (2026 — bkz. "Google Hesap Bağlama" bölümü),
-  `settings_screen_test.dart` (aynı bölüm). **`test/wheel_screen_test.dart` KISA SÜRE var oldu,
+  `settings_screen_test.dart` (aynı bölüm), `custom_messages_provider_test.dart` (2026 — Ana Sayfa
+  özel mesajlar özelliği), `currency_provider_test.dart` (2026 — Para ve Birikim çoklu para birimi
+  özelliği), `profile_stats_archive_provider_test.dart` (2026 — bkz. "Profil" bölümündeki "Geçmiş
+  Ay İstatistikleri" notu). **`test/wheel_screen_test.dart` KISA SÜRE var oldu,
   SONRA SİLİNDİ** — Şans Çarkı sonrası reklam denemesiyle birlikte geldi, kullanıcı o özelliği
   istemeyince (bkz. "Zibo'ya Art Arda Dokunma → Geçiş Reklamı" bölümündeki geri alma notu) testi
   de anlamsızlaştığı için kaldırıldı.
-  **Toplam: 276 test.**
+  **Toplam: 299 test.**
 - `widget_test.dart` içindeki `_buildAppWithClock()` yardımcı fonksiyonu enjekte edilebilir saatli
   testler için — **`RootScreen`'in ihtiyaç duyduğu HER provider'ı içermeli** (`AppThemeProvider`,
-  `AuthLinkProvider`, `CoinProvider`, `CostumeProvider`, `DailyRewardsProvider`,
-  `FavoriteQuotesProvider`, `GoalsProvider`, `GratitudeProvider`, `ManifestProvider`,
-  `MoneyProvider`, `NotificationProvider`, `ProfileProvider`, `SoundEffectsProvider`,
-  `ThemeProvider`, `TrustedTimeProvider`, `WaterProvider`, `ZiboPoseProvider`), çünkü `RootScreen`
-  tüm sekmeleri hemen kuruyor (artık `ProfileScreen` de bir sekme olduğu için onun transitif olarak
-  izlediği TÜM provider'lar da burada olmalı — bkz. "Alt Gezinme Çubuğu" bölümündeki Profil↔Birikim
-  yer değiştirme notu). **Gotcha (gerçekten yaşandı):**
+  `AuthLinkProvider`, `CoinProvider`, `CostumeProvider`, `CustomMessagesProvider`,
+  `DailyRewardsProvider`, `FavoriteQuotesProvider`, `GoalsProvider`, `GratitudeProvider`,
+  `ManifestProvider`, `MoneyProvider`, `NotificationProvider`, `ProfileProvider`,
+  `ProfileStatsArchiveProvider`, `SoundEffectsProvider`,
+  `ThemeProvider`, `TrustedTimeProvider`, `WaterProvider`, `ZiboPoseProvider`) — bunun sebebi
+  `RootScreen`'in tüm sekmeleri hemen kurması (artık `ProfileScreen` de bir sekme olduğu için onun
+  transitif olarak izlediği TÜM provider'lar da burada olmalı — bkz. "Alt Gezinme Çubuğu"
+  bölümündeki Profil↔Birikim yer değiştirme notu). **`CurrencyProvider` BİLİNÇLİ OLARAK bu listeye
+  EKLENMEDİ** — onu izleyen TEK ekran (`MoneyScreen`) `RootScreen`'in sabit sekmelerinden biri
+  DEĞİL (bkz. "Alt Gezinme Çubuğu" bölümü — Z butonu modül menüsünden push ediliyor), bu yüzden
+  `_buildAppWithClock` testlerinin hiçbiri onu hiç mount etmiyor. **Gotcha (gerçekten yaşandı):**
   `AppThemeProvider` `main.dart`'a eklenirken bu yardımcıya eklenmesi UNUTULMUŞTU — sonuç, o
   yardımcıyı kullanan İLK testte değil, `ProviderNotFoundException`'ın `widget_test.dart`'ın
   KENDİSİNDEN SONRA gelen HER testi (aynı test ikili dosyasında art arda koştukları için) etkilemesi,
