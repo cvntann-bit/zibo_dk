@@ -4586,6 +4586,55 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
     4. "Hesap Değiştir"e basınca GERÇEKTEN bir Google hesap seçicinin açıldığı (önceki hesabı
        sessizce ATLAMADAN) ve farklı bir hesap seçilince o hesabın (yeni ise boş, eskiyse kayıtlı)
        verisiyle uygulamanın yeniden açıldığı.
+- **2026 GÜNCELLEMESİ — gerçek cihazda bulunan bug: "Google ile Bağla" butonuna basınca HİÇBİR ŞEY
+  olmuyordu (ne hata ne başarı).** Kullanıcı release APK'yı gerçek cihazına kurup ilk kez denedi ve
+  butonun tepki vermediğini bildirdi. `adb logcat` ile canlı teşhis edildi:
+  - **Kök neden — `_authenticate()`'in `on GoogleSignInException { return null; }` bloğu HER TÜRLÜ
+    hata kodunu (yalnızca kullanıcının BİLEREK vazgeçmesini DEĞİL) sessizce "iptal" gibi
+    yorumluyordu.** `handleGoogleLinkTap`'in `if (!context.mounted || !linked) return;` satırı da
+    `null`/`false` durumunda HİÇBİR görsel geri bildirim vermiyordu — bu ikisi birleşince, GERÇEK
+    bir hata (yapılandırma sorunu, zaman aşımı, cihaz durumu) ile kullanıcının kasıtlı iptali
+    ARASINDA ARAYÜZDE HİÇBİR FARK yoktu, ikisi de "buton hiçbir şey yapmıyor" gibi görünüyordu.
+  - **İkinci bir gerçek risk — `_signIn.signOut()` (authenticate()'ten HEMEN ÖNCE, "Hesap
+    Değiştir"in her zaman taze bir seçici göstermesi için eklenmişti) bu cihazda (Samsung/
+    Credential Manager) nadiren yanıt vermeden takılabiliyordu**, bu da TÜM zincirin (signOut()
+    dahil) sonsuza kadar beklemesine yol açabilirdi.
+  - **Düzeltme (`google_auth_service.dart`, `_authenticate()`):**
+    1. Hem `_signIn.signOut()` (5sn) hem `_signIn.authenticate()` (25sn) çağrılarına `.timeout(...)`
+       eklendi — cihaz/eklenti yanıt vermese bile akış sonsuza kadar TAKILI KALMAZ, bir zaman
+       aşımı sonrası `GoogleSignInException(code: interrupted)` fırlatılır.
+    2. **`GoogleSignInException` yakalama mantığı DARALTILDI** — yalnızca `code ==
+       GoogleSignInExceptionCode.canceled` (kullanıcının GERÇEKTEN geri tuşuna basması/dışarı
+       dokunması) sessizce `null`'a düşüyor; DİĞER TÜM kodlar (`interrupted`,
+       `clientConfigurationError`, `providerConfigurationError`, `uiUnavailable`, `userMismatch`,
+       `unknownError` — bkz. `google_sign_in_platform_interface`'in `GoogleSignInExceptionCode`
+       enum'u) artık `rethrow` ediliyor. Bu istisna `linkCurrentUser()`/`AuthLinkProvider.
+       linkWithGoogle()` üzerinden hiç yakalanmadan `handleGoogleLinkTap`'in mevcut `catch (_) {
+       showSnackBar(googleLinkFailedMessage) }` bloğuna ulaşıyor — kullanıcı artık GERÇEK bir
+       hatada görünür bir mesaj görüyor, sessiz bir "hiçbir şey olmadı" değil.
+  - **Bu turda AÇIĞA ÇIKAN, KOD DIŞI bir ikinci sorun — cihaz taraflı bir Google Play Services
+    arızası:** Düzeltmeden sonra kullanıcı GERÇEKTEN "Bağlanırken sorun oluştu" mesajını gördü
+    (önceki sessiz davranışın YERİNE) — `adb logcat` bunun ardındaki gerçek native hatayı ortaya
+    çıkardı: `GoogleApiManager: SecurityException: Unknown calling package name
+    'com.google.android.gms'` + `ConnectionResult{statusCode=DEVELOPER_ERROR, ...}`. **İmza/SHA-1
+    kaydı AYRICA doğrulandı ve DOĞRU olduğu teyit edildi** (`apksigner verify --print-certs` ile
+    kurulu release APK'nın SHA-1'i `cde69544d15a5d9e2cb6f4bc2be5cde6125344a3`, `google-services.
+    json`'daki kayıtlı `certificate_hash` ile BİREBİR eşleşiyor) — yani bu, uygulamanın Firebase/
+    OAuth yapılandırmasında bir hata DEĞİL, cihazın KENDİ Google Play Services durumuyla ilgili
+    (bilinen bir GMS iç IPC/binder kimlik doğrulama arızası sınıfı — genelde Play Services önbelleğini
+    temizlemek/güncellemek veya cihazı yeniden başlatmakla çözülür). **Kullanıcıya bu üç adım
+    (yeniden başlat → Play Services önbelleğini temizle → Play Services'i güncelle) önerildi**,
+    sonucu bu turda DOĞRULANAMADI (cihaz taraflı bir adım, asistan yapamaz).
+  - **Ders:** bir servis sınıfının `on SomeException { return null; }` gibi GENİŞ bir istisna
+    yakalama bloğu, o istisna türünün İÇİNDE birden fazla farklı anlam taşıyan bir kod/alt tür
+    (burada: `canceled` vs. diğer TÜM hata kodları) varsa, farklı anlamları AYNI sessiz sonuca
+    indirger — kullanıcıya "gerçek hata" ile "kasıtlı vazgeçme" arasındaki farkı KAYBETTİRİR. Böyle
+    bir birleşik istisna tipiyle çalışırken, hangi ALT kodun/durumun GERÇEKTEN sessiz kalması
+    gerektiğini AÇIKÇA seçip geri kalanını çağırana FIRLATIN.
+  - **Bu değişiklik `FirebaseGoogleAuthService`'in kendisi (platform kanalı + Firebase'e dokunduğu
+    için) `flutter_test`'te DOĞRUDAN test EDİLEMİYOR** (bkz. bölümün başındaki "flutter_test'te
+    KULLANILAMAZ" notu) — yalnızca `flutter test`'in TAMAMININ (299/299) hâlâ geçtiği doğrulandı
+    (bu dosyaya dokunan hiçbir test YOK, değişiklik güvenle izole).
 
 ## Coin Ekonomisi Güvenliği (Mod APK / Hile Koruması) ([firestore.rules](firestore.rules))
 

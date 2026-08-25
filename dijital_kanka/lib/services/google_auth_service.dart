@@ -109,18 +109,36 @@ class FirebaseGoogleAuthService extends GoogleAuthService {
   Future<fb_auth.AuthCredential?> _authenticate() async {
     await _ensureInitialized();
     try {
-      await _signIn.signOut();
+      // Gerçek cihazda (Samsung/Credential Manager) bu çağrının nadiren
+      // yanıt vermeden takılabildiği gözlemlendi — bir zaman aşımı ile
+      // aşağıdaki authenticate() çağrısının HER ZAMAN denenmesini garanti
+      // ediyoruz.
+      await _signIn.signOut().timeout(const Duration(seconds: 5));
     } catch (_) {
       // Önbellek zaten boşsa/eklenti bunu desteklemiyorsa sessizce devam —
       // asıl kritik olan aşağıdaki authenticate() çağrısı.
     }
     try {
-      final account = await _signIn.authenticate();
+      final account = await _signIn.authenticate().timeout(
+        const Duration(seconds: 25),
+        onTimeout: () => throw const GoogleSignInException(
+          code: GoogleSignInExceptionCode.interrupted,
+          description: 'authenticate() timed out',
+        ),
+      );
       final idToken = account.authentication.idToken;
       if (idToken == null) return null;
       return fb_auth.GoogleAuthProvider.credential(idToken: idToken);
-    } on GoogleSignInException {
-      return null;
+    } on GoogleSignInException catch (e) {
+      // Yalnızca kullanıcının BİLEREK vazgeçmesi (geri tuşu/dışarı dokunma)
+      // sessizce `null`'a düşer — diğer TÜM hata kodları (yapılandırma
+      // hatası, kesinti, yukarıdaki zaman aşımı vb.) ÇAĞIRANA fırlatılıyor
+      // ki arayüz görünür bir hata mesajı göstersin. **Önceki davranış
+      // (HER `GoogleSignInException`'ı sessizce yutmak) gerçek bir hatayı
+      // "buton hiçbir şey yapmıyor" gibi gösteriyordu — kullanıcı geri
+      // bildirimiyle bulundu.**
+      if (e.code == GoogleSignInExceptionCode.canceled) return null;
+      rethrow;
     }
   }
 
