@@ -29,17 +29,64 @@ const messaging = app.messaging();
 // için; 4 bildirim betiğinin hiçbiri Auth'a dokunmuyor.
 const auth = app.auth();
 
-/** Şu anki UTC zamanını Europe/Istanbul (sabit UTC+3, Türkiye 2016'dan beri
- * yaz/kış saati uygulamıyor) gün anahtarına (`YYYY-MM-DD`) çevirir. */
-function istanbulDateKey(date) {
-  const istanbul = new Date(date.getTime() + 3 * 60 * 60 * 1000);
-  return istanbul.toISOString().slice(0, 10);
+const DEFAULT_TIME_ZONE = 'Europe/Istanbul';
+
+/** `users/{uid}.timeZone` — bkz. `PushNotificationService.touchLastActive`
+ * (Flutter tarafı, cihazın IANA saat dilimini `FlutterTimezone.
+ * getLocalTimezone()` ile okuyup yazıyor). Alan yoksa (eski uygulama sürümü,
+ * henüz güncellemeyen kullanıcı) VEYA geçersiz bir IANA ismiyse [DEFAULT_TIME_ZONE]'a
+ * düşülür — bu, 2026 güncellemesinden ÖNCEki davranışla (herkese İstanbul
+ * saatine göre gönderim) TUTARLI bir geri düşüş, hiç kimse "kırılmıyor".
+ * `Intl.DateTimeFormat`'ın yerleşik IANA veritabanı desteği kullanıldığı için
+ * yaz/kış saati (DST) otomatik doğru hesaplanıyor — ek bir npm paketi
+ * GEREKMEDİ. */
+function resolveTimeZone(user) {
+  return (user && user.timeZone) || DEFAULT_TIME_ZONE;
 }
 
-/** Şu anki UTC zamanının Europe/Istanbul saatindeki dakika-of-day değeri. */
-function istanbulMinutesOfDay(date) {
-  const istanbul = new Date(date.getTime() + 3 * 60 * 60 * 1000);
-  return istanbul.getUTCHours() * 60 + istanbul.getUTCMinutes();
+function formatInTimeZone(date, timeZone, options) {
+  try {
+    return new Intl.DateTimeFormat('en-US', { ...options, timeZone }).format(date);
+  } catch (error) {
+    // Geçersiz/tanınmayan IANA ismi — varsayılana düş.
+    console.warn(
+      `formatInTimeZone geçersiz timeZone='${timeZone}', Europe/Istanbul'a düşülüyor`,
+      error.message || error,
+    );
+    return new Intl.DateTimeFormat('en-US', { ...options, timeZone: DEFAULT_TIME_ZONE }).format(
+      date,
+    );
+  }
+}
+
+/** [user]'ın KENDİ yerel saatindeki saat değeri (0-23) — bildirim
+ * betiklerinin "şu an bu kullanıcı için doğru gönderim saati mi?" kontrolü
+ * için TEK veri kaynağı (bkz. her betikteki `TARGET_LOCAL_HOURS`). */
+function userLocalHour(user, date) {
+  const formatted = formatInTimeZone(date, resolveTimeZone(user), {
+    hour: 'numeric',
+    hour12: false,
+  });
+  // Bazı ICU sürümleri gece yarısı için "24" döndürüyor — 0'a normalize et.
+  const hour = parseInt(formatted, 10);
+  return hour === 24 ? 0 : hour;
+}
+
+/** [user]'ın KENDİ yerel takvim gününü `YYYY-MM-DD` olarak döner — "bugün
+ * hedefini işaretledi mi?"/"bugünkü su hedefini tamamladı mı?" gibi
+ * kontrollerin kullanıcının GERÇEK yerel gününe göre yapılması için (eski
+ * tasarımda TÜM kullanıcılar için TEK bir sabit Europe/Istanbul günü
+ * varsayılıyordu — `timeZone` alanı olmayan kullanıcılar için hâlâ o
+ * varsayılana düşülüyor, bkz. `resolveTimeZone`). */
+function userDateKey(user, date) {
+  const parts = formatInTimeZone(date, resolveTimeZone(user), {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  });
+  // 'en-US' formatı "MM/DD/YYYY" döner — "YYYY-MM-DD"ye çevir.
+  const [month, day, year] = parts.split('/');
+  return `${year}-${month}-${day}`;
 }
 
 async function fetchAllUsers() {
@@ -135,8 +182,8 @@ module.exports = {
   db,
   messaging,
   auth,
-  istanbulDateKey,
-  istanbulMinutesOfDay,
+  userLocalHour,
+  userDateKey,
   fetchAllUsers,
   sendToUser,
   getLanguageCode,

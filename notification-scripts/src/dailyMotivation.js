@@ -1,38 +1,28 @@
-// 1. GÜNLÜK MOTİVASYON — Europe/Istanbul'da GÜNDE BİRDEN FAZLA (bkz.
-// .github/workflows/daily-motivation.yml — şu an 4 ayrı cron tetikleyicisi)
-// çalışan bağımsız GitHub Actions çalıştırmaları tarafından çağrılır. HER
-// çalıştırma TÜM kullanıcılara, o ÇALIŞTIRMAYA özel rastgele seçilmiş bir
-// sözle bildirim gönderir — yani bir kullanıcı günde kaç kez tetiklenirse
-// (şu an 4) o kadar bildirim alır, her seferinde farklı bir söz.
+// 1. GÜNLÜK MOTİVASYON — SAATTE BİR (bkz. .github/workflows/daily-motivation.yml)
+// çalışan TEK bir GitHub Actions çalıştırması, her kullanıcının KENDİ yerel
+// saatine göre günde DÖRT kez (09/12/16/20 — bkz. TARGET_LOCAL_HOURS)
+// gönderim yapar. Bir kullanıcının yerel saati bu dört değerden birine denk
+// geldiğinde o çalıştırmada bir bildirim gönderilir; farklı diliminde olan
+// kullanıcılar o saatte pas geçilip KENDİ saatleri geldiğinde yakalanır.
 //
-// 2026 GÜNCELLEMESİ — TASARIM DEĞİŞİKLİĞİ (gerçek bir olayla bulundu):
-// İlk sürüm 09:00-10:45 arası 15 dakikada bir (8 kez) tetiklenip her
-// kullanıcının kendi hash'lenmiş "dilimine" denk gelen ÇALIŞTIRMADA
-// gönderim yapıyordu (kullanıcıya göre FARKLI ama gün gün SABİT bir saat
-// vermek için). Kullanıcının gerçek bir çalıştırmada "bildirim gelmedi"
-// bildirmesiyle yapılan incelemede şu bulundu: GitHub, `0,15,30,45 6-7 * *
-// *` gibi yoğun (:00/:15/:30/:45, GitHub'ın kendi dokümantasyonunda "en
-// yoğun" diye işaretlenen dakikalar) bir cron'u GÜVENİLİR ŞEKİLDE
-// ÇALIŞTIRMIYOR — o gün planlanan 8 tetiklemeden yalnızca 1'i gerçekleşti,
-// o da 22 dakika GECİKMEYLE, script'in kendi "pencere dışı" koruması
-// yüzünden HİÇ gönderim yapılmadan sessizce sonlandı. **Sonuç: GitHub
-// Actions'ın schedule tetikleyicisi, YUVARLAK dakikalarda (:00/:15/:30/:45)
-// planlanan cron'lar için güvenilir DEĞİL — sıklık değil, dakika seçimi
-// asıl risk.** Çözüm (o zamanki TEK tetiklemeden farklı olarak artık DÖRT
-// tetikleme var, ama HEPSİ yine YUVARLAK OLMAYAN dakikalarda —
-// `pickSlot`/hash tabanlı "kullanıcıya göre farklı dakika" mantığı
-// GERİ GETİRİLMEDİ, o karmaşıklık bu sefer de gerekmiyor): her biri kendi
-// SABİT, yoğun-olmayan dakikasında (09:07/12:22/16:37/20:52) çalışan DÖRT
-// BAĞIMSIZ, birbirinden habersiz basit çalıştırma — aynı "tek tetikleme,
-// güvenilir dakika" ilkesi, yalnızca gün içine yayılmış DÖRT kopyası.
+// 2026 GÜNCELLEMESİ — kullanıcı raporu: Kolombiya'daki bir test kullanıcısı
+// sabah 4'te bildirim aldığını bildirdi — kök neden, TÜM kullanıcılara sabit
+// Europe/Istanbul saatine göre (kullanıcının GERÇEK konumu/saat dilimi hiç
+// dikkate alınmadan) gönderim yapılmasıydı. Artık her kullanıcının
+// `timeZone` alanına (bkz. PushNotificationService.touchLastActive) göre
+// KENDİ yerel saati hesaplanıp (bkz. common.js'teki `userLocalHour` —
+// IANA saat dilimi kullanıldığı için yaz/kış saati otomatik doğru) yalnızca
+// hedef saatlerden birine denk gelenlere gönderim yapılıyor.
+//
+// **Önceki tasarım (dört AYRI, sabit-Istanbul-saatli cron tetikleyicisi,
+// `SAFETY_MIN_MINUTE`/`SAFETY_MAX_MINUTE` güvenlik penceresiyle) TAMAMEN
+// YERİNE bu SAATLİK + kullanıcı-bazlı filtreleme mantığı geçti** — eski
+// "GitHub'ın çalıştırmayı çok geç tetiklemesine karşı geniş bir Istanbul
+// penceresi" güvenlik ağına artık gerek yok, çünkü YENİ tasarım zaten
+// yalnızca kullanıcının KENDİ hesaplanan yerel saati hedefe denk geldiğinde
+// gönderim yapıyor — "yanlış saatte gönderim" riski tasarım gereği yok.
 
-const {
-  istanbulDateKey,
-  istanbulMinutesOfDay,
-  fetchAllUsers,
-  sendToUser,
-  getLanguageCode,
-} = require('./common');
+const { fetchAllUsers, sendToUser, getLanguageCode, userLocalHour } = require('./common');
 const { daily_motivation: MOTIVATION_QUOTES } = require('./content');
 
 // 2026 İKİNCİ GÜNCELLEMESİ — kullanıcı raporu: bildirimler kullanıcının arayüz dilinden
@@ -41,35 +31,22 @@ const { daily_motivation: MOTIVATION_QUOTES } = require('./content');
 // bir söz seçiliyor — "tüm kullanıcılara aynı çalıştırmada aynı söz" tasarımı artık yalnızca
 // "aynı çalıştırma" kısmında geçerli, söz her kullanıcının kendi dilinde.
 
-// Sıkı, tetiklemeye-özel bir pencere YOK — yalnızca GitHub'ın çalıştırmayı
-// KATASTROFİK şekilde geç (ör. saatler sonra, bir kesinti yüzünden)
-// tetiklemesine karşı geniş bir güvenlik ağı: uyanık saatlerin (07:00-23:00
-// Istanbul) DIŞINDaysa gönderim yapılmaz (yanlışlıkla gece yarısı bir
-// bildirim gitmesin diye). Dört ayrı tetiklemenin (09:07/12:22/16:37/20:52)
-// HEPSİ bu geniş pencerenin içinde kaldığı için tetiklemeye-özel dar bir
-// kontrole gerek yok — GitHub birkaç dakika/saat geç çalıştırsa bile
-// (yoğun olmayan dakikalarda seçildiği için bu ihtimal zaten düşük)
-// bildirim yine de mantıklı bir saatte gider.
-const SAFETY_MIN_MINUTE = 7 * 60; // 07:00
-const SAFETY_MAX_MINUTE = 23 * 60; // 23:00
+// Eski sabit Istanbul saatleriyle (09:07/12:22/16:37/20:52) AYNI ruhu
+// koruyan dört hedef yerel saat — yalnızca artık HERKES için Istanbul değil,
+// HERKESİN KENDİ yerel saatinde.
+const TARGET_LOCAL_HOURS = [9, 12, 16, 20];
 
 async function main() {
   const now = new Date();
-  const dateKey = istanbulDateKey(now);
-  const minutesOfDay = istanbulMinutesOfDay(now);
-  if (minutesOfDay < SAFETY_MIN_MINUTE || minutesOfDay > SAFETY_MAX_MINUTE) {
-    console.log(
-      `Güvenlik penceresi dışı (minutesOfDay=${minutesOfDay}, dateKey=${dateKey}) — ` +
-        `GitHub'ın çalıştırmayı beklenenden çok geç tetiklediği anlaşılıyor, gönderim atlandı.`,
-    );
-    return;
-  }
-
   const users = await fetchAllUsers();
-  console.log(`${users.length} kullanıcıya günlük motivasyon gönderiliyor (minutesOfDay=${minutesOfDay}).`);
+  const eligible = users.filter((u) => TARGET_LOCAL_HOURS.includes(userLocalHour(u, now)));
+  console.log(
+    `${users.length} kullanıcıdan ${eligible.length}'i şu an hedef yerel saatte — ` +
+      `günlük motivasyon gönderiliyor.`,
+  );
 
   await Promise.all(
-    users.map(async (u) => {
+    eligible.map(async (u) => {
       const lang = await getLanguageCode(u.uid);
       const quotes = MOTIVATION_QUOTES[lang] || MOTIVATION_QUOTES.tr;
       const quote = quotes[Math.floor(Math.random() * quotes.length)];

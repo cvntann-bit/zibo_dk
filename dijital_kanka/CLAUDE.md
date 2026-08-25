@@ -2983,6 +2983,76 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
     "yerel olarak çalıştırılamıyor" sınırlaması, bkz. yukarı) — kullanıcının GitHub Actions'tan
     `workflow_dispatch` ile elle tetikleyip (ideal olarak EN/ES `languageCode`'lu bir test
     kullanıcısıyla) doğrulaması gerekiyor.
+- **2026 ÜÇÜNCÜ güncelleme — bildirimler artık kullanıcının KENDİ saat dilimine göre gönderiliyor,
+  eskiden HEPSİ sabit Europe/Istanbul saatine göre gidiyordu.** Kullanıcı raporu: Kolombiya'da
+  (testerscommunity.com üzerinden bulunan) bir test kullanıcısı, günlük motivasyon bildirimini
+  yerel saatiyle sabah 4'te aldığını bildirdi — kök neden buydu, kullanıcının GERÇEK konumu/saat
+  dilimi hiçbir zaman dikkate alınmıyordu.
+  - **İstemci tarafı — `PushNotificationService.touchLastActive(uid)`** (zaten `RootScreen`'in her
+    açılışında/`AppLifecycleState.resumed`'da çağırdığı, `lastActiveAt`'i güncelleyen metot) artık
+    AYRICA cihazın GÜNCEL IANA saat dilimini (`flutter_timezone` paketi, `FlutterTimezone.
+    getLocalTimezone().identifier` — ör. `America/Bogota`) okuyup `users/{uid}.timeZone` alanına
+    yazıyor. Saat dilimi okuması AYRI bir try/catch'te — bu adım başarısız olsa bile (desteklenmeyen
+    platform vb.) `lastActiveAt` güncellemesi ("Geri Kazanma" bildiriminin TEK veri kaynağı)
+    ETKİLENMİYOR. Ayrı bir yazım turu/mekanizma GEREKMEDİ — mevcut "her resume'da tazele" çağrısına
+    tek bir alan eklendi, bu da kullanıcı SEYAHAT ettiğinde bile saat diliminin makul bir sıklıkla
+    güncel kalmasını sağlıyor.
+  - **Sunucu tarafı — `notification-scripts/src/common.js`'e İKİ yeni yardımcı eklendi:**
+    `userLocalHour(user, date)` (kullanıcının KENDİ yerel saatindeki saat değeri, 0-23) ve
+    `userDateKey(user, date)` (kullanıcının KENDİ yerel takvim günü, `YYYY-MM-DD`) — ikisi de
+    Node'un YERLEŞİK `Intl.DateTimeFormat` desteğiyle IANA saat dilimi isimlerini kullanıyor (ek bir
+    npm paketi GEREKMEDİ), bu da yaz/kış saatini (DST) otomatik doğru hesaplıyor. `users/{uid}.
+    timeZone` alanı YOKSA (eski uygulama sürümü, henüz güncellemeyen kullanıcı) VEYA geçersiz bir
+    IANA ismiyse `Europe/Istanbul`'a düşülüyor — 2026 güncellemesinden ÖNCEki davranışla TUTARLI bir
+    geri düşüş, kimse "kırılmıyor". Eski `istanbulDateKey`/`istanbulMinutesOfDay` (yalnızca sabit
+    Istanbul saatine göre hesaplayan) fonksiyonları, tüm kullanım yerleri değiştirildikten sonra
+    TAMAMEN kaldırıldı — artık hiçbir yerde kullanılmıyorlardı.
+  - **Mimari değişiklik — 5 betiğin HEPSİ "sabit Istanbul saatinde bir kez çalış, herkese gönder"
+    yerine "SAATTE BİR çalış, yalnızca KENDİ yerel saati hedefe denk gelen kullanıcılara gönder"
+    modeline geçti:**
+    - `dailyMotivation.js`: `TARGET_LOCAL_HOURS = [9, 12, 16, 20]` (eski dört sabit Istanbul
+      saatiyle AYNI ruh, artık HERKESİN KENDİ 9/12/16/20'sinde). Eski `SAFETY_MIN_MINUTE`/
+      `SAFETY_MAX_MINUTE` güvenlik penceresi TAMAMEN kaldırıldı — YENİ tasarım zaten yalnızca
+      kullanıcının hesaplanan yerel saati hedefe denk geldiğinde gönderim yaptığı için o güvenlik
+      ağına gerek kalmadı ("yanlış saatte gönderim" riski tasarım gereği yok).
+    - `streakReminder.js` (`TARGET_LOCAL_HOURS = [20]`), `dailyRewardReminder.js`
+      (`= [15]`), `waterReminder.js` (`= [16]`) — üçü de HEM saat filtresini HEM "bugün" tanımını
+      (`istanbulDateKey` yerine `userDateKey`) kullanıcının yerel saat dilimine göre hesaplıyor;
+      Firestore alt-doküman okuması (goals/dailyRewards/waterState) yalnızca saat filtresini
+      GEÇEN kullanıcılar için yapılıyor (gereksiz okuma maliyetini önlemek için filtre ÖNCE).
+    - `reEngagement.js` (`TARGET_LOCAL_HOURS = [11]`) — "2 gündür açılmadı mı" kontrolü zaten ham
+      milisaniye farkına dayandığı için saat dilimi bağımsızdı, DEĞİŞMEDİ; yalnızca gönderim ANI
+      artık kullanıcının yerel saatine göre.
+  - **`.github/workflows/*.yml` (4 dosya, `cleanup-stale-anonymous-users.yml` HARİÇ) — cron'lar
+    GÜNDE BİR/DÖRT sabit tetiklemeden SAATTE BİR'e çevrildi**, her biri KENDİ sabit, yoğun-olmayan
+    dakikasında (GitHub'ın `:00/:15/:30/:45`'i "yoğun" işaretlediği, gerçek bir olayla doğrulanmış
+    gecikme riski — bkz. `daily-motivation.yml`'deki tarihsel not — bu yüzden her workflow farklı
+    ve yuvarlak olmayan bir dakika kullanıyor, hem GitHub'ın yoğun dakikalarından kaçınmak hem
+    4 workflow'un aynı anda çakışmaması için): `daily-motivation` `:07`, `streak-reminder` `:14`,
+    `daily-reward-reminder` `:21`, `re-engagement` `:42`, `water-reminder` `:49`.
+  - **Bilinçli ölçek/maliyet notu (şimdilik sorun DEĞİL, ileride revize edilebilir):** saatlik
+    çalıştırma, `fetchAllUsers()`'ın (tüm `users` koleksiyonunu okuyan) çağrı sıklığını ~9 kat
+    artırdı (günde ~9 çalıştırmadan 5×24=120 çalıştırmaya). Küçük bir kapalı test kullanıcı
+    tabanında (birkaç düzine kişi) bu, Firestore'un Spark (ücretsiz) plan kotasının (günde 50.000
+    okuma) çok altında kalıyor — ama kullanıcı sayısı ileride binlere çıkarsa (ör. 1000+ kullanıcı)
+    bu tasarım günde 100.000+ okumaya çıkıp ücretsiz kotayı aşabilir. O noktaya gelinirse çözüm:
+    her kullanıcının "hedef saat kovası"nı (ör. `timeZone`'dan türetilen bir UTC-saat ofseti)
+    Firestore'da AYRI bir alan olarak SAKLAYIP, sorguyu `where('targetHourBucket', '==', currentUtcHour)`
+    gibi bir Firestore sorgusuna çevirmek (tüm koleksiyonu her seferinde ÇEKMEK yerine yalnızca o
+    anki kovaya denk gelenleri sorgulamak) — şimdilik bu optimizasyon YAPILMADI, "bilinçli
+    basitleştirme" (mevcut ölçekte gereksiz karmaşıklık).
+  - **Bu ortamda Node.js YOK, betikler (aynı yukarıdaki sınırlama) yalnızca dikkatli kod
+    incelemesiyle doğrulandı, `flutter test` (299/299) ile Flutter tarafının derlendiği/geçtiği
+    doğrulandı.** Kullanıcının GitHub Actions'tan `workflow_dispatch` ile elle tetikleyip (ideal
+    olarak farklı `timeZone` değerlerine sahip birkaç test kullanıcısıyla) doğrulaması gerekiyor —
+    özellikle Kolombiya'daki test kullanıcısının bir sonraki bildirimi artık KENDİ yerel saatinde
+    (gece yarısı/sabaha karşı DEĞİL) aldığını teyit etmek.
+  - **Yeni versiyon gerektiren kısım YALNIZCA istemci tarafı** (`touchLastActive`'in `timeZone`
+    yazması) — sunucu tarafı (`notification-scripts`/`.github/workflows`) değişiklikleri repoya
+    push edilir edilmez, kullanıcı hiçbir şey yapmadan devreye girer. Eski uygulama sürümündeki
+    (henüz güncellemeyen) kullanıcılar `timeZone` alanı yazmadığı için Europe/Istanbul'a düşer —
+    yani KIRILMIYORLAR, yalnızca güncelleyene kadar eski (sabit Istanbul saatli) davranışı
+    görmeye devam ediyorlar.
 - **`firestore.rules` — DEĞİŞİKLİK GEREKMEDİ (Cloud Functions taslağındaki gerekçeyle AYNI).**
   Mevcut kural zaten `match /users/{userId}/{document=**}` (bkz. "Firestore Veri Kalıcılığı"
   bölümü) ile `users/{uid}` dokümanının TÜM alanlarını (`fcmToken`/`lastActiveAt` dahil) sahibine

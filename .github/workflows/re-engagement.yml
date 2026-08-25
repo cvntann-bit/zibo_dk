@@ -1,11 +1,16 @@
 name: Geri Kazanma Bildirimi
 
 on:
-  # ~11:00 Europe/Istanbul = ~08:00 UTC. Dakika bilerek 07 (:00 DEĞİL) —
-  # GitHub'ın schedule gecikmeleri özellikle :00/:15/:30/:45'te yoğunlaşıyor
-  # (bkz. daily-motivation.yml'deki gerçek olayla doğrulanmış not).
+  # 2026 GÜNCELLEMESİ — SAATTE BİR çalışıp her kullanıcının KENDİ yerel
+  # saati 11:00 olduğunda kontrol eder (bkz. notification-scripts/src/
+  # reEngagement.js'teki TARGET_LOCAL_HOURS — daha önce sabit Europe/
+  # Istanbul saatiydi). Dakika bilerek :42 (:00/:15/:30/:45 DEĞİL) —
+  # GitHub'ın schedule gecikmeleri özellikle o dakikalarda yoğunlaşıyor
+  # (bkz. daily-motivation.yml'deki gerçek olayla doğrulanmış not); diğer
+  # bildirim workflow'larıyla aynı saatte çakışmasın diye de ayrı bir
+  # dakika seçildi.
   schedule:
-    - cron: '7 8 * * *'
+    - cron: '42 * * * *'
   workflow_dispatch: {}
 
 jobs:

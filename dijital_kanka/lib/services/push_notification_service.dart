@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter_timezone/flutter_timezone.dart';
 
 import '../models/push_notification_type.dart';
 import 'notification_service.dart';
@@ -30,11 +31,19 @@ abstract class PushNotificationService {
     required void Function(PushNotificationType type) onNotificationTap,
   });
 
-  /// Kullanıcının Firestore'daki `lastActiveAt` alanını "şimdi"ye günceller
-  /// — "Geri Kazanma" (re-engagement) bildiriminin (bkz. `functions/src/
-  /// index.ts`) "2 gündür uygulamayı hiç açmadı mı?" kontrolü için TEK veri
-  /// kaynağı. `RootScreen`'de hem `initState`'te (uygulama açılırken) hem
-  /// `AppLifecycleState.resumed`'da (arka plandan öne dönünce) çağrılıyor.
+  /// Kullanıcının Firestore'daki `lastActiveAt` alanını "şimdi"ye, `timeZone`
+  /// alanını cihazın GÜNCEL IANA saat dilimine (ör. `America/Bogota`) günceller.
+  /// `lastActiveAt`, "Geri Kazanma" (re-engagement) bildiriminin "2 gündür
+  /// uygulamayı hiç açmadı mı?" kontrolü için; `timeZone`, TÜM bildirim
+  /// betiklerinin (bkz. `notification-scripts/src/common.js`'teki
+  /// `userLocalHour`/`userDateKey`) kullanıcının KENDİ yerel saatine göre
+  /// gönderim yapabilmesi için TEK veri kaynağı — 2026 güncellemesi, kullanıcı
+  /// raporuyla eklendi (Kolombiya'daki bir test kullanıcısı sabah 4'te bildirim
+  /// aldığını bildirdi; önceden TÜM bildirimler sabit Europe/Istanbul saatine
+  /// göre gönderiliyordu). `RootScreen`'de hem `initState`'te (uygulama
+  /// açılırken) hem `AppLifecycleState.resumed`'da (arka plandan öne dönünce)
+  /// çağrılıyor — bu da saat dilimini kullanıcı seyahat ettiğinde bile makul
+  /// bir sıklıkla tazeler, ayrı bir mekanizma GEREKMEDİ.
   Future<void> touchLastActive(String uid);
 }
 
@@ -100,9 +109,21 @@ class FirebaseMessagingPushNotificationService extends PushNotificationService {
 
   @override
   Future<void> touchLastActive(String uid) async {
+    // Saat dilimi okuması AYRI bir try/catch'te — bu platform/eklenti
+    // sorunundan dolayı başarısız olsa bile (ör. desteklenmeyen bir OS
+    // sürümü) `lastActiveAt` güncellemesi ("Geri Kazanma" bildiriminin tek
+    // veri kaynağı) HİÇ etkilenmemeli.
+    String? timeZone;
+    try {
+      timeZone = (await FlutterTimezone.getLocalTimezone()).identifier;
+    } catch (_) {
+      // Yoksayılır — betikler `timeZone` alanı yoksa zaten Europe/Istanbul'a
+      // düşüyor (bkz. notification-scripts/src/common.js).
+    }
     try {
       await FirebaseFirestore.instance.collection('users').doc(uid).set({
         'lastActiveAt': FieldValue.serverTimestamp(),
+        if (timeZone != null) 'timeZone': timeZone,
       }, SetOptions(merge: true));
     } catch (_) {
       // Yoksayılır — bir sonraki resume'da tekrar denenecek.

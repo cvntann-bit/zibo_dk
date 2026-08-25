@@ -1,5 +1,7 @@
-// 3. GÜNLÜK ÖDÜL HATIRLATMASI — her gün 15:00 (Europe/Istanbul) tetiklenir
-// (bkz. .github/workflows/daily-reward-reminder.yml).
+// 3. GÜNLÜK ÖDÜL HATIRLATMASI — SAATTE BİR çalışan bir GitHub Actions
+// çalıştırması, her kullanıcının KENDİ yerel saati 15:00 olduğunda gönderir
+// (bkz. .github/workflows/daily-reward-reminder.yml, TARGET_LOCAL_HOURS
+// aşağıda).
 //
 // BİLİNEN SINIRLAMA: Şans Çarkı'nın Firestore'da kalıcı bir "bugün çevrildi
 // mi" alanı YOK (bkz. CLAUDE.md "Şans Çarkı" — günlük çevirme sınırı
@@ -10,16 +12,26 @@
 // kullanıcının arayüz diline göre değişmiyordu. Artık `getLanguageCode` ile
 // kullanıcının dili çözülüp `content.js`'teki TR/EN/ES metinlerinden doğru
 // olanı gönderiliyor.
+//
+// 2026 İKİNCİ GÜNCELLEMESİ — kullanıcı raporu (Kolombiya'daki bir test
+// kullanıcısı sabah 4'te bildirim aldı): gönderim artık sabit Europe/Istanbul
+// saatine göre DEĞİL, `userLocalHour`/`userDateKey` (bkz. common.js) ile
+// kullanıcının KENDİ saat dilimine göre yapılıyor.
 
-const { db, istanbulDateKey, fetchAllUsers, sendToUser, getLanguageCode } = require('./common');
+const { db, fetchAllUsers, sendToUser, getLanguageCode, userLocalHour, userDateKey } = require('./common');
 const { daily_reward: DAILY_REWARD_BODY } = require('./content');
 
+const TARGET_LOCAL_HOURS = [15];
+
 async function main() {
-  const dateKey = istanbulDateKey(new Date());
+  const now = new Date();
   const users = await fetchAllUsers();
+  const eligible = users.filter((u) => TARGET_LOCAL_HOURS.includes(userLocalHour(u, now)));
+  console.log(`${users.length} kullanıcıdan ${eligible.length}'i şu an hedef yerel saatte.`);
 
   await Promise.all(
-    users.map(async (user) => {
+    eligible.map(async (user) => {
+      const dateKey = userDateKey(user, now);
       const doc = await db
         .collection('users')
         .doc(user.uid)

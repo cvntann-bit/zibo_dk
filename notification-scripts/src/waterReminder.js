@@ -1,20 +1,32 @@
-// 5. SU HATIRLATMASI — her gün 16:07 (Europe/Istanbul) tetiklenir (bkz.
-// .github/workflows/water-reminder.yml). Yalnızca kullanıcı bugünkü su
-// hedefini HENÜZ tamamlamadıysa gönderilir — `users/{uid}/state/waterState`
-// (bkz. lib/providers/water_provider.dart) içindeki `entries` listesinde
-// bugüne ait bir kayıt YOKSA (hiç başlanmamış) VEYA varsa ama `unitCount <
+// 5. SU HATIRLATMASI — SAATTE BİR çalışan bir GitHub Actions çalıştırması,
+// her kullanıcının KENDİ yerel saati 16:00 olduğunda gönderir (bkz.
+// .github/workflows/water-reminder.yml, TARGET_LOCAL_HOURS aşağıda).
+// Yalnızca kullanıcı bugünkü (KENDİ yerel takvim günündeki) su hedefini
+// HENÜZ tamamlamadıysa gönderilir — `users/{uid}/state/waterState` (bkz.
+// lib/providers/water_provider.dart) içindeki `entries` listesinde bugüne
+// ait bir kayıt YOKSA (hiç başlanmamış) VEYA varsa ama `unitCount <
 // goalUnitCount`'sa (yarım kalmış) hatırlatma gider; `unitCount >=
 // goalUnitCount`'sa (hedef zaten tamamlanmış) HİÇ gönderilmez.
+//
+// 2026 GÜNCELLEMESİ — kullanıcı raporu (Kolombiya'daki bir test kullanıcısı
+// sabah 4'te bildirim aldı): gönderim artık sabit Europe/Istanbul saatine
+// göre DEĞİL, `userLocalHour`/`userDateKey` (bkz. common.js) ile
+// kullanıcının KENDİ saat dilimine göre yapılıyor.
 
-const { db, istanbulDateKey, fetchAllUsers, sendToUser, getLanguageCode } = require('./common');
+const { db, fetchAllUsers, sendToUser, getLanguageCode, userLocalHour, userDateKey } = require('./common');
 const { water_reminder: WATER_REMINDER_BODY } = require('./content');
 
+const TARGET_LOCAL_HOURS = [16];
+
 async function main() {
-  const dateKey = istanbulDateKey(new Date());
+  const now = new Date();
   const users = await fetchAllUsers();
+  const eligible = users.filter((u) => TARGET_LOCAL_HOURS.includes(userLocalHour(u, now)));
+  console.log(`${users.length} kullanıcıdan ${eligible.length}'i şu an hedef yerel saatte.`);
 
   await Promise.all(
-    users.map(async (user) => {
+    eligible.map(async (user) => {
+      const dateKey = userDateKey(user, now);
       const doc = await db
         .collection('users')
         .doc(user.uid)

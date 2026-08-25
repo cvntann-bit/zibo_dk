@@ -1,21 +1,17 @@
 name: Günlük Motivasyon Bildirimi
 
 on:
-  # GÜNDE DÖRT tetikleme (09:07/12:22/16:37/20:52 Europe/Istanbul), HER
-  # BİRİ BİLEREK :00/:15/:30/:45 DIŞINDA bir dakika (GitHub'ın kendi
-  # dokümantasyonu bu dakikaları "yoğun" olarak işaretliyor, gecikme riski
-  # en yüksek). İlk tasarım (09:00-10:45 arası 15dk'da bir, 8 tetikleme,
-  # HEPSİ yuvarlak dakikalarda) gerçek bir olayla test edildi: GitHub o gün
-  # 8 tetiklemeden yalnızca 1'ini gerçekleştirdi, 22 dakika GECİKMEYLE —
-  # script'in pencere kontrolü yüzünden hiç gönderim yapılmadı (bkz.
-  # notification-scripts/src/dailyMotivation.js'deki tam açıklama). O
-  # olaydan çıkan ders SIKLIK değil, DAKİKA SEÇİMİYDİ — bu yüzden dörde
-  # çıkarken de her tetikleme yine yoğun-olmayan bir dakikada.
+  # 2026 GÜNCELLEMESİ — kullanıcı dünyanın her yerinden test kullanıcıları
+  # katılınca (bir Kolombiya kullanıcısı sabah 4'te bildirim aldığını
+  # bildirdi) TASARIM DEĞİŞTİ: artık SABİT dört Istanbul saati YOK, bunun
+  # yerine SAATTE BİR çalışıp her kullanıcının KENDİ yerel saatine göre
+  # filtreleme yapan TEK bir tetikleyici var (bkz. notification-scripts/
+  # src/dailyMotivation.js'teki TARGET_LOCAL_HOURS = [9, 12, 16, 20]).
+  # Dakika BİLEREK :00/:15/:30/:45 DIŞINDA (:07) — GitHub'ın kendi
+  # dokümantasyonu bu dakikaları "yoğun" olarak işaretliyor, gerçek bir
+  # olayla (bkz. git geçmişi) doğrulanmış bir gecikme riski.
   schedule:
-    - cron: '7 6 * * *' # 09:07 İstanbul
-    - cron: '22 9 * * *' # 12:22 İstanbul
-    - cron: '37 13 * * *' # 16:37 İstanbul
-    - cron: '52 17 * * *' # 20:52 İstanbul
+    - cron: '7 * * * *'
   workflow_dispatch: {}
 
 jobs:
