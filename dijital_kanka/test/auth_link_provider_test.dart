@@ -123,6 +123,24 @@ void main() {
       },
     );
 
+    test(
+      '2026 bug düzeltmesi — linkWithGoogle GoogleSignInMissingIdTokenException '
+      'fırlatırsa (idToken null geldi, kullanıcı VAZGEÇMEDİ) çağırana YAYILIR, '
+      'SESSİZCE false DÖNMEZ',
+      () async {
+        final service = _FakeGoogleAuthService()
+          ..linkError = const GoogleSignInMissingIdTokenException();
+        final provider = AuthLinkProvider(googleAuthService: service);
+        await Future<void>.delayed(Duration.zero);
+
+        await expectLater(
+          provider.linkWithGoogle(),
+          throwsA(isA<GoogleSignInMissingIdTokenException>()),
+        );
+        expect(provider.isLinking, false);
+      },
+    );
+
     test('signInWithGoogle servisin döndürdüğü outcome\'u aynen döner', () async {
       final service = _FakeGoogleAuthService()
         ..nextSignInOutcome = const GoogleSignInOutcome(

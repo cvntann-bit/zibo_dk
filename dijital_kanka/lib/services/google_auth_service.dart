@@ -24,6 +24,32 @@ class GoogleAccountAlreadyLinkedElsewhereException implements Exception {
   const GoogleAccountAlreadyLinkedElsewhereException();
 }
 
+/// **2026 bug düzeltmesi — gerçek kullanıcı raporu: hesap seçiyorum ama
+/// hiçbir şey olmuyor.** `_authenticate()`'in `authenticate()` çağrısı
+/// BAŞARIYLA bir hesap döndürüp `account.authentication.idToken`'ın `null`
+/// geldiği (kullanıcının GERÇEKTEN vazgeçmesinden — `GoogleSignInException
+/// (code: canceled)` — TAMAMEN FARKLI bir durum) anda fırlatılır. Canlı
+/// `adb logcat` ile doğrulandı: hesap seçici tam olarak normal açılıp
+/// kapanıyor (native taraf hatasız), ama Dart tarafında `debugPrint` dahil
+/// HİÇBİR log satırı basılmıyordu — eski kod bu durumu SESSİZCE `null`'a
+/// düşürüyor, bu da `linkWithGoogle()`'ın `false` dönüp `handleGoogleLinkTap`'in
+/// hiçbir mesaj göstermeden çıkmasına yol açıyordu (kullanıcıya "buton
+/// hiçbir şey yapmıyor" gibi görünüyordu — `GoogleSignInException`'ın TÜM
+/// kodlarını sessizce yutan ÖNCEKİ bug'ın BİREBİR aynı sınıfı, bkz.
+/// CLAUDE.md "Google Hesap Bağlama" bölümü). Artık `handleGoogleLinkTap`'in
+/// genel `catch` bloğuna kadar fırlatılıp görünür bir hata mesajı gösteriyor
+/// VE `debugPrint` ile logcat'e düşüyor — bir dahaki sefere bu durum tekrar
+/// yaşanırsa kanıt hemen elde olacak.
+class GoogleSignInMissingIdTokenException implements Exception {
+  const GoogleSignInMissingIdTokenException();
+
+  @override
+  String toString() =>
+      'GoogleSignInMissingIdTokenException: authenticate() bir hesap döndürdü '
+      'ama idToken null geldi (kullanıcının vazgeçmesi DEĞİL — bkz. sınıf '
+      'dokümantasyonu).';
+}
+
 /// Google ile hesap bağlama/giriş işlemlerinin soyut arayüzü — `AdService`/
 /// `SoundEffectsService` ile AYNI "gerçek implementasyon, testte enjekte
 /// edilebilir sahte" deseni. Hem `google_sign_in` (native Credential
@@ -127,7 +153,9 @@ class FirebaseGoogleAuthService extends GoogleAuthService {
         ),
       );
       final idToken = account.authentication.idToken;
-      if (idToken == null) return null;
+      // `idToken == null` kullanıcının vazgeçmesi DEĞİL — bkz.
+      // GoogleSignInMissingIdTokenException dokümantasyonu.
+      if (idToken == null) throw const GoogleSignInMissingIdTokenException();
       return fb_auth.GoogleAuthProvider.credential(idToken: idToken);
     } on GoogleSignInException catch (e) {
       // Yalnızca kullanıcının BİLEREK vazgeçmesi (geri tuşu/dışarı dokunma)

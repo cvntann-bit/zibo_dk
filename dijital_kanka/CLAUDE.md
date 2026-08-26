@@ -4878,6 +4878,52 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
     SAATLERCE teşhis etmekten çok daha ucuza mal oluyor.
   - **Sürüm 1.1.0+7'ye yükseltildi**, bu düzeltmeyi içeren yeni bir AAB derlenip Play Console'un
     Kapalı Test track'ine yüklenmeye hazır.
+- **2026 GÜNCELLEMESİ — Play Store'a yayınlandıktan SONRA gelen yeni bir rapor: "hesap seçme ekranı
+  geliyor, hesabıma dokunuyorum ama hiçbir şey olmuyor."** Önceki turdaki düzeltme (yalnızca
+  `GoogleSignInException.canceled` sessiz kalsın, diğerleri fırlatılsın) bu YENİ senaryoyu
+  KAPSAMIYORDU çünkü bu sefer HİÇBİR İSTİSNA fırlatılmıyordu — `authenticate()` BAŞARIYLA
+  tamamlanıyor, yalnızca dönen hesabın `idToken`'ı `null` geliyordu.
+  - **Teşhis — canlı `adb logcat` ile (bağlı cihaz + `logcat -G 16M` ile büyütülmüş buffer,
+    yalnızca ilgili etiketlere filtrelenmiş: `flutter`/`GoogleApiManager`/`ActivityTaskManager`
+    vb. — cihazın sensör/ekran log gürültüsü varsayılan buffer'ı saniyeler içinde dolduruyordu, ilk
+    filtresiz denemede asıl kanıt kaybolmuştu):** `ActivityTaskManager` log'ları hesap seçici
+    akışının (`HiddenActivity` → `SignInCredentialChooserActivity` →
+    `GoogleSignInActivity` → `HiddenActivity` → `MainActivity`) TAM OLARAK normal, hatasız
+    şekilde açılıp kapandığını gösteriyordu (native tarafta HİÇBİR sorun yok) — ama bu SIRADA
+    (ve SONRASINDA) `flutter` etiketli TEK BİR log satırı bile YOKTU. Bu, akışın Dart tarafında
+    bir İSTİSNA olmadan, SESSİZCE `null` döndüğünü kanıtlıyordu.
+  - **Kök neden — `_authenticate()`'in `if (idToken == null) return null;` satırı.** Bu satır
+    `idToken`'ın `null` gelmesini kullanıcının vazgeçmesiyle AYNI kategoriye koyup sessizce
+    `null` döndürüyordu — ama bu İKİSİ TAMAMEN FARKLI durumlar: kullanıcı vazgeçtiğinde
+    `authenticate()` zaten `GoogleSignInException(code: canceled)` FIRLATIYOR (ayrı bir kod
+    yoluyla ele alınıyor); BURADAKİ durum ise `authenticate()`'in BAŞARIYLA bir hesap
+    döndürüp yalnızca ID token'ın eksik gelmesi — muhtemelen geçici bir Credential
+    Manager/Play Services tuhaflığı (kesin ikincil kök neden belirsiz, ama BELİRTİ artık net).
+    Sonuç: `linkCurrentUser()` → `null`, `AuthLinkProvider.linkWithGoogle()` → `false`,
+    `handleGoogleLinkTap`'in `if (!context.mounted || !linked) return;` satırı da HİÇBİR
+    mesaj göstermeden sessizce çıkıyordu — kullanıcıya "buton hiçbir şey yapmıyor" gibi
+    görünen TAM OLARAK bu rapor.
+  - **Düzeltme — YENİ `GoogleSignInMissingIdTokenException`** (`google_auth_service.dart`):
+    `idToken == null` artık sessizce `null` DÖNMÜYOR, bu YENİ, açıkça adlandırılmış istisnayı
+    FIRLATIYOR — `handleGoogleLinkTap`'in genel `catch (e, st)` bloğuna kadar yayılıp hem
+    görünür bir hata mesajı (`googleLinkFailedMessage`) gösteriyor HEM DE `debugPrint` ile
+    logcat'e düşüyor (bir dahaki sefere bu durum tekrarlanırsa kanıt ANINDA elde olacak,
+    ayrıca bir filtreli `adb logcat` seansı kurmaya gerek kalmayacak). **Ders — önceki turdaki
+    AYNI dersin bir varyasyonu:** bir akışın "başarı" ve "kullanıcı vazgeçmesi" dışında
+    ÜÇÜNCÜ bir sonucu (kısmi/eksik başarı) olabiliyorsa, bu üçüncü durumu ikiden BİRİNE
+    (özellikle "sessiz" olana) indirgemek gerçek bir hatayı görünmez kılar — her farklı sonuç
+    türü kendi açık kod yoluna sahip olmalı.
+  - **Cihazda GERÇEK dünya sideload testi bu turda YAPILMADI** — cihazda kurulu olan sürüm artık
+    kullanıcının GERÇEK, Play Store'dan güncellediği ve kendi verisini taşıyan canlı kurulumu
+    (9 coin, İspanyolca arayüz — kullanıcının kendi testleri sırasında birikmiş) olduğu için,
+    onu debug build ile ÜZERİNE YAZMAK (`adb install -r` bir imza uyuşmazlığı verip önce
+    `uninstall` gerektirirdi, bu da bu veriyi SİLERDİ) BİLEREK YAPILMADI. Düzeltme yalnızca
+    `flutter test`'teki (303/303) yeni bir testle (`auth_link_provider_test.dart` —
+    `GoogleSignInMissingIdTokenException`'ın `linkWithGoogle()`'dan sessizce yutulmadan
+    YAYILDIĞINI doğruluyor) doğrulandı. **Kullanıcının Play Store güncellemesini aldıktan
+    SONRA gerçek cihazında doğrulaması gereken:** sorun tekrar olursa artık en azından görünür
+    bir "Bağlanırken sorun oluştu" mesajı görmeli (sessiz kalmamalı) — sorun TAMAMEN ortadan
+    kalkıp kalkmadığı (idToken'ın neden bazen eksik geldiği) ayrıca izlenmeli.
 
 ## Coin Ekonomisi Güvenliği (Mod APK / Hile Koruması) ([firestore.rules](firestore.rules))
 
