@@ -14,7 +14,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:dijital_kanka/data/goal_quotes.dart';
 import 'package:dijital_kanka/data/money_quotes.dart';
 import 'package:dijital_kanka/data/wheel_prizes.dart';
-import 'package:dijital_kanka/data/zibo_messages.dart';
 import 'package:dijital_kanka/l10n/app_localizations.dart';
 import 'package:dijital_kanka/main.dart';
 import 'package:dijital_kanka/providers/app_theme_provider.dart';
@@ -44,6 +43,7 @@ import 'package:dijital_kanka/services/notification_service.dart';
 import 'package:dijital_kanka/services/purchase_service.dart';
 import 'package:dijital_kanka/utils/ad_free_promo_trigger.dart';
 import 'package:dijital_kanka/utils/tab_navigation.dart';
+import 'package:dijital_kanka/widgets/speech_bubble.dart';
 
 /// Gerçek [DijitalKankaApp] ile aynı kurulum, ama testte tarihi kontrol
 /// edebilmek için [GoalsProvider]'a sahte bir saat enjekte eder.
@@ -127,6 +127,19 @@ Future<void> _pumpPastOnboarding(WidgetTester tester, Widget app) async {
 Future<void> _openModulesMenu(WidgetTester tester) async {
   await tester.tap(find.bySemanticsLabel('Ek modülleri aç'));
   await tester.pumpAndSettle();
+}
+
+/// Ana Sayfa'nın konuşma balonunda o an gösterilen sözü okur — Zibo'nun
+/// başlangıç sözü artık RASTGELE seçildiği için (bkz. `home_screen.dart`'taki
+/// `_messageIndex` başlatıcısı, kullanıcı raporu: "hep aynı söz ile
+/// başlıyor") testler hangi sözün göründüğünü ARTIK sabit olarak
+/// varsayamıyor — bunun yerine anlık değeri doğrudan widget ağacından okuyor.
+String _currentHomeMessage(WidgetTester tester) {
+  return tester
+      .widget<Text>(
+        find.descendant(of: find.byType(SpeechBubble), matching: find.byType(Text)),
+      )
+      .data!;
 }
 
 void main() {
@@ -230,13 +243,13 @@ void main() {
     },
   );
 
-  testWidgets('Ana sayfa Zibo görselini ve ilk sözü gösterir', (
+  testWidgets('Ana sayfa Zibo görselini ve rastgele bir sözü gösterir', (
     WidgetTester tester,
   ) async {
     await _pumpPastOnboarding(tester, const DijitalKankaApp());
 
     expect(find.byKey(const Key('ziboCharacterImage')), findsOneWidget);
-    expect(find.text(ziboMessagesTr.first), findsOneWidget);
+    expect(_currentHomeMessage(tester), isNotEmpty);
     expect(find.text('0'), findsOneWidget); // başlangıç coin bakiyesi
   });
 
@@ -254,10 +267,11 @@ void main() {
     );
     await tester.pumpAndSettle();
 
+    final before = _currentHomeMessage(tester);
     await tester.tap(find.byKey(const Key('ziboCharacterImage')));
     await tester.pumpAndSettle();
 
-    expect(find.text(ziboMessagesTr.first), findsNothing);
+    expect(_currentHomeMessage(tester), isNot(equals(before)));
   });
 
   testWidgets(
@@ -304,6 +318,12 @@ void main() {
       expect(find.text(goalQuotesTr.first), findsOneWidget);
 
       await tester.pump(const Duration(seconds: 5));
+      // SpeechBubble artık söz değişiminde bir fade geçişi kullanıyor (bkz.
+      // speech_bubble.dart) — Timer'ın tetiklediği `setState` bu TEK
+      // `pump(duration)` çağrısının SONUNDA gerçekleşiyor, yani geçiş
+      // animasyonu o anda YENİ BAŞLIYOR; tamamlanması için ayrıca
+      // `pumpAndSettle()` gerekiyor.
+      await tester.pumpAndSettle();
 
       expect(find.text(goalQuotesTr.first), findsNothing);
 
@@ -578,6 +598,9 @@ void main() {
       expect(find.text(moneyQuotesTr.first), findsOneWidget);
 
       await tester.pump(const Duration(seconds: 5));
+      // SpeechBubble artık söz değişiminde bir fade geçişi kullanıyor (bkz.
+      // speech_bubble.dart) — bkz. Hedef Takibi testindeki AYNI not.
+      await tester.pumpAndSettle();
 
       expect(find.text(moneyQuotesTr.first), findsNothing);
 
@@ -894,7 +917,7 @@ void main() {
       expect(find.text('Home'), findsOneWidget);
       expect(find.text('Goals'), findsOneWidget);
       expect(find.text('Profile'), findsOneWidget);
-      expect(find.text(ziboMessagesEn.first), findsOneWidget);
+      expect(_currentHomeMessage(tester), isNotEmpty);
     },
   );
 
@@ -1740,8 +1763,9 @@ void main() {
     (WidgetTester tester) async {
       await _pumpPastOnboarding(tester, const DijitalKankaApp());
 
-      // Ana Sayfa'daki kalp ikonuna dokunup ilk sözü favorile.
-      final firstQuote = ziboMessagesTr.first;
+      // Ana Sayfa'daki kalp ikonuna dokunup o an gösterilen sözü favorile
+      // (başlangıç sözü artık rastgele — bkz. `_currentHomeMessage`).
+      final firstQuote = _currentHomeMessage(tester);
       await tester.tap(find.byIcon(Icons.favorite_border));
       await tester.pumpAndSettle();
       expect(find.byIcon(Icons.favorite), findsWidgets);

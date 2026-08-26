@@ -127,6 +127,54 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
   karıştırıyordu. Gerçek genel bir günlük seri kavramı eklenmek istenirse Hedef Takibi'ndeki per-goal
   7 günlük döngüden ayrı, `GoalsProvider`'daki verilerden türetilebilir bir şey olarak yeniden ele
   alınmalı.
+- **2026 bug düzeltmesi — uygulama HER açılışta havuzdaki AYNI (ilk) sözle başlıyordu.** Kullanıcı
+  raporu: "hep aynı söz ile başlıyor". Kök neden: `_HomeScreenState._messageIndex`'in başlangıç
+  değeri sabit `0`'dı — `_pickNewMessageIndex()`'in "art arda aynı mesaj gelmesin" garantisi yalnızca
+  Zibo'ya DOKUNULDUĞUNDA devreye giriyordu, İLK gösterim hiç rastgele değildi. **Düzeltme:**
+  `_messageIndex` artık `Random().nextInt(1 << 16)` ile rastgele bir başlangıç değeri alıyor —
+  `build()`'deki `_messageIndex % messagePool.length` zaten her büyüklükteki değeri geçerli bir
+  indekse indirgediği için üst sınırın kesin değeri önemsiz. **Test etkisi:** `widget_test.dart`'taki
+  başlangıç sözünü `ziboMessagesTr.first`'e sabit varsayan üç test (+ favorileme testindeki bir
+  değişken ataması) artık `_currentHomeMessage(tester)` (YENİ yardımcı — `SpeechBubble`'ın İÇİNDEKİ
+  `Text`'i doğrudan okuyor) ile o anki GERÇEK mesajı okuyup üyelik/eşitlik kontrolü yapıyor, belirli
+  bir sabit metne güvenmiyor.
+
+### Konuşma Balonu ([speech_bubble.dart](lib/widgets/speech_bubble.dart))
+- **2026 bug düzeltmesi — kısa sözlerde favori/paylaş/söz-ekle butonları metnin ÜSTÜNE biniyordu.**
+  Kullanıcı raporu: "cümle kısa ise çok küçülüyor... butonlar cümleyle iç içe giriyor." Kök neden:
+  `SpeechBubble` (8 ekranda paylaşılan tek widget — Ana Sayfa, Hedef Takibi, Para ve Birikim, Su
+  Takibi, Rüya/Şükran/Ruh Hali/Manifest günlükleri) `CustomPaint`'in çocuğuna (`Text`) göre
+  boyutlanıyordu — kısa bir söz geldiğinde balon küçülürken, köşelerine bindirilmiş 36×36 butonlar
+  (`Positioned(top/bottom: -6, ...)`, bkz. `home_screen.dart`'taki `Stack`) sabit boyutlarını
+  koruyup metnin üstüne taşıyordu. **Düzeltme:** `ConstrainedBox(minWidth: 240, minHeight: 100)`
+  eklendi — balon bu köşe butonlarının rahat durabileceği bir ALT sınırın altına asla düşmüyor, ÜST
+  sınır YOK (uzun sözler eskisi gibi serbestçe büyümeye devam ediyor). **Aynı turda eklenen ikinci
+  iyileştirme** (kullanıcı isteği: "değişen cümlelere bir animasyon ekleyebiliriz... sen seç") —
+  söz değiştiğinde ani bir "flaş" yerine yumuşak bir FADE (`AnimatedSwitcher`, 320ms,
+  `ValueKey(message)`); shake yerine fade seçildi çünkü rutin bir söz rotasyonu için daha sakin/şık
+  duruyor, shake daha çok hata/dikkat-çekme çağrışımı yapardı.
+  - **Test etkisi — minimum boyut bazı ekranlarda içeriği viewport'un altına itti:**
+    `manifest_journal_screen_test.dart`'ta büyüyen balon "Kaydet" `FilledButton`'ını gerçekçi telefon
+    viewport'unda `ListView`'ın lazy-realize penceresinin dışına itti — `find.byType(FilledButton)`
+    (varsayılan `skipOffstage: true`) onu bulamıyordu. Çözüm KAYDIRMAK değil (`onPressed`'i yalnızca
+    OKUYUP/doğrudan ÇAĞIRDIĞIMIZ için gerçek bir hit-test'e hiç gerek yok)
+    `find.byType(FilledButton, skipOffstage: false)` kullanmaktı.
+  - **Test etkisi — fade animasyonu, bazı testlerin `Timer.periodic(5sn)` + BÜYÜK-adımlı
+    `pump`/`pumpAndSettle` varsayımlarını bozdu:** `widget_test.dart`'taki "...5 saniyede bir
+    otomatik değişir" testleri `pump(Duration(seconds:5))`'ten HEMEN SONRA eski sözün kaybolduğunu
+    varsayıyordu — artık Timer'ın tetiklediği `setState` bu pump'ın SONUNDA gerçekleşip fade animasyonu
+    o an YENİ BAŞLADIĞI için tamamlanması ayrıca bir `pumpAndSettle()` gerektiriyor. **Daha ciddi bir
+    tuzak — `goal_completion_celebration_test.dart`'ta GERÇEK bir `pumpAndSettle` sonsuz döngüsü:**
+    bu testin "kutlama animasyonunu (~4sn) tek seferde geç" tekniği `pumpAndSettle(Duration(seconds:
+    5))` kullanıyordu — bu 5 SANİYELİK adım, `GoalTrackingScreen`'in KENDİ konuşma balonu sözünü
+    döndüren AYNI 5 saniyelik `Timer.periodic`'iyle TAM ÇAKIŞIP HER adımda timer'ı yeniden
+    tetikliyor, yeni eklenen fade animasyonunu her seferinde baştan başlatıp `pumpAndSettle`'ın ASLA
+    "settle" olamamasına (`pumpAndSettle timed out`) yol açıyordu. **Çözüm:** o tek satırı, kendi
+    başına asla yeniden tetiklenmeyen, 5000ms'e TAM denk gelmeyen üç ayrı `pump()` çağrısına
+    (`2sn + 2sn + 500ms`) bölmek. **Ders — genelleştirilebilir bir tuzak:** bir ekranın KENDİ periyodik
+    `Timer`'ı varsa, o ekranı pump'layan bir testte `pumpAndSettle(Duration(saniye))`'i o timer'ın
+    periyoduna TAM EŞİT (veya tam katı) bir değerle ASLA kullanmayın — `pump()`'ın kendi TEK SEFERLİK,
+    tekrarlamayan doğası bu resonance riskini taşımaz.
 
 ### Hedef Takibi ([goal_tracking_screen.dart](lib/screens/goal_tracking_screen.dart), [goals_provider.dart](lib/providers/goals_provider.dart), [goal.dart](lib/models/goal.dart), [goal_card.dart](lib/widgets/goal_card.dart), [goal_quotes.dart](lib/data/goal_quotes.dart))
 - **`SharedPreferences` ile kalıcı** (`ThemeProvider`/`CostumeProvider` ile aynı desen) — hedefler
@@ -1108,6 +1156,22 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
   bu provider'ın işi değil — `GoalsProvider`/`WaterProvider` ile aynı gerekçeyle coin sistemine
   bağımlı değil; `claimToday()` o günün miktarını (veya `null`) döner, gerçekten eklemek
   (`CoinProvider.earnDailyLoginReward(amount)`) çağıran ekranın sorumluluğunda.
+- **2026 bug düzeltmesi — döngü "her gün 1. gün olarak açılıyor, önceki günün ödülü
+  kaydedilmemiş gibi görünüyor" (gerçek kullanıcı raporu).** Kök neden `reconcileForToday()`'deki
+  `idx < 0` dalıydı: `TrustedTimeProvider` ağdan HENÜZ doğrulama yapmadan ÖNCE (uygulamanın ilk
+  açılışının ilk anları, bkz. "Firestore veri kalıcılığı... güvenilir zaman" bölümü) cihazın kendi
+  (yanlış/ileri ayarlı olabilen) saatine geçici olarak düşüyor — eğer `DailyRewardsProvider`'ın
+  İLK KURULUMU tam bu pencereye denk gelirse, `_cycleStartDate` yanlışlıkla GELECEKTEKİ bir tarihle
+  başlıyordu. Ağ saati düzelip gerçek "bugün" daha ERKEN bir tarihe dönünce `today < cycleStartDate`
+  (`idx` negatif) oluyor — eski kod bunu da "sıfırlanması gereken" sayıp `_claimedDates`'i
+  SİLİYORDU, bu da poisoned tarihe ulaşana kadar HER `reconcileForToday()` çağrısında (yani her gün)
+  tekrarlanıyordu. **Düzeltme:** `idx < 0` artık HİÇBİR ŞEYİ SİLMEDEN no-op dönüyor (`GoalsProvider.
+  _reconcileGoal`'ın `while (cursor.isBefore(today))` deseni bu anomaliye zaten doğal olarak bağışık
+  — bu yüzden Hedef Takibi'nde AYNI raporun hiç gelmediği fark edildi, sorun `DailyRewardsProvider`'a
+  ÖZGÜYDÜ) — gerçek zaman poisoned tarihe doğal olarak ulaşınca veri kaybı olmadan kendiliğinden
+  düzeliyor. Gerçek release-imzalı bir build'de doğrulandı (yeni test:
+  `daily_rewards_provider_test.dart`'taki "cycleStartDate cihaz saati anomalisiyle bugünün
+  İLERİSİNDE kalırsa..." senaryosu).
 - **2026 güncellemesi — ödül alınınca bir geçiş (interstitial) reklamı da gösteriliyor.** Kullanıcı
   isteği: "kişi günlük giriş ödülünü alınca da geçilebilir reklam olsun" — BİLEREK ÖDÜLLÜ
   (rewarded) DEĞİL, "Zibo'ya Art Arda Dokunma" bölümündeki AYNI `CoinProvider.
@@ -3686,7 +3750,8 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
   SONRA SİLİNDİ** — Şans Çarkı sonrası reklam denemesiyle birlikte geldi, kullanıcı o özelliği
   istemeyince (bkz. "Zibo'ya Art Arda Dokunma → Geçiş Reklamı" bölümündeki geri alma notu) testi
   de anlamsızlaştığı için kaldırıldı.
-  **Toplam: 299 test.**
+  **Toplam: 300 test** (2026 — `daily_rewards_provider_test.dart`'a cihaz saati anomalisi/idx<0
+  senaryosu eklendi, bkz. "Günlük Giriş Ödülleri" bölümü).
 - `widget_test.dart` içindeki `_buildAppWithClock()` yardımcı fonksiyonu enjekte edilebilir saatli
   testler için — **`RootScreen`'in ihtiyaç duyduğu HER provider'ı içermeli** (`AppThemeProvider`,
   `AuthLinkProvider`, `CoinProvider`, `CostumeProvider`, `CustomMessagesProvider`,

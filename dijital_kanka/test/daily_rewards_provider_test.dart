@@ -119,6 +119,37 @@ void main() {
     });
 
     test(
+      'cycleStartDate cihaz saati anomalisiyle bugünün İLERİSİNDE kalırsa, '
+      'reconcile ilerlemeyi SİLMEDEN bekler (gerçek kullanıcı raporuyla '
+      'bulunan bug: her gün "1. gün" yeniden açılıyordu)',
+      () async {
+        // Bootstrap anomalisi: TrustedTimeProvider ağdan doğrulanmadan önce
+        // cihazın (yanlış/ileri ayarlı olabilen) saatine düşüyor — döngü
+        // yanlışlıkla "gelecekteki" bir tarihle (10 Ocak) başlayıp o gün
+        // hemen alınıyor.
+        var clock = DateTime(2026, 1, 10);
+        final poisoned = DailyRewardsProvider(now: () => clock);
+        await Future<void>.delayed(Duration.zero);
+        poisoned.claimToday();
+
+        // Ağ saati doğrulanınca gerçek "bugün" daha ERKEN bir tarih olarak
+        // düzeliyor (5 Ocak) — cycleStartDate artık bugünün ilerisinde kaldı.
+        clock = DateTime(2026, 1, 5);
+        final reset = poisoned.reconcileForToday();
+
+        expect(reset, isFalse);
+        expect(poisoned.todayIndex, lessThan(0));
+        // idx<0 iken claim edilemez (no-op) — 10 Ocak'ın claim'i SİLİNMEDİ.
+        expect(poisoned.claimToday(), isNull);
+
+        // Gerçek zaman poisoned tarihe ulaşınca kendiliğinden düzelir —
+        // hiçbir veri kaybı olmadan.
+        clock = DateTime(2026, 1, 10);
+        expect(poisoned.isTodayClaimed, isTrue);
+      },
+    );
+
+    test(
       'Durum kalıcı depoya yazılır; uygulama yeniden başlatılsa bile '
       '(yeni DailyRewardsProvider) hatırlanır',
       () async {

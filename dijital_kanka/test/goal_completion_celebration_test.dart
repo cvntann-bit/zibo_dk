@@ -172,9 +172,21 @@ void main() {
       // Gün 1-6: hiçbiri döngüyü TAMAMLAMIYOR, reklam HİÇ tetiklenmemeli.
       for (var day = 1; day <= 6; day++) {
         await tester.tap(find.text('$day'));
-        // Kutlama animasyonunu (titreşim+konfeti, ~4sn) tamamen bitirip
-        // bir sonraki güne geçiyoruz.
-        await tester.pumpAndSettle(const Duration(seconds: 5));
+        // Kutlama animasyonunu (titreşim+konfeti, ~4sn) tamamen bitirip bir
+        // sonraki güne geçiyoruz. **`pumpAndSettle(Duration(seconds: 5))`
+        // KULLANILMIYOR BİLEREK** — bu ekranın KENDİ konuşma balonu sözü de
+        // AYNI 5 saniyelik `Timer.periodic` ile dönüyor (bkz. goal_tracking_
+        // screen.dart) ve SpeechBubble artık söz değişiminde bir fade geçişi
+        // kullanıyor (bkz. speech_bubble.dart) — `pumpAndSettle`'ın 5sn'lik
+        // HER adımı bu timer'ı TAM o anda yeniden tetikleyip fade animasyonunu
+        // baştan başlatıyor, bu da `pumpAndSettle`'ın asla "settle"
+        // olamamasına (sonsuz döngü/`pumpAndSettle timed out`) yol açıyordu.
+        // Bunun yerine, kendi başına asla yeniden tetiklenmeyen TEK SEFERLİK
+        // `pump()` çağrılarıyla (5000ms'e TAM denk gelmeyen adımlarla) aynı
+        // ~4sn'yi geçiyoruz.
+        await tester.pump(const Duration(seconds: 2));
+        await tester.pump(const Duration(seconds: 2));
+        await tester.pump(const Duration(milliseconds: 500));
         expect(ads.interstitialCallCount, 0);
         currentDate = currentDate.add(const Duration(days: 1));
         goalsProvider.reconcileForToday();

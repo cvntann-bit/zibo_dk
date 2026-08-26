@@ -57,8 +57,14 @@ class _HomeScreenState extends State<HomeScreen>
       widget.soundEffectsService ?? AudioPlayersSoundEffectsService();
   // Dizin tabanlı tutuluyor (metnin kendisi değil) ki dil değişince (bkz.
   // LocaleProvider) aynı "konum" korunarak build()'de doğru dildeki karşılığı
-  // gösterilebilsin — bkz. `ziboMessagesForLocale`.
-  int _messageIndex = 0;
+  // gösterilebilsin — bkz. `ziboMessagesForLocale`. **Rastgele bir başlangıç
+  // değeriyle başlatılıyor** — eskiden sabit `0` idi, bu yüzden uygulama HER
+  // açılışta havuzdaki AYNI (ilk) sözle başlıyordu (kullanıcı raporu: "hep
+  // aynı söz ile başlıyor"). Gerçek pool uzunluğu `build()`'de (dil/özel
+  // mesajlara göre) değişebildiği için burada kesin bir aralığa gerek yok —
+  // `build()`'deki `_messageIndex % messagePool.length` her zaman geçerli bir
+  // indekse indirgiyor.
+  int _messageIndex = Random().nextInt(1 << 16);
 
   /// 2026 güncellemesi — kullanıcı isteği: Zibo'ya art arda hızlı
   /// dokunulunca (5-6 kez, birkaç saniye içinde) bir reklam VEYA (daha

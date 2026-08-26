@@ -128,7 +128,24 @@ class DailyRewardsProvider extends ChangeNotifier {
   /// kez çağrılması yeterli. Sıfırlama olduysa `true` döner.
   bool reconcileForToday() {
     final idx = todayIndex;
-    var shouldReset = idx < 0 || idx >= _daysPerCycle;
+    // `idx < 0` normalde HİÇ olmamalı (bugünün, döngü başlangıcından ÖNCE
+    // olması demek) — ama gerçek bir kullanıcı raporuyla bulunan bug: bu,
+    // `TrustedTimeProvider`'ın ağdan HENÜZ doğrulama yapmadığı "bootstrap"
+    // anında cihazın kendi (yanlış/ileri ayarlı olabilen) saatine geçici
+    // olarak düşmesi yüzünden, döngünün BİR KEZ yanlışlıkla GELECEKTEKİ bir
+    // tarihle başlatılmış olabileceği anlamına gelir. Eski kod bu durumu da
+    // "sıfırlanması gereken" sayıp `_claimedDates`'i SİLİYORDU — bu da ağ
+    // saati düzelir düzelmez (aynı oturumda veya bir sonraki açılışta)
+    // kullanıcının AZ ÖNCE aldığı ödülün kaybolmasına, ve ertesi her gün
+    // yeniden "1. gün" olarak açılmasına yol açıyordu (`idx` gerçek zaman
+    // poisoned tarihe ulaşana kadar HEP negatif kalıyordu). Doğru davranış:
+    // hiçbir şeyi silmeden BEKLEMEK — `GoalsProvider._reconcileGoal`'ın
+    // `while (cursor.isBefore(today))` deseni bu anomaliye zaten doğal
+    // olarak bağışık (döngü `cycleStartDate >= today` iken hiç başlamıyor),
+    // buradaki `idx` tabanlı yaklaşım bunu AYRICA, açıkça kontrol etmeli.
+    if (idx < 0) return false;
+
+    var shouldReset = idx >= _daysPerCycle;
     if (!shouldReset) {
       for (var i = 0; i < idx; i++) {
         final date = _cycleStartDate.add(Duration(days: i));

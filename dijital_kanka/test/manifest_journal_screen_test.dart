@@ -107,9 +107,18 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Bir fotoğraf seç'), findsOneWidget);
-      // Fotoğraf seçilmeden Kaydet pasif.
+      // Fotoğraf seçilmeden Kaydet pasif. `skipOffstage: false` GEREKİYOR —
+      // SpeechBubble'ın minimum boyutu (bkz. speech_bubble.dart, köşe
+      // butonlarının kısa sözlerde metinle iç içe girmesini önleyen 2026
+      // düzeltmesi) sayfayı bu gerçekçi telefon viewport'unda "Kaydet"
+      // butonu ListView'ın lazy-realize penceresinin biraz dışında kalacak
+      // kadar uzatıyor — `find.byType`'ın varsayılan `skipOffstage: true`'su
+      // bu yüzden onu "yok" sayıyordu. `onPressed`'i yalnızca OKUYUP/DOĞRUDAN
+      // çağırdığımız (gerçek bir `tester.tap()` hit-test'i GEREKMEDİĞİ) için
+      // görünürlüğü önemsemeden `skipOffstage: false` ile bulmak yeterli —
+      // ayrıca kaydırmaya gerek yok.
       expect(
-        tester.widget<FilledButton>(find.byType(FilledButton)).onPressed,
+        tester.widget<FilledButton>(find.byType(FilledButton, skipOffstage: false)).onPressed,
         isNull,
       );
 
@@ -124,10 +133,10 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(
-        tester.widget<FilledButton>(find.byType(FilledButton)).onPressed,
+        tester.widget<FilledButton>(find.byType(FilledButton, skipOffstage: false)).onPressed,
         isNotNull,
       );
-      tester.widget<FilledButton>(find.byType(FilledButton)).onPressed!();
+      tester.widget<FilledButton>(find.byType(FilledButton, skipOffstage: false)).onPressed!();
       await tester.pumpAndSettle();
 
       expect(fakeService.saveCount, 1);
@@ -145,7 +154,7 @@ void main() {
       // kartından gelir).
       expect(find.text('Bir fotoğraf seç'), findsOneWidget);
       expect(
-        tester.widget<FilledButton>(find.byType(FilledButton)).onPressed,
+        tester.widget<FilledButton>(find.byType(FilledButton, skipOffstage: false)).onPressed,
         isNull,
       );
 
@@ -174,7 +183,7 @@ void main() {
       await tester.pumpAndSettle();
       await tester.enterText(find.byType(TextField), 'İlk niyetim');
       await tester.pumpAndSettle();
-      tester.widget<FilledButton>(find.byType(FilledButton)).onPressed!();
+      tester.widget<FilledButton>(find.byType(FilledButton, skipOffstage: false)).onPressed!();
       await tester.pumpAndSettle();
 
       final coinProvider = Provider.of<CoinProvider>(
@@ -190,7 +199,7 @@ void main() {
       await tester.pumpAndSettle();
       await tester.enterText(find.byType(TextField), 'İkinci niyetim');
       await tester.pumpAndSettle();
-      tester.widget<FilledButton>(find.byType(FilledButton)).onPressed!();
+      tester.widget<FilledButton>(find.byType(FilledButton, skipOffstage: false)).onPressed!();
       await tester.pumpAndSettle();
 
       expect(fakeService.saveCount, 2);
