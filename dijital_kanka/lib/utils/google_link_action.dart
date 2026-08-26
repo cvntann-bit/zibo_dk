@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -41,7 +42,10 @@ Future<void> handleGoogleLinkTap(BuildContext context) async {
   } on GoogleAccountAlreadyLinkedElsewhereException {
     if (!context.mounted) return;
     await _offerSignInInstead(context, l10n, authLink);
-  } catch (_) {
+  } catch (e, st) {
+    // Tanı amaçlı — bu turdaki gerçek hatanın (DEVELOPER_ERROR'ın ARDINDAKİ
+    // asıl GoogleSignInException kodu) `adb logcat`'te görünmesi için.
+    debugPrint('handleGoogleLinkTap hata: $e\n$st');
     if (!context.mounted) return;
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()

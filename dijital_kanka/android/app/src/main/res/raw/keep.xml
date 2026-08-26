@@ -1,19 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
   Release build'in kaynak küçültücüsüne (isShrinkResources = true, bkz.
-  build.gradle.kts / CLAUDE.md "Release İmzalama" bölümü) `res/raw/`
-  altındaki ses dosyalarının SİLİNMEMESİNİ söylüyor.
+  build.gradle.kts / CLAUDE.md "Release İmzalama" bölümü) belirli
+  kaynakların SİLİNMEMESİNİ söylüyor — hepsi AYNI kök nedenden: Java/
+  Kotlin/XML'den DOĞRUDAN (R.raw.x/R.string.x gibi) referans EDİLMEYİP
+  yalnızca bir METİN İSMİYLE, `getIdentifier(...)`/platform kanalı
+  üzerinden ÇALIŞMA ZAMANINDA çözülüyorlar — kaynak küçültücünün statik
+  analizi bu tür reflection tabanlı kullanımı GÖREMEZ, "kullanılmıyor"
+  sanıp APK'dan siler.
 
-  Neden gerekli: bu dosyalar Java/Kotlin/XML'den DOĞRUDAN (R.raw.x gibi)
-  referans EDİLMİYOR — flutter_local_notifications, bildirim kanalı sesini
-  `RawResourceAndroidNotificationSound('zibo_notification')` ile yalnızca
-  bir METİN İSMİ olarak, platform kanalı üzerinden ÇALIŞMA ZAMANINDA
-  çözüyor. Kaynak küçültücünün statik analizi bunu GÖREMEDİĞİ için
-  `zibo_notification.wav`'ı "kullanılmıyor" sanıp APK'dan siliyordu — kanal
-  OLUŞTURMA kodu buna rağmen sorunsuz çalışıyordu (yalnızca bir isim
-  kaydediyor), ama gerçek ÇALMA anında dosya APK'da olmadığı için SESSİZCE
-  hiçbir ses çalmıyordu (gerçek cihazda bulunan bir bug — bkz. CLAUDE.md
-  "Push Bildirimi Özel Sesi" bölümü).
+  - `@raw/zibo_notification`: flutter_local_notifications, bildirim kanalı
+    sesini `RawResourceAndroidNotificationSound('zibo_notification')` ile
+    yalnızca isimle çözüyor (bkz. CLAUDE.md "Push Bildirimi Özel Sesi"
+    bölümü — gerçek cihazda bulunan, sessizce ses çalmama bug'ı).
+  - `@string/default_web_client_id`: `google_sign_in_android` eklentisi,
+    `serverClientId`'i (CredentialManager'ın Google ile giriş için
+    ZORUNLU tuttuğu alan) `context.getResources().getIdentifier
+    ("default_web_client_id", "string", ...)` ile okuyor — bu string
+    `google-services` Gradle plugin'i tarafından `google-services.json`'daki
+    Web client'tan OTOMATİK üretiliyor ama STATİK bir Java/Kotlin referansı
+    YOK. Silinince `serverClientId` boş kalıp `CredentialManager` isteği
+    Google'ın sunucusuna hiç ULAŞMADAN reddediliyordu — kullanıcı "Google
+    ile Bağla" butonuna basınca "Bağlanırken sorun oluştu" görüyordu,
+    yalnızca DEBUG build'lerde (küçültme kapalı) çalışıyordu. Bu bug,
+    yukarıdaki bildirim sesi bug'ıyla AYNI sınıftan — reflection ile
+    okunan HER yeni kaynağı eklerken bu dosyaya da eklemeyi unutmayın.
 -->
 <resources xmlns:tools="http://schemas.android.com/tools"
-    tools:keep="@raw/zibo_notification" />
+    tools:keep="@raw/zibo_notification,@string/default_web_client_id" />

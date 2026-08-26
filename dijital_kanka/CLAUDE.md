@@ -4752,6 +4752,54 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
     kod seviyesinde doğrulandı. **Kullanıcının yapması gereken:** yeni AAB'yi (1.1.0+6) Kapalı
     Test'e yükleyip, testçilerin GÜNCELLENMİŞ sürümü Play Store'dan aldıktan sonra Google ile
     bağlanmayı tekrar denemesi.
+- **2026 GÜNCELLEMESİ — App Signing Key düzeltmesinden SONRA bile sorun devam etti ("bağlanmıyor
+  yine aynı sorun var"); ASIL kök neden bulundu ve DOĞRULANDI: `default_web_client_id` string
+  kaynağı R8'in kaynak küçültücüsü (`isShrinkResources = true`, bkz. "Release İmzalama" bölümü)
+  tarafından release build'lerden SESSİZCE SİLİNİYORDU — Push Bildirimi Özel Sesi bölümünde
+  belgelenen `zibo_notification.wav` bug'ıyla BİREBİR AYNI kök neden sınıfı.**
+  - **Teşhis:** `google_sign_in_android` eklentisinin native tarafı (`GoogleSignInPlugin.java`),
+    Dart'ın `initialize()`'ı açıkça bir `serverClientId` GEÇMEDİĞİ durumda, `context.getResources().
+    getIdentifier("default_web_client_id", "string", ...)` ile bu kaynağı yalnızca METİN İSMİYLE,
+    ÇALIŞMA ZAMANINDA okuyor — `google-services` Gradle plugin'inin `google-services.json`'daki Web
+    client'tan OTOMATİK ürettiği bu string'e Java/Kotlin/XML'de HİÇBİR statik `R.string.x` referansı
+    YOK. R8'in statik kullanım analizi bu reflection tabanlı okumayı GÖREMEDİĞİ için kaynağı
+    "kullanılmıyor" sanıp release APK'dan siliyordu — `aapt2 dump resources` ile bu ampirik olarak
+    DOĞRULANDI (kaynak gerçekten APK'da yoktu). Sonuç: `serverClientId` boş kalıp Android'in
+    `CredentialManager`'ı (bu alanı ZORUNLU tutuyor) isteği Google'ın sunucusuna hiç GÖNDERMEDEN
+    reddediyordu — bu da Google Cloud Console'un OAuth metrikleri panelinde hiçbir hata/istek
+    verisinin GÖRÜNMEMESİNİ (istek sunucuya hiç ulaşmadığı için) açıklıyor, ve neden yalnızca DEBUG
+    build'lerin (küçültme kapalı) çalışıp TÜM release build'lerin (App Signing Key'den BAĞIMSIZ,
+    hangi sertifika imzalarsa imzalasın) aynı şekilde başarısız olduğunu tam olarak izah ediyor.
+  - **Bu noktaya varmadan ÖNCE elenen ihtimaller** (kanıtla): device-side GMS bozulması (BİRDEN
+    FAZLA farklı fiziksel cihazda aynı hata görüldüğü için elendi), API key Android kısıtlamaları
+    (Cloud Console'da "None" — elendi), OAuth consent screen "Testing" modu (Console'da "In
+    production" — elendi), OAuth client "app ownership unverified" uyarısı (üç client için de
+    "not applicable... not a Google Play Store app" diyordu — muhtemelen alakasız/eksik bir Google
+    özelliği, elendi), `GoogleApiManager: SecurityException: Unknown calling package name` +
+    `DEVELOPER_ERROR` logcat hatası (İLK GÜÇLÜ ŞÜPHELİ olarak kovalandı ama WebSearch ile Google'ın
+    AdMob SDK destek ekibinin KENDİ ifadesiyle birçok alakasız uygulamada görülen, zararsız bir
+    arka-plan log gürültüsü olduğu doğrulanıp elendi).
+  - **Düzeltme — `android/app/src/main/res/raw/keep.xml`'e `@string/default_web_client_id`
+    eklendi** (mevcut `@raw/zibo_notification` girdisiyle AYNI dosya, aynı `tools:keep` listesi) —
+    R8'e bu kaynağa DOKUNMAMASINI açıkça söylüyor.
+  - **Doğrulama İKİ aşamalı yapıldı:** (1) statik — düzeltmeden SONRA yeniden derlenen
+    `app-release.apk`'da `aapt2 dump resources` ile `string/default_web_client_id`'in ARTIK
+    GERÇEKTEN var olduğu teyit edildi (düzeltmeden ÖNCE aynı komutla YOK olduğu doğrulanmıştı); (2)
+    canlı — bu release-imzalı (upload key, aynı R8/küçültme yapılandırmasıyla) APK, Play Store'da
+    kurulu olan (App Signing Key ile imzalı) sürüm KALDIRILIP `adb install -r` ile bağlı bir Xiaomi
+    test cihazına (`8b9a14f1`) kurulup açıldı, kullanıcı "Google ile Bağla"ya bastı ve **"bağlandı"**
+    diye doğruladı — sorun KALICI olarak çözüldü.
+  - **Ders — genelleştirilebilir bir Android/R8 kalıbı, `zibo_notification.wav` bug'ıyla İKİNCİ
+    somut örneği:** herhangi bir native platform eklentisinin bir Android kaynağına yalnızca bir
+    STRING/İSİM üzerinden ÇALIŞMA ZAMANINDA reflection ile referans verdiği HER durumda (raw ses
+    dosyaları, generated string'ler, drawable'lar vb.), release build'de `isShrinkResources = true`
+    açıkken bu kaynak SESSİZCE silinme riski taşır — derleme hatası/uyarısı YOK, yalnızca çalışma
+    zamanında sessiz bir eksiklik. Yeni bir "yalnızca isimle okunan" kaynak eklenirken PROAKTİF
+    olarak `res/raw/keep.xml`'e eklemek (dosya adı `raw/` klasöründe olsa da `tools:keep`
+    içeriğine `@string/`/`@drawable/` gibi başka kaynak türleri de eklenebiliyor), bu sınıf bug'ı
+    SAATLERCE teşhis etmekten çok daha ucuza mal oluyor.
+  - **Sürüm 1.1.0+7'ye yükseltildi**, bu düzeltmeyi içeren yeni bir AAB derlenip Play Console'un
+    Kapalı Test track'ine yüklenmeye hazır.
 
 ## Coin Ekonomisi Güvenliği (Mod APK / Hile Koruması) ([firestore.rules](firestore.rules))
 
