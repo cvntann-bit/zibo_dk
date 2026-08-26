@@ -2209,20 +2209,33 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
     - **Şükür ve Manifest:** son 30 günün kaçında Şükran Günlüğü VE kaçında Manifest Günlüğü
       kullanıldığının (farklı GÜN sayısı — aynı gün birden fazla manifest girişi tek gün sayılır)
       ortalama oranı.
-    - **İstikrar:** `%40` aktif hedeflerin güncel döngüdeki ortalama ilerlemesi `+ %60` son 8
-      haftada tamamlanan TAM 7-günlük döngü sayısı (haftada-bir-tamamlama beklentisine oranlanır)
-      — geçmiş performansa güncel andan daha fazla ağırlık veriliyor, çünkü istikrar tek bir
-      döngünün ortasında yakalanmaktan çok zaman içindeki tutarlılığı ölçüyor.
-    - **Öz Saygı ve Sağlık:** son 30 günün kaçında Su Takibi'ndeki günlük hedefin tamamlandığı
-      (kayıt hiç girilmemiş günler de "tamamlanmadı" sayılır, 30 sabit payda — birkaç gün kullanıp
-      bırakmak yapay yüksek puana yol açmasın diye).
-  - **Bulunan gerçek davranış — İstikrar kartı pratikte HİÇBİR ZAMAN "veri yok" göstermez:**
-    `GoalsProvider` ilk kurulumda otomatik bir örnek hedef ekliyor (bkz. "Hedef Takibi" bölümü),
-    bu yüzden `goals.goals` neredeyse her kullanıcı için baştan boş DEĞİL — İstikrar kartı bu
-    yüzden hemen hemen her zaman 0 puanla (kırmızı, "veri var" durumunda) başlıyor, teşvik
-    mesajı YERİNE. Bu bilinçli olarak bug OLARAK ele alınmadı (0 puanlı kırmızı gösterge zaten
-    kendi başına bir teşvik sinyali) ama testlerde AÇIKÇA belgelendi (bkz. `profile_stats_test.
-    dart`) ki gelecekte biri bunu "neden boş durumu hiç görmüyorum" diye bug sanmasın.
+    - **İstikrar:** `%60` aktif hedeflerin güncel döngüdeki ortalama ilerlemesi (`completedCount/7`)
+      `+ %40` son 8 haftada tamamlanan TAM 7-günlük döngü sayısı, **3** tamamlama = tam puan
+      (`totalCompletions/3`, kırpılır).
+    - **Öz Saygı ve Sağlık:** son 30 günün her birindeki Su Takibi KISMİ ilerleme oranının
+      (`unitCount/goalUnitCount`, 1.0'da kırpılır) ortalaması (kayıt hiç girilmemiş günler 0 oranla
+      sayılır, 30 sabit payda — birkaç gün kullanıp bırakmak yapay yüksek puana yol açmasın diye).
+    - **2026 bug düzeltmesi — gerçek kullanıcı raporu: "İstikrar ve Öz Saygı-Sağlık çalışmıyor."**
+      Kök neden formül DEĞİL, formülün AŞIRI KATI olmasıydı: İstikrar'ın eski ağırlıkları (`%40`
+      güncel + `%60` geçmiş, geçmiş bileşeni 8 haftada 8 TAM 7-gün tamamlaması istiyordu) ve Öz
+      Saygı-Sağlık'ın eski `isCompleted` (ikili, hepsi-ya-da-hiçbiri) ölçütü, GERÇEK ama KUSURSUZ
+      OLMAYAN kullanımı (ör. günlük check-in yapan ama henüz hiç 7 günü kesintisiz tamamlamamış bir
+      kullanıcı; günde 8 bardaktan 5-6'sını içen ama nadiren tam 8'e ulaşan bir kullanıcı) neredeyse
+      HİÇ ödüllendirmiyordu — puan sürekli 0'a yakın kalıp kullanıcıya "çalışmıyor" gibi görünüyordu.
+      Para Yönetimi/Şükür-Manifest zaten KISMİ katılımı ödüllendirdiği için (herhangi bir kullanım
+      orantılı puan veriyor) bu ikisinden şikayet gelmedi — asimetri buradan kaynaklanıyordu.
+      **Düzeltme:** İstikrar'ın ağırlıkları ters çevrildi (güncel andaki ilerlemeye daha fazla
+      ağırlık) VE geçmiş eşiği gevşetildi (8→3); Öz Saygı-Sağlık ikili ölçütten KISMİ orana geçti
+      (`unitCount/goalUnitCount`, ör. 6/8 bardak artık 0.75 kredi veriyor, 0 değil). Yeni testler
+      (`profile_stats_test.dart`): "haftanın yarısından fazlasını check-in yapan ama hiç tam
+      döngü tamamlamamış" ve "hedefin yarısını her gün düzenli içen ama asla %100'e ulaşmayan"
+      senaryoları artık anlamlı (0'a yakın olmayan) puanlar üretiyor.
+  - **ARTIK GEÇERSİZ NOT (tarihsel bağlam için tutuluyor):** Bu bölüm önceden "İstikrar kartı
+    pratikte HİÇBİR ZAMAN 'veri yok' göstermez" diyordu — `GoalsProvider`'ın o zamanki otomatik
+    örnek hedef eklemesi yüzünden. **O otomatik örnek hedef sonradan KALDIRILDI** (bkz. "Hedef
+    Takibi" bölümündeki "2026 güncellemesi — otomatik örnek hedef KALDIRILDI" notu) — taze bir
+    kurulumda `goals.goals` artık GERÇEKTEN boş, İstikrar kartı da diğer üç kategori gibi tutarlı
+    şekilde "veri yok" gösteriyor (`profile_stats_test.dart`'taki ilk test bunu doğruluyor).
   - **Renk sistemleri kasıtlı olarak İKİ BAĞIMSIZ katman:** `CircularScoreGauge`'un halka rengi
     SADECE puana göre (0'da kırmızı → 5'te amber → 10'da yeşil, sürekli `Color.lerp` geçişi);
     `StatTrendChart`'ın çizgi rengi SADECE kategoriye göre sabit (Para=mavi, Şükür ve Manifest=

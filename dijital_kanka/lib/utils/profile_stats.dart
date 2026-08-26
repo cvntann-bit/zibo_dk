@@ -137,12 +137,26 @@ class ProfileStats {
   }
 
   /// **İstikrar:** iki bileşenin ağırlıklı ortalaması —
-  /// (1) %40 ağırlık: aktif hedeflerin GÜNCEL döngüdeki ortalama ilerlemesi.
-  /// (2) %60 ağırlık: son 8 haftada tamamlanan TAM 7-günlük döngü sayısı,
-  /// "haftada bir tamamlama" beklentisine (8 hafta = 8 tamamlama = tam
-  /// puan) göre oranlanır — geçmiş performansa güncel andan daha fazla
-  /// ağırlık veriliyor, çünkü "istikrar" tek bir döngünün ortasında
-  /// yakalanmaktan çok, ZAMAN İÇİNDEKİ tutarlılığı ölçüyor.
+  /// (1) %60 ağırlık: aktif hedeflerin GÜNCEL döngüdeki ortalama ilerlemesi
+  /// (`completedCount / 7`) — kullanıcının ŞU AN ne kadar yolunda olduğunu
+  /// yansıtan, gerçek zamanlı sinyal.
+  /// (2) %40 ağırlık: son 8 haftada tamamlanan TAM 7-günlük döngü sayısı,
+  /// 3 tamamlama = tam puan olacak şekilde oranlanır (`totalCompletions / 3`)
+  /// — bir döngüyü baştan sona tamamlamak zaten yüksek bir bar olduğu için
+  /// (7 gün kesintisiz), iki ayda 3 kez başarmak "tutarlı kullanıcı" için
+  /// makul/ulaşılabilir bir eşik (8 haftada 8 TAM tamamlama isteyen eski
+  /// formül neredeyse hiç kimsenin ulaşamayacağı kadar katıydı).
+  ///
+  /// **2026 bug düzeltmesi — gerçek kullanıcı raporu: "İstikrar çalışmıyor."**
+  /// Eski formül (%40 güncel + %60 geçmiş, geçmiş bileşeni 8/8 TAM
+  /// tamamlama gerektiriyordu) günlük olarak düzenli check-in yapan ama
+  /// henüz hiç 7 günü kesintisiz TAMAMLAMAMIŞ (bir gün bile kaçırmak
+  /// `GoalsProvider`'ın döngüyü ANINDA sıfırlaması yüzünden çok kolay
+  /// gerçekleşiyor) bir kullanıcı için puanı SÜREKLİ neredeyse 0'da
+  /// tutuyordu — kullanıcı aktif olarak kullanıyor olsa bile "çalışmıyor"
+  /// gibi görünüyordu. Ağırlıklar ters çevrilip geçmiş eşiği gevşetildi ki
+  /// gerçek (kusursuz olmasa da) katılım anlamlı bir puana yansısın — tıpkı
+  /// Para Yönetimi'nin %50 birikim oranını zaten tam puan sayması gibi.
   static CategoryStat _consistencyStat(GoalsProvider goals, DateTime now) {
     final hasActiveGoals = goals.goals.isNotEmpty;
     final hasCompletions = goals.completions.isNotEmpty;
@@ -160,9 +174,9 @@ class ProfileStats {
     final completionDates = goals.completions.map((c) => c.completionDate).toList();
     final weekly = _weeklyCounts(completionDates, now, weeks: trendWeeks);
     final totalCompletions = weekly.fold(0, (sum, count) => sum + count);
-    final historicalRatio = (totalCompletions / trendWeeks).clamp(0.0, 1.0);
+    final historicalRatio = (totalCompletions / 3).clamp(0.0, 1.0);
 
-    final score = ((currentRatio * 0.4 + historicalRatio * 0.6) * 10).clamp(0.0, 10.0);
+    final score = ((currentRatio * 0.6 + historicalRatio * 0.4) * 10).clamp(0.0, 10.0);
 
     return CategoryStat(
       category: ProfileStatCategory.consistency,
@@ -172,10 +186,20 @@ class ProfileStats {
     );
   }
 
-  /// **Öz Saygı ve Sağlık:** son 30 günün kaçında Su Takibi'ndeki günlük
-  /// hedef tamamlandığının oranı — kayıt hiç girilmemiş günler de
-  /// "tamamlanmadı" sayılır (30 sabit payda), böylece yalnızca birkaç gün
-  /// kullanıp bırakmak yapay olarak yüksek bir puana yol açmaz.
+  /// **Öz Saygı ve Sağlık:** son 30 gündeki GÜNLÜK KISMİ ilerleme
+  /// oranlarının (`unitCount / goalUnitCount`, 1.0'da kırpılır) ortalaması —
+  /// kayıt hiç girilmemiş günler 0 oranla sayılır (30 sabit payda), böylece
+  /// yalnızca birkaç gün kullanıp bırakmak yapay olarak yüksek bir puana
+  /// yol açmaz.
+  ///
+  /// **2026 bug düzeltmesi — gerçek kullanıcı raporu: "Öz Saygı ve Sağlık
+  /// çalışmıyor."** Eski formül günü YALNIZCA hedefe %100 ulaşılmışsa
+  /// (`isCompleted`, ikili/hepsi-ya-da-hiçbiri) sayıyordu — günde 8
+  /// bardaktan 5-6'sını içen ama nadiren tam 8'e ulaşan (gerçekçi, yaygın
+  /// bir kullanım deseni) bir kullanıcı HER GÜN 0 kredi alıyor, puan
+  /// SÜREKLİ 0'a yakın kalıyordu. Artık her günün KISMİ oranı doğrudan
+  /// sayılıyor (ör. 6/8 bardak = 0.75 kredi) — gerçek (kusursuz olmasa da)
+  /// katılım artık puana yansıyor.
   static CategoryStat _selfCareHealthStat(WaterProvider water, DateTime now) {
     final today = water.todayEntry;
     final allEntries = [...water.history, if (today != null) today];
@@ -185,8 +209,11 @@ class ProfileStats {
 
     final windowStart = _daysAgo(now, 29);
     final recent = allEntries.where((e) => !e.date.isBefore(windowStart)).toList();
-    final completedCount = recent.where((e) => e.isCompleted).length;
-    final score = (completedCount / 30 * 10).clamp(0.0, 10.0);
+    final totalRatio = recent.fold(
+      0.0,
+      (sum, e) => sum + (e.goalUnitCount == 0 ? 0.0 : (e.unitCount / e.goalUnitCount).clamp(0.0, 1.0)),
+    );
+    final score = (totalRatio / 30 * 10).clamp(0.0, 10.0);
 
     final weekly = _weeklyCounts(
       recent.where((e) => e.isCompleted).map((e) => e.date).toList(),

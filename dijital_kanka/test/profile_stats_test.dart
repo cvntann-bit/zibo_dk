@@ -125,6 +125,79 @@ void main() {
     },
   );
 
+  test(
+    'İstikrar: 2026 bug düzeltmesi — bir haftanın YARISINDAN FAZLASINI '
+    'check-in yapan (ama hiç tam 7 gün TAMAMLAMAMIŞ) bir kullanıcı artık '
+    'anlamlı bir puan alır (eski formül bunu neredeyse 0\'da tutuyordu)',
+    () async {
+      var current = DateTime(2026, 3, 10);
+      final goals = GoalsProvider(now: () => current);
+      await Future<void>.delayed(Duration.zero);
+      goals.addGoal('Günde 30 dakika kitap oku');
+      final goalId = goals.goals.first.id;
+
+      // 4 gün art arda işaretlendi (döngü TAMAMLANMADI — 5-7. günler boş).
+      for (var i = 0; i < 4; i++) {
+        goals.toggleToday(goalId);
+        current = current.add(const Duration(days: 1));
+      }
+
+      final stats = ProfileStats.compute(
+        money: MoneyProvider(),
+        gratitude: GratitudeProvider(),
+        manifest: ManifestProvider(),
+        goals: goals,
+        water: WaterProvider(),
+        now: current,
+      );
+
+      final consistency = _statFor(stats, ProfileStatCategory.consistency);
+      expect(consistency.hasData, isTrue);
+      // 4/7 gün * %60 ağırlık * 10 = ~3.43 (hiç tam tamamlama yok, geçmiş
+      // bileşeni 0). Eski formülde bu ~1.71 idi — kullanıcı raporunun tam
+      // konusu buydu.
+      expect(consistency.score, closeTo(3.43, 0.1));
+      expect(consistency.score, greaterThan(3));
+    },
+  );
+
+  test(
+    'Öz Saygı ve Sağlık: 2026 bug düzeltmesi — hedefin YARISINI her gün '
+    'düzenli olarak tamamlayan (ama ASLA %100\'e ulaşmayan) bir kullanıcı '
+    'artık anlamlı bir puan alır (eski formül bunu 0\'da tutuyordu)',
+    () async {
+      var current = DateTime(2026, 2, 15);
+      final water = WaterProvider(now: () => current);
+      await Future<void>.delayed(Duration.zero);
+
+      // 30 gün boyunca HER GÜN hedefin tam yarısını içiyor (8 bardaklık
+      // varsayılan hedefin 4'ü) — ASLA tam tamamlamıyor.
+      for (var i = 0; i < 30; i++) {
+        current = DateTime(2026, 2, 15).add(Duration(days: i));
+        water.incrementUnit();
+        water.incrementUnit();
+        water.incrementUnit();
+        water.incrementUnit();
+      }
+
+      final stats = ProfileStats.compute(
+        money: MoneyProvider(),
+        gratitude: GratitudeProvider(),
+        manifest: ManifestProvider(),
+        goals: GoalsProvider(),
+        water: water,
+        now: DateTime(2026, 3, 16),
+      );
+
+      final waterStat = _statFor(stats, ProfileStatCategory.selfCareHealth);
+      expect(waterStat.hasData, isTrue);
+      // Her gün 4/8 = 0.5 kısmi kredi -> ortalama 0.5 -> puan 5.0. Eski
+      // (ikili/hepsi-ya-da-hiçbiri) formülde bu 0 idi (hiçbir gün %100
+      // tamamlanmadığı için).
+      expect(waterStat.score, closeTo(5.0, 0.1));
+    },
+  );
+
   test('Öz Saygı ve Sağlık: son 30 günün tamamı hedefi tamamlarsa puan tam 10 olur', () async {
     var current = DateTime(2026, 2, 15);
     final water = WaterProvider(now: () => current);
