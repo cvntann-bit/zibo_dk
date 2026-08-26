@@ -30,6 +30,14 @@
           }
         },
         {
+          "client_id": "855986625717-u1brfc2ovu98fcpge5mq86kg9v1m65i7.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.dijitalkanka.dijital_kanka",
+            "certificate_hash": "00765c1196cdfcb343d9d33168b832ba5d3fd277"
+          }
+        },
+        {
           "client_id": "855986625717-mh3dbtmiqkih8c1lufr8gac6jn6oep4v.apps.googleusercontent.com",
           "client_type": 3
         }

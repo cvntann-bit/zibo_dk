@@ -4705,6 +4705,53 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
     için) `flutter_test`'te DOĞRUDAN test EDİLEMİYOR** (bkz. bölümün başındaki "flutter_test'te
     KULLANILAMAZ" notu) — yalnızca `flutter test`'in TAMAMININ (299/299) hâlâ geçtiği doğrulandı
     (bu dosyaya dokunan hiçbir test YOK, değişiklik güvenle izole).
+- **2026 GÜNCELLEMESİ — ASIL kök neden bulundu: `google-services.json`'a Google'ın KENDİ "Uygulama
+  İmzalama Anahtarı" (App Signing Key) sertifikası HİÇ eklenmemişti.** Yukarıdaki turda "İmza/SHA-1
+  kaydı AYRICA doğrulandı ve DOĞRU" denilmişti — bu SINIRLI bir doğrulamaydı: yalnızca `adb install`
+  ile SIDELOAD edilen (bizim `upload-keystore.jks` ile imzaladığımız) test APK'sının imzasını
+  kontrol ediyordu. **Play Store'dan indiren GERÇEK test kullanıcıları farklı bir APK alıyor** —
+  Google'ın "Play App Signing" modeli (bkz. "Release İmzalama" bölümü — yeni uygulamalar için
+  ZORUNLU) uygulamayı Play Store'a dağıtmadan ÖNCE, bizim upload sertifikamızdan TAMAMEN FARKLI,
+  Google'ın KENDİ yönettiği bir "App Signing Key" ile YENİDEN İMZALIYOR. Firebase'e o zamana kadar
+  yalnızca upload sertifikamızın SHA-1'i kayıtlıydı — Play Store üzerinden kuran kullanıcıların
+  cihazındaki uygulamanın GERÇEK imzası (App Signing Key) Firebase'de HİÇ tanınmıyordu, bu yüzden
+  Google Sign-In OAuth doğrulaması o kullanıcılar için SESSİZCE reddediliyordu (kullanıcı raporu:
+  "birden fazla kullanıcı" etkileniyordu — TEK bir cihazın GMS arızası değil, SİSTEMİK bir sorundu).
+  - **Bulma yöntemi — Play Console'da (kullanıcıyla birlikte, ekran görüntüleriyle adım adım):**
+    Play Console > Google Play ile korunanlar > "Google Play Store koruması" kartını genişlet >
+    "Uygulama imzalama anahtarını koru" satırındaki **"Google Play Uygulama İmzalama'yı yönetin"**
+    linkine tıklanınca `.../keymanagement` sayfası açılıyor — orada "Uygulama imzalama anahtarı"
+    (Kullanımda) bölümünün **"Klasik anahtar"** sütunundaki SHA-1/SHA-256 butonlarına tıklanınca
+    GERÇEK değerler açığa çıkıyor. **Bu sayfa Google tarafından TAŞINMIŞ** — eski "Uygulama
+    bütünlüğü" (App integrity) sol menü linki artık yalnızca "ayarlarınız taşındı, Google Play ile
+    korunanlar sayfasında" diyen bir yönlendirme sayfası; doğru yer artık "Google Play ile
+    korunanlar" ana sayfası.
+    - App Signing Key SHA-1: `00:76:5C:11:96:CD:FC:B3:43:D9:D3:31:68:B8:32:BA:5D:3F:D2:77`
+    - App Signing Key SHA-256: `85:98:CD:68:6C:62:A9:F3:17:07:95:E7:86:5E:A9:73:4E:F5:87:15:5E:F4:13:EC:1C:54:E0:75:DD:CF:81:24`
+    (Upload key'in `CD:E6:95:44...` SHA-1'inden TAMAMEN FARKLI — kanıt buydu.)
+  - **Düzeltme:** Kullanıcı bu iki parmak izini Firebase Console'a (Project settings > Your apps >
+    Android uygulaması > Add fingerprint) EKLEYİP `google-services.json`'ı yeniden indirdi;
+    `android/app/google-services.json`'a üçüncü bir `oauth_client` girdisi
+    (`certificate_hash: "00765c1196cdfcb343d9d33168b832ba5d3fd277"`, App Signing Key'in
+    tire'siz/küçük harfli hâli) olarak eklendiği diff'te doğrulandı. Dosya projeye kopyalanıp
+    `flutter test` (299/299) + `flutter build appbundle --release` ile yeniden derlendi
+    (versionCode 1.1.0+6'ya yükseltildi).
+  - **Ders — genelleştirilebilir bir Play Store dağıtım deseni:** Play App Signing AÇIKKEN (yeni
+    uygulamalar için varsayılan/zorunlu), Firebase/Google Sign-In gibi SHA-sertifika tabanlı HER
+    entegrasyon için İKİ AYRI sertifika parmak izinin kaydedilmesi GEREKİR — (1) geliştiricinin
+    KENDİ upload/imzalama sertifikası (yerel derlemeler + `adb install` ile sideload testleri için)
+    VE (2) Google'ın Play Console > Google Play ile korunanlar > Uygulama imzalama sayfasından
+    alınan "App Signing Key" sertifikası (Play Store'dan GERÇEKTEN indiren kullanıcılar için). Yalnızca
+    birini eklemek, "kendi imzaladığın test APK'nda çalışıyor ama gerçek Play Store kullanıcılarında
+    ÇALIŞMIYOR" gibi kafa karıştırıcı, SESSİZ bir başarısızlığa yol açar — bu iki sertifikanın
+    FARKLI olduğu unutulup yalnızca biri kontrol edilirse (bu arc'ta tam olarak olan buydu) kök
+    neden gözden kaçabilir.
+  - **Gerçek cihazda GÖRSEL doğrulama bu turda YAPILAMADI** (Play Store dağıtımının yeni sertifikayı
+    yansıtması zaman alabilir + kullanıcının kendi test kullanıcılarıyla doğrulaması gerekiyor) —
+    yalnızca yapılandırmanın DOĞRU eklendiği (Firebase Console + `google-services.json` diff'i)
+    kod seviyesinde doğrulandı. **Kullanıcının yapması gereken:** yeni AAB'yi (1.1.0+6) Kapalı
+    Test'e yükleyip, testçilerin GÜNCELLENMİŞ sürümü Play Store'dan aldıktan sonra Google ile
+    bağlanmayı tekrar denemesi.
 
 ## Coin Ekonomisi Güvenliği (Mod APK / Hile Koruması) ([firestore.rules](firestore.rules))
 
