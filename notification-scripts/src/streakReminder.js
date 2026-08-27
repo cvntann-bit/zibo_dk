@@ -15,8 +15,23 @@
 // kullanıcının KENDİ saat dilimine göre yapılıyor — hem "şu an 20:00 mi"
 // kontrolü hem "bugün" tanımı (hedef tamamlama tarihleri) artık kullanıcının
 // yerel gününe göre.
+//
+// 2026 ÜÇÜNCÜ GÜNCELLEME — "TAM o saat mi?" kontrolü GitHub Actions'ın
+// saatlik cron'unu sık sık geciktirmesi/atlaması yüzünden bildirimleri
+// TAMAMEN durdurdu (bkz. dailyMotivation.js'teki aynı bulgu) — artık
+// `pendingNotifyHours`/`markNotifyHoursSent` (common.js) ile "hedef saat
+// GEÇTİ mi VE bugün için henüz işlenmedi mi?" sorulup gecikmeli bir
+// tetiklemede de doğru şekilde yakalanıyor.
 
-const { db, fetchAllUsers, sendToUser, getLanguageCode, userLocalHour, userDateKey } = require('./common');
+const {
+  db,
+  fetchAllUsers,
+  sendToUser,
+  getLanguageCode,
+  userDateKey,
+  pendingNotifyHours,
+  markNotifyHoursSent,
+} = require('./common');
 const { streak_reminder: STREAK_REMINDER_BODY } = require('./content');
 
 const TARGET_LOCAL_HOURS = [20];
@@ -24,25 +39,34 @@ const TARGET_LOCAL_HOURS = [20];
 async function main() {
   const now = new Date();
   const users = await fetchAllUsers();
-  const eligible = users.filter((u) => TARGET_LOCAL_HOURS.includes(userLocalHour(u, now)));
-  console.log(`${users.length} kullanıcıdan ${eligible.length}'i şu an hedef yerel saatte.`);
+  const eligible = users
+    .map((user) => ({
+      user,
+      pending: pendingNotifyHours(user, 'streak_reminder', TARGET_LOCAL_HOURS, now),
+    }))
+    .filter((e) => e.pending.length > 0);
+  console.log(
+    `${users.length} kullanıcıdan ${eligible.length}'i şu an hedef yerel saatte ` +
+      `(veya kaçırılmış bir dilimi yakalıyor).`,
+  );
 
   await Promise.all(
-    eligible.map(async (user) => {
+    eligible.map(async ({ user, pending }) => {
       const dateKey = userDateKey(user, now);
+      const markHandled = () => markNotifyHoursSent(user, 'streak_reminder', dateKey, pending);
       const goalsDoc = await db
         .collection('users')
         .doc(user.uid)
         .collection('state')
         .doc('goals')
         .get();
-      if (!goalsDoc.exists) return;
+      if (!goalsDoc.exists) return markHandled();
       const goals = goalsDoc.data().goals || [];
-      if (goals.length === 0) return;
+      if (goals.length === 0) return markHandled();
       const hasUnmarkedGoal = goals.some(
         (g) => !(g.completedDates || []).some((d) => d.startsWith(dateKey)),
       );
-      if (!hasUnmarkedGoal) return;
+      if (!hasUnmarkedGoal) return markHandled();
       const lang = await getLanguageCode(user.uid);
       await sendToUser(
         user,
@@ -50,6 +74,7 @@ async function main() {
         'Zibo',
         STREAK_REMINDER_BODY[lang] || STREAK_REMINDER_BODY.tr,
       );
+      await markHandled();
     }),
   );
 }

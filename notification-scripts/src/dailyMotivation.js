@@ -21,8 +21,25 @@
 // penceresi" güvenlik ağına artık gerek yok, çünkü YENİ tasarım zaten
 // yalnızca kullanıcının KENDİ hesaplanan yerel saati hedefe denk geldiğinde
 // gönderim yapıyor — "yanlış saatte gönderim" riski tasarım gereği yok.
+//
+// 2026 ÜÇÜNCÜ GÜNCELLEME — kullanıcı raporu: bu değişiklikten sonra
+// bildirimler TAMAMEN durdu (manuel tetiklemede bile "0 kullanıcı hedef
+// saatte"). Kök neden: "TAM o saat mi?" kontrolü GitHub Actions'ın saatlik
+// cron'u sık sık GECİKTİRDİĞİ/hiç ateşlemediği (bkz. CLAUDE.md "Push
+// Bildirimleri" bölümü) gerçek dünyada çok kırılgan çıktı — bir tetikleme
+// dakikasında ateşlenmezse o dilim o gün BİR DAHA hiç yakalanamıyordu.
+// Artık `pendingNotifyHours` (bkz. common.js) ile "hedef saat GEÇTİ mi VE
+// bugün için henüz işlenmedi mi?" soruluyor — gecikmiş bir tetikleme günün
+// SONRAKİ herhangi bir çalıştırmasında hâlâ doğru şekilde yakalanıyor.
 
-const { fetchAllUsers, sendToUser, getLanguageCode, userLocalHour } = require('./common');
+const {
+  fetchAllUsers,
+  sendToUser,
+  getLanguageCode,
+  userDateKey,
+  pendingNotifyHours,
+  markNotifyHoursSent,
+} = require('./common');
 const { daily_motivation: MOTIVATION_QUOTES } = require('./content');
 
 // 2026 İKİNCİ GÜNCELLEMESİ — kullanıcı raporu: bildirimler kullanıcının arayüz dilinden
@@ -39,18 +56,24 @@ const TARGET_LOCAL_HOURS = [9, 12, 16, 20];
 async function main() {
   const now = new Date();
   const users = await fetchAllUsers();
-  const eligible = users.filter((u) => TARGET_LOCAL_HOURS.includes(userLocalHour(u, now)));
+  const eligible = users
+    .map((user) => ({
+      user,
+      pending: pendingNotifyHours(user, 'daily_motivation', TARGET_LOCAL_HOURS, now),
+    }))
+    .filter((e) => e.pending.length > 0);
   console.log(
-    `${users.length} kullanıcıdan ${eligible.length}'i şu an hedef yerel saatte — ` +
-      `günlük motivasyon gönderiliyor.`,
+    `${users.length} kullanıcıdan ${eligible.length}'i şu an hedef yerel saatte ` +
+      `(veya kaçırılmış bir dilimi yakalıyor) — günlük motivasyon gönderiliyor.`,
   );
 
   await Promise.all(
-    eligible.map(async (u) => {
-      const lang = await getLanguageCode(u.uid);
+    eligible.map(async ({ user, pending }) => {
+      const lang = await getLanguageCode(user.uid);
       const quotes = MOTIVATION_QUOTES[lang] || MOTIVATION_QUOTES.tr;
       const quote = quotes[Math.floor(Math.random() * quotes.length)];
-      await sendToUser(u, 'daily_motivation', 'Zibo', quote);
+      await sendToUser(user, 'daily_motivation', 'Zibo', quote);
+      await markNotifyHoursSent(user, 'daily_motivation', userDateKey(user, now), pending);
     }),
   );
 }

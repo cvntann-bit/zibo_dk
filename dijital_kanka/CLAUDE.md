@@ -3130,6 +3130,47 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
     (henüz güncellemeyen) kullanıcılar `timeZone` alanı yazmadığı için Europe/Istanbul'a düşer —
     yani KIRILMIYORLAR, yalnızca güncelleyene kadar eski (sabit Istanbul saatli) davranışı
     görmeye devam ediyorlar.
+- **2026 DÖRDÜNCÜ güncelleme — saat-dilimi dağıtımından SONRA bildirimler 33+ saat boyunca
+  TAMAMEN durdu, "catch-up" penceresine geçilerek düzeltildi.** Kullanıcı raporu: yukarıdaki
+  saat-dilimi güncellemesinden beri hiçbir bildirim gelmiyordu, GitHub'dan manuel tetiklemek de
+  hiçbir şey göndermiyordu. `gh run list`/`gh run view --log` ile canlı teşhis edildi:
+  - **Kanıt — kesin bir ÖNCE/SONRA sınırı bulundu.** Son başarılı gönderim 2026-08-25 19:20 UTC'de
+    (`daily_motivation`, 16 kullanıcıya) gerçekleşmişti; saat-dilimi commit'i (`9071c82`) TAM
+    2026-08-25 21:54 UTC'de deploy edildi; o andan itibaren — kullanıcının manuel tetiklemesi DAHİL
+    — TÜM betiklerin TÜM çalıştırmaları (5 betik × onlarca çalıştırma, 33+ saat) istisnasız
+    `"N kullanıcıdan 0'i şu an hedef yerel saatte"` diye loglandı. Bu net zaman sınırı, saat-dilimi
+    değişikliğinin kendisini kesin şüpheli yaptı.
+  - **Kök neden — "TAM o saat mi?" kontrolü GitHub Actions'ın kendi cron güvenilirliğine karşı
+    çok kırılgandı.** `.github/workflows/*.yml`'in cron'ları GERÇEKTEN saatlik (`'7 * * * *'` vb.)
+    olsa da, GERÇEK çalıştırma zaman damgaları incelenince GitHub'ın bu tetiklemelerin ÇOĞUNU
+    (bazen 2-4+ saatlik boşluklarla) GECİKTİRDİĞİ/hiç ateşlemediği görüldü — bu, projede DAHA
+    ÖNCE de karşılaşılmış, GitHub'ın kendi dokümantasyonunda kabul edilen bir sınırlama (bkz.
+    yukarıdaki "Günlük Motivasyon" bölümündeki ilk `pickSlot` deneyiminin dersi), ama SAATLİK + 5
+    AYRI workflow'a geçişle (eskiden günde birkaç sabit tetikleme) yük ÇOK artıp gecikme/atlama
+    çok daha SIK hale geldi. Eski tasarım `userLocalHour(u, now) === TARGET`'in TAM O DAKİKADA
+    yakalanmasını gerektiriyordu — bir tetikleme gecikir/atlanırsa, o kullanıcının o günkü dilimi
+    BİR DAHA HİÇ yakalanamıyordu (ertesi gün `now` ilerleyip hedef saat GERİDE kalana kadar) —
+    GitHub'ın gecikme sıklığı göz önüne alınca bu, PRATİKTE neredeyse HİÇBİR gönderimin
+    gerçekleşmemesine yol açtı.
+  - **Düzeltme — `common.js`'e `pendingNotifyHours`/`markNotifyHoursSent` eklendi, TÜM 5 betik
+    bunu kullanacak şekilde güncellendi.** Kontrol artık "şu an TAM hedef saat mi?" DEĞİL, "hedef
+    saat(ler) GEÇTİ mi VE bugün bu tür için henüz `users/{uid}.notifyState[type]` = `{dateKey,
+    sentHours}`'a işlenmedi mi?" — `fetchAllUsers()` zaten TÜM kullanıcı dokümanını çektiği için bu
+    EK bir Firestore okuması GEREKTİRMİYOR. Gecikmiş/atlanmış bir tetikleme artık GÜN İÇİNDE
+    SONRAKİ (gecikmeli de olsa) herhangi bir çalıştırmada hâlâ doğru şekilde yakalanıyor. Hem
+    GERÇEKTEN gönderim yapıldığında HEM DE altta yatan koşul zaten karşılandığı için (hedef zaten
+    işaretli, su hedefi zaten tamamlanmış vb.) gönderim BİLİNÇLİ olarak atlandığında
+    `markNotifyHoursSent` çağrılıyor — ikisi de "bu dilim bugün için değerlendirildi" anlamına
+    gelir, aksi halde aynı günün SONRAKİ bir çalıştırmasında (koşul o sırada değişmiş olabileceği
+    için) aynı kullanıcıya birden fazla bildirim gitme riski doğardı. **Günlük Motivasyon'un DÖRT
+    hedef saati** için: birden fazla dilim BİRDEN aynı çalıştırmada "geçmiş" bulunursa (uzun bir
+    GitHub gecikmesi/atlaması sonucu) kullanıcıya TEK bir (spam olmayan) bildirim gidip TÜM geçmiş
+    dilimler birlikte "işlendi" işaretleniyor — 4 ayrı bildirim yerine bir "yakalama" bildirimi.
+  - **Doğrulanamadı (bu ortamda Node.js yok, bkz. bölümün genelindeki AYNI sınırlama)** — kod
+    yalnızca dikkatli inceleme + yukarıdaki kanıt zinciriyle doğrulandı. **Kullanıcının doğrulaması
+    gereken:** bir sonraki GitHub Actions çalıştırmasından (otomatik veya `workflow_dispatch` ile
+    manuel) sonra loglarda `"Gönderildi: uid=..."` satırlarının tekrar görünmesi VE gerçek cihazda
+    bir bildirimin gelmesi.
 - **`firestore.rules` — DEĞİŞİKLİK GEREKMEDİ (Cloud Functions taslağındaki gerekçeyle AYNI).**
   Mevcut kural zaten `match /users/{userId}/{document=**}` (bkz. "Firestore Veri Kalıcılığı"
   bölümü) ile `users/{uid}` dokümanının TÜM alanlarını (`fcmToken`/`lastActiveAt` dahil) sahibine

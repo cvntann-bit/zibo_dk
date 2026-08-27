@@ -17,8 +17,23 @@
 // kullanıcısı sabah 4'te bildirim aldı): gönderim artık sabit Europe/Istanbul
 // saatine göre DEĞİL, `userLocalHour`/`userDateKey` (bkz. common.js) ile
 // kullanıcının KENDİ saat dilimine göre yapılıyor.
+//
+// 2026 ÜÇÜNCÜ GÜNCELLEME — "TAM o saat mi?" kontrolü GitHub Actions'ın
+// saatlik cron'unu sık sık geciktirmesi/atlaması yüzünden bildirimleri
+// TAMAMEN durdurdu (bkz. dailyMotivation.js'teki aynı bulgu) — artık
+// `pendingNotifyHours`/`markNotifyHoursSent` (common.js) ile "hedef saat
+// GEÇTİ mi VE bugün için henüz işlenmedi mi?" sorulup gecikmeli bir
+// tetiklemede de doğru şekilde yakalanıyor.
 
-const { db, fetchAllUsers, sendToUser, getLanguageCode, userLocalHour, userDateKey } = require('./common');
+const {
+  db,
+  fetchAllUsers,
+  sendToUser,
+  getLanguageCode,
+  userDateKey,
+  pendingNotifyHours,
+  markNotifyHoursSent,
+} = require('./common');
 const { daily_reward: DAILY_REWARD_BODY } = require('./content');
 
 const TARGET_LOCAL_HOURS = [15];
@@ -26,12 +41,21 @@ const TARGET_LOCAL_HOURS = [15];
 async function main() {
   const now = new Date();
   const users = await fetchAllUsers();
-  const eligible = users.filter((u) => TARGET_LOCAL_HOURS.includes(userLocalHour(u, now)));
-  console.log(`${users.length} kullanıcıdan ${eligible.length}'i şu an hedef yerel saatte.`);
+  const eligible = users
+    .map((user) => ({
+      user,
+      pending: pendingNotifyHours(user, 'daily_reward', TARGET_LOCAL_HOURS, now),
+    }))
+    .filter((e) => e.pending.length > 0);
+  console.log(
+    `${users.length} kullanıcıdan ${eligible.length}'i şu an hedef yerel saatte ` +
+      `(veya kaçırılmış bir dilimi yakalıyor).`,
+  );
 
   await Promise.all(
-    eligible.map(async (user) => {
+    eligible.map(async ({ user, pending }) => {
       const dateKey = userDateKey(user, now);
+      const markHandled = () => markNotifyHoursSent(user, 'daily_reward', dateKey, pending);
       const doc = await db
         .collection('users')
         .doc(user.uid)
@@ -40,7 +64,7 @@ async function main() {
         .get();
       const claimedDates = (doc.exists && doc.data().claimedDates) || [];
       const claimedToday = claimedDates.some((d) => d.startsWith(dateKey));
-      if (claimedToday) return;
+      if (claimedToday) return markHandled();
       const lang = await getLanguageCode(user.uid);
       await sendToUser(
         user,
@@ -48,6 +72,7 @@ async function main() {
         'Zibo',
         DAILY_REWARD_BODY[lang] || DAILY_REWARD_BODY.tr,
       );
+      await markHandled();
     }),
   );
 }

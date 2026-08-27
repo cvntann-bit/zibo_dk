@@ -94,6 +94,62 @@ async function fetchAllUsers() {
   return snap.docs.map((doc) => ({ uid: doc.id, ...doc.data() }));
 }
 
+/** 2026 GÜNCELLEMESİ — "catch-up" penceresi: eskiden her betik
+ * `TARGET_LOCAL_HOURS.includes(userLocalHour(u, now))` ile "şu an TAM hedef
+ * saat mi?" diye soruyordu — GitHub Actions'ın saatlik cron tetiklemelerini
+ * sık sık GECİKTİRDİĞİ/hiç ateşlemediği gerçek dünya kanıtlarıyla
+ * doğrulandı (bkz. CLAUDE.md "Push Bildirimleri" bölümündeki GitHub yük
+ * dokümantasyonu VE bu güncellemenin kendi bulgusu — 2026-08-25 21:54'teki
+ * saat-dilimi dağıtımından SONRA art arda 33+ saat boyunca TÜM betiklerde
+ * "0 kullanıcı hedef saatte" görüldü, oysa hemen ÖNCESİNDE gönderimler
+ * sorunsuz çalışıyordu) — bir tetikleme TAM o dakikada ateşlenmezse, o
+ * kullanıcının o günkü dilimi bir daha HİÇ yakalanamıyordu (ertesi gün
+ * `now` ilerleyip hedef saat GERİDE kalana kadar). Artık "hedef saat(ler)
+ * GEÇTİ mi VE bugün bu tür için henüz `notifyState`'e işlenmedi mi?"
+ * soruluyor — gecikmiş/atlanmış bir tetikleme, GÜN İÇİNDE SONRAKİ (gecikmeli
+ * de olsa) herhangi bir çalıştırmada hâlâ doğru şekilde yakalanabiliyor.
+ *
+ * `user.notifyState[type]` = `{dateKey, sentHours}`, `users/{uid}`
+ * dokümanının KENDİSİNDE tutuluyor — `fetchAllUsers()` zaten TÜM dokümanı
+ * çektiği için bunu okumak EK bir Firestore sorgusu GEREKTİRMİYOR. `dateKey`
+ * bugünkünden FARKLIYSA (yeni bir yerel gün) `sentHours` sıfırlanmış
+ * SAYILIR (henüz hiçbir dilim bugün için işlenmedi). */
+function pendingNotifyHours(user, type, targetHours, now) {
+  const dateKey = userDateKey(user, now);
+  const localHour = userLocalHour(user, now);
+  const state = (user.notifyState && user.notifyState[type]) || {};
+  const sentHours = state.dateKey === dateKey ? state.sentHours || [] : [];
+  return targetHours.filter((h) => localHour >= h && !sentHours.includes(h));
+}
+
+/** [pendingNotifyHours]'ın döndürdüğü (veya kısmen değerlendirilmiş) saatleri
+ * bu kullanıcı için "bugün işlendi" diye kalıcı olarak işaretler. HEM
+ * gerçekten bir bildirim GÖNDERİLDİĞİNDE HEM DE altta yatan koşul zaten
+ * karşılanmış olduğu için gönderim BİLEREK ATLANDIĞINDA (ör. hedef zaten
+ * işaretlenmiş, su hedefi zaten tamamlanmış) çağrılmalı — ikisi de "bu dilim
+ * bugün için değerlendirildi" anlamına gelir; aksi halde aynı günün SONRAKİ
+ * bir çalıştırmasında (koşul o sırada değişmiş olabileceği için) aynı
+ * kullanıcıya birden fazla bildirim gitme riski doğar. Önceki
+ * `sentHours`'la (varsa, AYNI `dateKey` için) BİRLEŞTİRİLİR — tek bir
+ * çağrının önceki dilimlerin kaydını SİLMEMESİ için (bkz. Günlük Motivasyon'un
+ * dört ayrı hedef saati). */
+async function markNotifyHoursSent(user, type, dateKey, newHours) {
+  const state = (user.notifyState && user.notifyState[type]) || {};
+  const priorHours = state.dateKey === dateKey ? state.sentHours || [] : [];
+  const sentHours = [...new Set([...priorHours, ...newHours])];
+  try {
+    await db
+      .collection('users')
+      .doc(user.uid)
+      .set({ notifyState: { [type]: { dateKey, sentHours } } }, { merge: true });
+  } catch (error) {
+    console.warn(
+      `markNotifyHoursSent başarısız: uid=${user.uid} type=${type}`,
+      error.message || error,
+    );
+  }
+}
+
 const SUPPORTED_LANGUAGE_CODES = ['tr', 'en', 'es'];
 
 /** `users/{uid}/state/languageCode` — bkz. lib/providers/locale_provider.dart. Doküman/alan
@@ -184,6 +240,8 @@ module.exports = {
   auth,
   userLocalHour,
   userDateKey,
+  pendingNotifyHours,
+  markNotifyHoursSent,
   fetchAllUsers,
   sendToUser,
   getLanguageCode,
