@@ -41,6 +41,29 @@ class GoogleAccountAlreadyLinkedElsewhereException implements Exception {
 /// genel `catch` bloğuna kadar fırlatılıp görünür bir hata mesajı gösteriyor
 /// VE `debugPrint` ile logcat'e düşüyor — bir dahaki sefere bu durum tekrar
 /// yaşanırsa kanıt hemen elde olacak.
+/// **2026 bug düzeltmesi — canlı `adb logcat` ile KANITLANDI (bkz. CLAUDE.md
+/// "Google Hesap Bağlama" bölümü):** `GoogleSignInException.code ==
+/// GoogleSignInExceptionCode.canceled` HER ZAMAN kullanıcının BİLEREK
+/// vazgeçmesi ANLAMINA GELMİYOR. Gerçek bir kullanıcı raporunda `description`
+/// alanı `"[16] Account reauth failed."` çıktı — bu, Google'ın KENDİSİNİN
+/// seçilen hesabı YENİDEN DOĞRULAYAMADIĞI (reauth) GERÇEK bir hata; eklenti
+/// bu native durumu da (eski Google API'sindeki `CommonStatusCodes.
+/// CANCELED = 16` ile aynı sayısal koda sahip olduğu için) AYNI `canceled`
+/// koduna eşliyor. **Uygulama tarafında DÜZELTİLEMEZ** — hesabın/cihazın
+/// Google Play Hizmetleri tarafındaki durumuyla ilgili bir sorun; kullanıcının
+/// cihazında Google hesabını kaldırıp yeniden eklemesi, Google Play
+/// Hizmetleri'ni güncellemesi/önbelleğini temizlemesi, veya (sorunun hesaba
+/// mı cihaza mı özgü olduğunu ayırt etmek için) farklı bir Google hesabıyla
+/// denemesi gerekebilir.
+class GoogleSignInReauthFailedException implements Exception {
+  const GoogleSignInReauthFailedException(this.description);
+
+  final String description;
+
+  @override
+  String toString() => 'GoogleSignInReauthFailedException: $description';
+}
+
 class GoogleSignInMissingIdTokenException implements Exception {
   const GoogleSignInMissingIdTokenException();
 
@@ -180,6 +203,12 @@ class FirebaseGoogleAuthService extends GoogleAuthService {
         'GoogleAuthService._authenticate GoogleSignInException: '
         'code=${e.code} description=${e.description} details=${e.details}',
       );
+      // `canceled` kodu her zaman GERÇEK bir kullanıcı vazgeçmesi DEĞİL —
+      // bkz. GoogleSignInReauthFailedException dokümantasyonu.
+      final description = e.description ?? '';
+      if (description.toLowerCase().contains('reauth')) {
+        throw GoogleSignInReauthFailedException(description);
+      }
       if (e.code == GoogleSignInExceptionCode.canceled) return null;
       rethrow;
     }
