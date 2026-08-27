@@ -11,6 +11,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:dijital_kanka/data/founder_badge.dart';
 import 'package:dijital_kanka/l10n/app_localizations.dart';
 import 'package:dijital_kanka/providers/auth_link_provider.dart';
 import 'package:dijital_kanka/providers/coin_provider.dart';
@@ -172,4 +173,22 @@ void main() {
     final profile = Provider.of<ProfileProvider>(element, listen: false);
     expect(profile.name, 'Ayşe');
   });
+
+  testWidgets(
+    '"Kurucu Üye" rozeti yalnızca CostumeProvider.isOwned(founder_badge) '
+    'true iken görünür',
+    (tester) async {
+      await tester.pumpWidget(_buildTestApp(_FakePhotoService()));
+      await tester.pumpAndSettle();
+
+      expect(find.byTooltip('Kurucu Üye'), findsNothing);
+
+      final element = tester.element(find.byType(ProfileScreen));
+      final costume = Provider.of<CostumeProvider>(element, listen: false);
+      await costume.markOwned(founderBadgeCostumeId);
+      await tester.pumpAndSettle();
+
+      expect(find.byTooltip('Kurucu Üye'), findsOneWidget);
+    },
+  );
 }

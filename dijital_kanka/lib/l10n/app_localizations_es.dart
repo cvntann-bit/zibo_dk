@@ -1299,4 +1299,7 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get referralUnavailableMessage =>
       'Las invitaciones no están disponibles ahora, inténtalo más tarde.';
+
+  @override
+  String get founderBadgeTooltip => 'Miembro Fundador';
 }

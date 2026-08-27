@@ -3906,10 +3906,12 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
   SONRA SİLİNDİ** — Şans Çarkı sonrası reklam denemesiyle birlikte geldi, kullanıcı o özelliği
   istemeyince (bkz. "Zibo'ya Art Arda Dokunma → Geçiş Reklamı" bölümündeki geri alma notu) testi
   de anlamsızlaştığı için kaldırıldı.
-  **Toplam: 324 test** (2026 — `costume_provider_test.dart`'a `reconcileGoalUnlocks` grubu +
+  **Toplam: 325 test** (2026 — `costume_provider_test.dart`'a `reconcileGoalUnlocks` grubu +
   `water_provider_test.dart`'a `completedDaysCount` testi [bkz. "Kostümler" bölümü] +
-  `dream_sentiment_test.dart` [bkz. "Rüya Günlüğü" bölümündeki korelasyon notu] + YENİ
-  `referral_provider_test.dart` [bkz. "Davet Et (Referral) Sistemi" bölümü] eklendi).
+  `dream_sentiment_test.dart` [bkz. "Rüya Günlüğü" bölümündeki korelasyon notu] +
+  `referral_provider_test.dart` [bkz. "Davet Et (Referral) Sistemi" bölümü] +
+  `profile_screen_test.dart`'a "Kurucu Üye" rozeti senaryosu [bkz. "Kurucu Üye Rozeti" bölümü]
+  eklendi).
 - `widget_test.dart` içindeki `_buildAppWithClock()` yardımcı fonksiyonu enjekte edilebilir saatli
   testler için — **`RootScreen`'in ihtiyaç duyduğu HER provider'ı içermeli** (`AppThemeProvider`,
   `AuthLinkProvider`, `CoinProvider`, `CostumeProvider`, `CustomMessagesProvider`,
@@ -5353,6 +5355,62 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
   — kullanıcının GitHub Actions'tan `workflow_dispatch` ile (önce `dry_run: true` ile bir sağlık
   kontrolü, sonra gerçek bir davet kodu göndertip `dry_run: false` ile tekrar tetikleyerek)
   doğrulaması gerekiyor.
+
+## "Kurucu Üye" Rozeti ([founder_badge.dart](lib/data/founder_badge.dart), [profile_screen.dart](lib/screens/profile_screen.dart), workspace kökü [notification-scripts/src/grantFounderBadges.js](../notification-scripts/src/grantFounderBadges.js) + [.github/workflows/grant-founder-badges.yml](../.github/workflows/grant-founder-badges.yml))
+
+- **2026 yeni özellik.** Kullanıcı isteği: ilk 500 (kullanıcının `AskUserQuestion` ile 100/500
+  arasından seçtiği eşik) kayıt olan kullanıcıya özel, satın alınamayan bir "Kurucu Üye" rozeti/
+  kostümü ver; şimdilik basit bir placeholder görsel kullanılsın, kullanıcı ilerde kendi tasarımını
+  hazırlayınca kodda başka HİÇBİR değişiklik gerekmeden tek bir dosyayı değiştirerek
+  güncelleyebilsin; profilde bu rozeti gösteren küçük bir simge olsun.
+- **`founder_badge` id'si `costumes.dart`'taki satılabilir listeye BİLEREK EKLENMEDİ** — satın
+  alınamasın diye (Mağaza'nın Kostümler ızgarası yalnızca o listeyi dolaşır).
+  `CostumeProvider.markOwned('founder_badge')`/`isOwned(...)` gene de SORUNSUZ çalışır çünkü o
+  provider zaten satın alma-agnostik (bkz. "Kostümler" bölümü) — yalnızca sahiplik kaydını tutuyor,
+  listede olup olmadığını hiç umursamıyor. `lib/data/founder_badge.dart` (YENİ, küçük bir sabitler
+  dosyası) `founderBadgeCostumeId`/`founderBadgeImageAsset`'i tek yerde tutuyor.
+- **Sıra sinyali — Firestore'da `createdAt` alanı YOK, TEK güvenilir/manipüle-edilemez sinyal
+  Firebase Auth'un kendi `metadata.creationTime`'ı** (bkz. `cleanupStaleAnonymousUsers.js`'teki
+  AYNI `auth.listUsers()` sayfalama deseni — o betik bunu "son aktivite" için kullanıyor, burada
+  "ilk kayıt sırası" için).
+- **YENİ, tek seferlik betik** `notification-scripts/src/grantFounderBadges.js` —
+  `cleanupStaleAnonymousUsers.js`'in dry-run-varsayılan güvenlik deseniyle BİREBİR aynı: TÜM
+  kullanıcıları `creationTime`'a göre sıralayıp ilk `FOUNDER_COUNT` (varsayılan 500, env var ile
+  override edilebilir) uid'i alıp her biri için `users/{uid}/state/costumeState.ownedIds` dizisine
+  (mevcut belgeyi okuyup) `'founder_badge'` id'sini ekliyor — `CostumeProvider._save()`'in ürettiği
+  AYNI JSON şeklini üretiyor, istemci tarafında HİÇBİR özel kod gerekmiyor. **İdempotent** — zaten
+  rozeti olan bir kullanıcı atlanır, bu da kullanıcının "ilk 500'ü kilitleme" kararını netleşene
+  kadar betiği güvenle birkaç kez dry-run ile deneyebilmesini sağlıyor.
+- **YENİ** `.github/workflows/grant-founder-badges.yml` — `cleanup-stale-anonymous-users.yml` ile
+  AYNI desen: SADECE `workflow_dispatch` (periyodik DEĞİL, "bir kerelik bakım" kategorisi —
+  kullanıcı ilk 500'ü kilitlemeye karar verdiğinde elle bir kez tetikler), `dry_run` girdisi
+  VARSAYILAN `true`.
+- **Placeholder görsel — `tool/generate_founder_badge_placeholder.dart` (YENİ).** Bu ortamda harici
+  görsel üretim aracı yok, ama proje zaten `image` paketini (dev_dependency) `tool/` altında
+  tek-seferlik görsel betikleri için kullanıyor (`remove_bg.dart`/`clean_app_icon.dart` emsali) —
+  aynı desende, `img.fillCircle`/`img.fillPolygon` ile basit, programatik bir altın/hardal renkli
+  (`ZiboShareCard`'ın dokümante edilmiş "Zibo'nun altın tonu" `0xFFF0C868` ile AYNI, palet
+  tutarlılığı için) daire + beş köşeli yıldız rozeti çizip `assets/images/founder_badge.png` olarak
+  kaydediyor (şeffaf arka plan). `pubspec.yaml` zaten `assets/images/` klasörünü BÜTÜN olarak dahil
+  ediyor — ek bir pubspec değişikliği gerekmedi. **Kullanıcı kendi tasarımını hazırladığında
+  yalnızca bu dosyanın YERİNE (aynı adla) kendi PNG'sini koyması yeterli — kodda hiçbir değişiklik
+  gerekmez.**
+- **Profil ekranı — küçük bir simge, TAM bir `_ProfileLinkRow` DEĞİL** (kullanıcının açık isteği
+  "profilde bu rozeti gösteren küçük bir simge olsun"). Profil fotoğrafının etrafındaki `Stack`'e
+  (mevcut kamera-düzenle rozetinin — `Positioned(right:0, bottom:0)` — KARŞI köşesine,
+  `Positioned(left:0, top:0)`) `context.watch<CostumeProvider>().isOwned(founderBadgeCostumeId)`
+  ile koşullu, küçük (28×28) bir `Image.asset` + `Tooltip` eklendi. Zibo karakterine giydirilebilir
+  bir kostüm olarak DENENMEDİ (kapsam dışı — kullanıcı yalnızca profil simgesi istedi, gerçek poz
+  sanatı gelene kadar ek karmaşıklığa gerek yok — bkz. "Zibo Poz/Animasyon Sistemi" bölümü, bu
+  rozet o sistemin dışında).
+- **Test:** `profile_screen_test.dart`'a bir senaryo eklendi (`CostumeProvider.markOwned
+  ('founder_badge')` çağrılmadan ÖNCE rozet YOK, çağrıldıktan SONRA `find.byTooltip('Kurucu Üye')`
+  ile görünür) — backend betiği bu ortamda çalıştırılamıyor (diğer tüm Node betikleriyle AYNI
+  sınırlama), yalnızca istemci tarafı (rozetin GÖSTERİLMESİ) test edildi. **Toplam: 325 test.**
+- **Kullanıcının YAPMASI gereken adım:** ilk 500 kullanıcıyı "kilitlemeye" karar verdiğinde GitHub
+  Actions'tan `grant-founder-badges.yml`'i `workflow_dispatch` ile (önce `dry_run: true` ile KİME
+  rozet verileceğini gözden geçirip, sonra `dry_run: false` ile GERÇEKTEN vererek) tetiklemesi
+  gerekiyor — asistan bunu otomatik/periyodik yapmıyor, bilerek elle tetiklenen bir "kilitleme anı".
 
 ## Google Play Billing (IAP) Entegrasyonu ([purchase_service.dart](lib/services/purchase_service.dart), [iap_purchase_service.dart](lib/services/iap_purchase_service.dart))
 

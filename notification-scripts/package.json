@@ -13,7 +13,8 @@
     "re-engagement": "node src/reEngagement.js",
     "water-reminder": "node src/waterReminder.js",
     "cleanup-stale-anonymous-users": "node src/cleanupStaleAnonymousUsers.js",
-    "process-referral-rewards": "node src/processReferralRewards.js"
+    "process-referral-rewards": "node src/processReferralRewards.js",
+    "grant-founder-badges": "node src/grantFounderBadges.js"
   },
   "dependencies": {
     "firebase-admin": "^12.7.0"

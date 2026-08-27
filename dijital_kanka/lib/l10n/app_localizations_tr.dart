@@ -1292,4 +1292,7 @@ class AppLocalizationsTr extends AppLocalizations {
   @override
   String get referralUnavailableMessage =>
       'Davet sistemi şu an kullanılamıyor, daha sonra tekrar dene.';
+
+  @override
+  String get founderBadgeTooltip => 'Kurucu Üye';
 }

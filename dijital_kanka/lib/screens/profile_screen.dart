@@ -4,10 +4,12 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../data/founder_badge.dart';
 import '../l10n/app_localizations.dart';
 import '../models/bond_level.dart';
 import '../providers/auth_link_provider.dart';
 import '../providers/coin_provider.dart';
+import '../providers/costume_provider.dart';
 import '../providers/favorite_quotes_provider.dart';
 import '../providers/goals_provider.dart';
 import '../providers/gratitude_provider.dart';
@@ -186,6 +188,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final favoriteQuotes = context.watch<FavoriteQuotesProvider>();
     final authLink = context.watch<AuthLinkProvider>();
     final referral = context.watch<ReferralProvider>();
+    final isFounder = context
+        .watch<CostumeProvider>()
+        .isOwned(founderBadgeCostumeId);
     final statsArchive = context.watch<ProfileStatsArchiveProvider>();
     final now = context.watch<TrustedTimeProvider>().now();
 
@@ -258,6 +263,31 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   ),
                           ),
                         ),
+                        // 2026 yeni özellik — "Kurucu Üye" rozeti (bkz.
+                        // CLAUDE.md "Kurucu Üye" bölümü). Kullanıcının
+                        // "profilde bu rozeti gösteren küçük bir simge
+                        // olsun" isteği — tam bir `_ProfileLinkRow` DEĞİL,
+                        // fotoğrafın karşı köşesinde küçük bir rozet.
+                        // Sahiplik `CostumeProvider.isOwned` üzerinden
+                        // (bkz. yukarıdaki `isFounder`) TAMAMEN
+                        // istemci-dışı bir yoldan geliyor — yalnızca
+                        // `notification-scripts/src/grantFounderBadges.js`
+                        // (bir kerelik bakım betiği) tarafından
+                        // Firestore'a yazılabilir.
+                        if (isFounder)
+                          Positioned(
+                            left: 0,
+                            top: 0,
+                            child: Tooltip(
+                              message: l10n.founderBadgeTooltip,
+                              child: Image.asset(
+                                founderBadgeImageAsset,
+                                width: 28,
+                                height: 28,
+                                semanticLabel: l10n.founderBadgeTooltip,
+                              ),
+                            ),
+                          ),
                       ],
                     ),
                   ),

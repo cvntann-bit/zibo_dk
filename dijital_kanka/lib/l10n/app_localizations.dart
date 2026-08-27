@@ -2343,6 +2343,12 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'Davet sistemi şu an kullanılamıyor, daha sonra tekrar dene.'**
   String get referralUnavailableMessage;
+
+  /// Profil fotoğrafının köşesindeki Kurucu Üye rozetinin tooltip/erişilebilirlik etiketi
+  ///
+  /// In tr, this message translates to:
+  /// **'Kurucu Üye'**
+  String get founderBadgeTooltip;
 }
 
 class _AppLocalizationsDelegate

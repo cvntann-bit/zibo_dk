@@ -380,5 +380,6 @@
   "referralRedeemSelfCodeError": "You can't use your own invite code.",
   "referralRedeemInvalidCodeError": "Enter a valid invite code.",
   "referralAlreadyRedeemedStatus": "You've already used an invite code, thanks!",
-  "referralUnavailableMessage": "Invites aren't available right now, try again later."
+  "referralUnavailableMessage": "Invites aren't available right now, try again later.",
+  "founderBadgeTooltip": "Founding Member"
 }

@@ -1753,5 +1753,9 @@
   "referralUnavailableMessage": "Davet sistemi şu an kullanılamıyor, daha sonra tekrar dene.",
   "@referralUnavailableMessage": {
     "description": "uid yokken (Firebase kullanılamıyor) veya ağ hatası olunca gösterilen mesaj"
+  },
+  "founderBadgeTooltip": "Kurucu Üye",
+  "@founderBadgeTooltip": {
+    "description": "Profil fotoğrafının köşesindeki Kurucu Üye rozetinin tooltip/erişilebilirlik etiketi"
   }
 }
