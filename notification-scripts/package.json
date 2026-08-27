@@ -12,7 +12,8 @@
     "daily-reward-reminder": "node src/dailyRewardReminder.js",
     "re-engagement": "node src/reEngagement.js",
     "water-reminder": "node src/waterReminder.js",
-    "cleanup-stale-anonymous-users": "node src/cleanupStaleAnonymousUsers.js"
+    "cleanup-stale-anonymous-users": "node src/cleanupStaleAnonymousUsers.js",
+    "process-referral-rewards": "node src/processReferralRewards.js"
   },
   "dependencies": {
     "firebase-admin": "^12.7.0"

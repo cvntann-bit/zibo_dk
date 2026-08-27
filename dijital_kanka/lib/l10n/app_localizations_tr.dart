@@ -1242,4 +1242,54 @@ class AppLocalizationsTr extends AppLocalizations {
   @override
   String get googleSignOutFailedMessage =>
       'Çıkış yapılırken bir sorun oluştu, tekrar dene.';
+
+  @override
+  String get referralScreenTitle => 'Arkadaşını Davet Et';
+
+  @override
+  String get referralRowTitle => 'Arkadaşını Davet Et';
+
+  @override
+  String get referralRowSubtitle => 'Davet et, ikiniz de Zibo Coin kazanın';
+
+  @override
+  String get referralCodeLabel => 'Davet Kodun';
+
+  @override
+  String get referralCopyButton => 'Kopyala';
+
+  @override
+  String get referralCodeCopiedMessage => 'Davet kodu panoya kopyalandı!';
+
+  @override
+  String get referralShareButton => 'Paylaş';
+
+  @override
+  String referralShareMessage(String code, int amount) {
+    return 'Zibo\'yu deniyorum, sen de katıl! Davet kodum: $code — Profil > Arkadaşını Davet Et\'ten gir, ikimiz de $amount Zibo Coin kazanalım! 🎉';
+  }
+
+  @override
+  String get referralRedeemFieldLabel => 'Bir davet kodun var mı?';
+
+  @override
+  String get referralRedeemButton => 'Kullan';
+
+  @override
+  String get referralRedeemSuccessMessage =>
+      'Kodun gönderildi! Coin\'in kısa süre içinde hesabına eklenecek.';
+
+  @override
+  String get referralRedeemSelfCodeError => 'Kendi davet kodunu kullanamazsın.';
+
+  @override
+  String get referralRedeemInvalidCodeError => 'Geçerli bir davet kodu gir.';
+
+  @override
+  String get referralAlreadyRedeemedStatus =>
+      'Davet kodunu kullandın, teşekkürler!';
+
+  @override
+  String get referralUnavailableMessage =>
+      'Davet sistemi şu an kullanılamıyor, daha sonra tekrar dene.';
 }

@@ -3906,9 +3906,10 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
   SONRA SİLİNDİ** — Şans Çarkı sonrası reklam denemesiyle birlikte geldi, kullanıcı o özelliği
   istemeyince (bkz. "Zibo'ya Art Arda Dokunma → Geçiş Reklamı" bölümündeki geri alma notu) testi
   de anlamsızlaştığı için kaldırıldı.
-  **Toplam: 317 test** (2026 — `costume_provider_test.dart`'a `reconcileGoalUnlocks` grubu +
-  `water_provider_test.dart`'a `completedDaysCount` testi [bkz. "Kostümler" bölümü] + YENİ
-  `dream_sentiment_test.dart` [bkz. "Rüya Günlüğü" bölümündeki korelasyon notu] eklendi).
+  **Toplam: 324 test** (2026 — `costume_provider_test.dart`'a `reconcileGoalUnlocks` grubu +
+  `water_provider_test.dart`'a `completedDaysCount` testi [bkz. "Kostümler" bölümü] +
+  `dream_sentiment_test.dart` [bkz. "Rüya Günlüğü" bölümündeki korelasyon notu] + YENİ
+  `referral_provider_test.dart` [bkz. "Davet Et (Referral) Sistemi" bölümü] eklendi).
 - `widget_test.dart` içindeki `_buildAppWithClock()` yardımcı fonksiyonu enjekte edilebilir saatli
   testler için — **`RootScreen`'in ihtiyaç duyduğu HER provider'ı içermeli** (`AppThemeProvider`,
   `AuthLinkProvider`, `CoinProvider`, `CostumeProvider`, `CustomMessagesProvider`,
@@ -5262,6 +5263,96 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
     kısmi önlemle (+ launch öncesi gerçek IAP/AdMob geldiğinde zorunlu olarak eklenecek doğrulama)
     devam etmek mi — asistan bu maliyet/mimari kararını veremez, yalnızca seçenekleri VE her
     birinin ne sağlayıp ne sağlamadığını belgeliyor.
+
+## Davet Et (Referral) Sistemi ([referral_provider.dart](lib/providers/referral_provider.dart), [referral_screen.dart](lib/screens/referral_screen.dart), workspace kökü [notification-scripts/src/processReferralRewards.js](../notification-scripts/src/processReferralRewards.js) + [.github/workflows/process-referral-rewards.yml](../.github/workflows/process-referral-rewards.yml))
+
+- **2026 yeni özellik — büyüme (growth) mekanizması.** Kullanıcı isteği: her kullanıcıya özel bir
+  davet kodu/link oluştur (Firebase kullanıcı ID'sine bağlı), davet edilen kişi kodu girip
+  kullanınca HEM davet eden HEM davet edilen belirli miktarda ücretsiz ZC kazansın, WhatsApp/
+  Instagram'a tek tıkla paylaşım butonu olsun. Kullanıcının onayladığı kapsam kararı: **basit metin
+  kodu** — Play Store Install Referrer ile otomatik algılama/deep-link KAPSAM DIŞI bırakıldı (yeni
+  bir native paket + uygulamanın gerçekten Play Store'da YAYINDA olmasını gerektiriyordu, o an
+  test edilemezdi).
+- **Mimari — davet kodu = kullanıcının kendi Firebase uid'i.** Ayrı bir kod üretme/çakışma
+  yönetimi/lookup tablosu GEREKMİYOR — `ReferralProvider.referralCode` doğrudan `uid`'i döner.
+  `ReferralScreen` bu kodu kopyalama + `ShareService.shareText` (YENİ metot — mevcut
+  `shareImageBytes`'tan FARKLI, hiçbir görsel/dosya olmadan salt metin paylaşan basit bir yol,
+  davet mesajı için) ile WhatsApp/Instagram'a gönderiyor. Davet edilen kişi bu kodu **elle girip**
+  kullanıyor (gerçek bir "kaydolma" ekranı yok, uygulama zaten Anonymous Auth ile otomatik kimlik
+  alıyor — bkz. "Firestore veri kalıcılığı" bölümü).
+- **Ödül kredisi neden ANINDA DEĞİL — mevcut Firestore rules'un doğal bir sonucu.** İKİ AYRI
+  kullanıcının (davet eden + davet edilen) coin bakiyesini AYNI ANDA değiştirmek gerekiyor, ama
+  `firestore.rules` yalnızca `request.auth.uid == userId` olan kullanıcının KENDİ `coinState`
+  belgesine yazmasına izin veriyor (bkz. "Coin Ekonomisi Güvenliği" bölümü) — davet edilenin
+  cihazı davet edenin bakiyesine DOĞRUDAN yazamaz. Bu, projenin genelinde zaten kabul edilmiş
+  "hassas coin mutasyonları GitHub Actions + Admin SDK'ya taşınsın" felsefesiyle (bkz. Push
+  Bildirimleri bölümü) TUTARLI bir çözümle aşıldı:
+  1. `ReferralProvider.redeemCode(code)` KENDİ `users/{uid}/state/referralState` belgesini
+     (`{redeemed: true, referrerUid: code}` — AYNI ZAMANDA "zaten kullanıldı" bayrağı) yazar
+     (kendi belgesi — mevcut rules'a hiç dokunmadan izinli).
+  2. AYRICA yeni, dar kapsamlı bir top-level `referralRedemptions/{autoId}` koleksiyonuna
+     `{referrerUid, refereeUid, status: 'pending', createdAt: serverTimestamp()}` kaydı ekler —
+     `firestore.rules`'a EKLENEN yeni bir kural bunu yalnızca "kimliği doğrulanmış biri KENDİ
+     `refereeUid`'siyle, kendisinden FARKLI bir `referrerUid`'e" (self-referral rules seviyesinde
+     de engelleniyor — istemci kontrolünün YANI SIRA ikinci bir savunma katmanı) create-only olarak
+     yapabilsin diye sınırlıyor; okuma/güncelleme/silme TAMAMEN kapalı.
+  3. **YENİ** `notification-scripts/src/processReferralRewards.js` — diğer 5 bildirim betiğiyle
+     AYNI `firebase-admin` deseni, `status == 'pending'` kayıtları tarayıp `referrerUid !=
+     refereeUid` VE her iki uid de GERÇEKTEN var mı doğruluyor (Admin SDK ile, rules'u atlayarak),
+     geçerliyse HER İKİ tarafın `coinState` belgesine `CoinEconomy.referral` (zaten TANIMLIYDı —
+     100 ZC — ve `CoinProvider.earnReferral()` de zaten vardı ama HİÇ ÇAĞRILMIYORDU; bu özellik onu
+     ilk kez devreye soktu) kadar ekleyip `CoinProvider._save()`'in ürettiği JSON şekliyle BİREBİR
+     uyumlu bir işlem kaydı (`reason: 'Arkadaş daveti'`) da ekliyor, kaydı `'completed'` yapıyor;
+     geçersizse `'rejected'` yapıp asla tekrar işlemiyor. **`cleanupStaleAnonymousUsers.js`'in
+     AKSİNE `DRY_RUN` varsayılanı `false`** — bu betik EKLEYİCİ/DÜŞÜK RİSKLİ (yalnızca coin bakiyesi
+     ARTIRIYOR, hiçbir şey SİLMİYOR) ve `.github/workflows/process-referral-rewards.yml`'in
+     `schedule:`'ıyla (diğer bildirim workflow'larıyla AYNI saatlik desen, dakika `:28` — GitHub'ın
+     "yoğun" dediği `:00/:15/:30/:45`'ten kaçınmak için) GERÇEK otomasyonla çalışması amaçlanıyor;
+     her çalıştırmada elle onay beklemek otomasyonun amacını bozardı. Yine de `workflow_dispatch`
+     ilk sağlık kontrolü için `dry_run: true` seçeneği sunuyor.
+  4. **Bilinçli olarak YAPILMAYAN bir client-side kontrol:** `redeemCode` girilen kodun GERÇEKTEN
+     var olan bir kullanıcıya ait olup olmadığını istemci tarafında DOĞRULAMAZ — kök `users/{uid}`
+     dokümanı yalnızca SAHİBİ tarafından okunabiliyor (`isOwner()`), bu kısıtlamayı gevşetmeden bir
+     istemcinin "bu uid var mı" diye sorgulamasının güvenli bir yolu yok (bu turda KAPSAM DIŞI
+     bırakıldı — mevcut kuralı değiştirmek yeni bir manuel Firebase Console adımı + genişleyen
+     saldırı yüzeyi demek olurdu). Geçersiz/uydurma bir kod girilirse istek yine de "gönderildi"
+     denir, asıl doğrulama backend betiğinde yapılır — geçersizse sessizce kredilenMEZ.
+  5. **Bilinen/kabul edilen sınırlama:** betik AYNI ANDA iki kez çalışırsa (örtüşen manuel + otomatik
+     tetikleme) teorik olarak aynı kayıt iki kez kredilenebilir (Firestore transaction/lock
+     KULLANILMIYOR) — projenin genelindeki client-authoritative ekonomi risk kabulüyle AYNI
+     kategoride (bkz. "Coin Ekonomisi Güvenliği" bölümü), kapsam dışı bırakıldı.
+- **Profil ekranına yeni satır:** "Arkadaşını Davet Et" (`Icons.person_add_alt_1_rounded`),
+  "Profil Kartını Paylaş" satırının HEMEN ardına eklendi — mevcut `_ProfileLinkRow` widget'ı
+  AYNEN yeniden kullanıldı, yeni bir görsel bileşen YAZILMADI. Alt metin canlı: kod henüz
+  kullanılmadıysa genel bir davet mesajı, kullanılmışsa `referralAlreadyRedeemedStatus`.
+- **`ReferralScreen`** — kod gösterimi (kopyala + paylaş butonları) + (henüz redeem edilmediyse)
+  bir kod giriş alanı + "Kullan" butonu. Kullanıcı zaten bir kod kullanmışsa giriş alanı YERİNE bir
+  onay kartı gösterilir. `ReferralProvider.isRedeeming` diğer provider'lardaki `isLinking` deseniyle
+  AYNI — gönderim sırasında küçük bir yükleniyor göstergesi.
+- **Test:** YENİ `referral_provider_test.dart` — `fake_cloud_firestore` ile (kendi kodunu kullanma
+  reddedilir, boş kod reddedilir, geçerli bir kod `referralRedemptions`'a doğru şekilli bir
+  `pending` kaydı bırakır, ikinci bir redeem denemesi reddedilir, uid yokken özellik tamamen devre
+  dışı, durum kalıcı) + `widget_test.dart`'ın "Zibo ile Bağın" senaryosuna yeni bir adım (testte
+  `uid` her zaman `null` olduğu için — gerçek Firebase test ortamında hiç initialize edilmiyor —
+  yalnızca "özellik kullanılamıyor" durumu doğrulanabiliyor; asıl redeem mantığı yukarıdaki
+  provider testinde kapsanıyor). **Gotcha (gerçekten yaşandı):** `ReferralProvider`'ın kurucusu
+  enjekte edilen `firestore`'u kendi `_firestore` alanına atıyordu ama `CloudStateStore`'a
+  FORWARDLAMAYI unutmuştu — `CloudStateStore`'un kendi `firestore ?? (uid == null ? null :
+  FirebaseFirestore.instance)` düşüşü devreye girip `uid` doluyken gerçek `FirebaseFirestore.
+  instance`'a ulaşmaya çalışıp `[core/no-app]` hatasıyla çöküyordu (testte İLK çalıştırmada
+  yakalandı). **Ders:** bir provider birden fazla Firestore-bağımlı bileşen (kendi `_firestore`
+  alanı + bir `CloudStateStore`) barındırıyorsa, enjekte edilen `firestore` parametresi HER İKİSİNE
+  de (ayrı ayrı) geçirilmeli — birini unutmak yalnızca O bileşenin testte "gerçek Firebase'e
+  ulaşmaya çalışıp çökme" riskini taşır. **Toplam: 324 test.**
+- **Kullanıcının YAPMASI gereken adımlar** (asistan yapamaz — Firebase/GitHub Console erişimi
+  gerektiriyor): (1) `firestore.rules`'daki (bu güncellemeyle eklenen `referralRedemptions` bloğu
+  dahil) GÜNCEL içeriği Firebase Console > Firestore Database > Rules'a yapıştırıp yayınlamak —
+  bu blok eklenmeden davet kodu gönderme adımı `PERMISSION_DENIED` ile SESSİZCE başarısız olur
+  (`CloudStateStore`/`ReferralProvider`'ın try/catch'i hatayı yutar). (2) Bu betiği bu ortamda
+  ÇALIŞTIRIP TEST ETMEK mümkün değil (Node.js yok, bkz. diğer 5 bildirim betiğiyle AYNI sınırlama)
+  — kullanıcının GitHub Actions'tan `workflow_dispatch` ile (önce `dry_run: true` ile bir sağlık
+  kontrolü, sonra gerçek bir davet kodu göndertip `dry_run: false` ile tekrar tetikleyerek)
+  doğrulaması gerekiyor.
 
 ## Google Play Billing (IAP) Entegrasyonu ([purchase_service.dart](lib/services/purchase_service.dart), [iap_purchase_service.dart](lib/services/iap_purchase_service.dart))
 

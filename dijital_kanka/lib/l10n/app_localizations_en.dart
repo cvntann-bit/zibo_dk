@@ -1243,4 +1243,55 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get googleSignOutFailedMessage =>
       'Something went wrong signing out, try again.';
+
+  @override
+  String get referralScreenTitle => 'Invite a Friend';
+
+  @override
+  String get referralRowTitle => 'Invite a Friend';
+
+  @override
+  String get referralRowSubtitle => 'Invite someone, you both earn Zibo Coin';
+
+  @override
+  String get referralCodeLabel => 'Your Invite Code';
+
+  @override
+  String get referralCopyButton => 'Copy';
+
+  @override
+  String get referralCodeCopiedMessage => 'Invite code copied to clipboard!';
+
+  @override
+  String get referralShareButton => 'Share';
+
+  @override
+  String referralShareMessage(String code, int amount) {
+    return 'I\'m trying out Zibo, join me! My invite code: $code — enter it under Profile > Invite a Friend and we\'ll both earn $amount Zibo Coin! 🎉';
+  }
+
+  @override
+  String get referralRedeemFieldLabel => 'Have an invite code?';
+
+  @override
+  String get referralRedeemButton => 'Use Code';
+
+  @override
+  String get referralRedeemSuccessMessage =>
+      'Your code was sent! Your coins will be added shortly.';
+
+  @override
+  String get referralRedeemSelfCodeError =>
+      'You can\'t use your own invite code.';
+
+  @override
+  String get referralRedeemInvalidCodeError => 'Enter a valid invite code.';
+
+  @override
+  String get referralAlreadyRedeemedStatus =>
+      'You\'ve already used an invite code, thanks!';
+
+  @override
+  String get referralUnavailableMessage =>
+      'Invites aren\'t available right now, try again later.';
 }

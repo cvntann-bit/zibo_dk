@@ -37,6 +37,11 @@ class _FakeShareService extends ShareService {
     lastFileName = fileName;
     lastText = text;
   }
+
+  // 2026 — Davet Et (referral) özelliği ShareService'e shareText ekledi;
+  // bu dosya yalnızca shareImageBytes'ı test ediyor, no-op override yeterli.
+  @override
+  Future<void> shareText(String text) async {}
 }
 
 const _testMessage = 'Bugün küçük bir adım, yarın büyük bir fark.';

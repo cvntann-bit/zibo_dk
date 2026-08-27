@@ -18,6 +18,13 @@ abstract class ShareService {
     required String fileName,
     String? text,
   });
+
+  /// 2026 yeni özellik (Davet Et/referral) — yalnızca DÜZ METİN paylaşır,
+  /// hiçbir görsel/dosya YOK. `ZiboShareSheet`'in `RenderRepaintBoundary.
+  /// toImage()` ile bir PNG oluşturup [shareImageBytes]'ı çağırdığı akıştan
+  /// FARKLI, çok daha basit bir yol — davet kodu/linki gibi salt metin
+  /// içeriklerinin WhatsApp/Instagram'a tek tıkla gönderilmesi için.
+  Future<void> shareText(String text);
 }
 
 /// `share_plus` paketiyle gerçek native paylaşım sayfasını açan
@@ -42,5 +49,10 @@ class SharePlusService extends ShareService {
         text: text,
       ),
     );
+  }
+
+  @override
+  Future<void> shareText(String text) async {
+    await SharePlus.instance.share(ShareParams(text: text));
   }
 }

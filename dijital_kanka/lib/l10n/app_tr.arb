@@ -1685,5 +1685,73 @@
   "googleSignOutFailedMessage": "Çıkış yapılırken bir sorun oluştu, tekrar dene.",
   "@googleSignOutFailedMessage": {
     "description": "Çıkış yapma beklenmeyen bir hatayla başarısız olunca gösterilen SnackBar mesajı"
+  },
+  "referralScreenTitle": "Arkadaşını Davet Et",
+  "@referralScreenTitle": {
+    "description": "Davet Et ekranının AppBar başlığı"
+  },
+  "referralRowTitle": "Arkadaşını Davet Et",
+  "@referralRowTitle": {
+    "description": "Profil'deki 'Zibo ile Bağın' listesindeki Davet Et satırının başlığı"
+  },
+  "referralRowSubtitle": "Davet et, ikiniz de Zibo Coin kazanın",
+  "@referralRowSubtitle": {
+    "description": "Davet Et satırının, kullanıcı henüz bir kod kullanmamışken gösterilen alt metni"
+  },
+  "referralCodeLabel": "Davet Kodun",
+  "@referralCodeLabel": {
+    "description": "Davet Et ekranında kullanıcının kendi kodunun üstündeki etiket, ayrıca kod giriş alanının hint metni"
+  },
+  "referralCopyButton": "Kopyala",
+  "@referralCopyButton": {
+    "description": "Davet kodunu panoya kopyalayan buton"
+  },
+  "referralCodeCopiedMessage": "Davet kodu panoya kopyalandı!",
+  "@referralCodeCopiedMessage": {
+    "description": "Kopyala butonuna basınca gösterilen SnackBar mesajı"
+  },
+  "referralShareButton": "Paylaş",
+  "@referralShareButton": {
+    "description": "Davet kodunu share_plus ile paylaşan buton"
+  },
+  "referralShareMessage": "Zibo'yu deniyorum, sen de katıl! Davet kodum: {code} — Profil > Arkadaşını Davet Et'ten gir, ikimiz de {amount} Zibo Coin kazanalım! 🎉",
+  "@referralShareMessage": {
+    "description": "Davet kodu paylaşılırken gönderilen düz metin mesajı",
+    "placeholders": {
+      "code": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "int"
+      }
+    }
+  },
+  "referralRedeemFieldLabel": "Bir davet kodun var mı?",
+  "@referralRedeemFieldLabel": {
+    "description": "Kod giriş alanının üstündeki başlık"
+  },
+  "referralRedeemButton": "Kullan",
+  "@referralRedeemButton": {
+    "description": "Girilen davet kodunu gönderen buton"
+  },
+  "referralRedeemSuccessMessage": "Kodun gönderildi! Coin'in kısa süre içinde hesabına eklenecek.",
+  "@referralRedeemSuccessMessage": {
+    "description": "Bir davet kodu başarıyla gönderilince (ANINDA kredi değil, arka planda işlenir) gösterilen mesaj"
+  },
+  "referralRedeemSelfCodeError": "Kendi davet kodunu kullanamazsın.",
+  "@referralRedeemSelfCodeError": {
+    "description": "Kullanıcı kendi kodunu girmeye çalışınca gösterilen hata mesajı"
+  },
+  "referralRedeemInvalidCodeError": "Geçerli bir davet kodu gir.",
+  "@referralRedeemInvalidCodeError": {
+    "description": "Boş bir kod gönderilmeye çalışılınca gösterilen hata mesajı"
+  },
+  "referralAlreadyRedeemedStatus": "Davet kodunu kullandın, teşekkürler!",
+  "@referralAlreadyRedeemedStatus": {
+    "description": "Kullanıcı zaten bir davet kodu kullanmışsa hem Davet Et satırının alt metninde hem ekranın kendisinde gösterilen durum metni"
+  },
+  "referralUnavailableMessage": "Davet sistemi şu an kullanılamıyor, daha sonra tekrar dene.",
+  "@referralUnavailableMessage": {
+    "description": "uid yokken (Firebase kullanılamıyor) veya ağ hatası olunca gösterilen mesaj"
   }
 }

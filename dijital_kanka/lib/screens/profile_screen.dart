@@ -15,6 +15,7 @@ import '../providers/manifest_provider.dart';
 import '../providers/money_provider.dart';
 import '../providers/profile_provider.dart';
 import '../providers/profile_stats_archive_provider.dart';
+import '../providers/referral_provider.dart';
 import '../providers/trusted_time_provider.dart';
 import '../providers/water_provider.dart';
 import '../screens/address_term_screen.dart';
@@ -23,6 +24,7 @@ import '../screens/coin_summary_screen.dart';
 import '../screens/favorite_quotes_screen.dart';
 import '../screens/longest_streak_screen.dart';
 import '../screens/monthly_stats_history_screen.dart';
+import '../screens/referral_screen.dart';
 import '../services/photo_picker_service.dart';
 import '../utils/google_link_action.dart';
 import '../utils/profile_stats.dart';
@@ -183,6 +185,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final coin = context.watch<CoinProvider>();
     final favoriteQuotes = context.watch<FavoriteQuotesProvider>();
     final authLink = context.watch<AuthLinkProvider>();
+    final referral = context.watch<ReferralProvider>();
     final statsArchive = context.watch<ProfileStatsArchiveProvider>();
     final now = context.watch<TrustedTimeProvider>().now();
 
@@ -372,6 +375,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
               title: l10n.profileShareCardRowTitle,
               subtitle: l10n.profileShareCardRowSubtitle,
               onTap: () => _openShareCard(context, l10n, profile, stats),
+            ),
+            const SizedBox(height: 12),
+            _ProfileLinkRow(
+              icon: Icons.person_add_alt_1_rounded,
+              title: l10n.referralRowTitle,
+              subtitle: referral.hasRedeemed
+                  ? l10n.referralAlreadyRedeemedStatus
+                  : l10n.referralRowSubtitle,
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const ReferralScreen()),
+              ),
             ),
             const SizedBox(height: 12),
             _ProfileLinkRow(

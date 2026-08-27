@@ -365,5 +365,20 @@
   "googleSwitchAccountButton": "Switch Account",
   "googleSignOutConfirmTitle": "Sign Out",
   "googleSignOutConfirmBody": "Are you sure you want to sign out? Your data tied to this account won't be lost — it'll be restored the next time you sign in with the same Google account.",
-  "googleSignOutFailedMessage": "Something went wrong signing out, try again."
+  "googleSignOutFailedMessage": "Something went wrong signing out, try again.",
+  "referralScreenTitle": "Invite a Friend",
+  "referralRowTitle": "Invite a Friend",
+  "referralRowSubtitle": "Invite someone, you both earn Zibo Coin",
+  "referralCodeLabel": "Your Invite Code",
+  "referralCopyButton": "Copy",
+  "referralCodeCopiedMessage": "Invite code copied to clipboard!",
+  "referralShareButton": "Share",
+  "referralShareMessage": "I'm trying out Zibo, join me! My invite code: {code} — enter it under Profile > Invite a Friend and we'll both earn {amount} Zibo Coin! 🎉",
+  "referralRedeemFieldLabel": "Have an invite code?",
+  "referralRedeemButton": "Use Code",
+  "referralRedeemSuccessMessage": "Your code was sent! Your coins will be added shortly.",
+  "referralRedeemSelfCodeError": "You can't use your own invite code.",
+  "referralRedeemInvalidCodeError": "Enter a valid invite code.",
+  "referralAlreadyRedeemedStatus": "You've already used an invite code, thanks!",
+  "referralUnavailableMessage": "Invites aren't available right now, try again later."
 }

@@ -107,5 +107,28 @@ service cloud.firestore {
     match /_serverTime/{document} {
       allow read, write: if request.auth != null;
     }
+
+    // Davet Et (referral) sistemi (bkz. CLAUDE.md "Davet Et" bölümü VE
+    // lib/providers/referral_provider.dart) — İKİ kullanıcının coin
+    // bakiyesini AYNI ANDA değiştirmek gerektiği için, davet edilenin
+    // istemcisi davet edenin `coinState`'ine DOĞRUDAN yazAMIYOR (yukarıdaki
+    // `isOwner()` kısıtlaması). Bunun yerine davet edilen SADECE bu
+    // dar kapsamlı, CREATE-ONLY koleksiyona bir "işlem talebi" bırakıyor —
+    // asıl coin kredisi `notification-scripts/src/processReferralRewards.js`
+    // tarafından (Admin SDK ile, bu kuralları atlayarak, GÜVENİLİR taraf
+    // olarak) bir SONRAKİ çalıştırmada işleniyor. İstemciler bu koleksiyonu
+    // OKUYAMAZ/GÜNCELLEYEMEZ/SİLEMEZ — yalnızca KENDİ `refereeUid`'siyle,
+    // kendi uid'inden FARKLI bir `referrerUid`'e, `status: 'pending'` olarak
+    // yeni bir kayıt OLUŞTURABİLİR (self-referral rules seviyesinde de
+    // engelleniyor — istemci tarafı kontrolün YANI SIRA, ikinci bir savunma
+    // katmanı).
+    match /referralRedemptions/{redemptionId} {
+      allow create: if request.auth != null
+        && request.resource.data.refereeUid == request.auth.uid
+        && request.resource.data.referrerUid is string
+        && request.resource.data.referrerUid != request.auth.uid
+        && request.resource.data.status == 'pending';
+      allow read, update, delete: if false;
+    }
   }
 }

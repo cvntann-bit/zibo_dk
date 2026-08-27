@@ -2253,6 +2253,96 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'Çıkış yapılırken bir sorun oluştu, tekrar dene.'**
   String get googleSignOutFailedMessage;
+
+  /// Davet Et ekranının AppBar başlığı
+  ///
+  /// In tr, this message translates to:
+  /// **'Arkadaşını Davet Et'**
+  String get referralScreenTitle;
+
+  /// Profil'deki 'Zibo ile Bağın' listesindeki Davet Et satırının başlığı
+  ///
+  /// In tr, this message translates to:
+  /// **'Arkadaşını Davet Et'**
+  String get referralRowTitle;
+
+  /// Davet Et satırının, kullanıcı henüz bir kod kullanmamışken gösterilen alt metni
+  ///
+  /// In tr, this message translates to:
+  /// **'Davet et, ikiniz de Zibo Coin kazanın'**
+  String get referralRowSubtitle;
+
+  /// Davet Et ekranında kullanıcının kendi kodunun üstündeki etiket, ayrıca kod giriş alanının hint metni
+  ///
+  /// In tr, this message translates to:
+  /// **'Davet Kodun'**
+  String get referralCodeLabel;
+
+  /// Davet kodunu panoya kopyalayan buton
+  ///
+  /// In tr, this message translates to:
+  /// **'Kopyala'**
+  String get referralCopyButton;
+
+  /// Kopyala butonuna basınca gösterilen SnackBar mesajı
+  ///
+  /// In tr, this message translates to:
+  /// **'Davet kodu panoya kopyalandı!'**
+  String get referralCodeCopiedMessage;
+
+  /// Davet kodunu share_plus ile paylaşan buton
+  ///
+  /// In tr, this message translates to:
+  /// **'Paylaş'**
+  String get referralShareButton;
+
+  /// Davet kodu paylaşılırken gönderilen düz metin mesajı
+  ///
+  /// In tr, this message translates to:
+  /// **'Zibo\'yu deniyorum, sen de katıl! Davet kodum: {code} — Profil > Arkadaşını Davet Et\'ten gir, ikimiz de {amount} Zibo Coin kazanalım! 🎉'**
+  String referralShareMessage(String code, int amount);
+
+  /// Kod giriş alanının üstündeki başlık
+  ///
+  /// In tr, this message translates to:
+  /// **'Bir davet kodun var mı?'**
+  String get referralRedeemFieldLabel;
+
+  /// Girilen davet kodunu gönderen buton
+  ///
+  /// In tr, this message translates to:
+  /// **'Kullan'**
+  String get referralRedeemButton;
+
+  /// Bir davet kodu başarıyla gönderilince (ANINDA kredi değil, arka planda işlenir) gösterilen mesaj
+  ///
+  /// In tr, this message translates to:
+  /// **'Kodun gönderildi! Coin\'in kısa süre içinde hesabına eklenecek.'**
+  String get referralRedeemSuccessMessage;
+
+  /// Kullanıcı kendi kodunu girmeye çalışınca gösterilen hata mesajı
+  ///
+  /// In tr, this message translates to:
+  /// **'Kendi davet kodunu kullanamazsın.'**
+  String get referralRedeemSelfCodeError;
+
+  /// Boş bir kod gönderilmeye çalışılınca gösterilen hata mesajı
+  ///
+  /// In tr, this message translates to:
+  /// **'Geçerli bir davet kodu gir.'**
+  String get referralRedeemInvalidCodeError;
+
+  /// Kullanıcı zaten bir davet kodu kullanmışsa hem Davet Et satırının alt metninde hem ekranın kendisinde gösterilen durum metni
+  ///
+  /// In tr, this message translates to:
+  /// **'Davet kodunu kullandın, teşekkürler!'**
+  String get referralAlreadyRedeemedStatus;
+
+  /// uid yokken (Firebase kullanılamıyor) veya ağ hatası olunca gösterilen mesaj
+  ///
+  /// In tr, this message translates to:
+  /// **'Davet sistemi şu an kullanılamıyor, daha sonra tekrar dene.'**
+  String get referralUnavailableMessage;
 }
 
 class _AppLocalizationsDelegate

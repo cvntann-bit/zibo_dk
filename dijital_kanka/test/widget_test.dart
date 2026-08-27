@@ -30,6 +30,7 @@ import 'package:dijital_kanka/providers/money_provider.dart';
 import 'package:dijital_kanka/providers/notification_provider.dart';
 import 'package:dijital_kanka/providers/profile_provider.dart';
 import 'package:dijital_kanka/providers/profile_stats_archive_provider.dart';
+import 'package:dijital_kanka/providers/referral_provider.dart';
 import 'package:dijital_kanka/providers/sound_effects_provider.dart';
 import 'package:dijital_kanka/providers/theme_provider.dart';
 import 'package:dijital_kanka/providers/trusted_time_provider.dart';
@@ -68,6 +69,7 @@ Widget _buildAppWithClock(DateTime Function() now) {
       ),
       ChangeNotifierProvider(create: (_) => ProfileProvider(now: now)),
       ChangeNotifierProvider(create: (_) => ProfileStatsArchiveProvider()),
+      ChangeNotifierProvider(create: (_) => ReferralProvider()),
       ChangeNotifierProvider(create: (_) => SoundEffectsProvider()),
       ChangeNotifierProvider(create: (_) => ThemeProvider()),
       ChangeNotifierProvider(create: (_) => WaterProvider(now: now)),
@@ -1954,6 +1956,25 @@ void main() {
       tapRow('Favori Sözler');
       await tester.pumpAndSettle();
       expect(find.text(firstQuote), findsOneWidget);
+      await tester.tap(find.byTooltip('Geri'));
+      await tester.pumpAndSettle();
+
+      // Arkadaşını Davet Et: testte `ReferralProvider`'ın `uid`'i yok
+      // (gerçek Firebase testte hiç initialize edilmiyor, bkz. CLAUDE.md) —
+      // bu yüzden ekran "özellik kullanılamıyor" durumunu gösteriyor; asıl
+      // redeem/paylaşım mantığı `referral_provider_test.dart`'ta enjekte
+      // edilebilir `FakeFirebaseFirestore` ile ayrıca test ediliyor.
+      await tester.scrollUntilVisible(
+        find.text('Arkadaşını Davet Et'),
+        200,
+        scrollable: profileScrollable(),
+      );
+      tapRow('Arkadaşını Davet Et');
+      await tester.pumpAndSettle();
+      expect(
+        find.text('Davet sistemi şu an kullanılamıyor, daha sonra tekrar dene.'),
+        findsOneWidget,
+      );
       await tester.tap(find.byTooltip('Geri'));
       await tester.pumpAndSettle();
     },

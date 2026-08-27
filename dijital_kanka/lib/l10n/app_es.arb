@@ -365,5 +365,20 @@
   "googleSwitchAccountButton": "Cambiar de Cuenta",
   "googleSignOutConfirmTitle": "Cerrar Sesión",
   "googleSignOutConfirmBody": "¿Seguro que quieres cerrar sesión? Los datos vinculados a esta cuenta no se perderán — se restaurarán la próxima vez que inicies sesión con la misma cuenta de Google.",
-  "googleSignOutFailedMessage": "Hubo un problema al cerrar sesión, inténtalo de nuevo."
+  "googleSignOutFailedMessage": "Hubo un problema al cerrar sesión, inténtalo de nuevo.",
+  "referralScreenTitle": "Invita a un Amigo",
+  "referralRowTitle": "Invita a un Amigo",
+  "referralRowSubtitle": "Invita a alguien, los dos ganan Zibo Coin",
+  "referralCodeLabel": "Tu Código de Invitación",
+  "referralCopyButton": "Copiar",
+  "referralCodeCopiedMessage": "¡Código de invitación copiado!",
+  "referralShareButton": "Compartir",
+  "referralShareMessage": "¡Estoy probando Zibo, únete! Mi código de invitación: {code} — ingrésalo en Perfil > Invita a un Amigo y ambos ganaremos {amount} Zibo Coin! 🎉",
+  "referralRedeemFieldLabel": "¿Tienes un código de invitación?",
+  "referralRedeemButton": "Usar Código",
+  "referralRedeemSuccessMessage": "¡Tu código fue enviado! Tus monedas se añadirán pronto.",
+  "referralRedeemSelfCodeError": "No puedes usar tu propio código de invitación.",
+  "referralRedeemInvalidCodeError": "Ingresa un código de invitación válido.",
+  "referralAlreadyRedeemedStatus": "¡Ya usaste un código de invitación, gracias!",
+  "referralUnavailableMessage": "Las invitaciones no están disponibles ahora, inténtalo más tarde."
 }
