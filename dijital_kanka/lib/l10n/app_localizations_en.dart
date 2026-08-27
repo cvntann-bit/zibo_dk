@@ -410,6 +410,26 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String costumeUnlockViaStreak(int current, int target) {
+    return '🎯 Unlock free with a $target-day streak ($current/$target)';
+  }
+
+  @override
+  String costumeUnlockViaCompletions(int current, int target) {
+    return '🎯 Unlock free by completing $target goals ($current/$target)';
+  }
+
+  @override
+  String costumeUnlockViaWater(int current, int target) {
+    return '🎯 Unlock free with $target days of water tracking ($current/$target)';
+  }
+
+  @override
+  String costumeUnlockedViaGoalMessage(String name) {
+    return '🎉 You unlocked $name for free by reaching your goal!';
+  }
+
+  @override
   String get storeThemesTabLabel => 'Themes';
 
   @override

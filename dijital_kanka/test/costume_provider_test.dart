@@ -7,7 +7,10 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:dijital_kanka/models/goal.dart';
 import 'package:dijital_kanka/providers/costume_provider.dart';
+import 'package:dijital_kanka/providers/goals_provider.dart';
+import 'package:dijital_kanka/providers/water_provider.dart';
 
 void main() {
   setUp(() {
@@ -108,4 +111,119 @@ void main() {
     },
   );
 
+  group('reconcileGoalUnlocks (2026 — kostümler hedefle de ücretsiz açılır)', () {
+    late DateTime currentDate;
+    late CostumeProvider costumeProvider;
+    late GoalsProvider goalsProvider;
+    late WaterProvider waterProvider;
+
+    setUp(() async {
+      currentDate = DateTime(2026, 1, 5);
+      costumeProvider = CostumeProvider();
+      await Future<void>.delayed(Duration.zero);
+      goalsProvider = GoalsProvider(now: () => currentDate);
+      await Future<void>.delayed(Duration.zero);
+      goalsProvider.addGoal('Test hedefi');
+      waterProvider = WaterProvider(now: () => currentDate);
+    });
+
+    test('Hiçbir eşiğe ulaşılmamışsa hiçbir kostüm açılmaz', () {
+      final unlocked = costumeProvider.reconcileGoalUnlocks(
+        goalsProvider,
+        waterProvider,
+      );
+
+      expect(unlocked, isEmpty);
+      expect(costumeProvider.isOwned('zibo_hippi'), isFalse);
+    });
+
+    test(
+      'goalStreak eşiğine (zibo_hippi, 3 gün) ulaşılınca kostüm otomatik açılır',
+      () {
+        final goal = goalsProvider.goals.first;
+        for (var day = 0; day < 3; day++) {
+          goalsProvider.toggleToday(goal.id);
+          if (day < 2) {
+            currentDate = currentDate.add(const Duration(days: 1));
+            goalsProvider.reconcileForToday();
+          }
+        }
+        expect(goalsProvider.longestStreak, 3);
+
+        final unlocked = costumeProvider.reconcileGoalUnlocks(
+          goalsProvider,
+          waterProvider,
+        );
+
+        expect(unlocked, ['zibo_hippi']);
+        expect(costumeProvider.isOwned('zibo_hippi'), isTrue);
+      },
+    );
+
+    test(
+      'goalCompletions eşiğine (zibo_asker, 1 tamamlanan döngü) ulaşılınca '
+      'kostüm otomatik açılır',
+      () {
+        final goal = goalsProvider.goals.first;
+        for (var day = 0; day < Goal.daysPerCycle; day++) {
+          goalsProvider.toggleToday(goal.id);
+          if (day < Goal.daysPerCycle - 1) {
+            currentDate = currentDate.add(const Duration(days: 1));
+            goalsProvider.reconcileForToday();
+          }
+        }
+        expect(goalsProvider.completions, hasLength(1));
+
+        final unlocked = costumeProvider.reconcileGoalUnlocks(
+          goalsProvider,
+          waterProvider,
+        );
+
+        expect(unlocked, contains('zibo_asker'));
+        expect(costumeProvider.isOwned('zibo_asker'), isTrue);
+      },
+    );
+
+    test(
+      'waterDaysCompleted eşiğine (zibo_sporcu, 5 gün) ulaşılınca kostüm '
+      'otomatik açılır',
+      () {
+        for (var day = 0; day < 5; day++) {
+          for (var i = 0; i < waterProvider.goalUnitCount; i++) {
+            waterProvider.incrementUnit();
+          }
+          if (day < 4) currentDate = currentDate.add(const Duration(days: 1));
+        }
+        expect(waterProvider.completedDaysCount, 5);
+
+        final unlocked = costumeProvider.reconcileGoalUnlocks(
+          goalsProvider,
+          waterProvider,
+        );
+
+        expect(unlocked, contains('zibo_sporcu'));
+        expect(costumeProvider.isOwned('zibo_sporcu'), isTrue);
+      },
+    );
+
+    test('Zaten sahip olunan bir kostüm tekrar "yeni açıldı" olarak dönmez', () async {
+      await costumeProvider.markOwned('zibo_hippi');
+
+      final goal = goalsProvider.goals.first;
+      for (var day = 0; day < 3; day++) {
+        goalsProvider.toggleToday(goal.id);
+        if (day < 2) {
+          currentDate = currentDate.add(const Duration(days: 1));
+          goalsProvider.reconcileForToday();
+        }
+      }
+
+      final unlocked = costumeProvider.reconcileGoalUnlocks(
+        goalsProvider,
+        waterProvider,
+      );
+
+      expect(unlocked, isEmpty); // zaten sahipti, tekrar "açıldı" sayılmadı
+    });
+  });
 }

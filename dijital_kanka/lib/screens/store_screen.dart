@@ -12,6 +12,9 @@ import '../models/coin_economy.dart';
 import '../models/coin_package.dart';
 import '../providers/auth_link_provider.dart';
 import '../providers/coin_provider.dart';
+import '../providers/costume_provider.dart';
+import '../providers/goals_provider.dart';
+import '../providers/water_provider.dart';
 import '../utils/ad_free_promo_trigger.dart';
 import '../widgets/ad_free_promo_sheet.dart';
 import '../widgets/costume_card.dart';
@@ -63,13 +66,49 @@ class _StoreScreenState extends State<StoreScreen> {
   @override
   void initState() {
     super.initState();
-    if (widget.isActive) _maybeShowAdFreePromo();
+    if (widget.isActive) {
+      _maybeShowAdFreePromo();
+      _maybeReconcileCostumeUnlocks();
+    }
   }
 
   @override
   void didUpdateWidget(covariant StoreScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.isActive && !oldWidget.isActive) _maybeShowAdFreePromo();
+    if (widget.isActive && !oldWidget.isActive) {
+      _maybeShowAdFreePromo();
+      _maybeReconcileCostumeUnlocks();
+    }
+  }
+
+  /// 2026 güncellemesi — kullanıcı isteği: "TÜM kostümler hedefle de
+  /// açılabilsin." Mağaza'ya her girişte (`_maybeShowAdFreePromo` ile AYNI
+  /// "az önce görünür oldu" kancası) `CostumeProvider.reconcileGoalUnlocks`
+  /// çağrılır — yeni açılan kostüm varsa (bkz. o metodun dokümantasyonu,
+  /// zaten `markOwned`'ı KENDİSİ çağırıyor) tek bir kutlama SnackBar'ı
+  /// gösterilir. `addPostFrameCallback` ile ertelenmesi, `_maybeShowAdFreePromo`
+  /// ile AYNI gerekçe — `initState`/`didUpdateWidget` sırasında henüz build
+  /// tamamlanmadan bir SnackBar göstermek güvenli değil.
+  void _maybeReconcileCostumeUnlocks() {
+    final unlockedIds = context.read<CostumeProvider>().reconcileGoalUnlocks(
+      context.read<GoalsProvider>(),
+      context.read<WaterProvider>(),
+    );
+    if (unlockedIds.isEmpty) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final l10n = AppLocalizations.of(context)!;
+      final names = unlockedIds
+          .map((id) => findCostumeById(id)?.localizedName(l10n))
+          .whereType<String>()
+          .join(', ');
+      if (names.isEmpty) return;
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(content: Text(l10n.costumeUnlockedViaGoalMessage(names))),
+        );
+    });
   }
 
   /// Görsel mockup tanıtımı (bkz. CLAUDE.md "Zibo ADS" bölümü) — her Mağaza
@@ -191,8 +230,14 @@ class _CostumesSection extends StatelessWidget {
       crossAxisSpacing: 12,
       // Kilitli kartlar (görsel + isim + fiyat + "Satın Al" butonu) sahip
       // olunan kartlardan (görsel + isim + rozet) daha uzun — en uzun durumu
-      // taşırmayacak kadar düşük bir oran seçildi.
-      childAspectRatio: 0.66,
+      // taşırmayacak kadar düşük bir oran seçildi. 2026 güncellemesi: TÜM
+      // kostümler artık bir "X yaparak ücretsiz aç" ilerleme satırı da
+      // taşıyor (bkz. CostumeCard/costumes.dart) — kilitli kart bir satır
+      // daha uzadığı için oran 0.66'dan 0.56'ya düşürüldü (widget testiyle
+      // overflow olmadığı doğrulanacak, bkz. CLAUDE.md'de bu projede
+      // tekrarlayan "yeni içerik ekleyince childAspectRatio overflow'u"
+      // dersi).
+      childAspectRatio: 0.56,
       children: [
         for (final costume in costumes) CostumeCard(costume: costume),
       ],

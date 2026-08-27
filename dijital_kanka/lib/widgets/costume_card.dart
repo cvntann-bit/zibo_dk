@@ -3,8 +3,11 @@ import 'package:provider/provider.dart';
 
 import '../l10n/app_localizations.dart';
 import '../models/costume.dart';
+import '../models/costume_unlock_requirement.dart';
 import '../providers/coin_provider.dart';
 import '../providers/costume_provider.dart';
+import '../providers/goals_provider.dart';
+import '../providers/water_provider.dart';
 import '../utils/coin_feedback.dart';
 
 /// Mağaza > Kostümler ızgarasındaki tek bir kostüm kartı. Üç durumu var:
@@ -42,6 +45,12 @@ class CostumeCard extends StatelessWidget {
     final costumeProvider = context.watch<CostumeProvider>();
     final owned = costumeProvider.isOwned(costume.id);
     final equipped = costumeProvider.isEquipped(costume.id);
+    // Kilitliyken "X yaparak ücretsiz aç" ilerlemesini göstermek için — bkz.
+    // altta `_unlockProgressText`. `owned` iken bu iki provider'ı izlemenin
+    // hiçbir maliyeti yok (zaten `MultiProvider` ağacında hazırlar) ama
+    // yalnızca kilitli dalda KULLANILIYOR.
+    final goals = context.watch<GoalsProvider>();
+    final water = context.watch<WaterProvider>();
 
     final content = Padding(
       padding: const EdgeInsets.all(12),
@@ -122,6 +131,28 @@ class CostumeCard extends StatelessWidget {
                 child: Text(l10n.storeBuyButton),
               ),
             ),
+            // 2026 güncellemesi — kullanıcı isteği: "hem fiyatı hem de X
+            // yaparak ücretsiz aç bilgisini BİRLİKTE göster." Fiyat/buton
+            // satırı DEĞİŞMİYOR, yalnızca altına kompakt bir ilerleme satırı
+            // ekleniyor — bkz. `CostumeProvider.reconcileGoalUnlocks`
+            // (gerçek otomatik açma, burada YALNIZCA gösterim var).
+            if (costume.unlockRequirement != null) ...[
+              const SizedBox(height: 6),
+              Text(
+                _unlockProgressText(
+                  l10n,
+                  costume.unlockRequirement!,
+                  goals,
+                  water,
+                ),
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ],
           ],
         ],
       ),
@@ -154,6 +185,43 @@ class CostumeCard extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Kilitli bir kostüm kartındaki "X yaparak ücretsiz aç" satırı — `req.type`'a
+/// göre doğru provider'dan o anki ilerlemeyi okuyup doğru ARB metnini seçer.
+/// `CostumeProvider.reconcileGoalUnlocks`'taki AYNI küçük `switch`'in salt
+/// GÖSTERİM amaçlı bir kopyası (bkz. o metodun dokümantasyonu — bilerek
+/// paylaşılan bir yardımcıya çıkarılmadı, üç satırlık bir eşleme için ayrı
+/// bir soyutlama gereksiz dolaylılık eklerdi). `current`, `target`'ı
+/// AŞMAYACAK şekilde kırpılıyor — `reconcileGoalUnlocks` henüz çalışmadan
+/// (ör. Mağaza'ya bu turda ilk kez girilmeden) önceki tek bir karede
+/// "6/5" gibi mantıksız bir görünüm olmasın diye.
+String _unlockProgressText(
+  AppLocalizations l10n,
+  CostumeUnlockRequirement req,
+  GoalsProvider goals,
+  WaterProvider water,
+) {
+  final rawCurrent = switch (req.type) {
+    CostumeUnlockType.goalStreak => goals.longestStreak,
+    CostumeUnlockType.goalCompletions => goals.completions.length,
+    CostumeUnlockType.waterDaysCompleted => water.completedDaysCount,
+  };
+  final current = rawCurrent > req.target ? req.target : rawCurrent;
+  return switch (req.type) {
+    CostumeUnlockType.goalStreak => l10n.costumeUnlockViaStreak(
+      current,
+      req.target,
+    ),
+    CostumeUnlockType.goalCompletions => l10n.costumeUnlockViaCompletions(
+      current,
+      req.target,
+    ),
+    CostumeUnlockType.waterDaysCompleted => l10n.costumeUnlockViaWater(
+      current,
+      req.target,
+    ),
+  };
 }
 
 class _Badge extends StatelessWidget {

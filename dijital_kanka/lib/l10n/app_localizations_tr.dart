@@ -410,6 +410,26 @@ class AppLocalizationsTr extends AppLocalizations {
   }
 
   @override
+  String costumeUnlockViaStreak(int current, int target) {
+    return '🎯 $current/$target gün seri ile ücretsiz aç';
+  }
+
+  @override
+  String costumeUnlockViaCompletions(int current, int target) {
+    return '🎯 $current/$target hedef tamamlayarak ücretsiz aç';
+  }
+
+  @override
+  String costumeUnlockViaWater(int current, int target) {
+    return '🎯 $current/$target gün su takibiyle ücretsiz aç';
+  }
+
+  @override
+  String costumeUnlockedViaGoalMessage(String name) {
+    return '🎉 $name hedefini tamamlayarak ücretsiz açtın!';
+  }
+
+  @override
   String get storeThemesTabLabel => 'Temalar';
 
   @override

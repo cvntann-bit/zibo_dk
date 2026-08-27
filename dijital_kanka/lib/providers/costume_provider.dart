@@ -1,7 +1,11 @@
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../data/costumes.dart';
+import '../models/costume_unlock_requirement.dart';
 import '../services/cloud_state_store.dart';
+import 'goals_provider.dart';
+import 'water_provider.dart';
 
 /// Kullanıcının satın aldığı kostümleri ve o an giyili olanı tutan tek
 /// kaynak. Coin harcamasından bağımsız — tıpkı [GoalsProvider]'ın
@@ -84,5 +88,42 @@ class CostumeProvider extends ChangeNotifier {
     _equippedId = _equippedId == id ? null : id;
     notifyListeners();
     await _save();
+  }
+
+  /// 2026 güncellemesi — kullanıcı isteği: "TÜM kostümler hedefle de
+  /// açılabilsin." `costumes.dart`'taki (`lib/data/costumes.dart`) HER
+  /// kostümü dolaşıp, henüz SAHİP OLUNMAMIŞ VE bir `unlockRequirement`
+  /// taşıyanlar için ilgili provider'dan (`goals`/`water`) o anki
+  /// ilerlemeyi okur; hedefe ulaşılmışsa `markOwned(id)` çağırır (satın
+  /// almadan TAMAMEN bağımsız, `CostumeCard._buy`'ın çağırdığı AYNI metot).
+  ///
+  /// `GoalsProvider`/`WaterProvider`'ı constructor'dan değil PARAMETRE
+  /// olarak alıyor — `CostumeProvider`'ın coin/sound'dan bağımsız olma
+  /// felsefesiyle AYNI gerekçe (bkz. sınıf dokümantasyonu): bu provider
+  /// diğer provider'lara KALICI olarak bağımlı değil, yalnızca çağıran
+  /// tarafın (bkz. `StoreScreen`) o anki verilerini geçici olarak okuyor.
+  /// `StoreScreen`'in Mağaza'ya her girişte çağırdığı `isActive` kancasıyla
+  /// (bkz. `_maybeShowAdFreePromo` ile AYNI desen) tetiklenmesi
+  /// düşünülüyor — genel bir listener/arka plan servisi GEREKMİYOR.
+  ///
+  /// Yeni açılan kostümlerin id listesini döner — çağıran taraf bunu bir
+  /// kutlama SnackBar'ı göstermek için kullanabilir; hiçbiri açılmadıysa
+  /// boş liste (no-op, `notifyListeners()`/`_save()` HİÇ tetiklenmez).
+  List<String> reconcileGoalUnlocks(GoalsProvider goals, WaterProvider water) {
+    final unlocked = <String>[];
+    for (final costume in costumes) {
+      final requirement = costume.unlockRequirement;
+      if (requirement == null || isOwned(costume.id)) continue;
+      final progress = switch (requirement.type) {
+        CostumeUnlockType.goalStreak => goals.longestStreak,
+        CostumeUnlockType.goalCompletions => goals.completions.length,
+        CostumeUnlockType.waterDaysCompleted => water.completedDaysCount,
+      };
+      if (progress >= requirement.target) {
+        markOwned(costume.id);
+        unlocked.add(costume.id);
+      }
+    }
+    return unlocked;
   }
 }

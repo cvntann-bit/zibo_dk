@@ -551,6 +551,55 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
   overflow'u varsayılan olarak assertion'a çevirmiyor, sessizce geçebilir). `0.66`'ya düşürülünce
   düzeldi. Bir kart tasarımını değiştirirken en UZUN durumu (burada: kilitli, buton dahil) göz önünde
   bulundurun.
+- **2026 güncellemesi — TÜM kostümler hedef tamamlayarak da (ücretsiz) açılabilir, zorluk fiyata
+  göre ölçeklenir.** Kullanıcı isteği: kostümler yalnızca parayla değil, ilgili bir hedefi
+  tamamlayınca da açılabilsin; ucuz kostümler kolay/kısa vadeli hedeflerle, pahalı kostümler zor/
+  uzun vadeli hedeflerle. İKİ yol da geçerli — hangisi ÖNCE gerçekleşirse kostüm o yoldan açılıyor.
+  - **Yeni `CostumeUnlockType` enum + `CostumeUnlockRequirement`**
+    ([costume_unlock_requirement.dart](lib/models/costume_unlock_requirement.dart)) — üç tür:
+    `goalStreak` (`GoalsProvider.longestStreak`), `goalCompletions`
+    (`GoalsProvider.completions.length`, tamamlanan 7-günlük hedef döngüsü sayısı, SINIRSIZ büyür),
+    `waterDaysCompleted` (YENİ `WaterProvider.completedDaysCount` getter'ı — su hedefinin
+    tamamlandığı toplam gün sayısı, o da sınırsız büyür). `Costume`'a nullable bir
+    `unlockRequirement` alanı eklendi.
+  - **`goalStreak` BİLEREK yalnızca EN ucuz kostümde (zibo_hippi, hedef 3) kullanıldı** —
+    `longestStreak` mimari gereği ASLA 7'yi aşamaz (bir 7 günlük döngü tamamlanınca/bozulunca
+    sıfırlanıyor, bkz. `GoalsProvider` dokümantasyonu) — kullanıcının "30-60 gün streak" gibi üst-
+    tier örnekleri bu yüzden `goalCompletions`/`waterDaysCompleted`'e (ikisi de sınırsız büyüyen
+    metrikler) eşlendi, kullanıcının kendi "örn." ifadesiyle bunların katı bir gereksinim olmadığı
+    yorumlanarak. `costumes.dart`'taki 16 kostümün TAMAMI artık bir gereksinim taşıyor, fiyatla
+    monoton artan zorlukta (tam tablo o dosyanın dokümantasyonunda) — `zibo_hippi` = kullanıcının
+    kendi "3 gün streak" örneği, `zibo_elmas` (en pahalı) = kullanıcının kendi "100 gün su takibi"
+    örneği.
+  - **`CostumeProvider.reconcileGoalUnlocks(goals, water)`** (YENİ) — `GoalsProvider`/
+    `WaterProvider`'ı CONSTRUCTOR'dan değil PARAMETRE olarak alıyor (`CostumeProvider`'ın coin/
+    sound'dan bağımsız olma felsefesiyle AYNI gerekçe — bu provider diğerlerine KALICI bağımlı
+    değil, yalnızca çağıranın o anki verisini geçici okuyor). Her kostümü dolaşıp henüz sahip
+    olunmamış + gereksinimi karşılananlar için `markOwned(id)`'yi (satın almadan TAMAMEN bağımsız,
+    `CostumeCard._buy`'ın çağırdığı AYNI metot) çağırıp yeni açılanların id listesini döner.
+    `StoreScreen`'in Mağaza'ya her girişte tetiklenen `isActive`/`didUpdateWidget` kancasından
+    (`_maybeShowAdFreePromo` ile AYNI desen) çağrılıyor — yeni açılan varsa
+    `costumeUnlockedViaGoalMessage` SnackBar'ı gösteriliyor. Genel bir listener/arka plan servisi
+    GEREKMEDİ — `DailyRewardsProvider.reconcileForToday()` gibi "ilgili ekrana her girişte kontrol
+    et" deseninin bir tekrarı.
+  - **`CostumeCard` — dördüncü görsel alt-durum:** kilitli VE `unlockRequirement != null` iken,
+    mevcut fiyat+"Satın Al" satırının ALTINA (kullanıcının açık isteği "hem fiyatı hem de X bilgisini
+    BİRLİKTE göster") kompakt bir ilerleme satırı ekleniyor (ör. "🎯 3/5 gün su takibiyle ücretsiz
+    aç") — `_unlockProgressText` (dosyanın sonunda, private) `CostumeProvider.reconcileGoalUnlocks`'
+    taki AYNI küçük `switch`'in SALT GÖSTERİM amaçlı bir kopyası (bilerek paylaşılan bir yardımcıya
+    çıkarılmadı — üç satırlık bir eşleme için ayrı bir soyutlama gereksiz dolaylılık eklerdi).
+    `current`, `target`'ı AŞMAYACAK şekilde kırpılıyor (reconcile henüz çalışmadan önceki tek bir
+    karede "6/5" gibi mantıksız bir görünüm olmasın diye).
+  - **Bu projede DÖRDÜNCÜ kez tekrarlanan `childAspectRatio` overflow dersi:** yeni ilerleme satırı
+    kilitli kartı bir satır daha uzattığı için `_CostumesSection`'daki oran `0.66`'dan `0.56`'ya
+    düşürüldü (`flutter test` ile mevcut kostüm satın alma/giyme senaryolarının hâlâ overflow'suz
+    geçtiği doğrulandı).
+  - **Test:** `costume_provider_test.dart`'a yeni bir grup (5 test — eşik altı no-op, `goalStreak`/
+    `goalCompletions`/`waterDaysCompleted` her biri için gerçek provider API'leriyle [enjekte
+    edilebilir saatle] sürülen bir eşik-aşımı senaryosu, zaten sahip olunan bir kostümün tekrar
+    "yeni açıldı" sayılmadığı) + `water_provider_test.dart`'a `completedDaysCount` testi. Gerçek
+    cihazda/tarayıcıda görsel doğrulama bu turda YAPILMADI — yalnızca `flutter test`'teki 310
+    testle kapsandı.
 
 ### Zibo Poz/Animasyon Sistemi ([costume_poses.dart](lib/data/costume_poses.dart), [zibo_animated_image.dart](lib/widgets/zibo_animated_image.dart), [zibo_pose_provider.dart](lib/providers/zibo_pose_provider.dart))
 
@@ -3804,8 +3853,8 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
   SONRA SİLİNDİ** — Şans Çarkı sonrası reklam denemesiyle birlikte geldi, kullanıcı o özelliği
   istemeyince (bkz. "Zibo'ya Art Arda Dokunma → Geçiş Reklamı" bölümündeki geri alma notu) testi
   de anlamsızlaştığı için kaldırıldı.
-  **Toplam: 300 test** (2026 — `daily_rewards_provider_test.dart`'a cihaz saati anomalisi/idx<0
-  senaryosu eklendi, bkz. "Günlük Giriş Ödülleri" bölümü).
+  **Toplam: 310 test** (2026 — `costume_provider_test.dart`'a `reconcileGoalUnlocks` grubu +
+  `water_provider_test.dart`'a `completedDaysCount` testi eklendi, bkz. "Kostümler" bölümü).
 - `widget_test.dart` içindeki `_buildAppWithClock()` yardımcı fonksiyonu enjekte edilebilir saatli
   testler için — **`RootScreen`'in ihtiyaç duyduğu HER provider'ı içermeli** (`AppThemeProvider`,
   `AuthLinkProvider`, `CoinProvider`, `CostumeProvider`, `CustomMessagesProvider`,

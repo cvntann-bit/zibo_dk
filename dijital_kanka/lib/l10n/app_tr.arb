@@ -561,6 +561,51 @@
       }
     }
   },
+  "costumeUnlockViaStreak": "🎯 {current}/{target} gün seri ile ücretsiz aç",
+  "@costumeUnlockViaStreak": {
+    "description": "Kilitli bir kostüm kartında, seri (streak) ile ücretsiz açma ilerlemesi",
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "target": {
+        "type": "int"
+      }
+    }
+  },
+  "costumeUnlockViaCompletions": "🎯 {current}/{target} hedef tamamlayarak ücretsiz aç",
+  "@costumeUnlockViaCompletions": {
+    "description": "Kilitli bir kostüm kartında, tamamlanan hedef sayısıyla ücretsiz açma ilerlemesi",
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "target": {
+        "type": "int"
+      }
+    }
+  },
+  "costumeUnlockViaWater": "🎯 {current}/{target} gün su takibiyle ücretsiz aç",
+  "@costumeUnlockViaWater": {
+    "description": "Kilitli bir kostüm kartında, su takibi gün sayısıyla ücretsiz açma ilerlemesi",
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "target": {
+        "type": "int"
+      }
+    }
+  },
+  "costumeUnlockedViaGoalMessage": "🎉 {name} hedefini tamamlayarak ücretsiz açtın!",
+  "@costumeUnlockedViaGoalMessage": {
+    "description": "Mağaza'ya girildiğinde bir/birden fazla kostüm hedefle otomatik açılınca gösterilen SnackBar",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "storeThemesTabLabel": "Temalar",
   "@storeThemesTabLabel": {
     "description": "Mağaza sayfasındaki üç segmentten 'temalar' segmentinin etiketi"

@@ -228,5 +228,31 @@ void main() {
         expect(migrated.history.first.unitCount, 5);
       },
     );
+
+    test(
+      'completedDaysCount — 2026 güncellemesi (kostüm mağazasının "hedefle '
+      'ücretsiz aç" özelliği için): yalnızca hedefe ULAŞILAN günleri sayar, '
+      'yarım kalan günler hariç',
+      () {
+        expect(provider.completedDaysCount, 0);
+
+        // Gün 1 (2026-01-05): tam hedef (8/8) — sayılır.
+        for (var i = 0; i < 8; i++) {
+          provider.incrementUnit();
+        }
+        // Gün 2 (2026-01-06): tam hedef — sayılır.
+        currentDate = currentDate.add(const Duration(days: 1));
+        for (var i = 0; i < 8; i++) {
+          provider.incrementUnit();
+        }
+        // Gün 3 (2026-01-07): yarım kalmış — SAYILMAZ.
+        currentDate = currentDate.add(const Duration(days: 1));
+        for (var i = 0; i < 4; i++) {
+          provider.incrementUnit();
+        }
+
+        expect(provider.completedDaysCount, 2);
+      },
+    );
   });
 }

@@ -414,6 +414,26 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
+  String costumeUnlockViaStreak(int current, int target) {
+    return '🎯 Desbloquéalo gratis con una racha de $target días ($current/$target)';
+  }
+
+  @override
+  String costumeUnlockViaCompletions(int current, int target) {
+    return '🎯 Desbloquéalo gratis completando $target metas ($current/$target)';
+  }
+
+  @override
+  String costumeUnlockViaWater(int current, int target) {
+    return '🎯 Desbloquéalo gratis con $target días de seguimiento de agua ($current/$target)';
+  }
+
+  @override
+  String costumeUnlockedViaGoalMessage(String name) {
+    return '🎉 ¡Desbloqueaste $name gratis al cumplir tu meta!';
+  }
+
+  @override
   String get storeThemesTabLabel => 'Temas';
 
   @override

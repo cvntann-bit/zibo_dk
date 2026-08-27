@@ -814,6 +814,30 @@ abstract class AppLocalizations {
   /// **'{name} çıkar'**
   String costumeUnequipSemanticLabel(String name);
 
+  /// Kilitli bir kostüm kartında, seri (streak) ile ücretsiz açma ilerlemesi
+  ///
+  /// In tr, this message translates to:
+  /// **'🎯 {current}/{target} gün seri ile ücretsiz aç'**
+  String costumeUnlockViaStreak(int current, int target);
+
+  /// Kilitli bir kostüm kartında, tamamlanan hedef sayısıyla ücretsiz açma ilerlemesi
+  ///
+  /// In tr, this message translates to:
+  /// **'🎯 {current}/{target} hedef tamamlayarak ücretsiz aç'**
+  String costumeUnlockViaCompletions(int current, int target);
+
+  /// Kilitli bir kostüm kartında, su takibi gün sayısıyla ücretsiz açma ilerlemesi
+  ///
+  /// In tr, this message translates to:
+  /// **'🎯 {current}/{target} gün su takibiyle ücretsiz aç'**
+  String costumeUnlockViaWater(int current, int target);
+
+  /// Mağaza'ya girildiğinde bir/birden fazla kostüm hedefle otomatik açılınca gösterilen SnackBar
+  ///
+  /// In tr, this message translates to:
+  /// **'🎉 {name} hedefini tamamlayarak ücretsiz açtın!'**
+  String costumeUnlockedViaGoalMessage(String name);
+
   /// Mağaza sayfasındaki üç segmentten 'temalar' segmentinin etiketi
   ///
   /// In tr, this message translates to:

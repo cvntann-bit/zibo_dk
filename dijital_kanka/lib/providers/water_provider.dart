@@ -79,6 +79,14 @@ class WaterProvider extends ChangeNotifier {
     return List.unmodifiable(past);
   }
 
+  /// Su hedefinin TAMAMLANDIĞI toplam gün sayısı (bugün dahil, tarih sırası
+  /// önemsiz) — sınırsız büyür, `GoalsProvider.longestStreak`'in aksine
+  /// 7 günlük bir döngüye bağlı değil. 2026 güncellemesi: kostüm mağazasının
+  /// "hedefle ücretsiz aç" özelliğinin (bkz. `CostumeProvider.
+  /// reconcileGoalUnlocks`) ikinci ilerleme metriği için eklendi.
+  int get completedDaysCount =>
+      _entries.where((e) => e.unitCount >= e.goalUnitCount).length;
+
   Future<void> _loadFromPrefs() async {
     final decoded = await _store.load();
     if (decoded == null) return;
