@@ -83,16 +83,14 @@ android {
             // İmzalama" bölümü VE proguard-rules.pro'nun başındaki
             // dokümantasyon (R8'in yalnızca native plugin katmanını
             // etkilediği, Dart/Flutter iş mantığına DOKUNMADIĞI notu).
-            // GEÇİCİ TANI AMAÇLI KAPATILDI — Google Sign-In "[16] Account
-            // reauth failed" araştırması: kullanıcının "bu her zaman R8
-            // küçültmesinden kaynaklanıyor, debug'ta çalışıyor" hipotezini
-            // Play Store'un KENDİ dağıtım yoluyla (App Signing Key) test
-            // etmek için — bkz. CLAUDE.md "Google Hesap Bağlama" bölümü.
-            // SONUÇ NE OLURSA OLSUN bir sonraki gerçek sürümden ÖNCE `true`
-            // ya geri alınmalı YA DA (R8 gerçekten suçluysa) tespit edilen
-            // spesifik kaynak proguard-rules.pro'ya eklenip tekrar açılmalı.
-            isMinifyEnabled = false
-            isShrinkResources = false
+            // (2026 — bir turluk tanı amaçlı KAPATILMIŞTI: Google Sign-In
+            // "[16] Account reauth failed" için R8 hipotezi test edildi ve
+            // ELENDİ — sorun R8 kapalıyken de AYNEN devam etti. Gerçek kök
+            // neden `google-services.json`'daki App Signing Key SHA-1'in
+            // YANLIŞ olmasıydı (bkz. CLAUDE.md "Google Hesap Bağlama"
+            // bölümü) — R8 ile ilgisi YOKTU, bu yüzden tekrar açıldı.)
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",

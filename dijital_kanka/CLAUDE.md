@@ -4924,6 +4924,55 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
     SONRA gerçek cihazında doğrulaması gereken:** sorun tekrar olursa artık en azından görünür
     bir "Bağlanırken sorun oluştu" mesajı görmeli (sessiz kalmamalı) — sorun TAMAMEN ortadan
     kalkıp kalkmadığı (idToken'ın neden bazen eksik geldiği) ayrıca izlenmeli.
+- **2026 GÜNCELLEMESİ — ASIL/KESİN kök neden nihayet bulundu ve DÜZELTİLDİ: App Signing Key
+  SHA-1'i Firebase'e YANLIŞ değerle kaydedilmişti.** Yukarıdaki `GoogleSignInMissingIdTokenException`
+  düzeltmesi Play Store'a yayınlandıktan SONRA bile kullanıcı AYNI sorunu bildirmeye devam etti,
+  ama artık SESSİZ değildi — görünür "Bağlanırken bir sorun oluştu" mesajı çıkıyordu (önceki
+  düzeltmenin ÇALIŞTIĞININ kanıtı). Kullanıcı "bu debug'ta çalışıyor, kesin R8 küçültmesinden
+  kaynaklanıyor" diye ısrar etti (bu projede AYNI bug sınıfının — `default_web_client_id` — daha
+  önce GERÇEKTEN yaşanmış olması yüzünden makul bir şüpheydi).
+  - **R8 hipotezi KONTROLLÜ olarak test edildi ve ELENDİ:** `isMinifyEnabled`/`isShrinkResources`
+    GEÇİCİ olarak `false` yapılıp AYNI Play Store dağıtım yoluyla (App Signing Key ile) yeni bir
+    sürüm yayınlandı — sorun BİREBİR AYNI şekilde devam etti. Bu, R8'i kesin olarak devre dışı
+    bıraktı: aranan şey R8'in sildiği bir kaynak DEĞİLDİ.
+  - **Asıl kanıt — geniş kapsamlı (`*:W`, tüm etiketler, yalnızca uyarı+ seviyesi) canlı `adb
+    logcat` yakalamasında** hesap seçici kapanmadan HEMEN ÖNCE şu satırlar bulundu:
+    ```
+    W Auth    : [GetTokenResponseHandler] Server returned error: This android application is
+    not registered to use OAuth2.0, please confirm the package name and SHA-1 certificate
+    fingerprint match what you registered in Google Developer Console...
+    W Auth.Api.Credentials: [AccountReauth_flowRunner] Flow failed.
+    cmia: [8] Unknown error [status=UNREGISTERED_ON_API_CONSOLE].
+    ```
+    **`UNREGISTERED_ON_API_CONSOLE`** — Google'ın kendi sunucusu, bu APK'yı imzalayan sertifikanın
+    Cloud Console'da KAYITLI OLMADIĞINI söylüyordu.
+  - **Kesin doğrulama — cihazda GERÇEKTEN kurulu olan APK'nın imza sertifikası doğrudan çekilip
+    ölçüldü** (`adb shell pm path` ile APK yolu bulunup `adb pull` ile indirildi, `apksigner
+    verify --print-certs` ile imzası okundu): GERÇEK SHA-1 `EB:AA:2E:93:01:06:D6:DB:54:1D:9A:BC:
+    53:7D:B4:9A:61:F3:CF:32` (SHA-256 `46:99:DC:0B:1A:DD:48:98:20:2D:71:88:31:48:E6:E4:68:A0:D8:
+    0A:3A:15:81:C0:22:2A:18:6F:AA:59:75:C8`) — bu, `google-services.json`'da o ana kadar kayıtlı
+    OLAN ÜÇ sertifikanın (upload key `CD:E6:95:44:...`, debug key `AD:E5:CB:35:...`, ve daha
+    önce "App Signing Key" diye eklenen `00:76:5C:11:...`) HİÇBİRİYLE eşleşmiyordu.
+  - **Önceki turda Play Console'dan kopyalanan `00:76:5C:11:...` değeri YANLIŞTI** — muhtemelen
+    Play Console'un "Uygulama imzalama anahtarı" sayfasındaki "Yükleme anahtarı sertifikası" ile
+    "Uygulama imzalama anahtarı sertifikası" satırlarının (veya anahtar rotasyonu/"Klasik anahtar"
+    dışındaki bir varyantın) karıştırılmasından kaynaklandı — kesin sebep önemli değil, önemli olan
+    GERÇEK sertifikanın artık cihazdan bizzat ÖLÇÜLMÜŞ olması (bir ekran görüntüsünden elle
+    kopyalamaya değil, `apksigner`'ın kendi çıktısına dayanıyor — bu YÖNTEM daha güvenilir).
+  - **Düzeltme:** kullanıcı bu GERÇEK SHA-1/SHA-256'yı Firebase Console'a ("Add fingerprint")
+    ekleyip `google-services.json`'ı yeniden indirdi — dosyada artık DÖRDÜNCÜ bir `oauth_client`
+    girdisi (`certificate_hash: ebaa2e930106d6db541d9abc537db49a61f3cf32`) var. R8 de (hipotez
+    elendiği için) `true`'ya GERİ ALINDI.
+  - **Ders — genelleştirilebilir, bu bug sınıfının EN KESİN teşhis yöntemi:** Play App Signing
+    kullanan bir uygulamada Google Sign-In/Firebase SHA-sertifika sorunu yaşanıyorsa, Play
+    Console ekran görüntülerinden SHA-1/SHA-256 elle KOPYALAMAK yerine, GERÇEKTEN dağıtılan APK'yı
+    (`adb shell pm path` + `adb pull`) çekip `apksigner verify --print-certs` ile İMZASINI
+    DOĞRUDAN ÖLÇMEK çok daha güvenilir — Play Console'un çok katmanlı, kafa karıştırıcı arayüzünde
+    yanlış satırı kopyalamak (bu oturumda tam olarak olan buydu) kolay, ama cihazdan ölçülen bir
+    sertifika ASLA yanlış olamaz.
+  - **Doğrulama bu turda YAPILAMADI** — düzeltme henüz yeni bir sürüme (bir sonraki version code)
+    paketlenip yayınlanmadı; kullanıcının Play Store güncellemesini aldıktan SONRA "Google ile
+    Bağla"yı tekrar denemesi gerekiyor.
 
 ## Coin Ekonomisi Güvenliği (Mod APK / Hile Koruması) ([firestore.rules](firestore.rules))
 
