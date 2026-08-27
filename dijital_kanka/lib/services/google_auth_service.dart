@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
+import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 /// Google ile hesap bağlama/giriş sonucu — bkz. [GoogleAuthService.signIn].
@@ -153,6 +154,12 @@ class FirebaseGoogleAuthService extends GoogleAuthService {
         ),
       );
       final idToken = account.authentication.idToken;
+      // TANI AMAÇLI — authenticate()'in GERÇEKTEN bir hesapla başarıyla
+      // döndüğünü VE idToken'ın olup olmadığını doğrulamak için.
+      debugPrint(
+        'GoogleAuthService._authenticate authenticate() OK: '
+        'email=${account.email} idToken=${idToken == null ? 'NULL' : 'present (${idToken.length} chars)'}',
+      );
       // `idToken == null` kullanıcının vazgeçmesi DEĞİL — bkz.
       // GoogleSignInMissingIdTokenException dokümantasyonu.
       if (idToken == null) throw const GoogleSignInMissingIdTokenException();
@@ -165,6 +172,14 @@ class FirebaseGoogleAuthService extends GoogleAuthService {
       // (HER `GoogleSignInException`'ı sessizce yutmak) gerçek bir hatayı
       // "buton hiçbir şey yapmıyor" gibi gösteriyordu — kullanıcı geri
       // bildirimiyle bulundu.**
+      // TANI AMAÇLI — kullanıcı GERÇEKTEN bir hesap seçtiği halde `canceled`
+      // kodunun dönüp dönmediğini doğrulamak için (bkz. CLAUDE.md "Google
+      // Hesap Bağlama" bölümündeki en son not). Bu satır `canceled` DAHİL
+      // HER koddan ÖNCE, sessizce yutulmadan ÖNCE çalışıyor.
+      debugPrint(
+        'GoogleAuthService._authenticate GoogleSignInException: '
+        'code=${e.code} description=${e.description} details=${e.details}',
+      );
       if (e.code == GoogleSignInExceptionCode.canceled) return null;
       rethrow;
     }
@@ -175,11 +190,24 @@ class FirebaseGoogleAuthService extends GoogleAuthService {
     final user = fb_auth.FirebaseAuth.instance.currentUser;
     if (user == null) return null;
     final credential = await _authenticate();
+    // TANI AMAÇLI — `_authenticate()`'in gerçekten `null` (sessiz vazgeçme)
+    // döndüğünü mü, yoksa devam edip `linkWithCredential`'a mı ulaştığını
+    // ayırt etmek için.
+    debugPrint(
+      'GoogleAuthService.linkCurrentUser: credential=${credential == null ? 'NULL (sessiz çıkış)' : 'present, linkWithCredential çağrılıyor'}',
+    );
     if (credential == null) return null;
     try {
       final result = await user.linkWithCredential(credential);
+      debugPrint(
+        'GoogleAuthService.linkCurrentUser: linkWithCredential OK, email=${result.user?.email}',
+      );
       return result.user?.email;
     } on fb_auth.FirebaseAuthException catch (e) {
+      debugPrint(
+        'GoogleAuthService.linkCurrentUser linkWithCredential FirebaseAuthException: '
+        'code=${e.code} message=${e.message}',
+      );
       if (e.code == 'credential-already-in-use' ||
           e.code == 'email-already-in-use') {
         throw const GoogleAccountAlreadyLinkedElsewhereException();
