@@ -5346,15 +5346,23 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
   alanı + bir `CloudStateStore`) barındırıyorsa, enjekte edilen `firestore` parametresi HER İKİSİNE
   de (ayrı ayrı) geçirilmeli — birini unutmak yalnızca O bileşenin testte "gerçek Firebase'e
   ulaşmaya çalışıp çökme" riskini taşır. **Toplam: 324 test.**
-- **Kullanıcının YAPMASI gereken adımlar** (asistan yapamaz — Firebase/GitHub Console erişimi
-  gerektiriyor): (1) `firestore.rules`'daki (bu güncellemeyle eklenen `referralRedemptions` bloğu
-  dahil) GÜNCEL içeriği Firebase Console > Firestore Database > Rules'a yapıştırıp yayınlamak —
-  bu blok eklenmeden davet kodu gönderme adımı `PERMISSION_DENIED` ile SESSİZCE başarısız olur
-  (`CloudStateStore`/`ReferralProvider`'ın try/catch'i hatayı yutar). (2) Bu betiği bu ortamda
-  ÇALIŞTIRIP TEST ETMEK mümkün değil (Node.js yok, bkz. diğer 5 bildirim betiğiyle AYNI sınırlama)
-  — kullanıcının GitHub Actions'tan `workflow_dispatch` ile (önce `dry_run: true` ile bir sağlık
-  kontrolü, sonra gerçek bir davet kodu göndertip `dry_run: false` ile tekrar tetikleyerek)
-  doğrulaması gerekiyor.
+- **Doğrulandı (2026-08-28):** kullanıcı güncel `firestore.rules` içeriğini (bu güncellemeyle
+  eklenen `referralRedemptions` bloğu dahil) Firebase Console > Firestore Database > Rules'a
+  yapıştırıp yayınladı — bu blok eklenmeden davet kodu gönderme adımı `PERMISSION_DENIED` ile
+  SESSİZCE başarısız olurdu (`CloudStateStore`/`ReferralProvider`'ın try/catch'i hatayı yutuyordu).
+  **Gotcha (canlı yaşandı):** kullanıcı ilk denemede yeni kuralları eski içeriğin ALTINA
+  yapıştırdı — dosyada iki `rules_version`/`service cloud.firestore {}` bloğu oluşup editör hata
+  işaretledi; düzeltme `Ctrl+A` ile TÜM içeriği silip yalnızca YENİ bloğu yapıştırmaktı (Firebase
+  Console'un rules editörü bir "üzerine ekleme" değil "TAMAMEN değiştirme" bekliyor — bu ders
+  gelecekteki rules güncellemeleri için de geçerli). Ardından `gh workflow run
+  process-referral-rewards.yml -f dry_run=true` ile GitHub Actions'tan elle tetiklenip log'u
+  kontrol edildi: betik hatasız çalıştı (`Başlıyor — DRY_RUN=true` → `0 bekleyen davet kaydı
+  bulundu.` → `Bitti — 0 davet kredilenecekti...`) — "0 bekleyen kayıt" BEKLENEN bir sonuç
+  (özellik yeni yayınlandı, henüz kimse gerçek bir kod göndermedi), asıl doğrulanan şey betiğin
+  Firebase Admin SDK'ya bağlanıp `referralRedemptions` koleksiyonunu hatasız sorgulayabildiği.
+  **Hâlâ YAPILMAMIŞ:** gerçek bir uçtan-uca test (iki hesapla kod gönderip `dry_run: false` ile
+  tetikleyerek her iki tarafın da coin aldığını Firestore Console'da doğrulamak) — kullanıcı
+  isterse ileride yapabilir.
 
 ## "Kurucu Üye" Rozeti ([founder_badge.dart](lib/data/founder_badge.dart), [profile_screen.dart](lib/screens/profile_screen.dart), workspace kökü [notification-scripts/src/grantFounderBadges.js](../notification-scripts/src/grantFounderBadges.js) + [.github/workflows/grant-founder-badges.yml](../.github/workflows/grant-founder-badges.yml))
 
