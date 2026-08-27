@@ -10,11 +10,14 @@ import '../data/dream_quotes.dart';
 import '../data/localized_calendar_names.dart';
 import '../l10n/app_localizations.dart';
 import '../models/dream_entry.dart';
+import '../models/mood.dart';
 import '../providers/costume_provider.dart';
 import '../providers/dream_journal_provider.dart';
+import '../providers/mood_provider.dart';
 import '../providers/profile_provider.dart';
 import '../providers/zibo_pose_provider.dart';
 import '../utils/address_term.dart';
+import '../utils/dream_sentiment.dart';
 import '../widgets/speech_bubble.dart';
 import '../widgets/zibo_animated_image.dart';
 import 'dream_entry_form_screen.dart';
@@ -83,6 +86,7 @@ class _DreamJournalScreenState extends State<DreamJournalScreen> {
     final l10n = AppLocalizations.of(context)!;
     final colorScheme = Theme.of(context).colorScheme;
     final dreams = context.watch<DreamJournalProvider>().dreams;
+    final moodProvider = context.watch<MoodProvider>();
     final locale = Localizations.localeOf(context);
     final quotes = dreamQuotesForLocale(locale);
     final addressTerm = context.watch<ProfileProvider>().addressTerm;
@@ -151,7 +155,12 @@ class _DreamJournalScreenState extends State<DreamJournalScreen> {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      subtitle: Text(formatLongDate(dream.date, locale)),
+                      subtitle: _buildDreamSubtitle(
+                        context,
+                        locale,
+                        dream,
+                        moodProvider,
+                      ),
                       trailing: const Icon(Icons.chevron_right),
                       onTap: () => _openForm(context, existing: dream),
                     ),
@@ -162,4 +171,39 @@ class _DreamJournalScreenState extends State<DreamJournalScreen> {
       ),
     );
   }
+}
+
+/// Rüya Günlüğü listesindeki bir kaydın alt metni — normalde yalnızca
+/// tarih, ama AYNI tarihte olumsuz bir rüya (bkz. `isNegativeDream`) VE
+/// düşük bir ruh hali kaydı (bkz. `Mood.isLow`) varsa ikinci bir satırla
+/// hafifçe bunu belirtir (2026 yeni özellik — bkz. CLAUDE.md "Rüya
+/// Günlüğü" bölümündeki korelasyon notu). Liste yapısı/form/navigasyon
+/// HİÇ değişmedi, yalnızca bu TEK koşullu satır eklendi.
+Widget _buildDreamSubtitle(
+  BuildContext context,
+  Locale locale,
+  DreamEntry dream,
+  MoodProvider moodProvider,
+) {
+  final dateText = Text(formatLongDate(dream.date, locale));
+  final moodEntry = moodProvider.entryForDate(dream.date);
+  final correlated =
+      moodEntry != null && moodEntry.mood.isLow && isNegativeDream(dream);
+  if (!correlated) return dateText;
+
+  final l10n = AppLocalizations.of(context)!;
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      dateText,
+      Text(
+        l10n.dreamMoodCorrelationNote,
+        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
+          fontStyle: FontStyle.italic,
+        ),
+      ),
+    ],
+  );
 }

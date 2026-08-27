@@ -1855,6 +1855,38 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
   ayrı bir controller okuması yazmadan doğrudan `find.text('Ucmak')` gibi doğrulayabilmeyi sağlıyor.
 - Gerçek cihazda tam CRUD akışı (ekle → uygulamayı tamamen kapat/yeniden aç → kalıcılığı doğrula →
   düzenle → sil) `adb` ile uçtan uca doğrulandı; koyu temada da doğru render olduğu teyit edildi.
+- **2026 yeni özellik — Rüya Günlüğü ↔ Ruh Hali Takibi hafif korelasyonu (AI YOK, yalnızca tarih
+  eşleştirme + anahtar kelime taraması).** Kullanıcı isteği: "Rüya Günlüğü'nün mevcut konumu ve
+  yapısı aynen kalsın... sadece rüya günlüğü girdilerini Ruh Hali Takibi ile hafifçe
+  ilişkilendir... AI kullanmadan, sadece tarih karşılaştırmasına dayalı basit bir mantık." Ekranın
+  formu/navigasyonu/yerleşimi HİÇ değişmedi — yalnızca liste öğesinin `ListTile.subtitle`'ına
+  KOŞULLU bir ikinci satır eklendi.
+  - **`DreamEntry`'de sentiment alanı YOK, BİLEREK eklenmedi** (kullanıcının "yapı aynen kalsın"
+    isteği) — bunun yerine YENİ [dream_sentiment.dart](lib/utils/dream_sentiment.dart)'taki
+    `isNegativeDream(DreamEntry)` saf fonksiyonu, `title`+`text`'i (kullanıcı zaten yazmış olduğu
+    serbest metin) bilinen "kötü rüya" anahtar kelimeleriyle (kabus, korku, kaçtım, düştüm, öldüm,
+    boğul, kaybol, karanlık, canavar, saldırı, ağla, panik, terk) tarıyor. **Kullanıcının rüyayı
+    HANGİ dilde yazdığı bilinmediği için** (arayüz dilinden bağımsız) TR+EN+ES anahtar kelimeleri
+    BİRLİKTE taranıyor — diğer üç-dilli içerik havuzlarından (`zibo_messages.dart` vb., "kullanıcının
+    seçtiği dile göre TEK liste") FARKLI bir desen. Bu KESİN bir sentiment analizi DEĞİL (bilinçli
+    basitleştirme, kullanıcının açık "basit bir mantık" isteğiyle tutarlı) — yanlış pozitif/
+    negatifler olabilir, `dreamMoodCorrelationNote` yalnızca HAFİF bir gözlem sunuyor, kesin bir
+    teşhis İDDİA ETMİYOR.
+  - **`Mood`'a yeni bir `MoodLowness` extension'ı** (`lib/models/mood.dart`) — `bool get isLow =>
+    index <= 1;` (enum kötüden iyiye sıralı olduğu için ilk iki değer: `veryUnhappy`/`unhappy`).
+  - **`MoodProvider.entryForDate(DateTime)` ZATEN tam olarak istenen "bu tarihte kayıt var mı"
+    sorgusunu yapıyordu** — yeni bir metot GEREKMEDİ, `dream_journal_screen.dart` yalnızca
+    `context.watch<MoodProvider>()` eklendi.
+  - **`_buildDreamSubtitle`** (dosyanın sonunda, private top-level fonksiyon) — normalde yalnızca
+    tarih (`formatLongDate`, değişmedi); AYNI tarihte `isNegativeDream(dream) &&
+    moodProvider.entryForDate(dream.date)?.mood.isLow == true` ise `Column`'a dönüp ikinci bir satır
+    (`dreamMoodCorrelationNote`, ör. "O gün ruh halin de düşüktü 😔") ekliyor. Liste yapısı, form,
+    navigasyon — HİÇBİRİ değişmedi, yalnızca bu TEK koşullu satır.
+  - **Test:** YENİ `test/dream_sentiment_test.dart` (`isNegativeDream`'in TR/EN/ES anahtar kelime
+    tespiti, büyük/küçük harf duyarsızlığı, nötr/olumlu rüyalarda `false` dönmesi) +
+    `widget_test.dart`'a bir uçtan uca senaryo (olumsuz bir rüya eklenir → henüz ruh hali kaydı
+    yokken not GÖRÜNMEZ → Günlük Ruh Hali Takibi'nden düşük bir emoji seçilir → Rüya Günlüğü'ne
+    dönülünce not GÖRÜNÜR). **Toplam: 317 test.**
 
 ### Şükran Günlüğü ([gratitude_journal_screen.dart](lib/screens/gratitude_journal_screen.dart), [gratitude_provider.dart](lib/providers/gratitude_provider.dart), [gratitude_entry.dart](lib/models/gratitude_entry.dart), [gratitude_quotes.dart](lib/data/gratitude_quotes.dart))
 - **Yerleşim: alt çubuktaki Z butonunun açtığı modül menüsünden erişiliyor** (bkz. "Alt Gezinme
@@ -3853,8 +3885,9 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
   SONRA SİLİNDİ** — Şans Çarkı sonrası reklam denemesiyle birlikte geldi, kullanıcı o özelliği
   istemeyince (bkz. "Zibo'ya Art Arda Dokunma → Geçiş Reklamı" bölümündeki geri alma notu) testi
   de anlamsızlaştığı için kaldırıldı.
-  **Toplam: 310 test** (2026 — `costume_provider_test.dart`'a `reconcileGoalUnlocks` grubu +
-  `water_provider_test.dart`'a `completedDaysCount` testi eklendi, bkz. "Kostümler" bölümü).
+  **Toplam: 317 test** (2026 — `costume_provider_test.dart`'a `reconcileGoalUnlocks` grubu +
+  `water_provider_test.dart`'a `completedDaysCount` testi [bkz. "Kostümler" bölümü] + YENİ
+  `dream_sentiment_test.dart` [bkz. "Rüya Günlüğü" bölümündeki korelasyon notu] eklendi).
 - `widget_test.dart` içindeki `_buildAppWithClock()` yardımcı fonksiyonu enjekte edilebilir saatli
   testler için — **`RootScreen`'in ihtiyaç duyduğu HER provider'ı içermeli** (`AppThemeProvider`,
   `AuthLinkProvider`, `CoinProvider`, `CostumeProvider`, `CustomMessagesProvider`,

@@ -688,6 +688,10 @@ class AppLocalizationsEs extends AppLocalizations {
       'Todavía no has escrito ningún sueño. ¿Tuviste alguno hoy?';
 
   @override
+  String get dreamMoodCorrelationNote =>
+      'Ese día tu ánimo también estaba bajo 😔';
+
+  @override
   String get dreamTitleHint => 'Título';
 
   @override

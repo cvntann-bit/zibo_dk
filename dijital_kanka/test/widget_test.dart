@@ -1581,6 +1581,52 @@ void main() {
   );
 
   testWidgets(
+    'Rüya Günlüğü ↔ Ruh Hali Takibi korelasyonu: aynı tarihte olumsuz rüya + '
+    'düşük ruh hali varsa listede bir not görünür',
+    (WidgetTester tester) async {
+      await _pumpPastOnboarding(tester, const DijitalKankaApp());
+
+      // Önce bugüne olumsuz bir rüya kaydı ekle.
+      await _openModulesMenu(tester);
+      await tester.tap(find.text('Rüya Günlüğü'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Yeni Rüya Ekle'));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField).at(0), 'Kabus');
+      await tester.enterText(
+        find.byType(TextField).at(1),
+        'Karanlık bir yerde kaçıyordum, çok korktum.',
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Kaydet'));
+      await tester.pumpAndSettle();
+
+      // Henüz bugün için bir ruh hali kaydı YOK — not görünmemeli.
+      expect(find.text('O gün ruh halin de düşüktü 😔'), findsNothing);
+
+      // Dream Journal'dan çık, Günlük Ruh Hali Takibi'nden bugüne DÜŞÜK bir
+      // ruh hali kaydet (😢 = veryUnhappy, en düşük değer).
+      await tester.tap(find.byTooltip('Geri'));
+      await tester.pumpAndSettle();
+      await _openModulesMenu(tester);
+      await tester.tap(find.text('Günlük Ruh Hali Takibi'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('😢'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('Geri'));
+      await tester.pumpAndSettle();
+
+      // Rüya Günlüğü'ne geri dön — artık AYNI tarihte hem olumsuz rüya hem
+      // düşük ruh hali var, korelasyon notu görünmeli.
+      await _openModulesMenu(tester);
+      await tester.tap(find.text('Rüya Günlüğü'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('O gün ruh halin de düşüktü 😔'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
     'Şükran Günlüğü: 3 cümle yazılıp kaydedilince gün kilitlenir ve 2 Zibo Coin kazanılır',
     (WidgetTester tester) async {
       await _pumpPastOnboarding(tester, const DijitalKankaApp());

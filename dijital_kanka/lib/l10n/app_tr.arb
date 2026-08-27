@@ -976,6 +976,10 @@
   "@dreamEmptyState": {
     "description": "Hiç rüya kaydı yokken listede gösterilen metin"
   },
+  "dreamMoodCorrelationNote": "O gün ruh halin de düşüktü 😔",
+  "@dreamMoodCorrelationNote": {
+    "description": "Bir rüya kaydının listede, aynı tarihte olumsuz bir rüya + düşük bir ruh hali kaydı BİRLİKTE bulunduğunda gösterilen ikinci alt metin satırı"
+  },
   "dreamTitleHint": "Başlık",
   "@dreamTitleHint": {
     "description": "Rüya formundaki başlık alanının etiketi"

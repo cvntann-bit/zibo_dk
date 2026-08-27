@@ -1288,6 +1288,12 @@ abstract class AppLocalizations {
   /// **'Henüz bir rüya yazmadın. Bugün gördüğün bir rüya var mı?'**
   String get dreamEmptyState;
 
+  /// Bir rüya kaydının listede, aynı tarihte olumsuz bir rüya + düşük bir ruh hali kaydı BİRLİKTE bulunduğunda gösterilen ikinci alt metin satırı
+  ///
+  /// In tr, this message translates to:
+  /// **'O gün ruh halin de düşüktü 😔'**
+  String get dreamMoodCorrelationNote;
+
   /// Rüya formundaki başlık alanının etiketi
   ///
   /// In tr, this message translates to:

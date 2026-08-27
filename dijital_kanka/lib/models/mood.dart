@@ -17,6 +17,13 @@ enum Mood {
   final Color color;
 }
 
+/// 2026 yeni özellik — Rüya Günlüğü ↔ Ruh Hali Takibi korelasyonu (bkz.
+/// `lib/utils/dream_sentiment.dart`) için: enum'un en kötü İKİ değeri
+/// (kötüden iyiye sıralı olduğu için `index <= 1`) "düşük ruh hali" sayılır.
+extension MoodLowness on Mood {
+  bool get isLow => index <= 1;
+}
+
 /// Günlük Ruh Hali Takibi'nde tek bir güne ait kayıt.
 class MoodEntry {
   const MoodEntry({required this.date, required this.mood});

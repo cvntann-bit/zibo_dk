@@ -684,6 +684,9 @@ class AppLocalizationsTr extends AppLocalizations {
       'Henüz bir rüya yazmadın. Bugün gördüğün bir rüya var mı?';
 
   @override
+  String get dreamMoodCorrelationNote => 'O gün ruh halin de düşüktü 😔';
+
+  @override
   String get dreamTitleHint => 'Başlık';
 
   @override

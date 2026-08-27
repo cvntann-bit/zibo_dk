@@ -198,6 +198,7 @@
   "dreamJournalTitle": "Diario de Sueños",
   "dreamAddButton": "Añadir Nuevo Sueño",
   "dreamEmptyState": "Todavía no has escrito ningún sueño. ¿Tuviste alguno hoy?",
+  "dreamMoodCorrelationNote": "Ese día tu ánimo también estaba bajo 😔",
   "dreamTitleHint": "Título",
   "dreamTextHint": "Cuenta tu sueño...",
   "dreamSaveButton": "Guardar",
