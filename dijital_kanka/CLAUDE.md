@@ -2925,11 +2925,12 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
     `OnboardingProvider.completeOnboarding()` çağrılıp `_AppStartupGate` otomatik olarak
     `RootScreen`'e geçiyor (ayrı bir `Navigator.push`/`pop` YOK, tamamen gate'in kendi state'i
     üzerinden).
-  - **`static const _totalPages = 9` elle sabitlenmiş bir tamsayı, `_moduleIntros.length`'ten
+  - **`static const _totalPages` elle sabitlenmiş bir tamsayı, `_moduleIntros.length`'ten
     TÜRETİLMEDİ** — Dart'ta `List.length`, `const` bir liste üzerinde bile bir `static const`
     ifadesinde kullanılamıyor (derleme hatası: "The property 'length' can't be accessed... in a
     constant expression"). **`_moduleIntros` listesi değişirse bu sabit ELLE güncellenmeli**
-    (1 isim + modül sayısı + 1 kapanış).
+    (1 dil + 1 isim + modül sayısı + 1 kapanış — 2026 güncellemesiyle 11'e çıktı, bkz. altta
+    "modül tanıtım tonu ve Rüya Günlüğü eklendi" notu).
 - **Gerçek bir üretim bug'ı bu özellik eklenirken bulundu ve düzeltildi** — bkz. yukarıdaki
   `_AppStartupGate` bölümündeki "Kritik yarış koşulu" notu: `ProfileProvider`'ın tembel
   oluşturulması, Onboarding'in `setName()` çağrısıyla `_loadFromPrefs()`'in asenkron tamamlanması
@@ -2968,6 +2969,26 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
   göründüğü, ve galeri fotoğrafı seçerken HİÇBİR izin diyaloğu göstermeden doğrudan sistem Photo
   Picker'ının açıldığı — kod tarafı `flutter test`'teki 187 testle kapsanıyor ama bunların hiçbiri
   gerçek bir görsel/izin diyaloğu doğrulaması yerine geçmez.
+- **2026 güncellemesi — her modülün "neden var olduğu" tek cümlede netleştirildi + Rüya Günlüğü
+  eklendi.** Kullanıcı isteği: her modül için tek cümlelik, net bir "bu ne işe yarıyor" tanımı
+  yaz ve onboarding'de göster (kendi örnekleri: "Hedef Takibi: Büyük hayallerini küçük adımlara
+  böl", "Rüya Günlüğü: Bilinçaltının sana ne anlattığını keşfet").
+  - **7 mevcut `onboarding<X>Description` ARB metni YENİDEN YAZILDI** — eski ton "ne yap + ne
+    kazanırsın" idi (iki tümce, em-dash'li, ör. eski Hedef Takibi: "Kendi hedeflerini belirle,
+    her gün işaretle — 7 günlük bir seriyi tamamladığında Zibo Coin kazanırsın"), yeni ton
+    kullanıcının istediği kısa/punchy/amaç-odaklı tek cümle (ör. yeni Hedef Takibi: "Büyük
+    hayallerini küçük adımlara böl"). `onboarding_screen.dart`'ta HİÇBİR kod değişikliği
+    gerekmedi — `_moduleIntros`'un `description` alanları zaten ARB anahtarlarına işaret
+    ediyordu, yalnızca ARB metinleri değişti.
+  - **Rüya Günlüğü onboarding'de HİÇ YOKTU** — kullanıcı onu ikinci örnek olarak verdiği için
+    8. bir `_ModuleIntro` olarak EKLENDİ (`Icons.nights_stay_outlined`, Ruh Hali Takibi'nin
+    HEMEN ardına, Manifest'ten ÖNCE — ikisi de "iç dünya" temalı, Rüya↔Ruh Hali korelasyon
+    özelliğiyle [bkz. "Rüya Günlüğü" bölümü] de tematik olarak örtüşüyor). Yeni
+    `onboardingDreamJournalDescription` ARB anahtarı + `_totalPages` elle 10'dan 11'e çıkarıldı.
+  - **Test:** `widget_test.dart`'ın onboarding e2e senaryosu 7→8 modül sayfasına (dolayısıyla
+    7→8 "İleri" döngüsüne) göre güncellendi — CLAUDE.md'de defalarca belgelenen "sayfa eklenince
+    sabit sayaç kırılır" dersinin bir tekrarı. **Toplam: 317 test** (sayı DEĞİŞMEDİ — mevcut bir
+    test güncellendi, yeni bir test EKLENMEDİ).
 
 ## Push Bildirimleri — FCM + GitHub Actions ([push_notification_type.dart](lib/models/push_notification_type.dart), [push_notification_provider.dart](lib/providers/push_notification_provider.dart), [push_notification_service.dart](lib/services/push_notification_service.dart), workspace kökü [notification-scripts/](../notification-scripts/) + [.github/workflows/](../.github/workflows/))
 

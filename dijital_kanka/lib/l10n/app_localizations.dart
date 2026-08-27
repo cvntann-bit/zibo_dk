@@ -2086,46 +2086,52 @@ abstract class AppLocalizations {
   /// **'Hadi Başlayalım!'**
   String get onboardingStartButton;
 
-  /// Onboarding'de Hedef Takibi modülünü tanıtan 1-2 cümlelik açıklama
+  /// Onboarding'de Hedef Takibi modülünü tanıtan, tek cümlelik 'bu ne işe yarar' açıklaması
   ///
   /// In tr, this message translates to:
-  /// **'Kendi hedeflerini belirle, her gün işaretle — 7 günlük bir seriyi tamamladığında Zibo Coin kazanırsın.'**
+  /// **'Büyük hayallerini küçük adımlara böl.'**
   String get onboardingGoalsDescription;
 
-  /// Onboarding'de Su Takibi modülünü tanıtan 1-2 cümlelik açıklama
+  /// Onboarding'de Su Takibi modülünü tanıtan, tek cümlelik 'bu ne işe yarar' açıklaması
   ///
   /// In tr, this message translates to:
-  /// **'Günlük su hedefini takip et, bardak bardak ilerlemeni gör — hedefi tamamlayınca ödül seni bekliyor.'**
+  /// **'Vücuduna verdiğin en küçük sözü bile tutmayı öğren.'**
   String get onboardingWaterDescription;
 
-  /// Onboarding'de Şükran Günlüğü modülünü tanıtan 1-2 cümlelik açıklama
+  /// Onboarding'de Şükran Günlüğü modülünü tanıtan, tek cümlelik 'bu ne işe yarar' açıklaması
   ///
   /// In tr, this message translates to:
-  /// **'Her gün 3 şeye şükret, küçük anları yazıya dök — hem içini rahatlatır hem de bakış açını değiştirir.'**
+  /// **'Güne, sahip olduklarını hatırlayarak bak.'**
   String get onboardingGratitudeDescription;
 
-  /// Onboarding'de Günlük Ruh Hali Takibi modülünü tanıtan 1-2 cümlelik açıklama
+  /// Onboarding'de Günlük Ruh Hali Takibi modülünü tanıtan, tek cümlelik 'bu ne işe yarar' açıklaması
   ///
   /// In tr, this message translates to:
-  /// **'Bugün nasıl hissettiğini tek dokunuşla kaydet, zamanla ruh halinin nasıl değiştiğini gör.'**
+  /// **'Duygularını görmezden gelme, onları takip et.'**
   String get onboardingMoodDescription;
 
-  /// Onboarding'de Manifest Günlüğü modülünü tanıtan 1-2 cümlelik açıklama
+  /// Onboarding'de Rüya Günlüğü modülünü tanıtan, tek cümlelik 'bu ne işe yarar' açıklaması
   ///
   /// In tr, this message translates to:
-  /// **'Hayallerine bir fotoğraf ve niyet ekle — kendi vizyon panonu zamanla büyüt.'**
+  /// **'Bilinçaltının sana ne anlattığını keşfet.'**
+  String get onboardingDreamJournalDescription;
+
+  /// Onboarding'de Manifest Günlüğü modülünü tanıtan, tek cümlelik 'bu ne işe yarar' açıklaması
+  ///
+  /// In tr, this message translates to:
+  /// **'Hayal ettiğin hayatı gözünün önüne seriyorsun.'**
   String get onboardingManifestDescription;
 
-  /// Onboarding'de Mağaza modülünü tanıtan 1-2 cümlelik açıklama
+  /// Onboarding'de Mağaza modülünü tanıtan, tek cümlelik 'bu ne işe yarar' açıklaması
   ///
   /// In tr, this message translates to:
-  /// **'Zibo Coin biriktir, yeni kostümler ve renkli temalar satın al — Zibo\'yu istediğin gibi giydir.'**
+  /// **'Emeğini renklendir, Zibo\'yu kendi tarzınla giydir.'**
   String get onboardingStoreDescription;
 
-  /// Onboarding'de Profil modülünü tanıtan 1-2 cümlelik açıklama
+  /// Onboarding'de Profil modülünü tanıtan, tek cümlelik 'bu ne işe yarar' açıklaması
   ///
   /// In tr, this message translates to:
-  /// **'İstatistiklerini gör, Zibo ile bağını takip et, favori sözlerini biriktir — hepsi tek bir yerde.'**
+  /// **'Zibo\'yla olan bağını ve ilerlemeni tek bakışta gör.'**
   String get onboardingProfileDescription;
 
   /// Onboarding akışının son (kapanış) adımının başlığı

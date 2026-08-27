@@ -1142,31 +1142,35 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get onboardingGoalsDescription =>
-      'Kendi hedeflerini belirle, her gün işaretle — 7 günlük bir seriyi tamamladığında Zibo Coin kazanırsın.';
+      'Büyük hayallerini küçük adımlara böl.';
 
   @override
   String get onboardingWaterDescription =>
-      'Günlük su hedefini takip et, bardak bardak ilerlemeni gör — hedefi tamamlayınca ödül seni bekliyor.';
+      'Vücuduna verdiğin en küçük sözü bile tutmayı öğren.';
 
   @override
   String get onboardingGratitudeDescription =>
-      'Her gün 3 şeye şükret, küçük anları yazıya dök — hem içini rahatlatır hem de bakış açını değiştirir.';
+      'Güne, sahip olduklarını hatırlayarak bak.';
 
   @override
   String get onboardingMoodDescription =>
-      'Bugün nasıl hissettiğini tek dokunuşla kaydet, zamanla ruh halinin nasıl değiştiğini gör.';
+      'Duygularını görmezden gelme, onları takip et.';
+
+  @override
+  String get onboardingDreamJournalDescription =>
+      'Bilinçaltının sana ne anlattığını keşfet.';
 
   @override
   String get onboardingManifestDescription =>
-      'Hayallerine bir fotoğraf ve niyet ekle — kendi vizyon panonu zamanla büyüt.';
+      'Hayal ettiğin hayatı gözünün önüne seriyorsun.';
 
   @override
   String get onboardingStoreDescription =>
-      'Zibo Coin biriktir, yeni kostümler ve renkli temalar satın al — Zibo\'yu istediğin gibi giydir.';
+      'Emeğini renklendir, Zibo\'yu kendi tarzınla giydir.';
 
   @override
   String get onboardingProfileDescription =>
-      'İstatistiklerini gör, Zibo ile bağını takip et, favori sözlerini biriktir — hepsi tek bir yerde.';
+      'Zibo\'yla olan bağını ve ilerlemeni tek bakışta gör.';
 
   @override
   String get onboardingClosingTitle => 'Zibo ile Yolculuğun Başlıyor!';

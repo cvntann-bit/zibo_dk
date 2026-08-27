@@ -19,11 +19,19 @@ class _ModuleIntro {
   final String Function(AppLocalizations l10n) description;
 }
 
-/// Hedef Takibi/Su Takibi/Şükran/Ruh Hali/Manifest/Mağaza/Profil — bkz.
-/// kullanıcının istediği tanıtım sırası. Başlıklar için ayrı bir onboarding-
-/// özel ARB anahtarı AÇILMADI — her modülün zaten var olan ekran başlığı
-/// (`l10n.tabGoalTracking`, `l10n.waterScreenTitle` vb.) yeniden kullanıldı,
-/// yalnızca açıklama cümleleri onboarding'e özel yeni anahtarlar.
+/// Hedef Takibi/Su Takibi/Şükran/Ruh Hali/**Rüya Günlüğü**/Manifest/Mağaza/
+/// Profil — bkz. kullanıcının istediği tanıtım sırası. Başlıklar için ayrı
+/// bir onboarding-özel ARB anahtarı AÇILMADI — her modülün zaten var olan
+/// ekran başlığı (`l10n.tabGoalTracking`, `l10n.waterScreenTitle` vb.)
+/// yeniden kullanıldı, yalnızca açıklama cümleleri onboarding'e özel yeni
+/// anahtarlar. **2026 güncellemesi — Rüya Günlüğü EKLENDİ** (kullanıcı
+/// isteği: her modülün "neden var olduğunu" tek cümlede netleştir; Rüya
+/// Günlüğü'nü kendi örneği olarak verdi ama bu modül onboarding'de HİÇ
+/// yoktu) — Ruh Hali Takibi'nin HEMEN ardına, Manifest'ten ÖNCE eklendi
+/// (ikisi de "iç dünya" temalı, Feature 2'deki Rüya↔Ruh Hali korelasyonuyla
+/// da tematik olarak örtüşüyor); AYNI turda 7 mevcut açıklama da kullanıcının
+/// istediği "tek cümlelik, net 'bu ne işe yarıyor'" tonuna göre yeniden
+/// yazıldı (bkz. ARB — eski ton "ne yap + ne kazanırsın" idi).
 const _moduleIntros = <_ModuleIntro>[
   _ModuleIntro(
     icon: Icons.flag_rounded,
@@ -44,6 +52,11 @@ const _moduleIntros = <_ModuleIntro>[
     icon: Icons.mood_outlined,
     title: _moodTitle,
     description: _moodDescription,
+  ),
+  _ModuleIntro(
+    icon: Icons.nights_stay_outlined,
+    title: _dreamJournalTitle,
+    description: _dreamJournalDescription,
   ),
   _ModuleIntro(
     icon: Icons.auto_awesome_outlined,
@@ -70,6 +83,9 @@ String _gratitudeTitle(AppLocalizations l10n) => l10n.gratitudeScreenTitle;
 String _gratitudeDescription(AppLocalizations l10n) => l10n.onboardingGratitudeDescription;
 String _moodTitle(AppLocalizations l10n) => l10n.moodScreenTitle;
 String _moodDescription(AppLocalizations l10n) => l10n.onboardingMoodDescription;
+String _dreamJournalTitle(AppLocalizations l10n) => l10n.dreamJournalTitle;
+String _dreamJournalDescription(AppLocalizations l10n) =>
+    l10n.onboardingDreamJournalDescription;
 String _manifestTitle(AppLocalizations l10n) => l10n.manifestScreenTitle;
 String _manifestDescription(AppLocalizations l10n) => l10n.onboardingManifestDescription;
 String _storeTitle(AppLocalizations l10n) => l10n.storeTitle;
@@ -96,10 +112,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   Locale? _selectedLocale;
 
   // Dart'ta `List.length` const bir bağlamda kullanılamıyor (const bir
-  // listede bile) — bu yüzden elle sabitlendi: 1 (dil) + 1 (isim) + 7 (modül
-  // tanıtımları) + 1 (kapanış) = 10. `_moduleIntros` listesine yeni bir
-  // modül eklenirse bu sayı da güncellenmeli.
-  static const _totalPages = 10;
+  // listede bile) — bu yüzden elle sabitlendi: 1 (dil) + 1 (isim) + 8 (modül
+  // tanıtımları — 2026 güncellemesi: Rüya Günlüğü eklendi, eskiden 7'ydi) +
+  // 1 (kapanış) = 11. `_moduleIntros` listesine yeni bir modül eklenirse bu
+  // sayı da güncellenmeli.
+  static const _totalPages = 11;
   bool get _isLanguagePage => _pageIndex == 0;
   bool get _isNamePage => _pageIndex == 1;
   bool get _isClosingPage => _pageIndex == _totalPages - 1;

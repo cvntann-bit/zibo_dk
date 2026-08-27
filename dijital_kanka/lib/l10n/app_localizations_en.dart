@@ -1143,31 +1143,35 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get onboardingGoalsDescription =>
-      'Set your own goals and check them off each day — complete a 7-day streak to earn Zibo Coin.';
+      'Break your big dreams into small steps.';
 
   @override
   String get onboardingWaterDescription =>
-      'Track your daily water goal glass by glass — finish it and a reward is waiting for you.';
+      'Learn to keep even the smallest promise to your body.';
 
   @override
   String get onboardingGratitudeDescription =>
-      'Write down 3 things you\'re grateful for each day — it eases your mind and shifts your perspective.';
+      'Look at your day by remembering what you already have.';
 
   @override
   String get onboardingMoodDescription =>
-      'Log how you\'re feeling with a single tap and watch your mood shift over time.';
+      'Don\'t ignore your feelings — track them.';
+
+  @override
+  String get onboardingDreamJournalDescription =>
+      'Discover what your subconscious is telling you.';
 
   @override
   String get onboardingManifestDescription =>
-      'Add a photo and an intention for your dreams — build your own vision board over time.';
+      'Lay the life you dream of out in front of you.';
 
   @override
   String get onboardingStoreDescription =>
-      'Save up Zibo Coin, buy new costumes and colorful themes — dress Zibo however you like.';
+      'Add some color to your effort — dress Zibo in your own style.';
 
   @override
   String get onboardingProfileDescription =>
-      'See your stats, track your bond with Zibo, and collect your favorite sayings — all in one place.';
+      'See your bond with Zibo and your progress at a glance.';
 
   @override
   String get onboardingClosingTitle => 'Your Journey with Zibo Begins!';

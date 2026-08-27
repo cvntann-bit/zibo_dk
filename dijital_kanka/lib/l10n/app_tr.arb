@@ -1571,33 +1571,37 @@
   "@onboardingStartButton": {
     "description": "Onboarding akışının son (kapanış) adımındaki bitirme butonu"
   },
-  "onboardingGoalsDescription": "Kendi hedeflerini belirle, her gün işaretle — 7 günlük bir seriyi tamamladığında Zibo Coin kazanırsın.",
+  "onboardingGoalsDescription": "Büyük hayallerini küçük adımlara böl.",
   "@onboardingGoalsDescription": {
-    "description": "Onboarding'de Hedef Takibi modülünü tanıtan 1-2 cümlelik açıklama"
+    "description": "Onboarding'de Hedef Takibi modülünü tanıtan, tek cümlelik 'bu ne işe yarar' açıklaması"
   },
-  "onboardingWaterDescription": "Günlük su hedefini takip et, bardak bardak ilerlemeni gör — hedefi tamamlayınca ödül seni bekliyor.",
+  "onboardingWaterDescription": "Vücuduna verdiğin en küçük sözü bile tutmayı öğren.",
   "@onboardingWaterDescription": {
-    "description": "Onboarding'de Su Takibi modülünü tanıtan 1-2 cümlelik açıklama"
+    "description": "Onboarding'de Su Takibi modülünü tanıtan, tek cümlelik 'bu ne işe yarar' açıklaması"
   },
-  "onboardingGratitudeDescription": "Her gün 3 şeye şükret, küçük anları yazıya dök — hem içini rahatlatır hem de bakış açını değiştirir.",
+  "onboardingGratitudeDescription": "Güne, sahip olduklarını hatırlayarak bak.",
   "@onboardingGratitudeDescription": {
-    "description": "Onboarding'de Şükran Günlüğü modülünü tanıtan 1-2 cümlelik açıklama"
+    "description": "Onboarding'de Şükran Günlüğü modülünü tanıtan, tek cümlelik 'bu ne işe yarar' açıklaması"
   },
-  "onboardingMoodDescription": "Bugün nasıl hissettiğini tek dokunuşla kaydet, zamanla ruh halinin nasıl değiştiğini gör.",
+  "onboardingMoodDescription": "Duygularını görmezden gelme, onları takip et.",
   "@onboardingMoodDescription": {
-    "description": "Onboarding'de Günlük Ruh Hali Takibi modülünü tanıtan 1-2 cümlelik açıklama"
+    "description": "Onboarding'de Günlük Ruh Hali Takibi modülünü tanıtan, tek cümlelik 'bu ne işe yarar' açıklaması"
   },
-  "onboardingManifestDescription": "Hayallerine bir fotoğraf ve niyet ekle — kendi vizyon panonu zamanla büyüt.",
+  "onboardingDreamJournalDescription": "Bilinçaltının sana ne anlattığını keşfet.",
+  "@onboardingDreamJournalDescription": {
+    "description": "Onboarding'de Rüya Günlüğü modülünü tanıtan, tek cümlelik 'bu ne işe yarar' açıklaması"
+  },
+  "onboardingManifestDescription": "Hayal ettiğin hayatı gözünün önüne seriyorsun.",
   "@onboardingManifestDescription": {
-    "description": "Onboarding'de Manifest Günlüğü modülünü tanıtan 1-2 cümlelik açıklama"
+    "description": "Onboarding'de Manifest Günlüğü modülünü tanıtan, tek cümlelik 'bu ne işe yarar' açıklaması"
   },
-  "onboardingStoreDescription": "Zibo Coin biriktir, yeni kostümler ve renkli temalar satın al — Zibo'yu istediğin gibi giydir.",
+  "onboardingStoreDescription": "Emeğini renklendir, Zibo'yu kendi tarzınla giydir.",
   "@onboardingStoreDescription": {
-    "description": "Onboarding'de Mağaza modülünü tanıtan 1-2 cümlelik açıklama"
+    "description": "Onboarding'de Mağaza modülünü tanıtan, tek cümlelik 'bu ne işe yarar' açıklaması"
   },
-  "onboardingProfileDescription": "İstatistiklerini gör, Zibo ile bağını takip et, favori sözlerini biriktir — hepsi tek bir yerde.",
+  "onboardingProfileDescription": "Zibo'yla olan bağını ve ilerlemeni tek bakışta gör.",
   "@onboardingProfileDescription": {
-    "description": "Onboarding'de Profil modülünü tanıtan 1-2 cümlelik açıklama"
+    "description": "Onboarding'de Profil modülünü tanıtan, tek cümlelik 'bu ne işe yarar' açıklaması"
   },
   "onboardingClosingTitle": "Zibo ile Yolculuğun Başlıyor!",
   "@onboardingClosingTitle": {

@@ -183,7 +183,7 @@ void main() {
   });
 
   testWidgets(
-    'Onboarding: isim girilir, 7 modül tanıtılır, kapanışta isim geçer, '
+    'Onboarding: isim girilir, 8 modül tanıtılır, kapanışta isim geçer, '
     'tamamlanınca isim Profil\'e ve hitap tercihine yazılmış olarak Ana '
     "Sayfa açılır",
     (WidgetTester tester) async {
@@ -216,10 +216,12 @@ void main() {
       // İlk modül tanıtımı: Hedef Takibi.
       expect(find.text('Hedef Takibi'), findsOneWidget);
 
-      // Kalan 6 modülü + kapanış ekranına ulaşana kadar "İleri" ile ilerle
-      // (Hedef Takibi/Su Takibi/Şükran/Ruh Hali/Manifest/Mağaza/Profil = 7
-      // modül; Hedef Takibi'ndeyiz, kapanışa ulaşmak için 7 "İleri" gerekir).
-      for (var i = 0; i < 7; i++) {
+      // Kalan 7 modülü + kapanış ekranına ulaşana kadar "İleri" ile ilerle
+      // (Hedef Takibi/Su Takibi/Şükran/Ruh Hali/Rüya Günlüğü/Manifest/
+      // Mağaza/Profil = 8 modül — 2026 güncellemesi: Rüya Günlüğü eklendi,
+      // eskiden 7'ydi; Hedef Takibi'ndeyiz, kapanışa ulaşmak için 8 "İleri"
+      // gerekir).
+      for (var i = 0; i < 8; i++) {
         await tester.tap(find.text('İleri'));
         await tester.pumpAndSettle();
       }
