@@ -1,5 +1,5 @@
 // 5. SU HATIRLATMASI — SAATTE BİR çalışan bir GitHub Actions çalıştırması,
-// her kullanıcının KENDİ yerel saati 16:00 olduğunda gönderir (bkz.
+// her kullanıcının KENDİ yerel saati 14:00 olduğunda gönderir (bkz.
 // .github/workflows/water-reminder.yml, TARGET_LOCAL_HOURS aşağıda).
 // Yalnızca kullanıcı bugünkü (KENDİ yerel takvim günündeki) su hedefini
 // HENÜZ tamamlamadıysa gönderilir — `users/{uid}/state/waterState` (bkz.
@@ -19,6 +19,15 @@
 // `pendingNotifyHours`/`markNotifyHoursSent` (common.js) ile "hedef saat
 // GEÇTİ mi VE bugün için henüz işlenmedi mi?" sorulup gecikmeli bir
 // tetiklemede de doğru şekilde yakalanıyor.
+//
+// 2026 ÜÇÜNCÜ GÜNCELLEME — kullanıcı raporu: "bildirimler 3 kez birden ve
+// düzensiz geliyor". Eski saat (`16`) dailyMotivation'ın BİR dilimiyle
+// (`[9, 12, 16, 20]`) TAM AYNI saatte çakışıyordu VE dailyRewardReminder'ın
+// eski `15`'ine de yalnızca 1 saat uzaktı — bir kullanıcı ~60-90 dakika
+// içinde ödül + motivasyon + su olmak üzere ÜÇ bildirim görebiliyordu
+// (bkz. CLAUDE.md "Push Bildirimleri" bölümündeki tam çakışma haritası).
+// Saat `16` → `14`'e taşındı — dailyMotivation'ın 12 ve 16 dilimlerinin TAM
+// ORTASI, ikisinden de 2 saat uzaklıkta.
 
 const {
   db,
@@ -31,7 +40,7 @@ const {
 } = require('./common');
 const { water_reminder: WATER_REMINDER_BODY } = require('./content');
 
-const TARGET_LOCAL_HOURS = [16];
+const TARGET_LOCAL_HOURS = [14];
 
 async function main() {
   const now = new Date();

@@ -1,5 +1,5 @@
 // 2. STREAK HATIRLATMASI — SAATTE BİR çalışan bir GitHub Actions
-// çalıştırması, her kullanıcının KENDİ yerel saati 20:00 olduğunda gönderir
+// çalıştırması, her kullanıcının KENDİ yerel saati 21:00 olduğunda gönderir
 // (bkz. .github/workflows/streak-reminder.yml, TARGET_LOCAL_HOURS aşağıda).
 // Yalnızca kullanıcının aktif bir hedefi VE bugün (KENDİ yerel takvim günü)
 // henüz işaretlemediği bir hedefi varsa gönderilir.
@@ -22,6 +22,17 @@
 // `pendingNotifyHours`/`markNotifyHoursSent` (common.js) ile "hedef saat
 // GEÇTİ mi VE bugün için henüz işlenmedi mi?" sorulup gecikmeli bir
 // tetiklemede de doğru şekilde yakalanıyor.
+//
+// 2026 DÖRDÜNCÜ GÜNCELLEME — kullanıcı raporu: "bildirimler 3 kez birden ve
+// düzensiz geliyor". Kök neden BURADA değil, 5 bildirim türünün
+// `TARGET_LOCAL_HOURS`'ları arasındaki ÇAKIŞMALARDA bulundu (bkz.
+// dailyMotivation.js'in `[9, 12, 16, 20]`'si ile bu dosyanın eski `[20]`'si
+// TAM AYNI saatte çakışıyordu — aynı kullanıcı aynı yerel saatte HEM
+// motivasyon HEM streak bildirimi alıyordu). Saat `20` → `21`'e taşındı
+// (motivasyonun son diliminden yalnızca 1 saat sonra — TAM çakışmadan çok
+// daha iyi, ayrıca "günün sonuna yaklaşırken son şans" anlamına da daha
+// uygun) — bkz. CLAUDE.md "Push Bildirimleri" bölümündeki tam çakışma
+// haritası ve yeni saat planı.
 
 const {
   db,
@@ -34,7 +45,7 @@ const {
 } = require('./common');
 const { streak_reminder: STREAK_REMINDER_BODY } = require('./content');
 
-const TARGET_LOCAL_HOURS = [20];
+const TARGET_LOCAL_HOURS = [21];
 
 async function main() {
   const now = new Date();

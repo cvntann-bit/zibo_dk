@@ -39,6 +39,29 @@ import '../services/trusted_time_service.dart';
 /// "Firestore veri kalıcılığı, Anonymous Auth ve güvenilir zaman"
 /// bölümündeki tam açıklama, kabul edilen risk VE bir önceki (İLERİYE
 /// alınan saate karşı hiç işe yaramayan) hatalı tasarımın düzeltme geçmişi.
+///
+/// **2026 bug düzeltmesi — "Günlük Zibo Coin ödülü 1. günde takılı kalıyor"
+/// gerçek kullanıcı raporu.** Kök neden: [_loadFromPrefs] KALICI DEPODAN
+/// (bir ÖNCEKİ oturumdan kalma, saatler/günler eski olabilecek) bir
+/// `_lastVerifiedUtc` yüklediği ANDA, [now] bunu SANKİ BU OTURUMDA
+/// doğrulanmış gibi (`verified + _stopwatch.elapsed`, `_stopwatch` bu
+/// oturumun başında sıfırdan başlamış olsa BİLE) kullanmaya başlıyordu —
+/// yukarıdaki doküman "ilk doğrulama HİÇ tamamlanmadan" cihaz saatine
+/// düşüleceğini söylüyor ama kod "kalıcı depodan bir değer okundu" ile
+/// "BU oturumda gerçekten doğrulandı"yı birbirine KARIŞTIRIYORDU. Sonuç:
+/// ağ senkronizasyonu bir cihazda/oturumda tutarlı şekilde başarısız
+/// olursa (ör. soğuk başlangıçta henüz bağlanmamış Wi-Fi/mobil veri),
+/// [now] GÜNLERCE dondurulmuş, eski bir tarihte KALABİLİYORDU — her gün
+/// uygulama açıldığında "bugün" hep AYNI (eski) günü gösterip
+/// `DailyRewardsProvider.todayIndex`'in asla ilerlememesine yol açıyordu.
+/// **Düzeltme:** [_verifiedThisSession] eklendi — [now] artık yalnızca BU
+/// OTURUMDA gerçekten bir ağ doğrulaması TAMAMLANDIYSA `verified +
+/// _stopwatch.elapsed` kullanıyor; kalıcı depodan yüklenmiş ama BU
+/// oturumda henüz tazelenmemiş bir değer varken (ki bu, [hasVerifiedTime]
+/// `true` dönse bile GEÇERLİ bir durum) [now] güvenle cihaz saatine
+/// düşüyor — TAM OLARAK yukarıdaki dokümantasyonun VAAT ETTİĞİ (ama kodun
+/// UYGULAMADIĞI) davranış. Güvenlik özelliği (bir doğrulama BU oturumda
+/// tamamlandıktan sonra cihaz saati bir daha ASLA danışılmaz) korunuyor.
 class TrustedTimeProvider extends ChangeNotifier with WidgetsBindingObserver {
   /// [timeService] verilmezse — testlerin VARSAYILAN kullanımı hariç —
   /// [uid]'e göre seçilir: [uid] varsa önce Firestore sunucu zaman damgasını
@@ -72,6 +95,12 @@ class TrustedTimeProvider extends ChangeNotifier with WidgetsBindingObserver {
   DateTime? _lastVerifiedUtc;
   DateTime? _lastSyncAttemptAt;
   bool _syncing = false;
+
+  // BU OTURUMDA (bu provider örneğinin ömrü boyunca) gerçekten bir ağ
+  // doğrulaması TAMAMLANDI mı — [_lastVerifiedUtc] kalıcı depodan (ÖNCEKİ
+  // bir oturumdan) yüklenmiş olması TEK BAŞINA bunu `true` yapmaz, bkz.
+  // sınıfın başındaki "2026 bug düzeltmesi" dokümantasyonu.
+  bool _verifiedThisSession = false;
 
   /// Uygulama en az bir kez ağdan doğrulama yapabildiyse `true` — yalnızca
   /// bilgi/hata ayıklama amaçlı, hiçbir provider bu değere göre dallanmaz
@@ -122,9 +151,12 @@ class TrustedTimeProvider extends ChangeNotifier with WidgetsBindingObserver {
   /// ya da geri alsın fark etmeksizin doğru kalır.
   DateTime now() {
     final verified = _lastVerifiedUtc;
-    if (verified == null) {
-      // Henüz hiçbir doğrulama tamamlanmadı (ilk açılışın ilk anları) —
-      // cihaz saatine GEÇİCİ olarak güveniliyor; ilk senkron tamamlanır
+    if (verified == null || !_verifiedThisSession) {
+      // Henüz BU OTURUMDA hiçbir doğrulama tamamlanmadı — `verified` KALICI
+      // DEPODAN (önceki, artık eski olabilecek bir oturumdan) yüklenmiş
+      // olabilir, ama `_stopwatch` bu oturumun başında sıfırlandığı için o
+      // değere GÜVENİLEMEZ (bkz. sınıfın başındaki "2026 bug düzeltmesi").
+      // Cihaz saatine GEÇİCİ olarak düşülüyor; ilk senkron tamamlanır
       // tamamlanmaz (genelde bir saniyeden kısa sürede) düzelecek.
       return DateTime.now();
     }
@@ -147,6 +179,7 @@ class TrustedTimeProvider extends ChangeNotifier with WidgetsBindingObserver {
       final network = await _timeService.fetchNetworkTime();
       if (network != null) {
         _lastVerifiedUtc = network;
+        _verifiedThisSession = true;
         _stopwatch
           ..reset()
           ..start();

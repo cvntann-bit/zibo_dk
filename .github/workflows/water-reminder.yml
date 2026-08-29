@@ -2,14 +2,17 @@ name: Su Hatırlatması Bildirimi
 
 on:
   # 2026 GÜNCELLEMESİ — SAATTE BİR çalışıp her kullanıcının KENDİ yerel
-  # saati 16:00 olduğunda gönderir (bkz. notification-scripts/src/
+  # saati 14:00 olduğunda gönderir (bkz. notification-scripts/src/
   # waterReminder.js'teki TARGET_LOCAL_HOURS — daha önce sabit Europe/
   # Istanbul saatiydi, bir test kullanıcısının farklı saat diliminde
-  # bildirimi sabaha karşı alması üzerine değiştirildi). Dakika bilerek
-  # :49 (:00/:15/:30/:45 DEĞİL) — GitHub'ın schedule gecikmeleri özellikle
-  # o dakikalarda yoğunlaşıyor (bkz. daily-motivation.yml'deki gerçek
-  # olayla doğrulanmış not); diğer bildirim workflow'larıyla aynı saatte
-  # çakışmasın diye de ayrı bir dakika seçildi.
+  # bildirimi sabaha karşı alması üzerine değiştirildi; saat ayrıca 16→14'e
+  # taşındı çünkü dailyMotivation'ın 16 dilimiyle TAM çakışıyordu — bkz.
+  # "bildirimler 3 kez birden geliyor" bug düzeltmesi, CLAUDE.md "Push
+  # Bildirimleri" bölümü). Dakika bilerek :49 (:00/:15/:30/:45 DEĞİL) —
+  # GitHub'ın schedule gecikmeleri özellikle o dakikalarda yoğunlaşıyor
+  # (bkz. daily-motivation.yml'deki gerçek olayla doğrulanmış not); diğer
+  # bildirim workflow'larıyla aynı saatte çakışmasın diye de ayrı bir
+  # dakika seçildi.
   schedule:
     - cron: '49 * * * *'
   workflow_dispatch: {}

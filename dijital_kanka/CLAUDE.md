@@ -3273,6 +3273,109 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
     gereken:** bir sonraki GitHub Actions çalıştırmasından (otomatik veya `workflow_dispatch` ile
     manuel) sonra loglarda `"Gönderildi: uid=..."` satırlarının tekrar görünmesi VE gerçek cihazda
     bir bildirimin gelmesi.
+- **2026 BEŞİNCİ güncelleme — üç bağımsız gerçek kullanıcı raporu birlikte incelendi ve düzeltildi:
+  "bildirimler 3 kez birden ve düzensiz geliyor", "bildirimlerde hep aynı motivasyon cümleleri
+  tekrar ediyor", "günlük Zibo Coin ödülü 1. günde takılı kalıyor".** Üçü de kanıta dayalı ayrı ayrı
+  araştırıldı (kör tahminle düzeltmeye başlanmadı) — kökleri BİRBİRİNDEN TAMAMEN BAĞIMSIZ çıktı:
+  1. **"3 bildirim birden" — KÖK NEDEN: 5 bildirim türünün `TARGET_LOCAL_HOURS`'ları arasında
+     ÇAKIŞMA, tekrarlayan/çift tetikleyici DEĞİL.** `gh run list`/`gh run view --log` ile
+     onlarca çalıştırma incelendi — GitHub Actions'ın saatlik cron'ları GÜVENİLİR şekilde
+     ateşleniyordu (önceki "33+ saat tamamen durdu" olayından farklı olarak) VE `pendingNotifyHours`/
+     `markNotifyHoursSent` catch-up penceresi (bkz. yukarıdaki DÖRDÜNCÜ güncelleme) tek bir türün
+     kendi içinde çift gönderim yapmasını zaten doğru şekilde engelliyordu — sorun tekilleştirme
+     DEĞİL, ZAMANLAMA tasarımıydı: eski hedef saatler `dailyMotivation=[9,12,16,20]`,
+     `waterReminder=[16]` (dailyMotivation'ın 16'sıyla TAM çakışıyordu),
+     `dailyRewardReminder=[15]` (16'ya yalnızca 1 saat mesafede), `streakReminder=[20]`
+     (dailyMotivation'ın 20'siyle TAM çakışıyordu) idi — bir kullanıcı 15:XX-16:XX arası ödül +
+     motivasyon + su (ÜÇ bildirim, ~60-90 dakika içinde) ve 20:XX'te motivasyon + streak (İKİ
+     bildirim, AYNI saatte) alabiliyordu. **Düzeltme — saatler yeniden dağıtıldı, hiçbir türün
+     GÜNLÜK SIKLIĞI azaltılmadı** (dailyMotivation'ın 4x/gün'ü ÖNCEKİ bir kullanıcı isteğiydi,
+     geri alınmadı — yalnızca ÇAKIŞMA giderildi): `waterReminder` `16→14` (dailyMotivation'ın 12 ve
+     16 dilimlerinin tam ortası), `dailyRewardReminder` `15→18` (dailyMotivation'ın 16 ve 20
+     dilimlerinin tam ortası), `streakReminder` `20→21` (dailyMotivation'ın son diliminden yalnızca
+     1 saat sonra — TAM çakışmadan çok daha iyi, ayrıca "gün bitmeden son şans" anlamına da daha
+     uygun düştü). `reEngagement=[11]` DEĞİŞTİRİLMEDİ (hiçbir türle TAM çakışmıyordu, kapsam dışı
+     bırakıldı — gereksiz risk eklemeden minimal müdahale). **Yeni tam program (yerel saat):**
+     `9, 11, 12, 14, 16, 18, 20, 21` — en dar boşluk artık 1 saat (11-12, 20-21), eskiden 0 saat
+     (tam çakışma) olan İKİ nokta tamamen giderildi. `.github/workflows/{streak-reminder,
+     daily-reward-reminder,water-reminder}.yml`'in dokümantasyon yorumları da yeni saatlere göre
+     güncellendi (cron'un kendisi zaten saatlik, `TARGET_LOCAL_HOURS` filtrelemesi JS tarafında).
+  2. **"Hep aynı sözler tekrar ediyor" — KÖK NEDEN DOĞRULANDI (bkz. "content.js" dosyasının kendi
+     eski yorumu): `notification-scripts/src/content.js`'in `daily_motivation` havuzu YALNIZCA
+     8 söz/dil içeriyordu, Ana Sayfa'nın KENDİSİNİN kullandığı `lib/data/zibo_messages.dart`'taki
+     TAM 279'luk havuzla senkron DEĞİLDİ** ("küçük temsili bir alt küme kullanılıyor" diye dosyanın
+     kendi yorumunda bilerek işaretlenmiş bir basitleştirmeydi). Günde 4 kez 8 sözlük bir havuzdan
+     rastgele seçim yapınca birkaç gün içinde kaçınılmaz tekrar oluyordu. **Düzeltme — İKİ AYRI
+     katman:**
+     - **`tool/generate_content_js_daily_motivation.dart` (YENİ, tekrar çalıştırılabilir betik)**
+       — `lib/data/zibo_messages.dart`'ı DOĞRUDAN import ETMEDEN (o dosya `package:flutter/
+       material.dart` import ediyor, plain `dart run` Flutter framework'ünü çözemeyip çöküyordu —
+       ilk denemede yakalandı) kaynağı düz metin olarak okuyup `const ziboMessagesXx =
+       <String>[...]` bloklarını satır-satır ayrıştırıyor (tek/çift tırnaklı Dart string
+       literallerini, aralardaki dokümantasyon yorumlarını atlayarak) ve `jsonEncode` ile
+       (JSON string literalleri her zaman geçerli JS string literalleridir) hatasız bir JS çıktısı
+       üretiyor — 837 satırı (279×3 dil) ELLE kopyalamak yerine. **Gotcha (yakalanıp düzeltildi):**
+       ilk sürüm çift-tırnaklı satırlardaki `\"` iç-tırnak kaçışlarını unescape ETMİYORDU (`Say one
+       \\\"no\\\" today...` gibi ÇİFT kaçışlı, geçersiz bir çıktı üretiyordu) — genel bir `\X → X`
+       unescape'e (hem `\'` hem `\"` için) geçilerek düzeltildi, iki dedicated regex yerine.
+       `content.js`'in `daily_motivation` bloğu artık bu betiğin ÜRETTİĞİ, `lib/data/
+       zibo_messages.dart` ile BİREBİR senkron TR/EN/ES 279'ar sözden oluşuyor.
+     - **"En azından son birkaç günde kullanılmamış" garantisi (kullanıcının AÇIKÇA istediği
+       ikinci gereksinim)** — `dailyMotivation.js`'e `pickQuoteAvoidingRecent(quotes,
+       recentIndices)` eklendi: `users/{uid}.notifyState.daily_motivation.recentQuoteIndices`
+       (kalıcı, en fazla `RECENT_QUOTE_MEMORY=20` elemanlı bir dizi — günde 4 gönderimle ~5 günlük
+       tekrarsızlık penceresi) son gönderilen söz INDEX'lerini tutuyor, yeni seçim bu indexleri
+       HARİÇ TUTARAK yapılıyor (279'luk havuzda hepsi hariç tutulacak kadar dolması pratikte
+       imkansız, yine de bir güvenlik ağı olarak havuz tükenirse TÜM havuza geri düşülüyor). Bu
+       index dizisi DİLDEN BAĞIMSIZ — TR/EN/ES havuzları AYNI sırada/anlamda hizalı olduğu için
+       (`content.js`'in kendi yorumu) kullanıcı dil değiştirse bile aynı kavramsal söz kısa sürede
+       tekrar gelmiyor. `markNotifyHoursSent` (paylaşılan, 5 betiğin HEPSİNİN kullandığı) SÖZLEŞMESİ
+       DEĞİŞTİRİLMEDİ — `recordQuoteIndex` AYRI, küçük bir `db.set(..., {merge:true})` çağrısı
+       (Firestore'un nested map alanlarını `merge:true` ile REKÜRSİF birleştirdiği doğrulandı, bu
+       yüzden iki ayrı `set` çağrısı `notifyState.daily_motivation` altında `dateKey`/`sentHours`/
+       `recentQuoteIndices` üçünü de kaybetmeden bir araya geliyor).
+     - **Doğrulanamadı (bu ortamda Node.js yok, AYNI bölüm-geneli sınırlama)** — `content.js`'in
+       söz dizimi (kaçışlar, dize dengesi) elle + brace/parantez sayımıyla doğrulandı,
+       `pickQuoteAvoidingRecent`'in mantığı yalnızca dikkatli kod incelemesiyle doğrulandı.
+       **Kullanıcının doğrulaması gereken:** `workflow_dispatch` ile `daily-motivation.yml`'i
+       birkaç kez elle tetikleyip loglarda gönderilen sözlerin (varsa) FARKLI olduğunu, VE
+       birkaç gün gerçek kullanımda aynı sözün ardı ardına gelmediğini gözlemlemek.
+  3. **"Günlük ödül 1. günde takılı kalıyor" — KÖK NEDEN: `TrustedTimeProvider`'da cross-session
+     staleness, `DailyRewardsProvider`'ın KENDİSİNDE DEĞİL.** `daily_rewards_provider.dart`
+     (`reconcileForToday`/`claimToday`/`todayIndex`) incelendi — bu dosyanın ÖNCEKİ bir oturumda
+     tam olarak bu semptom için düzeltilmiş `idx < 0` mantığı hâlâ doğru duruyordu, provider
+     KENDİ İÇİNDE bir bug barındırmıyordu. Şüphe `TrustedTimeProvider.now()`'a kaydı — sınıfın
+     KENDİ dokümantasyonu "ilk doğrulama HİÇ TAMAMLANMADAN cihaz saatine GEÇİCİ olarak düşülür"
+     diyordu, ama KOD bunu UYGULAMIYORDU: `_loadFromPrefs()` kalıcı depodan (ÖNCEKİ bir oturumdan,
+     saatler/günler eski olabilecek) bir `_lastVerifiedUtc` yüklediği ANDA, `now()` bunu SANKİ BU
+     OTURUMDA taze doğrulanmış gibi (`verified + _stopwatch.elapsed`, `_stopwatch` BU oturumun
+     başında sıfırdan başlamış olsa BİLE) kullanmaya başlıyordu — "kalıcı depodan bir değer okundu"
+     ile "BU oturumda gerçekten doğrulandı" birbirine KARIŞTIRILMIŞTI. Eğer bir cihazda/oturumda ağ
+     senkronizasyonu TUTARLI şekilde başarısız olursa (ör. soğuk başlangıçta henüz bağlanmamış
+     Wi-Fi/mobil veri — MIUI'nin agresif ağ kısıtlaması bu projede DAHA ÖNCE de karşılaşılan bilinen
+     bir sorun, bkz. "Bildirimler" bölümündeki arka plan teslimat notu), `now()` GÜNLERCE
+     dondurulmuş eski bir tarihte kalabiliyordu — her gün uygulama açıldığında "bugün" hep AYNI
+     (eski) günü gösterip `todayIndex`'in ASLA ilerlememesine yol açıyordu; kullanıcının GERÇEKTEN
+     force-close edip her gün soğuk başlangıç yaptığı bir kullanım deseninde bu GÜNLÜK olarak
+     tekrarlanabilirdi. **Düzeltme:** `TrustedTimeProvider`'a `_verifiedThisSession` (bool) eklendi
+     — `now()` artık yalnızca BU OTURUMDA gerçekten bir ağ doğrulaması TAMAMLANDIYSA `verified +
+     _stopwatch.elapsed` kullanıyor; kalıcı depodan yüklenmiş ama BU oturumda henüz tazelenmemiş
+     bir değer varken (`hasVerifiedTime` `true` dönse BİLE geçerli bir durum) `now()` güvenle cihaz
+     saatine düşüyor — TAM OLARAK sınıfın zaten VAAT ETTİĞİ (ama kodun uygulamadığı) davranış.
+     Güvenlik özelliği (bir doğrulama BU oturumda tamamlandıktan sonra cihaz saati bir daha ASLA
+     danışılmaz — kullanıcı saati manuel ileri/geri alarak günlük ödülleri tekrar tetikleyemez)
+     KORUNUYOR, yalnızca cross-session staleness kapatıldı.
+     - **Test:** YENİ `test/trusted_time_provider_test.dart` (5 test) — özellikle "KRİTİK" testi bu
+       TAM senaryoyu simüle ediyor (kalıcı depoda yıllar eski bir doğrulama + bu oturumda ağ
+       senkronu BAŞARISIZ → `now()` eski/dondurulmuş tarihi DEĞİL, gerçek cihaz saatini döndürmeli)
+       — bu test DÜZELTMEDEN ÖNCEKİ kodda BAŞARISIZ olurdu, düzeltmeden SONRA geçiyor; bu, fix'in
+       gerçekten bu regresyonu yakaladığının somut kanıtı. `flutter test` tam yeşil: **330/330.**
+     - **Gerçek cihazda doğrulanmadı** (ağın soğuk başlangıçta kasıtlı olarak kesilmesini gerektiren
+       bir senaryo, kontrollü şekilde tekrarlaması zor) — mantığı test edilen, saf/deterministik bir
+       provider metodudur, risk düşük kabul edildi. Kullanıcı isterse: uçak modunu aç → uygulamayı
+       kapat → uçak modunu kapatmadan (veya ağı gerçekten yavaş bırakarak) uygulamayı yeniden aç →
+       Günlük Giriş Ödülleri'nin ESKİ günü DEĞİL, `DateTime.now()`'a yakın bir günü göstermesi
+       gerekir (kalıcı depoda önceden doğrulanmış bir zaman varsa bile).
 - **`firestore.rules` — DEĞİŞİKLİK GEREKMEDİ (Cloud Functions taslağındaki gerekçeyle AYNI).**
   Mevcut kural zaten `match /users/{userId}/{document=**}` (bkz. "Firestore Veri Kalıcılığı"
   bölümü) ile `users/{uid}` dokümanının TÜM alanlarını (`fcmToken`/`lastActiveAt` dahil) sahibine
@@ -3902,16 +4005,19 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
   `settings_screen_test.dart` (aynı bölüm), `custom_messages_provider_test.dart` (2026 — Ana Sayfa
   özel mesajlar özelliği), `currency_provider_test.dart` (2026 — Para ve Birikim çoklu para birimi
   özelliği), `profile_stats_archive_provider_test.dart` (2026 — bkz. "Profil" bölümündeki "Geçmiş
-  Ay İstatistikleri" notu). **`test/wheel_screen_test.dart` KISA SÜRE var oldu,
+  Ay İstatistikleri" notu), YENİ `trusted_time_provider_test.dart` (2026 — bkz. "Push
+  Bildirimleri" bölümündeki "günlük ödül 1. günde takılı kalıyor" bug düzeltmesi — cross-session
+  staleness'ı doğrudan hedefleyen 5 test). **`test/wheel_screen_test.dart` KISA SÜRE var oldu,
   SONRA SİLİNDİ** — Şans Çarkı sonrası reklam denemesiyle birlikte geldi, kullanıcı o özelliği
   istemeyince (bkz. "Zibo'ya Art Arda Dokunma → Geçiş Reklamı" bölümündeki geri alma notu) testi
   de anlamsızlaştığı için kaldırıldı.
-  **Toplam: 325 test** (2026 — `costume_provider_test.dart`'a `reconcileGoalUnlocks` grubu +
+  **Toplam: 330 test** (2026 — `costume_provider_test.dart`'a `reconcileGoalUnlocks` grubu +
   `water_provider_test.dart`'a `completedDaysCount` testi [bkz. "Kostümler" bölümü] +
   `dream_sentiment_test.dart` [bkz. "Rüya Günlüğü" bölümündeki korelasyon notu] +
   `referral_provider_test.dart` [bkz. "Davet Et (Referral) Sistemi" bölümü] +
-  `profile_screen_test.dart`'a "Kurucu Üye" rozeti senaryosu [bkz. "Kurucu Üye Rozeti" bölümü]
-  eklendi).
+  `profile_screen_test.dart`'a "Kurucu Üye" rozeti senaryosu [bkz. "Kurucu Üye Rozeti" bölümü] +
+  YENİ `trusted_time_provider_test.dart` [5 test, bkz. "Push Bildirimleri" bölümündeki günlük ödül
+  bug düzeltmesi] eklendi).
 - `widget_test.dart` içindeki `_buildAppWithClock()` yardımcı fonksiyonu enjekte edilebilir saatli
   testler için — **`RootScreen`'in ihtiyaç duyduğu HER provider'ı içermeli** (`AppThemeProvider`,
   `AuthLinkProvider`, `CoinProvider`, `CostumeProvider`, `CustomMessagesProvider`,

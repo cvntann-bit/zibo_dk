@@ -33,6 +33,7 @@
 // SONRAKİ herhangi bir çalıştırmasında hâlâ doğru şekilde yakalanıyor.
 
 const {
+  db,
   fetchAllUsers,
   sendToUser,
   getLanguageCode,
@@ -44,9 +45,48 @@ const { daily_motivation: MOTIVATION_QUOTES } = require('./content');
 
 // 2026 İKİNCİ GÜNCELLEMESİ — kullanıcı raporu: bildirimler kullanıcının arayüz dilinden
 // BAĞIMSIZ, her zaman Türkçe gidiyordu. Artık HER kullanıcı için ayrı ayrı `getLanguageCode`
-// ile dil çözülüp o dildeki söz havuzundan (bkz. content.js — TR/EN/ES, 8'er söz) rastgele
-// bir söz seçiliyor — "tüm kullanıcılara aynı çalıştırmada aynı söz" tasarımı artık yalnızca
-// "aynı çalıştırma" kısmında geçerli, söz her kullanıcının kendi dilinde.
+// ile dil çözülüp o dildeki söz havuzundan rastgele bir söz seçiliyor — "tüm kullanıcılara
+// aynı çalıştırmada aynı söz" tasarımı artık yalnızca "aynı çalıştırma" kısmında geçerli,
+// söz her kullanıcının kendi dilinde.
+//
+// 2026 ÜÇÜNCÜ GÜNCELLEME — kullanıcı raporu: "bildirimlerde hep aynı motivasyon cümleleri
+// tekrar ediyor". Kök neden: `content.js`'in `daily_motivation` havuzu YALNIZCA 8 söz/dil
+// içeriyordu (Ana Sayfa'nın KENDİSİNİN kullandığı `lib/data/zibo_messages.dart`'taki tam
+// 279'luk havuzdan bilerek küçültülmüş, "temsili" bir alt küme) — 8 sözlük bir havuzdan
+// günde 4 kez rastgele seçim yapınca birkaç gün içinde kaçınılmaz olarak aynı sözler
+// tekrarlanıyordu. **İKİ AYRI düzeltme birlikte uygulandı:** (1) `content.js` artık TAM
+// 279'luk havuzla senkron (bkz. o dosyanın kendi yorumu, `tool/generate_content_js_daily_
+// motivation.dart` ile üretildi); (2) kullanıcının AÇIKÇA istediği "en azından son birkaç
+// günde kullanılmamış" garantisi için `users/{uid}.notifyState.daily_motivation.
+// recentQuoteIndices` (kalıcı, en fazla [RECENT_QUOTE_MEMORY] elemanlı bir dizi) son
+// gönderilen söz INDEX'lerini tutuyor — [pickQuoteAvoidingRecent] bu indexleri HARİÇ TUTARAK
+// seçim yapıyor (279'luk havuzda hepsi hariç tutulacak kadar dolması pratik olarak imkansız,
+// ama yine de bir güvenlik ağı olarak havuz tükenirse TÜM havuza geri düşülüyor). Bu, dilden
+// BAĞIMSIZ tek bir index dizisi — kullanıcı dil değiştirse bile (üç dilin havuzları AYNI
+// sırada/anlamda hizalı, bkz. content.js) AYNI kavramsal söz kısa sürede tekrar gelmiyor.
+const RECENT_QUOTE_MEMORY = 20; // günde 4 gönderimle ~5 günlük tekrarsızlık penceresi
+
+function pickQuoteAvoidingRecent(quotes, recentIndices) {
+  const avoid = new Set(recentIndices);
+  const candidates = [];
+  for (let i = 0; i < quotes.length; i++) {
+    if (!avoid.has(i)) candidates.push(i);
+  }
+  const pool = candidates.length > 0 ? candidates : quotes.map((_, i) => i);
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
+async function recordQuoteIndex(uid, recentIndices, newIndex) {
+  const updated = [...recentIndices, newIndex].slice(-RECENT_QUOTE_MEMORY);
+  try {
+    await db
+      .collection('users')
+      .doc(uid)
+      .set({ notifyState: { daily_motivation: { recentQuoteIndices: updated } } }, { merge: true });
+  } catch (error) {
+    console.warn(`recordQuoteIndex başarısız: uid=${uid}`, error.message || error);
+  }
+}
 
 // Eski sabit Istanbul saatleriyle (09:07/12:22/16:37/20:52) AYNI ruhu
 // koruyan dört hedef yerel saat — yalnızca artık HERKES için Istanbul değil,
@@ -71,9 +111,15 @@ async function main() {
     eligible.map(async ({ user, pending }) => {
       const lang = await getLanguageCode(user.uid);
       const quotes = MOTIVATION_QUOTES[lang] || MOTIVATION_QUOTES.tr;
-      const quote = quotes[Math.floor(Math.random() * quotes.length)];
+      const motivationState = (user.notifyState && user.notifyState.daily_motivation) || {};
+      const recentIndices = Array.isArray(motivationState.recentQuoteIndices)
+        ? motivationState.recentQuoteIndices
+        : [];
+      const index = pickQuoteAvoidingRecent(quotes, recentIndices);
+      const quote = quotes[index];
       await sendToUser(user, 'daily_motivation', 'Zibo', quote);
       await markNotifyHoursSent(user, 'daily_motivation', userDateKey(user, now), pending);
+      await recordQuoteIndex(user.uid, recentIndices, index);
     }),
   );
 }

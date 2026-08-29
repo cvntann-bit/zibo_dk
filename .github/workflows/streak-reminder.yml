@@ -2,14 +2,17 @@ name: Streak Hatırlatması Bildirimi
 
 on:
   # 2026 GÜNCELLEMESİ — SAATTE BİR çalışıp her kullanıcının KENDİ yerel
-  # saati 20:00 olduğunda gönderir (bkz. notification-scripts/src/
+  # saati 21:00 olduğunda gönderir (bkz. notification-scripts/src/
   # streakReminder.js'teki TARGET_LOCAL_HOURS — daha önce sabit Europe/
   # Istanbul saatiydi, bir test kullanıcısının farklı saat diliminde
-  # bildirimi gece yarısına yakın alması üzerine değiştirildi). Dakika
-  # bilerek :14 (:00/:15/:30/:45 DEĞİL) — GitHub'ın schedule gecikmeleri
-  # özellikle o dakikalarda yoğunlaşıyor (bkz. daily-motivation.yml'deki
-  # gerçek olayla doğrulanmış not); diğer bildirim workflow'larıyla aynı
-  # saatte çakışmasın diye de ayrı bir dakika seçildi.
+  # bildirimi gece yarısına yakın alması üzerine değiştirildi; saat ayrıca
+  # 20→21'e taşındı çünkü dailyMotivation'ın 20 dilimiyle TAM çakışıyordu —
+  # bkz. "bildirimler 3 kez birden geliyor" bug düzeltmesi, CLAUDE.md "Push
+  # Bildirimleri" bölümü). Dakika bilerek :14 (:00/:15/:30/:45 DEĞİL) —
+  # GitHub'ın schedule gecikmeleri özellikle o dakikalarda yoğunlaşıyor
+  # (bkz. daily-motivation.yml'deki gerçek olayla doğrulanmış not); diğer
+  # bildirim workflow'larıyla aynı saatte çakışmasın diye de ayrı bir
+  # dakika seçildi.
   schedule:
     - cron: '14 * * * *'
   workflow_dispatch: {}

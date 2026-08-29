@@ -1,5 +1,5 @@
 // 3. GÜNLÜK ÖDÜL HATIRLATMASI — SAATTE BİR çalışan bir GitHub Actions
-// çalıştırması, her kullanıcının KENDİ yerel saati 15:00 olduğunda gönderir
+// çalıştırması, her kullanıcının KENDİ yerel saati 18:00 olduğunda gönderir
 // (bkz. .github/workflows/daily-reward-reminder.yml, TARGET_LOCAL_HOURS
 // aşağıda).
 //
@@ -24,6 +24,15 @@
 // `pendingNotifyHours`/`markNotifyHoursSent` (common.js) ile "hedef saat
 // GEÇTİ mi VE bugün için henüz işlenmedi mi?" sorulup gecikmeli bir
 // tetiklemede de doğru şekilde yakalanıyor.
+//
+// 2026 DÖRDÜNCÜ GÜNCELLEME — kullanıcı raporu: "bildirimler 3 kez birden ve
+// düzensiz geliyor". Eski saat (`15`) dailyMotivation'ın `16` diliminden
+// yalnızca 1 saat, waterReminder'ın eski `16`'sından da 1 saat uzaktaydı —
+// bir kullanıcı 15:XX'te ödül hatırlatması, 16:XX'te HEM motivasyon HEM su
+// hatırlatması alıp ~60-90 dakika içinde ÜÇ bildirim görüyordu (bkz.
+// CLAUDE.md "Push Bildirimleri" bölümündeki tam çakışma haritası). Saat
+// `15` → `18`'e taşındı — dailyMotivation'ın 16 ve 20 dilimlerinin TAM
+// ORTASI, ikisinden de 2 saat uzaklıkta.
 
 const {
   db,
@@ -36,7 +45,7 @@ const {
 } = require('./common');
 const { daily_reward: DAILY_REWARD_BODY } = require('./content');
 
-const TARGET_LOCAL_HOURS = [15];
+const TARGET_LOCAL_HOURS = [18];
 
 async function main() {
   const now = new Date();

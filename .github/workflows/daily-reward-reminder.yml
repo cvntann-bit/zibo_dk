@@ -2,9 +2,13 @@ name: Günlük Ödül Hatırlatması Bildirimi
 
 on:
   # 2026 GÜNCELLEMESİ — SAATTE BİR çalışıp her kullanıcının KENDİ yerel
-  # saati 15:00 olduğunda gönderir (bkz. notification-scripts/src/
+  # saati 18:00 olduğunda gönderir (bkz. notification-scripts/src/
   # dailyRewardReminder.js'teki TARGET_LOCAL_HOURS — daha önce sabit
-  # Europe/Istanbul saatiydi). Dakika bilerek :21 (:00/:15/:30/:45 DEĞİL) —
+  # Europe/Istanbul saatiydi; saat ayrıca 15→18'e taşındı çünkü
+  # dailyMotivation'ın 16 dilimine ve waterReminder'ın eski 16'sına çok
+  # yakındı, üçü birlikte ~60-90 dakika içinde 3 bildirime yol açıyordu —
+  # bkz. "bildirimler 3 kez birden geliyor" bug düzeltmesi, CLAUDE.md "Push
+  # Bildirimleri" bölümü). Dakika bilerek :21 (:00/:15/:30/:45 DEĞİL) —
   # GitHub'ın schedule gecikmeleri özellikle o dakikalarda yoğunlaşıyor
   # (bkz. daily-motivation.yml'deki gerçek olayla doğrulanmış not); diğer
   # bildirim workflow'larıyla aynı saatte çakışmasın diye de ayrı bir
