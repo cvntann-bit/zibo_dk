@@ -3345,12 +3345,16 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
        (Firestore'un nested map alanlarını `merge:true` ile REKÜRSİF birleştirdiği doğrulandı, bu
        yüzden iki ayrı `set` çağrısı `notifyState.daily_motivation` altında `dateKey`/`sentHours`/
        `recentQuoteIndices` üçünü de kaybetmeden bir araya geliyor).
-     - **Doğrulanamadı (bu ortamda Node.js yok, AYNI bölüm-geneli sınırlama)** — `content.js`'in
-       söz dizimi (kaçışlar, dize dengesi) elle + brace/parantez sayımıyla doğrulandı,
-       `pickQuoteAvoidingRecent`'in mantığı yalnızca dikkatli kod incelemesiyle doğrulandı.
-       **Kullanıcının doğrulaması gereken:** `workflow_dispatch` ile `daily-motivation.yml`'i
-       birkaç kez elle tetikleyip loglarda gönderilen sözlerin (varsa) FARKLI olduğunu, VE
-       birkaç gün gerçek kullanımda aynı sözün ardı ardına gelmediğini gözlemlemek.
+     - **Doğrulandı (2026-08-29) — `content.js`'in söz dizimi ÖNCE elle + brace/parantez
+       sayımıyla, SONRA GERÇEK bir GitHub Actions çalıştırmasıyla doğrulandı.**
+       `daily-motivation.yml` `gh workflow run` ile elle tetiklendi, log şunu gösterdi:
+       `"39 kullanıcıdan 1'i şu an hedef yerel saatte... — günlük motivasyon gönderiliyor."`
+       ardından `"Gönderildi: uid=... type=daily_motivation"` — betik HİÇBİR JS söz dizimi/çalışma
+       zamanı hatası fırlatmadan çalıştı (279 satırlık `content.js` bloğu VE `pickQuoteAvoidingRecent`
+       ikisi de gerçekte hatasız çözüldü). **Hâlâ kullanıcının doğrulaması gereken:** birkaç gün
+       gerçek kullanımda aynı sözün ardı ardına gelmediğini (yeni 279'luk havuz + tekrar-önleme
+       penceresi sayesinde) gözlemlemek — bu, YALNIZCA zaman geçtikçe gözlemlenebilecek bir
+       davranış, tek bir çalıştırmayla kanıtlanamaz.
   3. **"Günlük ödül 1. günde takılı kalıyor" — KÖK NEDEN: `TrustedTimeProvider`'da cross-session
      staleness, `DailyRewardsProvider`'ın KENDİSİNDE DEĞİL.** `daily_rewards_provider.dart`
      (`reconcileForToday`/`claimToday`/`todayIndex`) incelendi — bu dosyanın ÖNCEKİ bir oturumda
@@ -3387,6 +3391,22 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
        kapat → uçak modunu kapatmadan (veya ağı gerçekten yavaş bırakarak) uygulamayı yeniden aç →
        Günlük Giriş Ödülleri'nin ESKİ günü DEĞİL, `DateTime.now()`'a yakın bir günü göstermesi
        gerekir (kalıcı depoda önceden doğrulanmış bir zaman varsa bile).
+  - **Genel doğrulama (2026-08-29, kullanıcı isteğiyle: "önce apkyı telefonuma kur sonra tetikle
+    loglara bak onaylıyorum") — 1/2/3'ün HEPSİ tek bir turda birlikte doğrulandı:** `flutter build
+    apk --debug` ile yeniden derlenip telefona kurulup çöküş olmadan açıldığı (`adb shell monkey` +
+    `pidof`, logcat'te `FATAL EXCEPTION` YOK) doğrulandıktan SONRA, saat çakışması düzeltmesinden
+    etkilenen DÖRT workflow (`daily-motivation`, `daily-reward-reminder`, `streak-reminder`,
+    `water-reminder`) `gh workflow run` ile elle tetiklenip loglar okundu — DÖRDÜ de hatasız
+    tamamlandı (`✓` durumu), tek "hata" sınıfı birkaç `NotRegistered` (eski/geçersiz FCM token,
+    betiğin zaten beklediği/sessizce atladığı zararsız bir durum, KOD hatası DEĞİL). **Şeffaf bir
+    not:** bu manuel tetikleme günün akşam saatine denk geldiği için, YENİ saatlere (`reward=18`,
+    `water=14`) geçişten SONRAKİ İLK çalıştırma olduğundan catch-up mekanizması o an "bugün için
+    henüz işlenmemiş" bulduğu birçok kullanıcıya ÖDÜL VE SU hatırlatmasını ARKA ARKAYA gönderdi —
+    bu, YENİ saatlerin KENDİSİNİN bir çakışması DEĞİL, yalnızca bu BİR KEZLİK manuel/gündüz-dışı
+    test tetiklemesinin yan etkisiydi; normal saatlik zamanlamada her tür kendi saatinde, günün
+    farklı anlarında tetiklenmeye devam edecek. `streak-reminder` "0 kullanıcı hedef saatte" dedi
+    (beklenen — tetikleme anında hiçbir kullanıcının yerel saati henüz 21 değildi), bu da mantığın
+    YANLIŞ POZİTİF üretmediğinin kanıtı.
 - **`firestore.rules` — DEĞİŞİKLİK GEREKMEDİ (Cloud Functions taslağındaki gerekçeyle AYNI).**
   Mevcut kural zaten `match /users/{userId}/{document=**}` (bkz. "Firestore Veri Kalıcılığı"
   bölümü) ile `users/{uid}` dokümanının TÜM alanlarını (`fcmToken`/`lastActiveAt` dahil) sahibine
@@ -4016,38 +4036,50 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
   `settings_screen_test.dart` (aynı bölüm), `custom_messages_provider_test.dart` (2026 — Ana Sayfa
   özel mesajlar özelliği), `currency_provider_test.dart` (2026 — Para ve Birikim çoklu para birimi
   özelliği), `profile_stats_archive_provider_test.dart` (2026 — bkz. "Profil" bölümündeki "Geçmiş
-  Ay İstatistikleri" notu), YENİ `trusted_time_provider_test.dart` (2026 — bkz. "Push
+  Ay İstatistikleri" notu), `trusted_time_provider_test.dart` (2026 — bkz. "Push
   Bildirimleri" bölümündeki "günlük ödül 1. günde takılı kalıyor" bug düzeltmesi — cross-session
-  staleness'ı doğrudan hedefleyen 5 test). **`test/wheel_screen_test.dart` KISA SÜRE var oldu,
+  staleness'ı doğrudan hedefleyen 5 test), YENİ `widget_status_test.dart`/
+  `home_widget_sync_coordinator_test.dart`/`widgets_screen_test.dart` (2026 — bkz. "Ana Ekran
+  Widget'ları" bölümü). **`test/wheel_screen_test.dart` KISA SÜRE var oldu,
   SONRA SİLİNDİ** — Şans Çarkı sonrası reklam denemesiyle birlikte geldi, kullanıcı o özelliği
   istemeyince (bkz. "Zibo'ya Art Arda Dokunma → Geçiş Reklamı" bölümündeki geri alma notu) testi
   de anlamsızlaştığı için kaldırıldı.
-  **Toplam: 330 test** (2026 — `costume_provider_test.dart`'a `reconcileGoalUnlocks` grubu +
+  **Toplam: 356 test** (2026 — `costume_provider_test.dart`'a `reconcileGoalUnlocks` grubu +
   `water_provider_test.dart`'a `completedDaysCount` testi [bkz. "Kostümler" bölümü] +
   `dream_sentiment_test.dart` [bkz. "Rüya Günlüğü" bölümündeki korelasyon notu] +
   `referral_provider_test.dart` [bkz. "Davet Et (Referral) Sistemi" bölümü] +
   `profile_screen_test.dart`'a "Kurucu Üye" rozeti senaryosu [bkz. "Kurucu Üye Rozeti" bölümü] +
-  YENİ `trusted_time_provider_test.dart` [5 test, bkz. "Push Bildirimleri" bölümündeki günlük ödül
-  bug düzeltmesi] eklendi).
+  `trusted_time_provider_test.dart` [5 test, bkz. "Push Bildirimleri" bölümündeki günlük ödül
+  bug düzeltmesi] + YENİ `widget_status_test.dart`/`home_widget_sync_coordinator_test.dart`/
+  `widgets_screen_test.dart` [26 test, bkz. "Ana Ekran Widget'ları" bölümü] eklendi).
 - `widget_test.dart` içindeki `_buildAppWithClock()` yardımcı fonksiyonu enjekte edilebilir saatli
   testler için — **`RootScreen`'in ihtiyaç duyduğu HER provider'ı içermeli** (`AppThemeProvider`,
-  `AuthLinkProvider`, `CoinProvider`, `CostumeProvider`, `CustomMessagesProvider`,
-  `DailyRewardsProvider`, `FavoriteQuotesProvider`, `GoalsProvider`, `GratitudeProvider`,
-  `ManifestProvider`, `MoneyProvider`, `NotificationProvider`, `ProfileProvider`,
+  `AuthLinkProvider`, `CoinProvider`, `CostumeProvider`, `CurrencyProvider`,
+  `CustomMessagesProvider`, `DailyRewardsProvider`, `DreamJournalProvider`,
+  `FavoriteQuotesProvider`, `GoalsProvider`, `GratitudeProvider`, `LocaleProvider`,
+  `ManifestProvider`, `MoneyProvider`, `MoodProvider`, `NotificationProvider`, `ProfileProvider`,
   `ProfileStatsArchiveProvider`, `SoundEffectsProvider`,
   `ThemeProvider`, `TrustedTimeProvider`, `WaterProvider`, `ZiboPoseProvider`) — bunun sebebi
   `RootScreen`'in tüm sekmeleri hemen kurması (artık `ProfileScreen` de bir sekme olduğu için onun
   transitif olarak izlediği TÜM provider'lar da burada olmalı — bkz. "Alt Gezinme Çubuğu"
-  bölümündeki Profil↔Birikim yer değiştirme notu). **`CurrencyProvider` BİLİNÇLİ OLARAK bu listeye
-  EKLENMEDİ** — onu izleyen TEK ekran (`MoneyScreen`) `RootScreen`'in sabit sekmelerinden biri
-  DEĞİL (bkz. "Alt Gezinme Çubuğu" bölümü — Z butonu modül menüsünden push ediliyor), bu yüzden
-  `_buildAppWithClock` testlerinin hiçbiri onu hiç mount etmiyor. **Gotcha (gerçekten yaşandı):**
-  `AppThemeProvider` `main.dart`'a eklenirken bu yardımcıya eklenmesi UNUTULMUŞTU — sonuç, o
-  yardımcıyı kullanan İLK testte değil, `ProviderNotFoundException`'ın `widget_test.dart`'ın
-  KENDİSİNDEN SONRA gelen HER testi (aynı test ikili dosyasında art arda koştukları için) etkilemesi,
-  tek dosyada 20 test başarısızlığına yol açması oldu (bkz. "Temalar" bölümü). **`main.dart`'a yeni
-  bir `ChangeNotifierProvider` eklerken bu yardımcıyı GÜNCELLEMEYİ unutmayın** — unutulursa hata
-  yalnızca doğrudan ilgili testte değil, ondan sonraki TÜM testlerde görünür, kökeni bulmak zorlaşır.
+  bölümündeki Profil↔Birikim yer değiştirme notu). **ARTIK GEÇERSİZ NOT (tarihsel bağlam için
+  tutuluyor):** `CurrencyProvider` bir süre bilerek bu listeye EKLENMEMİŞTİ, çünkü onu izleyen TEK
+  ekran (`MoneyScreen`) `RootScreen`'in sabit sekmelerinden biri değildi. **2026 güncellemesi — Ana
+  Ekran Widget'ları özelliğiyle bu artık geçerli DEĞİL:** `RootScreen`'in KENDİSİ artık
+  `HomeWidgetSyncCoordinator` üzerinden `CurrencyProvider`'ı (Para ve Birikim widget'ının para
+  birimi formatı için) DOĞRUDAN `context.read` ediyor — `MoneyScreen`'den TAMAMEN BAĞIMSIZ, YENİ
+  bir gerekçeyle — bu yüzden `CurrencyProvider` (ve AYNI koordinatörün ihtiyaç duyduğu
+  `DreamJournalProvider`/`LocaleProvider`/`MoodProvider`) artık listeye EKLENDİ, bkz. "Ana Ekran
+  Widget'ları" bölümü. **Gotcha (gerçekten yaşandı, İKİ AYRI kez):** `AppThemeProvider` `main.dart`'a
+  eklenirken bu yardımcıya eklenmesi UNUTULMUŞTU — sonuç, o yardımcıyı kullanan İLK testte değil,
+  `ProviderNotFoundException`'ın `widget_test.dart`'ın KENDİSİNDEN SONRA gelen HER testi (aynı test
+  ikili dosyasında art arda koştukları için) etkilemesi, tek dosyada 20 test başarısızlığına yol
+  açması oldu (bkz. "Temalar" bölümü) — Ana Ekran Widget'ları eklenirken de AYNI hata TEKRAR
+  yaşandı (bu sefer 4 eksik provider'la, `test/widget_test.dart: Method not found` derleme hatası
+  olarak — bir öncekinden FARKLI belirti ama AYNI kök neden). **`main.dart`'a (VEYA `RootScreen`'in
+  KENDİSİNİN okuduğu provider kümesine) yeni bir bağımlılık eklerken bu yardımcıyı GÜNCELLEMEYİ
+  unutmayın** — unutulursa hata yalnızca doğrudan ilgili testte değil, ondan sonraki TÜM testlerde
+  görünür, kökeni bulmak zorlaşır.
 - **`widget_test.dart`'ta İKİ AYRI "uygulamayı ayağa kaldır" yardımcısı var, birbirine
   KARIŞTIRILMAMALI (2026, Onboarding eklenince ortaya çıktı):** `const DijitalKankaApp()`'i
   pump'layan HER test artık `_pumpPastOnboarding(tester, app)` kullanmalı (`DijitalKankaApp`
