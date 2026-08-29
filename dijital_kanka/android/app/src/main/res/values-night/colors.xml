@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Ana ekran widget'larının KOYU tema karşılıkları — bkz.
+         values/colors.xml'deki AÇIK tema tanımının başındaki dokümantasyon.
+         main.dart'taki `_darkSurfaceContainer`/`_darkCream`/
+         `_darkCreamSoft`/`_darkGold` sabitleriyle BİREBİR AYNI. -->
+    <color name="widget_card_background">#231F19</color>
+    <color name="widget_primary_text">#E3C179</color>
+    <color name="widget_secondary_text">#B89A5E</color>
+    <color name="widget_accent_default">#D9A94A</color>
+</resources>

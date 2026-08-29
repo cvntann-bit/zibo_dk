@@ -1757,5 +1757,127 @@
   "founderBadgeTooltip": "Kurucu Üye",
   "@founderBadgeTooltip": {
     "description": "Profil fotoğrafının köşesindeki Kurucu Üye rozetinin tooltip/erişilebilirlik etiketi"
+  },
+  "widgetTitleGoals": "Hedef Takibi",
+  "@widgetTitleGoals": {
+    "description": "Hedef Takibi ana ekran widget'ının başlığı (widget içinde + Widget'lar ekranındaki satırda)"
+  },
+  "widgetTitleWater": "Su Takibi",
+  "@widgetTitleWater": {
+    "description": "Su Takibi ana ekran widget'ının başlığı"
+  },
+  "widgetTitleGratitude": "Şükran Günlüğü",
+  "@widgetTitleGratitude": {
+    "description": "Şükran Günlüğü ana ekran widget'ının başlığı"
+  },
+  "widgetTitleMood": "Ruh Hali Takibi",
+  "@widgetTitleMood": {
+    "description": "Günlük Ruh Hali Takibi ana ekran widget'ının başlığı"
+  },
+  "widgetTitleManifest": "Manifest Günlüğü",
+  "@widgetTitleManifest": {
+    "description": "Manifest Günlüğü ana ekran widget'ının başlığı"
+  },
+  "widgetTitleDream": "Rüya Günlüğü",
+  "@widgetTitleDream": {
+    "description": "Rüya Günlüğü ana ekran widget'ının başlığı"
+  },
+  "widgetTitleMoney": "Para ve Birikim",
+  "@widgetTitleMoney": {
+    "description": "Para ve Birikim ana ekran widget'ının başlığı"
+  },
+  "widgetTitleDailyRewards": "Günlük Giriş Ödülleri",
+  "@widgetTitleDailyRewards": {
+    "description": "Günlük Giriş Ödülleri ana ekran widget'ının başlığı"
+  },
+  "widgetGoalsEmptyHint": "Henüz hedef eklenmedi",
+  "@widgetGoalsEmptyHint": {
+    "description": "Hedef Takibi widget'ında hiç hedef yokken gösterilen alt metin"
+  },
+  "widgetGoalsActiveHint": "bugün işaretlenen hedef",
+  "@widgetGoalsActiveHint": {
+    "description": "Hedef Takibi widget'ında 'X/Y' sayısının altında gösterilen açıklayıcı alt metin"
+  },
+  "widgetWaterHint": "{unit} · bugün",
+  "@widgetWaterHint": {
+    "description": "Su Takibi widget'ının alt metni — {unit} 'bardak'/'şişe' gibi seçili birim etiketi",
+    "placeholders": {
+      "unit": {"type": "String"}
+    }
+  },
+  "widgetGratitudeDoneHint": "Bugün tamamlandı",
+  "@widgetGratitudeDoneHint": {
+    "description": "Şükran Günlüğü widget'ında bugün zaten yazılmışsa gösterilen alt metin"
+  },
+  "widgetGratitudeEmptyHint": "Henüz yazılmadı",
+  "@widgetGratitudeEmptyHint": {
+    "description": "Şükran Günlüğü widget'ında bugün henüz yazılmamışsa gösterilen alt metin"
+  },
+  "widgetMoodSetHint": "Bugünkü ruh halin",
+  "@widgetMoodSetHint": {
+    "description": "Ruh Hali Takibi widget'ında bugün bir seçim yapılmışsa gösterilen alt metin"
+  },
+  "widgetMoodEmptyHint": "Henüz seçilmedi",
+  "@widgetMoodEmptyHint": {
+    "description": "Ruh Hali Takibi widget'ında bugün henüz seçim yapılmamışsa gösterilen alt metin"
+  },
+  "widgetManifestActiveHint": "bugün eklenen giriş",
+  "@widgetManifestActiveHint": {
+    "description": "Manifest Günlüğü widget'ında bugünkü giriş sayısının altında gösterilen açıklayıcı alt metin"
+  },
+  "widgetManifestEmptyHint": "Henüz giriş yok",
+  "@widgetManifestEmptyHint": {
+    "description": "Manifest Günlüğü widget'ında bugün hiç giriş eklenmemişse gösterilen alt metin"
+  },
+  "widgetDreamActiveHint": "toplam rüya kaydı",
+  "@widgetDreamActiveHint": {
+    "description": "Rüya Günlüğü widget'ında toplam kayıt sayısının altında gösterilen açıklayıcı alt metin"
+  },
+  "widgetDreamEmptyHint": "Henüz rüya eklenmedi",
+  "@widgetDreamEmptyHint": {
+    "description": "Rüya Günlüğü widget'ında hiç rüya eklenmemişse gösterilen alt metin"
+  },
+  "widgetMoneyHint": "bu ay net",
+  "@widgetMoneyHint": {
+    "description": "Para ve Birikim widget'ının alt metni — üstteki tutarın bu ayki net (birikim+gelir-harcama) toplamı olduğunu belirtir"
+  },
+  "widgetDailyRewardsClaimedHint": "Bugün alındı ✓",
+  "@widgetDailyRewardsClaimedHint": {
+    "description": "Günlük Giriş Ödülleri widget'ında bugünün ödülü zaten alınmışsa gösterilen alt metin"
+  },
+  "widgetDailyRewardsAvailableHint": "Bugün alınabilir 🎁",
+  "@widgetDailyRewardsAvailableHint": {
+    "description": "Günlük Giriş Ödülleri widget'ında bugünün ödülü henüz alınmamışsa gösterilen alt metin"
+  },
+  "widgetDailyRewardsPrimary": "Gün {day}/7",
+  "@widgetDailyRewardsPrimary": {
+    "description": "Günlük Giriş Ödülleri widget'ının ana metni — {day} 1-7 arası güncel gün numarası",
+    "placeholders": {
+      "day": {"type": "int"}
+    }
+  },
+  "widgetsScreenTitle": "Ana Ekran Widget'ları",
+  "@widgetsScreenTitle": {
+    "description": "Widget'lar ekranının AppBar başlığı, aynı zamanda Ayarlar'daki giriş satırının başlığı"
+  },
+  "widgetsScreenIntro": "Zibo'nun modüllerini ana ekranından tek bakışta takip et. İstediğin modülün yanındaki butona dokunarak ana ekranına ekle.",
+  "@widgetsScreenIntro": {
+    "description": "Widget'lar ekranının en üstündeki açıklama metni"
+  },
+  "widgetsScreenAddButton": "Ekle",
+  "@widgetsScreenAddButton": {
+    "description": "Widget'lar ekranındaki her modül satırının 'ana ekrana ekle' butonu"
+  },
+  "widgetsScreenAddedSuccessMessage": "Widget eklendi! Ana ekranını kontrol et.",
+  "@widgetsScreenAddedSuccessMessage": {
+    "description": "Widget ekleme isteği başarıyla gönderilince gösterilen SnackBar metni"
+  },
+  "widgetsScreenAddFailedMessage": "Widget eklenemedi — cihazın bu özelliği desteklemiyor olabilir, ana ekranına uzun basıp \"Widget'lar\" listesinden Zibo'yu da bulabilirsin.",
+  "@widgetsScreenAddFailedMessage": {
+    "description": "Widget ekleme isteği desteklenmiyorsa/başarısız olursa gösterilen SnackBar metni"
+  },
+  "settingsWidgetsRowSubtitle": "Modül durumlarını ana ekranından takip et",
+  "@settingsWidgetsRowSubtitle": {
+    "description": "Ayarlar'daki 'Ana Ekran Widget'ları' satırının alt metni"
   }
 }

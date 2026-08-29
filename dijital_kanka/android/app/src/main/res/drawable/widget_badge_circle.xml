@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Modül ikon rozetinin arka planı — düz beyaz bir daire, her widget
+     provider'ın kendi accent rengiyle ÇALIŞMA ZAMANINDA (RemoteViews'ın
+     desteklediği `setInt(id, "setColorFilter", color)` ile) tonlanıyor;
+     bkz. ZiboBaseWidgetProvider.kt. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="oval">
+    <solid android:color="#FFFFFF" />
+</shape>

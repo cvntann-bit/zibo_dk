@@ -2349,6 +2349,180 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'Kurucu Üye'**
   String get founderBadgeTooltip;
+
+  /// Hedef Takibi ana ekran widget'ının başlığı (widget içinde + Widget'lar ekranındaki satırda)
+  ///
+  /// In tr, this message translates to:
+  /// **'Hedef Takibi'**
+  String get widgetTitleGoals;
+
+  /// Su Takibi ana ekran widget'ının başlığı
+  ///
+  /// In tr, this message translates to:
+  /// **'Su Takibi'**
+  String get widgetTitleWater;
+
+  /// Şükran Günlüğü ana ekran widget'ının başlığı
+  ///
+  /// In tr, this message translates to:
+  /// **'Şükran Günlüğü'**
+  String get widgetTitleGratitude;
+
+  /// Günlük Ruh Hali Takibi ana ekran widget'ının başlığı
+  ///
+  /// In tr, this message translates to:
+  /// **'Ruh Hali Takibi'**
+  String get widgetTitleMood;
+
+  /// Manifest Günlüğü ana ekran widget'ının başlığı
+  ///
+  /// In tr, this message translates to:
+  /// **'Manifest Günlüğü'**
+  String get widgetTitleManifest;
+
+  /// Rüya Günlüğü ana ekran widget'ının başlığı
+  ///
+  /// In tr, this message translates to:
+  /// **'Rüya Günlüğü'**
+  String get widgetTitleDream;
+
+  /// Para ve Birikim ana ekran widget'ının başlığı
+  ///
+  /// In tr, this message translates to:
+  /// **'Para ve Birikim'**
+  String get widgetTitleMoney;
+
+  /// Günlük Giriş Ödülleri ana ekran widget'ının başlığı
+  ///
+  /// In tr, this message translates to:
+  /// **'Günlük Giriş Ödülleri'**
+  String get widgetTitleDailyRewards;
+
+  /// Hedef Takibi widget'ında hiç hedef yokken gösterilen alt metin
+  ///
+  /// In tr, this message translates to:
+  /// **'Henüz hedef eklenmedi'**
+  String get widgetGoalsEmptyHint;
+
+  /// Hedef Takibi widget'ında 'X/Y' sayısının altında gösterilen açıklayıcı alt metin
+  ///
+  /// In tr, this message translates to:
+  /// **'bugün işaretlenen hedef'**
+  String get widgetGoalsActiveHint;
+
+  /// Su Takibi widget'ının alt metni — {unit} 'bardak'/'şişe' gibi seçili birim etiketi
+  ///
+  /// In tr, this message translates to:
+  /// **'{unit} · bugün'**
+  String widgetWaterHint(String unit);
+
+  /// Şükran Günlüğü widget'ında bugün zaten yazılmışsa gösterilen alt metin
+  ///
+  /// In tr, this message translates to:
+  /// **'Bugün tamamlandı'**
+  String get widgetGratitudeDoneHint;
+
+  /// Şükran Günlüğü widget'ında bugün henüz yazılmamışsa gösterilen alt metin
+  ///
+  /// In tr, this message translates to:
+  /// **'Henüz yazılmadı'**
+  String get widgetGratitudeEmptyHint;
+
+  /// Ruh Hali Takibi widget'ında bugün bir seçim yapılmışsa gösterilen alt metin
+  ///
+  /// In tr, this message translates to:
+  /// **'Bugünkü ruh halin'**
+  String get widgetMoodSetHint;
+
+  /// Ruh Hali Takibi widget'ında bugün henüz seçim yapılmamışsa gösterilen alt metin
+  ///
+  /// In tr, this message translates to:
+  /// **'Henüz seçilmedi'**
+  String get widgetMoodEmptyHint;
+
+  /// Manifest Günlüğü widget'ında bugünkü giriş sayısının altında gösterilen açıklayıcı alt metin
+  ///
+  /// In tr, this message translates to:
+  /// **'bugün eklenen giriş'**
+  String get widgetManifestActiveHint;
+
+  /// Manifest Günlüğü widget'ında bugün hiç giriş eklenmemişse gösterilen alt metin
+  ///
+  /// In tr, this message translates to:
+  /// **'Henüz giriş yok'**
+  String get widgetManifestEmptyHint;
+
+  /// Rüya Günlüğü widget'ında toplam kayıt sayısının altında gösterilen açıklayıcı alt metin
+  ///
+  /// In tr, this message translates to:
+  /// **'toplam rüya kaydı'**
+  String get widgetDreamActiveHint;
+
+  /// Rüya Günlüğü widget'ında hiç rüya eklenmemişse gösterilen alt metin
+  ///
+  /// In tr, this message translates to:
+  /// **'Henüz rüya eklenmedi'**
+  String get widgetDreamEmptyHint;
+
+  /// Para ve Birikim widget'ının alt metni — üstteki tutarın bu ayki net (birikim+gelir-harcama) toplamı olduğunu belirtir
+  ///
+  /// In tr, this message translates to:
+  /// **'bu ay net'**
+  String get widgetMoneyHint;
+
+  /// Günlük Giriş Ödülleri widget'ında bugünün ödülü zaten alınmışsa gösterilen alt metin
+  ///
+  /// In tr, this message translates to:
+  /// **'Bugün alındı ✓'**
+  String get widgetDailyRewardsClaimedHint;
+
+  /// Günlük Giriş Ödülleri widget'ında bugünün ödülü henüz alınmamışsa gösterilen alt metin
+  ///
+  /// In tr, this message translates to:
+  /// **'Bugün alınabilir 🎁'**
+  String get widgetDailyRewardsAvailableHint;
+
+  /// Günlük Giriş Ödülleri widget'ının ana metni — {day} 1-7 arası güncel gün numarası
+  ///
+  /// In tr, this message translates to:
+  /// **'Gün {day}/7'**
+  String widgetDailyRewardsPrimary(int day);
+
+  /// Widget'lar ekranının AppBar başlığı, aynı zamanda Ayarlar'daki giriş satırının başlığı
+  ///
+  /// In tr, this message translates to:
+  /// **'Ana Ekran Widget\'ları'**
+  String get widgetsScreenTitle;
+
+  /// Widget'lar ekranının en üstündeki açıklama metni
+  ///
+  /// In tr, this message translates to:
+  /// **'Zibo\'nun modüllerini ana ekranından tek bakışta takip et. İstediğin modülün yanındaki butona dokunarak ana ekranına ekle.'**
+  String get widgetsScreenIntro;
+
+  /// Widget'lar ekranındaki her modül satırının 'ana ekrana ekle' butonu
+  ///
+  /// In tr, this message translates to:
+  /// **'Ekle'**
+  String get widgetsScreenAddButton;
+
+  /// Widget ekleme isteği başarıyla gönderilince gösterilen SnackBar metni
+  ///
+  /// In tr, this message translates to:
+  /// **'Widget eklendi! Ana ekranını kontrol et.'**
+  String get widgetsScreenAddedSuccessMessage;
+
+  /// Widget ekleme isteği desteklenmiyorsa/başarısız olursa gösterilen SnackBar metni
+  ///
+  /// In tr, this message translates to:
+  /// **'Widget eklenemedi — cihazın bu özelliği desteklemiyor olabilir, ana ekranına uzun basıp \"Widget\'lar\" listesinden Zibo\'yu da bulabilirsin.'**
+  String get widgetsScreenAddFailedMessage;
+
+  /// Ayarlar'daki 'Ana Ekran Widget'ları' satırının alt metni
+  ///
+  /// In tr, this message translates to:
+  /// **'Modül durumlarını ana ekranından takip et'**
+  String get settingsWidgetsRowSubtitle;
 }
 
 class _AppLocalizationsDelegate

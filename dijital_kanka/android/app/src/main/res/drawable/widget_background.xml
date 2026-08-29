@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Ana ekran widget'larının paylaşılan kart arka planı (bkz.
+     res/layout/widget_module.xml) — @color/widget_card_background açık/
+     koyu temaya göre values/ vs values-night/'ta otomatik doğru çözülüyor,
+     ayrı bir gece varyantı GEREKMİYOR. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="@color/widget_card_background" />
+    <corners android:radius="20dp" />
+</shape>

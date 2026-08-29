@@ -1302,4 +1302,99 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get founderBadgeTooltip => 'Miembro Fundador';
+
+  @override
+  String get widgetTitleGoals => 'Seguimiento de Metas';
+
+  @override
+  String get widgetTitleWater => 'Seguimiento de Agua';
+
+  @override
+  String get widgetTitleGratitude => 'Diario de Gratitud';
+
+  @override
+  String get widgetTitleMood => 'Seguimiento del Ánimo';
+
+  @override
+  String get widgetTitleManifest => 'Diario de Manifestación';
+
+  @override
+  String get widgetTitleDream => 'Diario de Sueños';
+
+  @override
+  String get widgetTitleMoney => 'Dinero y Ahorros';
+
+  @override
+  String get widgetTitleDailyRewards => 'Recompensas Diarias';
+
+  @override
+  String get widgetGoalsEmptyHint => 'Aún no hay metas';
+
+  @override
+  String get widgetGoalsActiveHint => 'metas marcadas hoy';
+
+  @override
+  String widgetWaterHint(String unit) {
+    return '$unit · hoy';
+  }
+
+  @override
+  String get widgetGratitudeDoneHint => 'Completado hoy';
+
+  @override
+  String get widgetGratitudeEmptyHint => 'Aún no escrito';
+
+  @override
+  String get widgetMoodSetHint => 'Tu ánimo de hoy';
+
+  @override
+  String get widgetMoodEmptyHint => 'Aún no elegido';
+
+  @override
+  String get widgetManifestActiveHint => 'entradas añadidas hoy';
+
+  @override
+  String get widgetManifestEmptyHint => 'Aún no hay entradas';
+
+  @override
+  String get widgetDreamActiveHint => 'sueños registrados en total';
+
+  @override
+  String get widgetDreamEmptyHint => 'Aún no hay sueños';
+
+  @override
+  String get widgetMoneyHint => 'neto este mes';
+
+  @override
+  String get widgetDailyRewardsClaimedHint => 'Reclamado hoy ✓';
+
+  @override
+  String get widgetDailyRewardsAvailableHint => 'Disponible hoy 🎁';
+
+  @override
+  String widgetDailyRewardsPrimary(int day) {
+    return 'Día $day/7';
+  }
+
+  @override
+  String get widgetsScreenTitle => 'Widgets de Pantalla de Inicio';
+
+  @override
+  String get widgetsScreenIntro =>
+      'Sigue los módulos de Zibo directamente desde tu pantalla de inicio. Toca el botón junto a un módulo para añadirlo.';
+
+  @override
+  String get widgetsScreenAddButton => 'Añadir';
+
+  @override
+  String get widgetsScreenAddedSuccessMessage =>
+      '¡Widget añadido! Revisa tu pantalla de inicio.';
+
+  @override
+  String get widgetsScreenAddFailedMessage =>
+      'No se pudo añadir el widget — puede que tu dispositivo no sea compatible. También puedes mantener presionada tu pantalla de inicio y buscar Zibo en la lista de widgets.';
+
+  @override
+  String get settingsWidgetsRowSubtitle =>
+      'Sigue el estado de los módulos desde tu pantalla de inicio';
 }

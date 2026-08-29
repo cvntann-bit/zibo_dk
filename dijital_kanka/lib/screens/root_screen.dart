@@ -3,7 +3,20 @@ import 'package:provider/provider.dart';
 
 import '../l10n/app_localizations.dart';
 import '../models/push_notification_type.dart';
+import '../providers/currency_provider.dart';
+import '../providers/daily_rewards_provider.dart';
+import '../providers/dream_journal_provider.dart';
+import '../providers/goals_provider.dart';
+import '../providers/gratitude_provider.dart';
+import '../providers/locale_provider.dart';
+import '../providers/manifest_provider.dart';
+import '../providers/money_provider.dart';
+import '../providers/mood_provider.dart';
 import '../providers/notification_provider.dart';
+import '../providers/trusted_time_provider.dart';
+import '../providers/water_provider.dart';
+import '../services/home_widget_service.dart';
+import '../services/home_widget_sync_coordinator.dart';
 import '../services/notification_service.dart';
 import '../services/push_notification_service.dart';
 import '../utils/tab_navigation.dart';
@@ -26,12 +39,17 @@ import 'store_screen.dart';
 /// kalır, yalnızca gövde (body) değişir. Ayarlar sekmelerden biri değildir;
 /// başlık çubuğundaki dişli ikonundan ayrı bir sayfa olarak push edilir.
 class RootScreen extends StatefulWidget {
-  const RootScreen({super.key, this.pushNotificationService});
+  const RootScreen({super.key, this.pushNotificationService, this.homeWidgetService});
 
   /// Testte sahte bir implementasyon enjekte edebilmek için — varsayılan
   /// `FirebaseMessagingPushNotificationService()` (`AdService`/
   /// `ShareService` ile AYNI desen).
   final PushNotificationService? pushNotificationService;
+
+  /// Ana ekran widget'ları (bkz. CLAUDE.md "Ana Ekran Widget'ları" bölümü)
+  /// için testte sahte bir implementasyon enjekte edebilmek üzere — AYNI
+  /// desen, varsayılan `HomeWidgetPluginService()`.
+  final HomeWidgetService? homeWidgetService;
 
   @override
   State<RootScreen> createState() => _RootScreenState();
@@ -45,6 +63,16 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
   int _selectedIndex = 0;
   late final PushNotificationService _pushNotificationService =
       widget.pushNotificationService ?? FirebaseMessagingPushNotificationService();
+  late final HomeWidgetService _homeWidgetService =
+      widget.homeWidgetService ?? const HomeWidgetPluginService();
+  HomeWidgetSyncCoordinator? _homeWidgetSync;
+  // `dispose()`'da `context.read(...)` çağırmak GÜVENSİZ (widget o an zaten
+  // deactivate ediliyor olabilir, "Looking up a deactivated widget's
+  // ancestor is unsafe" hatası fırlatır — gerçekten yakalandı, bkz.
+  // CLAUDE.md "Ana Ekran Widget'ları" bölümündeki test gotcha'sı) — bu
+  // yüzden referans `initState`'te (güvenli bir zamanda) BİR KEZ okunup
+  // burada saklanıyor, `dispose()` yalnızca bu saklanan referansı kullanıyor.
+  LocaleProvider? _localeProviderForCleanup;
 
   /// `main.dart`'ta `Provider<String?>.value(value: uid)` ile sağlanıyor
   /// (bkz. o dosyadaki "neden constructor parametresi DEĞİL" notu —
@@ -81,6 +109,34 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
     homeTabRequest.addListener(_onHomeTabRequested);
     goalsTabRequest.addListener(_onGoalsTabRequested);
     dailyRewardsPopupRequest.addListener(_onDailyRewardsPopupRequested);
+    // **2026 yeni özellik — ana ekran widget'ları.** Sekiz modülün widget'ını
+    // GÜNCEL tutan koordinatör burada BİR KEZ kuruluyor (bkz. CLAUDE.md "Ana
+    // Ekran Widget'ları" bölümü + HomeWidgetSyncCoordinator dokümantasyonu)
+    // — `context.read` çağrıları `build()` DIŞINDA olduğu için post-frame
+    // callback'e ertelenmesi gerekmiyor (initState'in kendisi zaten güvenli),
+    // ama `AppLocalizations.of(context)` ilk frame çizilmeden `null`
+    // dönebileceği için `syncAll()` yine de bir sonraki kareye bırakılıyor.
+    final sync = HomeWidgetSyncCoordinator(
+      context: context,
+      service: _homeWidgetService,
+      trustedTime: context.read<TrustedTimeProvider>(),
+      goals: context.read<GoalsProvider>(),
+      water: context.read<WaterProvider>(),
+      gratitude: context.read<GratitudeProvider>(),
+      mood: context.read<MoodProvider>(),
+      manifest: context.read<ManifestProvider>(),
+      dream: context.read<DreamJournalProvider>(),
+      money: context.read<MoneyProvider>(),
+      currency: context.read<CurrencyProvider>(),
+      dailyRewards: context.read<DailyRewardsProvider>(),
+    );
+    _homeWidgetSync = sync;
+    final localeProvider = context.read<LocaleProvider>();
+    _localeProviderForCleanup = localeProvider;
+    localeProvider.addListener(sync.syncAll);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) sync.syncAll();
+    });
   }
 
   @override
@@ -89,6 +145,11 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
     homeTabRequest.removeListener(_onHomeTabRequested);
     goalsTabRequest.removeListener(_onGoalsTabRequested);
     dailyRewardsPopupRequest.removeListener(_onDailyRewardsPopupRequested);
+    final sync = _homeWidgetSync;
+    if (sync != null) {
+      _localeProviderForCleanup?.removeListener(sync.syncAll);
+      sync.dispose();
+    }
     super.dispose();
   }
 

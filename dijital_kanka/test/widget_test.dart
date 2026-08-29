@@ -20,13 +20,17 @@ import 'package:dijital_kanka/providers/app_theme_provider.dart';
 import 'package:dijital_kanka/providers/auth_link_provider.dart';
 import 'package:dijital_kanka/providers/coin_provider.dart';
 import 'package:dijital_kanka/providers/costume_provider.dart';
+import 'package:dijital_kanka/providers/currency_provider.dart';
 import 'package:dijital_kanka/providers/custom_messages_provider.dart';
 import 'package:dijital_kanka/providers/daily_rewards_provider.dart';
+import 'package:dijital_kanka/providers/dream_journal_provider.dart';
 import 'package:dijital_kanka/providers/favorite_quotes_provider.dart';
 import 'package:dijital_kanka/providers/goals_provider.dart';
 import 'package:dijital_kanka/providers/gratitude_provider.dart';
+import 'package:dijital_kanka/providers/locale_provider.dart';
 import 'package:dijital_kanka/providers/manifest_provider.dart';
 import 'package:dijital_kanka/providers/money_provider.dart';
+import 'package:dijital_kanka/providers/mood_provider.dart';
 import 'package:dijital_kanka/providers/notification_provider.dart';
 import 'package:dijital_kanka/providers/profile_provider.dart';
 import 'package:dijital_kanka/providers/profile_stats_archive_provider.dart';
@@ -57,12 +61,16 @@ Widget _buildAppWithClock(DateTime Function() now) {
       ChangeNotifierProvider(create: (_) => CoinProvider(now: now)),
       ChangeNotifierProvider(create: (_) => CostumeProvider()),
       ChangeNotifierProvider(create: (_) => CustomMessagesProvider()),
+      ChangeNotifierProvider(create: (_) => CurrencyProvider()),
       ChangeNotifierProvider(create: (_) => DailyRewardsProvider(now: now)),
+      ChangeNotifierProvider(create: (_) => DreamJournalProvider()),
       ChangeNotifierProvider(create: (_) => FavoriteQuotesProvider()),
       ChangeNotifierProvider(create: (_) => GoalsProvider(now: now)),
       ChangeNotifierProvider(create: (_) => GratitudeProvider(now: now)),
+      ChangeNotifierProvider(create: (_) => LocaleProvider()),
       ChangeNotifierProvider(create: (_) => ManifestProvider(now: now)),
       ChangeNotifierProvider(create: (_) => MoneyProvider(now: now)),
+      ChangeNotifierProvider(create: (_) => MoodProvider(now: now)),
       ChangeNotifierProvider(
         create: (_) =>
             NotificationProvider(notificationService: const FakeNotificationService()),

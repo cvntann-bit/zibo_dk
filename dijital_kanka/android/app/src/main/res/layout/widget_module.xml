@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Ana ekran widget'larının TEK, paylaşılan RemoteViews şablonu — 8 modül
+     widget'ının (bkz. ZiboBaseWidgetProvider.kt) HEPSİ bu AYNI layout'u
+     kullanıyor, yalnızca içerik (ikon/renk/metin/ilerleme) Kotlin'den
+     dolduruluyor. Uygulamanın gerçek honey/mustard temasıyla eşleşen renk
+     paleti için bkz. values(/-night)/colors.xml. -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/widget_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/widget_background"
+    android:padding="14dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <FrameLayout
+                android:layout_width="26dp"
+                android:layout_height="26dp">
+
+                <ImageView
+                    android:id="@+id/widget_icon_bg"
+                    android:layout_width="26dp"
+                    android:layout_height="26dp"
+                    android:src="@drawable/widget_badge_circle"
+                    android:importantForAccessibility="no" />
+
+                <TextView
+                    android:id="@+id/widget_icon_emoji"
+                    android:layout_width="26dp"
+                    android:layout_height="26dp"
+                    android:gravity="center"
+                    android:textSize="13sp"
+                    android:importantForAccessibility="no"
+                    tools:text="🎯" />
+            </FrameLayout>
+
+            <TextView
+                android:id="@+id/widget_title"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="8dp"
+                android:textSize="12sp"
+                android:textColor="@color/widget_secondary_text"
+                android:maxLines="1"
+                android:ellipsize="end"
+                tools:text="Hedef Takibi" />
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="8dp" />
+
+        <TextView
+            android:id="@+id/widget_primary"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="19sp"
+            android:textStyle="bold"
+            android:textColor="@color/widget_primary_text"
+            android:maxLines="1"
+            android:ellipsize="end"
+            tools:text="3/7 gün" />
+
+        <TextView
+            android:id="@+id/widget_secondary"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:textSize="11sp"
+            android:textColor="@color/widget_secondary_text"
+            android:maxLines="2"
+            android:ellipsize="end"
+            tools:text="bugün işaretlenen hedef" />
+
+        <ProgressBar
+            android:id="@+id/widget_progress"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="match_parent"
+            android:layout_height="6dp"
+            android:layout_marginTop="10dp"
+            android:max="100"
+            android:progress="40"
+            android:progressTint="@color/widget_accent_default"
+            android:visibility="gone"
+            tools:visibility="visible" />
+    </LinearLayout>
+</FrameLayout>

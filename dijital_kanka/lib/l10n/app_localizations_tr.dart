@@ -1295,4 +1295,99 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get founderBadgeTooltip => 'Kurucu Üye';
+
+  @override
+  String get widgetTitleGoals => 'Hedef Takibi';
+
+  @override
+  String get widgetTitleWater => 'Su Takibi';
+
+  @override
+  String get widgetTitleGratitude => 'Şükran Günlüğü';
+
+  @override
+  String get widgetTitleMood => 'Ruh Hali Takibi';
+
+  @override
+  String get widgetTitleManifest => 'Manifest Günlüğü';
+
+  @override
+  String get widgetTitleDream => 'Rüya Günlüğü';
+
+  @override
+  String get widgetTitleMoney => 'Para ve Birikim';
+
+  @override
+  String get widgetTitleDailyRewards => 'Günlük Giriş Ödülleri';
+
+  @override
+  String get widgetGoalsEmptyHint => 'Henüz hedef eklenmedi';
+
+  @override
+  String get widgetGoalsActiveHint => 'bugün işaretlenen hedef';
+
+  @override
+  String widgetWaterHint(String unit) {
+    return '$unit · bugün';
+  }
+
+  @override
+  String get widgetGratitudeDoneHint => 'Bugün tamamlandı';
+
+  @override
+  String get widgetGratitudeEmptyHint => 'Henüz yazılmadı';
+
+  @override
+  String get widgetMoodSetHint => 'Bugünkü ruh halin';
+
+  @override
+  String get widgetMoodEmptyHint => 'Henüz seçilmedi';
+
+  @override
+  String get widgetManifestActiveHint => 'bugün eklenen giriş';
+
+  @override
+  String get widgetManifestEmptyHint => 'Henüz giriş yok';
+
+  @override
+  String get widgetDreamActiveHint => 'toplam rüya kaydı';
+
+  @override
+  String get widgetDreamEmptyHint => 'Henüz rüya eklenmedi';
+
+  @override
+  String get widgetMoneyHint => 'bu ay net';
+
+  @override
+  String get widgetDailyRewardsClaimedHint => 'Bugün alındı ✓';
+
+  @override
+  String get widgetDailyRewardsAvailableHint => 'Bugün alınabilir 🎁';
+
+  @override
+  String widgetDailyRewardsPrimary(int day) {
+    return 'Gün $day/7';
+  }
+
+  @override
+  String get widgetsScreenTitle => 'Ana Ekran Widget\'ları';
+
+  @override
+  String get widgetsScreenIntro =>
+      'Zibo\'nun modüllerini ana ekranından tek bakışta takip et. İstediğin modülün yanındaki butona dokunarak ana ekranına ekle.';
+
+  @override
+  String get widgetsScreenAddButton => 'Ekle';
+
+  @override
+  String get widgetsScreenAddedSuccessMessage =>
+      'Widget eklendi! Ana ekranını kontrol et.';
+
+  @override
+  String get widgetsScreenAddFailedMessage =>
+      'Widget eklenemedi — cihazın bu özelliği desteklemiyor olabilir, ana ekranına uzun basıp \"Widget\'lar\" listesinden Zibo\'yu da bulabilirsin.';
+
+  @override
+  String get settingsWidgetsRowSubtitle =>
+      'Modül durumlarını ana ekranından takip et';
 }

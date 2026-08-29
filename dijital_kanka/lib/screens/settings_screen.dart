@@ -14,6 +14,7 @@ import '../providers/theme_provider.dart';
 import '../utils/google_link_action.dart';
 import '../widgets/language_flag_circle.dart';
 import 'legal_placeholder_screen.dart';
+import 'widgets_screen.dart';
 
 /// Destek e-postası — Ayarlar > Destek > "Bize Ulaşın" satırında hem
 /// görünen metin hem `mailto:` hedefi olarak kullanılıyor.
@@ -146,6 +147,19 @@ class SettingsScreen extends StatelessWidget {
                     ],
                   ),
                   onTap: () => _showLanguagePicker(context),
+                ),
+                const Divider(height: 1),
+                // 2026 yeni özellik — sekiz modülün ana ekran widget'larını
+                // (bkz. CLAUDE.md "Ana Ekran Widget'ları" bölümü) listeleyen
+                // ayrı bir ekrana götürür.
+                ListTile(
+                  leading: const Icon(Icons.widgets_outlined),
+                  title: Text(l10n.widgetsScreenTitle),
+                  subtitle: Text(l10n.settingsWidgetsRowSubtitle),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute<void>(builder: (_) => const WidgetsScreen()),
+                  ),
                 ),
                 const Divider(height: 1),
                 // 2026 yeni özellik — mevcut (anonim) hesabı Google'a

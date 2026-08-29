@@ -4,4 +4,16 @@
          (bkz. drawable*/launch_background.xml) için. -->
     <color name="zibo_splash_light">#FFF8E8</color>
     <color name="zibo_splash_dark">#17140F</color>
+
+    <!-- Ana ekran widget'ları (bkz. CLAUDE.md "Ana Ekran Widget'ları"
+         bölümü) — bu dosyanın AÇIK tema değerleri, main.dart'taki
+         `_honeyCream`/`_espresso`/`_espressoSoft`/`_mustard` sabitleriyle
+         BİREBİR AYNI (uygulamanın gerçek Material temasıyla piksel piksel
+         eşleşsin diye elle kopyalandı — bu dosyalar Dart tarafını
+         OKUYAMIYOR, senkron tutmak elle yapılmalı). Koyu tema karşılıkları
+         values-night/colors.xml'de. -->
+    <color name="widget_card_background">#F7EAC9</color>
+    <color name="widget_primary_text">#4A3620</color>
+    <color name="widget_secondary_text">#7A5C34</color>
+    <color name="widget_accent_default">#A9711F</color>
 </resources>

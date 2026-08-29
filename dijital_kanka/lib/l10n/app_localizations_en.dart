@@ -1297,4 +1297,99 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get founderBadgeTooltip => 'Founding Member';
+
+  @override
+  String get widgetTitleGoals => 'Goal Tracking';
+
+  @override
+  String get widgetTitleWater => 'Water Tracking';
+
+  @override
+  String get widgetTitleGratitude => 'Gratitude Journal';
+
+  @override
+  String get widgetTitleMood => 'Mood Tracker';
+
+  @override
+  String get widgetTitleManifest => 'Manifest Journal';
+
+  @override
+  String get widgetTitleDream => 'Dream Journal';
+
+  @override
+  String get widgetTitleMoney => 'Money & Savings';
+
+  @override
+  String get widgetTitleDailyRewards => 'Daily Login Rewards';
+
+  @override
+  String get widgetGoalsEmptyHint => 'No goals added yet';
+
+  @override
+  String get widgetGoalsActiveHint => 'goals checked off today';
+
+  @override
+  String widgetWaterHint(String unit) {
+    return '$unit · today';
+  }
+
+  @override
+  String get widgetGratitudeDoneHint => 'Completed today';
+
+  @override
+  String get widgetGratitudeEmptyHint => 'Not written yet';
+
+  @override
+  String get widgetMoodSetHint => 'Today\'s mood';
+
+  @override
+  String get widgetMoodEmptyHint => 'Not set yet';
+
+  @override
+  String get widgetManifestActiveHint => 'entries added today';
+
+  @override
+  String get widgetManifestEmptyHint => 'No entries yet';
+
+  @override
+  String get widgetDreamActiveHint => 'dreams logged in total';
+
+  @override
+  String get widgetDreamEmptyHint => 'No dreams logged yet';
+
+  @override
+  String get widgetMoneyHint => 'net this month';
+
+  @override
+  String get widgetDailyRewardsClaimedHint => 'Claimed today ✓';
+
+  @override
+  String get widgetDailyRewardsAvailableHint => 'Available today 🎁';
+
+  @override
+  String widgetDailyRewardsPrimary(int day) {
+    return 'Day $day/7';
+  }
+
+  @override
+  String get widgetsScreenTitle => 'Home Screen Widgets';
+
+  @override
+  String get widgetsScreenIntro =>
+      'Keep an eye on Zibo\'s modules right from your home screen. Tap the button next to a module to add it.';
+
+  @override
+  String get widgetsScreenAddButton => 'Add';
+
+  @override
+  String get widgetsScreenAddedSuccessMessage =>
+      'Widget added! Check your home screen.';
+
+  @override
+  String get widgetsScreenAddFailedMessage =>
+      'Couldn\'t add the widget — your device may not support this. You can also long-press your home screen and find Zibo in the widget list.';
+
+  @override
+  String get settingsWidgetsRowSubtitle =>
+      'Track module status from your home screen';
 }

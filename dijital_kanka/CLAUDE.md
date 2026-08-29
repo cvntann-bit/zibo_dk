@@ -5877,3 +5877,165 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
   gerçek bir kullanıcı çökmesi geldiğinde Console'daki stack trace, R8'in obfuscate ettiği
   sınıf/metot adları yerine GERÇEK Dart/Kotlin isimlerini göstermeli; bu henüz gerçek (test
   DIŞI) bir çökmeyle doğrulanmadı, ilk gerçek rapor geldiğinde kontrol edilmeli.
+
+## Ana Ekran Widget'ları ([home_widget_service.dart](lib/services/home_widget_service.dart), [home_widget_sync_coordinator.dart](lib/services/home_widget_sync_coordinator.dart), [widget_status.dart](lib/utils/widget_status.dart), [widget_module.dart](lib/utils/widget_module.dart), [widgets_screen.dart](lib/screens/widgets_screen.dart), [android/.../widgets/](android/app/src/main/kotlin/com/dijitalkanka/dijital_kanka/widgets/))
+
+- **2026 yeni özellik.** Kullanıcı isteği: "her modül için kullanıcı anasayfasına widget
+  ekleyebilsin, widget tasarımını yap" — SEKİZ modülün (Hedef Takibi, Su Takibi, Şükran Günlüğü,
+  Günlük Ruh Hali Takibi, Manifest Günlüğü, Rüya Günlüğü, Para ve Birikim, Günlük Giriş Ödülleri)
+  HER BİRİ için ayrı, kullanıcının Android ana ekranına ekleyebileceği bir "at a glance" widget.
+- **Paket seçimi — `home_widget: ^0.9.0` (0.9.3'e çözüldü), KLASİK (RemoteViews/
+  `AppWidgetProvider`-tabanlı) API ile, YENİ Jetpack Glance (Compose) API'si DEĞİL.** Paketin
+  GitHub deposu (`gh api` ile incelendi, WebFetch'in Medium/docs.page sayfalarını çekemediği
+  durumlarda) `HomeWidgetProvider` (klasik) sınıfının hem eski hem GÜNCEL (main branch, 0.9.3)
+  sürümde hâlâ mevcut olduğunu doğruladı — paketin ÖRNEKLERİ Glance'a geçmiş olsa da, alttaki
+  Android kütüphanesi ikisini de destekliyor. **Glance BİLEREK seçilmedi:** Glance, `androidx.
+  glance:glance-appwidget` + Kotlin Compose derleyici Gradle plugin'i (`org.jetbrains.kotlin.
+  plugin.compose`) + `buildFeatures.compose = true` gerektiriyor — bu projenin `app/build.gradle.
+  kts`'sinde HİÇ kullanılmayan, bu spesifik AGP 9.0/Gradle 9.1.0 kombinasyonuyla önceden HİÇ test
+  edilmemiş bir toolchain eklemek anlamına gelirdi (bir sürüm uyuşmazlığı TÜM UYGULAMANIN
+  derlemesini kırabilirdi, yalnızca widget özelliğini değil). Klasik RemoteViews/XML-layout yolu,
+  bu projenin YAZILI/görsel olarak DOĞRULANABİLEN, hiçbir yeni Gradle plugin'i gerektirmeyen,
+  çok daha düşük riskli seçimdi — `home_widget` paketinin KENDİSİ zaten `androidx.glance:
+  glance-appwidget`'ı transitif bir bağımlılık olarak taşıyor (klasik API kullanılsa bile), ama bu
+  YALNIZCA paketin İÇİNDE bir AAR bağımlılığı — uygulamanın KENDİ modülünde hiçbir `@Composable`
+  kod YAZILMADIĞI için `app/build.gradle.kts`'e Compose derleyicisi eklemeye HİÇ gerek kalmadı.
+- **Mimari — SEKİZ widget, TEK paylaşılan native render mantığı.** `res/layout/widget_module.xml`
+  (TEK RemoteViews layout — ikon rozeti + başlık + büyük "ana metin" + küçük "alt metin" +
+  opsiyonel yatay ilerleme çubuğu) SEKİZ widget'ın HEPSİ tarafından paylaşılıyor.
+  `ZiboBaseWidgetProvider.kt` (abstract, `HomeWidgetProvider`'ı extend ediyor) TEK render
+  fonksiyonunu barındırıyor; sekiz somut alt sınıf (`ZiboGoalsWidgetProvider.kt` vb.) yalnızca
+  `dataKeyPrefix`/`emoji`/`accentColor` değerlerini override ediyor — 4-6 satırlık dosyalar.
+  Modül ikonu bir Material vector drawable DEĞİL, DÜZ BİR EMOJİ (🎯💧🙏😊✨🌙💰🎁) — yeni
+  drawable asset'leri eklemeden/doğrulamadan, evrensel olarak desteklenen sistem fontu üzerinden
+  düşük riskli bir çözüm. Rozet arka planı TEK bir düz beyaz oval drawable
+  (`widget_badge_circle.xml`), her widget'ın kendi accent rengiyle ÇALIŞMA ZAMANINDA
+  `RemoteViews.setInt(id, "setColorFilter", color)` ile tonlanıyor (RemoteViews'ın resmî olarak
+  desteklediği bir "runtime tinting" yöntemi) — sekiz ayrı renkli drawable dosyası YAZILMADI.
+  - **Renk paleti uygulamanın GERÇEK Material temasıyla piksel piksel eşleşiyor** — kart arka
+    planı/metin renkleri `main.dart`'taki `_honeyCream`/`_espresso`/`_espressoSoft`/`_mustard`
+    (açık) ve `_darkSurfaceContainer`/`_darkCream`/`_darkCreamSoft`/`_darkGold` (koyu) sabitlerinden
+    ELLE kopyalandı (`android/app/src/main/res/values(-night)/colors.xml`) — bu dosyalar Dart
+    tarafını okuyamıyor, senkron tutmak İLERİDE tema renkleri değişirse ELLE yapılmalı. Modül
+    rozeti accent renkleri (`ZiboXWidgetProvider.kt`'deki `accentColor`) bazı modüllerde
+    uygulamanın KENDİ kategori renkleriyle BİREBİR eşleşiyor (Şükran=`#4CAF50`
+    `_gratitudeGreen` ile aynı, Para ve Birikim=`#1E88E5` money kategorisi mavisiyle aynı).
+  - **AndroidManifest.xml'e sekiz `<receiver>` + MainActivity'ye bir `LAUNCH` intent-filter'ı
+    eklendi** (`home_widget` paketinin resmi örneğindeki AYNI desen —
+    `es.antonborri.home_widget.action.LAUNCH` — widget'a dokununca `HomeWidgetLaunchIntent`'in
+    ürettiği `PendingIntent`'in AYNI `MainActivity` örneğine doğru yönlenmesi için).
+  - **Tap davranışı BİLEREK BASİT tutuldu — widget'ın HERHANGİ bir yerine dokununca uygulama
+    yalnızca AÇILIR, modüle özel bir derin bağlantı (deep link, ör. doğrudan Su Takibi ekranına
+    gitme) YOK.** Bu, bildirime dokununca her zaman Ana Sayfa'ya giden mevcut push bildirimi
+    deseniyle (bkz. "Push Bildirimleri" bölümü) AYNI kasıtlı basitlik tercihi — sekiz FARKLI
+    modül ekranına derin bağlantı kurmak (her biri için ayrı bir `Uri`/route eşlemesi, `RootScreen`
+    tarafında ayrıca ele alınması gereken sekiz yeni "widget'tan geldi" durumu) bu turun kapsamının
+    ÖNEMLİ ölçüde ötesine geçen ayrı bir özellik olurdu; kullanıcı ileride isterse doğal bir sonraki
+    adım olarak eklenebilir.
+- **Veri akışı — Flutter'dan native'e TEK YÖNLÜ, `HomeWidgetSyncCoordinator` ile.** Sekiz
+  provider'ın (GoalsProvider/WaterProvider/GratitudeProvider/MoodProvider/ManifestProvider/
+  DreamJournalProvider/MoneyProvider/DailyRewardsProvider, + CurrencyProvider para birimi
+  formatı için) HİÇBİRİNİN constructor'ı DEĞİŞTİRİLMEDİ — `HomeWidgetSyncCoordinator`
+  (`RootScreen.initState()`'te BİR KEZ kurulan, hiçbir provider'a kalıcı bağımlı OLMAYAN bir
+  koordinatör, `CostumeProvider.reconcileGoalUnlocks`'ın "constructor'dan değil parametre olarak
+  al" felsefesiyle AYNI gerekçe) her provider'a DIŞARIDAN bir `addListener` ekleyip, İLGİLİ
+  provider değiştiğinde YALNIZCA o modülün widget'ını `HomeWidgetService.pushStatus(...)` ile
+  günceller — `HomeWidget.saveWidgetData` (native `SharedPreferences`'a `{prefix}_title`/
+  `{prefix}_primary`/`{prefix}_secondary`/`{prefix}_progress` yazar) + `HomeWidget.updateWidget`
+  (native `onUpdate`'i ANINDA tetikler) ikilisine ince bir sarmalayıcı. `LocaleProvider` de AYRICA
+  dinleniyor (`syncAll()` çağırıyor) — kullanıcı dil değiştirirse widget metinleri de ANINDA yeni
+  dile geçsin diye (widget başlıkları/alt metinleri `AppLocalizations`'tan geliyor, sabit Türkçe
+  DEĞİL — üç dilin hepsinde çalışıyor).
+  - **İçerik hesaplama mantığı (`widget_status.dart`) SEKİZ SAF fonksiyon** — provider nesnelerinin
+    KENDİSİNİ değil yalnızca birkaç ilkel değeri alıyor (`goalsWidgetStatus(l10n, {doneToday,
+    totalGoals})` gibi), bu sayede gerçek bir widget/provider kurmadan `flutter test`'te doğrudan
+    test edilebiliyor. Her modülün "at a glance" özeti:
+    - **Hedef Takibi:** bugün işaretlenen/toplam aktif hedef oranı (`3/5`) + ilerleme çubuğu.
+    - **Su Takibi:** bugünkü bardak/şişe sayısı/hedef (`6/8`) + seçili birim etiketi + ilerleme.
+    - **Şükran Günlüğü:** bugün tamamlandıysa `✓`, değilse `—` (ikili durum, ilerleme çubuğu YOK).
+    - **Ruh Hali Takibi:** bugün seçilen `Mood.emoji`'si (`Mood` enum'unun ZATEN taşıdığı emoji,
+      bkz. "Günlük Ruh Hali Takibi" bölümü) veya henüz seçilmediyse `—`.
+    - **Manifest Günlüğü:** bugün eklenen giriş sayısı (0 dahil).
+    - **Rüya Günlüğü:** TOPLAM (günlük değil — bu modülde günlük kilit yok) rüya sayısı.
+    - **Para ve Birikim:** bu ayki NET tutar (gelir+birikim−harcama, `formatCurrencyAmount` ile
+      kullanıcının seçtiği para birimi sembolüyle formatlı) — kapsam BİLEREK sadeleştirildi
+      (`MoneyTrendChart`'ın tam grafiği/kategori kırılımı DEĞİL, tek bir özet sayı).
+    - **Günlük Giriş Ödülleri:** `Gün X/7` + bugün alınıp alınmadığı + 7 günlük döngü ilerlemesi.
+      `todayIndex` güvenilir-zaman anomalisiyle (bkz. "Firestore veri kalıcılığı" bölümündeki
+      TrustedTimeProvider notları) döngü DIŞINA taşarsa `0..6` aralığına KIRPILIYOR — widget'ın
+      asla "Gün 19/7" gibi anlamsız bir şey GÖSTERMEMESİ için ekstra bir güvenlik ağı.
+- **`WidgetsScreen`** (YENİ, Ayarlar > Genel'deki "Ana Ekran Widget'ları" satırından push edilir)
+  — sekiz modülü emoji/renk/başlıkla listeleyip her biri için bir "Ekle" butonu sunuyor;
+  `HomeWidgetService.requestPin(module)` → `HomeWidget.requestPinWidget(androidName: ...)`
+  (Android 8+, yalnızca bazı launcher'larda desteklenen `requestPinAppWidget` API'sinin sarmalayıcısı)
+  — desteklenmiyorsa/reddedilirse SnackBar kullanıcıyı "ana ekranına uzun bas, Widget'lar
+  listesinden Zibo'yu bul" akışına yönlendiriyor (bu HER ZAMAN çalışan, evrensel geri düşüş yolu).
+- **Gerçek, çözülen İKİ hata (bu turda yakalanıp düzeltildi):**
+  1. **`context.read<LocaleProvider>()`'ı `RootScreen.dispose()` İÇİNDE çağırmak** "Looking up a
+     deactivated widget's ancestor is unsafe" hatasıyla ÇÖKÜYORDU (`flutter test`'te GERÇEKTEN
+     yakalandı, ~40 test bu yüzden başarısız oldu) — `dispose()` çağrıldığında widget zaten
+     deactivate ediliyor olabilir, bu anda YENİ bir `context.read`/`Provider.of` çağrısı GÜVENSİZ.
+     **Düzeltme:** referans `initState`'te (güvenli bir zamanda) BİR KEZ okunup
+     `_localeProviderForCleanup` alanında saklandı, `dispose()` yalnızca bu saklanan referansı
+     kullanıyor. **Genelleştirilebilir kural: bir listener'ı `initState`'te `context.read<T>()` ile
+     EKLEYEN bir State, o AYNI listener'ı `dispose()`'ta KALDIRIRKEN ASLA tekrar `context.read<T>()`
+     ÇAĞIRMAMALI — ilk okumadaki referansı bir alanda saklayıp dispose'ta ONU kullanmalı.**
+  2. **`flutter_test`'in `testWidgets` bloğu İÇİNDE çıplak `await Future<void>.delayed(Duration.
+     zero)` çağırmak SONSUZA KADAR HANGLENIYOR** (gerçekten yakalandı — bir test dosyası dakikalarca
+     "tamamlanmadı" durumunda kaldı, `timeout` ile zorla kesilip bisection'la kök nedene inildi).
+     Kök neden: `testWidgets`'ın test gövdesi Flutter'ın kendi "fake async" test ortamında
+     çalışıyor — gerçek bir `Future.delayed` (`Duration.zero` bile olsa) bu ortamda otomatik
+     İLERLEMEZ, yalnızca `tester.pump()`/`pumpAndSettle()`/`tester.runAsync()` zamanı/microtask
+     kuyruğunu güvenli şekilde ilerletebilir. **Bu, `goals_provider_test.dart` gibi DÜZ `test()`
+     bloklarında (fake async SARMALAMASI YOK, gerçek async ortamı) YAYGIN VE GÜVENLİ olarak
+     kullanılan `await Future<void>.delayed(Duration.zero)` desenini `testWidgets()` içine
+     KÖRÜ KÖRÜNE taşımanın SESSİZCE (derleme hatası YOK, yalnızca çalışma zamanında sonsuz
+     askıda kalma) kırıldığı somut bir örnek.** **Düzeltme:** o satır tamamen kaldırıldı — hemen
+     ardından gelen `tester.pumpWidget(...)`/`await tester.pumpAndSettle()` zaten provider'ların
+     `_loadFromPrefs()`'inin bekleyen microtask'larını güvenli şekilde flush ediyor, ayrı bir
+     bekleyişe gerek YOKTU. **Genelleştirilebilir kural: `testWidgets()` içinde asenkron bir
+     bekleyiş gerekiyorsa (bir provider'ın `_loadFromPrefs()`'i gibi), önce `tester.pump()`/
+     `pumpAndSettle()`'ın YETİP yetmediğine bakın; GERÇEKTEN çıplak bir `Future.delayed` GEREKİYORSA
+     bunu HER ZAMAN `tester.runAsync(() => Future.delayed(...))` içine sarın (bkz. "Test kalıpları"
+     bölümündeki `RenderRepaintBoundary.toImage()` gotcha'sında ZATEN belgelenen AYNI desen) — asla
+     `testWidgets` gövdesinde çıplak/sarmalanmamış bırakmayın.**
+- **Test:** YENİ `test/widget_status_test.dart` (16 test — sekiz saf fonksiyonun HER biri, boş/dolu
+  durumlar + `dailyRewardsWidgetStatus`'un güvenlik-ağı kırpma davranışı dahil), YENİ
+  `test/home_widget_sync_coordinator_test.dart` (7 test — `syncAll` sekizini birden günceller,
+  DÖRT temsili modülün [goals/water/dailyRewards/currency] KENDİ provider'ı değişince YALNIZCA
+  kendi widget'ını güncellediği, `dispose()` sonrası hiçbir güncelleme tetiklenmediği — sekiz
+  modülün TAMAMI değil, temsili bir alt küme + genel izolasyon garantisi; içerik hesaplamasının
+  KENDİSİ zaten `widget_status_test.dart`'ta ayrı ve tam test ediliyor), YENİ
+  `test/widgets_screen_test.dart` (3 test — sekiz modül kendi başlığıyla listeleniyor [gerçekçi
+  test yüzeyine sığmadığı için `scrollUntilVisible` ile GERÇEK EKRAN sırasıyla doğrulanıyor, bkz.
+  "Test kalıpları" bölümündeki tek-yönlü kaydırma gotcha'sı], "Ekle" doğru modülle `requestPin`
+  çağırıyor, başarısızlıkta doğru mesaj). `widget_test.dart`'ın `_buildAppWithClock()` yardımcısına
+  `CurrencyProvider`/`DreamJournalProvider`/`LocaleProvider`/`MoodProvider` eklendi — `RootScreen`
+  artık bunları da `context.read` ettiği için (bkz. "Test kalıpları" bölümündeki genel provider
+  kuralı), eklenmeseydi hata yalnızca ilgili testte değil ondan SONRAKİ TÜM testlerde görünürdü.
+  **Toplam: 356 test.**
+- **Native derleme + cihazda doğrulama:** `flutter build apk --debug` SORUNSUZ derlendi (yalnızca
+  `home_widget`'ın da (Firebase/flutter_timezone gibi) Kotlin Gradle Plugin uyguladığına dair
+  zararsız/bilgilendirici bir uyarı, hata DEĞİL). APK telefona kurulup `adb shell monkey` ile
+  başlatıldı — çöküş izi yok, logcat'te FATAL EXCEPTION YOK. **`adb shell dumpsys package` ile
+  SEKİZ widget receiver'ının da (`ZiboGoalsWidgetProvider`...`ZiboDailyRewardsWidgetProvider`)
+  `APPWIDGET_UPDATE` intent-filter'ıyla doğru şekilde SİSTEME KAYITLI olduğu doğrulandı** — bu,
+  sekizinin de telefonun widget seçicisinde (ana ekrana uzun basıp "Widget'lar") GERÇEKTEN
+  görüneceğinin somut/otomatik bir kanıtı.
+  - **Kullanıcının kendi cihazında GÖRSEL olarak doğrulaması gereken kısım** (native ana ekran
+    chrome'u, Flutter'ın render ağacının TAMAMEN dışında — `flutter test`/web preview'un HİÇBİRİYLE
+    doğrulanamaz, bu projenin native özelliklerindeki TÜM önceki "kullanıcı kendi cihazında
+    doğrulamalı" notlarıyla AYNI kategori): Ayarlar > "Ana Ekran Widget'ları"ndan (veya doğrudan
+    ana ekrana uzun basıp Widget'lar listesinden) sekiz widget'ın her birini eklemek, doğru
+    emoji/renk/başlıkla göründüklerini, açık VE koyu sistem temasında kart renklerinin doğru
+    çözüldüğünü (`values`/`values-night`), ilgili modülde bir işlem yapınca (ör. bir hedefi
+    işaretlemek) widget'ın birkaç saniye içinde GÜNCELLENDİĞİNİ, ve widget'a dokununca uygulamanın
+    açıldığını gözlemlemek.
+
+## Coin Reward Miktarları — Şükran/Su/Manifest Günlüğü 2 → 5 ZC
+
+- **2026 güncellemesi.** Kullanıcı isteği: "modüllerde 2 Zibo Coin veriyor, onu 5 yapalım" —
+  bkz. "Zibo Coin ekonomisi" bölümündeki tam detay (bu, o bölümdeki notun bir tekrarı değil,
+  çapraz referans içindir): `CoinEconomy.gratitudeJournal`/`waterGoalCompleted`/`manifestJournal`
+  ÜÇÜ BİRLİKTE 2'den 5'e yükseltildi + ilgili 4 hardcoded ARB metni (TR/EN/ES) + test
+  assertion'ları güncellendi. `flutter test` 330/330 (bu değişikliğin kendisi için) yeşil.

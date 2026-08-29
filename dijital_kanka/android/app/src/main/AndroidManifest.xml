@@ -48,12 +48,112 @@
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
+            <!-- Ana ekran widget'larına (bkz. CLAUDE.md "Ana Ekran
+                 Widget'ları" bölümü) dokununca `HomeWidgetLaunchIntent`in
+                 ürettiği PendingIntent'in AYNI MainActivity örneğine doğru
+                 yönlendirilmesi için — `home_widget` paketinin kendi resmi
+                 örneğindeki AYNI desen. -->
+            <intent-filter>
+                <action android:name="es.antonborri.home_widget.action.LAUNCH"/>
+            </intent-filter>
         </activity>
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+        <!-- Ana ekran widget'ları — SEKİZ modülün her biri kendi widget
+             provider'ı, hepsi `res/layout/widget_module.xml`i paylaşan TEK
+             bir ortak render mantığından (ZiboBaseWidgetProvider.kt) türüyor
+             — bkz. CLAUDE.md "Ana Ekran Widget'ları" bölümü. -->
+        <receiver
+            android:name=".widgets.ZiboGoalsWidgetProvider"
+            android:label="Zibo — Hedef Takibi"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_info_goals"/>
+        </receiver>
+        <receiver
+            android:name=".widgets.ZiboWaterWidgetProvider"
+            android:label="Zibo — Su Takibi"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_info_water"/>
+        </receiver>
+        <receiver
+            android:name=".widgets.ZiboGratitudeWidgetProvider"
+            android:label="Zibo — Şükran Günlüğü"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_info_gratitude"/>
+        </receiver>
+        <receiver
+            android:name=".widgets.ZiboMoodWidgetProvider"
+            android:label="Zibo — Ruh Hali Takibi"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_info_mood"/>
+        </receiver>
+        <receiver
+            android:name=".widgets.ZiboManifestWidgetProvider"
+            android:label="Zibo — Manifest Günlüğü"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_info_manifest"/>
+        </receiver>
+        <receiver
+            android:name=".widgets.ZiboDreamWidgetProvider"
+            android:label="Zibo — Rüya Günlüğü"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_info_dream"/>
+        </receiver>
+        <receiver
+            android:name=".widgets.ZiboMoneyWidgetProvider"
+            android:label="Zibo — Para ve Birikim"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_info_money"/>
+        </receiver>
+        <receiver
+            android:name=".widgets.ZiboDailyRewardsWidgetProvider"
+            android:label="Zibo — Günlük Giriş Ödülleri"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_info_daily_rewards"/>
+        </receiver>
         <!-- AdMob SDK'sının UYGULAMA BAŞLATILMADAN önce okuduğu zorunlu alan
              (google_mobile_ads eklentisi bu meta-data yoksa çöker).
              Yeni Bireysel AdMob hesabının ("Zibo-Dijital Kankan" — eski
