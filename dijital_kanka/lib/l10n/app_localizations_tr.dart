@@ -732,7 +732,7 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get gratitudeTodayDoneBody =>
-      '3 şükran cümleni yazdın ve 2 Zibo Coin kazandın. Yarın tekrar gel!';
+      '3 şükran cümleni yazdın ve 5 Zibo Coin kazandın. Yarın tekrar gel!';
 
   @override
   String get gratitudeHistoryTitle => 'Geçmiş Kayıtlar';
@@ -741,7 +741,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get gratitudeHistoryEmpty => 'Henüz tamamlanmış bir kayıt yok.';
 
   @override
-  String get gratitudeCoinRewardMessage => '+2 Zibo Coin kazandın!';
+  String get gratitudeCoinRewardMessage => '+5 Zibo Coin kazandın!';
 
   @override
   String get gratitudeEntryDetailCloseButton => 'Kapat';
@@ -827,7 +827,7 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get waterGoalCompletedMessage =>
-      'Günlük su hedefini tamamladın! +2 Zibo Coin kazandın!';
+      'Günlük su hedefini tamamladın! +5 Zibo Coin kazandın!';
 
   @override
   String get waterTodayCompleteBody =>
@@ -900,7 +900,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get manifestSavedMessage => 'Bugünün girişi kaydedildi.';
 
   @override
-  String get manifestCoinRewardMessage => '+2 Zibo Coin kazandın!';
+  String get manifestCoinRewardMessage => '+5 Zibo Coin kazandın!';
 
   @override
   String get manifestHistoryTitle => 'Geçmiş Kayıtlar';

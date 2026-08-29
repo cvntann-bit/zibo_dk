@@ -1631,7 +1631,7 @@ void main() {
   );
 
   testWidgets(
-    'Şükran Günlüğü: 3 cümle yazılıp kaydedilince gün kilitlenir ve 2 Zibo Coin kazanılır',
+    'Şükran Günlüğü: 3 cümle yazılıp kaydedilince gün kilitlenir ve 5 Zibo Coin kazanılır',
     (WidgetTester tester) async {
       await _pumpPastOnboarding(tester, const DijitalKankaApp());
 
@@ -1656,7 +1656,7 @@ void main() {
 
       // Form yerine "tamamlandı" kartı görünüyor, coin kazanma mesajı geldi.
       expect(find.text('Bugün tamamlandı!'), findsOneWidget);
-      expect(find.text('+2 Zibo Coin kazandın!'), findsOneWidget);
+      expect(find.text('+5 Zibo Coin kazandın!'), findsOneWidget);
 
       // Yazılan üç şükran artık kartın kendisinde de GÖRÜNÜYOR (eskiden bir
       // daha hiç görünmüyordu — bkz. CLAUDE.md "Şükran Günlüğü" 2026
@@ -1679,7 +1679,7 @@ void main() {
       // (Z menüsü üzerinden) push edildiği için tek "Geri" yeter.
       await tester.tap(find.byTooltip('Geri'));
       await tester.pumpAndSettle();
-      expect(find.text('2'), findsOneWidget); // AppBar'daki güncel bakiye
+      expect(find.text('5'), findsOneWidget); // AppBar'daki güncel bakiye
     },
   );
 
@@ -1710,7 +1710,7 @@ void main() {
   );
 
   testWidgets(
-    'Su Takibi: 8 bardak işaretlenince hedef tamamlanır ve 2 Zibo Coin kazanılır',
+    'Su Takibi: 8 bardak işaretlenince hedef tamamlanır ve 5 Zibo Coin kazanılır',
     (WidgetTester tester) async {
       await _pumpPastOnboarding(tester, const DijitalKankaApp());
 
@@ -1732,7 +1732,7 @@ void main() {
 
       expect(find.text('8/8 bardak'), findsOneWidget);
       expect(
-        find.text('Günlük su hedefini tamamladın! +2 Zibo Coin kazandın!'),
+        find.text('Günlük su hedefini tamamladın! +5 Zibo Coin kazandın!'),
         findsOneWidget,
       );
       expect(find.text('Bugün su hedefini tamamladın, harikasın kanka!'), findsOneWidget);
@@ -1750,9 +1750,9 @@ void main() {
 
       await tester.tap(find.byTooltip('Geri'));
       await tester.pumpAndSettle();
-      // Bakiye yalnızca 2 (tek seferlik ödül) — farm denemesi ikinci kez
+      // Bakiye yalnızca 5 (tek seferlik ödül) — farm denemesi ikinci kez
       // eklemedi.
-      expect(find.text('2'), findsOneWidget); // AppBar'daki güncel bakiye
+      expect(find.text('5'), findsOneWidget); // AppBar'daki güncel bakiye
     },
   );
 

@@ -99,7 +99,7 @@ void main() {
   });
 
   testWidgets(
-    'Fotoğraf seçilip niyet yazılınca kaydedilir, 2 Zibo Coin kazanılır ve '
+    'Fotoğraf seçilip niyet yazılınca kaydedilir, 5 Zibo Coin kazanılır ve '
     'form boş/açık kalır',
     (tester) async {
       final fakeService = _FakePhotoService();
@@ -140,13 +140,13 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(fakeService.saveCount, 1);
-      expect(find.text('+2 Zibo Coin kazandın!'), findsOneWidget);
+      expect(find.text('+5 Zibo Coin kazandın!'), findsOneWidget);
 
       final coinProvider = Provider.of<CoinProvider>(
         tester.element(find.byType(ManifestJournalScreen)),
         listen: false,
       );
-      expect(coinProvider.balance, 2);
+      expect(coinProvider.balance, 5);
 
       // Form BOŞ ve AÇIK kaldı — kullanıcı hemen yeni bir giriş ekleyebilir
       // (fotoğraf seçme ipucu geri döndü, TextField'ın kendi metni find.text
@@ -190,7 +190,7 @@ void main() {
         tester.element(find.byType(ManifestJournalScreen)),
         listen: false,
       );
-      expect(coinProvider.balance, 2);
+      expect(coinProvider.balance, 5);
       expect(fakeService.saveCount, 1);
 
       // Form boş — yeni bir fotoğraf seç ve ikinci bir giriş ekle.
@@ -204,7 +204,7 @@ void main() {
 
       expect(fakeService.saveCount, 2);
       // Coin bakiyesi DEĞİŞMEDİ — ikinci giriş coin tekrar tetiklemedi.
-      expect(coinProvider.balance, 2);
+      expect(coinProvider.balance, 5);
       expect(find.text('Bugünün girişi kaydedildi.'), findsOneWidget);
       // Hiçbir fotoğraf silinmedi — ikinci giriş birincinin ÜZERİNE YAZMADI.
       expect(fakeService.deletedPaths, isEmpty);

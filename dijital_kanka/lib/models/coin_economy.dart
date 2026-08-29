@@ -9,9 +9,11 @@ abstract final class CoinEconomy {
   static const int streak7Bonus = 50;
   static const int streak30Bonus = 250;
   static const int referral = 100;
-  static const int gratitudeJournal = 2;
-  static const int waterGoalCompleted = 2;
-  static const int manifestJournal = 2;
+  // 2026 güncellemesi — kullanıcı isteğiyle 2 → 5 ZC'ye yükseltildi (üç
+  // günlük-modül ödülü de tutarlı kalsın diye BİRLİKTE değiştirildi).
+  static const int gratitudeJournal = 5;
+  static const int waterGoalCompleted = 5;
+  static const int manifestJournal = 5;
 
   /// Günlük Giriş Ödülleri: 7 günlük döngüdeki her günün miktarı, sırayla
   /// (index 0 = Gün 1). Diğer sabitlerin aksine tek bir sayı değil, artan

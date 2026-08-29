@@ -732,7 +732,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get gratitudeTodayDoneBody =>
-      'You wrote 3 things you\'re grateful for and earned 2 Zibo Coin. Come back tomorrow!';
+      'You wrote 3 things you\'re grateful for and earned 5 Zibo Coin. Come back tomorrow!';
 
   @override
   String get gratitudeHistoryTitle => 'Past Entries';
@@ -741,7 +741,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get gratitudeHistoryEmpty => 'No completed entries yet.';
 
   @override
-  String get gratitudeCoinRewardMessage => 'You earned 2 Zibo Coin!';
+  String get gratitudeCoinRewardMessage => 'You earned 5 Zibo Coin!';
 
   @override
   String get gratitudeEntryDetailCloseButton => 'Close';
@@ -828,7 +828,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get waterGoalCompletedMessage =>
-      'You completed today\'s water goal! +2 Zibo Coin earned!';
+      'You completed today\'s water goal! +5 Zibo Coin earned!';
 
   @override
   String get waterTodayCompleteBody =>
@@ -901,7 +901,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get manifestSavedMessage => 'Today\'s entry was saved.';
 
   @override
-  String get manifestCoinRewardMessage => 'You earned 2 Zibo Coin!';
+  String get manifestCoinRewardMessage => 'You earned 5 Zibo Coin!';
 
   @override
   String get manifestHistoryTitle => 'Past Entries';

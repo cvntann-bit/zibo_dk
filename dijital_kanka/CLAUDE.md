@@ -270,8 +270,19 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
 
 ### Zibo Coin ekonomisi ([coin_provider.dart](lib/providers/coin_provider.dart), [coin_economy.dart](lib/models/coin_economy.dart))
 - Tüm tutarlar tek yerde: `CoinEconomy` (kazanma: check-in 5, reklam 20, mini görev 15, 7-gün
-  bonusu 50, 30-gün bonusu 250, referans 100 — harcama: streak freeze 80, kişilik modu 500, replik
-  paketi 150, kozmetik parametrik 100-300 aralığı).
+  bonusu 50, 30-gün bonusu 250, referans 100, günlük-modül ödülleri [Şükran/Su/Manifest] 5 — bkz.
+  altta "2026 güncellemesi" — harcama: streak freeze 80, kişilik modu 500, replik paketi 150,
+  kozmetik parametrik 100-300 aralığı).
+- **2026 güncellemesi — Şükran Günlüğü/Su Takibi/Manifest Günlüğü'nün günlük ödülü 2 → 5 ZC'ye
+  yükseltildi.** Kullanıcı isteği: "modüllerde 2 Zibo Coin veriyor, onu 5 yapalım" — üçü de AYNI
+  değeri (`gratitudeJournal`/`waterGoalCompleted`/`manifestJournal`, `coin_economy.dart`) paylaştığı
+  için TEK yerden, BİRLİKTE değiştirildi (kullanıcı belirli bir modülü ayırmadı, "modüllerde" genel
+  ifadesi kullanıldı — üçü de aynı "günde bir kez, küçük bir günlük görev" kategorisinde). İlgili
+  ARB metinleri (`gratitudeCoinRewardMessage`/`waterGoalCompletedMessage`/`manifestCoinRewardMessage`/
+  `gratitudeTodayDoneBody`, TR/EN/ES) hardcoded "2" yerine "5" gösterecek şekilde güncellendi —
+  bunlar `CoinEconomy`'den DİNAMİK OKUMUYOR, düz metin, bu yüzden kod DEĞİŞİNCE ARB'nin de elle
+  senkron tutulması gerekiyor (`flutter gen-l10n` çalıştırıldı). `flutter test`'teki balance/metin
+  assertion'ları (`widget_test.dart`, `manifest_journal_screen_test.dart`) güncellendi — 330/330 yeşil.
 - **`SharedPreferences` ile kalıcı** — bakiye + işlem geçmişi tek bir `'coinState'` anahtarı altında
   JSON. **Bu da başlangıçta EKSİKTİ** (Hedef Takibi/Para ve Birikim ile aynı kullanıcı raporuyla
   ortaya çıktı) — `CoinProvider` daha önce hiç `SharedPreferences` kullanmıyordu, bakiye her yeniden

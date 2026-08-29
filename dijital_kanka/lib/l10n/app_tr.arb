@@ -1041,7 +1041,7 @@
   "@gratitudeTodayDoneTitle": {
     "description": "Bugünün kaydı tamamlandığında gösterilen başlık"
   },
-  "gratitudeTodayDoneBody": "3 şükran cümleni yazdın ve 2 Zibo Coin kazandın. Yarın tekrar gel!",
+  "gratitudeTodayDoneBody": "3 şükran cümleni yazdın ve 5 Zibo Coin kazandın. Yarın tekrar gel!",
   "@gratitudeTodayDoneBody": {
     "description": "Bugünün kaydı tamamlandığında gösterilen açıklama metni"
   },
@@ -1053,7 +1053,7 @@
   "@gratitudeHistoryEmpty": {
     "description": "Geçmiş kayıt listesi boşken gösterilen metin"
   },
-  "gratitudeCoinRewardMessage": "+2 Zibo Coin kazandın!",
+  "gratitudeCoinRewardMessage": "+5 Zibo Coin kazandın!",
   "@gratitudeCoinRewardMessage": {
     "description": "Bugünün kaydı kaydedilince gösterilen kısa kutlama mesajı"
   },
@@ -1170,7 +1170,7 @@
       "unit": {"type": "String"}
     }
   },
-  "waterGoalCompletedMessage": "Günlük su hedefini tamamladın! +2 Zibo Coin kazandın!",
+  "waterGoalCompletedMessage": "Günlük su hedefini tamamladın! +5 Zibo Coin kazandın!",
   "@waterGoalCompletedMessage": {
     "description": "Günlük su hedefi tamamlanınca gösterilen kısa kutlama mesajı"
   },
@@ -1269,7 +1269,7 @@
   "@manifestSavedMessage": {
     "description": "Bugün zaten tamamlanmışken (coin tekrar verilmeden) tekrar kaydedilince gösterilen kısa mesaj"
   },
-  "manifestCoinRewardMessage": "+2 Zibo Coin kazandın!",
+  "manifestCoinRewardMessage": "+5 Zibo Coin kazandın!",
   "@manifestCoinRewardMessage": {
     "description": "Bugünün girişi İLK KEZ tamamlanıp coin kazanılınca gösterilen kısa kutlama mesajı"
   },

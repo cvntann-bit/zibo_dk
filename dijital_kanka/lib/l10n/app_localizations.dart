@@ -1381,7 +1381,7 @@ abstract class AppLocalizations {
   /// Bugünün kaydı tamamlandığında gösterilen açıklama metni
   ///
   /// In tr, this message translates to:
-  /// **'3 şükran cümleni yazdın ve 2 Zibo Coin kazandın. Yarın tekrar gel!'**
+  /// **'3 şükran cümleni yazdın ve 5 Zibo Coin kazandın. Yarın tekrar gel!'**
   String get gratitudeTodayDoneBody;
 
   /// Geçmiş şükran kayıtları listesinin başlığı
@@ -1399,7 +1399,7 @@ abstract class AppLocalizations {
   /// Bugünün kaydı kaydedilince gösterilen kısa kutlama mesajı
   ///
   /// In tr, this message translates to:
-  /// **'+2 Zibo Coin kazandın!'**
+  /// **'+5 Zibo Coin kazandın!'**
   String get gratitudeCoinRewardMessage;
 
   /// Geçmiş kayıt detay diyaloğunu kapatan butonun etiketi
@@ -1549,7 +1549,7 @@ abstract class AppLocalizations {
   /// Günlük su hedefi tamamlanınca gösterilen kısa kutlama mesajı
   ///
   /// In tr, this message translates to:
-  /// **'Günlük su hedefini tamamladın! +2 Zibo Coin kazandın!'**
+  /// **'Günlük su hedefini tamamladın! +5 Zibo Coin kazandın!'**
   String get waterGoalCompletedMessage;
 
   /// Hedef tamamlandığında ilerleme kartının altında gösterilen kısa metin
@@ -1675,7 +1675,7 @@ abstract class AppLocalizations {
   /// Bugünün girişi İLK KEZ tamamlanıp coin kazanılınca gösterilen kısa kutlama mesajı
   ///
   /// In tr, this message translates to:
-  /// **'+2 Zibo Coin kazandın!'**
+  /// **'+5 Zibo Coin kazandın!'**
   String get manifestCoinRewardMessage;
 
   /// Geçmiş manifest kayıtları galerisinin başlığı
