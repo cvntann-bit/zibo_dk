@@ -3,6 +3,7 @@ package com.dijitalkanka.dijital_kanka.widgets
 import android.appwidget.AppWidgetManager
 import android.content.Context
 import android.content.SharedPreferences
+import android.graphics.Color
 import android.view.View
 import android.widget.RemoteViews
 import com.dijitalkanka.dijital_kanka.MainActivity
@@ -30,6 +31,11 @@ abstract class ZiboBaseWidgetProvider : HomeWidgetProvider() {
   abstract val emoji: String
   abstract val accentColor: Int
 
+  /** [accentColor]'ın DÜŞÜK opaklıklı hâli — rozetin arkasındaki "halo" için
+   * (bkz. `widget_module.xml`'deki 2026 görsel güncellemesi). */
+  private fun withAlpha(color: Int, alpha: Int): Int =
+      Color.argb(alpha, Color.red(color), Color.green(color), Color.blue(color))
+
   override fun onUpdate(
       context: Context,
       appWidgetManager: AppWidgetManager,
@@ -45,7 +51,9 @@ abstract class ZiboBaseWidgetProvider : HomeWidgetProvider() {
             val progress = widgetData.getInt("${dataKeyPrefix}_progress", -1)
 
             setTextViewText(R.id.widget_icon_emoji, emoji)
+            setInt(R.id.widget_icon_halo, "setColorFilter", withAlpha(accentColor, 40))
             setInt(R.id.widget_icon_bg, "setColorFilter", accentColor)
+            setInt(R.id.widget_accent_bar, "setBackgroundColor", accentColor)
             setTextViewText(R.id.widget_title, title ?: "Zibo")
             setTextViewText(R.id.widget_primary, primary ?: "—")
             setTextViewText(R.id.widget_secondary, secondary ?: "")

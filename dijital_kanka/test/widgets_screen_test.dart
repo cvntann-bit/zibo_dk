@@ -1,4 +1,4 @@
-// WidgetsScreen'in sekiz modülü listelediğini VE her satırdaki "Ekle"
+// WidgetsScreen'in dokuz modülü listelediğini VE her satırdaki "Ekle"
 // butonunun enjekte edilen sahte `HomeWidgetService.requestPin`'i doğru
 // modülle çağırdığını doğrudan (gerçek `home_widget` platform kanalına
 // dokunmadan) test eder — bkz. CLAUDE.md "Ana Ekran Widget'ları" bölümü,
@@ -50,11 +50,11 @@ Widget _buildTestApp(HomeWidgetService service) {
 }
 
 void main() {
-  testWidgets('Sekiz modülün hepsi kendi başlığıyla listelenir', (tester) async {
+  testWidgets('Dokuz modülün hepsi kendi başlığıyla listelenir', (tester) async {
     await tester.pumpWidget(_buildTestApp(_FakeHomeWidgetService()));
     await tester.pumpAndSettle();
 
-    // Sekiz kart varsayılan test yüzeyine sığmıyor — listeyi GERÇEK EKRANDAKİ
+    // Dokuz kart varsayılan test yüzeyine sığmıyor — listeyi GERÇEK EKRANDAKİ
     // sırasıyla (yukarıdan aşağıya) kaydırarak doğrula (bkz. CLAUDE.md "Test
     // kalıpları" bölümündeki `scrollUntilVisible` tek-yönlü kaydırma
     // gotcha'sı — geriye dönük bir sıralama sessizce kırılabilir).
@@ -67,12 +67,26 @@ void main() {
       'Rüya Günlüğü',
       'Para ve Birikim',
       'Günlük Giriş Ödülleri',
+      'Zibo\'nun Sözü',
     ];
+    // Her başlığın kendi "Ekle" butonunu ANINDA (scroll edildiği anda,
+    // toplu bir sayım yerine) doğrula — dokuzuncu karta kadar kaydırınca
+    // `ListView`'ın Sliver tabanlı lazy-build mekanizması (bkz. CLAUDE.md
+    // "Test kalıpları" bölümü) en üstteki kartları ARTIK İNŞA EDİLMİŞ
+    // ağaçtan çıkarabiliyor — tüm kaydırma bittikten SONRA global bir
+    // `findsNWidgets(9)` bu yüzden GERÇEK bir uygulama hatası olmadan
+    // (yalnızca o anki cache penceresi yüzünden) başarısız olabiliyordu.
     for (final title in titlesInOrder) {
       await tester.scrollUntilVisible(find.text(title), 200);
       expect(find.text(title), findsOneWidget);
+      expect(
+        find.descendant(
+          of: find.ancestor(of: find.text(title), matching: find.byType(Card)),
+          matching: find.widgetWithText(FilledButton, 'Ekle'),
+        ),
+        findsOneWidget,
+      );
     }
-    expect(find.widgetWithText(FilledButton, 'Ekle', skipOffstage: false), findsNWidgets(8));
   });
 
   testWidgets('"Ekle"ye basınca doğru modül için requestPin çağrılır', (tester) async {

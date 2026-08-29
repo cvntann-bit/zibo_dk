@@ -17,7 +17,7 @@ int _percent(num done, num total) {
   return ((done / total) * 100).round().clamp(0, 100);
 }
 
-/// Aşağıdaki sekiz fonksiyonun HEPSİ saf (yan etkisiz) — provider
+/// Aşağıdaki dokuz fonksiyonun HEPSİ saf (yan etkisiz) — provider
 /// nesnelerinin KENDİSİNİ değil, o an ihtiyaç duydukları birkaç ilkel
 /// değeri alıyor; bu sayede `flutter test`'te gerçek bir widget/provider
 /// kurmadan doğrudan test edilebiliyorlar (bkz.
@@ -101,4 +101,14 @@ ZiboWidgetStatus dailyRewardsWidgetStatus(
         : l10n.widgetDailyRewardsAvailableHint,
     progress: _percent(safeIndex + 1, daysPerCycle),
   );
+}
+
+/// "Zibo'nun Sözü" widget'ı (bkz. `widget_motivation.xml`) — [quote] ZATEN
+/// seçilmiş/kişiselleştirilmiş (bkz. `HomeWidgetSyncCoordinator._syncMotivation`,
+/// hitap tercihi UYGULANMIŞ hâliyle) hazır bir metin; bu fonksiyon yalnızca
+/// diğer sekiziyle AYNI `ZiboWidgetStatus` şekline SARIYOR (`secondary` bu
+/// widget'ta kullanılmıyor, boş — karakter görseli + söz metni zaten
+/// kendi başına yeterli, `progress` de yok, bir "ilerleme" kavramı taşımıyor).
+ZiboWidgetStatus motivationWidgetStatus(AppLocalizations l10n, {required String quote}) {
+  return ZiboWidgetStatus(primary: quote, secondary: '');
 }

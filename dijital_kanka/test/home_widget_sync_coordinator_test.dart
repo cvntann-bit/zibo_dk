@@ -1,9 +1,9 @@
 // HomeWidgetSyncCoordinator'ın gerçek provider'ları dinleyip doğru modülü,
 // doğru içerikle `HomeWidgetService.pushStatus`'a ilettiğini doğrudan
 // (tam bir RootScreen kurmadan, sahte bir servisle) test eder — bkz.
-// CLAUDE.md "Ana Ekran Widget'ları" bölümü. Sekiz modülün TAMAMI değil,
-// temsili bir alt küme (goals/water/dailyRewards/currency) + genel
-// "yalnızca ilgili modül güncellenir" garantisi kapsanıyor; içerik
+// CLAUDE.md "Ana Ekran Widget'ları" bölümü. Dokuz modülün TAMAMI değil,
+// temsili bir alt küme (goals/water/dailyRewards/currency/motivation) +
+// genel "yalnızca ilgili modül güncellenir" garantisi kapsanıyor; içerik
 // hesaplama mantığının kendisi zaten `widget_status_test.dart`'ta ayrıca
 // ve tam olarak test ediliyor.
 //
@@ -14,11 +14,14 @@
 // bunu karşılayamaz, `Localizations.of` gerçek bir InheritedWidget
 // bekliyor).
 
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:dijital_kanka/data/zibo_messages.dart';
 import 'package:dijital_kanka/l10n/app_localizations.dart';
 import 'package:dijital_kanka/providers/currency_provider.dart';
 import 'package:dijital_kanka/providers/daily_rewards_provider.dart';
@@ -28,12 +31,27 @@ import 'package:dijital_kanka/providers/gratitude_provider.dart';
 import 'package:dijital_kanka/providers/manifest_provider.dart';
 import 'package:dijital_kanka/providers/money_provider.dart';
 import 'package:dijital_kanka/providers/mood_provider.dart';
+import 'package:dijital_kanka/providers/profile_provider.dart';
 import 'package:dijital_kanka/providers/trusted_time_provider.dart';
 import 'package:dijital_kanka/providers/water_provider.dart';
 import 'package:dijital_kanka/services/home_widget_service.dart';
 import 'package:dijital_kanka/services/home_widget_sync_coordinator.dart';
 import 'package:dijital_kanka/services/trusted_time_service.dart';
 import 'package:dijital_kanka/utils/widget_module.dart';
+
+/// `syncAll()`'ın seçtiği "Zibo'nun Sözü" içeriğini deterministik kılmak
+/// için — HER ZAMAN havuzun İLK sözünü döndürür (`CoinProvider`'ın Şans
+/// Çarkı testlerindeki AYNI "enjekte edilebilir sabit Random" deseni).
+class _FixedRandom implements Random {
+  @override
+  int nextInt(int max) => 0;
+
+  @override
+  bool nextBool() => false;
+
+  @override
+  double nextDouble() => 0;
+}
 
 class _RecordingHomeWidgetService implements HomeWidgetService {
   final List<(ZiboWidgetModule, String, String, String, int?)> calls = [];
@@ -76,6 +94,7 @@ class _Harness {
     required this.money,
     required this.currency,
     required this.dailyRewards,
+    required this.profile,
     required this.coordinator,
   });
 
@@ -89,10 +108,11 @@ class _Harness {
   final MoneyProvider money;
   final CurrencyProvider currency;
   final DailyRewardsProvider dailyRewards;
+  final ProfileProvider profile;
   final HomeWidgetSyncCoordinator coordinator;
 }
 
-Future<_Harness> _buildHarness(WidgetTester tester) async {
+Future<_Harness> _buildHarness(WidgetTester tester, {Random? random}) async {
   final fixedNow = DateTime(2026, 1, 10);
   DateTime now() => fixedNow;
 
@@ -107,6 +127,7 @@ Future<_Harness> _buildHarness(WidgetTester tester) async {
   final money = MoneyProvider(now: now);
   final currency = CurrencyProvider();
   final dailyRewards = DailyRewardsProvider(now: now);
+  final profile = ProfileProvider(now: now);
 
   late BuildContext capturedContext;
   await tester.pumpWidget(
@@ -141,6 +162,8 @@ Future<_Harness> _buildHarness(WidgetTester tester) async {
     money: money,
     currency: currency,
     dailyRewards: dailyRewards,
+    profile: profile,
+    random: random,
   );
 
   return _Harness(
@@ -154,6 +177,7 @@ Future<_Harness> _buildHarness(WidgetTester tester) async {
     money: money,
     currency: currency,
     dailyRewards: dailyRewards,
+    profile: profile,
     coordinator: coordinator,
   );
 }
@@ -163,13 +187,28 @@ void main() {
     SharedPreferences.setMockInitialValues({});
   });
 
-  testWidgets('syncAll TÜM sekiz modülü BİR KEZ günceller', (tester) async {
+  testWidgets('syncAll TÜM dokuz modülü BİR KEZ günceller', (tester) async {
     final h = await _buildHarness(tester);
     h.coordinator.syncAll();
     final updatedModules = h.service.calls.map((c) => c.$1).toSet();
     expect(updatedModules, ZiboWidgetModule.values.toSet());
     h.coordinator.dispose();
   });
+
+  testWidgets(
+    'syncAll "Zibo\'nun Sözü" widget\'ına havuzdan rastgele (sabit Random ile deterministik) bir söz gönderir',
+    (tester) async {
+      final h = await _buildHarness(tester, random: _FixedRandom());
+      h.coordinator.syncAll();
+      final call = h.service.calls.singleWhere((c) => c.$1 == ZiboWidgetModule.motivation);
+      final locale = Localizations.localeOf(h.coordinator.context);
+      // `_FixedRandom.nextInt` her zaman 0 döndürdüğü için havuzun İLK sözü
+      // seçiliyor — varsayılan hitap tercihi ('Kanka') değiştirilmediği için
+      // `applyAddressTerm` no-op, söz OLDUĞU GİBİ gelmeli.
+      expect(call.$3, ziboMessagesForLocale(locale).first);
+      h.coordinator.dispose();
+    },
+  );
 
   testWidgets('GoalsProvider değişince YALNIZCA Hedef Takibi widget\'ı güncellenir', (
     tester,

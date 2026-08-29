@@ -4044,14 +4044,16 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
   SONRA SİLİNDİ** — Şans Çarkı sonrası reklam denemesiyle birlikte geldi, kullanıcı o özelliği
   istemeyince (bkz. "Zibo'ya Art Arda Dokunma → Geçiş Reklamı" bölümündeki geri alma notu) testi
   de anlamsızlaştığı için kaldırıldı.
-  **Toplam: 356 test** (2026 — `costume_provider_test.dart`'a `reconcileGoalUnlocks` grubu +
+  **Toplam: 358 test** (2026 — `costume_provider_test.dart`'a `reconcileGoalUnlocks` grubu +
   `water_provider_test.dart`'a `completedDaysCount` testi [bkz. "Kostümler" bölümü] +
   `dream_sentiment_test.dart` [bkz. "Rüya Günlüğü" bölümündeki korelasyon notu] +
   `referral_provider_test.dart` [bkz. "Davet Et (Referral) Sistemi" bölümü] +
   `profile_screen_test.dart`'a "Kurucu Üye" rozeti senaryosu [bkz. "Kurucu Üye Rozeti" bölümü] +
   `trusted_time_provider_test.dart` [5 test, bkz. "Push Bildirimleri" bölümündeki günlük ödül
   bug düzeltmesi] + YENİ `widget_status_test.dart`/`home_widget_sync_coordinator_test.dart`/
-  `widgets_screen_test.dart` [26 test, bkz. "Ana Ekran Widget'ları" bölümü] eklendi).
+  `widgets_screen_test.dart` [26 test, bkz. "Ana Ekran Widget'ları" bölümü] + "Zibo'nun Sözü"
+  widget'ı için bu üç dosyaya eklenen 2 ek test [bkz. "Ana Ekran Widget'ları" bölümündeki 2026
+  görsel yeniden tasarım notu] eklendi).
 - `widget_test.dart` içindeki `_buildAppWithClock()` yardımcı fonksiyonu enjekte edilebilir saatli
   testler için — **`RootScreen`'in ihtiyaç duyduğu HER provider'ı içermeli** (`AppThemeProvider`,
   `AuthLinkProvider`, `CoinProvider`, `CostumeProvider`, `CurrencyProvider`,
@@ -6125,6 +6127,87 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
     paket adınıza göre filtrelemek (`grep dijital_kanka`) hatayı TAMAMEN KAÇIRIR; ilgili sistem
     bileşeninin (`AppWidgetHostView`, `NotificationManagerService` vb.) kendi log etiketlerini de
     aramak GEREKİR — bu oturumda tam olarak bu genişletilmiş arama sayesinde bulundu.
+- **2026 güncellemesi — görsel yeniden tasarım + DOKUZUNCU widget: "Zibo'nun Sözü".** Kullanıcı
+  isteği (verbatim özet): "widget tasarımlarını Zibo görsellerini kullanarak daha güzel ve çeşitli
+  yap... Zibo'nun motivasyon cümlelerinin olduğu widget de yapabilirsin, daha büyük widgetler
+  yapabilirsin, Zibo'nun logosunu kullanabilirsin — sana bırakıyorum" (tasarım kararları bilerek
+  asistana bırakıldı).
+  - **Sekiz mevcut (kompakt) widget'ın paylaştığı `widget_module.xml` üç yönden zenginleştirildi:**
+    1. **Rozetin arkasına soluk bir "halo"** — mevcut `widget_badge_circle.xml` drawable'ı DAHA
+       BÜYÜK (36dp, eski 26dp'lik rozetin ETRAFINDA) VE modülün KENDİ `accentColor`'ının düşük
+       opaklıklı (`alpha=40/255`) hâliyle tonlanıyor (`ZiboBaseWidgetProvider.withAlpha`, YENİ
+       private yardımcı). Yeni bir renk sistemi İCAT EDİLMEDİ — sekiz modülün zaten farklı olan
+       `accentColor`'ı burada İKİNCİ kez, daha GÖRÜNÜR bir şekilde kullanılıyor.
+    2. **"Çeşitlilik" isteği — accent bar.** Önceki turda (bkz. yukarıdaki "Araç yüklenemiyor" bug
+       düzeltmesi) ham `<View>` spacer'ın YERİNE geçen düz margin, şimdi modülün accent rengiyle
+       DOLU ince (3dp) bir "accent bar"a (`R.id.widget_accent_bar`, bir `TextView`,
+       `setInt(..., "setBackgroundColor", accentColor)` ile tonlanıyor) dönüştürüldü — sekiz
+       widget artık yalnızca rozetin İÇİNDE değil, ETRAFINDA VE ALTINDA da kendi rengiyle ayırt
+       ediliyor.
+    3. **Zibo logosu — kartın sağ-alt köşesinde, ÇOK soluk (`alpha="0.18"`) bir marka imzası**
+       (`@drawable/widget_zibo_logo`) — kullanıcının açık isteği. İçerikle YARIŞMASIN diye kasıtlı
+       düşük opaklık ve küçük boyut (30×12dp) seçildi.
+  - **DOKUZUNCU, DAHA BÜYÜK widget — "Zibo'nun Sözü" (`ZiboWidgetModule.motivation`).** Diğer
+    sekizinin AKSİNE kendi ayrı native layout'u (`widget_motivation.xml`) VE provider sınıfı
+    (`ZiboMotivationWidgetProvider.kt`, `ZiboBaseWidgetProvider`'ı EXTEND ETMİYOR — o sınıf
+    `R.layout.widget_module`u sabit varsayıyor, bu widget'ın yapısı yeterince farklı) var:
+    - **Varsayılan boyut 4×2 hücre** (`widget_info_motivation.xml`, `minWidth="250dp"`) — diğer
+      sekizinin 2×2'sinden BİLEREK daha büyük, kullanıcının "daha büyük widgetler yapabilirsin"
+      isteğinin doğrudan karşılığı.
+    - **Gerçek bir Zibo karakter görseli** (`widget_zibo_character.png` — `assets/images/
+      zibo_yeni.png`'nin `tool/prepare_widget_assets.dart` ile 420px yüksekliğe küçültülmüş hâli,
+      widget belleği için makul bir boyutta tutuldu, orijinal 773×975'in tamamı DEĞİL) solda, sağda
+      başlık + accent bar (diğer sekiziyle AYNI görsel dil) + çok satırlı (`maxLines="4"`) söz
+      metni.
+    - **İçerik — `HomeWidgetSyncCoordinator._syncMotivation()`** (YENİ metot): `syncAll()` her
+      çağrıldığında (uygulama açılışı + dil değişimi — diğer sekiz widget'ın listener'ları
+      `syncAll()`'ı TETİKLEMEDİĞİ için, bkz. sınıf dokümantasyonundaki güncellenmiş not, bu widget
+      GÜRÜLTÜSÜZ bir sıklıkta tazeleniyor) `ziboMessagesForLocale(locale)` havuzundan (Ana Sayfa'nın
+      KENDİ kullandığı AYNI 279 sözlük havuz — YENİ bir içerik havuzu YAZILMADI) rastgele bir söz
+      seçip `applyAddressTerm(quote, profile.addressTerm, locale)` ile kullanıcının hitap tercihini
+      UYGULUYOR (bkz. "Profil" bölümündeki "Hitap Tercihi" alt bölümü — 8 ekranın zaten kullandığı
+      AYNI kişiselleştirme, widget'a da genişletildi). Bunun için koordinatör artık `ProfileProvider`
+      (yeni required alan) VE test edilebilirlik için enjekte edilebilir bir `Random` (`CoinProvider`
+      Şans Çarkı'ndaki AYNI desen) alıyor.
+    - **`ZiboMotivationWidgetProvider`'ın accent rengi** yeni bir sabit renk İCAT ETMİYOR —
+      `@color/widget_accent_default`i (uygulamanın zaten var olan "Zibo marka rengi" varsayılanı,
+      açık/koyu temaya otomatik uyuyor) kullanıyor.
+  - **Native asset hazırlığı — `tool/prepare_widget_assets.dart` (YENİ, tek seferlik görsel işleme
+    betiği, `remove_bg.dart`/`clean_app_icon.dart` ile AYNI desen):** `zibo_splash_logo.png`'yi
+    (zaten native/RemoteViews-uyumlu, splash ekranı için önceden hazırlanmış) `widget_zibo_logo.
+    png` olarak kopyalıyor + `assets/images/zibo_yeni.png`'yi (773×975) 420px yüksekliğe küçültüp
+    `widget_zibo_character.png` olarak kaydediyor — `dart run tool/prepare_widget_assets.dart`.
+  - **`AndroidManifest.xml`'e dokuzuncu `<receiver>` eklendi** (`.widgets.
+    ZiboMotivationWidgetProvider`, `widget_info_motivation` kaynağıyla) — diğer sekizle BİREBİR
+    AYNI desen.
+  - **Gerçek cihazda GÖRSEL doğrulama, canlı `adb logcat` ile — DÖRT farklı widget türü, SIFIR
+    hata:** APK yeniden derlenip telefona kurulup (`adb install -r`, veri korunarak) test edildi.
+    Uygulama açılışında Hedef Takibi/Su Takibi widget'larının (önceki turdan zaten ekliydi) YENİ
+    tasarımla sorunsuz yeniden çizildiği (`AppWidgetHostView`/`InflateException` log'u SIFIR)
+    doğrulandı. Ardından "Zibo'nun Sözü" widget'ı gerçekten eklenip **bir EKRAN GÖRÜNTÜSÜYLE**
+    Zibo karakter görseli + "Zibo'nun Sözü" başlığı + accent bar + gerçek bir söz ("Emek boşa
+    gitmez can, er ya da geç karşılığını bulur.") ile DOĞRU render olduğu somut olarak kanıtlandı.
+    Test sırasındaki kazara dokunuşlar Su Takibi ve Şükran Günlüğü widget'larının da (farklı
+    zamanlarda) eklenip tıklandığını tetikledi — `adb logcat`'te bu DÖRT widget türünün (Hedef
+    Takibi/Su Takibi/Şükran Günlüğü/Zibo'nun Sözü) HİÇBİRİNDE `AppWidgetHostView` hata satırı VEYA
+    `InflateException` YOKTU, yalnızca zararsız `onclick` bilgi logları — yeni tasarımın (halo/
+    accent bar/logo/büyük karakter görseli) RemoteViews'ın kısıtlı view whitelist'iyle TAM uyumlu
+    olduğunun somut kanıtı. **Kazara birkaç widget eklenip/kaldırılmış olabilir** (test sırasındaki
+    dokunuş/kaydırma hareketleri MIUI'nin kendi widget kaldırma jestini tetiklemiş olabilir) —
+    kullanıcının kendi ana ekranını kontrol edip istediği widget'ları elle düzenlemesi gerekebilir.
+  - **Test:** `test/widget_status_test.dart`'a `motivationWidgetStatus` testi,
+    `test/home_widget_sync_coordinator_test.dart`'a `ProfileProvider` + enjekte edilebilir
+    `Random` (`_FixedRandom`, `CoinProvider` testlerindeki AYNI desen) ile "syncAll havuzdan
+    deterministik bir söz seçip gönderir" testi, `test/widgets_screen_test.dart`'a dokuzuncu
+    modülün satırı eklendi. **Gotcha (bu turda yakalandı) — dokuzuncu karta kadar kaydırmak
+    `ListView`'ın Sliver tabanlı lazy-build/cache-eviction'ını tetikleyip ÖNCEKİ (artık ekrandan
+    çok uzak) kartların `FilledButton`'larını inşa edilmiş ağaçtan ÇIKARDI:** eski test tüm
+    kaydırma BİTTİKTEN SONRA TEK bir global `findsNWidgets(9)` sayımı yapıyordu — sekiz modülle
+    çalışıyordu ama dokuzuncuya kaydırılınca yalnızca 8 buton bulundu (GERÇEK bir uygulama hatası
+    DEĞİL, yalnızca o anki cache penceresi). **Çözüm:** her başlık için "Ekle" butonunu o ANDA
+    (`scrollUntilVisible`'dan HEMEN sonra, `find.ancestor(of: find.text(title), matching: find.
+    byType(Card))` ile o KARTA özel) doğrulamak — toplu/gecikmeli bir sayıma güvenmemek. `flutter
+    test` tam yeşil: **358/358.**
 
 ## Coin Reward Miktarları — Şükran/Su/Manifest Günlüğü 2 → 5 ZC
 

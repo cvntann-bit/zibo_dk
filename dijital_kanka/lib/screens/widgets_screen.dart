@@ -4,7 +4,7 @@ import '../l10n/app_localizations.dart';
 import '../services/home_widget_service.dart';
 import '../utils/widget_module.dart';
 
-/// Sekiz modülün ana ekran widget'larını (bkz. CLAUDE.md "Ana Ekran
+/// Dokuz modülün ana ekran widget'larını (bkz. CLAUDE.md "Ana Ekran
 /// Widget'ları" bölümü) TEK bir listede toplayıp her biri için "Ekle"
 /// butonu sunan ekran — Ayarlar > Genel'deki "Ana Ekran Widget'ları"
 /// satırından push edilir.
@@ -108,6 +108,8 @@ class _WidgetModuleTile extends StatelessWidget {
         return ('💰', l10n.widgetTitleMoney, const Color(0xFF1E88E5));
       case ZiboWidgetModule.dailyRewards:
         return ('🎁', l10n.widgetTitleDailyRewards, const Color(0xFFC79A3D));
+      case ZiboWidgetModule.motivation:
+        return ('💬', l10n.widgetTitleMotivation, const Color(0xFFA9711F));
     }
   }
 }

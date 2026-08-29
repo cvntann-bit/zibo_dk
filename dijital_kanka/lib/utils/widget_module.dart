@@ -17,7 +17,14 @@ enum ZiboWidgetModule {
   dailyRewards(
     dataKeyPrefix: 'dailyRewards',
     androidProviderName: 'ZiboDailyRewardsWidgetProvider',
-  );
+  ),
+  /// 2026 güncellemesi — "Zibo'nun Sözü": diğer sekizinden FARKLI, ayrı bir
+  /// native layout/provider kullanan (bkz. `ZiboMotivationWidgetProvider.kt`,
+  /// `res/layout/widget_motivation.xml`) DAHA BÜYÜK, motivasyon
+  /// cümlelerini gösteren widget — kullanıcının "Zibo'nun motivasyon
+  /// cümlelerinin olduğu widget de yapabilirsin... daha büyük widgetler
+  /// yapabilirsin" isteği.
+  motivation(dataKeyPrefix: 'motivation', androidProviderName: 'ZiboMotivationWidgetProvider');
 
   const ZiboWidgetModule({required this.dataKeyPrefix, required this.androidProviderName});
 

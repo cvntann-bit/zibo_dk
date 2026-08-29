@@ -1,6 +1,6 @@
 // Ana ekran widget'larının içerik hesaplama mantığını (bkz. CLAUDE.md
 // "Ana Ekran Widget'ları" bölümü) doğrudan (widget/provider kurmadan) test
-// eder — sekiz fonksiyonun hepsi saf, yalnızca birkaç ilkel değer alıyor.
+// eder — dokuz fonksiyonun hepsi saf, yalnızca birkaç ilkel değer alıyor.
 
 import 'package:flutter_test/flutter_test.dart';
 
@@ -160,5 +160,14 @@ void main() {
         expect(overflow.primary, l10n.widgetDailyRewardsPrimary(7));
       },
     );
+  });
+
+  group('motivationWidgetStatus', () {
+    test('quote\'u olduğu gibi primary\'e taşır, secondary boş', () {
+      final status = motivationWidgetStatus(l10n, quote: 'Zor günler geçer, sen kalıcısın.');
+      expect(status.primary, 'Zor günler geçer, sen kalıcısın.');
+      expect(status.secondary, '');
+      expect(status.progress, isNull);
+    });
   });
 }

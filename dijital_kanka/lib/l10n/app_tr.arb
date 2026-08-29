@@ -1790,6 +1790,10 @@
   "@widgetTitleDailyRewards": {
     "description": "Günlük Giriş Ödülleri ana ekran widget'ının başlığı"
   },
+  "widgetTitleMotivation": "Zibo'nun Sözü",
+  "@widgetTitleMotivation": {
+    "description": "Zibo'nun Sözü (motivasyon cümleleri) ana ekran widget'ının başlığı (widget içinde + Widget'lar ekranındaki satırda)"
+  },
   "widgetGoalsEmptyHint": "Henüz hedef eklenmedi",
   "@widgetGoalsEmptyHint": {
     "description": "Hedef Takibi widget'ında hiç hedef yokken gösterilen alt metin"

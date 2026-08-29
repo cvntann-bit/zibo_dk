@@ -13,6 +13,7 @@ import '../providers/manifest_provider.dart';
 import '../providers/money_provider.dart';
 import '../providers/mood_provider.dart';
 import '../providers/notification_provider.dart';
+import '../providers/profile_provider.dart';
 import '../providers/trusted_time_provider.dart';
 import '../providers/water_provider.dart';
 import '../services/home_widget_service.dart';
@@ -129,6 +130,7 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
       money: context.read<MoneyProvider>(),
       currency: context.read<CurrencyProvider>(),
       dailyRewards: context.read<DailyRewardsProvider>(),
+      profile: context.read<ProfileProvider>(),
     );
     _homeWidgetSync = sync;
     final localeProvider = context.read<LocaleProvider>();

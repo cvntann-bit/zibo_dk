@@ -2398,6 +2398,12 @@ abstract class AppLocalizations {
   /// **'Günlük Giriş Ödülleri'**
   String get widgetTitleDailyRewards;
 
+  /// Zibo'nun Sözü (motivasyon cümleleri) ana ekran widget'ının başlığı (widget içinde + Widget'lar ekranındaki satırda)
+  ///
+  /// In tr, this message translates to:
+  /// **'Zibo\'nun Sözü'**
+  String get widgetTitleMotivation;
+
   /// Hedef Takibi widget'ında hiç hedef yokken gösterilen alt metin
   ///
   /// In tr, this message translates to:

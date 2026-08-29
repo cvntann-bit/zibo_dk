@@ -1,7 +1,9 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:flutter/widgets.dart';
 
+import '../data/zibo_messages.dart';
 import '../l10n/app_localizations.dart';
 import '../models/coin_economy.dart';
 import '../models/goal.dart';
@@ -15,16 +17,18 @@ import '../providers/goals_provider.dart';
 import '../providers/manifest_provider.dart';
 import '../providers/money_provider.dart';
 import '../providers/mood_provider.dart';
+import '../providers/profile_provider.dart';
 import '../providers/trusted_time_provider.dart';
 import '../providers/water_provider.dart';
+import '../utils/address_term.dart';
 import '../utils/currency_format.dart';
 import '../utils/widget_module.dart';
 import '../utils/widget_status.dart';
 import 'home_widget_service.dart';
 
-/// Sekiz modülün ana ekran widget'larını GÜNCEL tutan tek koordinatör —
+/// Dokuz modülün ana ekran widget'larını GÜNCEL tutan tek koordinatör —
 /// bkz. CLAUDE.md "Ana Ekran Widget'ları" bölümü. Hiçbir provider'ın
-/// constructor'ına dokunulmadan (8 dosyayı invaziv şekilde değiştirmek
+/// constructor'ına dokunulmadan (dosyaları invaziv şekilde değiştirmek
 /// yerine) her provider'a DIŞARIDAN bir `addListener` ekleyip, ilgili
 /// provider değiştiğinde SADECE o modülün widget'ını yeniden hesaplayıp
 /// [HomeWidgetService.pushStatus] ile native tarafa gönderiyor —
@@ -34,6 +38,17 @@ import 'home_widget_service.dart';
 ///
 /// `RootScreen`'in `initState`'inde BİR KEZ oluşturulup [syncAll] ile ilk
 /// senkronizasyon yapılıyor, `dispose()`'da TÜM listener'lar temizleniyor.
+///
+/// **"Zibo'nun Sözü" widget'ı (bkz. [_syncMotivation]) diğer sekizinden
+/// FARKLI davranıyor** — kendi provider'ı yok, bu yüzden tek başına
+/// dinlenecek bir "değişti" olayı da yok; yeni bir rastgele söz yalnızca
+/// [syncAll] her çağrıldığında (uygulama açılışı + dil değişimi —
+/// `RootScreen`'in zaten kurduğu AYNI tetikleyiciler) seçiliyor. Bu,
+/// "her mikro-etkileşimde söz değişsin" gibi daha gürültülü bir alternatif
+/// yerine BİLEREK seçildi — diğer sekiz widget'ın listener'ları yalnızca
+/// KENDİ widget'larını güncelliyor, `syncAll()`'ı TETİKLEMİYOR (bkz.
+/// yukarıdaki mimari notu), bu yüzden bu widget zaten gürültüsüz/ölçülü
+/// bir sıklıkta tazeleniyor.
 class HomeWidgetSyncCoordinator {
   HomeWidgetSyncCoordinator({
     required this.context,
@@ -48,7 +63,9 @@ class HomeWidgetSyncCoordinator {
     required this.money,
     required this.currency,
     required this.dailyRewards,
-  }) {
+    required this.profile,
+    Random? random,
+  }) : _random = random ?? Random() {
     goals.addListener(_syncGoals);
     water.addListener(_syncWater);
     gratitude.addListener(_syncGratitude);
@@ -77,6 +94,16 @@ class HomeWidgetSyncCoordinator {
   final CurrencyProvider currency;
   final DailyRewardsProvider dailyRewards;
 
+  /// "Zibo'nun Sözü" widget'ının hitap tercihini (bkz. [applyAddressTerm])
+  /// okumak için — bu provider'a bir `addListener` EKLENMEDİ (bkz. sınıf
+  /// dokümantasyonu), yalnızca [_syncMotivation] çalıştığında AN'lık olarak
+  /// okunuyor.
+  final ProfileProvider profile;
+
+  /// Testte deterministik bir söz seçimi enjekte edebilmek için (`CoinProvider`'ın
+  /// Şans Çarkı'ndaki AYNI "enjekte edilebilir Random" deseni).
+  final Random _random;
+
   DateTime get _today => Goal.dateOnly(trustedTime.now());
 
   AppLocalizations get _l10n => AppLocalizations.of(context)!;
@@ -93,6 +120,7 @@ class HomeWidgetSyncCoordinator {
     _syncDream();
     _syncMoney();
     _syncDailyRewards();
+    _syncMotivation();
   }
 
   void dispose() {
@@ -237,6 +265,22 @@ class HomeWidgetSyncCoordinator {
         primary: status.primary,
         secondary: status.secondary,
         progress: status.progress,
+      ),
+    );
+  }
+
+  void _syncMotivation() {
+    final locale = Localizations.localeOf(context);
+    final quotes = ziboMessagesForLocale(locale);
+    final rawQuote = quotes[_random.nextInt(quotes.length)];
+    final quote = applyAddressTerm(rawQuote, profile.addressTerm, locale);
+    final status = motivationWidgetStatus(_l10n, quote: quote);
+    unawaited(
+      service.pushStatus(
+        ZiboWidgetModule.motivation,
+        title: _l10n.widgetTitleMotivation,
+        primary: status.primary,
+        secondary: status.secondary,
       ),
     );
   }

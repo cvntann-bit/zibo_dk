@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- "Zibo'nun Sözü" — DOKUZUNCU, DAHA BÜYÜK ana ekran widget'ı (bkz.
+     CLAUDE.md "Ana Ekran Widget'ları" bölümü, kullanıcının "daha büyük
+     widgetler yapabilirsin... Zibo'nun motivasyon cümlelerinin olduğu
+     widget de yapabilirsin" isteği). Diğer sekiz modülün paylaştığı
+     `widget_module.xml`'DEN AYRI, ÖZEL bir layout — çünkü bu widget'ın
+     modül-özel emoji rozeti/ilerleme çubuğu YOK, bunun yerine gerçek bir
+     Zibo karakter görseli (`widget_zibo_character.png`,
+     `tool/prepare_widget_assets.dart` ile `assets/images/zibo_yeni.png`den
+     üretildi) + çok satırlı bir söz metni var. Diğer sekiz widget'la AYNI
+     görsel dili (accent bar, kart arka planı) paylaşıyor — bkz.
+     `ZiboMotivationWidgetProvider.kt`. -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/widget_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/widget_background"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <ImageView
+            android:id="@+id/widget_character"
+            android:layout_width="64dp"
+            android:layout_height="match_parent"
+            android:layout_gravity="bottom"
+            android:scaleType="fitStart"
+            android:adjustViewBounds="true"
+            android:src="@drawable/widget_zibo_character"
+            android:importantForAccessibility="no" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="14dp"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/widget_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="12sp"
+                android:textColor="@color/widget_secondary_text"
+                android:maxLines="1"
+                android:ellipsize="end"
+                tools:text="Zibo'nun Sözü" />
+
+            <!-- Diğer sekiz widget'taki accent bar'la AYNI desen — bkz.
+                 `widget_module.xml`'deki dokümantasyon (ham `<View>`
+                 spacer YERİNE, RemoteViews'ın desteklediği bir TextView). -->
+            <TextView
+                android:id="@+id/widget_accent_bar"
+                android:layout_width="30dp"
+                android:layout_height="3dp"
+                android:layout_marginTop="6dp"
+                android:layout_marginBottom="8dp" />
+
+            <TextView
+                android:id="@+id/widget_quote"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                android:textColor="@color/widget_primary_text"
+                android:maxLines="4"
+                android:ellipsize="end"
+                tools:text="Zor günler geçer, sen kalıcısın." />
+        </LinearLayout>
+    </LinearLayout>
+</FrameLayout>

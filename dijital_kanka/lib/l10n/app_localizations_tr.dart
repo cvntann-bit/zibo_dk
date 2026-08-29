@@ -1321,6 +1321,9 @@ class AppLocalizationsTr extends AppLocalizations {
   String get widgetTitleDailyRewards => 'Günlük Giriş Ödülleri';
 
   @override
+  String get widgetTitleMotivation => 'Zibo\'nun Sözü';
+
+  @override
   String get widgetGoalsEmptyHint => 'Henüz hedef eklenmedi';
 
   @override

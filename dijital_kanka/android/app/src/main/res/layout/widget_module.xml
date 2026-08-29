@@ -1,9 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Ana ekran widget'larının TEK, paylaşılan RemoteViews şablonu — 8 modül
-     widget'ının (bkz. ZiboBaseWidgetProvider.kt) HEPSİ bu AYNI layout'u
-     kullanıyor, yalnızca içerik (ikon/renk/metin/ilerleme) Kotlin'den
-     dolduruluyor. Uygulamanın gerçek honey/mustard temasıyla eşleşen renk
-     paleti için bkz. values(/-night)/colors.xml. -->
+<!-- Ana ekran widget'larının TEK, paylaşılan RemoteViews şablonu — SEKİZ
+     modül widget'ının (bkz. ZiboBaseWidgetProvider.kt) HEPSİ bu AYNI
+     layout'u kullanıyor, yalnızca içerik (ikon/renk/metin/ilerleme)
+     Kotlin'den dolduruluyor. Uygulamanın gerçek honey/mustard temasıyla
+     eşleşen renk paleti için bkz. values(/-night)/colors.xml.
+
+     2026 güncellemesi — kullanıcı isteği "widget tasarımlarını daha güzel
+     ve çeşitli yap, Zibo'nun logosunu kullanabilirsin": rozetin arkasına
+     modülün kendi accent renginde soluk bir "halo" eklendi (sekiz modül
+     artık yalnızca rozetin İÇİ değil, ETRAFI da kendi rengiyle ayırt
+     ediliyor — "çeşitlilik" isteğinin karşılığı, mevcut `accentColor`
+     altyapısı zaten her modülde farklı olduğu için YENİ bir renk sistemi
+     icat etmeye gerek kalmadan), başlık ile ana metin arasındaki (eskiden
+     çökmeye yol açan ham `<View>` spacer'ın yerini alan, bkz. altta) boşluk
+     artık modülün rengiyle dolu ince bir "accent bar"a dönüştürüldü, ve
+     kartın sağ-alt köşesine soluk bir Zibo logosu (`widget_zibo_logo.png`
+     — mevcut `zibo_splash_logo.png`'nin native/RemoteViews-uyumlu bir
+     kopyası, `tool/prepare_widget_assets.dart` ile üretildi) eklendi —
+     kullanıcının "Zibo'nun logosunu kullanabilirsin" isteği. -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/widget_root"
@@ -23,14 +37,27 @@
             android:orientation="horizontal"
             android:gravity="center_vertical">
 
+            <!-- Rozet + arkasındaki soluk "halo" — halo, badge'in AYNI
+                 dairesel drawable'ını (bkz. widget_badge_circle.xml) daha
+                 büyük boyutta VE modülün accent rengiyle DÜŞÜK opaklıkta
+                 tonlayarak (bkz. ZiboBaseWidgetProvider.withAlpha) çiziyor;
+                 üstüne AYNI eski 26dp'lik tam-opak rozet ortalanıyor. -->
             <FrameLayout
-                android:layout_width="26dp"
-                android:layout_height="26dp">
+                android:layout_width="36dp"
+                android:layout_height="36dp">
+
+                <ImageView
+                    android:id="@+id/widget_icon_halo"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:src="@drawable/widget_badge_circle"
+                    android:importantForAccessibility="no" />
 
                 <ImageView
                     android:id="@+id/widget_icon_bg"
                     android:layout_width="26dp"
                     android:layout_height="26dp"
+                    android:layout_gravity="center"
                     android:src="@drawable/widget_badge_circle"
                     android:importantForAccessibility="no" />
 
@@ -38,6 +65,7 @@
                     android:id="@+id/widget_icon_emoji"
                     android:layout_width="26dp"
                     android:layout_height="26dp"
+                    android:layout_gravity="center"
                     android:gravity="center"
                     android:textSize="13sp"
                     android:importantForAccessibility="no"
@@ -49,7 +77,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:layout_marginStart="8dp"
+                android:layout_marginStart="9dp"
                 android:textSize="12sp"
                 android:textColor="@color/widget_secondary_text"
                 android:maxLines="1"
@@ -57,28 +85,27 @@
                 tools:text="Hedef Takibi" />
         </LinearLayout>
 
-        <!-- 2026 bug düzeltmesi — gerçek cihazda bulunan gerçek çökme: ham bir
-             `<View>` (spacer olarak) RemoteViews'ın inflate ETTİĞİ sınıflar
-             için İZİN VERİLEN bir listeye (whitelist) sahip olduğu ve
-             `android.view.View`'in bu listede OLMADIĞI için, launcher
-             (`com.miui.home`, ama bu TÜM launcher'larda/Android sürümlerinde
-             geçerli bir RemoteViews kısıtlaması, MIUI'ye özgü değil) bu
-             widget'ı render etmeye çalıştığında `InflateException: Class not
-             allowed to be inflated android.view.View` fırlatıp "Araç
-             yüklenemiyor"/"Problem loading widget" gösteriyordu — kullanıcı
-             raporu doğrudan gerçek cihazda canlı `adb logcat` ile
-             `AppWidgetHostView`'in kendi stack trace'i okunarak doğrulandı.
-             **Düzeltme:** ayrı bir spacer `<View>` yerine boşluk doğrudan
-             `widget_primary`nin `layout_marginTop`'una taşındı — RemoteViews
-             TextView'ları zaten desteklediği için bu güvenli. **Genel kural:
-             RemoteViews layout'larında (widget/bildirim) boşluk için asla
-             ham `<View>`/`<Space>` kullanmayın, bunun yerine komşu elemanın
-             margin'ini kullanın.** -->
+        <!-- 2026 bug düzeltmesi (bkz. CLAUDE.md "Ana Ekran Widget'ları"
+             bölümü) — burada ham bir `<View>` spacer, RemoteViews'ın
+             inflate ETMEYE İZİN VERDİĞİ sınıflar listesinde olmadığı için
+             (`InflateException: Class not allowed to be inflated android.
+             view.View`, gerçek cihazda canlı `adb logcat` ile doğrulandı)
+             "Araç yüklenemiyor" çökmesine yol açıyordu. **Boşluk artık
+             SIRADAN bir margin DEĞİL, modülün accent rengiyle dolu ince bir
+             "accent bar" — hem eski çökme kesin olarak önleniyor (TextView
+             RemoteViews'ın desteklediği bir sınıf) HEM DE görsel çeşitlilik
+             isteğine bir vurgu daha ekleniyor.** -->
+        <TextView
+            android:id="@+id/widget_accent_bar"
+            android:layout_width="30dp"
+            android:layout_height="3dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="8dp" />
+
         <TextView
             android:id="@+id/widget_primary"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
             android:textSize="19sp"
             android:textStyle="bold"
             android:textColor="@color/widget_primary_text"
@@ -109,4 +136,20 @@
             android:visibility="gone"
             tools:visibility="visible" />
     </LinearLayout>
+
+    <!-- Soluk Zibo logosu — kartın sağ-alt köşesinde, içeriğin ÜSTÜNDE
+         (FrameLayout'ta son çocuk) ama çok düşük opaklıkta (`alpha`,
+         `View`'in TEMEL bir XML özniteliği — RemoteViews'ın "hangi VIEW
+         SINIFLARI inflate edilebilir" kısıtlamasından TAMAMEN AYRI, o
+         yalnızca ImageView/TextView gibi zaten İZİN VERİLEN sınıfların
+         KENDİ standart özniteliklerini kısıtlamıyor) bir marka imzası
+         olarak duruyor, içerikle YARIŞMIYOR. -->
+    <ImageView
+        android:layout_width="30dp"
+        android:layout_height="12dp"
+        android:layout_gravity="bottom|end"
+        android:src="@drawable/widget_zibo_logo"
+        android:alpha="0.18"
+        android:scaleType="fitEnd"
+        android:importantForAccessibility="no" />
 </FrameLayout>
