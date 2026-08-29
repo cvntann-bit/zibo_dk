@@ -6063,6 +6063,68 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
     çözüldüğünü (`values`/`values-night`), ilgili modülde bir işlem yapınca (ör. bir hedefi
     işaretlemek) widget'ın birkaç saniye içinde GÜNCELLENDİĞİNİ, ve widget'a dokununca uygulamanın
     açıldığını gözlemlemek.
+- **2026 bug düzeltmesi — kullanıcı raporu: "uygulama içinde widget eklenmedi yazıyor, manuel
+  olarak anasayfada ekleyince araç yüklenemiyor yazıyor."** İki AYRI, birbirinden BAĞIMSIZ gerçek
+  bug — ikisi de gerçek cihazda (`adb logcat`) canlı teşhis edilip doğrulandı, kör tahmin
+  YAPILMADI:
+  1. **"Widget eklenmedi" (in-app "Ekle" butonu her zaman başarısız) — kök neden:
+     `ZiboWidgetModule.androidProviderName` DEĞERLERİ `home_widget` paketinin native tarafının
+     beklediği şekle uymuyordu.** `HomeWidgetPlugin.kt`'nin `updateWidget`/`requestPinWidget`
+     handler'ları, `androidName`/`name` argümanı verildiğinde `Class.forName("${context.
+     packageName}.${className}")` kuruyor — yani bu parametre YALNIZCA widget provider sınıfı
+     uygulamanın KÖK paketinde (alt paket YOK) ise doğru çalışıyor. Bizim provider'larımız
+     `com.dijitalkanka.dijital_kanka.widgets.*` ALT PAKETİNDE (bkz. yukarıdaki mimari notu) —
+     `androidName: 'ZiboGoalsWidgetProvider'` vermek native tarafta `com.dijitalkanka.dijital_
+     kanka.ZiboGoalsWidgetProvider`'ı (`.widgets.` OLMADAN, GERÇEKTE VAR OLMAYAN bir sınıf)
+     aramaya çalışıp sessizce `ClassNotFoundException` fırlatıyordu — `HomeWidgetService`'in
+     try/catch'i bunu yutup `requestPin()`'in her zaman `false` dönmesine yol açıyordu.
+     **Düzeltme:** `ZiboWidgetModule`'e TAM NİTELİKLİ sınıf adını döndüren yeni bir
+     `qualifiedAndroidName` getter'ı eklendi (`'com.dijitalkanka.dijital_kanka.widgets.
+     $androidProviderName'`); `home_widget_service.dart`'taki HER İKİ çağrı (`HomeWidget.
+     updateWidget`/`requestPinWidget`) `name:`/`androidName:` yerine `qualifiedAndroidName:`
+     kullanacak şekilde değiştirildi (`Class.forName(qualifiedName ?: ...)` — verilen değeri
+     OLDUĞU GİBİ kullanıyor, hiçbir birleştirme yapmıyor, bu yüzden paket yolu sorunu YOK).
+  2. **"Araç yüklenemiyor" (manuel olarak ana ekrana eklenince) — kök neden: `widget_module.
+     xml`'de boşluk için kullanılan ham bir `<View>` spacer, RemoteViews'ın inflate ETMEYE
+     İZİN VERDİĞİ view sınıflarının whitelist'inde DEĞİL.** Gerçek cihazda `adb logcat` ile
+     `com.miui.home` (launcher) sürecinin kendi `AppWidgetHostView` etiketi altında TAM stack
+     trace'i yakalandı: `android.view.InflateException: ... Class not allowed to be inflated
+     android.view.View` — bu, `Class not allowed`'ın kelimesi kelimesine söylediği gibi, MIUI'ye
+     ÖZGÜ bir kısıtlama DEĞİL, `RemoteViews`'ın (bildirim VE widget'larda ortak) TÜM Android
+     sürüm/launcher'larında geçerli, belgelenmiş bir mimari kısıtlaması — yalnızca sabit bir
+     view sınıfı listesi (FrameLayout/LinearLayout/TextView/ImageView/ProgressBar vb.) inflate
+     edilebiliyor, ham `android.view.View`/`Space` bu listede YOK. Bu hata bizim UYGULAMAMIZIN
+     sürecinde DEĞİL, launcher'ın sürecinde (RemoteViews'ı ALICI taraf) oluştuğu için `com.
+     dijitalkanka.dijital_kanka`'nın kendi logcat'inde HİÇBİR İZ bırakmıyordu — yalnızca
+     `AppWidgetHostView`/`Launcher.Widget` etiketleriyle launcher'ın PID'inde görünüyordu, bu
+     yüzden ilk aramalar (uygulamamızın kendi loglarına bakan) sonuçsuz kaldı. **Düzeltme:**
+     ayrı spacer `<View>` KALDIRILDI, 8dp'lik boşluk bunun yerine hemen altındaki
+     `widget_primary` `TextView`'ının `layout_marginTop`'una taşındı (TextView zaten
+     RemoteViews'ın desteklediği bir sınıf, komşu elemanın margin'iyle AYNI görsel sonucu
+     SIFIR ek view maliyetiyle veriyor). **Genelleştirilebilir kural: RemoteViews kullanan HER
+     layout'ta (bildirimler DAHİL) boşluk için ASLA ham `<View>`/`<Space>` kullanmayın — komşu
+     elemanın `layout_margin*`'ini kullanın; aksi halde hata yalnızca ALICI SÜREÇTE (launcher/
+     sistem UI) oluşur ve GÖNDEREN uygulamanın kendi logcat'i TAMAMEN TEMİZ görünür, bu da teşhisi
+     ciddi şekilde zorlaştırır.**
+  - **Doğrulama — gerçek cihazda, İKİ AYRI derleme+kurulumla, canlı `adb logcat` ile:** İlk
+    düzeltmeden (yalnızca `qualifiedAndroidName`) sonra `WidgetsScreen`'den "Ekle"ye basılınca
+    widget artık GERÇEKTEN bağlanıyordu (`bindAppWidgetId`/`Bound widget` log satırları) AMA
+    hemen ardından `AppWidgetHostView` üzerinde YUKARIDAKİ `InflateException` görüldü — bu, İKİ
+    bug'ın BAĞIMSIZ olduğunu VE ilk düzeltmenin GERÇEKTEN işe yaradığını (aksi halde bind hiç
+    gerçekleşmezdi) kanıtladı. İkinci düzeltmeden SONRA aynı akış (hem "Hedef Takibi" hem "Su
+    Takibi" widget'ları için ayrı ayrı denendi) `logcat`'te HİÇBİR `AppWidgetHostView`/
+    `InflateException` satırı ÜRETMEDEN tamamlandı, VE `WidgetsScreen`'in "Ekle" butonu artık
+    gerçek `"Widget eklendi! Ana ekranını kontrol et."` başarı mesajını gösterdi (önceden HER
+    ZAMAN "Widget eklenemedi" başarısızlık mesajı gösteriyordu). `flutter test` iki düzeltmeden
+    sonra da tam yeşil (356/356) — hiçbir mevcut test bu iki dosyaya (`widget_module.dart`,
+    `home_widget_service.dart`, `widget_module.xml`) doğrudan bağımlı olmadığı için regresyon
+    riski taşımadı.
+  - **Ders — bu proje genelinde tekrarlayan bir teşhis kalıbı:** native bir platform bileşeninin
+    (widget/bildirim) render/uygulama HATASI, "gönderen" uygulamanın KENDİ sürecinde değil ALICI
+    sistem sürecinde (launcher, sistem UI) oluşabilir — bu durumda `adb logcat`'i yalnızca kendi
+    paket adınıza göre filtrelemek (`grep dijital_kanka`) hatayı TAMAMEN KAÇIRIR; ilgili sistem
+    bileşeninin (`AppWidgetHostView`, `NotificationManagerService` vb.) kendi log etiketlerini de
+    aramak GEREKİR — bu oturumda tam olarak bu genişletilmiş arama sayesinde bulundu.
 
 ## Coin Reward Miktarları — Şükran/Su/Manifest Günlüğü 2 → 5 ZC
 

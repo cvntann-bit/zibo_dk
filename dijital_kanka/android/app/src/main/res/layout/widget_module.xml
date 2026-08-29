@@ -57,14 +57,28 @@
                 tools:text="Hedef Takibi" />
         </LinearLayout>
 
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="8dp" />
-
+        <!-- 2026 bug düzeltmesi — gerçek cihazda bulunan gerçek çökme: ham bir
+             `<View>` (spacer olarak) RemoteViews'ın inflate ETTİĞİ sınıflar
+             için İZİN VERİLEN bir listeye (whitelist) sahip olduğu ve
+             `android.view.View`'in bu listede OLMADIĞI için, launcher
+             (`com.miui.home`, ama bu TÜM launcher'larda/Android sürümlerinde
+             geçerli bir RemoteViews kısıtlaması, MIUI'ye özgü değil) bu
+             widget'ı render etmeye çalıştığında `InflateException: Class not
+             allowed to be inflated android.view.View` fırlatıp "Araç
+             yüklenemiyor"/"Problem loading widget" gösteriyordu — kullanıcı
+             raporu doğrudan gerçek cihazda canlı `adb logcat` ile
+             `AppWidgetHostView`'in kendi stack trace'i okunarak doğrulandı.
+             **Düzeltme:** ayrı bir spacer `<View>` yerine boşluk doğrudan
+             `widget_primary`nin `layout_marginTop`'una taşındı — RemoteViews
+             TextView'ları zaten desteklediği için bu güvenli. **Genel kural:
+             RemoteViews layout'larında (widget/bildirim) boşluk için asla
+             ham `<View>`/`<Space>` kullanmayın, bunun yerine komşu elemanın
+             margin'ini kullanın.** -->
         <TextView
             android:id="@+id/widget_primary"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
             android:textSize="19sp"
             android:textStyle="bold"
             android:textColor="@color/widget_primary_text"

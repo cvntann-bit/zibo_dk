@@ -47,7 +47,9 @@ class HomeWidgetPluginService implements HomeWidgetService {
       await HomeWidget.saveWidgetData<String>('${prefix}_primary', primary);
       await HomeWidget.saveWidgetData<String>('${prefix}_secondary', secondary);
       await HomeWidget.saveWidgetData<int>('${prefix}_progress', progress ?? -1);
-      await HomeWidget.updateWidget(name: module.androidProviderName);
+      // `name:`/`androidName:` DEĞİL — bkz. `ZiboWidgetModule.
+      // qualifiedAndroidName` dokümantasyonundaki 2026 bug düzeltmesi.
+      await HomeWidget.updateWidget(qualifiedAndroidName: module.qualifiedAndroidName);
     } catch (_) {
       // Eklenti kullanılamıyorsa (desteklenmeyen platform, ilk açılışın
       // çok erken bir anı vb.) veya kullanıcı bu widget'ı hiç eklemediyse
@@ -62,7 +64,9 @@ class HomeWidgetPluginService implements HomeWidgetService {
     try {
       final supported = await HomeWidget.isRequestPinWidgetSupported() ?? false;
       if (!supported) return false;
-      await HomeWidget.requestPinWidget(androidName: module.androidProviderName);
+      // `androidName:` DEĞİL — bkz. `ZiboWidgetModule.qualifiedAndroidName`
+      // dokümantasyonundaki 2026 bug düzeltmesi.
+      await HomeWidget.requestPinWidget(qualifiedAndroidName: module.qualifiedAndroidName);
       return true;
     } catch (_) {
       return false;

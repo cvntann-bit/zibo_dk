@@ -28,8 +28,28 @@ enum ZiboWidgetModule {
   final String dataKeyPrefix;
 
   /// `android/app/src/main/AndroidManifest.xml`'deki `<receiver
-  /// android:name=".widgets.X">` ile BİREBİR eşleşmeli — `HomeWidget.
-  /// updateWidget(name: ...)`/`requestPinWidget(name: ...)` çağrılarında
-  /// kullanılıyor.
+  /// android:name=".widgets.X">` ile BİREBİR eşleşen SADECE sınıf adı
+  /// (paket öneki YOK) — yalnızca dokümantasyon/okunabilirlik için tutuluyor.
+  /// `HomeWidget` çağrılarında DOĞRUDAN KULLANILMIYOR, bkz. [qualifiedAndroidName].
   final String androidProviderName;
+
+  /// 2026 bug düzeltmesi — gerçek cihazda bulunan gerçek bug: `home_widget`
+  /// paketinin native tarafı `HomeWidget.updateWidget(name:)`/
+  /// `requestPinWidget(androidName:)` çağrılarında `Class.forName(
+  /// "${context.packageName}.${className}")` kuruyor — yani `androidName`
+  /// yalnızca `.widgets.` ALT PAKETİ OLMAYAN düz bir sınıf adı için doğru
+  /// çalışıyor. Bizim widget provider'larımız `com.dijitalkanka.dijital_
+  /// kanka.widgets.*` alt paketinde olduğu için (bkz. `android/app/src/
+  /// main/kotlin/.../widgets/`), `androidName: 'ZiboGoalsWidgetProvider'`
+  /// vermek native tarafta `com.dijitalkanka.dijital_kanka.
+  /// ZiboGoalsWidgetProvider`'ı (`.widgets.` OLMADAN, GERÇEKTE VAR OLMAYAN
+  /// bir sınıf) aramaya çalışıp `ClassNotFoundException` fırlatıyordu —
+  /// bu da `WidgetsScreen`'deki "Ekle" butonunun HER ZAMAN sessizce
+  /// başarısız olmasına (`requestPin` → `catch (_) { return false; }`)
+  /// yol açıyordu (kullanıcı raporu: "widget eklenmedi"). **Çözüm:**
+  /// `androidName`/`name` yerine `qualifiedAndroidName` (TAM nitelikli
+  /// sınıf adı, `Class.forName` bunu OLDUĞU GİBİ kullanıyor, hiçbir
+  /// birleştirme yapmıyor) kullanmak — bkz. `home_widget_service.dart`.
+  String get qualifiedAndroidName =>
+      'com.dijitalkanka.dijital_kanka.widgets.$androidProviderName';
 }
