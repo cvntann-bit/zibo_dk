@@ -44,11 +44,50 @@ import 'package:dijital_kanka/screens/profile_screen.dart';
 import 'package:dijital_kanka/screens/root_screen.dart';
 import 'package:dijital_kanka/screens/wheel_screen.dart';
 import 'package:dijital_kanka/services/ad_service.dart';
+import 'package:dijital_kanka/services/home_widget_service.dart';
 import 'package:dijital_kanka/services/notification_service.dart';
 import 'package:dijital_kanka/services/purchase_service.dart';
 import 'package:dijital_kanka/utils/ad_free_promo_trigger.dart';
 import 'package:dijital_kanka/utils/tab_navigation.dart';
+import 'package:dijital_kanka/utils/widget_module.dart';
 import 'package:dijital_kanka/widgets/speech_bubble.dart';
+
+/// Ana ekran widget'larına gerçekten hangi metnin gönderildiğini kaydeden
+/// sahte servis — `HomeWidgetSyncCoordinator`'ın kendi doğrudan testindeki
+/// (`home_widget_sync_coordinator_test.dart`) `_RecordingHomeWidgetService`
+/// ile AYNI amaç, ama BURADA `RootScreen`'in GERÇEK `_AppStartupGate`/
+/// `Consumer3<ThemeProvider, LocaleProvider, AppThemeProvider>` zincirinden
+/// GEÇEREK enjekte ediliyor — dil değişimi sonrası widget senkronunun
+/// GERÇEKTEN doğru locale'i kullandığını (2026 bug düzeltmesi, bkz.
+/// `root_screen.dart`'taki `_onLocaleChangedForWidgetSync` dokümantasyonu)
+/// doğrulamak için gerekli, o testte olduğu gibi `HomeWidgetSyncCoordinator`'ı
+/// izole kurmak bu kare-zamanlama yarışını YAKALAYAMAZDI.
+class _RecordingHomeWidgetService implements HomeWidgetService {
+  final List<(ZiboWidgetModule, String)> titlesPushed = [];
+
+  @override
+  Future<void> pushStatus(
+    ZiboWidgetModule module, {
+    required String title,
+    required String primary,
+    required String secondary,
+    int? progress,
+  }) async {
+    titlesPushed.add((module, title));
+  }
+
+  @override
+  Future<void> pushCarousel(
+    ZiboWidgetModule module, {
+    required String title,
+    required List<CarouselItem> items,
+  }) async {
+    titlesPushed.add((module, title));
+  }
+
+  @override
+  Future<bool> requestPin(ZiboWidgetModule module) async => true;
+}
 
 /// Gerçek [DijitalKankaApp] ile aynı kurulum, ama testte tarihi kontrol
 /// edebilmek için [GoalsProvider]'a sahte bir saat enjekte eder.
@@ -930,6 +969,41 @@ void main() {
       expect(find.text('Goals'), findsOneWidget);
       expect(find.text('Profile'), findsOneWidget);
       expect(_currentHomeMessage(tester), isNotEmpty);
+    },
+  );
+
+  testWidgets(
+    // 2026 bug düzeltmesi — kullanıcı raporu: "uygulama İspanyolca ama
+    // ana ekran widget'ları hâlâ Türkçe." Bkz. `root_screen.dart`'taki
+    // `_onLocaleChangedForWidgetSync` dokümantasyonu — kök neden bir
+    // kare-zamanlama yarışıydı (locale değişince widget senkronu bir
+    // SONRAKİ frame'e ertelenmeden HEMEN, `MaterialApp` henüz yeni
+    // locale'le yeniden inşa EDİLMEDEN çalışıyordu).
+    'Dil değiştirilince ana ekran widget senkronu da YENİ dile geçer (2026 bug düzeltmesi)',
+    (WidgetTester tester) async {
+      final recorder = _RecordingHomeWidgetService();
+      await _pumpPastOnboarding(
+        tester,
+        DijitalKankaApp(homeWidgetService: recorder),
+      );
+      recorder.titlesPushed.clear(); // yalnızca dil değişiminden SONRAKİ gönderimleri say
+
+      await tester.tap(find.byTooltip('Ayarlar'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Dil'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('English'));
+      await tester.pumpAndSettle();
+
+      // Su Takibi widget'ının başlığı artık İngilizce metinle (EN ARB
+      // değeri) gönderilmiş olmalı — Türkçe ("Su Takibi") ASLA gönderilmemiş
+      // olmalı bu noktadan itibaren.
+      final waterTitles = recorder.titlesPushed
+          .where((e) => e.$1 == ZiboWidgetModule.water)
+          .map((e) => e.$2)
+          .toList();
+      expect(waterTitles, contains('Water Tracking'));
+      expect(waterTitles, isNot(contains('Su Takibi')));
     },
   );
 

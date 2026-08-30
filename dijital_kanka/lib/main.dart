@@ -47,6 +47,7 @@ import 'screens/root_screen.dart';
 import 'services/ad_service.dart';
 import 'services/admob_ad_service.dart';
 import 'services/google_auth_service.dart';
+import 'services/home_widget_service.dart';
 import 'services/iap_purchase_service.dart';
 import 'services/purchase_service.dart';
 import 'services/push_notification_service.dart';
@@ -343,6 +344,7 @@ class DijitalKankaApp extends StatelessWidget {
     this.uid,
     this.adService,
     this.purchaseService,
+    this.homeWidgetService,
   });
 
   /// Kullanıcının anonim Firebase kimliği (bkz. `main()`) — `null` ise
@@ -367,6 +369,13 @@ class DijitalKankaApp extends StatelessWidget {
   /// için bunu doğrudan test eden senaryolar `const MockPurchaseService()`
   /// enjekte eder.
   final PurchaseService? purchaseService;
+
+  /// Test enjeksiyonu için — `RootScreen.homeWidgetService` ile AYNI desen,
+  /// `_AppStartupGate` üzerinden oraya iletiliyor (bkz. "Ana Ekran
+  /// Widget'ları" bölümündeki dil-değişimi regresyon testi). `null` ise
+  /// (üretimde HER ZAMAN) `RootScreen`'in KENDİ varsayılanı
+  /// (`HomeWidgetPluginService()`) kullanılır.
+  final HomeWidgetService? homeWidgetService;
 
   @override
   Widget build(BuildContext context) {
@@ -558,7 +567,7 @@ class DijitalKankaApp extends StatelessWidget {
               GlobalCupertinoLocalizations.delegate,
             ],
             supportedLocales: AppLocalizations.supportedLocales,
-            home: const _AppStartupGate(),
+            home: _AppStartupGate(homeWidgetService: homeWidgetService),
           );
         },
       ),
@@ -571,7 +580,12 @@ class DijitalKankaApp extends StatelessWidget {
 /// gizler — kullanıcı varsayılan/boş durumdan gerçek veriye "zıplayan" bir
 /// geçiş görmez, yumuşak bir çapraz-solma (`AnimatedSwitcher`) ile geçilir.
 class _AppStartupGate extends StatelessWidget {
-  const _AppStartupGate();
+  const _AppStartupGate({this.homeWidgetService});
+
+  /// `DijitalKankaApp.homeWidgetService`'ten (test enjeksiyonu için) geçiyor
+  /// — yalnızca `RootScreen` dalına iletiliyor, `AppLoadingScreen`/
+  /// `OnboardingScreen`'in ona ihtiyacı yok.
+  final HomeWidgetService? homeWidgetService;
 
   @override
   Widget build(BuildContext context) {
@@ -610,7 +624,10 @@ class _AppStartupGate extends StatelessWidget {
     } else if (!onboarding.isCompleted) {
       child = const OnboardingScreen(key: ValueKey('onboarding'));
     } else {
-      child = const RootScreen(key: ValueKey('root'));
+      child = RootScreen(
+        key: const ValueKey('root'),
+        homeWidgetService: homeWidgetService,
+      );
     }
     return AnimatedSwitcher(
       duration: const Duration(milliseconds: 350),

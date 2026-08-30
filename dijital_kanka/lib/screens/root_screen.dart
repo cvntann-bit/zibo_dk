@@ -137,9 +137,35 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
     _homeWidgetSync = sync;
     final localeProvider = context.read<LocaleProvider>();
     _localeProviderForCleanup = localeProvider;
-    localeProvider.addListener(sync.syncAll);
+    localeProvider.addListener(_onLocaleChangedForWidgetSync);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) sync.syncAll();
+    });
+  }
+
+  /// **2026 bug düzeltmesi — kullanıcı raporu: "uygulama İspanyolca ama
+  /// widget'lar hâlâ Türkçe."** Kök neden bir kare-zamanlama yarışıydı:
+  /// `LocaleProvider.notifyListeners()` KAYITLI TÜM listener'ları SENKRON
+  /// (aynı çağrı yığınında) tetikliyor — ama `MaterialApp`'in `locale:`
+  /// parametresi (dolayısıyla `AppLocalizations.of(context)`'in gördüğü
+  /// ambient değer) yalnızca `Consumer3`'ün BİR SONRAKİ FRAME'de yeniden
+  /// `build()` çalıştırmasıyla GERÇEKTEN değişiyor (`provider` paketinin
+  /// `notifyListeners()` → `setState`-benzeri mekanizması, Flutter'daki HER
+  /// `setState` gibi rebuild'i hemen değil bir SONRAKİ çizim karesine
+  /// erteliyor). `localeProvider.addListener(sync.syncAll)` DOĞRUDAN
+  /// bağlıyken, `sync.syncAll()` bu SENKRON anda (yani `MaterialApp` henüz
+  /// YENİ locale'le yeniden inşa EDİLMEDEN) çalışıp `_l10n` üzerinden HÂLÂ
+  /// ESKİ (bir adım geride) dili okuyordu — widget'lar dil değiştirildikten
+  /// SONRA bile eski dilde KALIYORDU (locale bir daha DEĞİŞMEDİĞİ sürece bu
+  /// bir daha tetiklenmediği için asla kendiliğinden düzelmiyordu).
+  /// initState'teki İLK `syncAll()` çağrısı ZATEN AYNI gerekçeyle
+  /// (`AppLocalizations.of(context)` ilk karede `null` dönebilir)
+  /// `addPostFrameCallback`'e erteleniyordu — burada da AYNI erteleme
+  /// deseni uygulanıp `MaterialApp` gerçekten yeni locale'le yeniden inşa
+  /// OLDUKTAN SONRAKİ karede çalışması sağlandı.
+  void _onLocaleChangedForWidgetSync() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _homeWidgetSync?.syncAll();
     });
   }
 
@@ -151,7 +177,7 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
     dailyRewardsPopupRequest.removeListener(_onDailyRewardsPopupRequested);
     final sync = _homeWidgetSync;
     if (sync != null) {
-      _localeProviderForCleanup?.removeListener(sync.syncAll);
+      _localeProviderForCleanup?.removeListener(_onLocaleChangedForWidgetSync);
       sync.dispose();
     }
     super.dispose();

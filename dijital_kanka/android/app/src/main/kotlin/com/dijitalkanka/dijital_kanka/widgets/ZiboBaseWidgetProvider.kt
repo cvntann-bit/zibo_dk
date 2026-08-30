@@ -19,9 +19,8 @@ import es.antonborri.home_widget.HomeWidgetProvider
  * render mantığı — `res/layout/widget_module.xml` (TEK, paylaşılan
  * RemoteViews şablonu) doldurulur. Her alt sınıf yalnızca [dataKeyPrefix]
  * (Flutter tarafının `HomeWidget.saveWidgetData` ile hangi anahtar
- * önekiyle yazdığı, bkz. `lib/services/home_widget_service.dart`), [emoji],
- * [accentColor] VE [backgroundFrames]'i belirtir — geri kalan HER ŞEY
- * burada, tek yerde.
+ * önekiyle yazdığı, bkz. `lib/services/home_widget_service.dart`), [emoji]
+ * ve [accentColor]'ı belirtir — geri kalan HER ŞEY burada, tek yerde.
  *
  * Flutter tarafı `widgetData`'ya üç alan yazıyor (önek + alan adı):
  * `{prefix}_title`, `{prefix}_primary`, `{prefix}_secondary`,
@@ -33,18 +32,6 @@ abstract class ZiboBaseWidgetProvider : HomeWidgetProvider() {
   abstract val dataKeyPrefix: String
   abstract val emoji: String
   abstract val accentColor: Int
-
-  /**
-   * **2026 güncellemesi — kullanıcı isteği "her widget'in kendi
-   * animasyonu olsun".** Bu alt sınıfa ÖZGÜ, önceden çizilmiş arka plan
-   * "sahne" drawable id'lerinin sırası (bkz. `tool/
-   * generate_widget_bg_animations.dart`) — [onUpdate] bunları
-   * `R.id.widget_bg_flipper`'a (bkz. `widget_module.xml`) sırayla
-   * `addView` ile ekleyip TAMAMEN NATIVE (launcher sürecinin kendi
-   * zamanlayıcısı) bir `ViewFlipper` döngüsü kurar, "Zibo'nun Sözü"
-   * widget'ındaki AYNI teknik.
-   */
-  abstract val backgroundFrames: List<Int>
 
   /** [accentColor]'ın DÜŞÜK opaklıklı hâli — rozetin arkasındaki "halo" için
    * (bkz. `widget_module.xml`'deki 2026 görsel güncellemesi). */
@@ -78,13 +65,6 @@ abstract class ZiboBaseWidgetProvider : HomeWidgetProvider() {
               setProgressBar(R.id.widget_progress, 100, progress, false)
             } else {
               setViewVisibility(R.id.widget_progress, View.GONE)
-            }
-
-            removeAllViews(R.id.widget_bg_flipper)
-            backgroundFrames.forEach { frameRes ->
-              val page = RemoteViews(context.packageName, R.layout.widget_bg_frame)
-              page.setImageViewResource(R.id.widget_bg_frame_image, frameRes)
-              addView(R.id.widget_bg_flipper, page)
             }
 
             // Widget'ın HERHANGİ bir yerine dokununca uygulama açılır —

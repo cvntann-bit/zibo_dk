@@ -6700,6 +6700,127 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
       doğru/net göründüğü, geçişin "nefes alma" hissi verdiği) doğrulama da bu turda YAPILAMADI —
       kullanıcının kendi cihazında beş widget'ın hepsini (özellikle henüz hiç bağlanmamış
       dördünü) ekleyip birkaç dakika gözlemlemesi gerekiyor.
+    - **DENENDİ, KULLANICI GERÇEK CİHAZDA GÖRÜP REDDETTİ, TAMAMEN GERİ ALINDI.** Kullanıcı geri
+      bildirimi (verbatim): "hiç güzel durmadı komple silelim bu tasarımları olmadı bunlar" —
+      Z-desenindeki AYNI kategori bir sonuç (bkz. yukarıdaki "ÜÇÜNCÜ güncelleme"deki Z-deseni
+      reddi), bu sefer TÜM BEŞ widget'ın arka plan animasyonu için. Tam geri alma yapıldı: 20 PNG
+      (`widget_bg_*_1..4.png`), `widget_bg_frame.xml`, `tool/generate_widget_bg_animations.dart`
+      SİLİNDİ; `ZiboBaseWidgetProvider.kt`'deki `backgroundFrames` abstract alanı + doldurma
+      döngüsü, üç alt sınıfın (`Water`/`Money`/`DailyRewards`) `backgroundFrames` override'ları,
+      `ZiboMotivationWidgetProvider.kt`/`ZiboProfileStatsWidgetProvider.kt`'deki ikinci
+      `ViewFlipper` doldurma bloğu, VE `widget_module.xml`/`widget_motivation.xml`/
+      `widget_profile_stats.xml`'deki `widget_bg_flipper` `<ViewFlipper>` elemanları TAMAMEN
+      kaldırılıp bu güncellemeden BİR ÖNCEKİ (Round 2/Z-deseni reddi sonrası) haline dönüldü —
+      beş widget şu an yeniden yalnızca TEK içerik-taşıyan katmana (veya "Zibo'nun Sözü"/
+      "İstatistiklerim" için TEK içerik `ViewFlipper`'ına) sahip, arka plan animasyonu YOK. Bu bir
+      daha DENENMEDEN önce, "sahne illüzyonu"nun (4 statik kare + ViewFlipper) kavramsal olarak
+      neden işe yaramadığı (renk/motif kalitesi mi, "durgunluk" hissi devam mı etti, yoksa arka
+      plan katmanının kendisi mi rahatsız etti) kullanıcıyla AYRICA netleştirilmeli.
+  - **2026 ALTINCI güncelleme — arka plan animasyonu tamamen reddedildikten HEMEN SONRA, kullanıcı
+    aynı oturumda "bu sefer YALNIZCA logoyu belirginleştir + hareket ettir" isteğiyle DAHA DAR
+    kapsamlı bir animasyon istedi, ardından ilk deneme "kasıyormuş gibi" bulunup düzeltildi.**
+    - **İlk deneme — "duraksamalı shake":** kullanıcı isteği (verbatim): "logoyu biraz daha
+      belirgin yap hafif duraksamalı shake efekti ver logo hareket etsin güzel durur." Köşedeki
+      Zibo logosu (`alpha=0.5`) statik bir `ImageView`'DEN, kendi `ViewFlipper`'ına (`widget_logo_
+      flipper`) çevrildi — `alpha=0.68`'e çıkarılıp SEKİZ kareye bölündü (`0/0/0/-8/8/-4/0/0°`,
+      `flipInterval=600ms`) — HİÇ YENİ PNG ÜRETİLMEDEN: her kare AYNI `widget_zibo_logo` kaynağının
+      yalnızca farklı bir `android:rotation` açısıyla STATİK XML örneği. **Bu tekniğin RemoteViews
+      güvenliği ÖNEMLİ bir keşif:** `android:rotation` (`alpha`/`scaleType` gibi) View'in TEMEL bir
+      inflate-zamanı XML özniteliği — `RemoteViews.setInt(id, "setRotation", ...)` gibi ÇALIŞMA
+      ZAMANI bir "action" çağrısı DEĞİL (bu, geçmişte `ProgressBar.setProgressTintList` reflection
+      hatasına yol açan TÜRDEN bir riskti) — bu yüzden RemoteViews'ın kısıtlı whitelist'inden HİÇ
+      geçmiyor, host süreç layout'u NORMAL `LayoutInflater` ile inflate ederken diğer TÜM statik
+      XML öznitelikleriyle (zaten güvenle kullanılan `alpha` gibi) AYNI şekilde uygulanıyor —
+      whitelist riski YOK.
+    - **Kullanıcı geri bildirimi (verbatim, HENÜZ cihazda görmeden, yalnızca kavram üzerinden):**
+      "widgetdeki ziboyu duraksamalı shake yaptık ya onu akıcı bir şekilde shake efekti yap böyle
+      kasıyormuş gibi durdu güzel olmadı daha akıcı animasyon ekle." Kök sorun: SEKİZ KABA kare +
+      ARADA GEÇİŞ ANİMASYONU OLMADAN (kasıtlı — "gerçek bir sallanma ani/keskin geçişlerle daha
+      inandırıcı" varsayımıyla) her komşu kare arasında BÜYÜK açı sıçramaları (0°→-8°→8°→-4°) VE
+      600ms'lik YAVAŞ bir `flipInterval` — bu, göze akıcı bir salınım değil, "zıplayan"/"takılan"
+      bir dizi ANLIK sıçrama olarak okunuyordu.
+    - **Düzeltme — "flip-book" (film şeridi/sprite animasyon) tekniği: ÇOK sayıda, İNCE açı
+      adımlı kare + KISA `flipInterval`.** Bu, klasik kare-tabanlı animasyonun (GIF/sprite sheet)
+      TEMEL prensibi — RemoteViews gerçek bir property animator ÇALIŞTIRAMADIĞI için (bkz. bu
+      bölümün genelindeki "RemoteViews'ın gerçek animasyon sınırı" notu), akıcılık YALNIZCA
+      "yeterince küçük adım + yeterince kısa aralık" ile TAKLİT edilebiliyor. Yeni tasarım: 28
+      kare — İLK 12'si bir sinüs eğrisinin örneklemi (`0°→4°→7°→8°→7°→4°→0°→-4°→-7°→-8°→-7°→-4°`,
+      TAM BİR yumuşak sallanma jesti, komşu kareler arası fark yalnızca 3-4°), SONRAKİ 16'sı 0°'de
+      DİNLENME (kullanıcının "hafif duraksamalı" isteğinin karşılığı) — `flipInterval=70ms` (12
+      kare × 70ms ≈ 840ms'lik akıcı bir sallanma + 16 kare × 70ms ≈ 1.1sn'lik bir duraklama,
+      döngü tekrarlıyor). Geçiş animasyonu (`in/outAnimation`) YİNE BİLEREK EKLENMEDİ — ince açı
+      adımları ZATEN akıcı, üstüne bir solma/kayma binmesi (özellikle bu kadar küçük bir logoda)
+      net rotasyon hissini bulanıklaştırırdı; akıcılığın kaynağı KARE SAYISI/HIZI, geçiş efekti
+      DEĞİL.
+    - **Üç widget layout dosyasının (`widget_module.xml` — 42×17dp, 8 modülden 3'ünün paylaştığı
+      şablon; `widget_motivation.xml`/`widget_profile_stats.xml` — 48×20dp) ÜÇÜ de AYNI 28 kareyi,
+      yalnızca kendi logo boyutuyla taşıyor** — elle 3×28=84 satır yazmak yerine tek bir Bash
+      döngüsüyle (derece dizisi → `<ImageView .../>` satırları) üretilip her dosyaya yapıştırıldı,
+      `tool/`'a kalıcı bir script EKLENMEDİ (tek seferlik, tekrar üretilmesi gerekirse aynı derece
+      dizisi + boyut/alpha kalıbı yeterli).
+    - **Gerçek cihazda doğrulama — İKİ AYRI build+kurulum turunda, `adb logcat` ile canlı
+      izlendi, SIFIR hata.** İlk tur (kaba 8-kare tasarım): cihazda ZATEN bağlı bir
+      `ZiboWaterWidgetProvider` (id=23) örneği bulunup uygulama açılışında `onWidgetUpdate`'in
+      HİÇBİR `InflateException`/`FATAL EXCEPTION` OLMADAN İKİ KEZ tetiklendiği doğrulandı. İkinci
+      tur (28-kareli akıcı tasarım, "kasıyor" düzeltmesinden SONRA): cihazda BU SEFER
+      `ZiboMotivationWidgetProvider` (id=29, "Zibo'nun Sözü" — `widget_motivation.xml`'i kullanan,
+      üç dosyadan biri) bağlı bulundu, `onWidgetUpdate id = 29` YİNE hatasız tetiklendi — İKİ
+      FARKLI widget türünde, İKİ AYRI tasarım turunda, RemoteViews inflate güvenliği canlı
+      kanıtlandı. **Görsel (gerçekten "akıcı" hissettirip hissettirmediği) doğrulama YAPILAMADI**
+      (bkz. bu bölümün genelindeki tekrarlayan "kullanıcının kendi cihazında bakması gerekiyor"
+      notu) — kullanıcının birkaç saniye izleyip önceki "kasıyor" hissinin geçtiğini onaylaması
+      gerekiyor.
+  - **2026 YEDİNCİ güncelleme — gerçek bug: widget'lar HER ZAMAN Türkçe kalıyordu, uygulama İÇİ
+    dil (`LocaleProvider`) değiştirilse bile.** Kullanıcı raporu (verbatim): "bu widgetler aynı
+    zamanda uygulama dili hangi dilse ona uygun olsun o hata var uygulama ispanyolca widget türkçe
+    misal bunu düzelt." İnceleme, `HomeWidgetSyncCoordinator`'ın (ve onu çağıran `RootScreen`'in)
+    DART tarafındaki kodunun YÜZEYSEL olarak zaten doğru göründüğünü ortaya çıkardı —
+    `localeProvider.addListener(sync.syncAll)` dil değişince `syncAll()`'ı tetikliyordu ve
+    `HomeWidgetSyncCoordinator._l10n` her çağrıda `AppLocalizations.of(context)`'i TAZE okuyordu.
+    - **Gerçek kök neden — bir KARE-ZAMANLAMA YARIŞI (race condition).**
+      `ChangeNotifier.notifyListeners()` KAYITLI TÜM listener'ları SENKRON (aynı çağrı yığınında)
+      tetikler — ama `provider` paketinin `Consumer3<ThemeProvider, LocaleProvider,
+      AppThemeProvider>`'ı bu bildirimi Flutter'ın standart `setState`-benzeri mekanizmasıyla ele
+      alır, bu da `MaterialApp`'in (dolayısıyla `locale:` parametresinin, dolayısıyla
+      `Localizations.of(context)`'in gördüğü AMBİYAN değerin) yalnızca BİR SONRAKİ ÇİZİM
+      KARESİNDE gerçekten yeniden `build()` edilmesi anlamına gelir — SENKRON değil. `RootScreen.
+      initState()`'teki `localeProvider.addListener(sync.syncAll)` DOĞRUDAN bağlıyken,
+      `sync.syncAll()` bu SENKRON anda (yani `MaterialApp` HENÜZ yeni locale'le yeniden inşa
+      EDİLMEDEN) çalışıp `_l10n` üzerinden HÂLÂ ESKİ (bir adım geride) dili okuyordu — widget'lar
+      dil değiştirildikten SONRA bile eski dilde KALIYORDU (locale bir daha DEĞİŞMEDİĞİ sürece bu
+      yeniden tetiklenmediği için KENDİLİĞİNDEN asla düzelmiyordu). **İlginç bir şekilde
+      `initState()`'teki İLK `syncAll()` çağrısı ZATEN (BAMBAŞKA bir gerekçeyle — `AppLocalizations.
+      of(context)`'in ilk karede `null` dönebileceği ihtimaline karşı) `addPostFrameCallback`'e
+      ERTELENMİŞTİ — yalnızca dil DEĞİŞİMİ dinleyicisi bu erteleme deseninden YOKSUNDU, asimetri
+      buradaydı.**
+    - **Düzeltme — `root_screen.dart`'a YENİ `_onLocaleChangedForWidgetSync()` metodu.**
+      `localeProvider.addListener(sync.syncAll)` yerine `localeProvider.addListener(_
+      onLocaleChangedForWidgetSync)` — bu yeni metot `syncAll()`'ı DOĞRUDAN çağırmak yerine
+      `WidgetsBinding.instance.addPostFrameCallback((_) { if (mounted) _homeWidgetSync?.
+      syncAll(); })` ile bir SONRAKİ KAREYE erteliyor — TAM OLARAK initState'in İLK çağrısının
+      ZATEN kullandığı deseni. `dispose()`'daki `removeListener` çağrısı da AYNI (artık isimli)
+      metoda güncellendi.
+    - **Test enjeksiyonu genişletildi — `DijitalKankaApp`/`_AppStartupGate`'e YENİ bir
+      `homeWidgetService` parametresi eklendi** (`adService`/`purchaseService` ile AYNI desen) —
+      önceden yalnızca `RootScreen`'in KENDİSİ bunu kabul ediyordu (`_AppStartupGate` her zaman
+      `const RootScreen(key: ValueKey('root'))` kuruyordu, hiçbir enjeksiyon yolu YOKTU). Bu
+      olmadan bu KARE-ZAMANLAMA hatasını GERÇEKTEN yakalayan bir test yazmak imkansızdı — hatayı
+      `HomeWidgetSyncCoordinator`'ı izole test ederek (bkz. `home_widget_sync_coordinator_test.
+      dart`) YAKALAYAMAZSINIZ, çünkü o test `syncAll()`'ı DOĞRUDAN çağırıyor, `Consumer3`'ün
+      GERÇEK bir sonraki-kare rebuild mekanizmasından hiç GEÇMİYOR — hatayı yakalamak için `const
+      DijitalKankaApp()`'in GERÇEK `MaterialApp`+`Consumer3` zincirinden geçen bir widget testi
+      ŞARTTI.
+    - **Test:** `widget_test.dart`'a YENİ `_RecordingHomeWidgetService` (yalnızca hangi modüle
+      hangi başlık metninin gönderildiğini kaydeden minimal bir sahte) + YENİ bir test — Ayarlar'dan
+      İngilizce'ye geçilip Su Takibi widget'ına gönderilen başlıkların ARTIK "Water Tracking"
+      İÇERDİĞİNİ VE ASLA "Su Takibi" İÇERMEDİĞİNİ (dil değişiminden SONRAKİ gönderimler için)
+      doğruluyor — bu test, DÜZELTMEDEN ÖNCEKİ kodda BAŞARISIZ OLURDU (senkron `syncAll()` hâlâ
+      Türkçe title gönderirdi), düzeltmeden SONRA geçiyor.
+    - **Gerçek cihazda GÖRSEL doğrulama bu turda YAPILMADI** (dil değiştirip widget'ın GERÇEKTEN
+      İngilizce/İspanyolca'ya döndüğünü görmek kullanıcının kendi cihazında gerekiyor) — yalnızca
+      yukarıdaki hedefe yönelik regresyon testiyle (`flutter test`, 351/351) VE mantığın kendisinin
+      (bir sonraki frame'e erteleme) `initState`'teki İLK senkronizasyonla BİREBİR AYNI, zaten
+      kanıtlanmış deseni tekrarladığıyla güven kazanıldı.
 
 ## Coin Reward Miktarları — Şükran/Su/Manifest Günlüğü 2 → 5 ZC
 

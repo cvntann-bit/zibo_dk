@@ -15,21 +15,6 @@
     android:background="@drawable/widget_background"
     android:padding="16dp">
 
-    <!-- 2026 güncellemesi — kullanıcı isteği "her widget'in kendi
-         animasyonu olsun": yükselen çubuk grafik temalı arka plan
-         sahneleri (bkz. `tool/generate_widget_bg_animations.dart`),
-         `widget_stats_flipper` (içerik carousel'i) İLE İLGİSİZ, TAMAMEN
-         AYRI/bağımsız bir `ViewFlipper` — bkz. `widget_motivation.xml`'deki
-         AYNI desen. -->
-    <ViewFlipper
-        android:id="@+id/widget_bg_flipper"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:flipInterval="5000"
-        android:autoStart="true"
-        android:inAnimation="@anim/widget_page_in"
-        android:outAnimation="@anim/widget_page_out" />
-
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -107,14 +92,44 @@
         </LinearLayout>
     </LinearLayout>
 
-    <!-- Zibo logosu — 2026 güncellemesi: alpha 0.18→0.5, boyut büyütüldü,
-         bkz. widget_module.xml'deki AYNI notun tam açıklaması. -->
-    <ImageView
-        android:layout_width="48dp"
-        android:layout_height="20dp"
+    <!-- Zibo logosu — kompakt widget'larla AYNI marka imzası deseni VE AYNI
+         akıcı "flip-book" shake `ViewFlipper`'ı (bkz. widget_module.xml'deki
+         AYNI notun tam açıklaması — alpha 0.68, 28 kare, ince sinüs adımlı,
+         flipInterval=70ms, YENİ PNG YOK). -->
+    <ViewFlipper
+        android:id="@+id/widget_logo_flipper"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
-        android:src="@drawable/widget_zibo_logo"
-        android:alpha="0.5"
-        android:scaleType="fitEnd"
-        android:importantForAccessibility="no" />
+        android:flipInterval="70"
+        android:autoStart="true">
+        <ImageView android:layout_width="48dp" android:layout_height="20dp" android:src="@drawable/widget_zibo_logo" android:alpha="0.68" android:scaleType="fitEnd" android:rotation="0" android:importantForAccessibility="no" />
+        <ImageView android:layout_width="48dp" android:layout_height="20dp" android:src="@drawable/widget_zibo_logo" android:alpha="0.68" android:scaleType="fitEnd" android:rotation="4" android:importantForAccessibility="no" />
+        <ImageView android:layout_width="48dp" android:layout_height="20dp" android:src="@drawable/widget_zibo_logo" android:alpha="0.68" android:scaleType="fitEnd" android:rotation="7" android:importantForAccessibility="no" />
+        <ImageView android:layout_width="48dp" android:layout_height="20dp" android:src="@drawable/widget_zibo_logo" android:alpha="0.68" android:scaleType="fitEnd" android:rotation="8" android:importantForAccessibility="no" />
+        <ImageView android:layout_width="48dp" android:layout_height="20dp" android:src="@drawable/widget_zibo_logo" android:alpha="0.68" android:scaleType="fitEnd" android:rotation="7" android:importantForAccessibility="no" />
+        <ImageView android:layout_width="48dp" android:layout_height="20dp" android:src="@drawable/widget_zibo_logo" android:alpha="0.68" android:scaleType="fitEnd" android:rotation="4" android:importantForAccessibility="no" />
+        <ImageView android:layout_width="48dp" android:layout_height="20dp" android:src="@drawable/widget_zibo_logo" android:alpha="0.68" android:scaleType="fitEnd" android:rotation="0" android:importantForAccessibility="no" />
+        <ImageView android:layout_width="48dp" android:layout_height="20dp" android:src="@drawable/widget_zibo_logo" android:alpha="0.68" android:scaleType="fitEnd" android:rotation="-4" android:importantForAccessibility="no" />
+        <ImageView android:layout_width="48dp" android:layout_height="20dp" android:src="@drawable/widget_zibo_logo" android:alpha="0.68" android:scaleType="fitEnd" android:rotation="-7" android:importantForAccessibility="no" />
+        <ImageView android:layout_width="48dp" android:layout_height="20dp" android:src="@drawable/widget_zibo_logo" android:alpha="0.68" android:scaleType="fitEnd" android:rotation="-8" android:importantForAccessibility="no" />
+        <ImageView android:layout_width="48dp" android:layout_height="20dp" android:src="@drawable/widget_zibo_logo" android:alpha="0.68" android:scaleType="fitEnd" android:rotation="-7" android:importantForAccessibility="no" />
+        <ImageView android:layout_width="48dp" android:layout_height="20dp" android:src="@drawable/widget_zibo_logo" android:alpha="0.68" android:scaleType="fitEnd" android:rotation="-4" android:importantForAccessibility="no" />
+        <ImageView android:layout_width="48dp" android:layout_height="20dp" android:src="@drawable/widget_zibo_logo" android:alpha="0.68" android:scaleType="fitEnd" android:rotation="0" android:importantForAccessibility="no" />
+        <ImageView android:layout_width="48dp" android:layout_height="20dp" android:src="@drawable/widget_zibo_logo" android:alpha="0.68" android:scaleType="fitEnd" android:rotation="0" android:importantForAccessibility="no" />
+        <ImageView android:layout_width="48dp" android:layout_height="20dp" android:src="@drawable/widget_zibo_logo" android:alpha="0.68" android:scaleType="fitEnd" android:rotation="0" android:importantForAccessibility="no" />
+        <ImageView android:layout_width="48dp" android:layout_height="20dp" android:src="@drawable/widget_zibo_logo" android:alpha="0.68" android:scaleType="fitEnd" android:rotation="0" android:importantForAccessibility="no" />
+        <ImageView android:layout_width="48dp" android:layout_height="20dp" android:src="@drawable/widget_zibo_logo" android:alpha="0.68" android:scaleType="fitEnd" android:rotation="0" android:importantForAccessibility="no" />
+        <ImageView android:layout_width="48dp" android:layout_height="20dp" android:src="@drawable/widget_zibo_logo" android:alpha="0.68" android:scaleType="fitEnd" android:rotation="0" android:importantForAccessibility="no" />
+        <ImageView android:layout_width="48dp" android:layout_height="20dp" android:src="@drawable/widget_zibo_logo" android:alpha="0.68" android:scaleType="fitEnd" android:rotation="0" android:importantForAccessibility="no" />
+        <ImageView android:layout_width="48dp" android:layout_height="20dp" android:src="@drawable/widget_zibo_logo" android:alpha="0.68" android:scaleType="fitEnd" android:rotation="0" android:importantForAccessibility="no" />
+        <ImageView android:layout_width="48dp" android:layout_height="20dp" android:src="@drawable/widget_zibo_logo" android:alpha="0.68" android:scaleType="fitEnd" android:rotation="0" android:importantForAccessibility="no" />
+        <ImageView android:layout_width="48dp" android:layout_height="20dp" android:src="@drawable/widget_zibo_logo" android:alpha="0.68" android:scaleType="fitEnd" android:rotation="0" android:importantForAccessibility="no" />
+        <ImageView android:layout_width="48dp" android:layout_height="20dp" android:src="@drawable/widget_zibo_logo" android:alpha="0.68" android:scaleType="fitEnd" android:rotation="0" android:importantForAccessibility="no" />
+        <ImageView android:layout_width="48dp" android:layout_height="20dp" android:src="@drawable/widget_zibo_logo" android:alpha="0.68" android:scaleType="fitEnd" android:rotation="0" android:importantForAccessibility="no" />
+        <ImageView android:layout_width="48dp" android:layout_height="20dp" android:src="@drawable/widget_zibo_logo" android:alpha="0.68" android:scaleType="fitEnd" android:rotation="0" android:importantForAccessibility="no" />
+        <ImageView android:layout_width="48dp" android:layout_height="20dp" android:src="@drawable/widget_zibo_logo" android:alpha="0.68" android:scaleType="fitEnd" android:rotation="0" android:importantForAccessibility="no" />
+        <ImageView android:layout_width="48dp" android:layout_height="20dp" android:src="@drawable/widget_zibo_logo" android:alpha="0.68" android:scaleType="fitEnd" android:rotation="0" android:importantForAccessibility="no" />
+        <ImageView android:layout_width="48dp" android:layout_height="20dp" android:src="@drawable/widget_zibo_logo" android:alpha="0.68" android:scaleType="fitEnd" android:rotation="0" android:importantForAccessibility="no" />
+    </ViewFlipper>
 </FrameLayout>

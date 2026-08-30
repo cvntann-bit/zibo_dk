@@ -31,19 +31,6 @@ import es.antonborri.home_widget.HomeWidgetProvider
 class ZiboProfileStatsWidgetProvider : HomeWidgetProvider() {
   private val dataKeyPrefix = "profileStats"
 
-  /** **2026 güncellemesi — kullanıcı isteği "her widget'in kendi
-   * animasyonu olsun": yükselen çubuk grafik temalı arka plan sahneleri**
-   * (bkz. `tool/generate_widget_bg_animations.dart`) — `R.id.
-   * widget_bg_flipper`'a (içerik carousel'i `widget_stats_flipper`'DAN
-   * TAMAMEN AYRI/bağımsız) eklenen SABİT dört kare. */
-  private val backgroundFrames =
-      listOf(
-          R.drawable.widget_bg_profile_stats_1,
-          R.drawable.widget_bg_profile_stats_2,
-          R.drawable.widget_bg_profile_stats_3,
-          R.drawable.widget_bg_profile_stats_4,
-      )
-
   private fun pageLayoutForIndex(index: Int): Int =
       when (index) {
         0 -> R.layout.widget_stat_page_money
@@ -63,13 +50,6 @@ class ZiboProfileStatsWidgetProvider : HomeWidgetProvider() {
           RemoteViews(context.packageName, R.layout.widget_profile_stats).apply {
             val title = widgetData.getString("${dataKeyPrefix}_title", null)
             setTextViewText(R.id.widget_title, title ?: "Zibo")
-
-            removeAllViews(R.id.widget_bg_flipper)
-            backgroundFrames.forEach { frameRes ->
-              val bgPage = RemoteViews(context.packageName, R.layout.widget_bg_frame)
-              bgPage.setImageViewResource(R.id.widget_bg_frame_image, frameRes)
-              addView(R.id.widget_bg_flipper, bgPage)
-            }
 
             val itemCount = widgetData.getInt("${dataKeyPrefix}_itemCount", 0)
             removeAllViews(R.id.widget_stats_flipper)
