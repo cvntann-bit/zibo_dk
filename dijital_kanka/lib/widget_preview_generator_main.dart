@@ -13,10 +13,12 @@
 // mevcut.
 //
 // **Bu widget'ın kendisi `dart:io`'yla PROJE KLASÖRÜNE erişemediği için**
-// (cihaz kendi izole dosya sistemine sahip) Z-doku katmanı + Zibo logosu
-// BURADA eklenmiyor — yalnızca düz gradyan + gerçek metin/ikon/karakter
-// render ediliyor; bu ikisi `tool/compose_widget_previews.dart` ile
-// MASAÜSTÜNDE, çıktı dosyalarının ÜZERİNE ayrıca bindiriliyor.
+// (cihaz kendi izole dosya sistemine sahip) Zibo logosu BURADA eklenmiyor
+// — yalnızca düz gradyan + gerçek metin/ikon/karakter render ediliyor;
+// logo `tool/compose_widget_previews.dart` ile MASAÜSTÜNDE, çıktı
+// dosyalarının ÜZERİNE ayrıca bindiriliyor. (Bir Z-doku katmanı da
+// BİR ARA vardı — kullanıcı gerçek cihazda görüp reddetti, bkz.
+// `widget_background.xml`'deki geri alma notu — artık YOK.)
 //
 // Widget tasarımı ileride DEĞİŞİRSE, önizlemeleri güncellemek için:
 // 1. `flutter build apk --debug -t lib/widget_preview_generator_main.dart`
@@ -26,7 +28,7 @@
 // 3. `adb exec-out run-as com.dijitalkanka.dijital_kanka cat <yol>/<dosya>`
 //    ile (debug build'ler `run-as` erişimine sahip) her PNG'yi çekip
 //    `android/app/src/main/res/drawable(-night)-nodpi/`'ye taşı.
-// 4. `dart run tool/compose_widget_previews.dart` ile Z-dokusu/logoyu bindir.
+// 4. `dart run tool/compose_widget_previews.dart` ile logoyu bindir.
 
 import 'dart:io';
 import 'dart:ui' as ui;
@@ -198,10 +200,10 @@ class _PreviewGeneratorAppState extends State<_PreviewGeneratorApp> {
             colors: [palette.gradientStart, palette.gradientEnd],
           ),
         ),
-        // Z-doku katmanı + Zibo logosu BİLEREK burada YOK — cihazda
-        // (`dart:io` proje klasörüne erişemediği için) eklenemiyor, bunun
-        // yerine masaüstünde `tool/compose_widget_previews.dart` ile
-        // (bkz. o betik) BU çıktının ÜZERİNE ayrıca bindiriliyor.
+        // Zibo logosu BİLEREK burada YOK — cihazda (`dart:io` proje
+        // klasörüne erişemediği için) eklenemiyor, bunun yerine
+        // masaüstünde `tool/compose_widget_previews.dart` ile (bkz. o
+        // betik) BU çıktının ÜZERİNE ayrıca bindiriliyor.
         child: ClipRRect(
           borderRadius: BorderRadius.circular(size.height * 0.13),
           child: child,

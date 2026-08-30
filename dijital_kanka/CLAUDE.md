@@ -6524,6 +6524,24 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
     `<layer-list>`'e çevrildi (gradyan katmanı + `widget_zibo_z_pattern_tiled.xml`'in [YENİ,
     `<bitmap tileModeX/Y="repeat">`] TEKRARLAYAN doku katmanı) — TÜM beş widget bu paylaşılan
     drawable'ı kullandığı için tek bir değişiklik hepsine yayıldı.
+    - **2026 DÖRDÜNCÜ güncelleme — DENENDİ, KULLANICI GERÇEK CİHAZDA GÖRÜP REDDETTİ, TAMAMEN GERİ
+      ALINDI.** Kullanıcının net ifadesi: "widgetin arka planı çok kötü öyle olmasın kaldıralım o
+      blurlu z şeklini." `widget_background.xml` düz gradyana GERİ DÖNDÜRÜLDÜ (`<layer-list>`
+      kaldırıldı); `widget_zibo_z_pattern_tiled.xml`, iki `widget_zibo_z_pattern.png` (açık/koyu)
+      ve onları üreten `tool/generate_widget_z_pattern.dart` TAMAMEN SİLİNDİ (geri getirmeye
+      değecek bir asset değil — ihtiyaç olursa git geçmişinden kurtarılabilir). **Beş widget'ın
+      `previewImage` PNG'lerinde de (bkz. altta "AYRI, kritik bir bulgu") Z-dokusu vardı** — bu
+      PNG'ler `tool/compose_widget_previews.dart` ile üretimin İKİNCİ (masaüstü) aşamasında
+      bindiriliyordu; dokuyu "çıkarmak" piksel-matematiksel olarak GERİ ALINAMAZ bir işlem olduğu
+      için (kompozisyon geri döndürülemez), `lib/widget_preview_generator_main.dart`
+      (değişmedi, hiç Z-doku İÇERMİYORDU zaten) cihazda TEKRAR çalıştırılıp on temiz temel PNG
+      yeniden üretildi, `compose_widget_previews.dart`'IN KENDİSİ de Z-doku bindirme adımı
+      TAMAMEN kaldırılacak şekilde güncellendi (artık YALNIZCA Zibo logosunu bindiriyor) — sonra
+      bu güncellenmiş betikle previewImage'lar yeniden oluşturuldu. Her iki betik de (`lib/
+      widget_preview_generator_main.dart`, `tool/compose_widget_previews.dart`) HÂLÂ KORUNUYOR
+      (yalnızca logo bindirme adımı için hâlâ gerekli, widget tasarımı ileride tekrar değişirse
+      yeniden çalıştırılabilir) — yalnızca Z-doku'ya ÖZGÜ üçlü (generator script + tiled drawable +
+      PNG'ler) silindi.
   - **5) "Uygulama içindeki Ekle çalışmıyor" — BİLEREK "düzeltilmedi", YERİNE YÖNLENDİRME
     getirildi.** Önceki turda `adb dumpsys appwidget` ile KANITLANMIŞTI ki `requestPinWidget()`
     bu MIUI launcher'ında `true` DÖNSE BİLE widget'ı GERÇEKTEN bağlamıyor — bu API'nin
