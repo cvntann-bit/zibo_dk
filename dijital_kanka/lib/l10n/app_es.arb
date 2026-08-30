@@ -391,6 +391,7 @@
   "widgetTitleMoney": "Dinero y Ahorros",
   "widgetTitleDailyRewards": "Recompensas Diarias",
   "widgetTitleMotivation": "Una Palabra de Zibo",
+  "widgetTitleProfileStats": "Mis Estadísticas",
   "widgetGoalsEmptyHint": "Aún no hay metas",
   "widgetGoalsActiveHint": "metas marcadas hoy",
   "widgetWaterHint": "{unit} · hoy",

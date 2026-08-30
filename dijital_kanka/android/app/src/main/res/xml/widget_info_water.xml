@@ -1,4 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- 2026 güncellemesi — `previewLayout` eklendi: kullanıcı raporu "ana
+     ekrana widget eklerken diğer uygulamaların widget'ı gözüküyor, bende
+     yalnızca Zibo app ikonu gözüküyor." Android 12+ (API 31+) widget
+     seçicisi bu alan verilirse widget'ın GERÇEK layout'unu (bu dosyanın
+     kendi `tools:text` yer tutucularıyla) canlı render edip önizleme
+     olarak gösteriyor — statik bir önizleme PNG'si üretip senkron tutmaya
+     GEREK KALMADAN "her widget kendi nasılsa öyle görünsün" isteğini
+     karşılıyor. minSdk 24 olduğu için API 31 altındaki cihazlarda bu alan
+     sessizce yok sayılıyor (eski davranışa düşülüyor) — ek bir
+     `previewImage` PNG'si BİLEREK eklenmedi, test edilen cihaz (ve modern
+     cihazların büyük çoğunluğu) zaten 31+. -->
 <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
     android:minWidth="110dp"
     android:minHeight="110dp"
@@ -6,5 +17,6 @@
     android:targetCellHeight="2"
     android:updatePeriodMillis="1800000"
     android:initialLayout="@layout/widget_module"
+    android:previewLayout="@layout/widget_module"
     android:resizeMode="horizontal|vertical"
     android:widgetCategory="home_screen" />

@@ -8,4 +8,8 @@
     <color name="widget_primary_text">#E3C179</color>
     <color name="widget_secondary_text">#B89A5E</color>
     <color name="widget_accent_default">#D9A94A</color>
+    <!-- 2026 güncellemesi — bkz. values/colors.xml'deki AYNI notun koyu
+         tema karşılığı. -->
+    <color name="widget_card_gradient_start">#2A251D</color>
+    <color name="widget_card_gradient_end">#1B1712</color>
 </resources>

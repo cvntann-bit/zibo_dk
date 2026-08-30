@@ -13,12 +13,14 @@ import es.antonborri.home_widget.HomeWidgetProvider
 
 /**
  * Ana ekran widget'larının (bkz. CLAUDE.md "Ana Ekran Widget'ları" bölümü)
- * SEKİZ modül provider'ının TÜMÜNÜN paylaştığı ortak render mantığı —
- * `res/layout/widget_module.xml` (TEK, paylaşılan RemoteViews şablonu)
- * doldurulur. Her alt sınıf yalnızca [dataKeyPrefix] (Flutter tarafının
- * `HomeWidget.saveWidgetData` ile hangi anahtar önekiyle yazdığı, bkz.
- * `lib/services/home_widget_service.dart`), [emoji] ve [accentColor]'ı
- * belirtir — geri kalan HER ŞEY burada, tek yerde.
+ * kompakt (2x2) ÜÇ modül provider'ının (Su Takibi/Para ve Birikim/Günlük
+ * Giriş Ödülleri — "Zibo'nun Sözü"/"İstatistiklerim" kendi AYRI carousel
+ * layout'larını kullanıyor, bu sınıfı extend ETMİYOR) paylaştığı ortak
+ * render mantığı — `res/layout/widget_module.xml` (TEK, paylaşılan
+ * RemoteViews şablonu) doldurulur. Her alt sınıf yalnızca [dataKeyPrefix]
+ * (Flutter tarafının `HomeWidget.saveWidgetData` ile hangi anahtar
+ * önekiyle yazdığı, bkz. `lib/services/home_widget_service.dart`), [emoji]
+ * ve [accentColor]'ı belirtir — geri kalan HER ŞEY burada, tek yerde.
  *
  * Flutter tarafı `widgetData`'ya üç alan yazıyor (önek + alan adı):
  * `{prefix}_title`, `{prefix}_primary`, `{prefix}_secondary`,

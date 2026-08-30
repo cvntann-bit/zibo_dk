@@ -1331,6 +1331,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get widgetTitleMotivation => 'Una Palabra de Zibo';
 
   @override
+  String get widgetTitleProfileStats => 'Mis Estadísticas';
+
+  @override
   String get widgetGoalsEmptyHint => 'Aún no hay metas';
 
   @override

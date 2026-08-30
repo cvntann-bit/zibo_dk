@@ -1,9 +1,11 @@
-// WidgetsScreen'in dokuz modülü listelediğini VE her satırdaki "Ekle"
+// WidgetsScreen'in beş modülü listelediğini VE her satırdaki "Ekle"
 // butonunun enjekte edilen sahte `HomeWidgetService.requestPin`'i doğru
 // modülle çağırdığını doğrudan (gerçek `home_widget` platform kanalına
 // dokunmadan) test eder — bkz. CLAUDE.md "Ana Ekran Widget'ları" bölümü,
 // `manifest_journal_screen_test.dart`'taki AYNI "bağımsız test uygulaması +
-// sahte servis enjeksiyonu" deseni.
+// sahte servis enjeksiyonu" deseni. **2026 güncellemesi** — beş "basit
+// günlük/checkbox" widget'ı kaldırılıp yerine [ZiboWidgetModule.profileStats]
+// geldi, listedeki modül sayısı 9 → 5.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -25,6 +27,13 @@ class _FakeHomeWidgetService implements HomeWidgetService {
     required String primary,
     required String secondary,
     int? progress,
+  }) async {}
+
+  @override
+  Future<void> pushCarousel(
+    ZiboWidgetModule module, {
+    required String title,
+    required List<CarouselItem> items,
   }) async {}
 
   @override
@@ -50,32 +59,25 @@ Widget _buildTestApp(HomeWidgetService service) {
 }
 
 void main() {
-  testWidgets('Dokuz modülün hepsi kendi başlığıyla listelenir', (tester) async {
+  testWidgets('Beş modülün hepsi kendi başlığıyla listelenir', (tester) async {
     await tester.pumpWidget(_buildTestApp(_FakeHomeWidgetService()));
     await tester.pumpAndSettle();
 
-    // Dokuz kart varsayılan test yüzeyine sığmıyor — listeyi GERÇEK EKRANDAKİ
-    // sırasıyla (yukarıdan aşağıya) kaydırarak doğrula (bkz. CLAUDE.md "Test
-    // kalıpları" bölümündeki `scrollUntilVisible` tek-yönlü kaydırma
-    // gotcha'sı — geriye dönük bir sıralama sessizce kırılabilir).
+    // Listeyi GERÇEK EKRANDAKİ sırasıyla (yukarıdan aşağıya) kaydırarak
+    // doğrula (bkz. CLAUDE.md "Test kalıpları" bölümündeki
+    // `scrollUntilVisible` tek-yönlü kaydırma gotcha'sı — geriye dönük bir
+    // sıralama sessizce kırılabilir).
     const titlesInOrder = [
-      'Hedef Takibi',
       'Su Takibi',
-      'Şükran Günlüğü',
-      'Ruh Hali Takibi',
-      'Manifest Günlüğü',
-      'Rüya Günlüğü',
       'Para ve Birikim',
       'Günlük Giriş Ödülleri',
       'Zibo\'nun Sözü',
+      'İstatistiklerim',
     ];
     // Her başlığın kendi "Ekle" butonunu ANINDA (scroll edildiği anda,
-    // toplu bir sayım yerine) doğrula — dokuzuncu karta kadar kaydırınca
-    // `ListView`'ın Sliver tabanlı lazy-build mekanizması (bkz. CLAUDE.md
-    // "Test kalıpları" bölümü) en üstteki kartları ARTIK İNŞA EDİLMİŞ
-    // ağaçtan çıkarabiliyor — tüm kaydırma bittikten SONRA global bir
-    // `findsNWidgets(9)` bu yüzden GERÇEK bir uygulama hatası olmadan
-    // (yalnızca o anki cache penceresi yüzünden) başarısız olabiliyordu.
+    // toplu bir sayım yerine) doğrula — bkz. CLAUDE.md "Test kalıpları"
+    // bölümündeki `ListView`'ın Sliver tabanlı lazy-build/cache-eviction
+    // dersi.
     for (final title in titlesInOrder) {
       await tester.scrollUntilVisible(find.text(title), 200);
       expect(find.text(title), findsOneWidget);
@@ -94,11 +96,11 @@ void main() {
     await tester.pumpWidget(_buildTestApp(service));
     await tester.pumpAndSettle();
 
-    // İlk kart Hedef Takibi'ne ait — ilk "Ekle" butonu ona karşılık gelir.
+    // İlk kart Su Takibi'ne ait — ilk "Ekle" butonu ona karşılık gelir.
     await tester.tap(find.widgetWithText(FilledButton, 'Ekle').first);
     await tester.pumpAndSettle();
 
-    expect(service.pinRequests, [ZiboWidgetModule.goals]);
+    expect(service.pinRequests, [ZiboWidgetModule.water]);
     expect(find.text('Widget eklendi! Ana ekranını kontrol et.'), findsOneWidget);
   });
 

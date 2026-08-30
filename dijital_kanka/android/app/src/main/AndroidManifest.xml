@@ -62,21 +62,17 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
-        <!-- Ana ekran widget'ları — SEKİZ modülün her biri kendi widget
-             provider'ı, hepsi `res/layout/widget_module.xml`i paylaşan TEK
-             bir ortak render mantığından (ZiboBaseWidgetProvider.kt) türüyor
-             — bkz. CLAUDE.md "Ana Ekran Widget'ları" bölümü. -->
-        <receiver
-            android:name=".widgets.ZiboGoalsWidgetProvider"
-            android:label="Zibo — Hedef Takibi"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
-            </intent-filter>
-            <meta-data
-                android:name="android.appwidget.provider"
-                android:resource="@xml/widget_info_goals"/>
-        </receiver>
+        <!-- Ana ekran widget'ları (bkz. CLAUDE.md "Ana Ekran Widget'ları"
+             bölümü). 2026 güncellemesi — kullanıcı isteğiyle beş "basit
+             günlük/checkbox" widget'ı (Hedef Takibi/Rüya Günlüğü/Şükran
+             Günlüğü/Ruh Hali Takibi/Manifest Günlüğü) TAMAMEN KALDIRILDI,
+             yerlerine PROFİL İSTATİSTİKLERİ carousel widget'ı geldi (bkz.
+             altta `ZiboProfileStatsWidgetProvider`) — bu beşi zaten Profil
+             ekranındaki dört kategoriyle ÖRTÜŞÜYORDU. Su Takibi/Para ve
+             Birikim/Günlük Giriş Ödülleri (gerçekten farklı/eyleme
+             geçirilebilir bilgi taşıyorlar) VE Zibo'nun Sözü KORUNDU. Kalan
+             üç "basit" widget `res/layout/widget_module.xml`i paylaşan TEK
+             bir ortak render mantığından (ZiboBaseWidgetProvider.kt) türüyor. -->
         <receiver
             android:name=".widgets.ZiboWaterWidgetProvider"
             android:label="Zibo — Su Takibi"
@@ -87,50 +83,6 @@
             <meta-data
                 android:name="android.appwidget.provider"
                 android:resource="@xml/widget_info_water"/>
-        </receiver>
-        <receiver
-            android:name=".widgets.ZiboGratitudeWidgetProvider"
-            android:label="Zibo — Şükran Günlüğü"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
-            </intent-filter>
-            <meta-data
-                android:name="android.appwidget.provider"
-                android:resource="@xml/widget_info_gratitude"/>
-        </receiver>
-        <receiver
-            android:name=".widgets.ZiboMoodWidgetProvider"
-            android:label="Zibo — Ruh Hali Takibi"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
-            </intent-filter>
-            <meta-data
-                android:name="android.appwidget.provider"
-                android:resource="@xml/widget_info_mood"/>
-        </receiver>
-        <receiver
-            android:name=".widgets.ZiboManifestWidgetProvider"
-            android:label="Zibo — Manifest Günlüğü"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
-            </intent-filter>
-            <meta-data
-                android:name="android.appwidget.provider"
-                android:resource="@xml/widget_info_manifest"/>
-        </receiver>
-        <receiver
-            android:name=".widgets.ZiboDreamWidgetProvider"
-            android:label="Zibo — Rüya Günlüğü"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
-            </intent-filter>
-            <meta-data
-                android:name="android.appwidget.provider"
-                android:resource="@xml/widget_info_dream"/>
         </receiver>
         <receiver
             android:name=".widgets.ZiboMoneyWidgetProvider"
@@ -154,8 +106,8 @@
                 android:name="android.appwidget.provider"
                 android:resource="@xml/widget_info_daily_rewards"/>
         </receiver>
-        <!-- Dokuzuncu, daha büyük widget — "Zibo'nun Sözü" (bkz.
-             ZiboMotivationWidgetProvider.kt). -->
+        <!-- Daha büyük, ViewFlipper tabanlı carousel widget'ı — "Zibo'nun
+             Sözü" (bkz. ZiboMotivationWidgetProvider.kt). -->
         <receiver
             android:name=".widgets.ZiboMotivationWidgetProvider"
             android:label="Zibo — Söz"
@@ -166,6 +118,21 @@
             <meta-data
                 android:name="android.appwidget.provider"
                 android:resource="@xml/widget_info_motivation"/>
+        </receiver>
+        <!-- 2026 güncellemesi — beş kaldırılan basit widget'ın YERİNE:
+             Profil ekranındaki "İstatistiklerim" dört kategorisini
+             ViewFlipper ile sırayla, animasyonla döndüren carousel widget'ı
+             (bkz. ZiboProfileStatsWidgetProvider.kt). -->
+        <receiver
+            android:name=".widgets.ZiboProfileStatsWidgetProvider"
+            android:label="Zibo — İstatistiklerim"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_info_profile_stats"/>
         </receiver>
         <!-- AdMob SDK'sının UYGULAMA BAŞLATILMADAN önce okuduğu zorunlu alan
              (google_mobile_ads eklentisi bu meta-data yoksa çöker).

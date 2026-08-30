@@ -17,26 +17,20 @@ int _percent(num done, num total) {
   return ((done / total) * 100).round().clamp(0, 100);
 }
 
-/// Aşağıdaki dokuz fonksiyonun HEPSİ saf (yan etkisiz) — provider
+/// Aşağıdaki fonksiyonların HEPSİ saf (yan etkisiz) — provider
 /// nesnelerinin KENDİSİNİ değil, o an ihtiyaç duydukları birkaç ilkel
 /// değeri alıyor; bu sayede `flutter test`'te gerçek bir widget/provider
 /// kurmadan doğrudan test edilebiliyorlar (bkz.
 /// `test/widget_status_test.dart`).
-ZiboWidgetStatus goalsWidgetStatus(
-  AppLocalizations l10n, {
-  required int doneToday,
-  required int totalGoals,
-}) {
-  if (totalGoals == 0) {
-    return ZiboWidgetStatus(primary: '—', secondary: l10n.widgetGoalsEmptyHint);
-  }
-  return ZiboWidgetStatus(
-    primary: '$doneToday/$totalGoals',
-    secondary: l10n.widgetGoalsActiveHint,
-    progress: _percent(doneToday, totalGoals),
-  );
-}
-
+///
+/// **2026 güncellemesi** — beş "basit günlük/checkbox" widget'ının
+/// (Hedef Takibi/Rüya Günlüğü/Şükran Günlüğü/Ruh Hali Takibi/Manifest
+/// Günlüğü) durum fonksiyonları (`goalsWidgetStatus`, `gratitudeWidgetStatus`,
+/// `moodWidgetStatus`, `manifestWidgetStatus`, `dreamWidgetStatus`) BURADAN
+/// KOMPLE KALDIRILDI — kullanıcı isteğiyle, bu widget'ların kendisi
+/// kaldırıldığı için (bkz. `widget_module.dart` başındaki not). Bu dört
+/// provider'ın verileri artık kaybolmuyor, `profile_stats.dart` üzerinden
+/// [ZiboWidgetModule.profileStats] carousel'ine besleniyor.
 ZiboWidgetStatus waterWidgetStatus(
   AppLocalizations l10n, {
   required int todayCount,

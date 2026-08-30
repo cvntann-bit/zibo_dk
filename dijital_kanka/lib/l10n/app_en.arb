@@ -391,6 +391,7 @@
   "widgetTitleMoney": "Money & Savings",
   "widgetTitleDailyRewards": "Daily Login Rewards",
   "widgetTitleMotivation": "A Word From Zibo",
+  "widgetTitleProfileStats": "My Stats",
   "widgetGoalsEmptyHint": "No goals added yet",
   "widgetGoalsActiveHint": "goals checked off today",
   "widgetWaterHint": "{unit} · today",

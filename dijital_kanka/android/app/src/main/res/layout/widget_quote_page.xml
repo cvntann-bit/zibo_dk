@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- "Zibo'nun Sözü" widget'ının ViewFlipper'ına eklenen TEK bir söz sayfası
+     — bkz. ZiboMotivationWidgetProvider.kt'nin `RemoteViews.addView(...)`
+     ile çalışma zamanında bu layout'tan N tane (kaç söz gönderildiyse)
+     örnek oluşturup ViewFlipper'a eklemesi. -->
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/widget_quote_text"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:textSize="15sp"
+    android:textStyle="bold"
+    android:textColor="@color/widget_primary_text"
+    android:maxLines="4"
+    android:ellipsize="end"
+    tools:text="Zor günler geçer, sen kalıcısın." />

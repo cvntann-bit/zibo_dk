@@ -2404,6 +2404,12 @@ abstract class AppLocalizations {
   /// **'Zibo\'nun Sözü'**
   String get widgetTitleMotivation;
 
+  /// Profil ekranındaki İstatistiklerim kategorilerini döndüren ana ekran widget'ının başlığı (widget içinde + Widget'lar ekranındaki satırda)
+  ///
+  /// In tr, this message translates to:
+  /// **'İstatistiklerim'**
+  String get widgetTitleProfileStats;
+
   /// Hedef Takibi widget'ında hiç hedef yokken gösterilen alt metin
   ///
   /// In tr, this message translates to:

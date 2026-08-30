@@ -6307,6 +6307,181 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
     (`scrollUntilVisible`'dan HEMEN sonra, `find.ancestor(of: find.text(title), matching: find.
     byType(Card))` ile o KARTA özel) doğrulamak — toplu/gecikmeli bir sayıma güvenmemek. `flutter
     test` tam yeşil: **358/358.**
+- **2026 İKİNCİ güncelleme — büyük bir yeniden yapılanma: beş widget kaldırıldı, carousel'ler
+  eklendi, görsel tasarım profesyonelleştirildi.** Kullanıcı isteği (verbatim özet): "widget
+  kısmında Zibo motivasyon sözleri 3 dakikada bir değişsin, Zibo logosunu kullan, arka planı
+  güzelleştir, widget'in modellemesini daha profesyonel yap; ana ekrana basılı tutup widget
+  eklerken diğer uygulamaların widget'i görünüyor ama Zibo'da sadece app ikonu görünüyor onu
+  düzelt; uygulama içinden otomatik widget eklenmiyor onu düzelt; bazı modüllerin widget'i
+  gereksiz duruyor (Hedef Takibi gereksiz, Rüya/Şükran/vs.) bunları komple kaldırıp kullanıcının
+  profil kısmındaki istatistiklerini sıra sıra animasyonla gösteren bir widget yapalım; Zibo
+  logosu ve Zibo görselini kullanmayı unutma." `AskUserQuestion` ile netleştirilen kesin kaldır/
+  tut listesi: **KALDIRILDI** Hedef Takibi, Rüya Günlüğü, Şükran Günlüğü, Ruh Hali Takibi,
+  Manifest Günlüğü (5 widget) — **KALDI** Su Takibi ("güzel, o kalsın"), Zibo'nun Sözü, Para ve
+  Birikim, Günlük Giriş Ödülleri — **YENİ EKLENDİ** "İstatistiklerim" (Profil ekranındaki 4
+  kategoriyi döndüren carousel).
+  - **`HomeWidgetService`'e YENİ, paylaşılan bir `pushCarousel(module, {title, items})` API'si
+    eklendi** — `CarouselItem` (YENİ, `home_widget_service.dart`) `{value, label?, progress?,
+    hasData}` taşıyan tek bir veri şekli, hem "Zibo'nun Sözü" (yalnızca `value` dolu) HEM
+    "İstatistiklerim" (dördü de dolu) tarafından PAYLAŞILIYOR. Native tarafta TEK bir anahtar
+    sözleşmesi (`{prefix}_itemCount` + `{prefix}_item{i}_value`/`_label`/`_progress`/`_hasData`)
+    — önceki taslakta bu iki widget FARKLI anahtar isimleri (`quoteCount`/`quote{i}` vs.
+    `categoryCount`/`cat{i}_label` vb.) kullanıyordu, `pushCarousel` yazılırken TEK, tutarlı bir
+    şemaya birleştirildi (hem Dart hem her iki Kotlin provider'ı güncellendi) — ileride üçüncü bir
+    carousel widget'ı eklenirse sıfırdan bir anahtar şeması icat etmeye gerek kalmayacak.
+  - **`ZiboMotivationWidgetProvider`/`ZiboProfileStatsWidgetProvider` — `RemoteViews.addView(...)`
+    ile ÇALIŞMA ZAMANINDA bir `ViewFlipper`'a N sayfa ekleyen desen.** `widget_motivation.xml`/
+    `widget_profile_stats.xml`'deki `ViewFlipper` (`android:flipInterval` — motivasyon 180000ms/3dk,
+    istatistikler 6000ms/6sn — `autoStart="true"`) TAMAMEN NATIVE (launcher sürecinin kendi
+    `Handler`-tabanlı zamanlayıcısı) döndüğü için Dart/uygulama HİÇ AÇIK OLMASA BİLE, hatta
+    `updatePeriodMillis`'in Android'in dayattığı 30 dakikalık ALT SINIRINDAN TAMAMEN BAĞIMSIZ
+    olarak dönmeye devam ediyor — kullanıcının "3 dakikada bir değişsin" isteğini `WorkManager`/
+    arka plan görevi gibi ağır bir mekanizma OLMADAN karşılıyor.
+    - **Bu teknik gerçek cihazda doğrulandı — RemoteViews'ın kısıtlı inflate whitelist'ine karşı
+      SIFIR risk taşıyor, çünkü `ViewFlipper` (LinearLayout/FrameLayout gibi) whitelist'te
+      ZATEN VAR olan bir sınıf; bu projenin iki ÖNCEKİ gerçek RemoteViews çökmesi (ham `<View>`
+      spacer, `ProgressBar.setProgressTintList` reflection'ı) HER İKİSİ de whitelist'te OLMAYAN
+      bir sınıf/metot kullanmaktan kaynaklanmıştı — `ViewFlipper` bu kategoriye GİRMİYOR.**
+      Uygulama içi "Ekle" akışı üç widget türü için (Su Takibi/kompakt, Zibo'nun Sözü/motivasyon
+      carousel, İstatistiklerim/carousel) ayrı ayrı denenip HER SEFERİNDE `adb logcat`'te
+      `AppWidgetHostView`/`InflateException`/`FATAL EXCEPTION` etiketleri SIFIR sonuç verdi —
+      bu, projenin önceki iki gerçek çökmesinin AYNI teşhis yöntemiyle (bkz. yukarıdaki "Araç
+      yüklenemiyor" bug düzeltmesi notu) doğrulandığı, negatif ama güvenilir bir kanıt.
+  - **Kaldırılan beş widget'ın Kotlin provider'ları + `widget_info_*.xml`'leri SİLİNDİ**
+    (`ZiboGoalsWidgetProvider.kt` vb.), `AndroidManifest.xml`'deki 5 `<receiver>` kaldırıldı.
+    `ZiboBaseWidgetProvider`'ı KULLANAN modül sayısı sekizden ÜÇE düştü (Su Takibi/Para ve
+    Birikim/Günlük Giriş Ödülleri — "Zibo'nun Sözü"/"İstatistiklerim" kendi AYRI carousel
+    layout'larını kullanıyor, bu paylaşılan sınıfı hiç extend ETMİYOR).
+  - **`lib/utils/widget_module.dart`** — `goals`/`gratitude`/`mood`/`manifest`/`dream` enum
+    değerleri TAMAMEN KALDIRILDI, yerine `profileStats` geldi. **`lib/utils/widget_status.dart`**
+    — beş modülün saf durum fonksiyonu (`goalsWidgetStatus` vb.) KOMPLE KALDIRILDI (kullanıcının
+    "komple kaldır" isteği — bu proje genelinde "kullanılmayan ARB anahtarını SİLME" konvansiyonu
+    ARB metinleri için geçerli, ama kod-seviyesi ölü fonksiyonlar için değil, bu yüzden
+    `widget_status.dart`'taki fonksiyonlar silindi, ARB anahtarları [`widgetGoalsEmptyHint` vb.]
+    İSE bilerek dosyalarda BIRAKILDI).
+  - **`HomeWidgetSyncCoordinator`'ın büyük yeniden yazımı** — `mood`/`dream` alanları+parametreleri
+    TAMAMEN kaldırıldı (`ProfileStats.compute()` bu ikisini hiç GEREKTİRMİYOR); `goals`/
+    `gratitude`/`manifest` alanları KALDI ama artık kendi `addListener`'ları YOK — yalnızca
+    [`_syncProfileStats()`]'ın (SADECE `syncAll()` içinde, uygulama açılışı + dil değişiminde
+    tetiklenen) `ProfileStats.compute(...)` girdisi. **Pratik sonuç:** bir hedefi işaretlemek/bir
+    şükran kaydı eklemek ARTIK anlık bir widget güncellemesi TETİKLEMİYOR — İstatistiklerim
+    widget'ı yalnızca bir sonraki `syncAll()`'da (açılış/dil değişimi) güncel puanları görür. Bu,
+    `ProfileStats.compute()`'un zaten "o anki canlı duruma göre HER SEFERİNDE yeniden hesaplanan"
+    bir fonksiyon olması ve dört kaynak provider'ın HER BİRİNE ayrı ayrı `addListener` eklemenin
+    (widget'ın kendisi zaten dakikalar mertebesinde güncellenen bir "at a glance" özet olduğu için)
+    gereksiz karmaşıklık eklemesi nedeniyle BİLİNÇLİ bir basitleştirme — `_syncMotivation()`'ın
+    ZATEN aynı "yalnızca syncAll'da tazelen" deseninde olması (bkz. sınıfın 2026 İLK güncelleme
+    notu) bu kararla tutarlı.
+  - **`_syncMotivation()` — TEK sözden `pushCarousel`'e geçti.** Havuzdan (`ziboMessagesForLocale`,
+    279 söz) `_motivationQuoteCount` (8) FARKLI söz `shuffle(_random)` ile seçilip her biri
+    `applyAddressTerm` (hitap tercihi) ile kişiselleştirilip TEK seferde gönderiliyor —
+    `CoinProvider`'ın Şans Çarkı'nda kullandığı AYNI enjekte edilebilir `Random` deseni testte
+    deterministik bir küme doğrulamayı sağlıyor (belirli bir Fisher-Yates SIRASI değil, kümenin
+    KENDİSİ + tekrarsızlığı test ediliyor — `shuffle()`'ın iç algoritmasına bağımlı KIRILGAN bir
+    beklenti kurulmadı).
+  - **YENİ `_syncProfileStats()`** — `ProfileStats.compute(money:, gratitude:, manifest:, goals:,
+    water:, now:)`'u ÇAĞIRIP dört `CategoryStat`'ı `CarouselItem`'a çeviriyor: `label` =
+    `lib/widgets/profile_stat_card.dart`'taki AYNI id→ARB-getter eşlemesi (`_profileStatTitle`,
+    KASITLI bir küçük duplikasyon — Profil ekranındaki `_title()` metoduyla BİREBİR aynı switch,
+    ayrı bir paylaşılan yardımcıya çıkarmaya değmeyecek kadar küçük), `value` = `hasData` ise
+    `"{score.toStringAsFixed(1)}/10"` değilse `"—"`, `progress` = `hasData` ise puanın 0-100
+    yüzdesi değilse `null`.
+  - **Görsel yeniden tasarım — `widget_module.xml` (kompakt üçlü) üç yönden zenginleştirildi:**
+    (1) rozetin arkasına modülün KENDİ accent renginin düşük-opaklıklı ("halo") hâli — yeni bir
+    renk sistemi İCAT EDİLMEDİ, mevcut `accentColor` altyapısı yeniden kullanıldı; (2) eski ham
+    `<View>` spacer'ın (bkz. "Araç yüklenemiyor" bug düzeltmesi) YERİNE geçen düz margin, modülün
+    rengiyle dolu ince bir "accent bar"a (bir `TextView`, RemoteViews-güvenli) dönüştürüldü; (3)
+    kartın sağ-alt köşesine soluk (`alpha=0.18`) bir Zibo logosu eklendi. "Zibo'nun Sözü"/
+    "İstatistiklerim" AYRICA gerçek bir Zibo karakter görseli (`widget_zibo_character.png`) + AYNI
+    logo/accent-bar dilini paylaşıyor — kullanıcının "Zibo logosu ve Zibo görselini kullanmayı
+    unutma" isteği hem kompakt hem büyük widget'larda karşılandı.
+  - **Arka plan — düz renkten köşegen gradyana.** `widget_background.xml`'deki `<solid>` bir
+    `<gradient android:angle="135">`'e çevrildi (`widget_card_gradient_start/end`, hem
+    `values/colors.xml` hem `values-night/colors.xml`'de tanımlı) — "arka planı güzelleştir"
+    isteğinin doğrudan karşılığı, TÜM widget'lar (5'i de) bu paylaşılan drawable'ı kullanıyor.
+  - **`tool/prepare_widget_assets.dart`** (YENİ) — `zibo_splash_logo.png`'yi `widget_zibo_logo.png`
+    olarak kopyalayıp `assets/images/zibo_yeni.png`'yi (773×975) 420px yüksekliğe küçültüp
+    `widget_zibo_character.png` olarak kaydeden tek seferlik görsel betiği (`remove_bg.dart` ile
+    AYNI desen).
+  - **Widget picker önizleme sorunu ("her widget kendi nasılsa öyle görünsün") — İKİ AYRI
+    doğrulama.** (a) `android:previewLayout` (API 31+) TÜM beş `widget_info_*.xml`'de tanımlı —
+    her ikisi de gerçek layout'u (`tools:text` yer tutucularıyla) `initialLayout` ile AYNI
+    dosyaya işaret ediyor, ek bir statik `previewImage` PNG'si GEREKMEDİ. (b) uygulama içi "Ekle"
+    ekranı (`WidgetsScreen`) her modül için KENDİ emoji/renk kombinasyonunu (`_presentationFor`)
+    doğru gösteriyor — statik/manuel olarak `flutter test`'te (`widgets_screen_test.dart`)
+    doğrulandı. **Manuel "ana ekrana uzun bas → Widget'lar" akışının GÖRSEL doğrulaması** (gerçek
+    launcher'ın previewLayout'u render edip etmediği) bu turda TAMAMLANAMADI — bkz. altta.
+  - **KRİTİK bulgu — "uygulama içinden otomatik widget eklenmiyor" raporu YENİDEN İNCELENDİ,
+    KOD SEVİYESİNDE zaten DÜZELTİLMİŞ olduğu doğrulandı, ama gerçek cihazda İKİNCİ, FARKLI bir
+    sınırlama keşfedildi.** `WidgetsScreen`'in "Ekle" butonuna (Su Takibi/Zibo'nun Sözü/
+    İstatistiklerim için ayrı ayrı) basılınca `HomeWidget.requestPinWidget(qualifiedAndroidName:
+    ...)` HER SEFERİNDE `true` döndü ve `"Widget eklendi! Ana ekranını kontrol et."` başarı
+    mesajı gösterildi (bkz. Phase 2'nin `qualifiedAndroidName` düzeltmesi — bu HÂLÂ doğru
+    çalışıyor). **AMA `adb shell dumpsys appwidget`'in `Widgets:`/`Hosts:` bölümleri incelenince**
+    hiçbir Zibo widget'ının GERÇEKTEN bağlanmadığı (`appWidgetId` atanmadığı) görüldü — sistemde
+    yalnızca ÖNCEDEN var olan tek bir (Duolingo) widget kaydı vardı, üç ayrı "Ekle" denemesinden
+    (isolate edilmiş, tek tek, aralarında `dumpsys` kontrolüyle) SONRA bile widget sayısı
+    `1`'de sabit kaldı. `dumpsys window`'daki `mCurrentFocus` da her denemede uygulamanın KENDİ
+    `MainActivity`'sinde kaldı — sistemin/launcher'ın bir onay diyaloğu (`PinAppWidgetActivity`
+    gibi) HİÇ açılmadı. **Bu, `AppWidgetManager.requestPinAppWidget()`'ın bu MIUI launcher
+    sürümünde `isRequestPinAppWidgetSupported()`'ı `true` döndürmesine RAĞMEN isteği SESSİZCE
+    no-op bıraktığı, bilinen bir OEM launcher kısıtlaması sınıfı** — kodumuzun (Dart VEYA Kotlin
+    tarafının) HİÇBİR şekilde tespit edemeyeceği/atlatamayacağı bir davranış, çünkü API'nin
+    KENDİSİ hatasız `true` dönüyor (`isRequestPinWidgetSupported()` de `true`). **Bu, kullanıcının
+    Phase 2'de bildirdiği "widget eklenmedi" hatasından TAMAMEN FARKLI bir sınıf** — o zamanki
+    hata `ClassNotFoundException`'a bağlı bir gerçek KOD hatasıydı (düzeltildi, hâlâ düzeltilmiş
+    durumda); bu seferki, kodun DOĞRU davrandığı ama OS/launcher'ın isteği tamamlamadığı bir
+    durum. **Kullanıcının kendi cihazında kontrol etmesi gereken:** "Ekle" butonuna bastıktan
+    SONRA gerçekten ana ekranına gidip widget'ın göründüğünü doğrulamak — görünmüyorsa, TEK
+    güvenilir yol her zaman "ana ekrana uzun bas → Widget'lar → Zibo" manuel akışı (bu akışın
+    KENDİSİ Phase 2'de ayrı bir bug'dan — ham `<View>` spacer inflate çökmesi — düzeltildi ve o
+    düzeltme bu turda da geçerliliğini koruyor, yalnızca GÖRSEL olarak launcher üzerinden
+    doğrulanamadı — bkz. altta "yapılamayan doğrulama" notu).
+  - **YAPILAMAYAN doğrulama — gerçek launcher'da manuel pinleme + previewLayout'un GÖRSEL
+    doğrulaması.** Bu MIUI launcher'ının "ana ekrana uzun bas → Widget'lar" akışı, `adb shell
+    input tap`/`swipe` ile sentezlenen dokunuşlara TUTARSIZ tepki verdi (bazen düğmeye
+    dokunmak yerine bir uygulama simgesini "seçili" duruma getirdi, bir kez yanlışlıkla bir
+    uygulamayı açtı) — bu, kullanıcının GERÇEK, kişisel ana ekranı/uygulamaları üzerinde
+    (rastgele bir uygulamanın yanlışlıkla kaldırılması RİSKİ dahil) güvenle devam ETTİRİLEMEYECEK
+    kadar öngörülemez hale gelince, bu proje genelinde zaten belgelenmiş "gerçek cihaz paylaşım
+    riski" prensibiyle (bkz. "Hedef Tamamlama Kutlaması" bölümündeki AYNI temkinli durma kararı)
+    TUTARLI şekilde durduruldu — hiçbir uygulama/veri zarar GÖRMEDİ (her adımda `dumpsys window`
+    ile odak kontrol edildi, hiçbir silme İŞLEMİ ONAYLANMADI), ama previewLayout'un GERÇEKTEN
+    "her widget kendi nasılsa öyle görünüyor" sonucunu verip vermediği yalnızca STATİK XML
+    incelemesiyle (doğru yapılandırıldığı doğrulandı) kapsandı, CANLI bir launcher ekran
+    görüntüsüyle DEĞİL. **Kullanıcının kendi cihazında elle tamamlaması gereken tek adım:** ana
+    ekrana uzun basıp Widget'lar listesinden Zibo'yu bulup her 5 widget'ın önizlemesinin
+    (özellikle "Zibo'nun Sözü"/"İstatistiklerim" — gerçek karakter görseli + söz/istatistik
+    metniyle) generic bir uygulama ikonu DEĞİL, kendi gerçek tasarımıyla göründüğünü, ve ekleyip
+    3 dakika (motivasyon) / 6 saniye (istatistikler) bekleyip sözlerin/kategorilerin gerçekten
+    OTOMATİK döndüğünü gözlemlemek.
+  - **Test:** `widget_status_test.dart`'tan beş obsolete `group` SİLİNDİ (yalnızca `waterWidgetStatus`/
+    `moneyWidgetStatus`/`dailyRewardsWidgetStatus`/`motivationWidgetStatus` kaldı).
+    `home_widget_sync_coordinator_test.dart` TAMAMEN yeniden yazıldı — `_RecordingHomeWidgetService`
+    artık hem `statusCalls` hem `carouselCalls` iki AYRI liste tutuyor; yeni testler: `syncAll`
+    TÜM beş modülü günceller, motivasyon carousel'i havuzdan 8 FARKLI söz gönderir (kümenin
+    KENDİSİ + üyeliği doğrulanıyor, sıra DEĞİL), istatistikler carousel'i veri yokken dört
+    kategoriyi `hasData: false`/`"—"` ile gönderir, veri eklenip `syncAll` TEKRAR çağrılınca
+    günceller, `GoalsProvider` değişimi ARTIK hiçbir ANLIK güncelleme TETİKLEMEZ (mimari
+    değişikliğin doğrudan kanıtı). `widgets_screen_test.dart`'taki `titlesInOrder` 9 modülden
+    5'e (`Su Takibi`/`Para ve Birikim`/`Günlük Giriş Ödülleri`/`Zibo'nun Sözü`/`İstatistiklerim`)
+    güncellendi, ilk "Ekle" butonunun artık `ZiboWidgetModule.water`'a karşılık geldiği
+    doğrulandı (eskiden `goals`'tı). ARB'ye `widgetTitleProfileStats` (TR: "İstatistiklerim",
+    EN: "My Stats", ES: "Mis Estadísticas") eklenip `flutter gen-l10n` çalıştırıldı. `flutter
+    test` tam yeşil: **350/350** (9 test net azaldı — 5 obsolete widget'ın 12 durumu SİLİNDİ, YENİ
+    carousel/profileStats testleri EKLENDİ, net fark negatif çünkü kaldırılan testler eklenenden
+    fazlaydı).
+  - **Gerçek cihazda doğrulama — build+kurulum+üç bağımsız "Ekle" denemesi + geniş kapsamlı
+    logcat taraması, SIFIR çökme/InflateException (uygulamanın KENDİSİNDEN VEYA launcher/
+    AppWidgetHost sürecinden).** `flutter build apk --debug` + `adb install -r` (veri korunarak)
+    + `adb shell am start` ile açılış → `AndroidManifest.xml`'in gerçekten 5 receiver'a
+    (`ZiboWaterWidgetProvider`/`ZiboMoneyWidgetProvider`/`ZiboDailyRewardsWidgetProvider`/
+    `ZiboMotivationWidgetProvider`/`ZiboProfileStatsWidgetProvider`) indiği doğrulandı; Ayarlar >
+    "Ana Ekran Widget'ları" ekranı beş modülü doğru emoji/renk/sırayla listeledi; "Ekle"
+    butonlarının HER BİRİ (su/motivasyon/istatistikler) başarı mesajı gösterdi, hiçbiri
+    `AppWidgetHostView`/`InflateException` ÜRETMEDİ. Yukarıdaki iki "YAPILAMAYAN"/"KRİTİK bulgu"
+    notunda açıklanan kısıtlamalar HARİÇ, bu turun teknik risklerinin (ViewFlipper güvenliği,
+    kod-seviyesi Ekle akışı, layout/kaynak eksiksizliği) TAMAMI olumlu sonuçlandı.
 
 ## Coin Reward Miktarları — Şükran/Su/Manifest Günlüğü 2 → 5 ZC
 

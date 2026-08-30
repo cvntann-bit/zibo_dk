@@ -4,10 +4,11 @@ import '../l10n/app_localizations.dart';
 import '../services/home_widget_service.dart';
 import '../utils/widget_module.dart';
 
-/// Dokuz modülün ana ekran widget'larını (bkz. CLAUDE.md "Ana Ekran
-/// Widget'ları" bölümü) TEK bir listede toplayıp her biri için "Ekle"
-/// butonu sunan ekran — Ayarlar > Genel'deki "Ana Ekran Widget'ları"
-/// satırından push edilir.
+/// Beş modülün ana ekran widget'larını (bkz. CLAUDE.md "Ana Ekran
+/// Widget'ları" bölümü — 2026 güncellemesi, beş "basit günlük/checkbox"
+/// widget'ı kaldırılıp yerine [ZiboWidgetModule.profileStats] geldi) TEK
+/// bir listede toplayıp her biri için "Ekle" butonu sunan ekran — Ayarlar
+/// > Genel'deki "Ana Ekran Widget'ları" satırından push edilir.
 class WidgetsScreen extends StatefulWidget {
   const WidgetsScreen({super.key, this.homeWidgetService});
 
@@ -92,24 +93,16 @@ class _WidgetModuleTile extends StatelessWidget {
 
   (String, String, Color) _presentationFor(ZiboWidgetModule module, AppLocalizations l10n) {
     switch (module) {
-      case ZiboWidgetModule.goals:
-        return ('🎯', l10n.widgetTitleGoals, const Color(0xFFA9711F));
       case ZiboWidgetModule.water:
         return ('💧', l10n.widgetTitleWater, const Color(0xFF2F7FBF));
-      case ZiboWidgetModule.gratitude:
-        return ('🙏', l10n.widgetTitleGratitude, const Color(0xFF4CAF50));
-      case ZiboWidgetModule.mood:
-        return ('😊', l10n.widgetTitleMood, const Color(0xFFD6672B));
-      case ZiboWidgetModule.manifest:
-        return ('✨', l10n.widgetTitleManifest, const Color(0xFF8E5FC4));
-      case ZiboWidgetModule.dream:
-        return ('🌙', l10n.widgetTitleDream, const Color(0xFF4C5FA8));
       case ZiboWidgetModule.money:
         return ('💰', l10n.widgetTitleMoney, const Color(0xFF1E88E5));
       case ZiboWidgetModule.dailyRewards:
         return ('🎁', l10n.widgetTitleDailyRewards, const Color(0xFFC79A3D));
       case ZiboWidgetModule.motivation:
         return ('💬', l10n.widgetTitleMotivation, const Color(0xFFA9711F));
+      case ZiboWidgetModule.profileStats:
+        return ('📊', l10n.widgetTitleProfileStats, const Color(0xFF8E24AA));
     }
   }
 }

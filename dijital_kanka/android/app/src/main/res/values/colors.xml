@@ -16,4 +16,11 @@
     <color name="widget_primary_text">#4A3620</color>
     <color name="widget_secondary_text">#7A5C34</color>
     <color name="widget_accent_default">#A9711F</color>
+    <!-- 2026 güncellemesi — kullanıcı isteği "arka planı güzelleştir,
+         modellemesini daha profesyonel yap": düz `widget_card_background`
+         yerine ince, köşegen bir gradyan (bkz. drawable/widget_background.xml)
+         — `widget_card_background`'ın KENDİSİ artık doğrudan kullanılmıyor
+         ama geriye dönük referans/dokümantasyon için silinmedi. -->
+    <color name="widget_card_gradient_start">#FBF2D6</color>
+    <color name="widget_card_gradient_end">#EFDCAE</color>
 </resources>

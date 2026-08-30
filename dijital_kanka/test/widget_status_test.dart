@@ -1,6 +1,9 @@
 // Ana ekran widget'larının içerik hesaplama mantığını (bkz. CLAUDE.md
 // "Ana Ekran Widget'ları" bölümü) doğrudan (widget/provider kurmadan) test
-// eder — dokuz fonksiyonun hepsi saf, yalnızca birkaç ilkel değer alıyor.
+// eder — kalan fonksiyonların hepsi saf, yalnızca birkaç ilkel değer alıyor.
+// **2026 güncellemesi** — beş "basit günlük/checkbox" widget'ının
+// (goals/gratitude/mood/manifest/dream) durum fonksiyonları koddan
+// kaldırıldığı için buradaki testleri de kaldırıldı, bkz. `widget_status.dart`.
 
 import 'package:flutter_test/flutter_test.dart';
 
@@ -9,22 +12,6 @@ import 'package:dijital_kanka/utils/widget_status.dart';
 
 void main() {
   final l10n = AppLocalizationsTr();
-
-  group('goalsWidgetStatus', () {
-    test('hiç hedef yokken "—" + boş durum ipucu, ilerleme çubuğu gizli', () {
-      final status = goalsWidgetStatus(l10n, doneToday: 0, totalGoals: 0);
-      expect(status.primary, '—');
-      expect(status.secondary, l10n.widgetGoalsEmptyHint);
-      expect(status.progress, isNull);
-    });
-
-    test('hedef varken X/Y oranı ve doğru yüzde ilerleme', () {
-      final status = goalsWidgetStatus(l10n, doneToday: 2, totalGoals: 4);
-      expect(status.primary, '2/4');
-      expect(status.secondary, l10n.widgetGoalsActiveHint);
-      expect(status.progress, 50);
-    });
-  });
 
   group('waterWidgetStatus', () {
     test('bardak sayısı/hedefi ve birim etiketini doğru gösterir', () {
@@ -47,62 +34,6 @@ void main() {
         unitLabel: l10n.waterUnitGlass,
       );
       expect(status.progress, 100);
-    });
-  });
-
-  group('gratitudeWidgetStatus', () {
-    test('bugün tamamlanmışsa tik + "tamamlandı" metni', () {
-      final status = gratitudeWidgetStatus(l10n, isTodayComplete: true);
-      expect(status.primary, '✓');
-      expect(status.secondary, l10n.widgetGratitudeDoneHint);
-      expect(status.progress, isNull);
-    });
-
-    test('bugün henüz yazılmamışsa boş durum', () {
-      final status = gratitudeWidgetStatus(l10n, isTodayComplete: false);
-      expect(status.primary, '—');
-      expect(status.secondary, l10n.widgetGratitudeEmptyHint);
-    });
-  });
-
-  group('moodWidgetStatus', () {
-    test('bugün bir emoji seçilmişse onu gösterir', () {
-      final status = moodWidgetStatus(l10n, todayMoodEmoji: '🙂');
-      expect(status.primary, '🙂');
-      expect(status.secondary, l10n.widgetMoodSetHint);
-    });
-
-    test('henüz seçim yoksa boş durum', () {
-      final status = moodWidgetStatus(l10n, todayMoodEmoji: null);
-      expect(status.primary, '—');
-      expect(status.secondary, l10n.widgetMoodEmptyHint);
-    });
-  });
-
-  group('manifestWidgetStatus', () {
-    test('bugün giriş varsa sayı + aktif ipucu', () {
-      final status = manifestWidgetStatus(l10n, entriesToday: 2);
-      expect(status.primary, '2');
-      expect(status.secondary, l10n.widgetManifestActiveHint);
-    });
-
-    test('bugün hiç giriş yoksa boş ipucu', () {
-      final status = manifestWidgetStatus(l10n, entriesToday: 0);
-      expect(status.primary, '0');
-      expect(status.secondary, l10n.widgetManifestEmptyHint);
-    });
-  });
-
-  group('dreamWidgetStatus', () {
-    test('kayıt varsa toplam sayı + aktif ipucu', () {
-      final status = dreamWidgetStatus(l10n, totalDreams: 12);
-      expect(status.primary, '12');
-      expect(status.secondary, l10n.widgetDreamActiveHint);
-    });
-
-    test('hiç kayıt yoksa boş ipucu', () {
-      final status = dreamWidgetStatus(l10n, totalDreams: 0);
-      expect(status.secondary, l10n.widgetDreamEmptyHint);
     });
   });
 

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- "İstatistiklerim" carousel widget'ı — "Zibo'nun Sözü" ile AYNI büyük
+     (4x2) varsayılan boyut, dört kategoriyi rahat okunacak şekilde
+     sığdırmak için. previewLayout — bkz. widget_info_water.xml'deki 2026
+     güncelleme notu. -->
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:minWidth="250dp"
+    android:minHeight="110dp"
+    android:targetCellWidth="4"
+    android:targetCellHeight="2"
+    android:updatePeriodMillis="1800000"
+    android:initialLayout="@layout/widget_profile_stats"
+    android:previewLayout="@layout/widget_profile_stats"
+    android:resizeMode="horizontal|vertical"
+    android:widgetCategory="home_screen" />

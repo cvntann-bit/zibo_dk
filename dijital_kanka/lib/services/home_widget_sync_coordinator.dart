@@ -11,44 +11,53 @@ import '../models/money_entry.dart';
 import '../models/water_entry.dart';
 import '../providers/currency_provider.dart';
 import '../providers/daily_rewards_provider.dart';
-import '../providers/dream_journal_provider.dart';
 import '../providers/gratitude_provider.dart';
 import '../providers/goals_provider.dart';
 import '../providers/manifest_provider.dart';
 import '../providers/money_provider.dart';
-import '../providers/mood_provider.dart';
 import '../providers/profile_provider.dart';
 import '../providers/trusted_time_provider.dart';
 import '../providers/water_provider.dart';
 import '../utils/address_term.dart';
 import '../utils/currency_format.dart';
+import '../utils/profile_stats.dart';
 import '../utils/widget_module.dart';
 import '../utils/widget_status.dart';
 import 'home_widget_service.dart';
 
-/// Dokuz modülün ana ekran widget'larını GÜNCEL tutan tek koordinatör —
-/// bkz. CLAUDE.md "Ana Ekran Widget'ları" bölümü. Hiçbir provider'ın
-/// constructor'ına dokunulmadan (dosyaları invaziv şekilde değiştirmek
-/// yerine) her provider'a DIŞARIDAN bir `addListener` ekleyip, ilgili
-/// provider değiştiğinde SADECE o modülün widget'ını yeniden hesaplayıp
-/// [HomeWidgetService.pushStatus] ile native tarafa gönderiyor —
-/// `CostumeProvider.reconcileGoalUnlocks`'ın "constructor'dan değil,
-/// parametre olarak al" felsefesiyle AYNI gerekçe: bu obje diğer
-/// provider'lara KALICI bağımlı değil, yalnızca onları dinliyor.
+/// Beş modülün (Su Takibi/Para ve Birikim/Günlük Giriş Ödülleri/"Zibo'nun
+/// Sözü"/"İstatistiklerim") ana ekran widget'larını GÜNCEL tutan tek
+/// koordinatör — bkz. CLAUDE.md "Ana Ekran Widget'ları" bölümü. Hiçbir
+/// provider'ın constructor'ına dokunulmadan (dosyaları invaziv şekilde
+/// değiştirmek yerine) her provider'a DIŞARIDAN bir `addListener` ekleyip,
+/// ilgili provider değiştiğinde SADECE o modülün widget'ını yeniden
+/// hesaplayıp [HomeWidgetService.pushStatus]/[HomeWidgetService.pushCarousel]
+/// ile native tarafa gönderiyor — `CostumeProvider.reconcileGoalUnlocks`'ın
+/// "constructor'dan değil, parametre olarak al" felsefesiyle AYNI gerekçe:
+/// bu obje diğer provider'lara KALICI bağımlı değil, yalnızca onları
+/// dinliyor.
+///
+/// **2026 güncellemesi — beş "basit günlük/checkbox" widget'ı (Hedef
+/// Takibi/Rüya Günlüğü/Şükran Günlüğü/Ruh Hali Takibi/Manifest Günlüğü)
+/// TAMAMEN KALDIRILDI.** `goals`/`gratitude`/`manifest` provider'ları
+/// KENDİ widget'larını kaybetti ama listede KALDI — artık yalnızca
+/// [_syncProfileStats]'ın `ProfileStats.compute(...)` girdisi olarak
+/// kullanılıyorlar (bkz. altta). `dream`/`mood` provider'ları ise HİÇBİR
+/// widget'a artık katkı vermiyor — `ProfileStats.compute()` bu ikisini
+/// GEREKTİRMİYOR (bkz. o fonksiyonun imzası), bu yüzden alanları/parametreleri
+/// TAMAMEN kaldırıldı.
 ///
 /// `RootScreen`'in `initState`'inde BİR KEZ oluşturulup [syncAll] ile ilk
 /// senkronizasyon yapılıyor, `dispose()`'da TÜM listener'lar temizleniyor.
 ///
-/// **"Zibo'nun Sözü" widget'ı (bkz. [_syncMotivation]) diğer sekizinden
-/// FARKLI davranıyor** — kendi provider'ı yok, bu yüzden tek başına
-/// dinlenecek bir "değişti" olayı da yok; yeni bir rastgele söz yalnızca
-/// [syncAll] her çağrıldığında (uygulama açılışı + dil değişimi —
-/// `RootScreen`'in zaten kurduğu AYNI tetikleyiciler) seçiliyor. Bu,
-/// "her mikro-etkileşimde söz değişsin" gibi daha gürültülü bir alternatif
-/// yerine BİLEREK seçildi — diğer sekiz widget'ın listener'ları yalnızca
-/// KENDİ widget'larını güncelliyor, `syncAll()`'ı TETİKLEMİYOR (bkz.
-/// yukarıdaki mimari notu), bu yüzden bu widget zaten gürültüsüz/ölçülü
-/// bir sıklıkta tazeleniyor.
+/// **"Zibo'nun Sözü" ([_syncMotivation]) VE "İstatistiklerim"
+/// ([_syncProfileStats]) widget'ları diğer üçünden FARKLI davranıyor** —
+/// ikisinin de KENDİ tek bir provider'ı yok (birden fazla provider'ın
+/// birleşimine dayanıyorlar), bu yüzden [syncAll] her çağrıldığında
+/// (uygulama açılışı + dil değişimi — `RootScreen`'in zaten kurduğu AYNI
+/// tetikleyiciler) yeniden hesaplanıyorlar. Diğer üç widget'ın listener'ları
+/// `syncAll()`'ı TETİKLEMİYOR (bkz. yukarıdaki mimari notu), bu yüzden bu
+/// ikisi zaten gürültüsüz/ölçülü bir sıklıkta tazeleniyor.
 class HomeWidgetSyncCoordinator {
   HomeWidgetSyncCoordinator({
     required this.context,
@@ -57,21 +66,14 @@ class HomeWidgetSyncCoordinator {
     required this.goals,
     required this.water,
     required this.gratitude,
-    required this.mood,
     required this.manifest,
-    required this.dream,
     required this.money,
     required this.currency,
     required this.dailyRewards,
     required this.profile,
     Random? random,
   }) : _random = random ?? Random() {
-    goals.addListener(_syncGoals);
     water.addListener(_syncWater);
-    gratitude.addListener(_syncGratitude);
-    mood.addListener(_syncMood);
-    manifest.addListener(_syncManifest);
-    dream.addListener(_syncDream);
     money.addListener(_syncMoney);
     currency.addListener(_syncMoney);
     dailyRewards.addListener(_syncDailyRewards);
@@ -84,12 +86,19 @@ class HomeWidgetSyncCoordinator {
   final BuildContext context;
   final HomeWidgetService service;
   final TrustedTimeProvider trustedTime;
+
+  /// Artık kendi widget'ı YOK — yalnızca [_syncProfileStats]'ın
+  /// `ProfileStats.compute(...)` girdisi.
   final GoalsProvider goals;
   final WaterProvider water;
+
+  /// Artık kendi widget'ı YOK — yalnızca [_syncProfileStats]'ın
+  /// `ProfileStats.compute(...)` girdisi.
   final GratitudeProvider gratitude;
-  final MoodProvider mood;
+
+  /// Artık kendi widget'ı YOK — yalnızca [_syncProfileStats]'ın
+  /// `ProfileStats.compute(...)` girdisi.
   final ManifestProvider manifest;
-  final DreamJournalProvider dream;
   final MoneyProvider money;
   final CurrencyProvider currency;
   final DailyRewardsProvider dailyRewards;
@@ -104,6 +113,12 @@ class HomeWidgetSyncCoordinator {
   /// Şans Çarkı'ndaki AYNI "enjekte edilebilir Random" deseni).
   final Random _random;
 
+  /// "Zibo'nun Sözü" carousel'inin bir turda kaç FARKLI söz taşıyacağı —
+  /// her biri `ViewFlipper`'da 3 dakika (`widget_motivation.xml`'deki
+  /// `flipInterval`) gösterildiği için 8 söz ~24 dakikalık bir tam döngü
+  /// yapıyor, uygulama her açılışta/dil değişiminde yeniden karıştırıyor.
+  static const _motivationQuoteCount = 8;
+
   DateTime get _today => Goal.dateOnly(trustedTime.now());
 
   AppLocalizations get _l10n => AppLocalizations.of(context)!;
@@ -112,42 +127,18 @@ class HomeWidgetSyncCoordinator {
   /// `LocaleProvider`'ı ayrıca dinleyip bunu çağırması) TÜM widget'ları
   /// BİR KEZDE günceller.
   void syncAll() {
-    _syncGoals();
     _syncWater();
-    _syncGratitude();
-    _syncMood();
-    _syncManifest();
-    _syncDream();
     _syncMoney();
     _syncDailyRewards();
     _syncMotivation();
+    _syncProfileStats();
   }
 
   void dispose() {
-    goals.removeListener(_syncGoals);
     water.removeListener(_syncWater);
-    gratitude.removeListener(_syncGratitude);
-    mood.removeListener(_syncMood);
-    manifest.removeListener(_syncManifest);
-    dream.removeListener(_syncDream);
     money.removeListener(_syncMoney);
     currency.removeListener(_syncMoney);
     dailyRewards.removeListener(_syncDailyRewards);
-  }
-
-  void _syncGoals() {
-    final today = _today;
-    final doneToday = goals.goals.where((g) => g.completedDates.contains(today)).length;
-    final status = goalsWidgetStatus(_l10n, doneToday: doneToday, totalGoals: goals.goals.length);
-    unawaited(
-      service.pushStatus(
-        ZiboWidgetModule.goals,
-        title: _l10n.widgetTitleGoals,
-        primary: status.primary,
-        secondary: status.secondary,
-        progress: status.progress,
-      ),
-    );
   }
 
   void _syncWater() {
@@ -162,62 +153,6 @@ class HomeWidgetSyncCoordinator {
       service.pushStatus(
         ZiboWidgetModule.water,
         title: _l10n.widgetTitleWater,
-        primary: status.primary,
-        secondary: status.secondary,
-        progress: status.progress,
-      ),
-    );
-  }
-
-  void _syncGratitude() {
-    final status = gratitudeWidgetStatus(_l10n, isTodayComplete: gratitude.isTodayComplete);
-    unawaited(
-      service.pushStatus(
-        ZiboWidgetModule.gratitude,
-        title: _l10n.widgetTitleGratitude,
-        primary: status.primary,
-        secondary: status.secondary,
-        progress: status.progress,
-      ),
-    );
-  }
-
-  void _syncMood() {
-    final status = moodWidgetStatus(_l10n, todayMoodEmoji: mood.todayMood?.emoji);
-    unawaited(
-      service.pushStatus(
-        ZiboWidgetModule.mood,
-        title: _l10n.widgetTitleMood,
-        primary: status.primary,
-        secondary: status.secondary,
-        progress: status.progress,
-      ),
-    );
-  }
-
-  void _syncManifest() {
-    final today = _today;
-    final entriesToday = manifest.history
-        .where((e) => Goal.dateOnly(e.date).isAtSameMomentAs(today))
-        .length;
-    final status = manifestWidgetStatus(_l10n, entriesToday: entriesToday);
-    unawaited(
-      service.pushStatus(
-        ZiboWidgetModule.manifest,
-        title: _l10n.widgetTitleManifest,
-        primary: status.primary,
-        secondary: status.secondary,
-        progress: status.progress,
-      ),
-    );
-  }
-
-  void _syncDream() {
-    final status = dreamWidgetStatus(_l10n, totalDreams: dream.dreams.length);
-    unawaited(
-      service.pushStatus(
-        ZiboWidgetModule.dream,
-        title: _l10n.widgetTitleDream,
         primary: status.primary,
         secondary: status.secondary,
         progress: status.progress,
@@ -271,17 +206,54 @@ class HomeWidgetSyncCoordinator {
 
   void _syncMotivation() {
     final locale = Localizations.localeOf(context);
-    final quotes = ziboMessagesForLocale(locale);
-    final rawQuote = quotes[_random.nextInt(quotes.length)];
-    final quote = applyAddressTerm(rawQuote, profile.addressTerm, locale);
-    final status = motivationWidgetStatus(_l10n, quote: quote);
+    final pool = [...ziboMessagesForLocale(locale)]..shuffle(_random);
+    final count = min(_motivationQuoteCount, pool.length);
+    final items = pool
+        .take(count)
+        .map((raw) => CarouselItem(value: applyAddressTerm(raw, profile.addressTerm, locale)))
+        .toList();
     unawaited(
-      service.pushStatus(
-        ZiboWidgetModule.motivation,
-        title: _l10n.widgetTitleMotivation,
-        primary: status.primary,
-        secondary: status.secondary,
-      ),
+      service.pushCarousel(ZiboWidgetModule.motivation, title: _l10n.widgetTitleMotivation, items: items),
     );
+  }
+
+  void _syncProfileStats() {
+    final stats = ProfileStats.compute(
+      money: money,
+      gratitude: gratitude,
+      manifest: manifest,
+      goals: goals,
+      water: water,
+      now: trustedTime.now(),
+    );
+    final items = stats
+        .map(
+          (stat) => CarouselItem(
+            label: _profileStatTitle(stat.category),
+            value: stat.hasData ? '${stat.score.toStringAsFixed(1)}/10' : '—',
+            progress: stat.hasData ? (stat.score / 10 * 100).round() : null,
+            hasData: stat.hasData,
+          ),
+        )
+        .toList();
+    unawaited(
+      service.pushCarousel(ZiboWidgetModule.profileStats, title: _l10n.widgetTitleProfileStats, items: items),
+    );
+  }
+
+  /// `lib/widgets/profile_stat_card.dart`'taki AYNI id→ARB-getter eşlemesi —
+  /// Profil ekranıyla BİREBİR aynı kategori başlıkları, ayrı bir çeviri
+  /// SETİ eklenmedi.
+  String _profileStatTitle(ProfileStatCategory category) {
+    switch (category) {
+      case ProfileStatCategory.money:
+        return _l10n.profileStatMoneyTitle;
+      case ProfileStatCategory.gratitudeManifest:
+        return _l10n.profileStatGratitudeManifestTitle;
+      case ProfileStatCategory.consistency:
+        return _l10n.profileStatConsistencyTitle;
+      case ProfileStatCategory.selfCareHealth:
+        return _l10n.profileStatSelfCareTitle;
+    }
   }
 }

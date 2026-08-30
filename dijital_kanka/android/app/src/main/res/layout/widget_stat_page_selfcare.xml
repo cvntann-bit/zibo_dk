@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- "İstatistiklerim" carousel'inin bir sayfası — Öz Saygı ve Sağlık kategorisi.
+     `widget_stat_page_*.xml` dosyalarının DÖRDÜ de yapısal olarak BİREBİR
+     AYNI, yalnızca `progressTint` rengi farklı (bkz. ProfileScreen'in
+     StatTrendChart'taki AYNI kategori-renk eşlemesi — Para=mavi, Şükür ve
+     Manifest=mor, İstikrar=turuncu, Öz Saygı ve Sağlık=yeşil). Kotlin
+     tarafında (ZiboProfileStatsWidgetProvider) DÖRT statik XML arasından
+     doğru olanı SEÇMEK, TEK bir dinamik layout'u runtime'da reflection ile
+     tonlamaya (`ProgressBar.setProgressTintList` bir ColorStateList alıyor,
+     RemoteViews'ın basit `setInt(id, method, int)` reflection'ıyla
+     ÇAĞRILAMIYOR) tercih edildi — sıfır reflection riski, önceki iki gerçek
+     RemoteViews çökmesinden (bkz. CLAUDE.md) sonra BİLİNÇLİ bir tercih. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/widget_stat_label"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="12sp"
+        android:textColor="@color/widget_secondary_text"
+        android:maxLines="1"
+        android:ellipsize="end"
+        tools:text="Öz Saygı ve Sağlık" />
+
+    <TextView
+        android:id="@+id/widget_stat_value"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dp"
+        android:textSize="19sp"
+        android:textStyle="bold"
+        android:textColor="@color/widget_primary_text"
+        android:maxLines="1"
+        android:ellipsize="end"
+        tools:text="7,5 / 10" />
+
+    <ProgressBar
+        android:id="@+id/widget_stat_progress"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent"
+        android:layout_height="6dp"
+        android:layout_marginTop="8dp"
+        android:max="100"
+        android:progress="75"
+        android:progressTint="#43A047" />
+</LinearLayout>

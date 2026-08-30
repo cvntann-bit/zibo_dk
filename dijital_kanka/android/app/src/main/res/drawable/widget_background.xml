@@ -1,10 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Ana ekran widget'larının paylaşılan kart arka planı (bkz.
-     res/layout/widget_module.xml) — @color/widget_card_background açık/
-     koyu temaya göre values/ vs values-night/'ta otomatik doğru çözülüyor,
-     ayrı bir gece varyantı GEREKMİYOR. -->
+<!-- Ana ekran widget'larının paylaşılan kart arka planı — TÜM widget'lar
+     (kompakt üçlü + "Zibo'nun Sözü" + "İstatistiklerim") bunu kullanıyor.
+     2026 güncellemesi — kullanıcı isteği "arka planı güzelleştir,
+     modellemesini daha profesyonel yap": düz tek renk yerine ince, köşegen
+     bir gradyan (bkz. values(/-night)/colors.xml'deki `widget_card_gradient_
+     start/end`) — açık/koyu temaya göre otomatik doğru çözülüyor, ayrı bir
+     gece varyantı GEREKMİYOR. -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="rectangle">
-    <solid android:color="@color/widget_card_background" />
+    <gradient
+        android:type="linear"
+        android:angle="135"
+        android:startColor="@color/widget_card_gradient_start"
+        android:endColor="@color/widget_card_gradient_end" />
     <corners android:radius="20dp" />
 </shape>

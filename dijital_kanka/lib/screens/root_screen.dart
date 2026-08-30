@@ -5,13 +5,11 @@ import '../l10n/app_localizations.dart';
 import '../models/push_notification_type.dart';
 import '../providers/currency_provider.dart';
 import '../providers/daily_rewards_provider.dart';
-import '../providers/dream_journal_provider.dart';
 import '../providers/goals_provider.dart';
 import '../providers/gratitude_provider.dart';
 import '../providers/locale_provider.dart';
 import '../providers/manifest_provider.dart';
 import '../providers/money_provider.dart';
-import '../providers/mood_provider.dart';
 import '../providers/notification_provider.dart';
 import '../providers/profile_provider.dart';
 import '../providers/trusted_time_provider.dart';
@@ -110,7 +108,7 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
     homeTabRequest.addListener(_onHomeTabRequested);
     goalsTabRequest.addListener(_onGoalsTabRequested);
     dailyRewardsPopupRequest.addListener(_onDailyRewardsPopupRequested);
-    // **2026 yeni özellik — ana ekran widget'ları.** Sekiz modülün widget'ını
+    // **2026 yeni özellik — ana ekran widget'ları.** Beş modülün widget'ını
     // GÜNCEL tutan koordinatör burada BİR KEZ kuruluyor (bkz. CLAUDE.md "Ana
     // Ekran Widget'ları" bölümü + HomeWidgetSyncCoordinator dokümantasyonu)
     // — `context.read` çağrıları `build()` DIŞINDA olduğu için post-frame
@@ -124,9 +122,7 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
       goals: context.read<GoalsProvider>(),
       water: context.read<WaterProvider>(),
       gratitude: context.read<GratitudeProvider>(),
-      mood: context.read<MoodProvider>(),
       manifest: context.read<ManifestProvider>(),
-      dream: context.read<DreamJournalProvider>(),
       money: context.read<MoneyProvider>(),
       currency: context.read<CurrencyProvider>(),
       dailyRewards: context.read<DailyRewardsProvider>(),

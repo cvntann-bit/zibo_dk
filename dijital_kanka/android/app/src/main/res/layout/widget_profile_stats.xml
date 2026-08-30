@@ -1,22 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- "Zibo'nun Sözü" — büyük, ViewFlipper tabanlı carousel widget'ı (bkz.
-     CLAUDE.md "Ana Ekran Widget'ları" bölümü). Gerçek bir Zibo karakter
-     görseli (`widget_zibo_character.png`) + çok satırlı, OTOMATİK DÖNEN
-     bir söz metni içeriyor.
-
-     2026 güncellemesi — kullanıcı isteği "sözler 3 dakikada bir değişsin":
-     tek statik `TextView` yerine artık bir `ViewFlipper`
-     (`widget_quote_flipper`) var — `ZiboMotivationWidgetProvider.kt`
-     `RemoteViews.addView(...)` ile ÇALIŞMA ZAMANINDA N tane
-     `widget_quote_page.xml` örneği ekliyor, `android:flipInterval` +
-     `autoStart="true"` sayesinde bunlar arasındaki geçiş TAMAMEN NATIVE
-     (launcher sürecinin kendi UI thread'inde çalışan bir animasyon) —
-     Dart/uygulama HİÇ AÇIK OLMASA BİLE, `updatePeriodMillis`'in Android'in
-     dayattığı 30 dakikalık ALT SINIRINDAN TAMAMEN BAĞIMSIZ olarak, home
-     ekranına eklendiği sürece kendi başına dönmeye devam ediyor (bkz. o
-     dosyadaki dokümantasyon — `ViewFlipper` bir "arka plan uyandırma"
-     mekanizması DEĞİL, sıradan bir View animasyonu, bu yüzden OS'in
-     periyodik widget güncelleme kısıtlamalarına HİÇ tabi değil). -->
+<!-- "İstatistiklerim" — beş kaldırılan basit widget'ın (Hedef Takibi/Rüya
+     Günlüğü/Şükran Günlüğü/Ruh Hali Takibi/Manifest Günlüğü) YERİNE geçen,
+     Profil ekranındaki dört kategoriyi (Para Yönetimi/Şükür ve Manifest/
+     İstikrar/Öz Saygı ve Sağlık) bir `ViewFlipper` ile sırayla, animasyonla
+     döndüren carousel widget'ı — bkz. CLAUDE.md "Ana Ekran Widget'ları"
+     bölümü. "Zibo'nun Sözü" widget'ıyla AYNI kompozisyon (karakter görseli
+     solda, içerik sağda, köşede logo) — kullanıcının "zibo logosu ve zibo
+     görselini kullanmayı unutma" isteği. -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/widget_root"
@@ -33,7 +23,7 @@
 
         <ImageView
             android:id="@+id/widget_character"
-            android:layout_width="64dp"
+            android:layout_width="56dp"
             android:layout_height="match_parent"
             android:layout_gravity="bottom"
             android:scaleType="fitStart"
@@ -56,11 +46,8 @@
                 android:textColor="@color/widget_secondary_text"
                 android:maxLines="1"
                 android:ellipsize="end"
-                tools:text="Zibo'nun Sözü" />
+                tools:text="İstatistiklerim" />
 
-            <!-- Diğer widget'lardaki accent bar'la AYNI desen — bkz.
-                 `widget_module.xml`'deki dokümantasyon (ham `<View>`
-                 spacer YERİNE, RemoteViews'ın desteklediği bir TextView). -->
             <TextView
                 android:id="@+id/widget_accent_bar"
                 android:layout_width="30dp"
@@ -69,32 +56,42 @@
                 android:layout_marginBottom="8dp" />
 
             <ViewFlipper
-                android:id="@+id/widget_quote_flipper"
+                android:id="@+id/widget_stats_flipper"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:flipInterval="180000"
+                android:flipInterval="6000"
                 android:autoStart="true"
                 android:inAnimation="@android:anim/fade_in"
                 android:outAnimation="@android:anim/fade_out">
-                <!-- Boş, "senkron henüz hiç çalışmadı" durumu için TEK bir
-                     yer tutucu sayfa — Kotlin tarafı ZATEN gerçek veri
-                     geldiğinde `removeAllViews` + gerçek sayfaları EKLİYOR,
-                     bu yalnızca ilk anlık görüntü/önizleme (previewLayout)
-                     için boş kalmasın diye. -->
-                <TextView
+                <!-- Boş durum yer tutucusu — Kotlin gerçek veri geldiğinde
+                     `removeAllViews` + dört gerçek `widget_stat_page_*`
+                     sayfasını EKLER (bkz. widget_quote_flipper'daki AYNI
+                     not). `<include>` KULLANILMADI — RemoteViews'ın
+                     inflate kısıtlamalarıyla test EDİLMEMİŞ bir mekanizmayı
+                     riske atmamak için doğrudan aynı yapı inline yazıldı. -->
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:textSize="15sp"
-                    android:textStyle="bold"
-                    android:textColor="@color/widget_primary_text"
-                    android:maxLines="4"
-                    android:ellipsize="end"
-                    tools:text="Zor günler geçer, sen kalıcısın." />
+                    android:orientation="vertical">
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textSize="12sp"
+                        android:textColor="@color/widget_secondary_text"
+                        tools:text="Para Yönetimi" />
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:textSize="19sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/widget_primary_text"
+                        tools:text="7,5 / 10" />
+                </LinearLayout>
             </ViewFlipper>
         </LinearLayout>
     </LinearLayout>
 
-    <!-- Zibo logosu — kompakt widget'larla AYNI soluk marka imzası deseni. -->
     <ImageView
         android:layout_width="34dp"
         android:layout_height="14dp"
