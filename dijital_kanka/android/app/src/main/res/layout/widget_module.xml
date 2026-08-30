@@ -26,6 +26,26 @@
     android:background="@drawable/widget_background"
     android:padding="14dp">
 
+    <!-- 2026 güncellemesi — kullanıcı isteği "her widget'in kendi
+         animasyonu olsun" (Su Takibi'ne dalga, Para ve Birikim'e banknot
+         vb., bkz. CLAUDE.md "Ana Ekran Widget'ları" bölümü). Gerçek verinin
+         (rozet/başlık/sayı) ARKASINDA, TEK BAŞINA duran bir arka plan
+         `ViewFlipper` — `ZiboBaseWidgetProvider.backgroundFrames`'in
+         belirttiği, her alt sınıfa (Su/Para/Günlük Ödül) ÖZGÜ önceden
+         çizilmiş sahneleri (bkz. `tool/generate_widget_bg_animations.dart`)
+         `widget_page_in`/`widget_page_out` (kayma+solma) ile döndürüyor —
+         "Zibo'nun Sözü"/"İstatistiklerim"deki İÇERİK carousel'inden
+         TAMAMEN BAĞIMSIZ, yalnızca dekoratif. FrameLayout'ta İLK çocuk
+         olduğu için içeriğin ARKASINDA kalıyor. -->
+    <ViewFlipper
+        android:id="@+id/widget_bg_flipper"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:flipInterval="5000"
+        android:autoStart="true"
+        android:inAnimation="@anim/widget_page_in"
+        android:outAnimation="@anim/widget_page_out" />
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"

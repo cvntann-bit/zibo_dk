@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Ana ekran widget'larının arka plan animasyon `ViewFlipper`'ına eklenen
+     TEK bir "sahne" sayfası — bkz. CLAUDE.md "Ana Ekran Widget'ları" bölümü
+     + `tool/generate_widget_bg_animations.dart`. BEŞ widget'ın hepsi (kompakt
+     üçlü + "Zibo'nun Sözü" + "İstatistiklerim") bu AYNI, tek-ImageView'lık
+     sayfa şablonunu paylaşıyor — hangi PNG'nin gösterileceği native tarafta
+     `setImageViewResource` ile HER sayfa için ayrı ayrı doldurulur. -->
+<ImageView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_bg_frame_image"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:scaleType="centerCrop"
+    android:importantForAccessibility="no" />

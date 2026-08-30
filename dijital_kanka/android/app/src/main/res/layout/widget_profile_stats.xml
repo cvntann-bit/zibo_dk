@@ -15,6 +15,21 @@
     android:background="@drawable/widget_background"
     android:padding="16dp">
 
+    <!-- 2026 güncellemesi — kullanıcı isteği "her widget'in kendi
+         animasyonu olsun": yükselen çubuk grafik temalı arka plan
+         sahneleri (bkz. `tool/generate_widget_bg_animations.dart`),
+         `widget_stats_flipper` (içerik carousel'i) İLE İLGİSİZ, TAMAMEN
+         AYRI/bağımsız bir `ViewFlipper` — bkz. `widget_motivation.xml`'deki
+         AYNI desen. -->
+    <ViewFlipper
+        android:id="@+id/widget_bg_flipper"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:flipInterval="5000"
+        android:autoStart="true"
+        android:inAnimation="@anim/widget_page_in"
+        android:outAnimation="@anim/widget_page_out" />
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"

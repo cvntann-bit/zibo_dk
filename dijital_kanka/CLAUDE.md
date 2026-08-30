@@ -6613,6 +6613,93 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
     gösterdiğini, (f) ana ekrana uzun basıp Widget'lar listesindeki Zibo önizlemelerinin ARTIK
     generic app ikonu DEĞİL, gerçek tasarımlarıyla (karakter görseli, gerçek metin, ilerleme
     çubuğu) göründüğünü.
+  - **2026 BEŞİNCİ güncelleme — kullanıcının "durgun" geri bildirimine devam: HER widget'ın
+    kendi TEMASINA uygun, sabit dört kareli bir "sahne" animasyonu.** Önceki turdaki ViewFlipper
+    geçiş animasyonu (kayma+solma) sürekli hissettirmedi — kullanıcı önce "su takibine dalgalar,
+    para/birikime yeşil banknot [Zibo logolu], günlük ödüllere hediye kutuları, Zibo'nun Sözü'ne
+    ampul, İstatistiklerim'e bir şey" fikrini SADECE KONUŞMAK için sordu (`işleme koyma sadece
+    yapabilirmisin yaparsan nasıl olur konuşalım`), bu KAPSAMLI teknik açıklamadan (bkz. altta
+    "RemoteViews'ın gerçek sınırı") sonra `evet hepsine başla` ile onayladı.
+    - **RemoteViews'ın gerçek animasyon sınırı, kullanıcıya önceden açıklandı:** Android home
+      screen widget'ları hiçbir zaman gerçek/sürekli bir canvas animasyonu (özel View, çizim
+      döngüsü) ÇALIŞTIRAMAZ — tek native "hareket" mekanizması `ViewFlipper`'ın ÖNCEDEN ÇİZİLMİŞ,
+      STATİK sayfalar arasında dönmesi (bkz. yukarıdaki "Zibo'nun Sözü"/"İstatistiklerim"
+      carousel'leri). Bu yüzden "animasyon" burada, her widget'ın KENDİ temasına göre üretilmiş
+      4 statik PNG karesinin `ViewFlipper` ile yavaşça (5sn aralıklarla) döndürülmesi — gerçek bir
+      akışkan hareket DEĞİL, "nefes alan" bir sahne illüzyonu. Kullanıcı bu açıklamayı KABUL EDİP
+      onayladıktan sonra uygulanmaya başlandı.
+    - **`tool/generate_widget_bg_animations.dart`** (YENİ) — saf geometri (`img.drawLine`/
+      `fillPolygon`/`drawCircle`/`fillRect`, `remove_bg.dart` ailesinden hiçbir font/BitmapFont
+      bağımlılığı olmayan AYNI teknik) ile 5 widget × 4 kare = 20 PNG üretiyor
+      (`drawable-nodpi/widget_bg_<widget>_1..4.png`): **Su Takibi** — sinüs dalgalı su desenleri
+      (mavi `#2F7FBF`); **Para ve Birikim** — kayan, dönük banknotlar (yeşil `#2E8B57`, her biri
+      dikdörtgen çerçeve + mühür dairesi + küçük 3 çizgilik bir "Z" — kullanıcının "Zibo logolu
+      yeşil banknot" isteğine sembolik bir karşılık, gerçek logo PNG'si DEĞİL, saf çizim); **Günlük
+      Giriş Ödülleri** — bobbing hediye kutuları (altın `#C79A3D`, kare + çapraz kurdele + iki
+      üçgenli fiyonk); **Zibo'nun Sözü** — bir ampul + beş ışın çizgisi (altın `#D9A94A`);
+      **İstatistiklerim** — yükselen dört çubuklu bir mini bar grafik (mor `#8E24AA`). Her widget
+      TEK, kendi SATÜRE accent rengini kullanıyor (Z-deseninin aksine — bkz. altta "neden AÇIK/
+      KOYU ayrımı yok").
+      - **Gerçek bug #1 — düşük alfa (30-50/255), sıcak krem arka plan üzerinde renk yerine
+        gri/bej okunuyordu.** Z-desenindeki AYNI genel teknik (opak çiz → blurla) burada
+        KULLANILMADI (motifler zaten kalın/net şekiller, blur GEREKMİYOR) ama İLK denemede alfa
+        değerleri düşük tutulunca (Z-deseninin dokümante edilmiş gerekçesiyle AYNI perspektif
+        karışım etkisi) mavi/yeşil/altın/mor tonlar tanınamaz hale geldi. **Düzeltme:** tüm 5
+        fonksiyonda alfa 68-100/255 aralığına (sed ile toplu) yükseltildi — artık her renk hem
+        açık hem koyu temada tanınabilir kalıyor.
+      - **Gerçek bug #2 — İstatistiklerim'in EN UZUN (4.) çubuğu 400px'lik kanvasın DIŞINA
+        taşıyordu.** `startX=0.72×400` + `barW=24,gap=18` toplamı sağ kenarı aşıyordu. Düzeltme:
+        `barW` (0.06→0.045×boyut), `gap` (0.045→0.03×boyut), `startX` (0.72→0.68×boyut) küçültülüp
+        4 çubuğun TAMAMI marjla kanvasa sığdırıldı.
+      - **Neden AÇIK/KOYU tema ayrımı YOK (Z-deseninden farklı):** Z-deseni neredeyse nötr
+        tonlarla arka plana KARIŞMAK üzere tasarlandığı için iki ayrı varyant gerekiyordu; bu yeni
+        motifler her widget'ın KENDİ SATÜRE (doygun) accent rengini orta-düşük alfayla kullandığı
+        için hem sıcak krem hem neredeyse-siyah arka planda AYIRT EDİLEBİLİR kalıyor — TEK asset
+        seti yeterli (kompoze edilmiş önizlemelerle iki temada da doğrulandı).
+    - **`res/layout/widget_bg_frame.xml`** (YENİ) — tek bir `ImageView` (`widget_bg_frame_image`)
+      taşıyan PAYLAŞILAN bir tek-sayfa şablonu; 5 widget'ın HEPSİ `RemoteViews(pkg, R.layout.
+      widget_bg_frame).setImageViewResource(...)` + `addView(...)` ile bunu bir ARKA PLAN
+      `ViewFlipper`'ına (`R.id.widget_bg_flipper`) dolduruyor — 5 ayrı, neredeyse aynı layout
+      dosyası YAZILMADI.
+    - **İKİ BAĞIMSIZ `ViewFlipper` içeren widget'lar — bu projede İLK KEZ.** "Zibo'nun Sözü" ve
+      "İstatistiklerim"in HER İKİSİ artık İKİ AYRI `ViewFlipper` taşıyor: mevcut İÇERİK
+      carousel'i (`widget_quote_flipper`/`widget_stats_flipper`, gerçek veri) VE YENİ ARKA PLAN
+      carousel'i (`widget_bg_flipper`, sabit 4 dekoratif kare) — ikisi TAMAMEN bağımsız, farklı
+      `flipInterval`'lerle (arka plan 5sn, içerik sırasıyla 180000ms/4500ms) kendi başlarına
+      dönüyor. Diğer üç widget (Su Takibi/Para ve Birikim/Günlük Giriş Ödülleri, hepsi
+      `ZiboBaseWidgetProvider`'ı extend ediyor) yalnızca TEK (yeni) arka plan `ViewFlipper`'ı
+      kazandı — `ZiboBaseWidgetProvider`'a eklenen `abstract val backgroundFrames: List<Int>` +
+      `onUpdate()`'teki paylaşılan doldurma döngüsü sayesinde HER ALT SINIFA tek satırlık bir
+      `backgroundFrames = listOf(...)` eklemek yeterli oldu.
+    - **RemoteViews güvenli-view sınıfı riski YOK** — yeni `widget_bg_frame.xml` tek bir
+      `ImageView`, yeni `ViewFlipper`'lar zaten whitelist'te olan bir sınıf (bkz. yukarıdaki
+      "Araç yüklenemiyor" bug notundaki whitelist) — bu turda YENİ bir inflate riski
+      İNCELENMESİ/İCAT EDİLMESİ gerekmedi.
+    - **Gerçek cihazda doğrulama — build+kurulum ANINDA yapıldı, `adb logcat` ile canlı
+      izlendi.** APK yeniden derlenip (`flutter build apk --debug`) telefona kurulup (`adb
+      install -r`, mevcut veri/widget'lar korunarak) açıldı — `adb shell dumpsys appwidget` ile
+      cihazda ZATEN bağlı bir `ZiboWaterWidgetProvider` (id=23) örneği olduğu görüldü (önceki bir
+      manuel ekleme oturumundan kalma). Bu, YENİ dual-ViewFlipper kodunu RİSKLİ bir manuel
+      ana-ekran etkileşimine hiç gerek kalmadan test etmek için gerçek bir fırsat sundu: uygulama
+      açılışı zaten `HomeWidgetSyncCoordinator.syncAll()`'ı (dolayısıyla bu widget'ın `onUpdate()`
+      'ini YENİ Kotlin koduyla) tetikledi. `adb logcat -T <açılış anı>` ile filtrelenmiş loglar
+      `AppWidgetServiceImpl: updateAppWidgetInstanceLocked ... ZiboWaterWidgetProvider` +
+      `Launcher:WidgetView: onWidgetUpdate id = 23`'ün İKİ KEZ, HİÇBİR `InflateException`/`FATAL
+      EXCEPTION`/`Class not allowed` satırı OLMADAN gerçekleştiğini gösterdi — dual-ViewFlipper
+      yaklaşımının en az BİR gerçek, canlı widget örneğinde ÇÖKMEDEN render edildiğinin somut
+      kanıtı.
+    - **`flutter test` tam yeşil: 350/350** (bu turda kod-seviyesi testte bir değişiklik
+      GEREKMEDİ — arka plan `ViewFlipper`'ları saf Kotlin/XML/asset değişikliği, hiçbir Dart
+      tarafı davranışına dokunmuyor).
+    - **YAPILAMAYAN/EKSİK doğrulama:** yalnızca Su Takibi widget'ı GERÇEKTEN bağlı bir örnek
+      üzerinden test edilebildi (crash-free doğrulandı) — diğer dört widget türünün (Para ve
+      Birikim/Günlük Giriş Ödülleri/Zibo'nun Sözü/İstatistiklerim) HİÇBİRİ bu turda bağlı DEĞİLDİ,
+      bu yüzden onlar için aynı canlı `dumpsys`/`logcat` kanıtı ELDE EDİLEMEDİ (yalnızca statik
+      kod incelemesiyle güvenilir — Kotlin tarafındaki desen Su Takibi'yle BİREBİR aynı olduğu
+      için risk düşük kabul edildi, ama KESİN değil). Görsel (renklerin/motiflerin gerçekten
+      doğru/net göründüğü, geçişin "nefes alma" hissi verdiği) doğrulama da bu turda YAPILAMADI —
+      kullanıcının kendi cihazında beş widget'ın hepsini (özellikle henüz hiç bağlanmamış
+      dördünü) ekleyip birkaç dakika gözlemlemesi gerekiyor.
 
 ## Coin Reward Miktarları — Şükran/Su/Manifest Günlüğü 2 → 5 ZC
 

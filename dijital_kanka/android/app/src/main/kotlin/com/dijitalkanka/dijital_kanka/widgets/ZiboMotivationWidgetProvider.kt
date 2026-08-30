@@ -35,6 +35,19 @@ import es.antonborri.home_widget.HomeWidgetProvider
 class ZiboMotivationWidgetProvider : HomeWidgetProvider() {
   private val dataKeyPrefix = "motivation"
 
+  /** **2026 güncellemesi — kullanıcı isteği "her widget'in kendi
+   * animasyonu olsun": ampul/fikir temalı arka plan sahneleri** (bkz.
+   * `tool/generate_widget_bg_animations.dart`) — `R.id.widget_bg_flipper`'a
+   * (içerik carousel'i `widget_quote_flipper`'DAN TAMAMEN AYRI/bağımsız)
+   * eklenen SABİT dört kare. */
+  private val backgroundFrames =
+      listOf(
+          R.drawable.widget_bg_motivation_1,
+          R.drawable.widget_bg_motivation_2,
+          R.drawable.widget_bg_motivation_3,
+          R.drawable.widget_bg_motivation_4,
+      )
+
   override fun onUpdate(
       context: Context,
       appWidgetManager: AppWidgetManager,
@@ -48,6 +61,13 @@ class ZiboMotivationWidgetProvider : HomeWidgetProvider() {
             val title = widgetData.getString("${dataKeyPrefix}_title", null)
             setInt(R.id.widget_accent_bar, "setBackgroundColor", accentColor)
             setTextViewText(R.id.widget_title, title ?: "Zibo")
+
+            removeAllViews(R.id.widget_bg_flipper)
+            backgroundFrames.forEach { frameRes ->
+              val bgPage = RemoteViews(context.packageName, R.layout.widget_bg_frame)
+              bgPage.setImageViewResource(R.id.widget_bg_frame_image, frameRes)
+              addView(R.id.widget_bg_flipper, bgPage)
+            }
 
             val itemCount = widgetData.getInt("${dataKeyPrefix}_itemCount", 0)
             removeAllViews(R.id.widget_quote_flipper)
