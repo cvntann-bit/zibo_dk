@@ -85,7 +85,7 @@ class _RecordingFakeNotificationService extends NotificationService {
   }
 
   @override
-  Future<void> showNow({required String title, required String body}) async {}
+  Future<void> showNow({required String title, required String body, int? id}) async {}
 }
 
 void main() {

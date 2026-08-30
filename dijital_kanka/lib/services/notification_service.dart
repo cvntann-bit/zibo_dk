@@ -125,7 +125,24 @@ abstract class NotificationService {
   /// `flutter_local_notifications` üzerinden yerel bir bildirim olarak
   /// gösterip kullanıcı deneyimini arka/kapalı plandaki davranışla tutarlı
   /// kılıyor.
-  Future<void> showNow({required String title, required String body});
+  ///
+  /// **2026 bug düzeltmesi — "bildirimler 2şer tane gelmeye başladı"
+  /// kullanıcı raporu.** [id] verilmezse (eski davranış) her çağrı
+  /// `DateTime.now()`'a dayalı YENİ/rastgele bir bildirim id'si üretiyordu —
+  /// FCM'in kendi teslimat garantisi "en az bir kez" (at-least-once), YANİ
+  /// "tam olarak bir kez" DEĞİL (bkz. Firebase'in kendi resmi dokümantasyonu)
+  /// — ağ yeniden bağlanması/OS'in kendi yeniden deneme mantığı AYNI mantıksal
+  /// mesajı ARADA SIRADA İKİNCİ kez `onMessage`'a düşürebiliyor. Rastgele id
+  /// kullanıldığında Android bunu TAMAMEN AYRI, ikinci bir bildirim olarak
+  /// gösteriyordu (aynı id'yle çağrılan `_plugin.show()` normalde VAR OLAN
+  /// bildirimin YERİNE geçer/günceller, farklı id'yle YENİ bir tane EKLER) —
+  /// kullanıcı bu yüzden "aynı bildirim 2 kez geldi" diye bildirdi.
+  /// **Düzeltme:** çağıran taraf (bkz. `PushNotificationService`) artık FCM
+  /// mesajının KENDİ `messageId`'sinden TÜRETİLMİŞ, DETERMİNİSTİK bir [id]
+  /// geçiyor — aynı mantıksal mesaj ikinci kez düşerse Android bunu SESSİZCE
+  /// mevcut bildirimin ÜZERİNE YAZAR, ikinci bir kart OLUŞTURMAZ. [id]
+  /// verilmezse geriye dönük uyumluluk için eski rastgele davranışa düşülür.
+  Future<void> showNow({required String title, required String body, int? id});
 }
 
 /// `flutter_local_notifications` ile gerçek yerel bildirimleri planlayan
@@ -399,7 +416,7 @@ class LocalNotificationService extends NotificationService {
   }
 
   @override
-  Future<void> showNow({required String title, required String body}) async {
+  Future<void> showNow({required String title, required String body, int? id}) async {
     try {
       // `PushNotificationService` (ön plandaki FCM mesajlarını göstermek
       // için) bu metodu `initialize()`'ı hiç çağırmadan kullanabiliyordu —
@@ -411,7 +428,9 @@ class LocalNotificationService extends NotificationService {
       // şekilde (zaten initialize edilmişse no-op) çağrılıyor.
       await initialize(onNotificationTap: () {});
       await _plugin.show(
-        id: DateTime.now().millisecondsSinceEpoch.remainder(100000),
+        // `id` verilmemişse (bkz. arayüz dokümantasyonundaki 2026 "2şer tane
+        // geliyor" bug düzeltmesi) eski rastgele davranışa düşülüyor.
+        id: id ?? DateTime.now().millisecondsSinceEpoch.remainder(100000),
         title: title,
         body: body,
         notificationDetails: const NotificationDetails(
@@ -492,5 +511,5 @@ class FakeNotificationService extends NotificationService {
   Future<void> scheduleTestNotificationIn(Duration delay) async {}
 
   @override
-  Future<void> showNow({required String title, required String body}) async {}
+  Future<void> showNow({required String title, required String body, int? id}) async {}
 }

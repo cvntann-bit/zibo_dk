@@ -3407,6 +3407,54 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
     farklı anlarında tetiklenmeye devam edecek. `streak-reminder` "0 kullanıcı hedef saatte" dedi
     (beklenen — tetikleme anında hiçbir kullanıcının yerel saati henüz 21 değildi), bu da mantığın
     YANLIŞ POZİTİF üretmediğinin kanıtı.
+- **2026 ALTINCI güncelleme — kullanıcı raporu: "bildirimler şimdi de 2şer tane gelmeye başladı."**
+  Kanıta dayalı araştırma, kör tahminle "muhtemelen sunucu tarafı" diye düzeltmeye BAŞLANMADI —
+  önce `gh run view --log` ile 5 betiğin TAMAMININ son ~15'er çalıştırması tek tek incelendi:
+  - **SUNUCU tarafında (`notification-scripts`) bir çift-gönderim bulunamadı.** Her çalıştırma
+    log'u, uygunluk saati/dilim koşulunu karşılayan HER kullanıcı için TAM BİR `"Gönderildi:
+    uid=... type=..."` satırı üretiyordu — iki kez değil. `daily_motivation`'ın AYNI 15 kullanıcıya
+    ~3 saat arayla (06:10 VE 09:10 UTC) tekrar göndermesi İLK BAKIŞTA bir çift-gönderim gibi
+    göründü, ama bu tamamen BEKLENEN bir davranıştı: bu kullanıcılar Türkiye saatinde (UTC+3),
+    `TARGET_LOCAL_HOURS = [9, 12, 16, 20]`'nin İKİ AYRI değerine (yerel 09:10 → hedef 9, yerel
+    12:10 → hedef 12) denk geliyorlardı — kullanıcının kendi önceki isteğiyle ZATEN "günde 3-4 kez"
+    olacak şekilde tasarlanmış özelliğin doğru çalışması, bir hata DEĞİL. Diğer dört türün
+    (`streak_reminder`/`water_reminder`/`daily_reward`/`re_engagement`, hepsi TEK bir hedef saate
+    sahip) günlük tekrarları da (~24 saat arayla) aynı şekilde BEKLENEN, tek-günlük cadence'e uygun
+    çıktı — hiçbir türde AYNI gün İÇİNDE, AYNI hedef saat için iki ayrı "Gönderildi" satırı
+    bulunmadı.
+  - **Kök neden İSTEMCİ tarafında bulundu — `NotificationService.showNow()`'ın rastgele bildirim
+    id'si.** FCM'in kendi teslimat garantisi resmi olarak "en az bir kez" (at-least-once), "TAM
+    OLARAK bir kez" DEĞİL (Firebase'in kendi dokümantasyonu) — ağ yeniden bağlanması gibi durumlarda
+    AYNI mantıksal mesaj istemcinin `FirebaseMessaging.onMessage` akışına İKİNCİ kez düşebiliyor.
+    `PushNotificationService`'in `onMessage` handler'ı bunu `NotificationService.showNow()`'a
+    iletiyordu, ve `showNow()` HER çağrıda `DateTime.now().millisecondsSinceEpoch.remainder(100000)`
+    ile YENİ/rastgele bir bildirim id'si üretiyordu — Android'de `_plugin.show(id: ...)`'ün AYNI
+    id'yle çağrılması mevcut bildirimin ÜZERİNE YAZAR/günceller, FARKLI id'yle çağrılması ise
+    TAMAMEN AYRI, İKİNCİ bir kart EKLER. Rastgele id, bu yeniden-teslimatı Android'in gözünde
+    "alakasız yeni bir bildirim" gibi gösteriyordu — kullanıcı bu yüzden AYNI bildirimin "2 tane"
+    geldiğini görüyordu.
+  - **Düzeltme — iki katmanlı:**
+    1. **Kök/asıl düzeltme — `messageId` tabanlı dedup.** `FirebaseMessagingPushNotificationService`'e
+       `_recentMessageIds` (en fazla 20 elemanlı, FIFO) eklendi — `onMessage` handler'ı artık FCM'in
+       HER mesaja verdiği benzersiz `message.messageId`'yi bu listede ARAYIP zaten işlenmişse
+       `showNow()`'ı hiç ÇAĞIRMADAN sessizce çıkıyor.
+    2. **İkinci savunma hattı — deterministik bildirim id'si.** `NotificationService.showNow()`'a
+       opsiyonel bir `int? id` parametresi eklendi (verilmezse eski rastgele davranışa düşülür —
+       geriye dönük uyumlu, TEK çağıran yeri `PushNotificationService` olduğu için risksiz bir
+       değişiklik); `onMessage` artık `id: messageId?.hashCode` geçiriyor — (1)'i her nasılsa
+       kaçıran bir yeniden teslimat (ör. `messageId` `null` gelirse) olsa bile, Android'in kendi
+       "aynı id = güncelle, yeni kart EKLEME" davranışı ikinci bir güvenlik ağı oluyor.
+  - **Doğrulanamadı — bu, gerçek bir FCM yeniden-teslimat senaryosunu (ağ kesintisi/yeniden bağlanma
+    ANINDA bir bildirim gelmesi) KONTROLLÜ olarak tetiklemek pratik olmadığı için gerçek cihazda
+    UÇTAN UCA doğrulanamadı** (yalnızca `flutter test`, 358/358 yeşil — `showNow()`'ın imza
+    değişikliği hiçbir mevcut çağrı yerini bozmadı). `PushNotificationService`/
+    `FirebaseMessagingPushNotificationService` zaten gerçek Firebase Messaging'e ihtiyaç duyduğu
+    için (bkz. bu bölümün en başındaki "flutter_test'te DOĞRUDAN test EDİLEMİYOR" notu, diğer
+    Firebase-bağımlı servislerle AYNI sınırlama) otomatik bir regresyon testi de YAZILAMADI. **Bu
+    KESİN bir kanıtlanmış çözüm DEĞİL, ama Firebase'in KENDİ resmi "at-least-once, id'lerinizi
+    deterministik tutun" tavsiyesine dayanan, doğru/standart bir düzeltme** — kullanıcının birkaç
+    gün gerçek kullanımda "2 tane geliyor" örüntüsünün TEKRARLANIP tekrarlanmadığını gözlemlemesi
+    gerekiyor.
 - **`firestore.rules` — DEĞİŞİKLİK GEREKMEDİ (Cloud Functions taslağındaki gerekçeyle AYNI).**
   Mevcut kural zaten `match /users/{userId}/{document=**}` (bkz. "Firestore Veri Kalıcılığı"
   bölümü) ile `users/{uid}` dokümanının TÜM alanlarını (`fcmToken`/`lastActiveAt` dahil) sahibine

@@ -51,6 +51,12 @@ abstract class PushNotificationService {
 class FirebaseMessagingPushNotificationService extends PushNotificationService {
   FirebaseMessagingPushNotificationService();
 
+  /// Son görülen FCM `messageId`'leri — bkz. `onMessage` handler'ındaki
+  /// 2026 "2şer tane geliyor" bug düzeltmesi dokümantasyonu. Sınırsız
+  /// büyümesin diye en fazla [_maxRecentMessageIds] eleman tutuluyor (FIFO).
+  final List<String> _recentMessageIds = [];
+  static const _maxRecentMessageIds = 20;
+
   @override
   Future<void> initialize({
     required String? uid,
@@ -78,12 +84,45 @@ class FirebaseMessagingPushNotificationService extends PushNotificationService {
 
       // Uygulama ÖN PLANDAYKEN gelen mesajlar — OS bunları otomatik
       // göstermiyor, `showNow` ile yerel bir bildirim olarak biz gösteriyoruz.
+      //
+      // **2026 bug düzeltmesi — "bildirimler 2şer tane gelmeye başladı"
+      // kullanıcı raporu.** `notification-scripts`'teki 5 betiğin loglarını
+      // (gerçek çalıştırmalar, `gh run view --log`) tek tek inceleyerek
+      // SUNUCU tarafında bir çift-gönderim bulunamadı (her tür günde/hedef
+      // saatte kullanıcı başına TAM BİR "Gönderildi" satırı üretiyor —
+      // `dailyMotivation.js`'in günde 4 kez göndermesi BİLEREK, kullanıcının
+      // kendi isteğiyle böyle) — bu yüzden kök neden İSTEMCİ tarafında
+      // arandı: FCM'in kendi teslimat garantisi "en az bir kez"
+      // (at-least-once), "tam olarak bir kez" DEĞİL (Firebase'in resmi
+      // dokümantasyonu) — ağ yeniden bağlanması gibi durumlarda AYNI mantıksal
+      // mesaj `onMessage`'a İKİNCİ kez düşebiliyor. Eskiden `showNow()` her
+      // çağrıda `DateTime.now()`'a dayalı YENİ bir bildirim id'si ürettiği
+      // için (bkz. `NotificationService.showNow` dokümantasyonu) böyle bir
+      // yeniden teslimat, Android'de TAMAMEN AYRI ikinci bir bildirim kartı
+      // olarak beliriyordu. **İKİ katmanlı düzeltme:**
+      // 1. `message.messageId`'yi (FCM'in HER mesaja verdiği benzersiz id)
+      //    son görülenler listesinde (`_recentMessageIds`, en fazla
+      //    [_maxRecentMessageIds] eleman) ARAYIP zaten işlenmişse bu çağrıyı
+      //    SESSİZCE atlıyoruz — asıl/kök düzeltme.
+      // 2. Yine de `showNow`'a `messageId`'den TÜRETİLMİŞ DETERMİNİSTİK bir
+      //    `id` geçiyoruz — (1) her nasılsa (ör. `messageId` `null` gelirse)
+      //    kaçırılsa bile, Android'in kendi "aynı id = güncelle, YENİ kart
+      //    EKLEME" davranışı ikinci bir savunma hattı oluyor.
       FirebaseMessaging.onMessage.listen((message) {
         final notification = message.notification;
         if (notification == null) return;
+        final messageId = message.messageId;
+        if (messageId != null) {
+          if (_recentMessageIds.contains(messageId)) return;
+          _recentMessageIds.add(messageId);
+          if (_recentMessageIds.length > _maxRecentMessageIds) {
+            _recentMessageIds.removeAt(0);
+          }
+        }
         localNotificationService.showNow(
           title: notification.title ?? 'Zibo',
           body: notification.body ?? '',
+          id: messageId?.hashCode,
         );
       });
 
