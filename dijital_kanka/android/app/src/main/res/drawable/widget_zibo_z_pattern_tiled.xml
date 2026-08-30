@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- `widget_zibo_z_pattern.png`yi (bkz. `tool/generate_widget_z_pattern.dart`)
+     her iki yönde TEKRARLAYAN bir doku olarak kullanmak için ince bir
+     sarmalayıcı — RemoteViews'ın kısıtlı inflate whitelist'inde `<bitmap>`
+     ZATEN var olan, güvenli bir kaynak türü. `@drawable/widget_zibo_z_pattern`
+     referansı `drawable-nodpi`/`drawable-night-nodpi` klasörlerindeki AÇIK/
+     KOYU tema varyantları arasında OTOMATİK seçim yapıyor — bu dosyanın
+     kendisinin ayrı bir gece varyantına GEREK YOK. -->
+<bitmap xmlns:android="http://schemas.android.com/apk/res/android"
+    android:src="@drawable/widget_zibo_z_pattern"
+    android:tileModeX="repeat"
+    android:tileModeY="repeat" />

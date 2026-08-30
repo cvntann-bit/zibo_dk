@@ -1401,6 +1401,25 @@ class AppLocalizationsEs extends AppLocalizations {
       'No se pudo añadir el widget — puede que tu dispositivo no sea compatible. También puedes mantener presionada tu pantalla de inicio y buscar Zibo en la lista de widgets.';
 
   @override
+  String get widgetsScreenAddSheetTitle =>
+      'Cómo Añadirlo a tu Pantalla de Inicio';
+
+  @override
+  String get widgetsScreenAddStep1 =>
+      'Mantén presionada un área vacía de tu pantalla de inicio.';
+
+  @override
+  String get widgetsScreenAddStep2 =>
+      'Toca \"Widgets\" en el menú que aparece.';
+
+  @override
+  String get widgetsScreenAddStep3 =>
+      'Busca Zibo en la lista y arrastra el widget que quieras a tu pantalla de inicio.';
+
+  @override
+  String get widgetsScreenAddSheetGotIt => 'Entendido';
+
+  @override
   String get settingsWidgetsRowSubtitle =>
       'Sigue el estado de los módulos desde tu pantalla de inicio';
 }

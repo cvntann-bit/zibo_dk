@@ -412,5 +412,10 @@
   "widgetsScreenAddButton": "Añadir",
   "widgetsScreenAddedSuccessMessage": "¡Widget añadido! Revisa tu pantalla de inicio.",
   "widgetsScreenAddFailedMessage": "No se pudo añadir el widget — puede que tu dispositivo no sea compatible. También puedes mantener presionada tu pantalla de inicio y buscar Zibo en la lista de widgets.",
+  "widgetsScreenAddSheetTitle": "Cómo Añadirlo a tu Pantalla de Inicio",
+  "widgetsScreenAddStep1": "Mantén presionada un área vacía de tu pantalla de inicio.",
+  "widgetsScreenAddStep2": "Toca \"Widgets\" en el menú que aparece.",
+  "widgetsScreenAddStep3": "Busca Zibo en la lista y arrastra el widget que quieras a tu pantalla de inicio.",
+  "widgetsScreenAddSheetGotIt": "Entendido",
   "settingsWidgetsRowSubtitle": "Sigue el estado de los módulos desde tu pantalla de inicio"
 }

@@ -5,13 +5,27 @@
      modellemesini daha profesyonel yap": düz tek renk yerine ince, köşegen
      bir gradyan (bkz. values(/-night)/colors.xml'deki `widget_card_gradient_
      start/end`) — açık/koyu temaya göre otomatik doğru çözülüyor, ayrı bir
-     gece varyantı GEREKMİYOR. -->
-<shape xmlns:android="http://schemas.android.com/apk/res/android"
-    android:shape="rectangle">
-    <gradient
-        android:type="linear"
-        android:angle="135"
-        android:startColor="@color/widget_card_gradient_start"
-        android:endColor="@color/widget_card_gradient_end" />
-    <corners android:radius="20dp" />
-</shape>
+     gece varyantı GEREKMİYOR.
+
+     **2026 İKİNCİ güncelleme — kullanıcı raporu "arka plan çok amatör
+     duruyor": düz gradyanın ÜZERİNE, Zibo'nun "Z" harfinden türeyen,
+     rastgele dağılmış + ağır blurlanmış bir doku katmanı eklendi** (bkz.
+     `tool/generate_widget_z_pattern.dart` + `widget_zibo_z_pattern_tiled.xml`)
+     — `<layer-list>` içinde gradyanın HEMEN ÜSTÜNDE, TEKRARLAYAN bir
+     `<bitmap>` katmanı olarak. Doku PNG'sinin kendi alfa kanalı ZATEN çok
+     düşük (bkz. o betiğin dokümantasyonundaki `_finalAlphaScale`) — bu
+     yüzden burada AYRICA bir opaklık ayarına gerek yok, katman OLDUĞU GİBİ
+     ekleniyor. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:type="linear"
+                android:angle="135"
+                android:startColor="@color/widget_card_gradient_start"
+                android:endColor="@color/widget_card_gradient_end" />
+            <corners android:radius="20dp" />
+        </shape>
+    </item>
+    <item android:drawable="@drawable/widget_zibo_z_pattern_tiled" />
+</layer-list>

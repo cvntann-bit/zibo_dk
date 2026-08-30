@@ -1396,6 +1396,23 @@ class AppLocalizationsEn extends AppLocalizations {
       'Couldn\'t add the widget — your device may not support this. You can also long-press your home screen and find Zibo in the widget list.';
 
   @override
+  String get widgetsScreenAddSheetTitle => 'How to Add to Your Home Screen';
+
+  @override
+  String get widgetsScreenAddStep1 =>
+      'Long-press an empty spot on your home screen.';
+
+  @override
+  String get widgetsScreenAddStep2 => 'Tap \"Widgets\" in the menu that opens.';
+
+  @override
+  String get widgetsScreenAddStep3 =>
+      'Find Zibo in the list and drag the widget you want to your home screen.';
+
+  @override
+  String get widgetsScreenAddSheetGotIt => 'Got It';
+
+  @override
   String get settingsWidgetsRowSubtitle =>
       'Track module status from your home screen';
 }

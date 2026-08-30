@@ -137,19 +137,23 @@
             tools:visibility="visible" />
     </LinearLayout>
 
-    <!-- Soluk Zibo logosu — kartın sağ-alt köşesinde, içeriğin ÜSTÜNDE
-         (FrameLayout'ta son çocuk) ama çok düşük opaklıkta (`alpha`,
-         `View`'in TEMEL bir XML özniteliği — RemoteViews'ın "hangi VIEW
-         SINIFLARI inflate edilebilir" kısıtlamasından TAMAMEN AYRI, o
-         yalnızca ImageView/TextView gibi zaten İZİN VERİLEN sınıfların
-         KENDİ standart özniteliklerini kısıtlamıyor) bir marka imzası
-         olarak duruyor, içerikle YARIŞMIYOR. -->
+    <!-- Zibo logosu — kartın sağ-alt köşesinde, içeriğin ÜSTÜNDE (FrameLayout'ta
+         son çocuk) bir marka imzası (`alpha`, `View`'in TEMEL bir XML
+         özniteliği — RemoteViews'ın "hangi VIEW SINIFLARI inflate
+         edilebilir" kısıtlamasından TAMAMEN AYRI, o yalnızca ImageView/
+         TextView gibi zaten İZİN VERİLEN sınıfların KENDİ standart
+         özniteliklerini kısıtlamıyor). **2026 güncellemesi — kullanıcı
+         raporu "logo çok soluk"**: ilk turda `alpha=0.18`/30×12dp
+         seçilmişti (metinle YARIŞMASIN diye BİLEREK çok düşük tutulmuştu)
+         — kullanıcı geri bildirimiyle `alpha=0.5`/42×17dp'ye büyütüldü,
+         hâlâ ana metnin (bold, tam opak) ÜSTÜNE binmeyecek kadar geride
+         ama artık gözle NET seçilebiliyor. -->
     <ImageView
-        android:layout_width="30dp"
-        android:layout_height="12dp"
+        android:layout_width="42dp"
+        android:layout_height="17dp"
         android:layout_gravity="bottom|end"
         android:src="@drawable/widget_zibo_logo"
-        android:alpha="0.18"
+        android:alpha="0.5"
         android:scaleType="fitEnd"
         android:importantForAccessibility="no" />
 </FrameLayout>

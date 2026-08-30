@@ -6482,6 +6482,119 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
     `AppWidgetHostView`/`InflateException` ÜRETMEDİ. Yukarıdaki iki "YAPILAMAYAN"/"KRİTİK bulgu"
     notunda açıklanan kısıtlamalar HARİÇ, bu turun teknik risklerinin (ViewFlipper güvenliği,
     kod-seviyesi Ekle akışı, layout/kaynak eksiksizliği) TAMAMI olumlu sonuçlandı.
+- **2026 ÜÇÜNCÜ güncelleme — kullanıcı gerçek cihazda widget'ları test edip beş ayrı bulgu
+  bildirdi: logo çok soluk, İstatistiklerim widget'ı çalışmıyor, widget'lar "durgun" (animasyon
+  eksik), arka plan amatörce duruyor (Zibo'nun Z harfini kullanan bir doku önerildi), ve
+  uygulama içindeki "Ekle" akışı çalışmıyor — EKRAN GÖRÜNTÜSÜYLE kanıtlandı ki widget seçici
+  Zibo'nun BEŞ widget'ı için de yalnızca GENEL UYGULAMA İKONUNU gösteriyordu (diğer uygulamaların
+  — Hedef Takibi/Telegram/İşCep — widget'ları KENDİ gerçek önizlemeleriyle listelenirken).**
+  - **1) Logo opaklığı** — `widget_module.xml`/`widget_motivation.xml`/`widget_profile_stats.xml`
+    üçünde de `alpha=0.18`/30-34dp'lik logo `alpha=0.5`/42-48dp'ye büyütüldü — hâlâ ana metnin
+    ÜSTÜNE binmeyecek kadar geride ama artık net seçilebiliyor.
+  - **2) "İstatistiklerim çalışmıyor" — KÖK NEDEN: carousel'ler YALNIZCA `syncAll()`'da
+    (uygulama açılışı/dil değişimi) tazeleniyordu, widget'ı UYGULAMA ZATEN AÇIKKEN (ör. arka
+    planda) manuel olarak ana ekrana eklemek bir SONRAKİ tam soğuk başlangıca kadar HİÇ taze veri
+    GÖRMÜYORDU.** Düzeltme: `RootScreen.didChangeAppLifecycleState`'e, `touchLastActive`'in
+    KULLANDIĞI AYNI `AppLifecycleState.resumed` tetikleyicisine `_homeWidgetSync?.syncAll()`
+    eklendi — uygulama HER öne gelişte (yani "widget'ı ekleyip uygulamaya geri döndüğün an")
+    carousel'ler de tazeleniyor, ek bir maliyeti yok (ikisi de ucuz, saf hesaplamalar).
+  - **3) "Widgetler durgun" — ViewFlipper geçişleri düz `fade_in`/`fade_out`'tan hafif bir
+    kayma+solma birleşimine (YENİ `res/anim/widget_page_in.xml`/`widget_page_out.xml`, `<set>`
+    içinde `<translate>` + `<alpha>`, 420ms) çevrildi** — RemoteViews'ın inflate kısıtlamasıyla
+    İLGİSİZ (bir VIEW SINIFI değil, standart bir animasyon KAYNAĞI). "İstatistiklerim"in
+    `flipInterval`'i de 6000ms→4500ms'e düşürüldü (daha görünür hareket) — "Zibo'nun Sözü"nün
+    180000ms'i (3 dakika) kullanıcının AÇIK isteği olduğu için BİLEREK DOKUNULMADI.
+    **RemoteViews'ın gerçek animasyon kısıtı:** sürekli/nabız tarzı bir animasyon (ör. halo'nun
+    yanıp sönmesi) `ViewFlipper` DIŞINDA teknik olarak MÜMKÜN DEĞİL (RemoteViews özel View'lara/
+    per-frame güncellemeye izin vermiyor) — bu yüzden animasyon zenginliği yalnızca MEVCUT iki
+    carousel'in geçiş kalitesine yatırıldı, kompakt üçlüye (Su Takibi/Para ve Birikim/Günlük Giriş
+    Ödülleri) eklenebilecek RemoteViews-güvenli bir sürekli animasyon YOK.
+  - **4) Arka plan — "Zibo'nun Z harfini kullanan, bolca+blurlanmış bir doku" isteği,
+    `tool/generate_widget_z_pattern.dart` (YENİ) ile karşılandı.** "Z" harfleri font/BitmapFont'a
+    GEREK KALMADAN saf geometriyle çiziliyor (bir Z zaten yalnızca üç doğru parçası — üst yatay,
+    çapraz, alt yatay — `img.drawLine` ile, rastgele boyut/açı/konumda ~55 adet). **Alfa kontrolü
+    İKİ AŞAMALI, kasıtlı dolaylı:** çizim TAM OPAK yapılıp `img.gaussianBlur` (radius 16) ile
+    blurlanıyor, SONRA bütün görselin alfa kanalı TEK bir çarpanla (`_finalAlphaScale = 0.34`)
+    aşağı çekiliyor — `drawLine`'ın `thickness`'le birleşince KISMİ alfa değerlerini güvenilir
+    blend ETMEDİĞİ (ilk denemede metnin okunmasını zorlaştıracak kadar KOYU/net çıktığı) elle
+    görsel karşılaştırmayla YAKALANIP bu iki-aşamalı yaklaşıma geçildi. AÇIK/KOYU tema için AYRI
+    renkte (espresso/altın) İKİ PNG üretilip `drawable-nodpi`/`drawable-night-nodpi`'ye kaydedildi
+    — Z-doku dosyasıyla AYNI ada sahip olduğu için gece/gündüz seçimi Android'in kendi resource
+    qualifier mekanizmasıyla OTOMATİK. `widget_background.xml` düz gradyandan bir
+    `<layer-list>`'e çevrildi (gradyan katmanı + `widget_zibo_z_pattern_tiled.xml`'in [YENİ,
+    `<bitmap tileModeX/Y="repeat">`] TEKRARLAYAN doku katmanı) — TÜM beş widget bu paylaşılan
+    drawable'ı kullandığı için tek bir değişiklik hepsine yayıldı.
+  - **5) "Uygulama içindeki Ekle çalışmıyor" — BİLEREK "düzeltilmedi", YERİNE YÖNLENDİRME
+    getirildi.** Önceki turda `adb dumpsys appwidget` ile KANITLANMIŞTI ki `requestPinWidget()`
+    bu MIUI launcher'ında `true` DÖNSE BİLE widget'ı GERÇEKTEN bağlamıyor — bu API'nin
+    KENDİSİ hatasız `true` döndüğü için Dart/Kotlin tarafından TESPİT EDİLEMEYEN bir OEM launcher
+    kısıtlaması. Kullanıcının kendi isteği ("onun yerinde direkt widget ekleme yerine
+    yönlendirebilirsin") doğrultusunda `WidgetsScreen`'in "Ekle" butonu ARTIK bir başarı/
+    başarısızlık SnackBar'ı GÖSTERMİYOR — bunun yerine HER ZAMAN üç adımlı manuel ekleme
+    talimatlarını (`_showAddInstructionsSheet`, YENİ) gösteren bir bottom sheet açıyor.
+    `requestPin()` YİNE DE arka planda (`unawaited`, sonucu HİÇ beklenmeden/UI'a yansıtılmadan)
+    çağrılmaya devam ediyor — bu API'yi GERÇEKTEN doğru uygulayan launcher'larda (ör. stok
+    Android/Pixel) kullanıcı belki hiç uzun basmadan sistemin kendi onay diyaloğunu görüp tek
+    adımda ekleyebilir, bu "bonus" yol tamamen zararsız.
+    - **Gotcha (bu turda yakalandı) — sheet'in içeriği (başlık + satır + 3 adım + buton) sabit
+      sheet yüksekliğine sığmayıp `RenderFlex overflow` verdi** — GERÇEK bir hata, yalnızca test
+      viewport'una özgü DEĞİL (dar bir telefonda da olurdu). `ad_free_promo_sheet.dart`'taki AYNI
+      desen (`isScrollControlled: true` + `SingleChildScrollView`) ile düzeltildi.
+  - **AYRI, kritik bir bulgu — widget seçicinin generic app ikonu göstermesinin ASIL kök nedeni:
+    `android:previewLayout` (API 31+) bu MIUI launcher'ında GÜVENİLİR RENDER EDİLMİYORDU/YOK
+    SAYILIYORDU, `android:previewImage` (eski/evrensel, STATİK bir PNG kaynağı) HİÇ VERİLMEMİŞTİ,
+    Android da son çare olarak uygulama ikonuna düşüyordu.** Önceki turdaki "previewLayout zaten
+    doğru tanımlı, statik doğrulamayla yeterli" varsayımı BU ekran görüntüsüyle YANLIŞLANDI —
+    launcher'ların previewLayout desteği TUTARSIZ, `previewImage` GERİ DÜŞÜŞÜ de eklenmesi
+    gerekiyormuş.
+    - **Beş widget'ın HER BİRİ için AÇIK+KOYU tema önizleme PNG'si üretildi (10 PNG toplam),
+      `android:previewImage` tüm `widget_info_*.xml`'lere eklendi** (previewLayout DA kaldı —
+      onu destekleyen launcher'larda hâlâ ÖNCELİKLİ, previewImage yalnızca bir geri düşüş).
+    - **Üretim yöntemi — İKİ AŞAMALI, ciddi bir gotcha'dan sonra bulundu.** İlk deneme
+      `flutter_test` + `RenderRepaintBoundary.toImage()` (ZiboShareCard'daki AYNI teknik) idi —
+      ama `flutter_test`'in kendi render motoru GERÇEK bir font/emoji YÜKLENMEDİĞİ sürece TÜM
+      karakterleri tofu/boş dikdörtgen olarak çiziyor; `google_fonts`'un ağdan gerçek font
+      indirmesiyle bunu aşma denemesi de bu ortamın test-sandbox'ında ASILI KALDI (dakikalarca
+      askıda kalan bir `flutter_tester.exe` süreci, elle `taskkill` ile sonlandırılmak zorunda
+      kaldı). **Çözüm — GERÇEK CİHAZ:** YENİ `lib/widget_preview_generator_main.dart` (normal
+      `main.dart`'ı hiç etkilemeyen, alternatif bir giriş noktası) `flutter build apk --debug -t
+      lib/widget_preview_generator_main.dart` ile derlenip cihaza kurulup açıldı — açılışta
+      OTOMATİK 10 PNG'yi (gerçek Roboto fontu + gerçek Zibo karakter görseliyle, ama `dart:io`
+      cihazın PROJE KLASÖRÜNE erişemediği için Z-dokusu/logo OLMADAN, düz gradyanla) kendi belge
+      dizinine yazdı — `adb exec-out run-as com.dijitalkanka.dijital_kanka cat <yol>` ile (debug
+      build'ler `run-as` erişimine sahip, root GEREKMEDİ) çekilip masaüstünde YENİ
+      `tool/compose_widget_previews.dart` ile Z-dokusu + Zibo logosu ÜZERİNE bindirildi (aynı
+      "cihaz: gerçek render, masaüstü: doku/logo bindirme" iki-aşamalı iş bölümü). **Emoji
+      rozetleri de Material Icons'a çevrildi** (`Icons.water_drop_rounded` vb.) — emoji glifleri
+      de (renkli emoji fontu gerektirdiği için) `flutter_test`'te render OLMUYORDU; Material
+      Icons Flutter SDK'sıyla birlikte geldiği için bu sorunu yaşamıyor, ama gerçek cihaz yoluna
+      geçilince bu artık gerekli değildi — yine de PREVIEW'ların kendi iç tutarlılığı için
+      korundu (gerçek widget'lar hâlâ RemoteViews'ta emoji kullanıyor, YALNIZCA statik önizleme
+      PNG'lerinde Icon kullanılıyor).
+    - **Her iki betik de (`lib/widget_preview_generator_main.dart`,
+      `tool/compose_widget_previews.dart`) SİLİNMEDİ — widget tasarımı ileride tekrar değişirse
+      yeniden çalıştırılabilecek, projenin `tool/` klasöründeki diğer tek-seferlik-ama-kalıcı
+      görsel betikleriyle (remove_bg.dart vb.) AYNI konvansiyonda tutuldu**, ikisinin de tepesinde
+      TAM yeniden-üretim adımlarını anlatan bir doküman var.
+  - **Test:** `widgets_screen_test.dart` yeniden yazıldı — eski başarı/başarısızlık SnackBar
+    testleri, artık `requestPin()`'in SONUCUNDAN BAĞIMSIZ olarak HER ZAMAN talimat sheet'inin
+    açıldığını (VE "Anladım"ın kapattığını) doğrulayan testlere döndü. `flutter test` tam yeşil:
+    **350/350.**
+  - **Gerçek cihazda doğrulama — KISMİ.** Build başarılı, `flutter test` yeşil, önizleme PNG'leri
+    GERÇEK cihazda üretilip masaüstünde bindirilerek doğrulandı (görsel olarak incelendi, net/
+    okunabilir/marka tutarlı). **AMA bu turun GERİ KALAN düzeltmelerinin (logo opaklığı, animasyon
+    geçişleri, arka plan dokusu gerçek widget üzerinde, İstatistiklerim'in resumed-sync
+    düzeltmesi, yeni "Ekle" talimat sheet'i) CANLI cihaz doğrulaması YAPILAMADI** — cihaz bu
+    turun sonunda bağlantıyı kaybetti (muhtemelen kullanıcı tarafından çıkarıldı/kilitlendi).
+    **Kullanıcının bir sonraki fırsatta kontrol etmesi gereken:** yeni APK'yı kurup (a) beş
+    widget'ın hepsinde logonun artık net göründüğünü, (b) "Zibo'nun Sözü"/"İstatistiklerim"
+    carousel'lerinin geçişinin artık kayma+solma ile daha "canlı" hissettirdiğini, (c) arka
+    planda artık soluk bir Z-deseni dokusu olduğunu, (d) İstatistiklerim widget'ını EKLEYİP
+    uygulamayı AÇIP KAPATINCA (resumed tetikleyici) gerçek verilerle dolduğunu, (e) uygulama
+    içindeki "Ekle" butonunun artık başarı iddia ETMEDEN doğrudan 3 adımlı bir talimat sheet'i
+    gösterdiğini, (f) ana ekrana uzun basıp Widget'lar listesindeki Zibo önizlemelerinin ARTIK
+    generic app ikonu DEĞİL, gerçek tasarımlarıyla (karakter görseli, gerçek metin, ilerleme
+    çubuğu) göründüğünü.
 
 ## Coin Reward Miktarları — Şükran/Su/Manifest Günlüğü 2 → 5 ZC
 

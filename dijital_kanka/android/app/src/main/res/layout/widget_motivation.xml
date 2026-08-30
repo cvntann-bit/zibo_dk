@@ -74,8 +74,8 @@
                 android:layout_height="wrap_content"
                 android:flipInterval="180000"
                 android:autoStart="true"
-                android:inAnimation="@android:anim/fade_in"
-                android:outAnimation="@android:anim/fade_out">
+                android:inAnimation="@anim/widget_page_in"
+                android:outAnimation="@anim/widget_page_out">
                 <!-- Boş, "senkron henüz hiç çalışmadı" durumu için TEK bir
                      yer tutucu sayfa — Kotlin tarafı ZATEN gerçek veri
                      geldiğinde `removeAllViews` + gerçek sayfaları EKLİYOR,
@@ -94,13 +94,15 @@
         </LinearLayout>
     </LinearLayout>
 
-    <!-- Zibo logosu — kompakt widget'larla AYNI soluk marka imzası deseni. -->
+    <!-- Zibo logosu — kompakt widget'larla AYNI marka imzası deseni (2026
+         güncellemesi: alpha 0.18→0.5, boyut büyütüldü — bkz.
+         widget_module.xml'deki AYNI notun tam açıklaması). -->
     <ImageView
-        android:layout_width="34dp"
-        android:layout_height="14dp"
+        android:layout_width="48dp"
+        android:layout_height="20dp"
         android:layout_gravity="bottom|end"
         android:src="@drawable/widget_zibo_logo"
-        android:alpha="0.18"
+        android:alpha="0.5"
         android:scaleType="fitEnd"
         android:importantForAccessibility="no" />
 </FrameLayout>

@@ -1394,6 +1394,24 @@ class AppLocalizationsTr extends AppLocalizations {
       'Widget eklenemedi — cihazın bu özelliği desteklemiyor olabilir, ana ekranına uzun basıp \"Widget\'lar\" listesinden Zibo\'yu da bulabilirsin.';
 
   @override
+  String get widgetsScreenAddSheetTitle => 'Ana Ekranına Nasıl Eklenir?';
+
+  @override
+  String get widgetsScreenAddStep1 =>
+      'Ana ekranının boş bir alanına parmağını basılı tut.';
+
+  @override
+  String get widgetsScreenAddStep2 =>
+      'Açılan menüden \"Widget\'lar\" (bazı cihazlarda \"Araçlar\") seçeneğine dokun.';
+
+  @override
+  String get widgetsScreenAddStep3 =>
+      'Listede Zibo\'yu bulup istediğin widget\'ı ana ekranına sürükle.';
+
+  @override
+  String get widgetsScreenAddSheetGotIt => 'Anladım';
+
+  @override
   String get settingsWidgetsRowSubtitle =>
       'Modül durumlarını ana ekranından takip et';
 }

@@ -2530,6 +2530,36 @@ abstract class AppLocalizations {
   /// **'Widget eklenemedi — cihazın bu özelliği desteklemiyor olabilir, ana ekranına uzun basıp \"Widget\'lar\" listesinden Zibo\'yu da bulabilirsin.'**
   String get widgetsScreenAddFailedMessage;
 
+  /// Widget ekleme talimatları sheet'inin başlığı — 2026 güncellemesi, `requestPinWidget`'ın bazı cihaz/launcher'larda sessizce tamamlanmaması nedeniyle doğrudan ekleme yerine kılavuz gösteriliyor
+  ///
+  /// In tr, this message translates to:
+  /// **'Ana Ekranına Nasıl Eklenir?'**
+  String get widgetsScreenAddSheetTitle;
+
+  /// No description provided for @widgetsScreenAddStep1.
+  ///
+  /// In tr, this message translates to:
+  /// **'Ana ekranının boş bir alanına parmağını basılı tut.'**
+  String get widgetsScreenAddStep1;
+
+  /// No description provided for @widgetsScreenAddStep2.
+  ///
+  /// In tr, this message translates to:
+  /// **'Açılan menüden \"Widget\'lar\" (bazı cihazlarda \"Araçlar\") seçeneğine dokun.'**
+  String get widgetsScreenAddStep2;
+
+  /// No description provided for @widgetsScreenAddStep3.
+  ///
+  /// In tr, this message translates to:
+  /// **'Listede Zibo\'yu bulup istediğin widget\'ı ana ekranına sürükle.'**
+  String get widgetsScreenAddStep3;
+
+  /// No description provided for @widgetsScreenAddSheetGotIt.
+  ///
+  /// In tr, this message translates to:
+  /// **'Anladım'**
+  String get widgetsScreenAddSheetGotIt;
+
   /// Ayarlar'daki 'Ana Ekran Widget'ları' satırının alt metni
   ///
   /// In tr, this message translates to:

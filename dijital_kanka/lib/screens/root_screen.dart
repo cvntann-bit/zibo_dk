@@ -38,7 +38,11 @@ import 'store_screen.dart';
 /// kalır, yalnızca gövde (body) değişir. Ayarlar sekmelerden biri değildir;
 /// başlık çubuğundaki dişli ikonundan ayrı bir sayfa olarak push edilir.
 class RootScreen extends StatefulWidget {
-  const RootScreen({super.key, this.pushNotificationService, this.homeWidgetService});
+  const RootScreen({
+    super.key,
+    this.pushNotificationService,
+    this.homeWidgetService,
+  });
 
   /// Testte sahte bir implementasyon enjekte edebilmek için — varsayılan
   /// `FirebaseMessagingPushNotificationService()` (`AdService`/
@@ -61,7 +65,8 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
 
   int _selectedIndex = 0;
   late final PushNotificationService _pushNotificationService =
-      widget.pushNotificationService ?? FirebaseMessagingPushNotificationService();
+      widget.pushNotificationService ??
+      FirebaseMessagingPushNotificationService();
   late final HomeWidgetService _homeWidgetService =
       widget.homeWidgetService ?? const HomeWidgetPluginService();
   HomeWidgetSyncCoordinator? _homeWidgetSync;
@@ -90,7 +95,8 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
     // burada dinleniyor.
     if (notificationsFeatureEnabled) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) context.read<NotificationProvider>().initializeAndSchedule();
+        if (mounted)
+          context.read<NotificationProvider>().initializeAndSchedule();
       });
     }
     // **2026 yeni özellik — FCM push bildirimleri.** Yerel sistemden
@@ -158,6 +164,22 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
     // öne geldiğinde tazeleniyor.
     if (state == AppLifecycleState.resumed && _uid != null) {
       _pushNotificationService.touchLastActive(_uid!);
+    }
+    // **2026 bug düzeltmesi — "İstatistiklerim" widget'ı boş/"—" görünüyordu.**
+    // Kullanıcı raporu: widget'ı ana ekrana MANUEL olarak (uygulama arka
+    // plandayken, `syncAll()`'ın yalnızca `initState`/dil değişiminde
+    // tetiklendiği bir andan SONRA) ekleyince carousel hiç veri
+    // GÖSTERMİYORDU — `_syncProfileStats()`/`_syncMotivation()` YALNIZCA
+    // `syncAll()` içinde çalıştığı için (bkz. `HomeWidgetSyncCoordinator`
+    // dokümantasyonu), bir widget'ın "önceki senkronizasyondan SONRA"
+    // eklenmesi, kullanıcı uygulamayı BİR SONRAKİ tam soğuk başlangıca
+    // kadar (ya da dil değiştirene kadar) hiç taze veri GÖRMEMESİ demekti.
+    // Düzeltme: uygulama HER öne gelişte (`resumed` — tam olarak "widget'ı
+    // ekleyip uygulamaya geri döndüğün an") `syncAll()` da tetikleniyor —
+    // `touchLastActive` ile AYNI tetikleyici, ek bir maliyeti yok (her iki
+    // carousel de zaten ucuz, saf hesaplamalar).
+    if (state == AppLifecycleState.resumed) {
+      _homeWidgetSync?.syncAll();
     }
   }
 
@@ -257,9 +279,9 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
           IconButton(
             icon: const Icon(Icons.settings_outlined),
             tooltip: l10n.tabSettings,
-            onPressed: () => Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const SettingsScreen()),
-            ),
+            onPressed: () => Navigator.of(
+              context,
+            ).push(MaterialPageRoute(builder: (_) => const SettingsScreen())),
           ),
         ],
       ),

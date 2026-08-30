@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- "Zibo'nun Sözü"/"İstatistiklerim" carousel'lerinin `ViewFlipper`'ı için
+     — kullanıcı raporu "widgetler çok durgun, biraz animasyon
+     ekleyebiliriz": düz `@android:anim/fade_in` yerine hafif bir kayma +
+     solma birleşimi, geçişi daha "canlı" hissettiriyor. RemoteViews'ın
+     inflate kısıtlamasıyla İLGİSİZ — bu bir VIEW SINIFI değil, standart bir
+     Android animasyon KAYNAĞI, `ViewFlipper.inAnimation`'ın zaten
+     beklediği tür. -->
+<set xmlns:android="http://schemas.android.com/apk/res/android">
+    <translate
+        android:fromXDelta="8%"
+        android:toXDelta="0"
+        android:duration="420"
+        android:interpolator="@android:anim/decelerate_interpolator" />
+    <alpha
+        android:fromAlpha="0"
+        android:toAlpha="1"
+        android:duration="420" />
+</set>

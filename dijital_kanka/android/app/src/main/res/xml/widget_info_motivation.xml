@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- "Zibo'nun Sözü" — diğer sekiz modülden (2x2) BİLEREK daha büyük
+<!-- "Zibo'nun Sözü" — diğer modüllerden (2x2) BİLEREK daha büyük
      varsayılan boyut (4x2) ile geliyor, kullanıcının "daha büyük
      widgetler yapabilirsin" isteği doğrultusunda — karakter görseli +
-     çok satırlı söz metni için gereken genişliği baştan sağlıyor. -->
+     çok satırlı söz metni için gereken genişliği baştan sağlıyor.
+     previewLayout + previewImage — bkz. widget_info_water.xml'deki 2026
+     güncelleme notlarının TAM açıklaması. -->
 <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
     android:minWidth="250dp"
     android:minHeight="110dp"
@@ -11,5 +13,6 @@
     android:updatePeriodMillis="1800000"
     android:initialLayout="@layout/widget_motivation"
     android:previewLayout="@layout/widget_motivation"
+    android:previewImage="@drawable/widget_preview_motivation"
     android:resizeMode="horizontal|vertical"
     android:widgetCategory="home_screen" />

@@ -4,12 +4,23 @@
      yalnızca Zibo app ikonu gözüküyor." Android 12+ (API 31+) widget
      seçicisi bu alan verilirse widget'ın GERÇEK layout'unu (bu dosyanın
      kendi `tools:text` yer tutucularıyla) canlı render edip önizleme
-     olarak gösteriyor — statik bir önizleme PNG'si üretip senkron tutmaya
-     GEREK KALMADAN "her widget kendi nasılsa öyle görünsün" isteğini
-     karşılıyor. minSdk 24 olduğu için API 31 altındaki cihazlarda bu alan
-     sessizce yok sayılıyor (eski davranışa düşülüyor) — ek bir
-     `previewImage` PNG'si BİLEREK eklenmedi, test edilen cihaz (ve modern
-     cihazların büyük çoğunluğu) zaten 31+. -->
+     olarak gösteriyor.
+
+     **2026 İKİNCİ güncelleme — `previewImage` DE eklendi.** Kullanıcı
+     GERÇEK cihazda "Araç ekle" ekranının bir fotoğrafını gönderdi —
+     `previewLayout` YETERSİZ kaldığı doğrulandı: bu MIUI launcher'ı
+     (ve previewLayout'u güvenilir render ETMEYEN bilinen diğer OEM
+     launcher'lar) previewLayout'u YOK SAYIP eski/evrensel `previewImage`
+     API'sine, o da yoksa uygulama ikonuna düşüyor — fotoğrafta TAM OLARAK
+     bu görüldü (Zibo'nun beş widget'ı da yalnızca app ikonu gösteriyordu,
+     diğer uygulamalar KENDİ gerçek önizlemeleriyle listeleniyordu).
+     `widget_preview_water.png` (bkz. `test/tools/generate_widget_previews.
+     dart` — Flutter'ın kendi render motoruyla üretilen, gerçek layout'u
+     yakından taklit eden statik bir PNG) hem `drawable-nodpi` (açık tema)
+     hem `drawable-night-nodpi` (koyu tema) altında duruyor — previewLayout'u
+     DESTEKLEYEN launcher'larda hâlâ previewLayout ÖNCELİKLİ kullanılıyor
+     (previewImage yalnızca previewLayout YOKSA/desteklenmiyorsa devreye
+     giriyor), previewImage yalnızca bir GERİ DÜŞÜŞ. -->
 <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
     android:minWidth="110dp"
     android:minHeight="110dp"
@@ -18,5 +29,6 @@
     android:updatePeriodMillis="1800000"
     android:initialLayout="@layout/widget_module"
     android:previewLayout="@layout/widget_module"
+    android:previewImage="@drawable/widget_preview_water"
     android:resizeMode="horizontal|vertical"
     android:widgetCategory="home_screen" />

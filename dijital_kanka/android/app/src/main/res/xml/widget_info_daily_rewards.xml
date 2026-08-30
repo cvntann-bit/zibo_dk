@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- previewLayout — bkz. widget_info_water.xml'deki 2026 güncelleme notu. -->
+<!-- previewLayout + previewImage — bkz. widget_info_water.xml'deki 2026
+     güncelleme notlarının TAM açıklaması. -->
 <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
     android:minWidth="110dp"
     android:minHeight="110dp"
@@ -8,5 +9,6 @@
     android:updatePeriodMillis="1800000"
     android:initialLayout="@layout/widget_module"
     android:previewLayout="@layout/widget_module"
+    android:previewImage="@drawable/widget_preview_daily_rewards"
     android:resizeMode="horizontal|vertical"
     android:widgetCategory="home_screen" />

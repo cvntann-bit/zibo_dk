@@ -1881,6 +1881,14 @@
     "description": "Widget ekleme isteği başarıyla gönderilince gösterilen SnackBar metni"
   },
   "widgetsScreenAddFailedMessage": "Widget eklenemedi — cihazın bu özelliği desteklemiyor olabilir, ana ekranına uzun basıp \"Widget'lar\" listesinden Zibo'yu da bulabilirsin.",
+  "widgetsScreenAddSheetTitle": "Ana Ekranına Nasıl Eklenir?",
+  "@widgetsScreenAddSheetTitle": {
+    "description": "Widget ekleme talimatları sheet'inin başlığı — 2026 güncellemesi, `requestPinWidget`'ın bazı cihaz/launcher'larda sessizce tamamlanmaması nedeniyle doğrudan ekleme yerine kılavuz gösteriliyor"
+  },
+  "widgetsScreenAddStep1": "Ana ekranının boş bir alanına parmağını basılı tut.",
+  "widgetsScreenAddStep2": "Açılan menüden \"Widget'lar\" (bazı cihazlarda \"Araçlar\") seçeneğine dokun.",
+  "widgetsScreenAddStep3": "Listede Zibo'yu bulup istediğin widget'ı ana ekranına sürükle.",
+  "widgetsScreenAddSheetGotIt": "Anladım",
   "@widgetsScreenAddFailedMessage": {
     "description": "Widget ekleme isteği desteklenmiyorsa/başarısız olursa gösterilen SnackBar metni"
   },
