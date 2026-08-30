@@ -1232,6 +1232,57 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
   düzeliyor. Gerçek release-imzalı bir build'de doğrulandı (yeni test:
   `daily_rewards_provider_test.dart`'taki "cycleStartDate cihaz saati anomalisiyle bugünün
   İLERİSİNDE kalırsa..." senaryosu).
+- **2026 İKİNCİ bug düzeltmesi — bir tester raporu: "günlük giriş ödülleri bu seferde 2. günde
+  takılı kalıyor."** Kullanıcıyla birlikte İKİ soruyla netleştirildi: (a) sorun uygulama İÇİ
+  popup'ta mı yoksa ana ekran WIDGET'ında mı gözlemlendi — cevap: uygulama içi popup; (b) gün
+  gerçek zamanla mı ilerledi yoksa cihaz saati elle mi değiştirildi — cevap: gerçek zaman geçti.
+  Bu, hem "cihaz saatini kandırmaya çalışma" (bilerek engellenen, bug OLMAYAN bir senaryo) hem de
+  "ana ekran widget'ının, uygulama açılmadan güncellenmemesi" (ayrı, muhtemel bir sınırlama)
+  ihtimallerini elemek için soruldu — asıl kök nedene bu netleştirmeden SONRA ulaşıldı.
+  - **Kapsamlı ama SONUÇSUZ kalan statik analiz:** `TrustedTimeProvider`/`DailyRewardsProvider`/
+    `CloudStateStore` tekrar tekrar elle izlendi (cross-session staleness, Firestore-öncelik-
+    sırası, tarih serileştirme/round-trip, `_resyncCooldown` etkileşimi) — hiçbir mantık hatası
+    BULUNAMADI. Ardından "her gün uygulamayı zorla kapatıp aç" gerçek test kalıbını simüle eden
+    geçici (sonradan silinen) testler yazıldı: Gün 1 claim → provider'ı YENİDEN OLUŞTUR (force-
+    close simülasyonu) → Gün 2 claim → provider'ı YENİDEN OLUŞTUR → Gün 3'e bak — bu senaryo DA
+    HER SEFERİNDE doğru sonuç verdi (`todayIndex` doğru ilerliyordu). **Kök neden koddan OKUYARAK
+    değil, bu ampirik testlerin SONUÇSUZ kalmasından SONRA farklı bir açıdan (hangi widget'lar
+    provider'ı İZLİYOR VE sürekli monte mi kalıyor) bakılınca bulundu.**
+  - **Gerçek kök neden — `reconcileForToday()`, bir SIFIRLAMA olmadığı sürece
+    `notifyListeners()`'ı HİÇ ÇAĞIRMIYORDU.** `todayIndex`/`isTodayClaimed`/`statusForIndex()`
+    saf GETTER'lar olduğu için (her erişimde `_now()`'a göre YENİDEN hesaplanıyorlar) TAZE açılan
+    bir widget (`DailyRewardsScreen` popup'ının KENDİSİ — `showDialog` her seferinde YENİ bir
+    örnek kurduğu için) HER ZAMAN doğru günü gösteriyordu; bu yüzden ne kullanıcı ne asistan
+    popup'ı doğrudan test ederken sorunu YAKALAYAMADI. Ama `DailyRewardsTriggerButton`
+    (`RootScreen`'in `IndexedStack`'i yüzünden sekmeler arası geçişte ASLA dispose OLMUYOR, bkz.
+    "Mimari özet" bölümündeki `IndexedStack` gotcha'sı) `context.watch<DailyRewardsProvider>()
+    .isTodayClaimed`'e göre bir ✓ rozeti gösteriyor — Gün 1 alınınca bu rozet DOĞRU şekilde
+    beliriyordu, ama Gün 2 SESSİZCE (sıfırlama gerekmeden, `_cycleStartDate`/`_claimedDates`
+    hiç değişmeden) geldiğinde `reconcileForToday()` `notifyListeners()` ÇAĞIRMADIĞI için bu
+    SÜREKLİ MONTE widget hiç YENİDEN BUILD OLMUYORDU — dünün ✓ rozetini GÜN DEĞİŞTİKTEN GÜNLER
+    SONRA BİLE göstermeye devam ediyordu. Tester bu rozeti görüp "2. günde takılı kaldı" diye
+    bildirdi — popup'ı GERÇEKTEN açsalardı muhtemelen doğru günü/kutucuğu görürlerdi, ama sürekli
+    yanlış "zaten alındı" izlenimi veren rozet onları popup'ı hiç açmadan "bozuk" sonucuna
+    götürmüş olabilir.
+  - **Ampirik doğrulama — hedefe yönelik bir provider testiyle KANITLANDI:** `provider.
+    addListener(...)` ile bir sayaç eklenip Gün 1 claim edildikten SONRA Gün 2'ye geçilip
+    (sıfırlama GEREKMEYEN bir geçiş) `reconcileForToday()` çağrıldı — düzeltmeden ÖNCE
+    `notifyCount == 0` (kanıtlanmış çökme/durgunluk kaynağı), düzeltmeden SONRA `notifyCount > 0`.
+    Bu test kalıcı olarak `daily_rewards_provider_test.dart`'a eklendi.
+  - **Düzeltme:** `reconcileForToday()`'in "sıfırlama gerekmiyor" dalı artık `return false`'tan
+    HEMEN ÖNCE koşulsuz `notifyListeners()` çağırıyor (sıfırlama dalı zaten çağırıyordu, DEĞİŞMEDİ)
+    — sürekli monte kalan HER widget artık her `reconcileForToday()` çağrısında (uygulama öne
+    gelince, popup her açılışında) taze günü yansıtacak şekilde yeniden build oluyor.
+  - **Genelleştirilebilir ders — bu proje genelinde tekrarlayan bir kalıp:** bir `ChangeNotifier`
+    metodunun "bir şey DEĞİŞTİ mi?" diye SORUP yalnızca DEĞİŞİKLİK olduğunda `notifyListeners()`
+    çağırması, TAZE açılan/yeniden oluşturulan widget'lar için ZARARSIZ görünse de (onlar zaten
+    canlı state'i doğrudan okuyor), SÜREKLİ MONTE kalan widget'lar (özellikle bu projenin
+    `IndexedStack` sekme mimarisinde YAYGIN olan bir desen) için SESSİZ bir durgunluk riski taşır
+    — özellikle "durum" zaman GEÇTİKÇE (bir alan MUTASYONU olmadan) kendiliğinden değişebiliyorsa
+    (buradaki "hangi gün bugün" gibi). **Böyle bir provider'da, dışarıdan çağrılan bir
+    "reconcile/senkronize et" metodunun, SONUCU DEĞİŞTİRMESE bile `notifyListeners()`'ı ÇAĞIRMASI
+    daha güvenli bir varsayılandır** — maliyeti (gereksiz bir rebuild) neredeyse sıfırdır, ama
+    atlanması gerçek, kullanıcı tarafından fark edilen bir "takılı kalma" hissi yaratabilir.
 - **2026 güncellemesi — ödül alınınca bir geçiş (interstitial) reklamı da gösteriliyor.** Kullanıcı
   isteği: "kişi günlük giriş ödülünü alınca da geçilebilir reklam olsun" — BİLEREK ÖDÜLLÜ
   (rewarded) DEĞİL, "Zibo'ya Art Arda Dokunma" bölümündeki AYNI `CoinProvider.
@@ -4092,7 +4143,7 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
   SONRA SİLİNDİ** — Şans Çarkı sonrası reklam denemesiyle birlikte geldi, kullanıcı o özelliği
   istemeyince (bkz. "Zibo'ya Art Arda Dokunma → Geçiş Reklamı" bölümündeki geri alma notu) testi
   de anlamsızlaştığı için kaldırıldı.
-  **Toplam: 358 test** (2026 — `costume_provider_test.dart`'a `reconcileGoalUnlocks` grubu +
+  **Toplam: 359 test** (2026 — `costume_provider_test.dart`'a `reconcileGoalUnlocks` grubu +
   `water_provider_test.dart`'a `completedDaysCount` testi [bkz. "Kostümler" bölümü] +
   `dream_sentiment_test.dart` [bkz. "Rüya Günlüğü" bölümündeki korelasyon notu] +
   `referral_provider_test.dart` [bkz. "Davet Et (Referral) Sistemi" bölümü] +

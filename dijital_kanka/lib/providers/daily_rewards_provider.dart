@@ -125,7 +125,11 @@ class DailyRewardsProvider extends ChangeNotifier {
   /// geçmişi" — `GoalCompletion` gibi — bu özellik için istenmedi).
   ///
   /// Uygulama her açıldığında/öne geldiğinde VE popup her açıldığında bir
-  /// kez çağrılması yeterli. Sıfırlama olduysa `true` döner.
+  /// kez çağrılması yeterli. Sıfırlama olduysa `true` döner. **Sıfırlama
+  /// olmasa BİLE `notifyListeners()` HER ZAMAN çağrılır** (bkz. altta,
+  /// 2026 bug düzeltmesi) — sürekli monte kalan widget'ların (ör.
+  /// `DailyRewardsTriggerButton`) gün sessizce ilerlediğinde de yeniden
+  /// build olabilmesi için.
   bool reconcileForToday() {
     final idx = todayIndex;
     // `idx < 0` normalde HİÇ olmamalı (bugünün, döngü başlangıcından ÖNCE
@@ -155,7 +159,33 @@ class DailyRewardsProvider extends ChangeNotifier {
         }
       }
     }
-    if (!shouldReset) return false;
+    if (!shouldReset) {
+      // 2026 bug düzeltmesi — gerçek bir tester raporu: "günlük giriş
+      // ödülleri 2. günde takılı kalıyor." Kök neden BURASIYDI: gün
+      // SESSİZCE ilerlemiş olabilir (ör. Gün 1 → Gün 2, `_cycleStartDate`/
+      // `_claimedDates`'in HİÇBİRİ değişmeden — yalnızca `_now()`'ın
+      // döndürdüğü değer ilerledi, döngü zaten devam ediyor) ama bu metot
+      // `notifyListeners()`'ı YALNIZCA gerçek bir SIFIRLAMA olduğunda
+      // çağırıyordu. `todayIndex`/`isTodayClaimed`/`statusForIndex()` saf
+      // GETTER'lar olduğu için (her çağrıda `_now()`'a göre YENİDEN
+      // hesaplanıyorlar) TAZE açılan bir widget (ör. popup'ın kendisi,
+      // `showDialog` her seferinde YENİ bir örnek kurduğu için) her zaman
+      // doğru günü gösteriyordu — ama SÜREKLİ MONTE kalan widget'lar (ör.
+      // `DailyRewardsTriggerButton`, `RootScreen`'in `IndexedStack`'i
+      // yüzünden sekme değişse bile HİÇ dispose OLMUYOR, bkz. "Mimari özet"
+      // bölümündeki `IndexedStack` gotcha'sı) `notifyListeners()`
+      // gelmediği için asla YENİDEN BUILD OLMUYORDU — dünün "alındı" ✓
+      // rozetini GÜN DEĞİŞTİKTEN SONRA BİLE SONSUZA KADAR göstermeye devam
+      // ediyorlardı. Tester bu rozeti görüp "takılı kaldı" diye bildirdi —
+      // popup'ın kendisi açıldığında aslında doğru günü gösteriyordu, ama
+      // rozet yanlışlıkla "bugün zaten alındı" izlenimi verip kafa
+      // karıştırdı. **Düzeltme:** sıfırlama olmasa bile `notifyListeners()`
+      // çağrılıyor — sürekli monte kalan widget'lar da her `reconcileForToday()`
+      // çağrısında (uygulama öne gelince/popup her açılışında) taze günü
+      // yansıtacak şekilde yeniden build oluyor.
+      notifyListeners();
+      return false;
+    }
 
     _cycleStartDate = today;
     _claimedDates = {};

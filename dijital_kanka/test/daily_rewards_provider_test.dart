@@ -150,6 +150,30 @@ void main() {
     );
 
     test(
+      'reconcileForToday, sıfırlama gerekmese BİLE (gün sessizce ilerlediğinde) '
+      'notifyListeners çağırır — gerçek tester raporuyla bulunan bug: sürekli '
+      'monte kalan widget\'lar (ör. DailyRewardsTriggerButton) bu olmadan '
+      'dünün "alındı" rozetini sonsuza kadar göstermeye devam ediyordu',
+      () {
+        provider.claimToday(); // Gün 1 alındı
+        var notifyCount = 0;
+        provider.addListener(() => notifyCount++);
+
+        currentDate = DateTime(2026, 1, 6); // Gün 2 — sıfırlama GEREKMİYOR
+        final reset = provider.reconcileForToday();
+
+        expect(reset, isFalse);
+        expect(
+          notifyCount,
+          greaterThan(0),
+          reason:
+              'sıfırlama olmasa bile dinleyiciler günün ilerlediğini bilmeli, '
+              'aksi halde sürekli monte kalan widget\'lar yeniden build olmaz',
+        );
+      },
+    );
+
+    test(
       'Durum kalıcı depoya yazılır; uygulama yeniden başlatılsa bile '
       '(yeni DailyRewardsProvider) hatırlanır',
       () async {
