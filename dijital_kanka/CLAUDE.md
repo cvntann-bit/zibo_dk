@@ -4849,6 +4849,70 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
   4. Ödeme/gelir kurulumu (Appodeal Console'un kendi ödeme profili formu) — kimlik/vergi bilgisi
      girişi içerdiği için asistan bunu YAPAMAZ, kullanıcının kendisi tamamlamalı.
 
+### Appodeal Console onboarding'i + Unity Ads adaptörü — gerçek cihazda uçtan uca doğrulama (2026-08-31/09-01)
+
+- **Kullanıcı Appodeal Console'un "Monetization Setup" onboarding sihirbazını adım adım geçti** —
+  bkz. şu kararlar: (1) "Autoconnection" (varsayılan işaretli) bırakıldı — Appodeal kullanılabilir
+  ağları otomatik bağlayıp uygulama yayında/yeterli trafikliyken devreye sokuyor; (2) "Connecting
+  AdMob and Meta" bölümü BİLEREK atlandı (`Save and Continue Later`) — AdMob banlı, Meta
+  kullanılmıyor; (3) "SDK Integration" adımında "Confirm SDK implemented"/"Confirm Ad Formats
+  implemented" işaretlendi, "Confirm AdMob App ID added" BİLEREK boş bırakıldı (bu, "Finish SDK
+  Integration" butonunu KİLİTLİ tuttu — çözüm: sol menüden doğrudan "Publish App" adımına
+  tıklamak, sihirbazın adım linkleri serbestçe gezilebiliyor); (4) "Publish App" adımındaki üç
+  uyum maddesi (Privacy Policy güncellemesi, app-ads.txt, AdMob üzerinden CMP/GDPR kurulumu)
+  BİLEREK ERTELENDİ (`Save and Continue Later`) — hiçbiri reklam gösterimini ENGELLEMİYOR;
+  app-ads.txt `getzibo.com`'a erişim gerektiriyor (bu oturumun erişemediği ayrı proje), CMP için
+  Appodeal'in AdMob'suz kendi "Stack Consent Manager"ı (Google UMP tabanlı, SDK 3.0+'ta İLK
+  başlatmada GDPR/CCPA bölgesindeki kullanıcılara OTOMATİK gösteriliyor) var — AdMob login
+  GEREKMİYOR.
+- **"Test Impressions" — gerçek cihazda GERÇEKTEN doğrulandı, kör tahmin YAPILMADI.** Release
+  (Play Store) sürümünde reklam hiç gelmiyordu ("İzle"ye basınca hiçbir şey olmuyordu) — kullanıcı
+  debug build'i (USB üzerinden, `adb install`) test etmeyi seçti. **MIUI'ye özgü ek bir engel
+  bulundu:** `adb install` `INSTALL_FAILED_USER_RESTRICTED` ile başarısız oldu — Geliştirici
+  Seçenekleri'nde "USB Hata Ayıklama"dan AYRI, **"USB üzerinden yükleme" (Install via USB)**
+  anahtarının da açılması gerekiyordu (MIUI'nin ek güvenlik katmanı). Açılınca kurulum başarılı
+  oldu; `adb logcat` ile canlı izlenince `com.explorestack.iab.vast.activity.VastActivity`'nin
+  (Appodeal'in VAST/IAB reklam oynatma Activity'si) GERÇEKTEN başlayıp görüntülendiği (`ActivityTaskManager:
+  Displayed`) doğrulandı — SDK uçtan uca çalışıyor. **Kök neden:** release build'de `Appodeal.
+  setTesting(kDebugMode)` = `false` (doğru davranış — gerçek kullanıcıya test reklamı
+  gösterilmemeli) + o ana kadar hiçbir gerçek ağ adaptörü bağlı değildi, bu yüzden production'da
+  henüz gerçek doluluk (fill) yoktu; debug build'de test modu açık olduğu için Appodeal'in kendi
+  backfill test kreatifi (`test_ads/video_720x1280.mp4`) yüklenip gösterildi. Test SONRASI cihaz
+  `adb uninstall` + Play Store'dan yeniden kurulumla gerçek release sürümüne (imza/veri farkı —
+  `installerPackageName=com.android.vending` ile doğrulandı) GERİ DÖNDÜRÜLDÜ.
+- **Unity Ads adaptörü `android/app/build.gradle.kts`'e eklendi** —
+  `implementation("com.appodeal.ads.sdk.adapters:unity_ads:4.17.0.0")` (Gradle cache'te hem bu
+  adaptörün hem alttaki `com.unity3d.ads:unity-ads:4.17.0`'ın gerçekten indirildiği doğrulandı).
+  **AMA Appodeal Console'un "Mediation Setup > Ad Units" sayfası UnityAds'i (VE VK Ads/Vungle/
+  ironSource/Mintegral/BigoAds/DT Exchange gibi bir grubu) hâlâ "This network does not pass all
+  restrictions" diyip KAPALI (OFF) gösteriyor — kod tarafında adaptörü eklemek TEK BAŞINA yeterli
+  DEĞİL, Appodeal'in KENDİ tarafında da bu ağı "uygun" görmesi gerekiyor.** Kesin sebep (ⓘ tooltip'i
+  okunarak, TAHMİN EDİLMEDEN doğrulandı): **"The store link is required."** — Apps > [uygulama] >
+  General sayfasındaki **Store URL** alanı "This app is not in store yet" diyor, sağda **"The store
+  link will update automatically in 24h"** notu var. Yani Appodeal, uygulamanın Play Store'da
+  GERÇEKTEN yayında olduğunu KENDİ İÇ mekanizmasıyla (muhtemelen paket adı + App Key üzerinden
+  Play Store'u periyodik sorgulayarak) 24 saat içinde otomatik doğruluyor — elle girilecek bir alan
+  YOK, `Refresh` butonu da anlık bir API çağrısı yapmıyor gibi görünüyor (sonuç değişmedi). **Bu
+  24 saatlik pencere dolana kadar UnityAds (ve aynı kısıtlamayı taşıyan diğer ağlar) Console'da
+  AÇILAMAYACAK** — kod tarafında adaptör HAZIR bekliyor, Appodeal'in kendi tarafı devreye girince
+  ekstra bir Dart/Kotlin değişikliği GEREKMEYECEK.
+  - **İyi haber — bu bekleme sırasında bile TAMAMEN reklamsız DEĞİLİZ:** aynı Ad Units sayfasında
+    **AppLovin** ve **BidMachine**'in ZATEN "ON" (Appodeal'in varsayılan hesabı üzerinden otomatik
+    bağlı) olduğu görüldü — kullanıcının kendi AppLovin hesabının "uygulama yayında değil" diye
+    reddedilmesinden TAMAMEN BAĞIMSIZ bir yol (Appodeal'in KENDİ AppLovin ilişkisi/hesabı
+    üzerinden) — yani gerçek reklam talebi şu an SIFIR değil, yalnızca UnityAds gibi ek ağlar
+    henüz devrede değil.
+  - **General sayfasında AYRICA görülen, ileride değerlendirilecek iki alan:** (1) **COPPA**
+    anahtarı BİLİNÇLİ olarak KAPALI bırakıldı (Zibo çocuklara özel bir uygulama değil, bu doğru);
+    (2) **S2S Reward Callback URL / Encryption key** — BOŞ, Appodeal'in KENDİ sunucu-taraflı ödül
+    doğrulama (server-side verification) mekanizması TAM OLARAK bu alanlar üzerinden kuruluyor —
+    bkz. "Coin Ekonomisi Güvenliği" bölümündeki "AdMob SSV" notunun Appodeal karşılığı, aynı Cloud
+    Functions/backend kararına bağlı, bu turda KURULMADI, yalnızca varlığı doğrulandı/not düşüldü.
+- **Sürüm 1.3.1+17'ye yükseltildi**, Unity Ads adaptörünü içeren yeni bir release AAB derlenip
+  kullanıcıya teslim edildi — Play Console'a yüklenmeyi bekliyor. Yüklenip 24 saatlik Store Link
+  penceresi de dolunca, UnityAds'in Console'da otomatik AÇILIP AÇILMADIĞI + gerçek reklam
+  doluluğunun artıp artmadığı kontrol edilmeli.
+
 ### Reklamlar tam ekranı kaplamıyor (bug düzeltmesi) — `AdActivity` tema override + blur yedek katmanı
 
 > **TARİHSEL — `AdActivity` tema override'ının KENDİSİ (native/manifest seviyesindeki asıl

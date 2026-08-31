@@ -118,4 +118,11 @@ flutter {
 
 dependencies {
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
+    // Appodeal mediation adaptörü — Unity Ads. `stack_appodeal_flutter`'ın kendi
+    // build.gradle'ı yalnızca Appodeal'in çekirdek/IAB (bidding) adaptörünü
+    // getiriyor; GERÇEK bir ağdan reklam alabilmek için o ağın Appodeal
+    // adaptörünü BURADA elle eklemek gerekiyor (bkz. CLAUDE.md "AdMob →
+    // Appodeal geçişi" bölümü). Sürüm, Appodeal'in kendi README'sinde
+    // dokümante edilen 4.2.0 SDK setiyle uyumlu adaptör sürümü.
+    implementation("com.appodeal.ads.sdk.adapters:unity_ads:4.17.0.0")
 }
