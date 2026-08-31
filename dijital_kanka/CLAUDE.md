@@ -1446,6 +1446,80 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
       widget'ı için ayrı bir widget testi YOK (fl_chart'ın kendi `CustomPainter` çizimini test
       etmek yerine, `money_provider_test.dart` + `widget_test.dart`'taki kategori/tutar senaryoları
       besleme verisinin doğruluğunu zaten kapsıyor).
+  - **2026 ÜÇÜNCÜ güncelleme — her kayıt KENDİ para birimini taşıyabilir (tek bir global ayara
+    bağımlı kalmadan).** Kullanıcı isteği (verbatim özet): "aynı listede hem TL hem Dolar hem Euro
+    gibi farklı para birimleriyle girişler ekleyebilmeli, her kayıt kendi para birimini korusun,
+    birbirine otomatik çevrilmesin." Eskiden `CurrencyProvider.currencyCode` TEK global bir ayardı
+    ve TÜM kayıtlar/görüntülemeler onu paylaşıyordu — artık yalnızca YENİ kayıt eklerken bir
+    BAŞLANGIÇ varsayılanı olarak kullanılıyor, GÖRÜNTÜLEME artık her kaydın KENDİ
+    `currencyCode`'undan geliyor.
+    - **`MoneyEntry.currencyCode`** (YENİ, `required`, ISO 4217) — kaydın eklendiği ANDAKİ para
+      birimi, `GoalCompletion`/favori sözlerdeki AYNI "anlık görüntü" felsefesiyle sonradan global
+      ayar değişse bile GERİYE DÖNÜK değişmiyor. `MoneyProvider._entryFromJson`'daki eski
+      (`currencyCode`'suz) kayıtlar 'TRY'ye düşüyor (kullanıcının kendi önerdiği varsayılan) — ayrı
+      bir migrasyon betiği/Cloud Function GEREKMEDİ, bu satır `CloudStateStore.load()`'un
+      döndürdüğü HER kayıt için (yerelden VEYA Firestore'dan fark etmeksizin) çalışıp bir SONRAKİ
+      `_save()`'de kalıcı hale geliyor — `date` alanının eklenmesindeki AYNI "oku-zamanı-göç-et"
+      deseni. `addEntry`/`updateEntry` artık `required String currencyCode` alıyor (mevcut
+      `required String name`/`amount` ile AYNI stilde — gizli bir varsayılana DÜŞÜLMÜYOR, çağıran
+      HER ZAMAN açık bir seçim geçirmeli).
+    - **`MoneyProvider.totalFor(category)` DOKUNULMADI** (ham/para-birimi-kör toplam, testleri hâlâ
+      geçerli) — YENİ `Map<String, double> totalsByCurrencyFor(category)` eklendi (para birimi
+      koduna göre gruplanmış toplamlar), UI artık BUNU kullanıyor.
+    - **`MoneyCategoryCard._showEntryDialog`'a bir `DropdownButtonFormField<String>` eklendi**
+      (`currencies` listesinden, her öğe `'${code} ${symbol}'` — dil-bağımsız, ARB gerekmiyor).
+      Varsayılan: yeni kayıt için `defaultCurrencyCode` (kartın YENİ parametresi, eskiden
+      `currencySymbol` idi — artık GÖRÜNTÜLEME için değil, yalnızca bu varsayılan için), düzenlemede
+      `existing.currencyCode`. Dialog `StatefulBuilder`'a sarıldı (yalnızca TEK bir dropdown
+      state'i olduğu için Şükran Günlüğü'nün "3 controller'lı, editable" `_GratitudeEditDialog
+      Content`'i kadar ayrı bir StatefulWidget'a GEREK duyulmadı). Yeni `moneyEntryCurrencyLabel`
+      ARB anahtarı (TR/EN/ES) alanın etiketi için eklendi.
+    - **Liste satırları** artık `currencyByCode(entry.currencyCode).symbol` kullanıyor (kartın
+      paylaşılan sembolü DEĞİL). **Kategori toplamı** `totalsByCurrencyFor`'u para birimi koduna
+      göre ALFABETİK sıralayıp `'${symbol}${tutar}'` parçalarını `' + '` ile birleştirip mevcut
+      `l10n.moneyCategoryTotal({amount})` anahtarına (TEK `{amount}` placeholder'ı, ARB'de zaten
+      vardı) geçiriyor (ör. "Toplam: €3.00 + $5.00") — **otomatik kur çevirisi YOK**, kullanıcının
+      açık isteği.
+    - **`MoneyTrendChart` — "en basit çözüm": otomatik çevirme yok, tek seferde TEK para birimi
+      çiziliyor.** Widget artık KENDİ `_selectedCurrency` state'ini taşıyor (granularity'yi zaten
+      kendi yönettiği gibi); `expenses`/`savings`/`incomes` HÂLÂ TAM (filtrelenmemiş) listeler
+      olarak geçiriliyor, filtreleme `build()` içinde yapılıyor — bu sayede widget kayıtlardaki
+      BENZERSİZ para birimi kümesini kendi hesaplayıp seçiciyi (`_CurrencySelector`, YENİ, kompakt
+      bir `DropdownButton`) doldurabiliyor. Seçici `SegmentedButton`ın SOLUNA (`Align(centerRight)`
+      bir `Row(spaceBetween)`e çevrildi) eklendi — **yalnızca BİRDEN FAZLA para birimi varsa**
+      gösteriliyor, tek para birimli (yaygın) durumda hiçbir ekstra UI eklenmiyor.
+      - **Gerçek bug, testte yakalandı — `_selectedCurrency` (widget'ın İLK build'inde ayarlanan
+        başlangıç değeri) kayıtlar EKLENMEDEN ÖNCE seçilmiş olabilir ve dropdown'ın `items`
+        listesinde (yalnızca GERÇEKTEN var olan para birimi kodlarından oluşan) HİÇ
+        BULUNMAYABİLİR** — bu, "there should be exactly one item with [DropdownButton]'s value"
+        assertion hatasına yol açtı (widget testinde canlı yakalandı, iki farklı para biriminde
+        art arda kayıt eklenen bir senaryoda). **Düzeltme:** `effectiveCurrency` adında TÜRETİLMİŞ
+        bir değer — `_selectedCurrency` hâlâ `availableCurrencies` içinde GEÇERLİYSE onu korur,
+        değilse mevcut ilk para birimine düşer; KALICI state (`_selectedCurrency`) yalnızca
+        kullanıcı GERÇEKTEN seçim yapınca değişir. **Ders:** bir dropdown'ın `value`'sunu widget
+        ömrü boyunca DEĞİŞEBİLEN bir `items` listesine karşı doğrulamadan doğrudan state'ten
+        besleyen HER yerde bu risk var — `value`'nun HER ZAMAN `items`'ın bir üyesi olduğunu build
+        anında garanti eden türetilmiş bir değer kullanın, ham state'i DOĞRUDAN vermeyin.
+    - **`HomeWidgetSyncCoordinator._syncMoney()`** — "bu ayki net tutar" hesaplaması artık YALNIZCA
+      `entry.currencyCode == currency.currencyCode` (o an SEÇİLİ global para birimi) olan kayıtları
+      topluyor — widget'ın kompakt tek-satırlık özeti hâlâ TEK bir sayı olmak ZORUNDA (RemoteViews'ın
+      basit metin alanı), bu yüzden diğer para birimlerindeki kayıtlar bu ÖZEL metrikte sessizce
+      dışarıda bırakılıyor — kartlardaki/grafikteki asıl çoklu-para-birimi deneyimini ETKİLEMİYOR.
+    - **Test:** `money_provider_test.dart`'taki TÜM `addEntry`/`updateEntry` çağrılarına
+      `currencyCode: 'TRY'` eklendi (mevcut 10 test aynı davranışı doğrulamaya devam ediyor) + YENİ
+      bir grup (4 test — `totalsByCurrencyFor` gruplama, boş kategori, `updateEntry` para birimi
+      değiştirme, eski/para-birimsiz kayıt TRY'ye göç). `widget_test.dart`'taki 3. Para ve Birikim
+      senaryosuna (USD'ye geçilip kayıt eklenen) AYNI kategoriye EUR'da İKİNCİ bir kayıt ekleyip her
+      iki sembolün ayrı ayrı VE toplamın birleşik (`'€3.00 + $5.00'`) göründüğünü doğrulayan bir
+      adım eklendi. `profile_stats_test.dart`/`home_widget_sync_coordinator_test.dart`'taki mevcut
+      `MoneyProvider.addEntry` çağrılarına da `currencyCode: 'TRY'` eklendi (yeni required parametre
+      yüzünden derleme kırılmasın diye). `flutter test` tam yeşil: **355/355.**
+    - **Gerçek cihazda GÖRSEL doğrulama bu turda YAPILMADI** — yalnızca `flutter test`'teki
+      kapsamlı senaryolarla doğrulandı. Kullanıcının kendi cihazında kontrol etmesi gereken: yeni
+      kayıt eklerken para birimi seçicisinin doğru göründüğü, farklı para birimindeki kayıtların
+      listede kendi sembolleriyle ayrı ayrı göründüğü, kategori toplamının birleşik metni doğru
+      biçimlendirdiği, ve "Mevcut Durum" grafiğindeki yeni para birimi seçicisinin (birden fazla
+      para birimi kullanılınca) doğru çalıştığı.
 
 ### Ayarlar ([settings_screen.dart](lib/screens/settings_screen.dart), [legal_placeholder_screen.dart](lib/screens/legal_placeholder_screen.dart))
 - **2026 güncellemesi — üç bölüm başlığı altında gruplandı: Genel/Destek/Uygulama Hakkında**

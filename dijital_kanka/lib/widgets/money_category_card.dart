@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../data/currencies.dart';
 import '../l10n/app_localizations.dart';
 import '../models/money_entry.dart';
 import '../providers/money_provider.dart';
@@ -17,7 +18,7 @@ class MoneyCategoryCard extends StatelessWidget {
     required this.title,
     required this.accentColor,
     required this.amountSign,
-    required this.currencySymbol,
+    required this.defaultCurrencyCode,
   });
 
   final MoneyCategory category;
@@ -26,9 +27,13 @@ class MoneyCategoryCard extends StatelessWidget {
   final Color accentColor;
   final String amountSign;
 
-  /// Kullanıcının Para ve Birikim modülü için seçtiği para birimi sembolü
-  /// (bkz. `CurrencyProvider`) — modül genelinde tutarların yanında gösterilir.
-  final String currencySymbol;
+  /// **2026 güncellemesi — eskiden `currencySymbol` idi, artık GÖRÜNTÜLEME
+  /// için kullanılmıyor (her kayıt artık KENDİ para birimini taşıyor, bkz.
+  /// `MoneyEntry.currencyCode`).** Yalnızca YENİ kayıt ekleme diyalogunda
+  /// para birimi seçicisinin başlangıç değeri için — kullanıcının Para ve
+  /// Birikim AppBar'ından seçtiği GÜNCEL global para birimi
+  /// (`CurrencyProvider.currencyCode`).
+  final String defaultCurrencyCode;
 
   Future<void> _showEntryDialog(BuildContext context, {MoneyEntry? existing}) async {
     final l10n = AppLocalizations.of(context)!;
@@ -36,62 +41,104 @@ class MoneyCategoryCard extends StatelessWidget {
     final amountController = TextEditingController(
       text: existing != null ? existing.amount.toStringAsFixed(2) : null,
     );
+    // Diyalog kendi para birimi seçimini tutuyor — `StatefulBuilder` ile
+    // (Şükran Günlüğü düzenleme diyalogundaki gibi AYRI bir StatefulWidget'a
+    // GEREK YOK, burada yalnızca TEK bir dropdown state'i var, `Gratitude
+    // EditDialogContent`'in "3 controller'lı, editable" karmaşıklığı yok).
+    var selectedCurrencyCode = existing?.currencyCode ?? defaultCurrencyCode;
 
-    final result = await showDialog<(String, double)>(
+    final result = await showDialog<(String, double, String)>(
       context: context,
       builder: (dialogContext) {
-        void submit() {
-          final amount = double.tryParse(
-            amountController.text.replaceAll(',', '.'),
-          );
-          if (nameController.text.trim().isEmpty ||
-              amount == null ||
-              amount <= 0) {
-            return;
-          }
-          Navigator.of(
-            dialogContext,
-          ).pop((nameController.text.trim(), amount));
-        }
+        return StatefulBuilder(
+          builder: (dialogContext, setDialogState) {
+            void submit() {
+              final amount = double.tryParse(
+                amountController.text.replaceAll(',', '.'),
+              );
+              if (nameController.text.trim().isEmpty ||
+                  amount == null ||
+                  amount <= 0) {
+                return;
+              }
+              Navigator.of(dialogContext).pop((
+                nameController.text.trim(),
+                amount,
+                selectedCurrencyCode,
+              ));
+            }
 
-        return AlertDialog(
-          title: Text(existing == null ? l10n.moneyAddEntryTitle : l10n.moneyEditEntryTitle),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: nameController,
-                autofocus: true,
-                decoration: InputDecoration(labelText: l10n.moneyEntryNameHint),
+            return AlertDialog(
+              title: Text(existing == null ? l10n.moneyAddEntryTitle : l10n.moneyEditEntryTitle),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: nameController,
+                    autofocus: true,
+                    decoration: InputDecoration(labelText: l10n.moneyEntryNameHint),
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: amountController,
+                          keyboardType: const TextInputType.numberWithOptions(
+                            decimal: true,
+                          ),
+                          decoration: InputDecoration(
+                            labelText: l10n.moneyEntryAmountHint,
+                            prefixText: currencyByCode(selectedCurrencyCode).symbol,
+                          ),
+                          onSubmitted: (_) => submit(),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      SizedBox(
+                        width: 108,
+                        child: DropdownButtonFormField<String>(
+                          value: selectedCurrencyCode,
+                          isExpanded: true,
+                          decoration: InputDecoration(labelText: l10n.moneyEntryCurrencyLabel),
+                          items: [
+                            for (final currency in currencies)
+                              DropdownMenuItem(
+                                value: currency.code,
+                                child: Text(
+                                  '${currency.code} ${currency.symbol}',
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                          ],
+                          onChanged: (value) {
+                            if (value != null) {
+                              setDialogState(() => selectedCurrencyCode = value);
+                            }
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: amountController,
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(dialogContext).pop(),
+                  child: Text(
+                    MaterialLocalizations.of(dialogContext).cancelButtonLabel,
+                  ),
                 ),
-                decoration: InputDecoration(
-                  labelText: l10n.moneyEntryAmountHint,
-                  prefixText: currencySymbol,
+                FilledButton(
+                  onPressed: submit,
+                  child: Text(
+                    MaterialLocalizations.of(dialogContext).okButtonLabel,
+                  ),
                 ),
-                onSubmitted: (_) => submit(),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(),
-              child: Text(
-                MaterialLocalizations.of(dialogContext).cancelButtonLabel,
-              ),
-            ),
-            FilledButton(
-              onPressed: submit,
-              child: Text(
-                MaterialLocalizations.of(dialogContext).okButtonLabel,
-              ),
-            ),
-          ],
+              ],
+            );
+          },
         );
       },
     );
@@ -102,6 +149,7 @@ class MoneyCategoryCard extends StatelessWidget {
         category,
         name: result.$1,
         amount: result.$2,
+        currencyCode: result.$3,
       );
     } else {
       context.read<MoneyProvider>().updateEntry(
@@ -109,6 +157,7 @@ class MoneyCategoryCard extends StatelessWidget {
         id: existing.id,
         name: result.$1,
         amount: result.$2,
+        currencyCode: result.$3,
       );
     }
   }
@@ -119,7 +168,21 @@ class MoneyCategoryCard extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final moneyProvider = context.watch<MoneyProvider>();
     final entries = moneyProvider.entriesFor(category);
-    final total = moneyProvider.totalFor(category);
+    // **2026 güncellemesi — çoklu para birimi.** Tek bir `total` DEĞİL,
+    // para birimine göre gruplanmış toplamlar (bkz. `totalsByCurrencyFor`
+    // dokümantasyonu) — otomatik kur çevirisi YAPILMADAN, her para birimi
+    // ALFABETİK sırayla kendi toplamıyla `' + '` ile birleştiriliyor (ör.
+    // "₺500.00 + $50.00"), kullanıcının açık isteği.
+    final totalsByCurrency = moneyProvider.totalsByCurrencyFor(category);
+    final sortedCurrencyCodes = totalsByCurrency.keys.toList()..sort();
+    final totalText = entries.isEmpty
+        ? '${currencyByCode(defaultCurrencyCode).symbol}0.00'
+        : sortedCurrencyCodes
+              .map(
+                (code) =>
+                    '${currencyByCode(code).symbol}${totalsByCurrency[code]!.toStringAsFixed(2)}',
+              )
+              .join(' + ');
 
     return Card(
       child: Padding(
@@ -136,7 +199,7 @@ class MoneyCategoryCard extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  l10n.moneyCategoryTotal('$currencySymbol${total.toStringAsFixed(2)}'),
+                  l10n.moneyCategoryTotal(totalText),
                   style: Theme.of(context).textTheme.labelLarge?.copyWith(
                     color: accentColor,
                     fontWeight: FontWeight.bold,
@@ -173,7 +236,8 @@ class MoneyCategoryCard extends StatelessWidget {
                             ),
                           ),
                           Text(
-                            '$amountSign$currencySymbol${entry.amount.toStringAsFixed(2)}',
+                            '$amountSign${currencyByCode(entry.currencyCode).symbol}'
+                            '${entry.amount.toStringAsFixed(2)}',
                             style: TextStyle(color: accentColor, fontWeight: FontWeight.w600),
                           ),
                           IconButton(

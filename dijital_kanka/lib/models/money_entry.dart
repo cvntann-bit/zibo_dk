@@ -11,6 +11,7 @@ class MoneyEntry {
     required this.name,
     required this.amount,
     required this.date,
+    required this.currencyCode,
   });
 
   final String id;
@@ -20,4 +21,13 @@ class MoneyEntry {
   /// Kaydın eklendiği an — "Mevcut Durum" trend grafiğinin zaman eksenini
   /// oluşturmak için kullanılır (bkz. `MoneyScreen`/`MoneyTrendChart`).
   final DateTime date;
+
+  /// **2026 güncellemesi — kullanıcı isteği: her kayıt KENDİ para birimini
+  /// taşıyabilsin (tek bir global ayara bağımlı kalmadan).** ISO 4217 kodu
+  /// (`CurrencyOption.code`, bkz. `data/currencies.dart`) — kaydın
+  /// eklendiği ANDAKİ para birimi, sonradan global ayar değişse bile
+  /// GERİYE DÖNÜK değişmez (bkz. `GoalCompletion`/favori sözlerdeki AYNI
+  /// "anlık görüntü" felsefesi). Otomatik kur çevirisi YOK — kullanıcının
+  /// açık isteği, bkz. `MoneyProvider.totalsByCurrencyFor`.
+  final String currencyCode;
 }

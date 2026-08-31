@@ -68,6 +68,7 @@
   "moneyEditEntryTitle": "Editar Registro",
   "moneyEntryNameHint": "Nombre",
   "moneyEntryAmountHint": "Cantidad",
+  "moneyEntryCurrencyLabel": "Moneda",
   "moneyDeleteEntryTooltip": "Eliminar registro",
   "moneyCurrencyTooltip": "Moneda",
   "moneyCurrencyPickerTitle": "Elegir Moneda",

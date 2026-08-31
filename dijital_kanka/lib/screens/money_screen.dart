@@ -178,7 +178,11 @@ class _MoneyScreenState extends State<MoneyScreen> {
         : (findCostumeById(equippedId)?.imageAsset ?? defaultZiboImage);
     final poseStep = context.watch<ZiboPoseProvider>().poseStep;
     final moneyProvider = context.watch<MoneyProvider>();
-    final currencySymbol = context.watch<CurrencyProvider>().currency.symbol;
+    // **2026 güncellemesi — çoklu para birimi.** Artık her kayıt KENDİ para
+    // birimini taşıyor (bkz. `MoneyEntry.currencyCode`) — bu, yalnızca YENİ
+    // kayıt eklerken varsayılan seçim + trend grafiğinin başlangıç filtresi
+    // için kullanılıyor, GÖRÜNTÜLEME artık buna bağımlı değil.
+    final defaultCurrencyCode = context.watch<CurrencyProvider>().currencyCode;
 
     return Scaffold(
       appBar: AppBar(
@@ -200,7 +204,7 @@ class _MoneyScreenState extends State<MoneyScreen> {
           poseStep,
           equippedImageAsset,
           moneyProvider,
-          currencySymbol,
+          defaultCurrencyCode,
         ),
       ),
     );
@@ -214,7 +218,7 @@ class _MoneyScreenState extends State<MoneyScreen> {
     int poseStep,
     String equippedImageAsset,
     MoneyProvider moneyProvider,
-    String currencySymbol,
+    String defaultCurrencyCode,
   ) {
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
@@ -250,7 +254,7 @@ class _MoneyScreenState extends State<MoneyScreen> {
           title: l10n.moneyExpenses,
           accentColor: _expenseRed,
           amountSign: '-',
-          currencySymbol: currencySymbol,
+          defaultCurrencyCode: defaultCurrencyCode,
         ),
         const SizedBox(height: 12),
         MoneyCategoryCard(
@@ -259,7 +263,7 @@ class _MoneyScreenState extends State<MoneyScreen> {
           title: l10n.moneySavings,
           accentColor: _savingGreen,
           amountSign: '+',
-          currencySymbol: currencySymbol,
+          defaultCurrencyCode: defaultCurrencyCode,
         ),
         const SizedBox(height: 12),
         MoneyCategoryCard(
@@ -268,7 +272,7 @@ class _MoneyScreenState extends State<MoneyScreen> {
           title: l10n.moneyIncome,
           accentColor: _incomeBlue,
           amountSign: '+',
-          currencySymbol: currencySymbol,
+          defaultCurrencyCode: defaultCurrencyCode,
         ),
         const SizedBox(height: 24),
         Text(l10n.moneyTrendSectionTitle, style: Theme.of(context).textTheme.titleMedium),
@@ -280,7 +284,7 @@ class _MoneyScreenState extends State<MoneyScreen> {
               expenses: moneyProvider.entriesFor(MoneyCategory.expense),
               savings: moneyProvider.entriesFor(MoneyCategory.saving),
               incomes: moneyProvider.entriesFor(MoneyCategory.income),
-              currencySymbol: currencySymbol,
+              defaultCurrencyCode: defaultCurrencyCode,
             ),
           ),
         ),

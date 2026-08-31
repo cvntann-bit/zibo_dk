@@ -68,6 +68,7 @@
   "moneyEditEntryTitle": "Edit Entry",
   "moneyEntryNameHint": "Name",
   "moneyEntryAmountHint": "Amount",
+  "moneyEntryCurrencyLabel": "Currency",
   "moneyDeleteEntryTooltip": "Delete entry",
   "moneyCurrencyTooltip": "Currency",
   "moneyCurrencyPickerTitle": "Choose Currency",

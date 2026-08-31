@@ -223,7 +223,7 @@ void main() {
     'Kategoriye veri eklenip syncAll TEKRAR çağrılınca İstatistiklerim carousel\'i günceller',
     (tester) async {
       final h = await _buildHarness(tester);
-      h.money.addEntry(MoneyCategory.saving, name: 'Birikim', amount: 500);
+      h.money.addEntry(MoneyCategory.saving, name: 'Birikim', amount: 500, currencyCode: 'TRY');
       h.coordinator.syncAll();
       final call = h.service.carouselCalls.lastWhere((c) => c.$1 == ZiboWidgetModule.profileStats);
       final moneyItem = call.$3.first; // ProfileStatCategory sırasında ilk = Para Yönetimi

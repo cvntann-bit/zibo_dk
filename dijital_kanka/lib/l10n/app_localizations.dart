@@ -508,6 +508,12 @@ abstract class AppLocalizations {
   /// **'Tutar'**
   String get moneyEntryAmountHint;
 
+  /// 2026 — kayıt ekleme/düzenleme diyalog kutusundaki kayda özel para birimi seçicisinin etiketi
+  ///
+  /// In tr, this message translates to:
+  /// **'Para Birimi'**
+  String get moneyEntryCurrencyLabel;
+
   /// Bir para kaydının yanındaki silme ikonunun erişilebilirlik ipucu
   ///
   /// In tr, this message translates to:

@@ -239,6 +239,9 @@ class AppLocalizationsTr extends AppLocalizations {
   String get moneyEntryAmountHint => 'Tutar';
 
   @override
+  String get moneyEntryCurrencyLabel => 'Para Birimi';
+
+  @override
   String get moneyDeleteEntryTooltip => 'Kaydı sil';
 
   @override

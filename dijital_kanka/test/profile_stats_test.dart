@@ -84,7 +84,7 @@ void main() {
     () async {
       final mostlySaving = MoneyProvider(now: () => DateTime(2026, 3, 16));
       await Future<void>.delayed(Duration.zero);
-      mostlySaving.addEntry(MoneyCategory.saving, name: 'Birikim', amount: 1000);
+      mostlySaving.addEntry(MoneyCategory.saving, name: 'Birikim', amount: 1000, currencyCode: 'TRY');
 
       // İki provider AYNI (varsayılan uid==null) yerel SharedPreferences
       // deposunu paylaşır — ikinci provider'ın ilkinin verisini yanlışlıkla
@@ -94,7 +94,7 @@ void main() {
       SharedPreferences.setMockInitialValues({});
       final mostlySpending = MoneyProvider(now: () => DateTime(2026, 3, 16));
       await Future<void>.delayed(Duration.zero);
-      mostlySpending.addEntry(MoneyCategory.expense, name: 'Harcama', amount: 1000);
+      mostlySpending.addEntry(MoneyCategory.expense, name: 'Harcama', amount: 1000, currencyCode: 'TRY');
 
       final statsSaving = ProfileStats.compute(
         money: mostlySaving,
@@ -252,7 +252,7 @@ void main() {
   test('Tüm kategorilerin puanı her zaman 0-10 aralığında kalır', () async {
     final money = MoneyProvider(now: () => DateTime(2026, 3, 16));
     await Future<void>.delayed(Duration.zero);
-    money.addEntry(MoneyCategory.saving, name: 'Büyük birikim', amount: 999999);
+    money.addEntry(MoneyCategory.saving, name: 'Büyük birikim', amount: 999999, currencyCode: 'TRY');
 
     final stats = ProfileStats.compute(
       money: money,

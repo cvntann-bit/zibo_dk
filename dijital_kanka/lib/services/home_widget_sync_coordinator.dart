@@ -163,9 +163,17 @@ class HomeWidgetSyncCoordinator {
   void _syncMoney() {
     final now = trustedTime.now();
     bool isThisMonth(DateTime d) => d.year == now.year && d.month == now.month;
+    // **2026 güncellemesi — çoklu para birimi.** Widget'ın "bu ayki net
+    // tutar" özeti hâlâ TEK bir sayı olmak ZORUNDA (RemoteViews'ın basit
+    // metin alanı) — otomatik kur çevirisi YAPMAMAK için (kullanıcının açık
+    // isteği, bkz. `MoneyCategoryCard`/`MoneyTrendChart`'taki AYNI karar)
+    // yalnızca o ANKİ SEÇİLİ global para birimindeki (`currency.
+    // currencyCode`) kayıtlar toplanıyor — BAŞKA para birimindeki kayıtlar
+    // bu TEK widget metriğinde sessizce dışarıda kalıyor (kartlardaki/
+    // grafikteki asıl çoklu-para-birimi deneyimi bundan ETKİLENMİYOR).
     double sumThisMonth(MoneyCategory category) => money
         .entriesFor(category)
-        .where((e) => isThisMonth(e.date))
+        .where((e) => isThisMonth(e.date) && e.currencyCode == currency.currencyCode)
         .fold(0.0, (total, e) => total + e.amount);
     final net =
         sumThisMonth(MoneyCategory.income) +

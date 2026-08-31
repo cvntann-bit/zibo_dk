@@ -314,6 +314,10 @@
   "@moneyEntryAmountHint": {
     "description": "Yeni kayıt ekleme diyalog kutusundaki tutar alanının etiketi"
   },
+  "moneyEntryCurrencyLabel": "Para Birimi",
+  "@moneyEntryCurrencyLabel": {
+    "description": "2026 — kayıt ekleme/düzenleme diyalog kutusundaki kayda özel para birimi seçicisinin etiketi"
+  },
   "moneyDeleteEntryTooltip": "Kaydı sil",
   "@moneyDeleteEntryTooltip": {
     "description": "Bir para kaydının yanındaki silme ikonunun erişilebilirlik ipucu"

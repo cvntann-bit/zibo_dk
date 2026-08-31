@@ -241,6 +241,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get moneyEntryAmountHint => 'Cantidad';
 
   @override
+  String get moneyEntryCurrencyLabel => 'Moneda';
+
+  @override
   String get moneyDeleteEntryTooltip => 'Eliminar registro';
 
   @override

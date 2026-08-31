@@ -627,6 +627,31 @@ void main() {
       expect(find.text('-\$5.00'), findsOneWidget);
       expect(find.text('Toplam: \$5.00'), findsOneWidget);
 
+      // **2026 güncellemesi — kayıt başına para birimi.** AYNI kategoriye
+      // BAŞKA bir para biriminde (EUR) ikinci bir kayıt eklenip her iki
+      // sembolün de ayrı ayrı VE toplamın birleşik göründüğü doğrulanıyor —
+      // otomatik kur çevirisi OLMADAN.
+      await tester.tap(
+        find.descendant(of: expenseCard, matching: find.text('Ekle')),
+      );
+      await tester.pumpAndSettle();
+
+      final secondTextFields = find.byType(TextField);
+      await tester.enterText(secondTextFields.at(0), 'Kahve Falı');
+      await tester.enterText(secondTextFields.at(1), '3');
+      await tester.tap(find.byType(DropdownButtonFormField<String>));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('EUR €'));
+      await tester.pumpAndSettle();
+      expect(find.text('€'), findsOneWidget); // Tutar alanının prefix'i artık €.
+      await tester.tap(find.text('Tamam'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('-\$5.00'), findsOneWidget);
+      expect(find.text('-€3.00'), findsOneWidget);
+      // Para birimi kodu alfabetik sıralı: EUR < USD.
+      expect(find.text('Toplam: €3.00 + \$5.00'), findsOneWidget);
+
       await tester.tap(find.byTooltip('Geri'));
       await tester.pumpAndSettle();
     },

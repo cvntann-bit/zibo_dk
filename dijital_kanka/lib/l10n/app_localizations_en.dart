@@ -239,6 +239,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get moneyEntryAmountHint => 'Amount';
 
   @override
+  String get moneyEntryCurrencyLabel => 'Currency';
+
+  @override
   String get moneyDeleteEntryTooltip => 'Delete entry';
 
   @override

@@ -1,6 +1,7 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
+import '../data/currencies.dart';
 import '../data/localized_calendar_names.dart';
 import '../l10n/app_localizations.dart';
 import '../models/money_entry.dart';
@@ -20,22 +21,36 @@ enum _Granularity { daily, weekly }
 /// karşılaştırılabilir kalır. Sağ üstteki Günlük/Haftalık seçici periyodu
 /// değiştirir — haftalık görünüm aynı veriyi daha az (ama her biri daha
 /// geniş bir zaman aralığını temsil eden) noktaya sıkıştırır.
+///
+/// **2026 güncellemesi — çoklu para birimi ("basit çözüm": otomatik kur
+/// çevirisi YOK, tek seferde TEK para birimi çiziliyor).** Kayıtlar artık
+/// farklı para birimlerinde olabildiği için (bkz. `MoneyEntry.currencyCode`)
+/// bir kümülatif toplamda FARKLI birimleri ham sayı olarak toplamak anlamsız
+/// olurdu — bunun yerine widget kendi `_selectedCurrency` state'ini taşıyor
+/// (granularity'yi zaten kendi yönettiği gibi), grafiği yalnızca O para
+/// birimindeki kayıtlarla çiziyor. [expenses]/[savings]/[incomes] HÂLÂ TAM
+/// (filtrelenmemiş) listeler olarak geçiriliyor — filtreleme `build()`
+/// içinde yapılıyor, bu sayede widget kayıtlardaki BENZERSİZ para birimi
+/// kümesini kendi hesaplayıp seçiciyi doldurabiliyor.
 class MoneyTrendChart extends StatefulWidget {
   const MoneyTrendChart({
     super.key,
     required this.expenses,
     required this.savings,
     required this.incomes,
-    required this.currencySymbol,
+    required this.defaultCurrencyCode,
   });
 
   final List<MoneyEntry> expenses;
   final List<MoneyEntry> savings;
   final List<MoneyEntry> incomes;
 
-  /// Bkz. `MoneyCategoryCard.currencySymbol` dokümantasyonu — aynı seçili
-  /// para birimi, eksen etiketlerinde ve dokunma tooltip'inde kullanılır.
-  final String currencySymbol;
+  /// Grafiğin BAŞLANGIÇ para birimi — kullanıcının Para ve Birikim
+  /// AppBar'ından seçtiği güncel global para birimi (`CurrencyProvider.
+  /// currencyCode`). Kayıtlarda bu para birimi hiç YOKSA (kullanıcı yalnızca
+  /// başka bir para biriminde kayıt girmişse) grafik boş bir "veri yok"
+  /// durumuna düşer — kullanıcı seçiciden mevcut bir para birimine geçebilir.
+  final String defaultCurrencyCode;
 
   @override
   State<MoneyTrendChart> createState() => _MoneyTrendChartState();
@@ -43,6 +58,7 @@ class MoneyTrendChart extends StatefulWidget {
 
 class _MoneyTrendChartState extends State<MoneyTrendChart> {
   _Granularity _granularity = _Granularity.daily;
+  late String _selectedCurrency = widget.defaultCurrencyCode;
 
   @override
   Widget build(BuildContext context) {
@@ -50,21 +66,53 @@ class _MoneyTrendChartState extends State<MoneyTrendChart> {
     final colorScheme = Theme.of(context).colorScheme;
     final locale = Localizations.localeOf(context);
 
-    if (widget.expenses.isEmpty && widget.savings.isEmpty && widget.incomes.isEmpty) {
-      return Text(
-        l10n.moneyTrendEmpty,
-        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-          color: colorScheme.onSurfaceVariant,
-        ),
+    // Kayıtlardaki BENZERSİZ para birimi kodları, alfabetik — seçici bu
+    // listeyi dolduruyor, birden fazla varsa gösteriliyor.
+    final availableCurrencies =
+        {
+          for (final entry in [...widget.expenses, ...widget.savings, ...widget.incomes])
+            entry.currencyCode,
+        }.toList()
+          ..sort();
+    // Gotcha (gerçek testte yakalandı) — `_selectedCurrency` (widget'ın
+    // İLK build'inde ayarlanan BAŞLANGIÇ değeri) kayıtlar EKLENMEDEN ÖNCE
+    // seçilmiş olabilir ve `availableCurrencies`'te HİÇ BULUNMAYABİLİR —
+    // bu durumda `DropdownButton`'a DOĞRUDAN `_selectedCurrency` vermek
+    // "there should be exactly one item with [DropdownButton]'s value"
+    // assertion'ını tetikliyordu (seçili değerle EŞLEŞEN hiçbir `item` yok).
+    // `effectiveCurrency`, `_selectedCurrency` hâlâ GEÇERLİYSE onu korur,
+    // değilse mevcut ilk para birimine düşer — kalıcı state (`_selectedCurrency`)
+    // yalnızca kullanıcı GERÇEKTEN seçim yapınca değişir.
+    final effectiveCurrency = availableCurrencies.contains(_selectedCurrency)
+        ? _selectedCurrency
+        : (availableCurrencies.isEmpty ? _selectedCurrency : availableCurrencies.first);
+    final currencySymbol = currencyByCode(effectiveCurrency).symbol;
+
+    final expenses = widget.expenses.where((e) => e.currencyCode == effectiveCurrency).toList();
+    final savings = widget.savings.where((e) => e.currencyCode == effectiveCurrency).toList();
+    final incomes = widget.incomes.where((e) => e.currencyCode == effectiveCurrency).toList();
+
+    if (expenses.isEmpty && savings.isEmpty && incomes.isEmpty) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (availableCurrencies.length > 1)
+            _CurrencySelector(
+              availableCurrencies: availableCurrencies,
+              selected: effectiveCurrency,
+              onChanged: (code) => setState(() => _selectedCurrency = code),
+            ),
+          Text(
+            l10n.moneyTrendEmpty,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ],
       );
     }
 
-    final series = _buildSeries(
-      widget.expenses,
-      widget.savings,
-      widget.incomes,
-      _granularity,
-    );
+    final series = _buildSeries(expenses, savings, incomes, _granularity);
     final maxY = [
       ...series.expenseCumulative,
       ...series.savingCumulative,
@@ -81,27 +129,37 @@ class _MoneyTrendChartState extends State<MoneyTrendChart> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Align(
-          alignment: Alignment.centerRight,
-          child: SegmentedButton<_Granularity>(
-            style: const ButtonStyle(
-              visualDensity: VisualDensity.compact,
-              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            if (availableCurrencies.length > 1)
+              _CurrencySelector(
+                availableCurrencies: availableCurrencies,
+                selected: effectiveCurrency,
+                onChanged: (code) => setState(() => _selectedCurrency = code),
+              )
+            else
+              const SizedBox.shrink(),
+            SegmentedButton<_Granularity>(
+              style: const ButtonStyle(
+                visualDensity: VisualDensity.compact,
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
+              segments: [
+                ButtonSegment(
+                  value: _Granularity.daily,
+                  label: Text(l10n.moneyTrendGranularityDaily),
+                ),
+                ButtonSegment(
+                  value: _Granularity.weekly,
+                  label: Text(l10n.moneyTrendGranularityWeekly),
+                ),
+              ],
+              selected: {_granularity},
+              onSelectionChanged: (selection) =>
+                  setState(() => _granularity = selection.first),
             ),
-            segments: [
-              ButtonSegment(
-                value: _Granularity.daily,
-                label: Text(l10n.moneyTrendGranularityDaily),
-              ),
-              ButtonSegment(
-                value: _Granularity.weekly,
-                label: Text(l10n.moneyTrendGranularityWeekly),
-              ),
-            ],
-            selected: {_granularity},
-            onSelectionChanged: (selection) =>
-                setState(() => _granularity = selection.first),
-          ),
+          ],
         ),
         const SizedBox(height: 12),
         SizedBox(
@@ -134,7 +192,7 @@ class _MoneyTrendChartState extends State<MoneyTrendChart> {
                     getTitlesWidget: (value, meta) => Padding(
                       padding: const EdgeInsets.only(right: 4),
                       child: Text(
-                        _formatAxisAmount(value, widget.currencySymbol),
+                        _formatAxisAmount(value, currencySymbol),
                         style: TextStyle(fontSize: 10, color: colorScheme.onSurfaceVariant),
                       ),
                     ),
@@ -167,7 +225,7 @@ class _MoneyTrendChartState extends State<MoneyTrendChart> {
                   getTooltipItems: (touchedSpots) => touchedSpots
                       .map(
                         (spot) => LineTooltipItem(
-                          '${widget.currencySymbol}${spot.y.toStringAsFixed(0)}',
+                          '$currencySymbol${spot.y.toStringAsFixed(0)}',
                           TextStyle(
                             color: spot.bar.color,
                             fontWeight: FontWeight.bold,
@@ -313,6 +371,40 @@ class _LegendDot extends StatelessWidget {
         const SizedBox(width: 6),
         Text(label, style: Theme.of(context).textTheme.labelMedium),
       ],
+    );
+  }
+}
+
+/// **2026 yeni özellik** — grafiğin hangi para biriminde çizildiğini
+/// seçmek için kompakt bir açılır liste; yalnızca `[availableCurrencies]`
+/// BİRDEN FAZLA öğe taşıdığında (bkz. `_MoneyTrendChartState.build`)
+/// gösteriliyor — tek para birimli (yaygın) durumda hiçbir ekstra UI
+/// eklenmiyor.
+class _CurrencySelector extends StatelessWidget {
+  const _CurrencySelector({
+    required this.availableCurrencies,
+    required this.selected,
+    required this.onChanged,
+  });
+
+  final List<String> availableCurrencies;
+  final String selected;
+  final ValueChanged<String> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return DropdownButton<String>(
+      value: selected,
+      isDense: true,
+      underline: const SizedBox.shrink(),
+      style: Theme.of(context).textTheme.labelMedium,
+      items: [
+        for (final code in availableCurrencies)
+          DropdownMenuItem(value: code, child: Text('${currencyByCode(code).symbol} $code')),
+      ],
+      onChanged: (value) {
+        if (value != null) onChanged(value);
+      },
     );
   }
 }
