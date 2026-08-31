@@ -299,7 +299,11 @@ class SettingsScreen extends StatelessWidget {
                     MaterialPageRoute<void>(
                       builder: (_) => LegalPlaceholderScreen(
                         title: l10n.settingsPrivacyPolicy,
-                        body: privacyPolicyTr,
+                        // **2026 güncellemesi** — artık uygulama dili
+                        // hangisiyse (bkz. `LocaleProvider`) o dilde
+                        // gösteriliyor, eskiden HER ZAMAN Türkçe idi (bkz.
+                        // `legal_texts.dart`'ın dosya başındaki notu).
+                        body: privacyPolicyForLocale(Localizations.localeOf(context)),
                       ),
                     ),
                   ),
@@ -313,7 +317,7 @@ class SettingsScreen extends StatelessWidget {
                     MaterialPageRoute<void>(
                       builder: (_) => LegalPlaceholderScreen(
                         title: l10n.settingsTermsOfService,
-                        body: termsOfServiceTr,
+                        body: termsOfServiceForLocale(Localizations.localeOf(context)),
                       ),
                     ),
                   ),

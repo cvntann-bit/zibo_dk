@@ -4159,6 +4159,39 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
   doğru yuvarlak bayraklarla listelendiği doğrulandı; İspanyolca'ya geçiş ve Türkçe'ye geri dönüş
   doğrulaması cihaz bağlantısı koptuğu için TAMAMLANAMADI — kod yolu İngilizce ile birebir aynı
   olduğu için risk düşük, ama bir sonraki oturumda tamamlanmalı.
+- **2026 güncellemesi — Gizlilik Politikası/Kullanım Koşulları de dil sistemine bağlandı, bilerek
+  ALINMIŞ önceki "yalnızca Türkçe" kararı GERİ ÇEVRİLDİ.** Kullanıcı raporu: "uygulama dili
+  İngilizce/İspanyolca'ya değiştirilse bile bu sayfalar hep Türkçe kalıyor." `lib/data/
+  legal_texts.dart`'ın (bkz. "Ayarlar" bölümündeki orijinal açıklama) o zamanki gerekçesi —
+  "hukuki bir belgenin çeviri belirsizliği GERÇEK sonuç doğurabilir, bu yüzden TEK yetkili Türkçe
+  sürüm tutulsun" — kullanıcının bu turdaki AÇIK isteğiyle bilinçli olarak bir kenara bırakıldı.
+  - **`privacyPolicyEn`/`privacyPolicyEs`/`termsOfServiceEn`/`termsOfServiceEs`** eklendi —
+    `zibo_messages.dart` gibi diğer içerik havuzlarının "ton uyarlaması" YAKLAŞIMINI İZLEMİYOR
+    (kelimesi kelimesine değil ama madde madde ANLAMCA birebir çeviri, çünkü bu bir hukuki/
+    bilgilendirici belge). KVKK referansı gibi Türkiye'ye özgü unsurlar EN/ES sürümlerinde de
+    KORUNDU (genel bir ifadeyle silinip gizlenmedi) — "Uygulanacak Hukuk" maddesi zaten dilden
+    bağımsız olarak Türk hukukunun geçerli olduğunu söylüyor.
+  - **`privacyPolicyForLocale(Locale)`/`termsOfServiceForLocale(Locale)`** — `moneyQuotesForLocale`/
+    `ziboMessagesForLocale` ile BİREBİR AYNI kalıp (`switch (locale.languageCode) { 'en' => ...,
+    'es' => ..., _ => trSürümü }`). `lib/screens/settings_screen.dart`'taki iki `LegalPlaceholder
+    Screen` çağrısı `body: privacyPolicyTr`/`termsOfServiceTr` yerine
+    `body: privacyPolicyForLocale(Localizations.localeOf(context))`/AYNI kalıpla `termsOfService
+    ForLocale(...)` kullanıyor.
+  - **Gotcha (gerçekten yaşandı) — `library;` direktifi dosyanın EN BAŞINDA olmalı, bir `import`'tan
+    SONRA GELEMEZ.** İlk yazımda `import 'package:flutter/widgets.dart';` (yeni `Locale` parametresi
+    için gerekli) dosyanın dokümantasyon yorumu+`library;` direktifinden ÖNCE eklenmişti —
+    `flutter test` "The library directive must appear before all other directives" derleme
+    hatasıyla ÇÖKTÜ. **Düzeltme:** `import`, `library;` direktifinden SONRAYA taşındı (Dart'ın
+    zorunlu direktif sırası: `library` → `import`/`export` → geri kalan kod).
+  - **Test:** `widget_test.dart`'a YENİ bir senaryo — dil İngilizce'ye çevrilip Gizlilik Politikası/
+    Kullanım Koşulları'na girilince İngilizce sürümden ayırt edici bir ibarenin ("Data Controller"/
+    "Virtual Currency") göründüğü VE Türkçe ibarenin ("Veri Sorumlusu"/"Sanal Para Birimi")
+    GÖRÜNMEDİĞİ doğrulanıyor — mevcut TR-varsayılan test (aynı iki ibarenin Türkçe karşılıklarını
+    doğrulayan) DOKUNULMADAN kalıyor. `flutter test` tam yeşil: **356/356.**
+  - **Gerçek cihazda GÖRSEL doğrulama bu turda YAPILMADI** — kullanıcının kendi cihazında dil
+    değiştirip her iki sayfanın da doğru dilde, taşmadan render olduğunu kontrol etmesi gerekiyor
+    (özellikle İspanyolca — bu dilin metni EN'den biraz daha uzun, `SingleChildScrollView`
+    zaten uzun metinler için kurulmuştu ama İspanyolca ile ayrıca doğrulanmadı).
 
 ## Görsel işleme ([tool/](tool/))
 

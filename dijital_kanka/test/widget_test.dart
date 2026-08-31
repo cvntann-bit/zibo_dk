@@ -966,6 +966,52 @@ void main() {
   );
 
   testWidgets(
+    // 2026 yeni özellik — kullanıcı raporu: "uygulama dili İngilizce/
+    // İspanyolca'ya değiştirilse bile bu sayfalar hep Türkçe kalıyor" —
+    // bkz. `legal_texts.dart`'taki `privacyPolicyForLocale`/
+    // `termsOfServiceForLocale` dokümantasyonu.
+    'Dil İngilizce\'ye çevrilince Gizlilik Politikası/Kullanım Koşulları da İngilizce gösterilir',
+    (WidgetTester tester) async {
+      await _pumpPastOnboarding(tester, const DijitalKankaApp());
+
+      await tester.tap(find.byTooltip('Ayarlar'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Dil'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('English'));
+      await tester.pumpAndSettle();
+
+      await tester.scrollUntilVisible(find.text('Privacy Policy'), 300);
+      tester
+          .widget<ListTile>(
+            find.ancestor(
+              of: find.text('Privacy Policy'),
+              matching: find.byType(ListTile),
+            ),
+          )
+          .onTap!();
+      await tester.pumpAndSettle();
+      expect(find.textContaining('Data Controller'), findsOneWidget);
+      expect(find.textContaining('Veri Sorumlusu'), findsNothing);
+      await tester.tap(find.byTooltip('Back'));
+      await tester.pumpAndSettle();
+
+      await tester.scrollUntilVisible(find.text('Terms of Service'), 300);
+      tester
+          .widget<ListTile>(
+            find.ancestor(
+              of: find.text('Terms of Service'),
+              matching: find.byType(ListTile),
+            ),
+          )
+          .onTap!();
+      await tester.pumpAndSettle();
+      expect(find.textContaining('Virtual Currency'), findsOneWidget);
+      expect(find.textContaining('Sanal Para Birimi'), findsNothing);
+    },
+  );
+
+  testWidgets(
     'Dil seçici: İngilizce seçilince arayüz her yerde İngilizce\'ye döner',
     (WidgetTester tester) async {
       await _pumpPastOnboarding(tester, const DijitalKankaApp());
