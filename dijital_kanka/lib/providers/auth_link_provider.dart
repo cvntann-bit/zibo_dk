@@ -28,7 +28,7 @@ class AuthLinkProvider extends ChangeNotifier {
   /// currentUser` bir `[core/no-app]` istisnası fırlatıp `DijitalKankaApp`
   /// kuran HER TEK testi ANINDA çökertirdi. Gerçek servis yalnızca
   /// `main.dart`'ın ÜRETİM `DijitalKankaApp` kurulumunda AÇIKÇA veriliyor —
-  /// `AdMobAdService`'in `CoinProvider`'a verilme şekliyle BİREBİR aynı.
+  /// `AppodealAdService`'in `CoinProvider`'a verilme şekliyle BİREBİR aynı.
   AuthLinkProvider({GoogleAuthService? googleAuthService, String? uid})
     : _service = googleAuthService ?? const FakeGoogleAuthService(),
       _store = CloudStateStore(prefsKey: _prefsKey, uid: uid) {

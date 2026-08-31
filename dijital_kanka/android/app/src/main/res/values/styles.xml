@@ -5,27 +5,22 @@
         <!-- Show a splash screen on the activity. Automatically removed when
              the Flutter engine draws its first frame -->
         <item name="android:windowBackground">@drawable/launch_background</item>
-        <!-- 2026 güncellemesi — AdMob geçiş (interstitial) reklamları tam
-             ekranı kaplamıyor bug'ı için. `compileSdk = 37` (bkz.
-             build.gradle.kts) Android 15+'ın ZORUNLU edge-to-edge
-             davranışını devreye sokuyor — bu, `google_mobile_ads`'ın kendi
-             reklam Activity'sinin durum çubuğu alanını doğru
-             kapatamamasına yol açıyor (reklamın ÜSTÜNDE uygulamamızın eski
-             arayüzü/AppBar'ı görünür kalıyor) — Google'ın kendi AdMob SDK
-             destek ekibinin RESMİ olarak önerdiği geçici çözüm bu (bkz.
-             CLAUDE.md "AdMob Entegrasyonu" bölümü, kaynak linki dahil). Bu
-             Android 15 API'si (`windowOptOutEdgeToEdgeEnforcement`)
-             uygulamayı bu ZORUNLU davranıştan çıkarıp GELENEKSEL (opak
-             durum çubuğu) davranışa döndürüyor — hem `MainActivity` hem
-             AdMob'un kendi Activity'leri için düzeltiyor. Eski Android
-             sürümlerinde bu öğe sessizce yok sayılır (API 35'te eklendi),
-             zararsız. **GEÇİCİ bir çözüm — Google, bu bayrağın Android
-             16'yı hedefleyen uygulamalarda DEVRE DIŞI/kullanılamaz
-             olacağını duyurdu** — o noktada AdMob SDK'sının kendisinin
-             inset'leri doğru işlemesi gerekecek, bizim tarafımızdan
-             yapılacak ek bir şey yok ama `targetSdk` Android 16'ya
-             yükseltilince bu bug'ın geri gelip gelmediği TEKRAR
-             kontrol edilmeli. -->
+        <!-- Kökeni AdMob'un geçiş (interstitial) reklamları tam ekranı
+             kaplamıyor bug'ıydı (bkz. CLAUDE.md "AdMob Entegrasyonu"
+             bölümü) — `compileSdk = 37` (bkz. build.gradle.kts) Android
+             15+'ın ZORUNLU edge-to-edge davranışını devreye sokuyor, bu da
+             o zamanki `google_mobile_ads` reklam Activity'sinin durum
+             çubuğu alanını doğru kapatamamasına yol açıyordu. AdMob
+             projeden kaldırılıp Appodeal'e geçildi (bkz. o bölümdeki geçiş
+             notu) ama bu Android 15 API'si (`windowOptOutEdgeToEdgeEnforcement`)
+             `MainActivity`'nin KENDİ pencere davranışını GELENEKSEL (opak
+             durum çubuğu) tutmak için hâlâ faydalı olduğu için KORUNDU —
+             ad SDK'sından bağımsız, uygulamanın genel görsel tutarlılığı
+             için. Eski Android sürümlerinde bu öğe sessizce yok sayılır
+             (API 35'te eklendi), zararsız. **GEÇİCİ bir çözüm — Google, bu
+             bayrağın Android 16'yı hedefleyen uygulamalarda DEVRE DIŞI/
+             kullanılamaz olacağını duyurdu** — `targetSdk` Android 16'ya
+             yükseltilince bu davranış TEKRAR gözden geçirilmeli. -->
         <item name="android:windowOptOutEdgeToEdgeEnforcement" tools:targetApi="35">true</item>
     </style>
     <!-- Theme applied to the Android Window as soon as the process has started.
@@ -38,19 +33,10 @@
         <item name="android:windowBackground">#FFF8E8</item>
         <item name="android:windowOptOutEdgeToEdgeEnforcement" tools:targetApi="35">true</item>
     </style>
-    <!-- 2026 güncellemesi — yukarıdaki LaunchTheme/NormalTheme'e uygulanan
-         `windowOptOutEdgeToEdgeEnforcement` YALNIZCA bizim `MainActivity`'mizi
-         kapsıyordu, AdMob'un kendi `com.google.android.gms.ads.AdActivity`
-         bileşenini HİÇ etkilemiyordu (o, KENDİ manifest'inde AYRI bir tema
-         deklare ediyor) — bu da kullanıcının bildirdiği "reklam gösterilirken
-         Zibo'nun üst çubuğu hâlâ üstte görünüyor" bug'ının ASIL nedeniydi.
-         Bu tema `AndroidManifest.xml`'de `tools:replace="android:theme"` ile
-         AdActivity'ye AÇIKÇA atanıyor (bkz. o dosyadaki dokümantasyon).
-         Ebeveyn (`Theme.Translucent.NoTitleBar`) Google AdMob destek
-         ekibinin kendi önerdiği örnekle BİREBİR aynı — reklam SDK'sının
-         kendi geçiş animasyonları için yarı saydamlığa ihtiyacı olabileceği
-         varsayılıyor, yalnızca edge-to-edge ZORUNLULUĞU opt-out ediliyor. -->
-    <style name="AdActivityTheme" parent="@android:style/Theme.Translucent.NoTitleBar">
-        <item name="android:windowOptOutEdgeToEdgeEnforcement" tools:targetApi="35">true</item>
-    </style>
+    <!-- 2026 güncellemesi — `AdActivityTheme` (AdMob'un kendi `AdActivity`
+         bileşenine `tools:replace="android:theme"` ile atanan tema)
+         KALDIRILDI: `google_mobile_ads` paketi projeden TAMAMEN çıkarılıp
+         Appodeal'e geçildi (bkz. CLAUDE.md "AdMob Entegrasyonu" bölümü) —
+         o bileşen artık manifest'te YOK, bu temaya referans veren hiçbir
+         yer kalmadı. -->
 </resources>

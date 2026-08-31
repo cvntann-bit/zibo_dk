@@ -4,30 +4,26 @@ import 'package:flutter/material.dart';
 
 import '../utils/ad_overlay_state.dart';
 
-/// AdMob'un tam ekran reklamı (rewarded/interstitial) AÇIKKEN uygulamanın
-/// kendi arayüzünün üzerine bir bulanıklaştırma (blur) + koyu perde katmanı
-/// bindiren, YEDEK (fallback) bir güvenlik önlemi.
+/// Tam ekran bir reklam (rewarded/interstitial) AÇIKKEN uygulamanın kendi
+/// arayüzünün üzerine bir bulanıklaştırma (blur) + koyu perde katmanı
+/// bindiren, YEDEK (fallback) bir güvenlik önlemi — reklam SDK'sından
+/// (Appodeal, önceden AdMob) BAĞIMSIZ.
 ///
-/// **Neden gerekli — asıl (native/manifest seviyesindeki) düzeltme yetersiz
-/// kalırsa diye:** Android 15'in zorunlu edge-to-edge davranışı + AdMob'un
-/// kendi `AdActivity` bileşeninin (Google'ın SDK'sından gelen, bizim
-/// manifest'imize otomatik birleşen) varsayılan YARI SAYDAM teması bir araya
-/// gelince, reklam gösterilirken ekranın üst kısmında (durum çubuğu
-/// şeridinde) altındaki `MainActivity`'nin içeriği — Zibo'nun kendi AppBar'ı
-/// (coin sayacı/+/ayarlar ikonu) — görünür kalabiliyor (bkz. CLAUDE.md
-/// "AdMob Entegrasyonu" bölümü — kullanıcının gerçek cihazda ekran
-/// görüntüsüyle bildirdiği bir bug). Asıl düzeltme
-/// `android/app/src/main/AndroidManifest.xml`'de
-/// `com.google.android.gms.ads.AdActivity`'nin KENDİ temasını
-/// `tools:replace="android:theme"` ile `windowOptOutEdgeToEdgeEnforcement`
-/// içeren bir temayla değiştirmek (Google AdMob destek ekibinin resmi
-/// önerisi, bkz. CLAUDE.md) — ama bu native/manifest seviyesinde bir
-/// düzeltme olduğu için cihaz/OEM/Android sürümüne göre davranışı
-/// değişebilir, %100 garantili DEĞİL. Bu widget o düzeltme YETERSİZ kalırsa
-/// (ör. belirli bir cihaz/sürüm kombinasyonunda) kullanıcının en azından NET
-/// bir arayüz karışıklığı GÖRMEMESİNİ sağlayan, TAMAMEN Flutter tarafında
-/// kontrol edilen (native davranışa bağımlı OLMAYAN, bu yüzden garantili
-/// çalışan) bir ikinci katman.
+/// **Kökeni — AdMob'da gerçek, cihazda doğrulanmış bir bug'dan geldi:**
+/// Android 15'in zorunlu edge-to-edge davranışı + AdMob'un kendi
+/// `AdActivity` bileşeninin (Google'ın SDK'sından gelen, manifest'e otomatik
+/// birleşen) varsayılan YARI SAYDAM teması bir araya gelince, reklam
+/// gösterilirken ekranın üst kısmında (durum çubuğu şeridinde) altındaki
+/// `MainActivity`'nin içeriği — Zibo'nun kendi AppBar'ı — görünür
+/// kalabiliyordu. O zamanki asıl düzeltme (`AdActivity`'nin temasını
+/// `tools:replace="android:theme"` ile override etmek) AdMob'un KENDİ
+/// manifest bileşenine bağlıydı — `google_mobile_ads` bu projeden TAMAMEN
+/// kaldırılınca (bkz. CLAUDE.md "AdMob Entegrasyonu" bölümündeki Appodeal
+/// geçiş notu) o native override de artık uygulanamaz/geçersiz hale geldi.
+/// **Bu widget (Flutter-taraflı, native davranıştan bağımsız katman) BİLEREK
+/// KORUNDU** — hangi reklam SDK'sı kullanılırsa kullanılsın, tam ekranı
+/// düzgün kaplamayan bir reklam Activity'si için genel/garantili bir
+/// güvenlik ağı olarak faydalı olmaya devam ediyor.
 ///
 /// `MaterialApp.builder`'ın EN DIŞINDA sarılıyor (bkz. `main.dart`) — bu
 /// katmanın altındaki HER ŞEYİ (AppBar dahil) kapsaması için.

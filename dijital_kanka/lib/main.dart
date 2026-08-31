@@ -5,12 +5,13 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:provider/provider.dart';
+import 'package:stack_appodeal_flutter/stack_appodeal_flutter.dart';
 
-import 'config/admob_config.dart';
+import 'config/appodeal_config.dart';
 import 'data/app_themes.dart';
 import 'l10n/app_localizations.dart';
 import 'providers/app_theme_provider.dart';
@@ -45,7 +46,7 @@ import 'models/app_theme_option.dart';
 import 'screens/onboarding/onboarding_screen.dart';
 import 'screens/root_screen.dart';
 import 'services/ad_service.dart';
-import 'services/admob_ad_service.dart';
+import 'services/appodeal_ad_service.dart';
 import 'services/google_auth_service.dart';
 import 'services/home_widget_service.dart';
 import 'services/iap_purchase_service.dart';
@@ -267,16 +268,27 @@ void main() async {
     // eksik) — `uid` `null` kalır, uygulama Firebase'e bağımlı olmadan
     // (tamamen yerel depoyla) sorunsuz çalışmaya devam eder.
   }
-  // AdMob SDK'sı — Firebase'den TAMAMEN BAĞIMSIZ bir try/catch (biri
-  // başarısız olursa diğerini etkilemesin diye). `MobileAds.instance.
-  // initialize()` çağrılmadan `RewardedAd.load(...)` (bkz.
-  // AdMobAdService) sessizce başarısız olur — bu yüzden `runApp`'tan ÖNCE
-  // tamamlanmalı. Web önizlemesinde veya platform desteklenmiyorsa
-  // (`flutter_test` dahil) hatayı yutup uygulamanın reklamsız (her
-  // `showRewardedAd()` çağrısı `false` dönerek) çalışmaya devam etmesine
-  // izin verir.
+  // Appodeal SDK'sı — Firebase'den TAMAMEN BAĞIMSIZ bir try/catch (biri
+  // başarısız olursa diğerini etkilemesin diye). `Appodeal.initialize(...)`
+  // AdMob'un `MobileAds.instance.initialize()`'ının AKSİNE `await`
+  // EDİLMİYOR — paketin kendi API'si `initialize()`'dan hiçbir şey
+  // DÖNDÜRMÜYOR (fire-and-forget, bkz. CLAUDE.md "AdMob Entegrasyonu"
+  // bölümündeki Appodeal notu), yalnızca `runApp`'tan ÖNCE ÇAĞRILMASI
+  // yeterli — SDK arka planda kendi kendine başlatılıp reklam yüklemeye
+  // başlıyor, `AppodealAdService.showX()` zaten `isLoaded()`'i polling ile
+  // bekliyor. `setTesting(kDebugMode)` DEBUG build'lerde HER ZAMAN test
+  // reklamı gösterilmesini garanti ediyor — kullanıcının önceki AdMob
+  // hesabının banlanmasına katkıda bulunan hatayı (gerçek reklam
+  // birimleriyle kendi cihazından test etmek) bir daha TEKRARLAMAMAK için.
+  // Web önizlemesinde veya platform desteklenmiyorsa (`flutter_test` dahil)
+  // hatayı yutup uygulamanın reklamsız çalışmaya devam etmesine izin verir.
   try {
-    await MobileAds.instance.initialize();
+    Appodeal.setTesting(kDebugMode);
+    Appodeal.initialize(
+      appKey: AppodealConfig.appKey,
+      adTypes: const [AppodealAdType.RewardedVideo, AppodealAdType.Interstitial],
+      onInitializationFinished: (errors) {},
+    );
   } catch (_) {}
   runApp(_AppRoot(initialUid: uid));
 }
@@ -356,11 +368,11 @@ class DijitalKankaApp extends StatelessWidget {
 
   /// Test enjeksiyonu için — `RootScreen.pushNotificationService`/
   /// `HomeScreen.soundEffectsService` ile AYNI desen. `null` ise (üretimde
-  /// HER ZAMAN) gerçek [AdMobAdService] kullanılır; `flutter_test`'te gerçek
-  /// AdMob SDK'sı platform kanalına dokunamadığı için ("Reklam İzle"
-  /// bastığında reklam hiç "yüklenmez", `showRewardedAd()` sessizce `false`
-  /// döner) bunu doğrudan test eden senaryolar `const MockAdService()`
-  /// enjekte eder (bkz. widget_test.dart).
+  /// HER ZAMAN) gerçek [AppodealAdService] kullanılır; `flutter_test`'te
+  /// gerçek Appodeal SDK'sı platform kanalına dokunamadığı için ("Reklam
+  /// İzle" bastığında reklam hiç "yüklenmez", `showRewardedAd()` sessizce
+  /// `false` döner) bunu doğrudan test eden senaryolar `const
+  /// MockAdService()` enjekte eder (bkz. widget_test.dart).
   final AdService? adService;
 
   /// Test enjeksiyonu için — [adService] ile AYNI desen. `null` ise
@@ -408,12 +420,7 @@ class DijitalKankaApp extends StatelessWidget {
         ChangeNotifierProvider(
           create: (context) => CoinProvider(
             uid: uid,
-            adService:
-                adService ??
-                AdMobAdService(
-                  rewardedAdUnitId: AdMobConfig.rewardedAdUnitId,
-                  interstitialAdUnitId: AdMobConfig.interstitialAdUnitId,
-                ),
+            adService: adService ?? AppodealAdService(),
             purchaseService: purchaseService ?? InAppPurchasePurchaseService(),
             soundEffectsService: AudioPlayersSoundEffectsService(),
             isSoundEnabled: () =>
@@ -541,8 +548,8 @@ class DijitalKankaApp extends StatelessWidget {
             // yol açtığı için bilerek kullanılmıyor). AnimatedThemeOverlay
             // İÇERİDE (fade perdesinin ALTINDA) sarılıyor ki tema değişince
             // parçacık katmanı da aynı yumuşak geçişe dahil olsun, aniden
-            // belirip kaybolmasın. AdBlurOverlay EN DIŞTA — AdMob reklamı
-            // gösterilirken (bkz. `AdMobAdService`) uygulamanın TAMAMININ
+            // belirip kaybolmasın. AdBlurOverlay EN DIŞTA — reklam
+            // gösterilirken (bkz. `AppodealAdService`) uygulamanın TAMAMININ
             // (AppBar dahil) üzerine bir yedek bulanıklaştırma katmanı
             // bindirebilsin diye (bkz. o dosyadaki dokümantasyon).
             builder: (context, child) => AdBlurOverlay(

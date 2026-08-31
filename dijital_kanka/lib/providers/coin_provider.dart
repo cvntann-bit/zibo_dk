@@ -447,7 +447,7 @@ class CoinProvider extends ChangeNotifier {
   /// Ana Sayfa'da Zibo'ya art arda hızlı dokunulduğunda gösterilen geçiş
   /// (interstitial) reklamı — bkz. `HomeScreen._RapidTapState`
   /// dokümantasyonu. Coin bakiyesini/işlem geçmişini HİÇ etkilemiyor,
-  /// yalnızca zaten var olan (main.dart'ta gerçek AdMob ile kurulan)
+  /// yalnızca zaten var olan (main.dart'ta gerçek Appodeal ile kurulan)
   /// [_adService] örneğini yeniden kullanmak için buradan geçiriliyor —
   /// ayrı bir ikinci `AdService` örneği/kablolaması gerekmesin diye.
   Future<bool> showInterstitialAd() => _adService.showInterstitialAd();

@@ -783,7 +783,7 @@ void main() {
   testWidgets('Mağazadan reklam izleyince 20 Zibo Coin kazanılır', (
     WidgetTester tester,
   ) async {
-    // Gerçek AdMobAdService, flutter_test'in platform kanalına dokunamadığı
+    // Gerçek AppodealAdService, flutter_test'in platform kanalına dokunamadığı
     // bir ortamda reklam yükleyemez (bkz. main.dart'taki DijitalKankaApp.
     // adService dokümantasyonu) — bu senaryo "reklam izlenince ödül
     // veriliyor mu" akışını test ettiği için MockAdService (her zaman
@@ -1684,7 +1684,7 @@ void main() {
     'Şans Çarkı: reklam izleyip çevirince ağırlıklı bir ödül kazanılır ve bakiyeye eklenir',
     (WidgetTester tester) async {
       // bkz. yukarıdaki "Mağazadan reklam izleyince..." testindeki AYNI
-      // gerekçe — gerçek AdMobAdService testte reklam yükleyemez.
+      // gerekçe — gerçek AppodealAdService testte reklam yükleyemez.
       await _pumpPastOnboarding(
         tester,
         const DijitalKankaApp(adService: MockAdService()),
@@ -1751,7 +1751,7 @@ void main() {
   testWidgets(
     'Günlük Giriş Ödülleri: bugünün kutucuğuna dokununca ödül alınır ve bakiyeye eklenir',
     (WidgetTester tester) async {
-      // Gerçek AdMobAdService, flutter_test'in platform kanalına dokunamadığı
+      // Gerçek AppodealAdService, flutter_test'in platform kanalına dokunamadığı
       // bir ortamda reklam yükleyemez ve `showInterstitialAd()`'ın kendi
       // 8sn'lik zaman aşımı Timer'ı test bitiminde hâlâ askıda kalıp
       // "A Timer is still pending" hatasına yol açar (bkz. CLAUDE.md "Zibo

@@ -86,11 +86,15 @@ bölümündeki `clean_app_icon.dart` notu).
   Sonuç olarak: (a) bir sekmenin ihtiyaç duyduğu her `Provider` uygulama genelinde mevcut olmalı,
   (b) `Timer`-tabanlı bir sekme (örn. `MoneyScreen`) görünür değilken de arka planda çalışmaya devam
   etmesin diye `isActive`-farkındalığı taşımalı (aşağıya bakın).
-- **Servis soyutlamaları:** `AdService` ve `PurchaseService` soyut arayüzler; şu an sadece
-  `MockAdService`/`MockPurchaseService` (600ms gecikmeyle her zaman başarı dönen sahte
-  implementasyonlar) var. Gerçek AdMob/IAP entegrasyonu geldiğinde yalnızca bu arayüzleri uygulayan
-  yeni sınıflar yazılıp `CoinProvider`'a constructor'dan verilecek — `CoinProvider` ve onu çağıran
-  ekranların hiçbir satırı değişmeyecek. `ShareService`/`NotificationService`/`ManifestPhotoService`
+- **Servis soyutlamaları:** `AdService` ve `PurchaseService` soyut arayüzler. Üretimde varsayılan
+  olarak gerçek implementasyonlar kullanılıyor — `AppodealAdService` (bkz. "AdMob → Appodeal
+  geçişi" bölümü, önceden `AdMobAdService`) ve `InAppPurchasePurchaseService` (bkz. "Google Play
+  Billing" bölümü); `MockAdService`/`MockPurchaseService` (600ms gecikmeyle her zaman başarı dönen
+  sahteler) artık yalnızca `flutter_test`'te enjekte ediliyor — gerçek platform kanalına
+  dokunamayan test ortamında reklam/satın alma akışlarını simüle etmek için. Bir reklam/ödeme
+  SDK'sından başka birine geçilirken (AdMob → Appodeal'de olduğu gibi) yalnızca bu arayüzü
+  uygulayan YENİ bir sınıf yazılıp `CoinProvider`'a constructor'dan verilecek — `CoinProvider` ve
+  onu çağıran ekranların hiçbir satırı değişmeyecek. `ShareService`/`NotificationService`/`ManifestPhotoService`
   de aynı desende ama farkla: gerçek implementasyonları (`SharePlusService`/
   `LocalNotificationService`/`ImagePickerPhotoService`) baştan gerçek — mock/fake, yalnızca
   `flutter test`'in gerçek platform channel'lara dokunamaması için testte enjekte ediliyor (bkz.
@@ -1292,10 +1296,12 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
   (ödül zaten günde bir kez alınabildiği için ayrı bir sınırlama koduna gerek YOK). Reklam
   yüklenemezse (ağ yok, envanter boş) `showInterstitialAd()` sessizce `false` döner, ödülün
   kendisi HİÇ etkilenmez — coin zaten reklamdan ÖNCE eklenmiş durumda.
-  - **Test gotcha'sı — gerçek `AdMobAdService` kullanan bir teste YENİ bir reklam çağrısı
-    eklemek "A Timer is still pending" hatasına yol açtı:** `widget_test.dart`'taki "Günlük Giriş
+  - **Test gotcha'sı — gerçek reklam servisi kullanan bir teste YENİ bir reklam çağrısı
+    eklemek "A Timer is still pending" hatasına yol açtı (o zamanki gerçek servis `AdMobAdService`
+    idi, bkz. "AdMob → Appodeal geçişi" bölümü — `AppodealAdService` de AYNI 8sn'lik zaman aşımı
+    desenini taşıdığı için bu gotcha güncelliğini koruyor):** `widget_test.dart`'taki "Günlük Giriş
     Ödülleri: bugünün kutucuğuna dokununca ödül alınır..." testi `const DijitalKankaApp()`
-    (varsayılan, gerçek `AdMobAdService`) kullanıyordu — `showInterstitialAd()`'ın `flutter_test`
+    (varsayılan, gerçek reklam servisi) kullanıyordu — `showInterstitialAd()`'ın `flutter_test`
     ortamında hiç tamamlanmayan 8sn'lik yükleme zaman aşımı Timer'ı, test biterken hâlâ askıda
     kalıp assertion'ı tetikledi (`showRewardedAd()`'ın Mağaza'daki reklam testinde ZATEN bilinen
     AYNI sorun). **Çözüm:** Mağaza'nın reklam testindeki AYNI desen — bu test de artık
@@ -2896,10 +2902,11 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
   isteği (verbatim özet): Mağaza ziyaretlerinde ara sıra gösterilen, üstte kırmızı bir "Zibo ADS"
   şeridi olan, reklamsız olmanın faydalarını listeleyen, "Satın Al" butonu ŞİMDİLİK yalnızca bir
   "Yakında!" mesajı gösteren, kullanıcının kapatabildiği (zorunlu olmayan) bir tanıtım ekranı.
-  Gerçek AdMob/IAP entegrasyonu geldiğinde (bkz. "Şu an mock/placeholder olan şeyler" bölümü)
-  `_maybeShowAdFreePromo`/`showAdFreePromoSheet`'in "Satın Al" `onPressed`'i gerçek bir satın alma
-  akışına (muhtemelen `PurchaseService` soyutlamasına, `CoinProvider`'ın kullandığı desenle aynı)
-  bağlanacak — bu ARAYÜZ/TETİKLEME kablolaması o zaman DEĞİŞMEYECEK, yalnızca buton içindeki eylem.
+  Gerçek Google Play Billing ARTIK BAĞLI (bkz. "Google Play Billing" bölümü) ama bu spesifik
+  "Satın Al" butonu HENÜZ ona BAĞLANMADI — `_maybeShowAdFreePromo`/`showAdFreePromoSheet`'in
+  `onPressed`'i gerçek bir satın alma akışına (muhtemelen `PurchaseService` soyutlamasına,
+  `CoinProvider`'ın kullandığı desenle aynı) bağlanacak — bu ARAYÜZ/TETİKLEME kablolaması o zaman
+  DEĞİŞMEYECEK, yalnızca buton içindeki eylem.
 - **`AdFreePromoTrigger`** — Mağaza ziyaretine göre tetiklenen bir kural.
   **2026 güncellemesi — kullanıcı raporu: "çok sık/rahatsız edici çıkıyor".** İlk sürüm YALNIZCA
   oturum bazlı bir sayaçtı (her 3. Mağaza ziyaretinde, kalıcılık YOK — uygulama yeniden açılınca
@@ -4509,7 +4516,16 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
   - `flutter test` bu koddan hiç etkilenmiyor çünkü testler `main()`'i hiç çalıştırmıyor
     (`DijitalKankaApp`'i doğrudan `pumpWidget` ediyorlar, `uid` varsayılan `null`).
 
-## AdMob Entegrasyonu ([ad_service.dart](lib/services/ad_service.dart), [admob_ad_service.dart](lib/services/admob_ad_service.dart))
+## AdMob Entegrasyonu (TARİHSEL — bkz. altta "AdMob → Appodeal geçişi", `AdMobAdService`/`admob_ad_service.dart`/`admob_config.dart` artık kod tabanında YOK) ([ad_service.dart](lib/services/ad_service.dart))
+
+> **Bu bölümün TAMAMI, AdMob'un `com.google.android.gms.ads.*` API'lerine dayanan ESKİ
+> entegrasyonu anlatıyor — proje 2026'da bu SDK'dan TAMAMEN çıkıp Appodeal'e geçti (bkz. altta
+> "AdMob → Appodeal geçişi" alt bölümü, bu H2'nin İÇİNDE). Aşağıdaki `AdMobAdService`/
+> `admob_ad_service.dart`/`AdMobConfig`/`admob_config.dart`/`google_mobile_ads` referanslarının
+> HİÇBİRİ artık koda karşılık GELMİYOR — bu bölüm, o zamanki kararların/bug düzeltmelerinin
+> GEREKÇESİNİ (özellikle "reklam tam ekranı kaplamıyor" gibi genel Android/RemoteViews dersleri
+> hâlâ geçerli) kaybetmemek için SİLİNMEDİ, projenin "geçmiş karar + neden değiştiği birlikte
+> kalır" convansiyonuyla tutarlı.**
 
 - **2026 yeni özellik — gerçek Google AdMob SDK'sı (`google_mobile_ads: ^9.1.0`) bağlandı.**
   Kullanıcı isteği: "gerçek admob entegrasyonuna geçmeye başlayalım." Uygulamada YALNIZCA TEK bir
@@ -4710,7 +4726,138 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
     sayesinde geçiş (AdMob'a dönmek DAHİL) tek bir servis sınıfı yazıp `main.dart`'ta bağlamaktan
     ibaret olacak, `CoinProvider`/ekranlar hiç değişmeyecek.
 
+### AdMob → Appodeal geçişi (2026) — `AdService` soyutlaması sayesinde tek bir servis değişikliği ([appodeal_config.dart](lib/config/appodeal_config.dart), [appodeal_ad_service.dart](lib/services/appodeal_ad_service.dart))
+
+- **Kullanıcı isteği (verbatim özet): "uygulamayı admob entegrasyonundan çıkartıp appodeal ı
+  entegre edeceğiz."** Yukarıdaki "AdMob/AdSense hesabı devre dışı bırakıldı" bölümünde konuşulan
+  yedek planın (AppLovin MAX) YERİNE, kullanıcının kendisi Appodeal'i (bir mediation platformu —
+  tek bir ağa bağımlı olmadığı için tek bir ağın hesap yasaklamasının reklam gelirini TAMAMEN
+  durdurmasını önlüyor, tam da AdMob banının yarattığı riski hedefleyen bir seçim) araştırıp
+  seçti; asistandan yalnızca kod-tarafı entegrasyonu istendi. Bu, `AdService` soyutlamasının
+  tam olarak VAAT ETTİĞİ senaryo — `CoinProvider`/Mağaza/Şans Çarkı/Ana Sayfa'nın art arda dokunma
+  reklamı/Günlük Giriş Ödülleri/Hedef Tamamlama kutlaması gibi TÜM çağıran kod HİÇ DEĞİŞMEDİ,
+  yalnızca `AdService`'i uygulayan TEK bir sınıf (`AdMobAdService` → `AppodealAdService`) ve
+  `main.dart`'taki TEK bir kompozisyon-kökü satırı değişti.
+- **Paket seçimi — `appodeal_flutter` (community, pub.dev'de ARŞİVLENMİŞ, resmi paketi kullanmayı
+  öneren bir notla) DEĞİL, `stack_appodeal_flutter: ^4.2.0` (Appodeal'in KENDİ, "verified
+  publisher: appodeal.com" resmi paketi) seçildi.** WebFetch'in özetlenmiş dokümantasyonuna
+  GÜVENMEK yerine (bu proje genelinde üçüncü parti paket entegrasyonlarında kurulu convansiyon,
+  bkz. "Test kalıpları" ve diğer bölümlerdeki "gerçek kaynağı oku" pratiği), paketin pub-cache'teki
+  GERÇEK kaynak dosyaları (`appodeal.dart`, 630 satır; `appodeal_ad_type.dart`, 57 satır) doğrudan
+  okunup TAM API sözleşmesi (aşağıda) çıkarıldı.
+- **API'nin AdMob'dan mimari FARKI — callback'ler SDK-seviyesinde GLOBAL, her `show()` çağrısına
+  ÖZEL değil.** AdMob'da her `RewardedAd`/`InterstitialAd` örneği KENDİ
+  `FullScreenContentCallback`'ini taşıyordu; Appodeal `Appodeal.setRewardedVideoCallbacks({...})`/
+  `Appodeal.setInterstitialCallbacks({...})`'i BİR KEZ (bu servisin constructor'ında) kaydediyor —
+  `AppodealAdService`'in `showRewardedAd()`/`showInterstitialAd()`'ı bu yüzden bir
+  **Completer-tabanlı köprü** deseni kullanıyor: o anki isteği temsil eden bir `Completer<bool>`
+  bir ALANDA (`_rewardedCompleter`/`_interstitialCompleter`) saklanıp, global callback'ler bu
+  alanı görüp tamamlıyor.
+  - `Appodeal.setTesting(bool)` — SENKRON (AdMob'un `await MobileAds.instance.initialize()`'ının
+    AKSİNE).
+  - `Appodeal.initialize({appKey, adTypes, onInitializationFinished})` — Dart API'sinin KENDİSİ
+    HİÇBİR ŞEY DÖNDÜRMÜYOR (gövdesinde `return` YOK) — fire-and-forget, anlamlı şekilde
+    `await`lenemez; `main()`'de bu yüzden `await` EDİLMEDEN çağrılıyor.
+  - **Ön-yükleme (preload) YOK — AdMob'un AKSİNE elle bir `load()` TETİKLEMİYORUZ.** Appodeal
+    `initialize()` çağrıldıktan sonra ilgili `adTypes` için arka planda SÜREKLİ kendi kendine
+    reklam yüklüyor; `AppodealAdService._waitUntilLoaded(type)` yalnızca `Appodeal.isLoaded(type)`'i
+    300ms aralıklarla 8 saniyelik (AdMob'daki AYNI zaman aşımı süresi) bir pencerede polling ile
+    SORUYOR, bir yükleme TETİKLEMİYOR.
+  - `Appodeal.show(adType, [placement])` → `Future<bool>` — reklamın GÖSTERİLEBİLDİĞİNİ (TAMAMLANDIĞINI
+    DEĞİL) belirtiyor; gerçek sonuç (ödül kazanıldı mı/kapatıldı mı) yukarıdaki global callback'lerden
+    geliyor.
+  - `AppodealAdType` enum'u: `None, Banner, BannerBottom, BannerTop, BannerLeft, BannerRight,
+    Interstitial, RewardedVideo, MREC, NativeAd, All` — uygulama yalnızca `RewardedVideo` +
+    `Interstitial`'ı kullanıyor (AdMob entegrasyonundaki AYNI "TEK reklam formatı" kapsam
+    sınırlaması, bkz. yukarıdaki bölüm — banner/MREC/native BİLEREK entegre EDİLMEDİ).
+- **`AppodealConfig.appKey`** (`lib/config/appodeal_config.dart`, `AdMobConfig`'in AYNI "TEK Dart
+  config noktası" deseni) — kullanıcının Appodeal Console'da oluşturduğu "Zibo" uygulamasının App
+  Key'i (`6c5e7e6022e1a98028a71951d73681a9f587c7a1993d9114`, Bundle Id
+  `com.dijitalkanka.dijital_kanka` ile eşleşiyor). **AdMob'un App ID'sinden KRİTİK bir farkla:**
+  App Key native `AndroidManifest.xml`'den OKUNMUYOR — doğrudan Dart'tan `Appodeal.initialize(
+  appKey: ...)`'e geçiriliyor, bu yüzden AdMob'un `com.google.android.gms.ads.APPLICATION_ID`
+  meta-data'sının bir eşdeğerine HİÇ GEREK YOK (bkz. altta AndroidManifest.xml notu).
+- **`AppodealAdService`** — `isAdShowing`/`AdBlurOverlay` (bkz. yukarıdaki "reklam tam ekranı
+  kaplamıyor" bölümü) toggling'i, `.catchError`/try-catch güvenlik ağları, `unawaited` YOK ama
+  reklam gösterildikten SONRA bir sonraki reklamı ELLE yeniden YÜKLEMEYE gerek yok (SDK zaten
+  sürekli arka planda yüklüyor) — `AdMobAdService`'in bu iki deseninden (preload/`unawaited
+  (_loadAd())`) BİLEREK VAZGEÇİLDİ, kalan tüm güvenlik davranışı (try/catch, `isAdShowing`
+  toggling) BİREBİR korundu.
+- **Android tarafı — `android/build.gradle` (proje düzeyi) VE `android/app/build.gradle`'a HİÇBİR
+  elle ekleme GEREKMEDİ.** `stack_appodeal_flutter`'ın KENDİ `android/build.gradle`'ı
+  `rootProject.allprojects { repositories { ... maven { url ".../appodeal" } } } }` ile Appodeal'in
+  maven deposunu TÜM projeye (uygulamamız dahil) otomatik ekliyor VE kendi `dependencies {}`
+  bloğunda `com.appodeal.ads.sdk:core:4.2.0` + `com.appodeal.ads.sdk.adapters:iab:1.8.1.0`'ı
+  ZATEN bağımlılık olarak taşıyor — bu, TEK bir Appodeal-kendi ağı/bidding adaptörüyle (IAB/Bidon)
+  reklam göstermeye yetecek MİNİMAL bir kurulum. **AdMob dahil BAŞKA hiçbir ağ adaptörü
+  eklenmedi** (README'nin listelediği onlarca AppLovin/AdMob/Unity Ads/vb. adaptörü BİLİNÇLİ
+  olarak dışarıda bırakıldı) — kullanıcı Appodeal Console'dan ek ağlar (ör. AdMob'u YENİDEN,
+  ama bu sefer bir mediation ağı OLARAK) etkinleştirmek isterse, o ağın `build.gradle`
+  bağımlılığını (Dependencies Wizard'ın ürettiği satırı) `android/app/build.gradle.kts`'e elle
+  eklemesi gerekecek — bu turda kapsam dışı bırakıldı, "adım adım" ilerleyişin İLK/temel adımı.
+- **`AndroidManifest.xml`/`styles.xml`'den AdMob'a özel üç şey TAMAMEN KALDIRILDI** (silinmedi
+  bırakılmadı — projenin "genuine replacement, deprecation değil" convansiyonu): (1)
+  `com.google.android.gms.ads.APPLICATION_ID` meta-data'sı (yukarıda açıklandığı gibi Appodeal'de
+  karşılığı YOK), (2) `com.google.android.gms.ads.AdActivity`'ye `tools:replace="android:theme"`
+  ile atanan tema override'ı (bkz. altta "Reklamlar tam ekranı kaplamıyor" bölümü — o bileşen artık
+  manifest'te hiç YOK, `google_mobile_ads` paketi tamamen kaldırıldığı ve hiçbir Appodeal
+  adaptörü AdMob'u getirmediği için), (3) `values/styles.xml`/`values-night/styles.xml`'deki
+  `AdActivityTheme` stili (yalnızca #2'nin hedefiydi, artık kullanılmıyor). `AdBlurOverlay`/
+  `isAdShowing` (Flutter-taraflı, native davranıştan bağımsız YEDEK katman) BİLEREK KORUNDU —
+  hangi reklam SDK'sı kullanılırsa kullanılsın genel bir güvenlik ağı olarak faydalı.
+- **`lib/services/admob_ad_service.dart`/`lib/config/admob_config.dart` TAMAMEN SİLİNDİ**
+  (deprecate edilmedi) — `pubspec.yaml`'dan `google_mobile_ads: ^9.1.0` çıkarılıp
+  `stack_appodeal_flutter: ^4.2.0` eklendi (`flutter pub get` "Changed 6 dependencies!" ile
+  çözdü, `google_mobile_ads`'ın transitif `webview_flutter*` bağımlılıkları da birlikte gitti).
+- **`kDebugMode` — CLAUDE.md'nin ÖNCEKİ bir notu YANLIŞTI, bu turda düzeltildi:** "kDebugMode
+  (`flutter/foundation.dart`'tan, `material.dart` üzerinden transitif olarak erişilebilir)"
+  diye belgelenmişti — gerçekte bu Flutter/paket sürüm kombinasyonunda DEĞİL, `flutter test`
+  derleme hatasıyla (`Undefined name 'kDebugMode'`) YAKALANDI. **Düzeltme:** `main.dart`'a açık
+  `import 'package:flutter/foundation.dart' show kDebugMode;` eklendi — `Appodeal.setTesting(
+  kDebugMode)` DEBUG build'lerde HER ZAMAN test reklamı gösterilmesini garanti ediyor, kullanıcının
+  önceki AdMob hesabının banlanmasına katkıda bulunduğu düşünülen hatayı (gerçek reklam
+  birimleriyle kendi cihazından test etmek) BİR DAHA TEKRARLAMAMAK için.
+- **Test + doğrulama:** `flutter test` — tam suite (bir istisnayla: "Zibo'ya dokununca söz
+  değişir..." testi, ÖNCEDEN belgelenmiş `audioplayers`/`home_widget` platform kanalı
+  `MissingPluginException` sızıntısı flake'i, bu turun değişiklikleriyle İLGİSİZ, bkz. "Test
+  kalıpları" bölümü) yeşil. `flutter build apk --debug` sorunsuz derlendi (yalnızca
+  `stack_appodeal_flutter`'ın da diğer plugin'ler gibi Kotlin Gradle Plugin uyguladığına dair
+  zararsız/bilgilendirici bir uyarı — Firebase/`flutter_timezone`/`home_widget`'la AYNI kategori).
+  **Gerçek cihazda kurulum/görsel doğrulama bu turda BİLEREK YAPILMADI** — bağlı cihaz
+  kontrol edildiğinde (`adb shell dumpsys package`) `installerPackageName=com.android.vending`,
+  `versionName=1.2.0` çıktı, yani bu kullanıcının GERÇEK, Play Store'dan kurulu canlı kurulumu
+  (bir test cihazı DEĞİL) — bunu debug build'le ÜZERİNE YAZMAK (imza uyuşmazlığı yüzden önce
+  `uninstall` gerektirirdi, bu da gerçek kullanıcı verisini SİLERDİ) bu projede DEFALARCA
+  tekrarlanan "gerçek cihaz paylaşım riski" prensibiyle (bkz. "Hedef Tamamlama Kutlaması"/
+  "Ana Ekran Widget'ları" bölümlerindeki AYNI temkinli durma kararları) tutarlı şekilde
+  ATLANDI.
+- **Kullanıcının Appodeal Console'da/kendi cihazında tamamlaması gereken adımlar** (asistan
+  yapamaz — konsol/cihaz erişimi gerektiriyor):
+  1. Yeni APK'yı (bir sonraki `flutter build`/Play Console yüklemesi) kurup EN AZ BİR KEZ
+     çalıştırmak — Appodeal Console'daki uygulama girişinin SDK durumunun "No SDK" → gerçek bir
+     SDK sürümüne (`4.2.0`) geçtiğini doğrulamak için (SDK ilk gerçek `initialize()` çağrısında
+     Appodeal'in sunucularına "merhaba" sinyali gönderiyor).
+  2. Appodeal Console'un Monetization Setup akışından (kullanıcının önceki turda paylaştığı
+     ekran görüntüsündeki) en az bir gerçek reklam ağı (AdMob'u YENİDEN mediation ağı olarak
+     eklemek DAHİL, veya farklı bir ağ) etkinleştirmek + o ağın kendi hesap/API anahtarlarını
+     girmek — bu turda kod yalnızca Appodeal'in KENDİ (IAB/Bidon) minimal doldurma kapasitesine
+     dayanıyor, gerçek/yüksek dolgu oranı için EN AZ bir ek ağ eklenmesi ÖNERİLİR.
+  3. Debug build ile `Appodeal.setTesting(true)` (kod zaten `kDebugMode`'a bağlı) test reklamları
+     gösterecek — kullanıcının kendi cihazında Mağaza'nın "İzle" butonuna/Şans Çarkı'na/art arda
+     Zibo dokunmasına basıp GERÇEKTEN bir reklamın (test etiketli) göründüğünü doğrulaması
+     gerekiyor.
+  4. Ödeme/gelir kurulumu (Appodeal Console'un kendi ödeme profili formu) — kimlik/vergi bilgisi
+     girişi içerdiği için asistan bunu YAPAMAZ, kullanıcının kendisi tamamlamalı.
+
 ### Reklamlar tam ekranı kaplamıyor (bug düzeltmesi) — `AdActivity` tema override + blur yedek katmanı
+
+> **TARİHSEL — `AdActivity` tema override'ının KENDİSİ (native/manifest seviyesindeki asıl
+> düzeltme) AdMob → Appodeal geçişiyle KALDIRILDI** (bkz. yukarıdaki "AdMob → Appodeal geçişi"
+> alt bölümü — `google_mobile_ads` paketi projeden tamamen çıkarıldığı için o bileşen artık
+> manifest'te YOK). Bu bölümdeki KÖK NEDEN analizi (Android 15 edge-to-edge + üçüncü parti bir
+> reklam Activity'sinin yarı saydam teması) genel bir Android dersi olarak halen geçerli;
+> `AdBlurOverlay`/`isAdShowing` (Flutter-taraflı yedek katman, altta anlatılıyor) SDK'dan bağımsız
+> olduğu için KORUNDU ve hâlâ aktif.
 
 - **2026 bug raporu (İLK TUR — YETERSİZ KALDI).** Kullanıcı bildirdi: AdMob reklamları
   (özellikle geçiş/interstitial) gösterilirken ekranın üst kısmında hâlâ Zibo'nun kendi arayüzü
@@ -4817,7 +4964,7 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
   sebeple (cihaz/OEM/sürüm farkı) tam işe yaramazsa, kullanıcının en azından net bir arayüz
   karışıklığı GÖRMEMESİNİ garanti eden, tamamen bizim kontrolümüzdeki ikinci bir savunma hattı.
 
-### Zibo'ya Art Arda Dokunma → Geçiş (Interstitial) Reklamı / Reklamsız Zibo Teklifi ([home_screen.dart](lib/screens/home_screen.dart), [ad_service.dart](lib/services/ad_service.dart), [admob_ad_service.dart](lib/services/admob_ad_service.dart))
+### Zibo'ya Art Arda Dokunma → Geçiş (Interstitial) Reklamı / Reklamsız Zibo Teklifi ([home_screen.dart](lib/screens/home_screen.dart), [ad_service.dart](lib/services/ad_service.dart), [appodeal_ad_service.dart](lib/services/appodeal_ad_service.dart))
 
 - **2026 yeni özellik.** Kullanıcı isteği (verbatim özet): Ana Sayfa'da Zibo'ya art arda 5-6 kez
   (birkaç saniye içinde) dokunulursa bir AdMob geçiş (interstitial) reklamı gösterilsin;
@@ -5592,11 +5739,13 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
     sahte (bkz. "Şu an mock/placeholder olan şeyler" bölümü). Gerçek IAP henüz bağlanmadığı için
     bugün İTİBARİYLE doğrulanacak gerçek bir makbuz da YOK — ama gerçek IAP bağlandığında bu
     boşluk KRİTİK hale gelecek (bkz. altta 3. madde).
-  - **Reklam karşılığı coin (Şans Çarkı + Mağaza'nın Ücretsiz kartı):** `AdMobAdService.
-    showRewardedAd()`'ın `onUserEarnedReward` callback'i gerçek AdMob SDK'sından geliyor (bu, saf
-    bir istemci-tarafı flag'den daha güvenilir — Google'ın kendi reklam gösterim mantığına bağlı)
+  - **Reklam karşılığı coin (Şans Çarkı + Mağaza'nın Ücretsiz kartı):** `AppodealAdService.
+    showRewardedAd()`'ın ödül sinyali (`onRewardedVideoFinished`/`onRewardedVideoClosed`, bkz.
+    "AdMob → Appodeal geçişi" bölümü) gerçek Appodeal SDK'sından geliyor (bu, saf bir
+    istemci-tarafı flag'den daha güvenilir — reklam SDK'sının kendi gösterim mantığına bağlı)
     ama YİNE DE istemci tarafında değerlendiriliyor, sunucu tarafı doğrulama (SSV) YOK (bkz. altta
-    4. madde).
+    4. madde — Appodeal'in kendisi de S2S/postback tabanlı bir doğrulama sunuyor, AdMob'un SSV'siyle
+    AYNI mimari karara [Cloud Functions] bağlı, henüz kurulmadı).
   - **Eskiden Firestore güvenlik kuralları (`firestore.rules`) `coinState` dahil TÜM
     `users/{uid}/state/**` belgelerine `request.auth.uid == uid` sağlandığı sürece SINIRSIZ
     okuma/yazma izni veriyordu** — yani kimliği doğrulanmış (anonim dahil) HERHANGİ bir istemci,

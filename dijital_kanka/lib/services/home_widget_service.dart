@@ -117,7 +117,7 @@ class HomeWidgetPluginService implements HomeWidgetService {
     } catch (_) {
       // Eklenti kullanılamıyorsa (desteklenmeyen platform, ilk açılışın
       // çok erken bir anı vb.) veya kullanıcı bu widget'ı hiç eklemediyse
-      // sessizce yut — NotificationService/AdMobAdService'teki AYNI "bir
+      // sessizce yut — NotificationService/AppodealAdService'teki AYNI "bir
       // platform kanalı hatası uygulamanın geri kalanını ETKİLEMEMELİ"
       // felsefesi.
     }

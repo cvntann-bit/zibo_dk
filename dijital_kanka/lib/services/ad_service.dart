@@ -1,8 +1,11 @@
 /// Ödüllü reklam (rewarded video) VE geçiş reklamı (interstitial)
-/// göstermekten sorumlu servisin soyut arayüzü. Gerçek AdMob entegrasyonu
-/// geldiğinde, bu arayüzü uygulayan yeni bir `AdMobAdService` yazılıp
-/// [CoinProvider]'a verilecek — [CoinProvider] ve onu çağıran ekranların
-/// hiçbir satırı değişmeyecek.
+/// göstermekten sorumlu servisin soyut arayüzü. Gerçek reklam entegrasyonu
+/// bu arayüzü uygulayan bir sınıfla (bkz. `AppodealAdService`) sağlanıyor —
+/// bir reklam SDK'sından başka birine geçilirken (AdMob → Appodeal geçişinde
+/// olduğu gibi, bkz. CLAUDE.md "AdMob Entegrasyonu" bölümü) tek yapılması
+/// gereken bu arayüzü uygulayan YENİ bir sınıf yazıp [CoinProvider]'a
+/// vermek — [CoinProvider] ve onu çağıran ekranların hiçbir satırı
+/// değişmiyor.
 abstract class AdService {
   const AdService();
 
@@ -19,9 +22,10 @@ abstract class AdService {
   Future<bool> showInterstitialAd();
 }
 
-/// AdMob SDK'sı bağlanana kadar kullanılan geçici/sahte servis. Kısa bir
-/// gecikmeyle (gerçek bir reklam izleme deneyimini simüle etmek için)
-/// her zaman başarılı sonuç döner.
+/// Gerçek bir reklam SDK'sının platform kanalına dokunamayan `flutter_test`
+/// ortamında enjekte edilen sahte servis. Kısa bir gecikmeyle (gerçek bir
+/// reklam izleme deneyimini simüle etmek için) her zaman başarılı sonuç
+/// döner.
 class MockAdService extends AdService {
   const MockAdService();
 

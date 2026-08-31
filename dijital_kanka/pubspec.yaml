@@ -58,7 +58,7 @@ dependencies:
   url_launcher: ^6.3.1
   package_info_plus: ^10.2.1
   audioplayers: ^6.0.0
-  google_mobile_ads: ^9.1.0
+  stack_appodeal_flutter: ^4.2.0
   google_sign_in: ^7.0.0
   flutter_svg: ^2.2.1
   in_app_purchase: ^3.3.0

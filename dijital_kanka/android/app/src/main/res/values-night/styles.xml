@@ -5,8 +5,7 @@
         <!-- Show a splash screen on the activity. Automatically removed when
              the Flutter engine draws its first frame -->
         <item name="android:windowBackground">@drawable/launch_background</item>
-        <!-- Bkz. values/styles.xml'deki AYNI öğenin dokümantasyonu — AdMob
-             geçiş reklamlarının tam ekranı kaplamama bug'ının düzeltmesi. -->
+        <!-- Bkz. values/styles.xml'deki AYNI öğenin dokümantasyonu. -->
         <item name="android:windowOptOutEdgeToEdgeEnforcement" tools:targetApi="35">true</item>
     </style>
     <!-- Theme applied to the Android Window as soon as the process has started.
@@ -19,10 +18,6 @@
         <item name="android:windowBackground">#17140F</item>
         <item name="android:windowOptOutEdgeToEdgeEnforcement" tools:targetApi="35">true</item>
     </style>
-    <!-- Bkz. values/styles.xml'deki AYNI öğenin tam dokümantasyonu — bu,
-         AdMob'un kendi AdActivity bileşenine `AndroidManifest.xml`'de
-         `tools:replace="android:theme"` ile AÇIKÇA atanan tema. -->
-    <style name="AdActivityTheme" parent="@android:style/Theme.Translucent.NoTitleBar">
-        <item name="android:windowOptOutEdgeToEdgeEnforcement" tools:targetApi="35">true</item>
-    </style>
+    <!-- 2026 güncellemesi — bkz. values/styles.xml'deki AYNI not:
+         `AdActivityTheme` (AdMob'a özel) KALDIRILDI, Appodeal'e geçildi. -->
 </resources>
