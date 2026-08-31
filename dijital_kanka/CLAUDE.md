@@ -1589,6 +1589,104 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
   Su Takibi'nin kendi ekranındaki AppBar ayar ikonunda yaşıyor (bkz. "Su Takibi" bölümündeki
   Tarihçe notu; başlangıçta burada bir kart olarak yaşıyordu, modülün TEK ayarı olduğu için
   kullanıcı isteğiyle modülün kendi ekranına taşındı).
+- **2026 — dış test ekibinin geri bildirim raporu incelendi, iki somut madde uygulandı.** Kullanıcı
+  `Zibo_Test_Geri_Bildirim_Raporu.docx` adlı bir tester geri bildirim raporu paylaştı (Test
+  Topluluğu'ndan, 5 numaralı öneri + genel öneriler). Rapor önce brainstorm edildi — beş numaralı
+  önerinin İKİSİ (2. "Dinamik tanıtım turu" ve genel önerilerdeki "günlük hatırlatıcı"/"çok dilli
+  destek") ZATEN uygulanmış özelliklere karşılık geliyordu (muhtemelen raporun eski bir sürümü test
+  ettiği anlaşıldı — onboarding akışı ve FCM push bildirimleri raporun yazıldığı tarihte henüz yoktu
+  ya da tester onlara rastlamadı), ikisi (1. ASO, 3. ekran görüntüleri) kod dışı/pazarlama işiydi.
+  Kullanıcı yalnızca **4. "Uygulama İçi Puanlama İstemi"** ve **5. "Sistem Teması Desteği"**
+  maddelerini seçti — ikisi de altta belgeli.
+  - **4) "Bizi Puanlayın" — `rate_us_sheet.dart` (YENİ).** Raporun önerdiği düz "Uygulamanızı
+    Puanlayın" metin/buton YERİNE kullanıcının kendi tasarım isteği: Zibo görseli + altta 5
+    yıldızlık dokunmatik bir seçim, hangi yıldıza (1-5) dokunulursa dokunulsun AYNI sonuç —
+    doğrudan Google Play Store'a yönlendirme. Gerçek bir puanlama backend'i/API'si (Google'ın
+    "In-App Review API"si dahil, raporun önerdiği bir alternatifti) BİLEREK kullanılmadı — bu,
+    kullanıcının ne kadar yıldız seçtiğini biz KAYDETMİYORUZ, yalnızca Play Store'un KENDİ
+    puanlama arayüzüne kapı aralıyoruz; gerçek puanı toplama işi TAMAMEN Play Store'da oluyor.
+    - **`showModalBottomSheet`** — `AdFreePromoSheet`/`showModulesMenuSheet` ile AYNI desen
+      (`showDragHandle: true`). İçerik: `assets/images/zibo_yeni.png` (kostüm-farkındalığı
+      BİLEREK yok — `AdFreePromoSheet` gibi promosyon sheet'leri bu projede hep sade tutuluyor,
+      8 "modül ekranı"nın aksine) + başlık/açıklama + 5 `IconButton` (`Icons.star_rounded`/
+      `star_border_rounded`, Zibo'nun altın tonu `0xFFF0C868` — `ZiboShareCard`'daki AYNI marka
+      rengi).
+    - **`_selectStars(count)`** — `setState` ile N yıldızı ANINDA doldurup kısa bir gecikme
+      (350ms, Hedef Tamamlama Kutlaması'ndaki "seçim önce görünsün, sonra devam et" felsefesiyle
+      AYNI) sonrası sheet'i kapatıyor; Play Store yönlendirmesi (`_openPlayStoreListing`) BİLEREK
+      `unawaited` — **gerçek bir bug'dan kaçınmak için:** `await` edilseydi, `launchUrl`
+      `flutter_test` ortamında (bu codebase'in `settingsWebsite`/`settingsContactUs` satırlarının
+      ZATEN hiç TIKLANMADAN test edilmesinin asıl nedeni) kalıcı olarak ASILI kalabiliyor —
+      canlı `print` ile izlenerek doğrulandı (`await`'in `_openPlayStoreListing()`'den SONRAKİ
+      hiçbir satıra asla ULAŞMADIĞI görüldü). `unawaited` yalnızca test'i mümkün kılmakla
+      kalmıyor, GERÇEK KULLANICI için de daha iyi bir UX — sheet Play Store'un GERÇEKTEN açılmasını
+      beklemeden hemen kapanıyor, yönlendirme arka planda devam ediyor.
+    - **`_openPlayStoreListing()`** — ÖNCE `market://details?id=<paket>` (Play Store uygulamasını
+      DOĞRUDAN açar, tarayıcıya hiç uğramadan) dener, başarısız olursa (Play Store kurulu değil,
+      emülatör vb.) `https://play.google.com/store/apps/details?id=<paket>` web adresine geri
+      düşer — ikisi de `.catchError((_) => false)` ile sarılı, `_launchOrShowError`'daki AYNI
+      desen. `market:` şeması `AndroidManifest.xml`'in `<queries>` bloğuna YENİ eklendi (`https:`
+      zaten sorgulanabilir durumdaydı) — Android 11+ paket görünürlüğü kısıtlaması bu olmadan
+      `canLaunchUrl`/`launchUrl`'ün hep başarısız olmasına yol açardı (mailto/https ile AYNI, bu
+      projede önceden belgelenmiş gerekçe).
+    - **Ayarlar > Destek bölümüne "Bize Ulaşın"ın hemen altına yeni bir satır** eklendi
+      (`Icons.star_outline_rounded`).
+    - **Test:** `widget_test.dart`'a satırın varlığını doğrulayan bir assertion + AYRI, dedike
+      bir senaryo (sheet'in başlığı + Zibo görseli + 5 BOŞ yıldız gösterdiği, bir yıldıza
+      dokununca — gerçek `launchUrl`'ü hiç TETİKLEMEDEN, `unawaited` sayesinde — sheet'in
+      KAPANDIĞI). **`flutter test` — 361/361** (bu turda eklenen testler dahil, ayrıca ÖNCEDEN
+      var olan/bu turla İLGİSİZ bir flake — bkz. "Test kalıpları" bölümündeki not — ayrı bir
+      göreve bölündü).
+  - **5) Sistem Teması Desteği — `ThemeProvider` iki-durumlu `bool`'dan Flutter'ın KENDİ
+    `ThemeMode` enum'una (`light`/`dark`/`system`) geçti.** Yeni bir özel enum İCAT EDİLMEDİ —
+    `MaterialApp.themeMode` zaten TAM OLARAK bu üç değeri bekliyor ve `system` iken `theme`/
+    `darkTheme` arasında cihazın kendi parlaklığına göre OTOMATİK seçim yapıyor;
+    `main.dart`'taki `themeMode: themeProvider.themeMode` satırı HİÇ DEĞİŞMEDİ, artık üçüncü
+    değeri de doğru taşıyor.
+    - **`ThemeProvider.isDarkMode`** (halihazırda `AnimatedThemeOverlay`/`home_screen.dart`/
+      `theme_option_card.dart` tarafından "hangi renk varyantı gösterilecek" kararı için
+      kullanılıyordu) artık `system` iken `PlatformDispatcher.instance.platformBrightness`'a göre
+      ÇÖZÜMLENİYOR — bu ÜÇ tüketici HİÇ DEĞİŞMEDEN doğru davranmaya devam ediyor.
+    - **Gerçek bir tasarım hatası YAPILIP DÜZELTİLDİ — `WidgetsBindingObserver` denendi, TÜM
+      `ThemeProvider` testlerini kırdığı görülüp GERİ ALINDI.** İlk tasarım, cihaz parlaklığı
+      DEĞİŞTİĞİNDE `isDarkMode`'u izleyen widget'ların ANINDA (bir sonraki rebuild'i beklemeden)
+      güncellenmesi için `ThemeProvider`'a `WidgetsBindingObserver` mixin'i + `WidgetsBinding.
+      instance.addObserver(this)` ekliyordu — ama `theme_provider_test.dart` (`RootScreen`
+      gibi bir `State` İÇİNDE DEĞİL, `test()` ile DOĞRUDAN `ThemeProvider()` örnekleyen bir dosya)
+      bu yüzden "Binding has not yet been initialized" hatasıyla TAMAMEN kırıldı — `WidgetsBinding.
+      instance`, `TestWidgetsFlutterBinding.ensureInitialized()`/`runApp()` hiç çağrılmadan
+      erişilemiyor. **Çözüm — basitleştirildi:** `WidgetsBindingObserver` TAMAMEN kaldırıldı,
+      `isDarkMode` yalnızca `PlatformDispatcher.instance.platformBrightness`'ı ANLIK okuyor (canlı
+      REAKTİF değil) — kabul edilen ödünleşim: `MaterialApp`'in KENDİSİ zaten `themeMode: system`
+      iken sistem parlaklığını canlı takip edip DOĞRU `theme`/`darkTheme`'i seçiyor (asıl görünen
+      renk şeması HER ZAMAN doğru); yalnızca üç İKİNCİL/dekoratif tüketici, kullanıcı uygulama
+      AÇIKKEN elle OS temasını değiştirirse BİR SONRAKİ rebuild'e (ekran geçişi, dil/tema
+      değişimi, uygulama öne gelmesi — pratikte çok kısa bir gecikme) kadar eski değeri
+      gösterebilir. **Ders — genelleştirilebilir:** bir `ChangeNotifier`'ın (State DEĞİL, düz bir
+      sınıf) `WidgetsBinding.instance`'a bağımlı hale gelmesi, o sınıfı DÜZ `test()` bloklarında
+      (yalnızca `testWidgets()`'te DEĞİL) doğrudan örnekleyen HER test dosyasını riske atar —
+      `RootScreen` gibi bir `State` içindeki AYNI mixin güvenlidir çünkü `State`'ler yalnızca
+      `testWidgets()`/`pumpWidget()` üzerinden, bir binding ZATEN kurulu haldeyken kullanılır.
+    - **Kalıcılık göçü — eski format (`{'value': true/false}`, `system` hiç yoktu) → yeni format
+      (`{'value': 'light'/'dark'/'system'}`).** `_loadFromPrefs()` `saved is bool` ise (2026
+      ÖNCESİ kayıt) `true→dark`/`false→light`'a eşleyip yeni string formata göç ediyor — `date`/
+      `currencyCode` alanlarının eklenmesindeki AYNI "oku-zamanı-göç-et" deseni, ayrı bir
+      migrasyon betiği GEREKMEDİ.
+    - **Ayarlar UI — eski `SwitchListTile` (Koyu Tema anahtarı) kaldırıldı, YERİNE Dil satırıyla
+      BİREBİR AYNI "satır → alt metin + `showModalBottomSheet` seçici → onay ikonu" deseninde bir
+      "Görünüm" satırı geldi** (`_showThemeModePicker`, `_showLanguagePicker`'ın kopyası) — üç
+      seçenek: Açık/Koyu/Sistemi Takip Et.
+    - **Test:** `theme_provider_test.dart` tamamen `ThemeMode`-tabanlı API'ye (`setThemeMode`)
+      geçirildi + eski düz-bool kayıtlı veri göç testi eklendi; `widget_test.dart`'taki "Koyu Tema
+      anahtarı..." testi yeni "Görünüm satırından Koyu seçilince..." sheet akışına güncellendi.
+  - **Gerçek cihazda GÖRSEL doğrulama bu turda YAPILMADI** (cihazda kullanıcının GERÇEK, Play
+    Store'dan kurulu canlı sürümü olduğu için — bkz. "Sürüm kontrolü" tartışması, debug build ile
+    ÜZERİNE yazmak bilerek yapılmadı) — yalnızca `flutter build apk --debug` (hatasız) +
+    `flutter test` (361/361, önceden var olan 1 ilgisiz flake ayrı bir göreve bölündü) ile
+    doğrulandı. **Kullanıcının kendi cihazında (yeni bir sürüm kurulduğunda) doğrulaması
+    gereken:** "Bizi Puanlayın"a dokununca gerçekten bir yıldıza basıp Play Store'un (uygulama
+    veya tarayıcı) GERÇEKTEN açıldığını, "Görünüm"den "Sistemi Takip Et" seçilince cihazın kendi
+    açık/koyu ayarını değiştirince uygulamanın da buna uyduğunu.
 
 ### Bildirimler ([notification_service.dart](lib/services/notification_service.dart), [notification_provider.dart](lib/providers/notification_provider.dart), [tab_navigation.dart](lib/utils/tab_navigation.dart))
 - **GEÇİCİ OLARAK RAFA KALDIRILDI** — `notification_provider.dart`'taki `notificationsFeatureEnabled`

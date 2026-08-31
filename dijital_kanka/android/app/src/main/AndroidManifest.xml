@@ -189,6 +189,15 @@
             <action android:name="android.intent.action.VIEW"/>
             <data android:scheme="https"/>
         </intent>
+        <!-- 2026 — Ayarlar > Destek'teki "Bizi Puanlayın" yıldız sheet'i
+             ÖNCE `market://` (Play Store uygulamasını DOĞRUDAN, tarayıcıya
+             hiç uğramadan açar) deniyor, başarısız olursa `https:` (yukarıda
+             zaten sorgulanabilir durumda) geri düşüşüne geçiyor — AYNI
+             Android 11+ paket görünürlüğü gerekçesi. -->
+        <intent>
+            <action android:name="android.intent.action.VIEW"/>
+            <data android:scheme="market"/>
+        </intent>
         <!-- Bilinen agresif üreticilerin "otomatik başlatma" ayar
              ekranlarını sorgulayabilmek için (bkz.
              NotificationService.openAutostartOrAppSettings()) — Android 11+

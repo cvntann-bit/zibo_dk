@@ -119,6 +119,18 @@ class AppLocalizationsTr extends AppLocalizations {
   String get settingsDarkTheme => 'Koyu Tema';
 
   @override
+  String get settingsAppearance => 'Görünüm';
+
+  @override
+  String get settingsThemeModeLight => 'Açık';
+
+  @override
+  String get settingsThemeModeDark => 'Koyu';
+
+  @override
+  String get settingsThemeModeSystem => 'Sistemi Takip Et';
+
+  @override
   String get settingsSoundEffects => 'Ses Efektleri';
 
   @override
@@ -160,6 +172,20 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get settingsContactUs => 'Bize Ulaşın';
+
+  @override
+  String get settingsRateUs => 'Bizi Puanlayın';
+
+  @override
+  String get settingsRateUsSubtitle =>
+      'Play Store\'da yıldız ver, Zibo\'nun gelişmesine yardımcı ol';
+
+  @override
+  String get rateUsSheetTitle => 'Zibo\'yu Seviyor musun?';
+
+  @override
+  String get rateUsSheetSubtitle =>
+      'Yıldızlara dokun, Play Store\'da bizi değerlendir!';
 
   @override
   String get settingsVersion => 'Sürüm';

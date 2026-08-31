@@ -13,6 +13,7 @@ import '../providers/sound_effects_provider.dart';
 import '../providers/theme_provider.dart';
 import '../utils/google_link_action.dart';
 import '../widgets/language_flag_circle.dart';
+import '../widgets/rate_us_sheet.dart';
 import 'legal_placeholder_screen.dart';
 import 'widgets_screen.dart';
 
@@ -42,6 +43,54 @@ Future<void> _launchOrShowError(BuildContext context, Uri uri) async {
 /// (geri butonu dahil) taşır.
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
+
+  /// **2026 güncellemesi** — eski koyu/açık `SwitchListTile`'ının yerini
+  /// aldı (bkz. `ThemeProvider` dokümantasyonu). `_showLanguagePicker` ile
+  /// BİREBİR AYNI görsel desen (sheet başlığı + `ListTile` satırları + seçili
+  /// olana onay ikonu) — kullanıcı zaten bu deseni Dil satırından tanıyor.
+  Future<void> _showThemeModePicker(BuildContext context) async {
+    final l10n = AppLocalizations.of(context)!;
+    final themeProvider = context.read<ThemeProvider>();
+
+    await showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      builder: (sheetContext) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 4, 20, 8),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  l10n.settingsAppearance,
+                  style: Theme.of(sheetContext).textTheme.titleMedium,
+                ),
+              ),
+            ),
+            for (final entry in {
+              ThemeMode.light: (Icons.light_mode_outlined, l10n.settingsThemeModeLight),
+              ThemeMode.dark: (Icons.dark_mode_outlined, l10n.settingsThemeModeDark),
+              ThemeMode.system: (Icons.brightness_auto_outlined, l10n.settingsThemeModeSystem),
+            }.entries)
+              ListTile(
+                leading: Icon(entry.value.$1),
+                title: Text(entry.value.$2),
+                trailing: themeProvider.themeMode == entry.key
+                    ? Icon(Icons.check, color: Theme.of(sheetContext).colorScheme.primary)
+                    : null,
+                onTap: () {
+                  themeProvider.setThemeMode(entry.key);
+                  Navigator.of(sheetContext).pop();
+                },
+              ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+  }
 
   Future<void> _showLanguagePicker(BuildContext context) async {
     final l10n = AppLocalizations.of(context)!;
@@ -86,10 +135,16 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
+  String _themeModeLabel(AppLocalizations l10n, ThemeMode mode) => switch (mode) {
+    ThemeMode.light => l10n.settingsThemeModeLight,
+    ThemeMode.dark => l10n.settingsThemeModeDark,
+    ThemeMode.system => l10n.settingsThemeModeSystem,
+  };
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final isDarkMode = context.watch<ThemeProvider>().isDarkMode;
+    final themeMode = context.watch<ThemeProvider>().themeMode;
     final soundEffectsEnabled = context.watch<SoundEffectsProvider>().enabled;
     final currentLanguageCode = context.watch<LocaleProvider>().locale.languageCode;
     final authLink = context.watch<AuthLinkProvider>();
@@ -112,12 +167,12 @@ class SettingsScreen extends StatelessWidget {
             clipBehavior: Clip.antiAlias,
             child: Column(
               children: [
-                SwitchListTile(
-                  secondary: const Icon(Icons.dark_mode_outlined),
-                  title: Text(l10n.settingsDarkTheme),
-                  value: isDarkMode,
-                  onChanged: (value) =>
-                      context.read<ThemeProvider>().setDarkMode(value),
+                ListTile(
+                  leading: const Icon(Icons.brightness_6_outlined),
+                  title: Text(l10n.settingsAppearance),
+                  subtitle: Text(_themeModeLabel(l10n, themeMode)),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => _showThemeModePicker(context),
                 ),
                 const Divider(height: 1),
                 // 2026 yeni özellik — uygulama içi kısa ses efektlerini
@@ -258,15 +313,31 @@ class SettingsScreen extends StatelessWidget {
           const SizedBox(height: 8),
           Card(
             clipBehavior: Clip.antiAlias,
-            child: ListTile(
-              leading: const Icon(Icons.mail_outline),
-              title: Text(l10n.settingsContactUs),
-              subtitle: const Text(_contactEmail),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () => _launchOrShowError(
-                context,
-                Uri(scheme: 'mailto', path: _contactEmail),
-              ),
+            child: Column(
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.mail_outline),
+                  title: Text(l10n.settingsContactUs),
+                  subtitle: const Text(_contactEmail),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => _launchOrShowError(
+                    context,
+                    Uri(scheme: 'mailto', path: _contactEmail),
+                  ),
+                ),
+                const Divider(height: 1),
+                // 2026 yeni özellik — test geri bildirim raporunun "Uygulama
+                // İçi Puanlama İstemi" önerisine karşılık; düz bir metin
+                // yerine Zibo görseli + 5 yıldızlık dokunmatik seçim
+                // (bkz. `rate_us_sheet.dart`).
+                ListTile(
+                  leading: const Icon(Icons.star_outline_rounded),
+                  title: Text(l10n.settingsRateUs),
+                  subtitle: Text(l10n.settingsRateUsSubtitle),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => showRateUsSheet(context),
+                ),
+              ],
             ),
           ),
 

@@ -160,7 +160,23 @@
   },
   "settingsDarkTheme": "Koyu Tema",
   "@settingsDarkTheme": {
-    "description": "Ayarlar listesindeki koyu/açık tema anahtarının başlığı"
+    "description": "ARTIK KULLANILMIYOR (bkz. settingsAppearance) — 2026 güncellemesiyle koyu/açık anahtarı yerini üç seçenekli (Açık/Koyu/Sistem) bir seçiciye bıraktı, silinmedi (proje convansiyonu)"
+  },
+  "settingsAppearance": "Görünüm",
+  "@settingsAppearance": {
+    "description": "2026 — Ayarlar listesindeki görünüm (açık/koyu/sistem) satırının başlığı VE seçim sheet'inin başlığı"
+  },
+  "settingsThemeModeLight": "Açık",
+  "@settingsThemeModeLight": {
+    "description": "Görünüm seçicisindeki 'Açık tema' seçeneği"
+  },
+  "settingsThemeModeDark": "Koyu",
+  "@settingsThemeModeDark": {
+    "description": "Görünüm seçicisindeki 'Koyu tema' seçeneği"
+  },
+  "settingsThemeModeSystem": "Sistemi Takip Et",
+  "@settingsThemeModeSystem": {
+    "description": "Görünüm seçicisindeki 'cihazın sistem temasını takip et' seçeneği"
   },
   "settingsSoundEffects": "Ses Efektleri",
   "@settingsSoundEffects": {
@@ -213,6 +229,22 @@
   "settingsContactUs": "Bize Ulaşın",
   "@settingsContactUs": {
     "description": "Destek bölümündeki, dokununca mail uygulamasını açan satırın başlığı"
+  },
+  "settingsRateUs": "Bizi Puanlayın",
+  "@settingsRateUs": {
+    "description": "2026 — Destek bölümündeki, dokununca yıldız puanlama sheet'ini açan satırın başlığı"
+  },
+  "settingsRateUsSubtitle": "Play Store'da yıldız ver, Zibo'nun gelişmesine yardımcı ol",
+  "@settingsRateUsSubtitle": {
+    "description": "Bizi Puanlayın satırının alt metni"
+  },
+  "rateUsSheetTitle": "Zibo'yu Seviyor musun?",
+  "@rateUsSheetTitle": {
+    "description": "Yıldız puanlama sheet'inin başlığı"
+  },
+  "rateUsSheetSubtitle": "Yıldızlara dokun, Play Store'da bizi değerlendir!",
+  "@rateUsSheetSubtitle": {
+    "description": "Yıldız puanlama sheet'indeki açıklama metni"
   },
   "settingsVersion": "Sürüm",
   "@settingsVersion": {

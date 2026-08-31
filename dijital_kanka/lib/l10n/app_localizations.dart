@@ -274,11 +274,35 @@ abstract class AppLocalizations {
   /// **'Uygulama Hakkında'**
   String get settingsAbout;
 
-  /// Ayarlar listesindeki koyu/açık tema anahtarının başlığı
+  /// ARTIK KULLANILMIYOR (bkz. settingsAppearance) — 2026 güncellemesiyle koyu/açık anahtarı yerini üç seçenekli (Açık/Koyu/Sistem) bir seçiciye bıraktı, silinmedi (proje convansiyonu)
   ///
   /// In tr, this message translates to:
   /// **'Koyu Tema'**
   String get settingsDarkTheme;
+
+  /// 2026 — Ayarlar listesindeki görünüm (açık/koyu/sistem) satırının başlığı VE seçim sheet'inin başlığı
+  ///
+  /// In tr, this message translates to:
+  /// **'Görünüm'**
+  String get settingsAppearance;
+
+  /// Görünüm seçicisindeki 'Açık tema' seçeneği
+  ///
+  /// In tr, this message translates to:
+  /// **'Açık'**
+  String get settingsThemeModeLight;
+
+  /// Görünüm seçicisindeki 'Koyu tema' seçeneği
+  ///
+  /// In tr, this message translates to:
+  /// **'Koyu'**
+  String get settingsThemeModeDark;
+
+  /// Görünüm seçicisindeki 'cihazın sistem temasını takip et' seçeneği
+  ///
+  /// In tr, this message translates to:
+  /// **'Sistemi Takip Et'**
+  String get settingsThemeModeSystem;
 
   /// Ayarlar listesindeki uygulama içi ses efektleri (ör. Zibo dokunma sesi) anahtarının başlığı
   ///
@@ -357,6 +381,30 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'Bize Ulaşın'**
   String get settingsContactUs;
+
+  /// 2026 — Destek bölümündeki, dokununca yıldız puanlama sheet'ini açan satırın başlığı
+  ///
+  /// In tr, this message translates to:
+  /// **'Bizi Puanlayın'**
+  String get settingsRateUs;
+
+  /// Bizi Puanlayın satırının alt metni
+  ///
+  /// In tr, this message translates to:
+  /// **'Play Store\'da yıldız ver, Zibo\'nun gelişmesine yardımcı ol'**
+  String get settingsRateUsSubtitle;
+
+  /// Yıldız puanlama sheet'inin başlığı
+  ///
+  /// In tr, this message translates to:
+  /// **'Zibo\'yu Seviyor musun?'**
+  String get rateUsSheetTitle;
+
+  /// Yıldız puanlama sheet'indeki açıklama metni
+  ///
+  /// In tr, this message translates to:
+  /// **'Yıldızlara dokun, Play Store\'da bizi değerlendir!'**
+  String get rateUsSheetSubtitle;
 
   /// Hakkında bölümündeki uygulama sürüm numarası satırının başlığı
   ///

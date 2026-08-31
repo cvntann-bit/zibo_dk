@@ -937,6 +937,9 @@ void main() {
     expect(find.text('Destek'), findsOneWidget);
     expect(find.text('Bize Ulaşın'), findsOneWidget);
     expect(find.text('contact@getzibo.com'), findsOneWidget);
+    // 2026 yeni özellik — test geri bildirim raporunun "Uygulama İçi
+    // Puanlama İstemi" maddesine karşılık (bkz. rate_us_sheet.dart).
+    expect(find.text('Bizi Puanlayın'), findsOneWidget);
     await tester.scrollUntilVisible(find.text('Uygulama Hakkında'), 300);
     expect(find.text('Uygulama Hakkında'), findsOneWidget);
     expect(find.text('Sürüm'), findsOneWidget);
@@ -1034,6 +1037,50 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.textContaining('Virtual Currency'), findsOneWidget);
       expect(find.textContaining('Sanal Para Birimi'), findsNothing);
+    },
+  );
+
+  testWidgets(
+    // 2026 yeni özellik — test geri bildirim raporunun "Uygulama İçi
+    // Puanlama İstemi" maddesine karşılık, ama düz metin yerine Zibo
+    // görseli + 5 yıldızlık dokunmatik seçim (bkz. `rate_us_sheet.dart`).
+    // Gerçek `launchUrl` çağrısı `flutter_test`'te platform kanalına
+    // dokunamadığı için (`.catchError((_) => false)` ile sessizce
+    // yutuluyor, `_launchOrShowError`'daki AYNI desen) burada YALNIZCA
+    // sheet'in UI akışı doğrulanıyor — asıl Play Store yönlendirmesi
+    // kullanıcının kendi cihazında doğrulanmalı.
+    'Bizi Puanlayın sheet\'i Zibo görseli + 5 yıldız gösterir, bir yıldıza dokununca kapanır',
+    (WidgetTester tester) async {
+      await _pumpPastOnboarding(tester, const DijitalKankaApp());
+
+      await tester.tap(find.byTooltip('Ayarlar'));
+      await tester.pumpAndSettle();
+
+      await tester.scrollUntilVisible(find.text('Bizi Puanlayın'), 300);
+      await tester.tap(find.text('Bizi Puanlayın'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Zibo\'yu Seviyor musun?'), findsOneWidget);
+      expect(find.byIcon(Icons.star_border_rounded), findsNWidgets(5));
+      expect(find.byIcon(Icons.star_rounded), findsNothing);
+
+      // 4. yıldıza dokun — Play Store'a yönlendirme denemesi başarısız/
+      // sessiz kalsa bile (test ortamında beklenen, `.catchError` ile
+      // yutuluyor) sheet KAPANMALI.
+      await tester.tap(find.byIcon(Icons.star_border_rounded).at(3));
+      // Widget'ın kendi `Future.delayed(350ms)`'i `testWidgets`'ın sahte
+      // zaman kuyruğunda — `tester.pump(duration)` ile ilerletiliyor
+      // (`runAsync` GERÇEK zamanı ilerletir, bu widget içi saf gecikme
+      // için YANLIŞ araç olurdu). Play Store yönlendirmesi `unawaited`
+      // olduğu için (bkz. `rate_us_sheet.dart`'taki not — `launchUrl`
+      // `flutter_test`'te kalıcı olarak ASILI kalabiliyor, tıpkı bu
+      // codebase'in `settingsWebsite`/`settingsContactUs` satırlarını hiç
+      // TIKLAMADAN test etmesi gibi) sheet bu gecikmeden HEMEN sonra
+      // kapanıyor, ek bir bekleyişe gerek yok.
+      await tester.pump(const Duration(milliseconds: 400));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Zibo\'yu Seviyor musun?'), findsNothing);
     },
   );
 
@@ -1171,7 +1218,11 @@ void main() {
   );
 
   testWidgets(
-    'Koyu Tema anahtarı açılınca uygulama koyu temaya geçer',
+    // 2026 güncellemesi — kullanıcı test geri bildirim raporu: "Sistem
+    // Teması Desteği" eksik. Eski koyu/açık `SwitchListTile`'ının yerini
+    // "Görünüm" satırı + Dil seçiciyle AYNI desende bir sheet aldı (bkz.
+    // `ThemeProvider`/`settings_screen.dart` dokümantasyonu).
+    'Görünüm satırından Koyu seçilince uygulama koyu temaya geçer',
     (WidgetTester tester) async {
       await _pumpPastOnboarding(tester, const DijitalKankaApp());
 
@@ -1183,11 +1234,16 @@ void main() {
       await tester.tap(find.byTooltip('Ayarlar'));
       await tester.pumpAndSettle();
 
-      expect(find.text('Koyu Tema'), findsOneWidget);
-      // Ayarlar sayfasında birden fazla `Switch` var (Koyu Tema/Ses
-      // Efektleri), bu yüzden `find.byType(Switch)` belirsiz — spesifik
-      // `SwitchListTile`'ı başlığından buluyoruz.
-      await tester.tap(find.widgetWithText(SwitchListTile, 'Koyu Tema'));
+      // Satır varsayılan olarak "Açık" alt metnini gösteriyor.
+      expect(find.widgetWithText(ListTile, 'Görünüm'), findsOneWidget);
+      expect(find.text('Açık'), findsOneWidget);
+
+      await tester.tap(find.widgetWithText(ListTile, 'Görünüm'));
+      await tester.pumpAndSettle();
+
+      // Sheet açıldı — üç seçenek de görünür, "Koyu"ya dokun.
+      expect(find.text('Sistemi Takip Et'), findsOneWidget);
+      await tester.tap(find.text('Koyu'));
       await tester.pumpAndSettle();
 
       // Ayarlar sayfası RootScreen'in ÜSTÜNE push edildiği için RootScreen
@@ -1200,10 +1256,12 @@ void main() {
         ).brightness,
         Brightness.dark,
       );
+      // Satır artık "Koyu" alt metnini gösteriyor.
+      expect(find.text('Koyu'), findsOneWidget);
 
       final prefs = await SharedPreferences.getInstance();
       final saved = jsonDecode(prefs.getString('isDarkMode')!) as Map<String, dynamic>;
-      expect(saved['value'], isTrue);
+      expect(saved['value'], 'dark');
     },
   );
 

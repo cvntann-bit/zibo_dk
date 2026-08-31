@@ -119,6 +119,18 @@ class AppLocalizationsEs extends AppLocalizations {
   String get settingsDarkTheme => 'Tema Oscuro';
 
   @override
+  String get settingsAppearance => 'Apariencia';
+
+  @override
+  String get settingsThemeModeLight => 'Claro';
+
+  @override
+  String get settingsThemeModeDark => 'Oscuro';
+
+  @override
+  String get settingsThemeModeSystem => 'Seguir el Sistema';
+
+  @override
   String get settingsSoundEffects => 'Efectos de Sonido';
 
   @override
@@ -161,6 +173,20 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get settingsContactUs => 'Contáctanos';
+
+  @override
+  String get settingsRateUs => 'Califícanos';
+
+  @override
+  String get settingsRateUsSubtitle =>
+      'Danos una calificación en Play Store y ayuda a Zibo a crecer';
+
+  @override
+  String get rateUsSheetTitle => '¿Te gusta Zibo?';
+
+  @override
+  String get rateUsSheetSubtitle =>
+      '¡Toca las estrellas para calificarnos en Play Store!';
 
   @override
   String get settingsVersion => 'Versión';
