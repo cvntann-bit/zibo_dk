@@ -60,6 +60,36 @@ abstract class HomeWidgetService {
   /// desteklemiyorsa veya istek reddedilirse `false` döner — arayüz bu
   /// durumda kullanıcıyı "ana ekrana uzun bas" akışına yönlendirmeli.
   Future<bool> requestPin(ZiboWidgetModule module);
+
+  /// **2026 yeni özellik — widget derin bağlantısı.** Uygulama SOĞUK
+  /// başlangıçta bir widget'a dokunularak açıldıysa hangi modülün
+  /// widget'ına dokunulduğunu döner (`null` = normal açılış, widget'tan
+  /// GELMEDİ). Yalnızca BİR KEZ, uygulama ömrü boyunca ilk sorulduğunda
+  /// anlamlı bir değer taşır — bkz. `home_widget` paketinin kendi
+  /// `initiallyLaunchedFromHomeWidget()` dokümantasyonu.
+  Future<ZiboWidgetModule?> initialLaunchModule();
+
+  /// Uygulama ZATEN AÇIKKEN (ön/arka planda) bir widget'a dokunulduğunda
+  /// modülü yayınlayan akış — `null` = alakasız/parse edilemeyen bir olay,
+  /// yok sayılabilir. `RootScreen` bunu dinleyip `_handleWidgetModuleTap`
+  /// ile doğru ekrana/sekmeye yönlendiriyor.
+  Stream<ZiboWidgetModule?> get moduleClicked;
+}
+
+/// `zibowidget://open/<dataKeyPrefix>` biçimindeki bir URI'yi (bkz.
+/// `ZiboBaseWidgetProvider.kt`/`ZiboMotivationWidgetProvider.kt`/
+/// `ZiboProfileStatsWidgetProvider.kt`'nin ÜÇÜNÜN de kullandığı AYNI
+/// şema) [ZiboWidgetModule]'e çevirir — eşleşme yoksa (şema farklı, yol
+/// segmenti hiçbir `dataKeyPrefix`'e uymuyor, `uri` `null`) `null` döner.
+ZiboWidgetModule? _moduleFromWidgetUri(Uri? uri) {
+  if (uri == null || uri.scheme != 'zibowidget' || uri.pathSegments.isEmpty) {
+    return null;
+  }
+  final segment = uri.pathSegments.last;
+  for (final module in ZiboWidgetModule.values) {
+    if (module.dataKeyPrefix == segment) return module;
+  }
+  return null;
 }
 
 /// Gerçek implementasyon — `home_widget` paketinin `HomeWidget` statik
@@ -129,4 +159,18 @@ class HomeWidgetPluginService implements HomeWidgetService {
       return false;
     }
   }
+
+  @override
+  Future<ZiboWidgetModule?> initialLaunchModule() async {
+    try {
+      final uri = await HomeWidget.initiallyLaunchedFromHomeWidget();
+      return _moduleFromWidgetUri(uri);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  @override
+  Stream<ZiboWidgetModule?> get moduleClicked =>
+      HomeWidget.widgetClicked.map(_moduleFromWidgetUri);
 }

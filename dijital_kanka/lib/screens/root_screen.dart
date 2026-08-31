@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -19,6 +21,7 @@ import '../services/home_widget_sync_coordinator.dart';
 import '../services/notification_service.dart';
 import '../services/push_notification_service.dart';
 import '../utils/tab_navigation.dart';
+import '../utils/widget_module.dart';
 import '../widgets/coin_balance_widget.dart';
 import '../widgets/daily_rewards_trigger_button.dart';
 import '../widgets/main_bottom_bar.dart';
@@ -29,9 +32,11 @@ import 'completed_goals_screen.dart';
 import 'daily_rewards_screen.dart';
 import 'goal_tracking_screen.dart';
 import 'home_screen.dart';
+import 'money_screen.dart';
 import 'profile_screen.dart';
 import 'settings_screen.dart';
 import 'store_screen.dart';
+import 'water_tracking_screen.dart';
 
 /// Uygulamanın sabit başlık çubuğunu ve alt gezinme çubuğunu barındıran
 /// ana iskelet. Sekmeler arasında geçiş yapıldığında başlık çubuğu sabit
@@ -70,6 +75,12 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
   late final HomeWidgetService _homeWidgetService =
       widget.homeWidgetService ?? const HomeWidgetPluginService();
   HomeWidgetSyncCoordinator? _homeWidgetSync;
+  // **2026 yeni özellik — widget derin bağlantısı.** Uygulama ZATEN
+  // AÇIKKEN bir widget'a dokunulduğunda `HomeWidgetService.moduleClicked`
+  // akışını dinlemek için — bu sınıfta İLK `StreamSubscription` kullanımı
+  // (`_homeWidgetSync` alanıyla AYNI "nullable field, dispose'ta güvenli
+  // temizlik" üslubunda).
+  StreamSubscription<ZiboWidgetModule?>? _widgetClickSub;
   // `dispose()`'da `context.read(...)` çağırmak GÜVENSİZ (widget o an zaten
   // deactivate ediliyor olabilir, "Looking up a deactivated widget's
   // ancestor is unsafe" hatası fırlatır — gerçekten yakalandı, bkz.
@@ -114,6 +125,14 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
     homeTabRequest.addListener(_onHomeTabRequested);
     goalsTabRequest.addListener(_onGoalsTabRequested);
     dailyRewardsPopupRequest.addListener(_onDailyRewardsPopupRequested);
+    waterModuleRequest.addListener(_onWaterModuleRequested);
+    moneyModuleRequest.addListener(_onMoneyModuleRequested);
+    profileTabRequest.addListener(_onProfileTabRequested);
+    // **2026 yeni özellik — widget derin bağlantısı.** Uygulama ZATEN
+    // açıkken bir widget'a dokunulursa bu akıştan gelir.
+    _widgetClickSub = _homeWidgetService.moduleClicked.listen((module) {
+      if (module != null) _handleWidgetModuleTap(module);
+    });
     // **2026 yeni özellik — ana ekran widget'ları.** Beş modülün widget'ını
     // GÜNCEL tutan koordinatör burada BİR KEZ kuruluyor (bkz. CLAUDE.md "Ana
     // Ekran Widget'ları" bölümü + HomeWidgetSyncCoordinator dokümantasyonu)
@@ -138,8 +157,16 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
     final localeProvider = context.read<LocaleProvider>();
     _localeProviderForCleanup = localeProvider;
     localeProvider.addListener(_onLocaleChangedForWidgetSync);
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) sync.syncAll();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) return;
+      sync.syncAll();
+      // **2026 yeni özellik — widget derin bağlantısı, SOĞUK başlangıç.**
+      // `sync.syncAll()` ile AYNI karede kontrol ediliyor — `Navigator`
+      // hazır olduktan (ilk frame çizildikten) SONRA çalışması gerektiği
+      // için AYNI erteleme deseni yeterli, ayrı bir postFrameCallback'e
+      // gerek yok.
+      final initialModule = await _homeWidgetService.initialLaunchModule();
+      if (mounted && initialModule != null) _handleWidgetModuleTap(initialModule);
     });
   }
 
@@ -175,6 +202,10 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
     homeTabRequest.removeListener(_onHomeTabRequested);
     goalsTabRequest.removeListener(_onGoalsTabRequested);
     dailyRewardsPopupRequest.removeListener(_onDailyRewardsPopupRequested);
+    waterModuleRequest.removeListener(_onWaterModuleRequested);
+    moneyModuleRequest.removeListener(_onMoneyModuleRequested);
+    profileTabRequest.removeListener(_onProfileTabRequested);
+    _widgetClickSub?.cancel();
     final sync = _homeWidgetSync;
     if (sync != null) {
       _localeProviderForCleanup?.removeListener(_onLocaleChangedForWidgetSync);
@@ -230,6 +261,31 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
     });
   }
 
+  /// **2026 yeni özellik — widget derin bağlantısı.** `modules_menu_sheet.
+  /// dart`'ın Su Takibi'ni açtığı AYNI `MaterialPageRoute` çağrısı — bir
+  /// sekme DEĞİL, pushed bir ekran olduğu için `_setSelectedIndex` yerine
+  /// doğrudan `Navigator.push` kullanılıyor.
+  void _onWaterModuleRequested() {
+    if (!mounted) return;
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(builder: (_) => const WaterTrackingScreen()),
+    );
+  }
+
+  /// [_onWaterModuleRequested] ile AYNI desen — Para ve Birikim.
+  void _onMoneyModuleRequested() {
+    if (!mounted) return;
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(builder: (_) => const MoneyScreen()),
+    );
+  }
+
+  /// [_onGoalsTabRequested] ile AYNI desen — "İstatistiklerim" widget'ı
+  /// Profil sekmesine karşılık geliyor.
+  void _onProfileTabRequested() {
+    if (mounted) _setSelectedIndex(_profileTabIndex);
+  }
+
   /// Bir push bildirimine dokunulduğunda (bkz. `PushNotificationService`)
   /// `PushNotificationType`'a göre doğru sekmeye/popup'a yönlendirir.
   void _handlePushNotificationTap(PushNotificationType type) {
@@ -247,6 +303,33 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
         goalsTabRequest.value++;
       case PushNotificationType.dailyReward:
         dailyRewardsPopupRequest.value++;
+    }
+  }
+
+  /// **2026 yeni özellik — widget derin bağlantısı.** Ana ekrandaki BEŞ
+  /// widget'ın (bkz. `ZiboWidgetModule`) HERHANGİ birine dokununca (soğuk
+  /// başlangıçta [initState]'teki `initialLaunchModule()` kontrolünden VEYA
+  /// uygulama zaten açıkken [_widgetClickSub]'tan) hangi modülün açılması
+  /// gerektiğini belirler. `_handlePushNotificationTap`'in AYNI switch-
+  /// tabanlı deseni — [ZiboWidgetModule.dailyRewards] zaten var olan
+  /// [dailyRewardsPopupRequest] sinyalini YENİDEN KULLANIYOR (push
+  /// bildirimiyle AYNI hedef), [ZiboWidgetModule.motivation] ("Zibo'nun
+  /// Sözü") kendi ayrı bir ekranı olmadığı için (içerik zaten Ana Sayfa'nın
+  /// konuşma balonunda yaşıyor) [homeTabRequest]'e düşüyor — kullanıcının
+  /// "her widget kendi modülünü DOĞRUDAN açsın" isteğinin bu widget için en
+  /// doğru karşılığı Ana Sayfa'nın kendisi.
+  void _handleWidgetModuleTap(ZiboWidgetModule module) {
+    switch (module) {
+      case ZiboWidgetModule.water:
+        waterModuleRequest.value++;
+      case ZiboWidgetModule.money:
+        moneyModuleRequest.value++;
+      case ZiboWidgetModule.dailyRewards:
+        dailyRewardsPopupRequest.value++;
+      case ZiboWidgetModule.motivation:
+        homeTabRequest.value++;
+      case ZiboWidgetModule.profileStats:
+        profileTabRequest.value++;
     }
   }
 

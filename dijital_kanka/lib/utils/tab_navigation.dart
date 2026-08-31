@@ -28,5 +28,25 @@ final ValueNotifier<int> goalsTabRequest = ValueNotifier<int>(0);
 /// bildirimine dokununca). `RootScreen` bunu dinleyip Ana Sayfa'ya
 /// geçtikten sonra `DailyRewardsScreen`'i `showDialog` ile açıyor —
 /// `DailyRewardsTriggerButton`'ın kendi `onTap`'iyle AYNI mekanizma,
-/// yalnızca tetikleyicisi farklı.
+/// yalnızca tetikleyicisi farklı. **2026 güncellemesi — artık "Günlük
+/// Giriş Ödülleri" widget'ına dokununca da (bkz. `RootScreen.
+/// _handleWidgetModuleTap`) AYNI sinyal kullanılıyor.**
 final ValueNotifier<int> dailyRewardsPopupRequest = ValueNotifier<int>(0);
+
+/// **2026 yeni özellik — widget derin bağlantısı.** Su Takibi widget'ına
+/// dokununca `WaterTrackingScreen`'in DOĞRUDAN (Ana Sayfa'dan geçmeden)
+/// push edilmesini istemek için — [goalsTabRequest] ile AYNI "değerin
+/// kendisi önemli değil, her artış bir eylem anlamına gelir" deseni.
+/// `RootScreen` bunu dinleyip `modules_menu_sheet.dart`'ın Su Takibi'ni
+/// açtığı AYNI `MaterialPageRoute` ile push ediyor.
+final ValueNotifier<int> waterModuleRequest = ValueNotifier<int>(0);
+
+/// [waterModuleRequest] ile AYNI desen — Para ve Birikim widget'ına
+/// dokununca `MoneyScreen`'in doğrudan push edilmesini istemek için.
+final ValueNotifier<int> moneyModuleRequest = ValueNotifier<int>(0);
+
+/// [goalsTabRequest] ile AYNI desen — "İstatistiklerim" widget'ına
+/// dokununca Profil sekmesine geçilmesini istemek için (push
+/// bildirimlerinin hiçbirinin ihtiyaç duymadığı, bu yüzden önceden hiç
+/// olmayan YENİ bir sinyal — bkz. `RootScreen._profileTabIndex`).
+final ValueNotifier<int> profileTabRequest = ValueNotifier<int>(0);

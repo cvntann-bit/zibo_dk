@@ -75,6 +75,12 @@ class _RecordingHomeWidgetService implements HomeWidgetService {
 
   @override
   Future<bool> requestPin(ZiboWidgetModule module) async => true;
+
+  @override
+  Future<ZiboWidgetModule?> initialLaunchModule() async => null;
+
+  @override
+  Stream<ZiboWidgetModule?> get moduleClicked => const Stream.empty();
 }
 
 /// Bir testin ihtiyaç duyduğu her şeyi (sahte servis + provider'lar + gerçek

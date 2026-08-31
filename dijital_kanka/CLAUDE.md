@@ -6928,6 +6928,105 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
       yukarıdaki hedefe yönelik regresyon testiyle (`flutter test`, 351/351) VE mantığın kendisinin
       (bir sonraki frame'e erteleme) `initState`'teki İLK senkronizasyonla BİREBİR AYNI, zaten
       kanıtlanmış deseni tekrarladığıyla güven kazanıldı.
+  - **2026 SEKİZİNCİ güncelleme — widget'lar artık tıklanınca yalnızca Ana Sayfa'yı DEĞİL, kendi
+    modüllerini DOĞRUDAN açıyor.** Kullanıcı isteği (verbatim özet): "Su Takibi widget'ına basınca
+    kullanıcı doğrudan Su Takibi ekranına düşmeli, önce Ana Sayfa'ya gidip sonra manuel gezinmesine
+    gerek kalmamalı — bu davranışı SADECE Su Takibi'nde değil, mevcut TÜM widget'larda düzelt."
+    Eskiden BEŞ widget'ın (Hedef Takibi/Şükran Günlüğü gibi örnekler kullanıcının verdiği ama
+    ÖNCEKİ bir turda ZATEN kaldırılmış widget'lardı — kullanıcının NİYETİ güncel beş widget'a
+    [Su Takibi/Para ve Birikim/Günlük Giriş Ödülleri/Zibo'nun Sözü/İstatistiklerim] uygulandı)
+    HEPSİ `HomeWidgetLaunchIntent.getActivity(context, MainActivity::class.java)`'ı URI'SİZ
+    çağırıyordu — bu, "bildirime dokununca Ana Sayfa'ya gitme deseniyle AYNI basitlik tercihi"
+    diye BİLEREK belgelenmiş bir kararı geri çeviriyor.
+    - **Kotlin — üç dosyada `Uri.parse("zibowidget://open/$dataKeyPrefix")` üçüncü parametre
+      olarak eklendi** (`android.net.Uri` importuyla): `ZiboBaseWidgetProvider.kt` (Su Takibi/Para
+      ve Birikim/Günlük Giriş Ödülleri'nin PAYLAŞTIĞI TEK `onUpdate()` — üçü de kendi
+      `dataKeyPrefix`'ini zaten taşıdığı için TEK bir değişiklik üçüne birden yayıldı),
+      `ZiboMotivationWidgetProvider.kt`, `ZiboProfileStatsWidgetProvider.kt` (ikisi ayrı
+      `onUpdate()` taşıyor, `HomeWidgetLaunchIntent.getActivity(...)` çağrısı HER birinde TEK bir
+      yerde, `R.id.widget_root` hedefli — tam üç widget türünün üçünde de BAŞKA hiçbir tıklama
+      hedefi olmadığı Explore turuyla doğrulandı).
+    - **`home_widget` paketinin (v0.9.3) KENDİ resmi derin bağlantı API'si kullanıldı** —
+      `HomeWidgetLaunchIntent.getActivity(context, activityClass, uri)`'nin ÜÇÜNCÜ, opsiyonel `uri`
+      parametresi (paket kaynağından doğrulandı: `intent.data = uri`) + Flutter tarafındaki
+      `HomeWidget.initiallyLaunchedFromHomeWidget()` (SOĞUK başlangıç) / `HomeWidget.widgetClicked`
+      (uygulama ZATEN açıkken, bir `EventChannel` stream'i) — ikisi de URI'yi `Uri.parse(...)`
+      olarak döndürüyor, hiç yeni bir platform kanalı YAZILMASI gerekmedi.
+    - **`HomeWidgetService`'e iki yeni üye:** `Future<ZiboWidgetModule?> initialLaunchModule()` +
+      `Stream<ZiboWidgetModule?> get moduleClicked` — `HomeWidgetPluginService` bunları yukarıdaki
+      gerçek API'lere sarıp, ortak bir `_moduleFromWidgetUri(Uri?)` yardımcısıyla
+      `zibowidget://open/<prefix>`'i (`uri.pathSegments.last`) `ZiboWidgetModule.values`'tan
+      `dataKeyPrefix`'i eşleşen üyeyle `ZiboWidgetModule`e çeviriyor (eşleşme yoksa `null`, AdService/
+      NotificationService'teki AYNI "platform kanalı hatası sessizce yutulur" savunması).
+    - **`RootScreen._handleWidgetModuleTap(ZiboWidgetModule)`** — `_handlePushNotificationTap`'in
+      BİREBİR AYNI switch-tabanlı deseni. `ZiboWidgetModule.dailyRewards` ZATEN VAR OLAN
+      `dailyRewardsPopupRequest` sinyalini YENİDEN KULLANIYOR (push bildirimiyle AYNI hedef — Ana
+      Sayfa'ya geçip `DailyRewardsScreen`'i dialog olarak açıyor); `ZiboWidgetModule.motivation`
+      ("Zibo'nun Sözü") kendi ayrı bir EKRANI olmadığı için (içerik zaten Ana Sayfa'nın konuşma
+      balonunda yaşıyor) `homeTabRequest`'e düşüyor — kullanıcının "her widget kendi modülünü
+      DOĞRUDAN açsın" isteğinin bu widget için EN DOĞRU karşılığı Ana Sayfa'nın kendisi (zaten
+      GERÇEK bir hedef ekranı YOK).
+      - **`waterModuleRequest`/`moneyModuleRequest`** (YENİ, `tab_navigation.dart`,
+        `goalsTabRequest` ile AYNI `ValueNotifier<int>` deseni) — Su Takibi/Para ve Birikim BİRER
+        SEKME DEĞİL, `modules_menu_sheet.dart`'ın push ettiği ekranlar olduğu için (push
+        bildiriminin `waterReminder`/`dailyMotivation` türlerinin daha önce "en basit düşüş"
+        olarak Ana Sayfa'ya attığı AYNI sınırlama) bu ikisi `RootScreen`'de `Navigator.of(context).
+        push(MaterialPageRoute(builder: (_) => const WaterTrackingScreen()))`/AYNI `MoneyScreen()`
+        ile — `modules_menu_sheet.dart`'ın Su Takibi/Para ve Birikim'i açtığı BİREBİR AYNI çağrı
+        kopyalandı — DOĞRUDAN karşılanıyor; artık push bildirimlerinin aksine GERÇEKTEN o ekrana
+        düşülüyor.
+      - **`profileTabRequest`** (YENİ) — "İstatistiklerim" widget'ı Profil sekmesine karşılık
+        geliyor; push bildirimlerinin HİÇBİRİ Profil sekmesine ihtiyaç duymadığı için önceden HİÇ
+        var olmayan yepyeni bir sinyal.
+    - **Soğuk başlangıç kontrolü, `initState`'teki MEVCUT `sync.syncAll()` postFrameCallback'inin
+      İÇİNE eklendi** (`final initialModule = await _homeWidgetService.initialLaunchModule(); if
+      (mounted && initialModule != null) _handleWidgetModuleTap(initialModule);`) — AYNI karede,
+      ayrı bir postFrameCallback'e gerek kalmadan. **Sıcak tıklama için `RootScreen`'de bu sınıfta
+      İLK KEZ bir `StreamSubscription<ZiboWidgetModule?>`** (`_homeWidgetService.moduleClicked.
+      listen(...)`, `_homeWidgetSync` alanıyla AYNI "nullable field, dispose'ta güvenli temizlik"
+      üslubunda `dispose()`'ta `cancel()` ediliyor).
+    - **Test enjeksiyonu — `DijitalKankaApp`'e YENİ bir `homeWidgetService` parametresi eklendi**
+      (`adService`/`purchaseService` ile AYNI desen), `_AppStartupGate` üzerinden `RootScreen`'e
+      iletiliyor — önceden yalnızca `RootScreen`'in KENDİSİ bunu kabul ediyordu (`_AppStartupGate`
+      her zaman `const RootScreen(key: ValueKey('root'))` kuruyordu, hiçbir enjeksiyon yolu YOKTU)
+      — bu enjeksiyon olmadan derin bağlantı davranışını `const DijitalKankaApp()`'in GERÇEK
+      `MaterialApp`+`Consumer3` zincirinden geçen bir widget testiyle doğrulamak İMKANSIZDI.
+    - **Mevcut sahte `HomeWidgetService`'ler güncellendi** (`widget_test.dart`/
+      `home_widget_sync_coordinator_test.dart`/`widgets_screen_test.dart`'taki ÜÇ ayrı fake) — yeni
+      soyut üyeleri implemente etmeden derleme kırılırdı. `widget_test.dart`'taki
+      `_RecordingHomeWidgetService` AYRICA testte KONTROL EDİLEBİLİR bir `initialLaunchModuleValue`
+      alanı + `simulateWidgetClick(module)` metodu (dahili `StreamController.broadcast()`'a `.add`
+      eden TEK açık giriş noktası, private field'a dışarıdan erişilemediği için) kazandı.
+    - **Test:** `widget_test.dart`'a ÜÇ YENİ senaryo — (a) soğuk başlangıç: `initialLaunchModule
+      Value = ZiboWidgetModule.water` ile pump'lanan uygulamanın DOĞRUDAN (Ana Sayfa'dan geçmeden)
+      Su Takibi ekranını açtığı; (b) sıcak tıklama: uygulama normal açıldıktan SONRA `simulateWidget
+      Click(ZiboWidgetModule.money)` çağrılınca Para ve Birikim ekranının push edildiği; (c) kalan
+      üç eşleme (`dailyRewards`/`motivation`/`profileStats`) için DAHA HAFİF doğrulamalar — ilgili
+      `ValueNotifier`'ın (`dailyRewardsPopupRequest`/`homeTabRequest`/`profileTabRequest`) ÖNCEKİ
+      değerinden BÜYÜK olduğu (mutlak değer değil, DELTA — global sinyaller test dosyası genelinde
+      paylaşıldığı için robust) doğrulanıyor; bu üçü ZATEN kendi mekanizmalarıyla (push bildirimi
+      yönlendirmesi, sekme geçişi) ayrı ayrı test edildiği için burada yalnızca `_handleWidgetModule
+      Tap`'in DOĞRU sinyale eşlediği kanıtlanması yeterli. `flutter test` tam yeşil (bir istisnayla —
+      bkz. altta): **357/358** (kalan bir başarısızlık — "Zibo'ya dokununca söz değişir..." testinin
+      `audioplayers` platform kanalı `MissingPluginException`'ı — `git stash` ile son commit'e
+      dönülüp DOĞRULANDI: bu turdan ÖNCE de aynı şekilde başarısız oluyordu, bu turun DEĞİŞİKLİKLERİYLE
+      İLGİSİZ, önceden var olan bir kusur; ayrı bir arka plan görevi olarak flagelendi, bu turda
+      DÜZELTİLMEDİ).
+    - **Gerçek cihazda doğrulama bu turda YAPILAMADI — bilinçli bir karar.** Bağlı cihazda
+      `adb install -r` **imza uyuşmazlığı** (`INSTALL_FAILED_UPDATE_INCOMPATIBLE`) ile reddedildi;
+      `adb shell dumpsys package` ile kontrol edilince cihazdaki kurulu sürümün
+      `installerPackageName=com.android.vending` (Google Play Store) VE `versionName=1.1.1`
+      (kullanıcının BİR ÖNCEKİ turda Play Console'a yüklediği GERÇEK release sürümü) olduğu
+      görüldü — yani bu, bir test cihazı DEĞİL, kullanıcının kendi GERÇEK/CANLI kurulumu. Bunu
+      SİLİP debug anahtarıyla YENİDEN kurmak (imza uyuşmazlığını aşmanın TEK yolu) kullanıcının
+      gerçek uygulamasını bir debug build'le DEĞİŞTİRİRDİ — "geri dönüşü zor/dışa dönük eylem"
+      ilkesi gereği bu YAPILMADI. Doğrulama yalnızca (a) `flutter build apk --debug`'ın SORUNSUZ
+      derlenmesi (Kotlin `Uri.parse` çağrıları dahil) VE (b) yukarıdaki kapsamlı widget test
+      senaryolarıyla sınırlı kaldı. **Kullanıcının kendi cihazında (Play Store güncellemesini
+      aldıktan SONRA) doğrulaması gereken:** her beş widget'a dokununca uygulamanın GERÇEKTEN
+      kendi modülüne (Su Takibi/Para ve Birikim ekranı DOĞRUDAN açılıyor, Günlük Giriş Ödülleri
+      popup'ı açılıyor, Zibo'nun Sözü/İstatistiklerim widget'ları sırasıyla Ana Sayfa'yı/Profil
+      sekmesini öne getiriyor) düştüğü, önce Ana Sayfa'ya gidip MANUEL gezinme GEREKMEDİĞİ.
 
 ## Coin Reward Miktarları — Şükran/Su/Manifest Günlüğü 2 → 5 ZC
 

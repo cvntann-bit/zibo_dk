@@ -3,6 +3,7 @@ package com.dijitalkanka.dijital_kanka.widgets
 import android.appwidget.AppWidgetManager
 import android.content.Context
 import android.content.SharedPreferences
+import android.net.Uri
 import android.widget.RemoteViews
 import androidx.core.content.ContextCompat
 import com.dijitalkanka.dijital_kanka.MainActivity
@@ -66,9 +67,10 @@ class ZiboMotivationWidgetProvider : HomeWidgetProvider() {
               addView(R.id.widget_quote_flipper, page)
             }
 
-            // Diğer widget'larla AYNI basit tıklama deseni — bkz.
-            // ZiboBaseWidgetProvider dokümantasyonu.
-            val pendingIntent = HomeWidgetLaunchIntent.getActivity(context, MainActivity::class.java)
+            // **2026 güncellemesi** — diğer widget'larla AYNI derin
+            // bağlantı deseni, bkz. `ZiboBaseWidgetProvider` dokümantasyonu.
+            val pendingIntent = HomeWidgetLaunchIntent.getActivity(
+                context, MainActivity::class.java, Uri.parse("zibowidget://open/$dataKeyPrefix"))
             setOnClickPendingIntent(R.id.widget_root, pendingIntent)
           }
 

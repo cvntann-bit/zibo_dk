@@ -4,6 +4,7 @@ import android.appwidget.AppWidgetManager
 import android.content.Context
 import android.content.SharedPreferences
 import android.graphics.Color
+import android.net.Uri
 import android.view.View
 import android.widget.RemoteViews
 import com.dijitalkanka.dijital_kanka.MainActivity
@@ -67,12 +68,16 @@ abstract class ZiboBaseWidgetProvider : HomeWidgetProvider() {
               setViewVisibility(R.id.widget_progress, View.GONE)
             }
 
-            // Widget'ın HERHANGİ bir yerine dokununca uygulama açılır —
-            // modüle özel derin bağlantı (deep link) YOK, bilerek — bkz.
-            // CLAUDE.md dokümantasyonu, kapsam bilinçli olarak basit
-            // tutuldu (bildirime dokununca Ana Sayfa'ya gitme deseniyle
-            // AYNI basitlik tercihi).
-            val pendingIntent = HomeWidgetLaunchIntent.getActivity(context, MainActivity::class.java)
+            // **2026 güncellemesi — kullanıcı isteği: her widget kendi
+            // modülünü DOĞRUDAN açsın (önce Ana Sayfa'ya gidip sonra
+            // manuel gezinme YOK).** `zibowidget://open/<dataKeyPrefix>`
+            // URI'si `HomeWidgetLaunchIntent`in ÜÇÜNCÜ parametresi olarak
+            // veriliyor — Flutter tarafı bunu `HomeWidget.
+            // initiallyLaunchedFromHomeWidget()`/`HomeWidget.widgetClicked`
+            // ile okuyup `ZiboWidgetModule`e çeviriyor (bkz.
+            // `home_widget_service.dart`).
+            val pendingIntent = HomeWidgetLaunchIntent.getActivity(
+                context, MainActivity::class.java, Uri.parse("zibowidget://open/$dataKeyPrefix"))
             setOnClickPendingIntent(R.id.widget_root, pendingIntent)
           }
 

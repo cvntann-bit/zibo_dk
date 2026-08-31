@@ -3,6 +3,7 @@
 // yetersiz bakiye akışlarını doğrular. Hedef Takibi'nin tarihe bağlı 7 günlük
 // döngü mantığının ayrıntılı testleri goals_provider_test.dart içinde.
 
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -65,6 +66,18 @@ import 'package:dijital_kanka/widgets/speech_bubble.dart';
 class _RecordingHomeWidgetService implements HomeWidgetService {
   final List<(ZiboWidgetModule, String)> titlesPushed = [];
 
+  /// **2026 yeni özellik — widget derin bağlantısı testleri için.**
+  /// Testin BAŞINDA ayarlanıp `RootScreen.initState`'in soğuk-başlangıç
+  /// kontrolü tarafından BİR KEZ okunur — gerçek `HomeWidget.
+  /// initiallyLaunchedFromHomeWidget()` ile AYNI "yalnızca ilk sorulduğunda
+  /// anlamlı" semantiği.
+  ZiboWidgetModule? initialLaunchModuleValue;
+
+  /// Uygulama ZATEN AÇIKKEN bir widget tıklamasını simüle etmek için —
+  /// teste `.add(ZiboWidgetModule.water)` gibi çağrılarla "sıcak tıklama"
+  /// enjekte edilebiliyor.
+  final _moduleClickController = StreamController<ZiboWidgetModule?>.broadcast();
+
   @override
   Future<void> pushStatus(
     ZiboWidgetModule module, {
@@ -87,6 +100,19 @@ class _RecordingHomeWidgetService implements HomeWidgetService {
 
   @override
   Future<bool> requestPin(ZiboWidgetModule module) async => true;
+
+  @override
+  Future<ZiboWidgetModule?> initialLaunchModule() async => initialLaunchModuleValue;
+
+  @override
+  Stream<ZiboWidgetModule?> get moduleClicked => _moduleClickController.stream;
+
+  /// Uygulama ZATEN AÇIKKEN bir widget tıklamasını simüle eder — testin
+  /// `moduleClicked` akışına doğrudan erişememesi (private field) için
+  /// bilerek AÇIK bırakılan tek giriş noktası.
+  void simulateWidgetClick(ZiboWidgetModule module) {
+    _moduleClickController.add(module);
+  }
 }
 
 /// Gerçek [DijitalKankaApp] ile aynı kurulum, ama testte tarihi kontrol
@@ -1075,6 +1101,72 @@ void main() {
           .toList();
       expect(waterTitles, contains('Water Tracking'));
       expect(waterTitles, isNot(contains('Su Takibi')));
+    },
+  );
+
+  testWidgets(
+    // 2026 yeni özellik — kullanıcı isteği: "widget'lar tıklanınca yalnızca
+    // Ana Sayfa'yı DEĞİL, kendi modüllerini DOĞRUDAN açmalı." Soğuk
+    // başlangıç senaryosu — `HomeWidgetService.initialLaunchModule()`'ın
+    // döndürdüğü modül, uygulama AÇILIRKEN doğrudan o ekranı push etmeli
+    // (Ana Sayfa'dan geçmeden).
+    'Su Takibi widget\'ına dokunarak SOĞUK başlatılınca uygulama doğrudan Su Takibi ekranını açar',
+    (WidgetTester tester) async {
+      final fakeService = _RecordingHomeWidgetService()
+        ..initialLaunchModuleValue = ZiboWidgetModule.water;
+      await _pumpPastOnboarding(
+        tester,
+        DijitalKankaApp(homeWidgetService: fakeService),
+      );
+
+      expect(find.text('Su Takibi'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'Para ve Birikim widget\'ına uygulama ZATEN AÇIKKEN dokununca Para ve Birikim ekranı açılır',
+    (WidgetTester tester) async {
+      final fakeService = _RecordingHomeWidgetService();
+      await _pumpPastOnboarding(
+        tester,
+        DijitalKankaApp(homeWidgetService: fakeService),
+      );
+      // Henüz hiçbir widget deep-link tetiklenmedi — Ana Sayfa'dayız.
+      expect(find.text('Harcamalar ve Birikimler'), findsNothing);
+
+      fakeService.simulateWidgetClick(ZiboWidgetModule.money);
+      await tester.pumpAndSettle();
+
+      expect(find.text('Harcamalar ve Birikimler'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'Günlük Giriş Ödülleri/Zibo\'nun Sözü/İstatistiklerim widget\'larına dokununca doğru sinyal artar',
+    (WidgetTester tester) async {
+      final fakeService = _RecordingHomeWidgetService();
+      await _pumpPastOnboarding(
+        tester,
+        DijitalKankaApp(homeWidgetService: fakeService),
+      );
+
+      final dailyRewardsBefore = dailyRewardsPopupRequest.value;
+      fakeService.simulateWidgetClick(ZiboWidgetModule.dailyRewards);
+      await tester.pumpAndSettle();
+      expect(dailyRewardsPopupRequest.value, greaterThan(dailyRewardsBefore));
+      // Açılan Günlük Giriş Ödülleri diyaloğunu kapat, sonraki adımlar için.
+      await tester.tap(find.byIcon(Icons.close));
+      await tester.pumpAndSettle();
+
+      final homeBefore = homeTabRequest.value;
+      fakeService.simulateWidgetClick(ZiboWidgetModule.motivation);
+      await tester.pumpAndSettle();
+      expect(homeTabRequest.value, greaterThan(homeBefore));
+
+      final profileBefore = profileTabRequest.value;
+      fakeService.simulateWidgetClick(ZiboWidgetModule.profileStats);
+      await tester.pumpAndSettle();
+      expect(profileTabRequest.value, greaterThan(profileBefore));
     },
   );
 

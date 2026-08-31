@@ -48,6 +48,12 @@ class _FakeHomeWidgetService implements HomeWidgetService {
     pinRequests.add(module);
     return nextResult;
   }
+
+  @override
+  Future<ZiboWidgetModule?> initialLaunchModule() async => null;
+
+  @override
+  Stream<ZiboWidgetModule?> get moduleClicked => const Stream.empty();
 }
 
 Widget _buildTestApp(HomeWidgetService service) {
