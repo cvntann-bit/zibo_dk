@@ -1,4 +1,8 @@
-ZIBO — YENİ SÖZ ÖNERİLERİ (İNCELEME İÇİN, HENÜZ SİSTEME EKLENMEDİ)
+ZIBO — YENİ SÖZ ÖNERİLERİ
+====================================================================
+DURUM: Kullanıcı onayladı, 175 sözün TAMAMI lib/data/motivation_pools.dart'taki
+ilgili 7 Türkçe havuzun SONUNA eklendi (her havuz 51 → 76 söz). Bu dosya artık
+yalnızca TARİHSEL bir kayıt/referans — aşağıdaki içerik uygulamada canlı.
 ====================================================================
 
 Bu dosya, motivation_pools.dart'taki 7 havuzun (sabah/öğle/akşam/gece/

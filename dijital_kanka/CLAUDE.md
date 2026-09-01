@@ -370,29 +370,43 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
   DEĞİŞTİRMEZ) — üçü de `_ScriptedRandom` ile elle hesaplanmış ağırlık matematiğine göre
   DETERMİNİSTİK doğrulandı (roll'ün hangi dala düştüğü + hangi etiketin kullanıldığı).
 
-#### Söz Havuzlarının Genişletilmesi — 175 yeni öneri (henüz eklenmedi)
+#### Söz Havuzlarının Genişletilmesi — 175 yeni söz EKLENDİ (51 → 76/havuz, TR)
 
 - **2026 — kullanıcı isteği: "her havuz için 25'er yeni söz öner, ayrı bir dosyada topla, ben
   önce onaylayayım."** Yedi havuzun (sabah/öğle/akşam/gece/düşük/nötr/yüksek) mevcut 51 sözünün
   tonu/üslubu (Zibo'nun sıcak, samimi, motive edici ama abartısız kişiliği) analiz edilip HER
-  HAVUZ İÇİN 25 yeni söz (toplam 175) yazıldı — [yeni_sozler_onerileri.txt](yeni_sozler_onerileri.txt)
-  dosyasında, hangi havuza ait olduğu AÇIKÇA belirtilerek. **Bu dosya doğrudan uygulamaya DAHİL
-  DEĞİL** — `lib/data/motivation_pools.dart`'a HENÜZ EKLENMEDİ, yalnızca bir inceleme/onay
-  aracı.
+  HAVUZ İÇİN 25 yeni söz (toplam 175) yazılıp [yeni_sozler_onerileri.txt](yeni_sozler_onerileri.txt)
+  dosyasında (hangi havuza ait olduğu belirtilerek) kullanıcıya sunuldu.
 - **Mekanik doğrulama — geçici bir betikle (kontrolden sonra silindi):** her havuzun 25 yeni
   sözünün (a) KENDİ İÇİNDE tekrarsız olduğu, (b) mevcut 51 sözle TAM olarak ÇAKIŞMADIĞI, gerçek
   Dart string eşitliğiyle (regex ile her iki dosyadan ayrıştırılıp `Set` karşılaştırması)
   doğrulandı — `pool.toSet().length` testlerindeki AYNI "yalnızca metin `grep`'ine güvenme"
   dersi. **Yakın-benzerlik/anlamsal tekrar** (ör. aynı fikrin farklı kelimelerle ifadesi) bu
   mekanik kontrolün YAKALAYAMADIĞI bir şey — yalnızca insan gözden geçirmesiyle elenebilir,
-  kullanıcının onay adımı tam olarak bunun için.
-- **Kullanıcı onayladıktan SONRA yapılması gereken:** onaylanan sözler `motivation_pools.dart`'taki
-  ilgili `motivationXTr` listelerinin SONUNA eklenip (51 → 76 söz/havuz, onaylanan sayıya göre),
-  `motivation_quote_selector_test.dart`'taki "havuz bütünlüğü" testlerindeki `hasLength(51)`
-  beklentileri yeni sayıya güncellenmeli — **EN/ES çevirisi bu turda YAPILMADI**, TR havuzlar
-  büyüyünce EN/ES'in aynı uzunlukta KALMAMASI (per-pool Türkçe geri düşüş sayesinde) sistemi
-  BOZMAZ ama TUTARSIZ bırakır — ileride ayrı bir çeviri turunda ele alınmalı (motivation_pools.
-  dart'ın EN/ES çevirisinin daha önce nasıl yapıldığına bkz., aynı bölüm).
+  kullanıcının onay adımı tam olarak bunun içindi.
+- **Kullanıcı TÜMÜNÜ onayladı ("sözleri ekle hoşuma gitti") — 175 sözün HEPSİ, HİÇBİR düzenleme
+  YAPILMADAN, `motivation_pools.dart`'taki ilgili yedi `motivationXTr` listesinin SONUNA
+  eklendi** (her havuz 51 → 76 söz, `// --- 2026 güncellemesi: kullanıcı onayıyla eklenen 25
+  yeni söz ---` yorumuyla ayrılmış bloklar halinde — hangi sözlerin bu turda eklendiği kod
+  içinde de görünür kalsın diye). `yeni_sozler_onerileri.txt` SİLİNMEDİ, yalnızca başına
+  "DURUM: eklendi" notu eklenip tarihsel bir kayıt olarak bırakıldı.
+- **`motivation_quote_selector_test.dart`'taki "havuz bütünlüğü" testleri güncellendi** —
+  `checkPool` yardımcısına bir `expectedLength` parametresi eklendi: 7 TR havuzu artık
+  `hasLength(76)` bekliyor, 21 EN/ES havuzu (bu turda ÇEVRİLMEDİ) `hasLength(51)`'de kaldı.
+  **Bu uzunluk FARKI sistemi BOZMUYOR** — `timeBucketQuotes`/`moodPoolQuotes`'un per-pool
+  Türkçe geri düşüş mekanizması yalnızca BOŞ havuzlar için devreye giriyor, dolu ama FARKLI
+  uzunluktaki havuzlar sorunsuz çalışıyor (her dil kendi havuzunun `%` ile sarılan index'ini
+  kullanıyor) — yalnızca İngilizce/İspanyolca kullanıcılar bu 175 yeni sözü henüz GÖRMÜYOR,
+  bu bilinçli/geçici bir tutarsızlık, ileride ayrı bir çeviri turunda ele alınmalı (bkz.
+  `motivation_pools.dart`'ın EN/ES çevirisinin daha önce nasıl yapıldığı, aynı bölümün başı).
+  `resolveMotivationQuoteText`/`pickMotivationQuote` testleri (`motivationMorningTr[0]` gibi
+  DİNAMİK referanslar kullanıyorlar, sabit "51" HİÇ geçmiyor) hiçbir değişiklik GEREKTİRMEDİ.
+- **Doğrulama:** `flutter test` — tam suite, yalnızca önceden belgelenmiş `audioplayers`
+  flake'i hariç yeşil (425 test, sayı DEĞİŞMEDİ — yeni test EKLENMEDİ, yalnızca mevcut 21
+  "havuz bütünlüğü" testinin BEKLENEN UZUNLUĞU güncellendi). `flutter build apk --debug`
+  sorunsuz. **Gerçek cihazda GÖRSEL doğrulama YAPILMADI** — 175 yeni sözün Ana Sayfa'da
+  gerçekten göründüğünü kullanıcı zaman içinde (havuz 76 söz olduğu için tek bir oturumda
+  hepsini görmek beklenmiyor) kendi cihazında gözlemleyebilir.
 
 ### Konuşma Balonu ([speech_bubble.dart](lib/widgets/speech_bubble.dart))
 - **2026 bug düzeltmesi — kısa sözlerde favori/paylaş/söz-ekle butonları metnin ÜSTÜNE biniyordu.**

@@ -250,36 +250,42 @@ void main() {
   // gibi salt metinsel `grep` kontrolünün kaçırabileceği yanlış-negatifleri
   // YAKALAMIYOR ama gerçek kopyala-yapıştır tekrarlarını güvenilir yakalar.
   group('motivation_pools.dart — havuz bütünlüğü', () {
-    void checkPool(String label, List<String> pool) {
-      test('$label: 51 uzunlukta ve tekrarsız', () {
-        expect(pool, hasLength(51));
-        expect(pool.toSet(), hasLength(51));
+    // `expectedLength` parametreli — 2026 güncellemesi: kullanıcı onayıyla
+    // TR havuzlarına 25'er yeni söz eklendi (51 → 76, bkz. CLAUDE.md "Söz
+    // Havuzlarının Genişletilmesi" bölümü), EN/ES bu turda ÇEVRİLMEDİĞİ
+    // için 51'de kaldı — per-pool Türkçe geri düşüş mekanizması sayesinde
+    // bu UZUNLUK FARKI sistemi bozmuyor (yalnızca TUTARSIZ bırakıyor,
+    // ileride bir çeviri turunda ele alınmalı).
+    void checkPool(String label, List<String> pool, int expectedLength) {
+      test('$label: $expectedLength uzunlukta ve tekrarsız', () {
+        expect(pool, hasLength(expectedLength));
+        expect(pool.toSet(), hasLength(expectedLength));
       });
     }
 
-    checkPool('motivationMorningTr', motivationMorningTr);
-    checkPool('motivationAfternoonTr', motivationAfternoonTr);
-    checkPool('motivationEveningTr', motivationEveningTr);
-    checkPool('motivationNightTr', motivationNightTr);
-    checkPool('motivationLowMoodTr', motivationLowMoodTr);
-    checkPool('motivationNeutralMoodTr', motivationNeutralMoodTr);
-    checkPool('motivationHighMoodTr', motivationHighMoodTr);
+    checkPool('motivationMorningTr', motivationMorningTr, 76);
+    checkPool('motivationAfternoonTr', motivationAfternoonTr, 76);
+    checkPool('motivationEveningTr', motivationEveningTr, 76);
+    checkPool('motivationNightTr', motivationNightTr, 76);
+    checkPool('motivationLowMoodTr', motivationLowMoodTr, 76);
+    checkPool('motivationNeutralMoodTr', motivationNeutralMoodTr, 76);
+    checkPool('motivationHighMoodTr', motivationHighMoodTr, 76);
 
-    checkPool('motivationMorningEn', motivationMorningEn);
-    checkPool('motivationAfternoonEn', motivationAfternoonEn);
-    checkPool('motivationEveningEn', motivationEveningEn);
-    checkPool('motivationNightEn', motivationNightEn);
-    checkPool('motivationLowMoodEn', motivationLowMoodEn);
-    checkPool('motivationNeutralMoodEn', motivationNeutralMoodEn);
-    checkPool('motivationHighMoodEn', motivationHighMoodEn);
+    checkPool('motivationMorningEn', motivationMorningEn, 51);
+    checkPool('motivationAfternoonEn', motivationAfternoonEn, 51);
+    checkPool('motivationEveningEn', motivationEveningEn, 51);
+    checkPool('motivationNightEn', motivationNightEn, 51);
+    checkPool('motivationLowMoodEn', motivationLowMoodEn, 51);
+    checkPool('motivationNeutralMoodEn', motivationNeutralMoodEn, 51);
+    checkPool('motivationHighMoodEn', motivationHighMoodEn, 51);
 
-    checkPool('motivationMorningEs', motivationMorningEs);
-    checkPool('motivationAfternoonEs', motivationAfternoonEs);
-    checkPool('motivationEveningEs', motivationEveningEs);
-    checkPool('motivationNightEs', motivationNightEs);
-    checkPool('motivationLowMoodEs', motivationLowMoodEs);
-    checkPool('motivationNeutralMoodEs', motivationNeutralMoodEs);
-    checkPool('motivationHighMoodEs', motivationHighMoodEs);
+    checkPool('motivationMorningEs', motivationMorningEs, 51);
+    checkPool('motivationAfternoonEs', motivationAfternoonEs, 51);
+    checkPool('motivationEveningEs', motivationEveningEs, 51);
+    checkPool('motivationNightEs', motivationNightEs, 51);
+    checkPool('motivationLowMoodEs', motivationLowMoodEs, 51);
+    checkPool('motivationNeutralMoodEs', motivationNeutralMoodEs, 51);
+    checkPool('motivationHighMoodEs', motivationHighMoodEs, 51);
   });
 
   // 2026 yeni özellik — Olay Tetiklemeli Özel Mesajlar (bkz. CLAUDE.md).
