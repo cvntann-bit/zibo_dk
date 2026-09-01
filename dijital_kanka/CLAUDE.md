@@ -253,6 +253,147 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
     edilebilir — dil İngilizce/İspanyolca'ya çevrilince ekrandaki sözün ANINDA (bir sonraki
     dokunuşta) o dildeki karşılığına geçtiği.
 
+#### Olay Tetiklemeli Özel Mesajlar ([zibo_event_signal.dart](lib/utils/zibo_event_signal.dart), [zibo_event_messages.dart](lib/data/zibo_event_messages.dart))
+
+- **2026 yeni özellik.** Kullanıcı isteği: zaman/ruh hali havuzlarına ek olarak, belirli ANLARA
+  özel, ayrı bir mesaj seti — bu mesajlar rastgele havuzdan DEĞİL, doğrudan olay gerçekleştiğinde
+  tetiklensin ve normal ağırlıklı seçimin ÖNÜNE geçsin: (1) hedef/döngü tamamlandığında (7/7),
+  (2) streak kırıldığında (kaçırılan gün), (3) yeni bir kostüm/tema açıldığında, (4) 7/30 günlük
+  streak bonusuna ulaşıldığında.
+- **Mimari — dört olayın DÖRDÜ de Ana Sayfa'nın KENDİSİNDE DEĞİL, BAŞKA ekranlarda
+  gerçekleşiyor** (Hedef Takibi, Mağaza, Günlük Giriş Ödülleri) — bu yüzden `motivation_quote_
+  selector.dart`'ın ağırlıklı seçimine YENİ bir "olay" kaynağı eklemek yerine (o fonksiyon hâlâ
+  yalnızca zaman/ruh hali/genel arasında seçim yapıyor, HİÇ değişmedi), TAMAMEN AYRI, basit bir
+  sinyal mekanizması kuruldu:
+  - **`pendingZiboEvent`** (`utils/zibo_event_signal.dart`) — `tab_navigation.dart`'taki
+    `homeTabRequest`/`isHomeTabActive` ile AYNI "basit, kalıcılık gerektirmeyen, widget ağacının
+    dışından da yazılabilen global `ValueNotifier`" deseni. `ZiboEventType` enum'u dört değeri
+    taşıyor. **Kalıcı DEĞİL** (uygulama kapanırsa kaybolur) — `_recentZiboTaps` gibi diğer
+    oturum-içi durumlarla AYNI bilinçli basitleştirme, bu kozmetik bir özellik. **Tek bir slot,
+    kuyruk DEĞİL** — aynı anda birden fazla olay gerçekleşirse yalnızca EN SON olay gösterilir.
+  - **`zibo_event_messages.dart`** — `motivation_pools.dart`'ın AYNI `xTr/En/Es` + per-pool
+    Türkçe geri düşüş deseni (şimdilik yalnızca Türkçe dolu, EN/ES BİLEREK BOŞ — `motivation_
+    pools.dart`'ın İLK sürümüyle AYNI, ileride ayrı bir çeviri turunda doldurulabilir). Dört
+    havuz: `goalCycleCompleted`/`streakBroken` (10-15'er söz, kullanıcının istediği aralık),
+    `costumeOrThemeUnlocked`/`loginStreakBonus` (5-10'ar söz).
+  - **`MotivationQuotePick.source`'a DÖRDÜNCÜ bir değer eklendi: `'event'`** —
+    `resolveMotivationQuoteText`'in switch'ine `'event' => eventMessagesForLocale(...)` bir
+    `case` daha eklendi, mevcut `'time'`/`'mood'`/`'general'` dallarına HİÇ dokunulmadı.
+  - **`HomeScreen._pickAndSetQuote()`** artık İLK İŞ olarak `pendingZiboEvent.value`'u kontrol
+    ediyor — `null` DEĞİLSE, normal `pickMotivationQuote` ağırlıklı seçimi TAMAMEN ATLANIP
+    doğrudan o olayın özel havuzundan rastgele bir söz seçiliyor, VE olay ANINDA TÜKETİLİYOR
+    (`pendingZiboEvent.value = null`) — bir SONRAKİ seçimde (dokunuş) normal akışa dönülüyor.
+  - **`HomeScreen`'e YENİ bir `initState()`/`dispose()` çifti eklendi** — `pendingZiboEvent.
+    addListener(_onPendingZiboEventChanged)`: olay BAŞKA bir ekranda tetiklendiğinde, Ana Sayfa
+    `IndexedStack` içinde GÖRÜNMÜYOR bile olsa konuşma balonu ANINDA (kullanıcı sekmeyi
+    değiştirmeden ÖNCE) güncelleniyor — aksi halde olay yalnızca kullanıcı Zibo'ya GERÇEKTEN
+    dokunursa görünürdü, bu da "hedefimi tamamladım, Ana Sayfa'ya döndüğümde Zibo beni kutlasın"
+    beklentisini karşılamazdı.
+- **Altı tetikleme noktası, hepsi tek satırlık bir `pendingZiboEvent.value = ZiboEventType.X;`
+  eklemesi:**
+  1. `GoalCard._onTodayTap` — `cycleCompleted == true` iken (`earnStreak7Bonus()`'un HEMEN
+     yanına) → `goalCycleCompleted`.
+  2. `GoalTrackingScreen._reconcileForToday` — `resetNames.isNotEmpty` iken (mevcut "döngü
+     sıfırlandı" SnackBar'ından HEMEN ÖNCE) → `streakBroken`.
+  3. `CostumeCard._buy` — `markOwned` çağrısından HEMEN SONRA → `costumeOrThemeUnlocked`.
+  4. `ThemeOptionCard._buy` — AYNI desen → `costumeOrThemeUnlocked`.
+  5. `StoreScreen._maybeReconcileCostumeUnlocks` — `unlockedIds.isNotEmpty` iken (hedefle ÜCRETSİZ
+     kostüm açma yolu, satın almadan AYRI) → `costumeOrThemeUnlocked`.
+  6. `DailyRewardsScreen._claimDay` — `index == 6` (Gün 7, döngünün EN BÜYÜK tek günlük ödülü)
+     iken → `loginStreakBonus`.
+  - **7. — `CoinProvider.earnStreak30Bonus()` — GELECEĞE HAZIRLIK, BUGÜN HİÇBİR YERDEN
+    ÇAĞRILMIYOR.** `CoinEconomy.streak30Bonus` (250 ZC) tanımlı ama bu metot kod tabanında
+    HİÇBİR YERDEN tetiklenmiyordu (gerçek bir "30 günlük" mekanik hiç İCAT EDİLMEMİŞTİ) —
+    kullanıcının "7 günlük VEYA 30 günlük streak bonusu" isteğini TAM karşılamak için YENİ bir
+    30-günlük takip mekaniği İCAT ETMEK yerine (bu, mesaj eklemenin çok ötesinde bir oyun-
+    ekonomisi tasarım kararı olurdu), BİLİNÇLİ bir kapsam kararı: `earnStreak30Bonus()`'un
+    GÖVDESİNE `pendingZiboEvent.value = ZiboEventType.loginStreakBonus;` eklendi — böylece
+    ileride biri bu metodu GERÇEKTEN bir yere bağlarsa (ör. `GoalsProvider.completions.length`
+    30'a ulaşınca), mesaj sistemi otomatik olarak doğru çalışacak, ayrı bir kablolama
+    GEREKMEYECEK. **"7 günlük" kısmı** `loginStreakBonus`'un GERÇEK tetikleyicisi olan Günlük
+    Giriş Ödülleri'nin Gün 7'si üzerinden ZATEN karşılanıyor (yukarıdaki 6. madde) — Hedef
+    Takibi'nin KENDİ 7/7 döngüsü (`goalCycleCompleted`, 1. madde) BİLEREK AYRI tutuldu, ikisi
+    farklı ekranlar/farklı kavramlar (bir alışkanlığı bir hafta sürdürmek vs. uygulamayı bir
+    hafta art arda açmak).
+- **Mesaj metinleri Zibo'nun mevcut sesinden (motivation_pools.dart) türetildi** — sıcak,
+  samimi, ikinci tekil şahıs ("sen"), abartısız. `streakBroken` havuzu ÖZELLİKLE suçlamayan bir
+  dille yazıldı (kullanıcının açık isteği) — "neden yapamadın" tarzı hiçbir ifade YOK, yalnızca
+  "bu normal, devam edelim" çerçevesi.
+- **Test:** `motivation_quote_selector_test.dart`'a YENİ gruplar — `zibo_event_messages.dart`
+  havuz bütünlüğü (her havuz kullanıcının istediği aralıkta [10-15/5-10] VE tekrarsız, EN/ES
+  şimdilik TR'ye düştüğü), `resolveMotivationQuoteText`'in `'event'` kaynağını doğru çözdüğü.
+  YENİ `test/home_screen_event_message_test.dart` (`home_screen_sound_test.dart`'taki
+  "bağımsız test uygulaması" deseniyle, 3 test): Ana Sayfa açılmadan ÖNCE kuyruğa alınan bir
+  olay İLK karede kendi özel havuzundan bir mesaj gösterip ANINDA tükeniyor; Ana Sayfa ZATEN
+  AÇIKKEN kuyruğa alınan bir olay dokunmaya GEREK KALMADAN otomatik görünüyor (`initState`
+  listener'ının kanıtı); olay tüketildikten SONRA Zibo'ya dokunmak normal (olay havuzu
+  DIŞINDAKİ) bir söze dönüyor. **Gotcha (test) — `find.descendant(..., matching: find.byType
+  (Text))` `AnimatedSwitcher`'ın fade GEÇİŞİ SÜRERKEN İKİ `Text` bulup "Too many elements"
+  hatası verdi** (`speech_bubble.dart`'ın 320ms'lik fade animasyonu — bkz. "Konuşma Balonu"
+  bölümü) — `pendingZiboEvent.value` DEĞİŞTİRİLDİKTEN sonra tek bir `pump()` yerine
+  `pumpAndSettle()` kullanmak (geçişin TAMAMLANMASINI beklemek) düzeltti.
+- **Gerçek cihazda doğrulama bu turda YAPILMADI** — `flutter test` (tam suite, yalnızca önceden
+  belgelenmiş `audioplayers` flake'i hariç) + `flutter build apk --debug` ile doğrulandı. Altı
+  tetikleme noktasının kendisi (tek satırlık ekler, çağıran kodun geri kalanı hiç değişmedi)
+  ayrı ayrı test EDİLMEDİ — bunun yerine `pendingZiboEvent`'in TÜKETİLME/GÖSTERİLME mekanizması
+  (asıl karmaşıklığın olduğu yer) kapsamlı test edildi, tetikleme noktaları kod incelemesiyle
+  doğrulandı.
+
+#### Ruh Hali Notundan Anahtar Kelime Çıkarımı ([mood_note_keywords.dart](lib/utils/mood_note_keywords.dart))
+
+- **2026 yeni özellik.** Kullanıcı isteği: ruh hali notundaki serbest metinde basit bir anahtar
+  kelime taraması yap (TR/EN/ES temel kelime listeleri), tespit edilince havuzdaki ilgili alt
+  temaya sahip sözlerin çıkma olasılığını hafifçe artır — **gerçek AI/NLP KULLANILMADI**,
+  `dream_sentiment.dart`'taki (Rüya Günlüğü ↔ Ruh Hali Takibi korelasyonu) BİREBİR AYNI desen:
+  kısa gövdeler (kökler), TR+EN+ES BİRLİKTE taranıyor (kullanıcı notu hangi dilde yazdığını
+  bilemeyiz), büyük/küçük harf duyarsız `contains` taraması.
+- **`moodNoteKeywordBias(String? note)`** — İKİ kategori (`MoodPoolTag.low`/`high`, `neutral`
+  için kelime listesi YOK çünkü zaten hiçbir sinyal bulunamadığında dönülen varsayılan): not
+  hem düşük hem yüksek kelime içeriyorsa (çelişkili) VEYA boşsa/`null`sa `null` döner.
+- **`pickMotivationQuote`'a YENİ, opsiyonel bir `latestMoodNote` parametresi eklendi**
+  (varsayılan `null`, geriye dönük TAM uyumlu — mevcut TÜM testler DEĞİŞMEDEN geçmeye devam
+  ediyor). Kararın kalbi — **not, SEÇİLEN emoji'den TÜRETİLEN etiketle ÇELİŞİYORSA** (ör. emoji
+  "nötr" ama not "sınavdan çok yorgun geldim" diyorsa) İKİ şey oluyor:
+  1. Mood havuzu artık emoji'nin DEĞİL, notun işaret ettiği (`effectiveMoodTag`) etiketten
+     besleniyor — notun GÜNCELLİĞİ/özgüllüğü, birkaç saat/gün önce seçilmiş tek bir emoji'den
+     daha güvenilir bir "şu an nasıl hissediyor" sinyali sayıldı.
+  2. Ruh hali payına [recentLowMoodRatio] ile AYNI büyüklükte (+8 puan, kullanıcının "hafifçe"
+     ifadesiyle tutarlı) EK bir nüans daha ekleniyor — notun GERÇEKTEN bir sonuç doğurduğunu
+     garantiliyor, yalnızca "kaydedilip görmezden gelinen" bir alan olmuyor.
+  - **Not YOKSA/boşsa VEYA emoji'yle ZATEN AYNI yöndeyse VEYA kendi içinde çelişkiliyse**
+    (`moodNoteKeywordBias` `null` döner) davranış TAMAMEN DEĞİŞMİYOR — bu üç durumda
+    `effectiveMoodTag == moodTag` ve `moodBoost` sıfır, mevcut testlerin HİÇBİRİ etkilenmedi.
+- **Test:** `motivation_quote_selector_test.dart`'a YENİ gruplar — `moodNoteKeywordBias` (null/
+  boş not, düşük/yüksek kelime eşleşmesi TR+EN+ES, bilinmeyen metin, çelişkili not), 
+  `pickMotivationQuote — anahtar kelime çıkarımı` (not emoji ile AYNI yöndeyse davranış
+  DEĞİŞMEZ, ÇELİŞİYORSA mood havuzu notun etiketine göre çözülür, çelişkili not hiçbir şeyi
+  DEĞİŞTİRMEZ) — üçü de `_ScriptedRandom` ile elle hesaplanmış ağırlık matematiğine göre
+  DETERMİNİSTİK doğrulandı (roll'ün hangi dala düştüğü + hangi etiketin kullanıldığı).
+
+#### Söz Havuzlarının Genişletilmesi — 175 yeni öneri (henüz eklenmedi)
+
+- **2026 — kullanıcı isteği: "her havuz için 25'er yeni söz öner, ayrı bir dosyada topla, ben
+  önce onaylayayım."** Yedi havuzun (sabah/öğle/akşam/gece/düşük/nötr/yüksek) mevcut 51 sözünün
+  tonu/üslubu (Zibo'nun sıcak, samimi, motive edici ama abartısız kişiliği) analiz edilip HER
+  HAVUZ İÇİN 25 yeni söz (toplam 175) yazıldı — [yeni_sozler_onerileri.txt](yeni_sozler_onerileri.txt)
+  dosyasında, hangi havuza ait olduğu AÇIKÇA belirtilerek. **Bu dosya doğrudan uygulamaya DAHİL
+  DEĞİL** — `lib/data/motivation_pools.dart`'a HENÜZ EKLENMEDİ, yalnızca bir inceleme/onay
+  aracı.
+- **Mekanik doğrulama — geçici bir betikle (kontrolden sonra silindi):** her havuzun 25 yeni
+  sözünün (a) KENDİ İÇİNDE tekrarsız olduğu, (b) mevcut 51 sözle TAM olarak ÇAKIŞMADIĞI, gerçek
+  Dart string eşitliğiyle (regex ile her iki dosyadan ayrıştırılıp `Set` karşılaştırması)
+  doğrulandı — `pool.toSet().length` testlerindeki AYNI "yalnızca metin `grep`'ine güvenme"
+  dersi. **Yakın-benzerlik/anlamsal tekrar** (ör. aynı fikrin farklı kelimelerle ifadesi) bu
+  mekanik kontrolün YAKALAYAMADIĞI bir şey — yalnızca insan gözden geçirmesiyle elenebilir,
+  kullanıcının onay adımı tam olarak bunun için.
+- **Kullanıcı onayladıktan SONRA yapılması gereken:** onaylanan sözler `motivation_pools.dart`'taki
+  ilgili `motivationXTr` listelerinin SONUNA eklenip (51 → 76 söz/havuz, onaylanan sayıya göre),
+  `motivation_quote_selector_test.dart`'taki "havuz bütünlüğü" testlerindeki `hasLength(51)`
+  beklentileri yeni sayıya güncellenmeli — **EN/ES çevirisi bu turda YAPILMADI**, TR havuzlar
+  büyüyünce EN/ES'in aynı uzunlukta KALMAMASI (per-pool Türkçe geri düşüş sayesinde) sistemi
+  BOZMAZ ama TUTARSIZ bırakır — ileride ayrı bir çeviri turunda ele alınmalı (motivation_pools.
+  dart'ın EN/ES çevirisinin daha önce nasıl yapıldığına bkz., aynı bölüm).
+
 ### Konuşma Balonu ([speech_bubble.dart](lib/widgets/speech_bubble.dart))
 - **2026 bug düzeltmesi — kısa sözlerde favori/paylaş/söz-ekle butonları metnin ÜSTÜNE biniyordu.**
   Kullanıcı raporu: "cümle kısa ise çok küçülüyor... butonlar cümleyle iç içe giriyor." Kök neden:
@@ -4491,13 +4632,19 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
   `resolveMotivationQuoteText`/`pickMotivationQuote`'un saf fonksiyon testleri), YENİ
   `founder_badge_provider_test.dart` (2026 — bkz. "Kurucu Üye Rozeti" bölümündeki "2026 İKİNCİ
   güncelleme", canlı sayaç + `claimIfEligible()` transaction mantığının `fake_cloud_firestore`
-  ile 8 testi). **`test/wheel_screen_test.dart` KISA SÜRE var oldu, SONRA SİLİNDİ** — Şans Çarkı
-  sonrası reklam denemesiyle birlikte geldi, kullanıcı o özelliği istemeyince (bkz. "Zibo'ya Art
-  Arda Dokunma → Geçiş Reklamı" bölümündeki geri alma notu) testi de anlamsızlaştığı için
-  kaldırıldı.
-  **Toplam: 408 test** (407 geçti + 1 önceden belgelenmiş `audioplayers` flake'i — 2026, Kurucu
+  ile 8 testi), YENİ `home_screen_event_message_test.dart` (2026 — bkz. "Olay Tetiklemeli Özel
+  Mesajlar" bölümü, `pendingZiboEvent` tüketimi/gösterimini doğrulayan 3 test). **`test/
+  wheel_screen_test.dart` KISA SÜRE var oldu, SONRA SİLİNDİ** — Şans Çarkı sonrası reklam
+  denemesiyle birlikte geldi, kullanıcı o özelliği istemeyince (bkz. "Zibo'ya Art Arda Dokunma →
+  Geçiş Reklamı" bölümündeki geri alma notu) testi de anlamsızlaştığı için kaldırıldı.
+  **Toplam: 425 test** (424 geçti + 1 önceden belgelenmiş `audioplayers` flake'i — 2026, Olay
+  Tetiklemeli Özel Mesajlar + Ruh Hali Notu Anahtar Kelime Çıkarımı turunda `motivation_quote_
+  selector_test.dart`'a 14 YENİ test (`zibo_event_messages.dart` havuz bütünlüğü, `resolveMotivationQuoteText`'in
+  `'event'` kaynağı, `moodNoteKeywordBias`, `pickMotivationQuote`'un anahtar kelime çıkarımı) +
+  YENİ `home_screen_event_message_test.dart` [3 test] eklendi, bkz. "Olay Tetiklemeli Özel
+  Mesajlar"/"Ruh Hali Notundan Anahtar Kelime Çıkarımı" bölümleri. Bu turdan BİR ÖNCEKİ, Kurucu
   Üye rozetinin Google-bağlama-tabanlı canlı sayaca geçişi turunda `founder_badge_provider_test.
-  dart` [8 YENİ test] eklendi, bkz. "Kurucu Üye Rozeti" bölümü. Bu turdan BİR ÖNCEKİ, EN/ES
+  dart` [8 YENİ test] eklendi, bkz. "Kurucu Üye Rozeti" bölümü. Ondan BİR ÖNCEKİ, EN/ES
   söz havuzu çevirisi turunda `motivation_quote_selector_test.dart`'a 21 YENİ "havuz bütünlüğü"
   testi [`pool.toSet().length == 51`, 7 Tr + 7 En + 7 Es] eklendi, bkz. `motivation_pools.dart`
   bülteni. Bu turdan BİR ÖNCEKİ (Türkçe-yalnızca) turda `motivation_quote_selector_test.dart`'a

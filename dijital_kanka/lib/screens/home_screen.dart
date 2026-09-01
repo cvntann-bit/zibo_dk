@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import '../data/app_themes.dart';
 import '../data/costume_poses.dart';
 import '../data/costumes.dart';
+import '../data/zibo_event_messages.dart';
 import '../data/zibo_messages.dart';
 import '../l10n/app_localizations.dart';
 import '../providers/app_theme_provider.dart';
@@ -21,6 +22,7 @@ import '../providers/zibo_pose_provider.dart';
 import '../services/sound_effects_service.dart';
 import '../utils/address_term.dart';
 import '../utils/motivation_quote_selector.dart';
+import '../utils/zibo_event_signal.dart';
 import '../widgets/ad_free_promo_sheet.dart';
 import '../widgets/custom_messages_button.dart';
 import '../widgets/favorite_quote_button.dart';
@@ -82,14 +84,38 @@ class _HomeScreenState extends State<HomeScreen>
   /// `context.read`/`Localizations.localeOf(context)` kullandığı için
   /// yalnızca `build()` çalıştıktan SONRA (ilk `build()` dahil, `_currentQuote
   /// == null` koşuluyla) çağrılabilir — `initState()`'te DEĞİL.
+  ///
+  /// **2026 yeni özellik — Olay Tetiklemeli Özel Mesajlar (bkz. CLAUDE.md
+  /// aynı adlı bölüm).** [pendingZiboEvent] BİR OLAY taşıyorsa, normal
+  /// zaman/ruh hali ağırlıklı seçim TAMAMEN BAYPAS EDİLİP doğrudan o
+  /// olayın özel havuzundan bir söz seçiliyor — olay ANINDA TÜKETİLİYOR
+  /// (`pendingZiboEvent.value = null`) ki bir SONRAKİ seçimde (dokunuş/
+  /// tekrar tetiklenme) normal akışa dönülsün.
   void _pickAndSetQuote() {
     final locale = Localizations.localeOf(context);
+    final pendingEvent = pendingZiboEvent.value;
+    if (pendingEvent != null) {
+      pendingZiboEvent.value = null;
+      final pool = eventMessagesForLocale(pendingEvent, locale);
+      final pick = MotivationQuotePick(
+        source: 'event',
+        tag: pendingEvent.name,
+        index: _random.nextInt(pool.length),
+      );
+      _currentQuote = pick;
+      _recentQuoteIds.add(pick.id);
+      if (_recentQuoteIds.length > _maxRecentQuoteIds) {
+        _recentQuoteIds.removeAt(0);
+      }
+      return;
+    }
     final generalPool = [
       ...ziboMessagesForLocale(locale),
       ...context.read<CustomMessagesProvider>().messages,
     ];
     final moodEntries = context.read<MoodProvider>().entries;
     final latestMood = moodEntries.isEmpty ? null : moodEntries.first.mood;
+    final latestMoodNote = moodEntries.isEmpty ? null : moodEntries.first.note;
     final now = DateTime.now();
     final pick = pickMotivationQuote(
       localNow: now,
@@ -99,11 +125,25 @@ class _HomeScreenState extends State<HomeScreen>
       generalPool: generalPool,
       recentIds: _recentQuoteIds.toSet(),
       random: _random,
+      latestMoodNote: latestMoodNote,
     );
     _currentQuote = pick;
     _recentQuoteIds.add(pick.id);
     if (_recentQuoteIds.length > _maxRecentQuoteIds) {
       _recentQuoteIds.removeAt(0);
+    }
+  }
+
+  /// [pendingZiboEvent] BAŞKA bir ekranda (Hedef Takibi, Mağaza, Günlük
+  /// Giriş Ödülleri) tetiklendiğinde, Ana Sayfa `IndexedStack` içinde
+  /// GÖRÜNMÜYOR bile olsa konuşma balonunun ANINDA (kullanıcı sekmeyi
+  /// değiştirmeden ÖNCE) güncellenmiş olmasını sağlar — aksi halde olay
+  /// yalnızca kullanıcı Zibo'ya GERÇEKTEN dokunursa görünürdü, bu da
+  /// "hedefimi tamamladım, Ana Sayfa'ya döndüğümde Zibo'nun beni
+  /// kutlaması" beklentisini karşılamazdı.
+  void _onPendingZiboEventChanged() {
+    if (pendingZiboEvent.value != null && mounted) {
+      setState(_pickAndSetQuote);
     }
   }
 
@@ -160,7 +200,14 @@ class _HomeScreenState extends State<HomeScreen>
   ]).animate(_bounceController);
 
   @override
+  void initState() {
+    super.initState();
+    pendingZiboEvent.addListener(_onPendingZiboEventChanged);
+  }
+
+  @override
   void dispose() {
+    pendingZiboEvent.removeListener(_onPendingZiboEventChanged);
     _bounceController.dispose();
     _soundEffectsService.dispose();
     super.dispose();

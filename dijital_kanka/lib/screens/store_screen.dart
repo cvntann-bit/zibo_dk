@@ -16,6 +16,7 @@ import '../providers/costume_provider.dart';
 import '../providers/goals_provider.dart';
 import '../providers/water_provider.dart';
 import '../utils/ad_free_promo_trigger.dart';
+import '../utils/zibo_event_signal.dart';
 import '../widgets/ad_free_promo_sheet.dart';
 import '../widgets/costume_card.dart';
 import '../widgets/google_link_promo_sheet.dart';
@@ -95,6 +96,10 @@ class _StoreScreenState extends State<StoreScreen> {
       context.read<WaterProvider>(),
     );
     if (unlockedIds.isEmpty) return;
+    // 2026 yeni özellik — Olay Tetiklemeli Özel Mesajlar (bkz. CLAUDE.md):
+    // Ana Sayfa'nın konuşma balonu bir SONRAKİ seçiminde bu özel kutlama
+    // havuzundan bir söz gösterecek — bkz. `zibo_event_signal.dart`.
+    pendingZiboEvent.value = ZiboEventType.costumeOrThemeUnlocked;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       final l10n = AppLocalizations.of(context)!;

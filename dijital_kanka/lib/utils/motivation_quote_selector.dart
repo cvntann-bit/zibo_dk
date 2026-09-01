@@ -3,7 +3,10 @@ import 'dart:math';
 import 'package:flutter/material.dart' show Locale;
 
 import '../data/motivation_pools.dart';
+import '../data/zibo_event_messages.dart';
 import '../models/mood.dart';
+import 'mood_note_keywords.dart';
+import 'zibo_event_signal.dart' show ZiboEventType;
 
 /// Ana Sayfa'daki Zibo konuşma balonu için zaman dilimi + ruh hali duyarlı,
 /// ağırlıklı söz seçim motoru — bkz. CLAUDE.md "Motivasyon Sözü Sistemi"
@@ -31,11 +34,14 @@ class MotivationQuotePick {
     required this.index,
   });
 
-  /// `'time'` | `'mood'` | `'general'`.
+  /// `'time'` | `'mood'` | `'general'` | `'event'` (bkz.
+  /// `utils/zibo_event_signal.dart` — olay tetiklemeli özel mesajlar,
+  /// normal ağırlıklı seçimi BAYPAS EDEN dördüncü bir kaynak).
   final String source;
 
   /// `source == 'time'` ise `TimeBucket.name`, `source == 'mood'` ise
-  /// `MoodPoolTag.name`, `source == 'general'` ise boş string.
+  /// `MoodPoolTag.name`, `source == 'event'` ise `ZiboEventType.name`,
+  /// `source == 'general'` ise boş string.
   final String tag;
 
   final int index;
@@ -58,6 +64,10 @@ String resolveMotivationQuoteText(
   final pool = switch (pick.source) {
     'time' => timeBucketQuotes(TimeBucket.values.byName(pick.tag), locale),
     'mood' => moodPoolQuotes(MoodPoolTag.values.byName(pick.tag), locale),
+    'event' => eventMessagesForLocale(
+      ZiboEventType.values.byName(pick.tag),
+      locale,
+    ),
     _ => generalPool,
   };
   if (pool.isEmpty) return '';
@@ -157,6 +167,20 @@ MotivationQuotePick _pickFrom(
 /// "düşük" ise ruh hali payına "hafifçe" (+10 puan, zaman diliminden yarısı
 /// + genelden yarısı düşülerek) bir kişiselleşme nüansı ekliyor
 /// (kullanıcının 7. madde isteği).
+///
+/// **2026 yeni özellik — [latestMoodNote]'tan anahtar kelime çıkarımı
+/// (bkz. `mood_note_keywords.dart`).** Kullanıcının notu ([moodNoteKeywordBias]
+/// ile taranıp) SEÇTİĞİ emoji'den TÜRETİLEN etiketle (`moodPoolTagFor
+/// (latestMood)`) ÇELİŞEN bir sinyal veriyorsa (ör. emoji "nötr" ama not
+/// "sınavdan çok yorgun geldim" diyorsa), İKİ şey oluyor: (1) o özel notun
+/// GÜNCELLİĞİ/özgüllüğü nedeniyle ruh hali havuzu artık emoji'nin DEĞİL
+/// notun işaret ettiği etiketten (`effectiveMoodTag`) besleniyor, (2) ruh
+/// hali payına [recentLowMoodRatio] ile AYNI büyüklükte (+8 puan) EK bir
+/// "hafif" nüans daha ekleniyor — bu notun görmezden gelinmeyip GERÇEKTEN
+/// bir sonuç doğurduğunu garantiliyor. Not YOKSA/boşsa VEYA emoji'yle
+/// ZATEN AYNI yöndeyse VEYA kendi içinde çelişkiliyse (`moodNoteKeywordBias`
+/// `null` döner) davranış TAMAMEN DEĞİŞMİYOR — mevcut testlerin hiçbiri
+/// bu değişiklikten etkilenmedi.
 MotivationQuotePick pickMotivationQuote({
   required DateTime localNow,
   required Locale locale,
@@ -165,19 +189,26 @@ MotivationQuotePick pickMotivationQuote({
   required List<String> generalPool,
   required Set<String> recentIds,
   required Random random,
+  String? latestMoodNote,
 }) {
   const baseTimeWeight = 0.55;
   const baseMoodWeight = 0.25;
   const baseGeneralWeight = 0.20;
 
-  final moodBoost = recentLowMoodRatio > 0.5 ? 0.10 : 0.0;
+  final moodTag = moodPoolTagFor(latestMood);
+  final keywordBias = moodNoteKeywordBias(latestMoodNote);
+  final keywordConflict = keywordBias != null && keywordBias != moodTag;
+  final effectiveMoodTag = keywordBias ?? moodTag;
+
+  final ratioBoost = recentLowMoodRatio > 0.5 ? 0.10 : 0.0;
+  final keywordBoost = keywordConflict ? 0.08 : 0.0;
+  final moodBoost = ratioBoost + keywordBoost;
   final timeWeight = baseTimeWeight - moodBoost / 2;
   final moodWeight = baseMoodWeight + moodBoost;
   final generalWeight = baseGeneralWeight - moodBoost / 2;
   final total = timeWeight + moodWeight + generalWeight;
 
   final bucket = timeBucketFor(localNow);
-  final moodTag = moodPoolTagFor(latestMood);
 
   final roll = random.nextDouble() * total;
   if (roll < timeWeight) {
@@ -185,8 +216,8 @@ MotivationQuotePick pickMotivationQuote({
     return _pickFrom('time', bucket.name, pool, recentIds, random);
   }
   if (roll < timeWeight + moodWeight) {
-    final pool = moodPoolQuotes(moodTag, locale);
-    return _pickFrom('mood', moodTag.name, pool, recentIds, random);
+    final pool = moodPoolQuotes(effectiveMoodTag, locale);
+    return _pickFrom('mood', effectiveMoodTag.name, pool, recentIds, random);
   }
   return _pickFrom('general', '', generalPool, recentIds, random);
 }

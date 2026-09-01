@@ -7,6 +7,7 @@ import '../l10n/app_localizations.dart';
 import '../models/coin_economy.dart';
 import '../providers/coin_provider.dart';
 import '../providers/daily_rewards_provider.dart';
+import '../utils/zibo_event_signal.dart';
 
 /// Günlük Giriş Ödülleri popup'ı — `WheelScreen`'in aksine tam ekran DEĞİL,
 /// ortada küçük bir `Dialog` (kullanıcı isteği: "ortada bir popup açılsın").
@@ -39,6 +40,12 @@ class _DailyRewardsScreenState extends State<DailyRewardsScreen> {
     if (amount == null) return;
     final coin = context.read<CoinProvider>();
     coin.earnDailyLoginReward(amount);
+    // 2026 yeni özellik — Olay Tetiklemeli Özel Mesajlar (bkz. CLAUDE.md):
+    // 7 günlük döngünün SON günü (index 6 = "Gün 7", en büyük tek günlük
+    // ödül) alınınca Ana Sayfa'nın konuşma balonu bir SONRAKİ seçiminde
+    // ayrı, daha coşkulu bir "seri bonusu" mesajı gösterecek — bkz.
+    // `zibo_event_signal.dart`.
+    if (index == 6) pendingZiboEvent.value = ZiboEventType.loginStreakBonus;
     // Kullanıcı isteği: günlük giriş ödülü alınınca geçilebilir (interstitial,
     // ÖDÜLLÜ DEĞİL) bir reklam gösterilsin — HomeScreen'in art arda dokunma
     // reklamıyla (bkz. `_showRapidTapPromoOrAd`) AYNI `CoinProvider.

@@ -7,6 +7,7 @@ import '../providers/app_theme_provider.dart';
 import '../providers/coin_provider.dart';
 import '../providers/theme_provider.dart';
 import '../utils/coin_feedback.dart';
+import '../utils/zibo_event_signal.dart';
 import 'starry_gradient_background.dart';
 import 'theme_particle_effect.dart';
 
@@ -29,6 +30,10 @@ class ThemeOptionCard extends StatelessWidget {
     final localizedName = theme.localizedName(l10n);
     coins.spendOnTheme(themeName: localizedName, cost: theme.price);
     context.read<AppThemeProvider>().markOwned(theme.id);
+    // 2026 yeni özellik — Olay Tetiklemeli Özel Mesajlar (bkz. CLAUDE.md):
+    // Ana Sayfa'nın konuşma balonu bir SONRAKİ seçiminde bu özel kutlama
+    // havuzundan bir söz gösterecek — bkz. `zibo_event_signal.dart`.
+    pendingZiboEvent.value = ZiboEventType.costumeOrThemeUnlocked;
 
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()

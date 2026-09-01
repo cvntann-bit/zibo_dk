@@ -4,8 +4,11 @@ import 'package:flutter/material.dart' show Locale;
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:dijital_kanka/data/motivation_pools.dart';
+import 'package:dijital_kanka/data/zibo_event_messages.dart';
 import 'package:dijital_kanka/models/mood.dart';
+import 'package:dijital_kanka/utils/mood_note_keywords.dart';
 import 'package:dijital_kanka/utils/motivation_quote_selector.dart';
+import 'package:dijital_kanka/utils/zibo_event_signal.dart';
 
 /// Testte kontrollü bir sonuç dizisi döndüren sahte `Random` —
 /// `wheel_prizes_test.dart`'taki `_FixedRandom` deseniyle AYNI amaç.
@@ -277,5 +280,182 @@ void main() {
     checkPool('motivationLowMoodEs', motivationLowMoodEs);
     checkPool('motivationNeutralMoodEs', motivationNeutralMoodEs);
     checkPool('motivationHighMoodEs', motivationHighMoodEs);
+  });
+
+  // 2026 yeni özellik — Olay Tetiklemeli Özel Mesajlar (bkz. CLAUDE.md).
+  group('zibo_event_messages.dart — havuz bütünlüğü + boyut aralığı', () {
+    void checkEventPool(
+      String label,
+      List<String> pool, {
+      required int min,
+      required int max,
+    }) {
+      test(
+        '$label: $min-$max aralığında ve tekrarsız',
+        () {
+          expect(pool.length, greaterThanOrEqualTo(min));
+          expect(pool.length, lessThanOrEqualTo(max));
+          expect(pool.toSet(), hasLength(pool.length));
+        },
+      );
+    }
+
+    checkEventPool(
+      'goalCycleCompleted (Tr)',
+      eventMessagesForLocale(ZiboEventType.goalCycleCompleted, const Locale('tr')),
+      min: 10,
+      max: 15,
+    );
+    checkEventPool(
+      'streakBroken (Tr)',
+      eventMessagesForLocale(ZiboEventType.streakBroken, const Locale('tr')),
+      min: 10,
+      max: 15,
+    );
+    checkEventPool(
+      'costumeOrThemeUnlocked (Tr)',
+      eventMessagesForLocale(
+        ZiboEventType.costumeOrThemeUnlocked,
+        const Locale('tr'),
+      ),
+      min: 5,
+      max: 10,
+    );
+    checkEventPool(
+      'loginStreakBonus (Tr)',
+      eventMessagesForLocale(ZiboEventType.loginStreakBonus, const Locale('tr')),
+      min: 5,
+      max: 10,
+    );
+
+    test('EN/ES havuzları henüz boş — TR\'ye düşer (bkz. dosya dokümantasyonu)', () {
+      for (final type in ZiboEventType.values) {
+        final tr = eventMessagesForLocale(type, const Locale('tr'));
+        final en = eventMessagesForLocale(type, const Locale('en'));
+        final es = eventMessagesForLocale(type, const Locale('es'));
+        expect(en, tr);
+        expect(es, tr);
+      }
+    });
+  });
+
+  group('resolveMotivationQuoteText — event kaynağı', () {
+    test('source == event iken doğru olay havuzundan çözer', () {
+      final pool = eventMessagesForLocale(
+        ZiboEventType.goalCycleCompleted,
+        const Locale('tr'),
+      );
+      final pick = MotivationQuotePick(
+        source: 'event',
+        tag: ZiboEventType.goalCycleCompleted.name,
+        index: 0,
+      );
+      expect(
+        resolveMotivationQuoteText(pick, const Locale('tr'), const []),
+        pool[0],
+      );
+    });
+  });
+
+  group('moodNoteKeywordBias', () {
+    test('null/boş not için null döner', () {
+      expect(moodNoteKeywordBias(null), isNull);
+      expect(moodNoteKeywordBias(''), isNull);
+      expect(moodNoteKeywordBias('   '), isNull);
+    });
+
+    test('düşük ruh hali kelimesi içeren bir not MoodPoolTag.low döner', () {
+      expect(moodNoteKeywordBias('Bugün sınavdan çok yorgun geldim'), MoodPoolTag.low);
+      expect(moodNoteKeywordBias('so tired after the exam'), MoodPoolTag.low);
+      expect(moodNoteKeywordBias('estoy muy cansada hoy'), MoodPoolTag.low);
+    });
+
+    test('yüksek ruh hali kelimesi içeren bir not MoodPoolTag.high döner', () {
+      expect(moodNoteKeywordBias('Bugün gerçekten çok mutluyum, başardım!'), MoodPoolTag.high);
+      expect(moodNoteKeywordBias('I feel so happy and proud today'), MoodPoolTag.high);
+      expect(moodNoteKeywordBias('me siento muy feliz hoy'), MoodPoolTag.high);
+    });
+
+    test('bilinen kelime içermeyen bir not null döner', () {
+      expect(moodNoteKeywordBias('Bugün markete gittim, süt aldım.'), isNull);
+    });
+
+    test('hem düşük hem yüksek kelime aynı anda geçerse (çelişkili) null döner', () {
+      expect(
+        moodNoteKeywordBias('Çok yorgunum ama sınavı geçtiğim için mutluyum'),
+        isNull,
+      );
+    });
+  });
+
+  group('pickMotivationQuote — anahtar kelime çıkarımı', () {
+    test(
+      'not, seçilen emoji ile AYNI yöndeyse davranış DEĞİŞMEZ (mevcut '
+      'testlerle geriye dönük uyumlu)',
+      () {
+        // roll < timeWeight + moodWeight (mood dalı) düşecek şekilde
+        // ayarlanmış sabit bir Random.
+        final withoutNote = pickMotivationQuote(
+          localNow: DateTime(2026, 1, 1, 10),
+          locale: const Locale('tr'),
+          latestMood: Mood.veryUnhappy,
+          recentLowMoodRatio: 0.0,
+          generalPool: const ['genel söz'],
+          recentIds: const {},
+          random: _ScriptedRandom([0.6], [3]),
+        );
+        final withMatchingNote = pickMotivationQuote(
+          localNow: DateTime(2026, 1, 1, 10),
+          locale: const Locale('tr'),
+          latestMood: Mood.veryUnhappy,
+          recentLowMoodRatio: 0.0,
+          generalPool: const ['genel söz'],
+          recentIds: const {},
+          random: _ScriptedRandom([0.6], [3]),
+          latestMoodNote: 'çok yorgunum',
+        );
+        expect(withMatchingNote.tag, withoutNote.tag);
+        expect(withMatchingNote.tag, MoodPoolTag.low.name);
+      },
+    );
+
+    test(
+      'not, seçilen emoji ile ÇELİŞİYORSA mood havuzu notun etiketine göre '
+      'çözülür (emoji yerine)',
+      () {
+        final pick = pickMotivationQuote(
+          localNow: DateTime(2026, 1, 1, 10),
+          locale: const Locale('tr'),
+          latestMood: Mood.neutral,
+          recentLowMoodRatio: 0.0,
+          generalPool: const ['genel söz'],
+          recentIds: const {},
+          // roll'ün mood dalına düşmesi için (nötr, boost olmadan) yeterince
+          // düşük — %55 zaman + boost'lu %33 ruh hali payının içine.
+          random: _ScriptedRandom([0.6], [3]),
+          latestMoodNote: 'sınavdan çok yorgun geldim',
+        );
+        expect(pick.source, 'mood');
+        expect(pick.tag, MoodPoolTag.low.name);
+      },
+    );
+
+    test(
+      'çelişkili bir not (hem düşük hem yüksek kelime) hiçbir şeyi '
+      'DEĞİŞTİRMEZ — emoji\'nin etiketi kullanılmaya devam eder',
+      () {
+        final pick = pickMotivationQuote(
+          localNow: DateTime(2026, 1, 1, 10),
+          locale: const Locale('tr'),
+          latestMood: Mood.neutral,
+          recentLowMoodRatio: 0.0,
+          generalPool: const ['genel söz'],
+          recentIds: const {},
+          random: _ScriptedRandom([0.6], [3]),
+          latestMoodNote: 'çok yorgunum ama başardığım için mutluyum',
+        );
+        expect(pick.tag, MoodPoolTag.neutral.name);
+      },
+    );
   });
 }

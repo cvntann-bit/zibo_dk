@@ -9,6 +9,7 @@ import '../providers/costume_provider.dart';
 import '../providers/goals_provider.dart';
 import '../providers/water_provider.dart';
 import '../utils/coin_feedback.dart';
+import '../utils/zibo_event_signal.dart';
 
 /// Mağaza > Kostümler ızgarasındaki tek bir kostüm kartı. Üç durumu var:
 /// kilitli (satın alınmamış — dim görsel + kilit rozeti + "Satın Al"),
@@ -29,6 +30,10 @@ class CostumeCard extends StatelessWidget {
     final localizedName = costume.localizedName(l10n);
     coins.spendOnCostume(costumeName: localizedName, cost: costume.price);
     context.read<CostumeProvider>().markOwned(costume.id);
+    // 2026 yeni özellik — Olay Tetiklemeli Özel Mesajlar (bkz. CLAUDE.md):
+    // Ana Sayfa'nın konuşma balonu bir SONRAKİ seçiminde bu özel kutlama
+    // havuzundan bir söz gösterecek — bkz. `zibo_event_signal.dart`.
+    pendingZiboEvent.value = ZiboEventType.costumeOrThemeUnlocked;
 
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()

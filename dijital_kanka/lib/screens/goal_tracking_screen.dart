@@ -17,6 +17,7 @@ import '../providers/sound_effects_provider.dart';
 import '../providers/zibo_pose_provider.dart';
 import '../services/sound_effects_service.dart';
 import '../utils/address_term.dart';
+import '../utils/zibo_event_signal.dart';
 import '../widgets/goal_card.dart';
 import '../widgets/goal_confetti_burst.dart';
 import '../widgets/share_zibo_button.dart';
@@ -221,6 +222,12 @@ class _GoalTrackingScreenState extends State<GoalTrackingScreen>
     if (!mounted) return;
     final resetNames = context.read<GoalsProvider>().reconcileForToday();
     if (resetNames.isEmpty || !mounted) return;
+
+    // 2026 yeni özellik — Olay Tetiklemeli Özel Mesajlar (bkz. CLAUDE.md):
+    // kaçırılan bir gün yüzünden döngü sıfırlanınca, Ana Sayfa'nın
+    // konuşma balonu bir SONRAKİ seçiminde nazik/suçlamayan bir "tekrar
+    // deneyelim" mesajı gösterecek — bkz. `zibo_event_signal.dart`.
+    pendingZiboEvent.value = ZiboEventType.streakBroken;
 
     final l10n = AppLocalizations.of(context)!;
     ScaffoldMessenger.of(context)

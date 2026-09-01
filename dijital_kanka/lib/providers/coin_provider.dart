@@ -13,6 +13,7 @@ import '../services/ad_service.dart';
 import '../services/cloud_state_store.dart';
 import '../services/purchase_service.dart';
 import '../services/sound_effects_service.dart';
+import '../utils/zibo_event_signal.dart';
 
 /// Zibo Coin bakiyesini ve işlem geçmişini tutan tek kaynak (single source
 /// of truth). Tüm kazanma/harcama mekanikleri burada metod olarak
@@ -310,8 +311,16 @@ class CoinProvider extends ChangeNotifier {
   void earnStreak7Bonus() =>
       _earn(CoinEconomy.streak7Bonus, '7 günlük seri bonusu');
 
-  void earnStreak30Bonus() =>
-      _earn(CoinEconomy.streak30Bonus, '30 günlük seri bonusu');
+  void earnStreak30Bonus() {
+    _earn(CoinEconomy.streak30Bonus, '30 günlük seri bonusu');
+    // 2026 yeni özellik — Olay Tetiklemeli Özel Mesajlar (bkz. CLAUDE.md):
+    // bu metodun KENDİSİ bugün itibariyle HİÇBİR YERDEN çağrılmıyor (30
+    // günlük gerçek bir mekanik bu turda İCAT EDİLMEDİ) — ama ileride
+    // biri bunu bağlarsa, Ana Sayfa'nın konuşma balonu otomatik olarak
+    // aynı coşkulu "seri bonusu" havuzunu gösterecek, ayrı bir kablolama
+    // gerekmeyecek.
+    pendingZiboEvent.value = ZiboEventType.loginStreakBonus;
+  }
 
   void earnReferral() => _earn(CoinEconomy.referral, 'Arkadaş daveti');
 

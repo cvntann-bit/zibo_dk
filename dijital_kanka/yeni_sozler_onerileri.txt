@@ -1,0 +1,225 @@
+ZIBO — YENİ SÖZ ÖNERİLERİ (İNCELEME İÇİN, HENÜZ SİSTEME EKLENMEDİ)
+====================================================================
+
+Bu dosya, motivation_pools.dart'taki 7 havuzun (sabah/öğle/akşam/gece/
+düşük ruh hali/nötr ruh hali/yüksek ruh hali) her biri için önerilen
+25'er YENİ sözü içerir — toplam 175 söz. Mevcut 51 sözün tonu/üslubu
+(Zibo'nun sıcak, samimi, motive edici ama abartısız kişiliği) analiz
+edilip aynı ses tonunda, mevcut sözlerin bir tekrarı/çok yakın benzeri
+OLMAYAN yeni çeşitlilik katacak sözler yazılmaya çalışıldı.
+
+NASIL KULLANILIR: Bu sözleri gözden geçirip beğenmediklerinizi
+işaretleyin/silin, isterseniz kendi düzenlemelerinizi yapın. Onayınızdan
+sonra bu listeyi lib/data/motivation_pools.dart'taki ilgili
+motivationXTr listelerinin SONUNA ekleyip (51 → 76 söz/havuz),
+test/motivation_quote_selector_test.dart'taki "havuz bütünlüğü"
+testlerindeki `hasLength(51)` beklentilerini yeni sayıya güncelleyeceğim.
+Bu dosyanın kendisi doğrudan uygulamaya dahil DEĞİL, yalnızca bir
+inceleme/onay aracı.
+
+====================================================================
+1) SABAH (motivationMorningTr) — 25 yeni söz
+====================================================================
+1. Gözlerini açtığın an, ben zaten seni bekliyordum.
+2. Bugün ilk fincanını kime ya da neye adayacaksın?
+3. Yastığından kalkman bile bugünün ilk cesur kararı.
+4. Pencereden gelen ışığı bir saniye izle, sonra başlayalım.
+5. Bugün kendine "merhaba" demeyi unutma, yeni bir gündesin.
+6. Sabahın sessizliği düşünmek için en iyi zaman olabilir.
+7. Bugün hangi müzikle başlamak istersin?
+8. Ayakların yere değdiği an, gün resmen başladı sayılır.
+9. Bugün kahvaltıda neye can atıyorsun?
+10. Sabah esintisi gibi hafif ve taze bir başlangıç yap.
+11. Bugün ilk gülümsemeni kime saklıyorsun?
+12. Yataktan çıkmak zor geldiyse bile, çıktın, bu yeter.
+13. Bugün gözlerini açar açmaz aklına ne geldi?
+14. Sabah rutinini birazcık değiştirsen nasıl olurdu?
+15. Bugün kendine sorman gereken tek soru: neyle başlamak istiyorsun?
+16. Güneş henüz yükselmedi ama sen zaten harekete geçtin.
+17. Bugün bir şeyi ilk kez mi deneyeceksin?
+18. Sabahın erken saatleri, kimsenin seni bölmediği ender anlardan.
+19. Bugün kendine dair küçük bir keşif yapmaya ne dersin?
+20. Uykunun izlerini üzerinden atmak için birkaç dakika yeter.
+21. Bugün planların olsun ya da olmasın, buradasın, bu önemli.
+22. Sabah havasını içine çek, gün seninle başlıyor.
+23. Bugün ilk adımını atmadan önce bir an dur ve nefes al.
+24. Yeni güne "evet" demek bile bir cesaret işareti.
+25. Bugün kendine güzel bir şey söylemekle başla.
+
+====================================================================
+2) ÖĞLE (motivationAfternoonTr) — 25 yeni söz
+====================================================================
+1. Güneş tam tepede, sen de tam formundasın değil mi?
+2. Bugün öğlen molası sırasında telefonu bırakıp etrafına bak.
+3. Şu ana kadarki en iyi kararın hangisiydi?
+4. Öğle vakti biraz gerinmek bile iyi gelir, dene.
+5. Bugün yarı yolda olmak bile bir başarı sayılır.
+6. Güne dair şu ana kadar ne öğrendin?
+7. Öğlen yorgunluğu geldiyse, bu bir zayıflık değil, doğal bir sinyal.
+8. Bugün kendine küçük bir mola sözü ver.
+9. Şu an oturduğun yerde bir dakika sessiz kal, iyi gelecek.
+10. Öğle güneşi altında bile küçük hedefler büyür.
+11. Bugün gün ortasında bir şeyi tamamlamak nasıl hissettirir?
+12. Enerjini toparlamak için bir bardak su ya da birkaç adım yeter.
+13. Bugün öğlen kendine dürüst bir soru sor: nasıl gidiyor gerçekten?
+14. Günün en yoğun saatlerindesin, bir nefes al.
+15. Bugün şu ana kadarki en zor anını nasıl atlattın?
+16. Öğle vakti bir şeyi bitirmek, güne farklı bir renk katar.
+17. Bugün kalan saatler için tek bir öncelik seçsen ne olurdu?
+18. Öğlen sessizliği, düşünmek için iyi bir fırsat olabilir.
+19. Bugün yarısını geride bıraktın, geri kalanı senin.
+20. Şu an bedenin ne istiyor, dinledin mi?
+21. Öğle arası kısa da olsa, gerçekten "ara" olsun.
+22. Bugün öğleden sonrasını nasıl geçirmek istersin?
+23. Günün ortasında bile yeni bir niyet belirleyebilirsin.
+24. Bugün kendine "şimdiye kadar iyi gidiyor" demeyi hak ediyorsun.
+25. Öğlen güneşinin altında bir anlığına dur, sonra devam.
+
+====================================================================
+3) AKŞAM (motivationEveningTr) — 25 yeni söz
+====================================================================
+1. Gün batarken, bugünün sana kattığı bir şeyi düşün.
+2. Bugün akşam, telefonu bırakıp gerçek bir mola versen nasıl olur?
+3. Akşam ışıkları yanmaya başladı, sen de biraz yavaşla.
+4. Bugünün en sakin anı hangisiydi?
+5. Akşam yemeğinde kiminle ya da neyle olmak istersin?
+6. Bugün seni gülümseten küçük bir şey oldu mu?
+7. Gün batımını izlemek için bir dakikan var mı?
+8. Bugün akşam kendine "elimden geleni yaptım" demeyi hak ediyorsun.
+9. Akşam serinliği gibi, sen de biraz sakinleş.
+10. Bugün en çok neyi merak ettin?
+11. Akşam vakti, günün gürültüsünden uzaklaşma zamanı.
+12. Bugün kimseye söylemediğin bir başarın var mı?
+13. Gün biterken, yarına dair tek bir umut taşı.
+14. Bugün akşam yemeğini kiminle paylaşacaksın?
+15. Akşam olunca, bugünkü telaşı bir kenara bırak.
+16. Bugün seni şaşırtan bir şey oldu mu?
+17. Gün ışığı azalırken, içindeki ışığı hatırla.
+18. Bugün akşam kendine küçük bir ödül vermeyi düşündün mü?
+19. Akşam sessizliği, gün boyu biriktirdiklerini bırakmak için iyi bir an.
+20. Bugün en çok kimin yüzünü gülümsetti?
+21. Gün batarken bir şey seni hâlâ meşgul ediyorsa, bırakmayı dene.
+22. Bugün akşam kendine sorman gereken tek şey: bugün nasıldı gerçekten?
+23. Akşam yıldızları henüz görünmese de, sen kendi ışığını taşıyorsun.
+24. Bugün son bir kez derin bir nefes almaya ne dersin?
+25. Gün biterken, kendine bir "teşekkür ederim" borçlusun.
+
+====================================================================
+4) GECE (motivationNightTr) — 25 yeni söz
+====================================================================
+1. Yastığa başını koymadan önce, bugünden bir anı seç ve sakla.
+2. Gece sessizliği, zihnini boşaltmak için iyi bir fırsat.
+3. Bugün ne kadar yorulduysan, uykunun tadı o kadar güzel olacak.
+4. Karanlık çökerken, kendine son bir nazik söz söyle.
+5. Uykuya dalmadan önce, yarın için tek bir küçük niyet belirle.
+6. Bugün seni en çok ne rahatlattı?
+7. Gece vakti telefonu bırakıp gözlerini kapatmayı dene.
+8. Bugün taşıdığın yükü, uyumadan önce bir kenara bırak.
+9. Yıldızlar görünmese de, gökyüzü hâlâ orada — sen de öylesin.
+10. Bugün kendine söylemediğin bir "teşekkürler" var mı?
+11. Gece, günün son sayfasını kapatma vaktidir.
+12. Bugün küçük bir huzur anı yakaladın mı?
+13. Uykuya geçmeden önce, bedenine bir teşekkür et.
+14. Gece karanlığı, dinlenmek için en doğal davettir.
+15. Bugün ne olduysa oldu, artık bırakabilirsin.
+16. Yastığın seni beklediğini biliyorum, birazdan orada olacaksın.
+17. Bugün son düşüncen ne olsun istersin?
+18. Gece vakti, yarının seni nasıl karşılayacağını hayal et.
+19. Bugün kendine gösterdiğin sabır için minnettar ol.
+20. Uykuya dalarken, bugünkü en tatlı anını hatırla.
+21. Gece, hesap sormanın değil, dinlenmenin zamanıdır.
+22. Bugün attığın her adım, şimdi seninle birlikte uyuyacak.
+23. Yorgunsan, bu geceyi kendine hediye et.
+24. Bugün ne kadar küçük olursa olsun, bir ilerleme kaydettin.
+25. İyi geceler dostum, yarın yine buradayım.
+
+====================================================================
+5) DÜŞÜK RUH HALİ (motivationLowMoodTr) — 25 yeni söz
+====================================================================
+1. Bugün gülümsemek zorunda değilsin, olduğun gibi kalabilirsin.
+2. Ağırlık hissediyorsan, onu tek başına taşımana gerek yok.
+3. Bugün "iyi değilim" demek de bir cesaret.
+4. Kendine bugün hiçbir açıklama borçlu değilsin.
+5. Bazen tek yapman gereken, sadece bugünü atlatmak.
+6. Bu duygu seni küçültmüyor, sadece o anki gerçeğin.
+7. Bugün ağlamak istiyorsan, buna da izin ver.
+8. Kendine "neden böyleyim" diye sorman gerekmiyor.
+9. Zor bir gündeysen, beklentilerini bugünlük küçült.
+10. Bu his geçici, sen ise kalıcısın.
+11. Bugün hiçbir şeyi başaramasan da, var olman yeterli.
+12. Kendine acı çektiren düşünceyi bir kenara koymayı dene.
+13. Zorlanmak, senin hakkında hiçbir şey söylemiyor.
+14. Bugün sessiz kalmak istiyorsan, sessiz kal.
+15. Kendine bugün küçük bir "iyi ki varsın" de.
+16. Bu duyguyla baş etmeye çalışman bile bir güç.
+17. Bugün her şeyi anlamlandırmak zorunda değilsin.
+18. Ağır bir gündeysen, yalnızca nefes almak yeterli bir hedef.
+19. Kendine bugün acele etmeme izni ver.
+20. Bu an zor, ama tek başına değilsin.
+21. Bugün kendine sarılmak istersen, buna da izin ver.
+22. Zor hissetmek, seni yanlış yapmıyor.
+23. Bugün bir şeyi ertelemen gerekiyorsa, ertele.
+24. Kendine bugün yalnızca "buradayım" demeyi dene.
+25. Bu duygu fırtınası da geçecek, sen sağlam kalacaksın.
+
+====================================================================
+6) NÖTR RUH HALİ (motivationNeutralMoodTr) — 25 yeni söz
+====================================================================
+1. Bugün sıradan geçse de, sıradanlık da bir huzur biçimi.
+2. Küçük bir rutine bugün yeni bir dokunuş katmaya ne dersin?
+3. Bugün kendine "ne istiyorum" diye sormaya vaktin var mı?
+4. Her sıradan gün, aslında sessiz bir ilerlemedir.
+5. Bugün bir şeyi merak etmeye ne dersin?
+6. Küçük bir düzen, büyük bir huzurun temeli olabilir.
+7. Bugün kendine bir soru sor: bugün neyi biraz daha iyi yapabilirim?
+8. Sıradan görünen bugün bile, yarının tohumu.
+9. Bugün bir alışkanlığını gözden geçirmeye ne dersin?
+10. Küçük tutarlılık, büyük değişimden daha güvenilirdir.
+11. Bugün kendine bir hedef değil, bir niyet belirle.
+12. Her gün aynı görünse de, sen aynı değilsin.
+13. Bugün bir şeyi merakla, yükümlülük hissetmeden yap.
+14. Küçük bir adım bugün, yarının rahat bir başlangıcı.
+15. Bugün kendine dürüstçe sor: neye zaman ayırıyorum?
+16. Sıradan bir gün, dinlenmek için de bir fırsat olabilir.
+17. Bugün bir konuda biraz daha meraklı olmaya ne dersin?
+18. Küçük düzenlemeler, büyük karmaşayı önler.
+19. Bugün kendine bir mola ile bir hedefi dengelemeyi dene.
+20. Her gün, kendini biraz daha tanıma fırsatı.
+21. Bugün bir şeyi basitleştirmeye ne dersin?
+22. Küçük bir farkındalık, günü değiştirebilir.
+23. Bugün kendine sıradan olmanın da bir değeri olduğunu hatırlat.
+24. Bir hedefe değil, bir yöne doğru ilerlemek de yeterli.
+25. Bugün kendine küçük ama gerçek bir söz ver.
+
+====================================================================
+7) YÜKSEK RUH HALİ (motivationHighMoodTr) — 25 yeni söz
+====================================================================
+1. Bu enerji bulaşıcı, ben bile gülümsüyorum!
+2. Bugün içindeki ateşi bir yöne doğru yönlendir.
+3. Bu kadar iyi hissetmen, emeğinin karşılığı.
+4. Bugün cesur bir adım atmak için mükemmel bir gün.
+5. Bu ruh haliyle bugün neyi başarmak istersin?
+6. Sen parlarken, etrafındakiler de aydınlanıyor.
+7. Bugün bu coşkuyu bir hedefe akıtmaya ne dersin?
+8. Bu kadar enerjik olman beni gerçekten heyecanlandırıyor!
+9. Bugün "yapamam" diye bir şey yok, değil mi?
+10. Bu güzel hissi bir başkasıyla paylaşmaya ne dersin?
+11. Bugün sınırlarını nazikçe zorlamanın tam zamanı.
+12. Bu ivmeyle bugün yarım kalan bir şeyi bitirebilirsin.
+13. Sen bu haldeyken, imkansız bile mümkün görünüyor.
+14. Bugün bu gücü kullanmadan geçirme.
+15. Bu kadar keyifli olman bile başlı başına bir kutlama.
+16. Bugün kendine büyük bir "neden olmasın" sor.
+17. Bu enerjiyle bugün birine ilham verebilirsin.
+18. Bugün harika hissediyorsun, bunu unutma.
+19. Bu ruh hali seninle her zaman kalmayabilir, o yüzden bugün doyasıya yaşa.
+20. Bugün küçük bir riski göze almaya ne dersin?
+21. Bu kadar canlı hissetmen, içindeki gücün kanıtı.
+22. Bugün kendine yeni bir sınır belirlemenin tam zamanı.
+23. Bu enerjiyle bir gülümseme daha yaymaya ne dersin?
+24. Bugün harika bir hikayenin başlangıcı olabilir.
+25. Bu hissi hatırla, zor günlerde sana güç verecek.
+
+====================================================================
+TOPLAM: 175 yeni söz (7 havuz × 25)
+====================================================================
