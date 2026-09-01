@@ -370,7 +370,7 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
   DEĞİŞTİRMEZ) — üçü de `_ScriptedRandom` ile elle hesaplanmış ağırlık matematiğine göre
   DETERMİNİSTİK doğrulandı (roll'ün hangi dala düştüğü + hangi etiketin kullanıldığı).
 
-#### Söz Havuzlarının Genişletilmesi — 175 yeni söz EKLENDİ (51 → 76/havuz, TR)
+#### Söz Havuzlarının Genişletilmesi — 175 yeni söz EKLENDİ (51 → 76/havuz, ÜÇ dilde de)
 
 - **2026 — kullanıcı isteği: "her havuz için 25'er yeni söz öner, ayrı bir dosyada topla, ben
   önce onaylayayım."** Yedi havuzun (sabah/öğle/akşam/gece/düşük/nötr/yüksek) mevcut 51 sözünün
@@ -390,23 +390,30 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
   yeni söz ---` yorumuyla ayrılmış bloklar halinde — hangi sözlerin bu turda eklendiği kod
   içinde de görünür kalsın diye). `yeni_sozler_onerileri.txt` SİLİNMEDİ, yalnızca başına
   "DURUM: eklendi" notu eklenip tarihsel bir kayıt olarak bırakıldı.
+- **2026 İKİNCİ güncelleme — 175 sözün TAMAMI aynı oturumda İngilizce/İspanyolca'ya da
+  çevrildi ("evet çevir" isteği).** `motivation_pools.dart`'ın önceki EN/ES çevirisinde
+  kurulan AYNI felsefe (kelimesi kelimesine ÇEVİRİ değil, Zibo'nun tonunu koruyan bir
+  UYARLAMA; kaynakta "Kanka" geçmediği için EN/ES'te de bir hitap kelimesi zorlanmadı — bu
+  175 sözün TR halinde de "Kanka" hiç geçmediği `grep` ile doğrulandı) BİREBİR tekrarlandı.
+  21 EN/ES havuzunun HER BİRİNE kendi 25 çevirisi eklendi — artık TÜM 21 havuz (7×3 dil)
+  yeniden AYNI uzunlukta (76).
 - **`motivation_quote_selector_test.dart`'taki "havuz bütünlüğü" testleri güncellendi** —
-  `checkPool` yardımcısına bir `expectedLength` parametresi eklendi: 7 TR havuzu artık
-  `hasLength(76)` bekliyor, 21 EN/ES havuzu (bu turda ÇEVRİLMEDİ) `hasLength(51)`'de kaldı.
-  **Bu uzunluk FARKI sistemi BOZMUYOR** — `timeBucketQuotes`/`moodPoolQuotes`'un per-pool
-  Türkçe geri düşüş mekanizması yalnızca BOŞ havuzlar için devreye giriyor, dolu ama FARKLI
-  uzunluktaki havuzlar sorunsuz çalışıyor (her dil kendi havuzunun `%` ile sarılan index'ini
-  kullanıyor) — yalnızca İngilizce/İspanyolca kullanıcılar bu 175 yeni sözü henüz GÖRMÜYOR,
-  bu bilinçli/geçici bir tutarsızlık, ileride ayrı bir çeviri turunda ele alınmalı (bkz.
-  `motivation_pools.dart`'ın EN/ES çevirisinin daha önce nasıl yapıldığı, aynı bölümün başı).
-  `resolveMotivationQuoteText`/`pickMotivationQuote` testleri (`motivationMorningTr[0]` gibi
-  DİNAMİK referanslar kullanıyorlar, sabit "51" HİÇ geçmiyor) hiçbir değişiklik GEREKTİRMEDİ.
+  `checkPool` yardımcısındaki `expectedLength` parametresi TÜM 21 havuz için `76`'ya
+  çıkarıldı. `resolveMotivationQuoteText`/`pickMotivationQuote` testleri (`motivationMorningTr
+  [0]` gibi DİNAMİK referanslar kullanıyorlar, sabit "51"/"76" HİÇ geçmiyor) hiçbir değişiklik
+  GEREKTİRMEDİ.
+- **Bu turda GERÇEK bir duplicate-çeviri hatası YAKALANMADI** — `pool.toSet().length ==
+  hasLength(76)` testinin HER 21 havuzda da (7 TR + 7 EN + 7 ES) sorunsuz geçmesi, 351
+  yeni satırın (175 EN + 175 ES) hiçbirinin kendi havuzu İÇİNDE birebir tekrar ETMEDİĞİNİN
+  somut kanıtı — önceki EN/ES çeviri turunda (`motivation_pools.dart`'ın İLK 51'lik
+  çevirisinde) İKİ tane böyle hata bulunup düzeltilmişti, bu sefer TEMİZ çıktı.
 - **Doğrulama:** `flutter test` — tam suite, yalnızca önceden belgelenmiş `audioplayers`
   flake'i hariç yeşil (425 test, sayı DEĞİŞMEDİ — yeni test EKLENMEDİ, yalnızca mevcut 21
   "havuz bütünlüğü" testinin BEKLENEN UZUNLUĞU güncellendi). `flutter build apk --debug`
-  sorunsuz. **Gerçek cihazda GÖRSEL doğrulama YAPILMADI** — 175 yeni sözün Ana Sayfa'da
-  gerçekten göründüğünü kullanıcı zaman içinde (havuz 76 söz olduğu için tek bir oturumda
-  hepsini görmek beklenmiyor) kendi cihazında gözlemleyebilir.
+  sorunsuz. **Gerçek cihazda GÖRSEL doğrulama YAPILMADI** — dil değiştirip 175 yeni sözün
+  İngilizce/İspanyolca karşılıklarının Ana Sayfa'da GERÇEKTEN göründüğünü kullanıcı zaman
+  içinde (havuz 76 söz olduğu için tek bir oturumda hepsini görmek beklenmiyor) kendi
+  cihazında gözlemleyebilir.
 
 ### Konuşma Balonu ([speech_bubble.dart](lib/widgets/speech_bubble.dart))
 - **2026 bug düzeltmesi — kısa sözlerde favori/paylaş/söz-ekle butonları metnin ÜSTÜNE biniyordu.**
