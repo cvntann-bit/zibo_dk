@@ -23,6 +23,7 @@ import 'providers/custom_messages_provider.dart';
 import 'providers/daily_rewards_provider.dart';
 import 'providers/dream_journal_provider.dart';
 import 'providers/favorite_quotes_provider.dart';
+import 'providers/founder_badge_provider.dart';
 import 'providers/goals_provider.dart';
 import 'providers/gratitude_provider.dart';
 import 'providers/locale_provider.dart';
@@ -429,6 +430,11 @@ class DijitalKankaApp extends StatelessWidget {
           ),
         ),
         ChangeNotifierProvider(create: (_) => CostumeProvider(uid: uid)),
+        // 2026 yeni özellik — Kurucu Üye rozeti artık Google hesabına
+        // bağlanan İLK 500 kullanıcıya, canlı bir Firestore sayacıyla
+        // veriliyor (bkz. FounderBadgeProvider dokümantasyonu). Diğer
+        // provider'lardan bağımsız, yalnızca kendi `uid`'ini alıyor.
+        ChangeNotifierProvider(create: (_) => FounderBadgeProvider(uid: uid)),
         ChangeNotifierProvider(
           create: (_) => CustomMessagesProvider(uid: uid),
         ),

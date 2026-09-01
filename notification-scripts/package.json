@@ -14,7 +14,7 @@
     "water-reminder": "node src/waterReminder.js",
     "cleanup-stale-anonymous-users": "node src/cleanupStaleAnonymousUsers.js",
     "process-referral-rewards": "node src/processReferralRewards.js",
-    "grant-founder-badges": "node src/grantFounderBadges.js"
+    "init-founder-badge-counter": "node src/initFounderBadgeCounter.js"
   },
   "dependencies": {
     "firebase-admin": "^12.7.0"

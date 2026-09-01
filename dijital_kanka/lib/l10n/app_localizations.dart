@@ -2410,6 +2410,24 @@ abstract class AppLocalizations {
   /// **'Kurucu Üye'**
   String get founderBadgeTooltip;
 
+  /// Google hesabına bağlanma satırının üstündeki, henüz bağlanmamış kullanıcılara gösterilen teşvik kartının başlığı
+  ///
+  /// In tr, this message translates to:
+  /// **'Kurucu Üye Rozeti Kazan'**
+  String get founderBadgePromoTitle;
+
+  /// Kurucu Üye teşvik kartının alt metni — kaç hakkın kaldığını canlı gösterir
+  ///
+  /// In tr, this message translates to:
+  /// **'Google hesabını bağlayan ilk 500 kişiden biri ol — {remaining} hak kaldı!'**
+  String founderBadgePromoBody(int remaining);
+
+  /// Google hesabı bağlanırken Kurucu Üye kontenjanından bir hak da kazanıldığında, bağlanma başarı mesajının ARDINDAN gösterilen ikinci SnackBar
+  ///
+  /// In tr, this message translates to:
+  /// **'🏅 Kurucu Üye rozetini kazandın!'**
+  String get founderBadgeClaimedMessage;
+
   /// Hedef Takibi ana ekran widget'ının başlığı (widget içinde + Widget'lar ekranındaki satırda)
   ///
   /// In tr, this message translates to:

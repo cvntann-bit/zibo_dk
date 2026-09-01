@@ -12,6 +12,7 @@ import '../providers/notification_provider.dart';
 import '../providers/sound_effects_provider.dart';
 import '../providers/theme_provider.dart';
 import '../utils/google_link_action.dart';
+import '../widgets/founder_badge_promo_card.dart';
 import '../widgets/language_flag_circle.dart';
 import '../widgets/rate_us_sheet.dart';
 import 'legal_placeholder_screen.dart';
@@ -217,6 +218,16 @@ class SettingsScreen extends StatelessWidget {
                   ),
                 ),
                 const Divider(height: 1),
+                // 2026 yeni özellik — Kurucu Üye rozeti kontenjanı hâlâ
+                // doluysa VE hesap henüz bağlı değilse, hemen aşağıdaki
+                // Google satırının ÜSTÜNE küçük bir teşvik kartı ekler
+                // (bkz. FounderBadgePromoCard dokümantasyonu — kart kendi
+                // içinde koşulları kontrol edip gerekmiyorsa hiçbir yer
+                // kaplamıyor, bu yüzden burada ekstra bir `if` GEREKMEDİ).
+                const Padding(
+                  padding: EdgeInsets.fromLTRB(12, 12, 12, 0),
+                  child: FounderBadgePromoCard(),
+                ),
                 // 2026 yeni özellik — mevcut (anonim) hesabı Google'a
                 // bağlayıp cihaz değişikliğinde veri kaybını önler (bkz.
                 // AuthLinkProvider/utils/google_link_action.dart). Profil

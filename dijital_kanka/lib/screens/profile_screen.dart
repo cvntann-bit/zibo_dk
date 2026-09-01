@@ -31,6 +31,7 @@ import '../services/photo_picker_service.dart';
 import '../utils/google_link_action.dart';
 import '../utils/profile_stats.dart';
 import '../widgets/costume_closet_preview.dart';
+import '../widgets/founder_badge_promo_card.dart';
 import '../widgets/profile_stat_card.dart';
 import '../widgets/zibo_share_sheet.dart';
 
@@ -418,6 +419,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ),
             const SizedBox(height: 12),
+            const FounderBadgePromoCard(),
             _ProfileLinkRow(
               icon: authLink.isLinked
                   ? Icons.verified_user_rounded

@@ -4488,11 +4488,16 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
   `home_widget_sync_coordinator_test.dart`/`widgets_screen_test.dart` (2026 — bkz. "Ana Ekran
   Widget'ları" bölümü), YENİ `motivation_quote_selector_test.dart` (2026 — bkz. "Motivasyon Sözü
   Sistemi" bölümü, 11 test — `timeBucketFor`/`moodPoolTagFor`/`recentLowMoodRatio`/
-  `resolveMotivationQuoteText`/`pickMotivationQuote`'un saf fonksiyon testleri). **`test/
-  wheel_screen_test.dart` KISA SÜRE var oldu, SONRA SİLİNDİ** — Şans Çarkı sonrası reklam
-  denemesiyle birlikte geldi, kullanıcı o özelliği istemeyince (bkz. "Zibo'ya Art Arda Dokunma →
-  Geçiş Reklamı" bölümündeki geri alma notu) testi de anlamsızlaştığı için kaldırıldı.
-  **Toplam: 400 test** (399 geçti + 1 önceden belgelenmiş `audioplayers` flake'i — 2026, EN/ES
+  `resolveMotivationQuoteText`/`pickMotivationQuote`'un saf fonksiyon testleri), YENİ
+  `founder_badge_provider_test.dart` (2026 — bkz. "Kurucu Üye Rozeti" bölümündeki "2026 İKİNCİ
+  güncelleme", canlı sayaç + `claimIfEligible()` transaction mantığının `fake_cloud_firestore`
+  ile 8 testi). **`test/wheel_screen_test.dart` KISA SÜRE var oldu, SONRA SİLİNDİ** — Şans Çarkı
+  sonrası reklam denemesiyle birlikte geldi, kullanıcı o özelliği istemeyince (bkz. "Zibo'ya Art
+  Arda Dokunma → Geçiş Reklamı" bölümündeki geri alma notu) testi de anlamsızlaştığı için
+  kaldırıldı.
+  **Toplam: 408 test** (407 geçti + 1 önceden belgelenmiş `audioplayers` flake'i — 2026, Kurucu
+  Üye rozetinin Google-bağlama-tabanlı canlı sayaca geçişi turunda `founder_badge_provider_test.
+  dart` [8 YENİ test] eklendi, bkz. "Kurucu Üye Rozeti" bölümü. Bu turdan BİR ÖNCEKİ, EN/ES
   söz havuzu çevirisi turunda `motivation_quote_selector_test.dart`'a 21 YENİ "havuz bütünlüğü"
   testi [`pool.toSet().length == 51`, 7 Tr + 7 En + 7 Es] eklendi, bkz. `motivation_pools.dart`
   bülteni. Bu turdan BİR ÖNCEKİ (Türkçe-yalnızca) turda `motivation_quote_selector_test.dart`'a
@@ -4514,7 +4519,9 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
   testler için — **`RootScreen`'in ihtiyaç duyduğu HER provider'ı içermeli** (`AppThemeProvider`,
   `AuthLinkProvider`, `CoinProvider`, `CostumeProvider`, `CurrencyProvider`,
   `CustomMessagesProvider`, `DailyRewardsProvider`, `DreamJournalProvider`,
-  `FavoriteQuotesProvider`, `GoalsProvider`, `GratitudeProvider`, `LocaleProvider`,
+  `FavoriteQuotesProvider`, `FounderBadgeProvider` (2026 — `ProfileScreen`/`SettingsScreen`'in
+  `FounderBadgePromoCard` üzerinden izlediği, bkz. "Kurucu Üye Rozeti" bölümü), `GoalsProvider`,
+  `GratitudeProvider`, `LocaleProvider`,
   `ManifestProvider`, `MoneyProvider`, `MoodProvider`, `NotificationProvider`, `ProfileProvider`,
   `ProfileStatsArchiveProvider`, `SoundEffectsProvider`,
   `ThemeProvider`, `TrustedTimeProvider`, `WaterProvider`, `ZiboPoseProvider`) — bunun sebebi
@@ -6177,7 +6184,14 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
   tetikleyerek her iki tarafın da coin aldığını Firestore Console'da doğrulamak) — kullanıcı
   isterse ileride yapabilir.
 
-## "Kurucu Üye" Rozeti ([founder_badge.dart](lib/data/founder_badge.dart), [profile_screen.dart](lib/screens/profile_screen.dart), workspace kökü [notification-scripts/src/grantFounderBadges.js](../notification-scripts/src/grantFounderBadges.js) + [.github/workflows/grant-founder-badges.yml](../.github/workflows/grant-founder-badges.yml))
+## "Kurucu Üye" Rozeti ([founder_badge.dart](lib/data/founder_badge.dart), [founder_badge_provider.dart](lib/providers/founder_badge_provider.dart), [founder_badge_promo_card.dart](lib/widgets/founder_badge_promo_card.dart), [profile_screen.dart](lib/screens/profile_screen.dart), [settings_screen.dart](lib/screens/settings_screen.dart), workspace kökü [notification-scripts/src/initFounderBadgeCounter.js](../notification-scripts/src/initFounderBadgeCounter.js) + [.github/workflows/init-founder-badge-counter.yml](../.github/workflows/init-founder-badge-counter.yml))
+
+> **Bu bölümün İLK üç bullet'ı (aşağıda) "ilk 500 KAYIT OLAN kullanıcı, bir kerelik elle tetiklenen
+> Admin SDK betiği" mimarisini anlatıyor — bu mimari 2026'da TAMAMEN DEĞİŞTİ (bkz. altta "2026
+> İKİNCİ güncelleme"), `grantFounderBadges.js`/`grant-founder-badges.yml` SİLİNDİ. Bu bölüm
+> SİLİNMEDİ, yalnızca projenin "geçmiş karar + neden değiştiği birlikte kalır" convansiyonuyla
+> tarihsel bağlam olarak tutuluyor — `founder_badge` id'si/placeholder görsel/Profil'deki küçük
+> simge notları HÂLÂ GEÇERLİ, yalnızca "kim rozeti KAZANIR ve NASIL" kısmı değişti.**
 
 - **2026 yeni özellik.** Kullanıcı isteği: ilk 500 (kullanıcının `AskUserQuestion` ile 100/500
   arasından seçtiği eşik) kayıt olan kullanıcıya özel, satın alınamayan bir "Kurucu Üye" rozeti/
@@ -6228,10 +6242,126 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
   ('founder_badge')` çağrılmadan ÖNCE rozet YOK, çağrıldıktan SONRA `find.byTooltip('Kurucu Üye')`
   ile görünür) — backend betiği bu ortamda çalıştırılamıyor (diğer tüm Node betikleriyle AYNI
   sınırlama), yalnızca istemci tarafı (rozetin GÖSTERİLMESİ) test edildi. **Toplam: 325 test.**
-- **Kullanıcının YAPMASI gereken adım:** ilk 500 kullanıcıyı "kilitlemeye" karar verdiğinde GitHub
-  Actions'tan `grant-founder-badges.yml`'i `workflow_dispatch` ile (önce `dry_run: true` ile KİME
-  rozet verileceğini gözden geçirip, sonra `dry_run: false` ile GERÇEKTEN vererek) tetiklemesi
-  gerekiyor — asistan bunu otomatik/periyodik yapmıyor, bilerek elle tetiklenen bir "kilitleme anı".
+- **ARTIK GEÇERSİZ — "Kullanıcının YAPMASI gereken adım"** eski hâliyle (elle `grant-founder-
+  badges.yml` tetiklemek) artık YOK, bkz. altta "2026 İKİNCİ güncelleme."
+
+### 2026 İKİNCİ güncelleme — rozet artık "ilk 500 KAYIT OLAN"a değil, "Google hesabına bağlanan İLK 500"e, CANLI bir uygulama-içi sayaçla veriliyor
+
+- **Kullanıcı isteği (verbatim özet):** "Kurucu Üye rozetini şuna bağla: ilk 500 kişi Google
+  hesabıyla oturum açıp bağlayınca rozet kazansın, uygulama içinde bir sayaç olsun, 500 kişi
+  tamamlanınca kapansın ama bilgilendirme olsun — örneğin 'Google hesabını bağla, Kurucu Üye
+  rozeti kazan' gibi." İki net karar `AskUserQuestion` ile önceden alındı: (1) saya/teşvik mesajı
+  Google satırının HEMEN ÜSTÜNE **ayrı, küçük bir uyarı kartı** olarak konacak (satırın alt metnine
+  gömülmek YERİNE — kullanıcının kendi seçimi, "daha dikkat çekici" gerekçesiyle); (2) eski
+  `grantFounderBadges.js` betiği DAHA ÖNCE gerçekten çalıştırılmıştı ama kaç kişiye gittiği
+  BİLİNMİYORDU — bu yüzden yeni sayacın başlangıç değeri KÖR bir "0'dan başlat" yerine, TÜM
+  kullanıcıları tarayıp gerçek sayıyı hesaplayan bir betikle (altta) belirlendi.
+- **Mimari değişikliği — bir kerelik Admin SDK betiğinden, CANLI bir Firestore sayacına.** Eski
+  mimari "haftalar sonra elle bir kez tetiklenen, TÜM kullanıcı listesini `creationTime`'a göre
+  sıralayan" bir batch işlemdi — yeni gereksinim ("Google'a bağlanan İLK 500", ANLIK/canlı bir
+  sayaçla) bu modele UYMUYORDU. Çözüm: `founderBadgeStatus/status` adında TEK bir paylaşılan
+  Firestore dokümanı (`{count: int}`), [FounderBadgeProvider] tarafından `.snapshots()` ile CANLI
+  izleniyor VE bir Firestore **transaction**'ı ile artırılıyor.
+  - **Neden Cloud Functions'a (Blaze plan) GEREK KALMADAN atomik — Firestore'un KENDİ optimistic-
+    concurrency transaction mekanizması.** `FounderBadgeProvider.claimIfEligible()` bir
+    transaction İÇİNDE `count`'u okuyup `< 500` ise `count+1` yazıyor VE AYNI transaction'da
+    kullanıcının `costumeState.ownedIds`'ine `founder_badge`'i ekliyor. Firestore SDK'sı AYNI
+    dokümana AYNI ANDA gelen İKİ transaction'ı KENDİLİĞİNDEN serileştirip (biri "kazanır", diğeri
+    ÇAKIŞMA algılanıp OTOMATİK olarak yeni bir `count` değeriyle RETRY edilir) ikisinin de aynı anda
+    `499`'u okuyup ikisinin de `500`'e yazmasını engelliyor — bu proje genelinde "hassas coin/ödül
+    mutasyonları Cloud Functions/GitHub Actions'a taşınsın" felsefesinin (bkz. "Coin Ekonomisi
+    Güvenliği"/"Davet Et" bölümleri) YERİNE, BU SPESİFİK "ilk N kişi" problemi için Firestore'un
+    KENDİ transaction garantisinin YETERLİ olduğu nadir bir durum.
+  - **`firestore.rules`'daki `founderBadgeStatus/status` kuralı İKİNCİ, sunucu-taraflı bir savunma
+    katmanı** — `count` yalnızca TAM +1 artabilir VE `count < 500` iken yazılabilir, `create`
+    BİLEREK `false` (doküman istemcilerce ASLA oluşturulamaz, yalnızca Admin SDK betiğiyle BİR
+    KEZ seed edilir). Doküman henüz seed edilmediyse `resource` `null` olacağı için `update` kuralı
+    da doğal olarak reddeder — `claimIfEligible()`'ın kendi `!statusSnap.exists` kontrolüyle
+    TUTARLI, çift katmanlı bir "henüz hazır değilse sessizce devre dışı kal" garantisi.
+  - **`costumeState` yazımı için ayrı bir kural GEREKMEDİ** — mevcut genel `users/{uid}/state/
+    {stateDoc}` kuralı (`coinState` HARİÇ tam yetkili) zaten sahibinin kendi `costumeState`'ine
+    yazmasına izin veriyor; bu, "kostüm sahiplik listeleri zaten tamamen korumasız" diye ÖNCEDEN
+    kabul edilmiş bir riskle (bkz. "Coin Ekonomisi Güvenliği" bölümü) AYNI kategoride — bu özellik
+    YENİ bir risk EKLEMİYOR, yalnızca ZATEN var olan güven modelini kullanıyor.
+  - **Kabul edilen sınırlama (kod içinde de belgeli):** bu TAM bir sunucu yetkisi DEĞİL — bir mod
+    APK teorik olarak GERÇEKTEN Google'a bağlanmadan bu transaction'ı doğrudan tetikleyip bir slot
+    "yakabilir". Ama bunun TEK sonucu havuzdan bir slotun boşa gitmesi (griefing), gerçek bir coin/
+    ödeme KAYBI DEĞİL — düşük şiddetli, projenin genelindeki risk kabulüyle TUTARLI, üzerine
+    ELEŞTİRİLMEDEN kabul edildi.
+- **`FounderBadgeProvider`** (YENİ) — `ReferralProvider`'ın AYNI `firestore ?? (uid == null ? null
+  : FirebaseFirestore.instance)` test-enjeksiyon deseni. `isLoaded`/`claimedCount`/`remainingSlots`/
+  `isSoldOut` getter'ları — `isLoaded == false` iken (uid yok, ağ yok, VEYA doküman henüz seed
+  edilmedi) UI HİÇBİR ŞEY göstermez, ne "0/500" ne "500/500" gibi yanıltıcı bir ilk kare.
+  - **Kritik doğruluk kararı — `claimIfEligible()`'daki Firestore yazımı, `CostumeProvider`'ın
+    bellek-içi state'ini BYPASS EDİYOR, bu yüzden çağıran taraf HEMEN ARDINDAN `CostumeProvider.
+    markOwned(founderBadgeCostumeId)`'i de çağırmalı.** `CostumeProvider._save()` HER save'de
+    TÜM `costumeState` dokümanının ÜZERİNE YAZIYOR (bkz. `CostumeProvider` dokümantasyonu) — eğer
+    transaction'ın Firestore'a doğrudan yazdığı `founder_badge` üyeliği, `CostumeProvider`'ın
+    bellek-içi `_ownedIds` listesine hiç YANSITILMAZSA, (a) Profil'deki rozet ikonu uygulama
+    yeniden başlamadan GÖRÜNMEZ, VE (b) bir SONRAKİ ilgisiz `CostumeProvider._save()` (ör. başka
+    bir kostüm giyme) bu Firestore yazımını SESSİZCE ÜZERİNE YAZIP KAYBEDER. Bu yüzden
+    `utils/google_link_action.dart`'taki `handleGoogleLinkTap`, `claimIfEligible()` `true`
+    dönerse HEMEN `context.read<CostumeProvider>().markOwned(...)`'ü de çağırıyor — `markOwned`
+    idempotent olduğu için (zaten sahipse no-op) bu güvenle her zaman çağrılabilir.
+  - **Transaction'ın KENDİSİ, `costumeState` dokümanının VAR OLUP olmadığına göre `tx.update`/
+    `tx.set` arasında dallanıyor** (`tx.set(..., merge:true)` KULLANILMADI) — `fake_cloud_
+    firestore`'un (bkz. altta test notu) transaction içindeki `set()`'in `SetOptions`'ı SESSİZCE
+    YOK SAYDIĞI (tam bir overwrite'a düştüğü) gerçek bir davranış farkı PAKET KAYNAĞI okunarak
+    keşfedildi — merge semantiğine HİÇ güvenmemek, doküman yoksa `equippedId: null` içeren TAM bir
+    başlangıç dokümanı YAZMAK, doküman VARSA yalnızca `arrayUnion` ile `update` etmek, bu riski
+    HEM gerçek Firestore'da HEM test double'ında aynı şekilde ORTADAN KALDIRDI.
+- **`FounderBadgePromoCard`** (YENİ, PAYLAŞILAN widget — Profil'in "Zibo ile Bağın" bölümünde VE
+  Ayarlar'ın "Genel" kartında AYNI widget kullanılıyor, kod tekrarı yok). Google satırının HEMEN
+  ÜSTÜNDE (kullanıcının seçtiği yerleşim); `!isLoaded || isLinked || isSoldOut` iken `SizedBox.
+  shrink()` — üç durumun HİÇBİRİNDE yer kaplamıyor. Dokununca AYNI `handleGoogleLinkTap(context)`'i
+  çağırıyor (Google satırıyla BİREBİR aynı akış).
+- **`handleGoogleLinkTap` — Kurucu Üye denemesi YALNIZCA "yeni/ilk kez bağlama" dalında.**
+  [handleSwitchAccountTap]/`_offerSignInInstead`'in "MEVCUT bir hesabı KURTARMA" akışları BİLEREK
+  DIŞARIDA — o hesap ya zaten rozete sahip ya da bağlandığı anda kontenjan doluydu, ikisi de o
+  akışlarda tekrar denenecek bir şey değil. Başarı SnackBar'ı `wonFounderBadge` durumuna göre
+  `googleLinkSuccessMessage` + (kazanıldıysa) `founderBadgeClaimedMessage`'ı BİRLEŞTİRİYOR.
+- **Sıra sinyali artık `creationTime` DEĞİL** — canlı sayaç, Firestore transaction'ının kendi
+  serileştirme sırasını kullanıyor (kim ÖNCE transaction'ı BAŞARIYLA COMMIT ederse o kazanıyor).
+- **YENİ, tek seferlik betik** `notification-scripts/src/initFounderBadgeCounter.js` — ESKİ
+  `grantFounderBadges.js`'in (bkz. yukarıdaki tarihsel bölüm) YERİNE geçti, TAMAMEN SİLİNDİ. Bu
+  betiğin işi ARTIK rozet VERMEK değil, yeni sayacı DOĞRU başlangıç değeriyle SEED ETMEK: TÜM
+  kullanıcıları (`auth.listUsers()`) tarayıp `costumeState.ownedIds` içinde `founder_badge`
+  arayarak GERÇEK sayıyı (eski betiğin DAHA ÖNCE kaç kişiye rozet vermiş OLABİLECEĞİni, kullanıcının
+  kendisi de tam hatırlamıyordu) hesaplıyor, `founderBadgeStatus/status`'a `{count: N}` yazıyor.
+  `cleanupStaleAnonymousUsers.js` ile AYNI dry-run-varsayılan güvenlik deseni +
+  **`founderBadgeStatus/status` ZATEN VARSA (canlıya alınıp gerçek kullanıcı bağlamalarıyla
+  ilerliyor olabilir) `FORCE=true` AÇIKÇA verilmedikçe ÜZERİNE YAZILMAZ** — canlı bir sayacı
+  yanlışlıkla sıfırlama riskine karşı ek bir güvenlik ağı.
+- **YENİ** `.github/workflows/init-founder-badge-counter.yml` — `grant-founder-badges.yml`'in
+  YERİNE geçti, TAMAMEN SİLİNDİ. AYNI desen: SADECE `workflow_dispatch`, `dry_run` VARSAYILAN
+  `true`, ARTIK bir de `force` girdisi var (VARSAYILAN `false`).
+- **Test:** YENİ `test/founder_badge_provider_test.dart` (8 test, `fake_cloud_firestore` ile —
+  `referral_provider_test.dart`'taki AYNI desen): uid yokken/sayaç seed edilmeden özellik devre
+  dışı, canlı sayaç dışarıdan değişince günceller, kontenjan doluyken kazanılamaz VE sayaç
+  DEĞİŞMEZ, başarılı kazanımda sayaç +1 artar VE `ownedIds`'e eklenir, VAR OLAN `equippedId`
+  KORUNUR [transaction'ın `set`/`update` dallanmasının doğru çalıştığının kanıtı], zaten sahip olan
+  bir kullanıcı ikinci kez sayacı artırmaz [idempotent], `isClaiming` doğru geçiş yapar. `profile_
+  screen_test.dart`/`settings_screen_test.dart`/`widget_test.dart`'ın `_buildAppWithClock()`'una
+  `FounderBadgeProvider` eklendi (`RootScreen`'in/`ProfileScreen`'in/`SettingsScreen`'in ihtiyaç
+  duyduğu HER provider kuralı, bkz. "Test kalıpları" bölümü). `flutter test` tam yeşil: **408
+  test** (407 geçti + 1 önceden belgelenmiş, bu değişiklikle İLGİSİZ `audioplayers` flake'i —
+  `git stash` ile ÖNCEKİ commit'e dönülüp AYNI testin AYNI şekilde başarısız olduğu doğrulandı).
+- **Kullanıcının Firebase Console/GitHub Actions'ta tamamlaması gereken adımlar** (asistan yapamaz
+  — Console/production Firestore erişimi gerektiriyor):
+  1. Güncel `firestore.rules` içeriğini (bu turda eklenen `founderBadgeStatus/status` bloğu dahil)
+     Firebase Console > Firestore Database > Rules'a yapıştırıp yayınlamak (bkz. "Firestore veri
+     kalıcılığı" bölümündeki AYNI "editör TAMAMEN değiştirme bekliyor, üzerine EKLEME değil" notu).
+  2. GitHub Actions'tan `init-founder-badge-counter.yml`'i ÖNCE `dry_run: true` ile tetikleyip
+     log'da kaç kullanıcının eski betikten kalma `founder_badge`'e ZATEN sahip olduğunu gözden
+     geçirmek, sonra `dry_run: false` ile TEKRAR tetikleyip `founderBadgeStatus/status`'u GERÇEKTEN
+     seed etmek — bu adım tamamlanmadan `FounderBadgeProvider.isLoaded` HİÇBİR ZAMAN `true` OLMAZ,
+     teşvik kartı hiç GÖRÜNMEZ (sessiz/güvenli bir "henüz hazır değil" durumu, kod tarafında ek bir
+     şey GEREKMEZ).
+  3. Gerçek cihazda: bir Google hesabına İLK KEZ bağlanıp hem başarı mesajının "🏅 Kurucu Üye
+     rozetini kazandın!" ekini GERÇEKTEN gösterdiğini HEM Profil'deki rozet ikonunun ANINDA
+     (uygulama yeniden başlamadan) belirdiğini doğrulamak — bu turda YALNIZCA `flutter test`/
+     `flutter build apk --debug` ile doğrulandı, gerçek Google kimlik doğrulaması + canlı Firestore
+     transaction'ı bu ortamda test EDİLEMEDİ.
 
 ## Google Play Billing (IAP) Entegrasyonu ([purchase_service.dart](lib/services/purchase_service.dart), [iap_purchase_service.dart](lib/services/iap_purchase_service.dart))
 

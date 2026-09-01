@@ -1330,6 +1330,17 @@ class AppLocalizationsTr extends AppLocalizations {
   String get founderBadgeTooltip => 'Kurucu Üye';
 
   @override
+  String get founderBadgePromoTitle => 'Kurucu Üye Rozeti Kazan';
+
+  @override
+  String founderBadgePromoBody(int remaining) {
+    return 'Google hesabını bağlayan ilk 500 kişiden biri ol — $remaining hak kaldı!';
+  }
+
+  @override
+  String get founderBadgeClaimedMessage => '🏅 Kurucu Üye rozetini kazandın!';
+
+  @override
   String get widgetTitleGoals => 'Hedef Takibi';
 
   @override

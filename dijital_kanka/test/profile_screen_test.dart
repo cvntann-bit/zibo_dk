@@ -17,6 +17,7 @@ import 'package:dijital_kanka/providers/auth_link_provider.dart';
 import 'package:dijital_kanka/providers/coin_provider.dart';
 import 'package:dijital_kanka/providers/costume_provider.dart';
 import 'package:dijital_kanka/providers/favorite_quotes_provider.dart';
+import 'package:dijital_kanka/providers/founder_badge_provider.dart';
 import 'package:dijital_kanka/providers/goals_provider.dart';
 import 'package:dijital_kanka/providers/gratitude_provider.dart';
 import 'package:dijital_kanka/providers/manifest_provider.dart';
@@ -66,6 +67,7 @@ Widget _buildTestApp(PhotoPickerService photoService) {
         create: (_) => TrustedTimeProvider(timeService: const _NeverSyncTimeService()),
       ),
       ChangeNotifierProvider(create: (_) => AuthLinkProvider()),
+      ChangeNotifierProvider(create: (_) => FounderBadgeProvider()),
       ChangeNotifierProvider(create: (_) => ProfileProvider()),
       ChangeNotifierProvider(create: (_) => ProfileStatsArchiveProvider()),
       ChangeNotifierProvider(create: (_) => ReferralProvider()),

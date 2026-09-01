@@ -130,5 +130,35 @@ service cloud.firestore {
         && request.resource.data.status == 'pending';
       allow read, update, delete: if false;
     }
+
+    // Kurucu Üye rozeti — Google hesabına bağlanan İLK 500 kullanıcıya
+    // verilen, paylaşılan CANLI bir sayaç (bkz. CLAUDE.md "Kurucu Üye
+    // Rozeti" bölümü VE lib/providers/founder_badge_provider.dart). TEK
+    // doküman, istemci tarafında BİR Firestore transaction'ı ile
+    // increment ediliyor — Firestore'un kendi optimistic-concurrency
+    // transaction mekanizması aynı anda gelen iki isteğin ikisinin de
+    // count'u 499'dan 500'e artırmasını (çakışan tarafı otomatik retry
+    // ettirerek) engellediği için, Cloud Functions'a GEREK KALMADAN atomik
+    // bir "ilk N kişi" garantisi mümkün oluyor. Bu kural o garantinin
+    // İKİNCİ, sunucu-taraflı savunma katmanı: `count` yalnızca TAM +1
+    // artabilir VE 500'e ulaştıktan SONRA HİÇBİR yazıma izin verilmez.
+    //
+    // `create` BİLEREK `false` — doküman istemciler tarafından ASLA
+    // oluşturulamaz, yalnızca BİR KEZ `notification-scripts/src/
+    // initFounderBadgeCounter.js` (Admin SDK, bu kuralları atlar) ile seed
+    // ediliyor. Doküman henüz seed edilmediyse `resource` `null` olacağı
+    // için `update` kuralı da doğal olarak reddeder (özellik sessizce
+    // devre dışı kalır) — bu, `FounderBadgeProvider.claimIfEligible()`'ın
+    // zaten kendi tarafında yaptığı `!statusSnap.exists` kontrolüyle
+    // TUTARLI, çift katmanlı bir güvenlik.
+    match /founderBadgeStatus/status {
+      allow read: if request.auth != null;
+      allow update: if request.auth != null
+        && resource.data.count is int
+        && resource.data.count < 500
+        && request.resource.data.count == resource.data.count + 1
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['count']);
+      allow create, delete: if false;
+    }
   }
 }

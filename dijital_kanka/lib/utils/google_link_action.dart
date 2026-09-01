@@ -1,9 +1,14 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../data/founder_badge.dart';
 import '../l10n/app_localizations.dart';
 import '../providers/auth_link_provider.dart';
+import '../providers/costume_provider.dart';
+import '../providers/founder_badge_provider.dart';
 import '../services/google_auth_service.dart';
 import 'auth_switch.dart';
 
@@ -22,6 +27,16 @@ import 'auth_switch.dart';
 /// `switchToUid` sinyaline verilir, bu da `main.dart`'ın `_AppRoot`'unun
 /// TÜM uygulamayı o (kurtarılan) hesabın uid'iyle YENİDEN kurmasını
 /// tetikler.
+///
+/// **Bağlama BAŞARILI olunca — Kurucu Üye rozeti denemesi.** Bu, YALNIZCA
+/// bu dalda (yeni/ilk kez bağlama) yapılıyor — [handleSwitchAccountTap]/
+/// `_offerSignInInstead`'in "MEVCUT bir hesabı KURTARMA" akışları BİLEREK
+/// DIŞARIDA: o hesap ya zaten rozete sahip ya da bağlandığı anda kontenjan
+/// doluydu, ikisi de burada tekrar denenecek bir şey değil.
+/// [FounderBadgeProvider.claimIfEligible] hem kontenjanı hem "zaten
+/// sahip mi"yi kendi içinde kontrol ettiği için burada ekstra bir koşula
+/// GEREK YOK — sessizce `false` dönerse (kontenjan dolu, sayaç henüz seed
+/// edilmedi, ağ hatası vb.) yalnızca normal bağlanma mesajı gösterilir.
 Future<void> handleGoogleLinkTap(BuildContext context) async {
   final l10n = AppLocalizations.of(context)!;
   final authLink = context.read<AuthLinkProvider>();
@@ -36,9 +51,37 @@ Future<void> handleGoogleLinkTap(BuildContext context) async {
   try {
     final linked = await authLink.linkWithGoogle();
     if (!context.mounted || !linked) return;
+
+    final wonFounderBadge = await context
+        .read<FounderBadgeProvider>()
+        .claimIfEligible();
+    if (wonFounderBadge && context.mounted) {
+      // Yalnızca Firestore'daki sayacı arttırıp `costumeState`'e
+      // `founder_badge`'i ekliyor — `CostumeProvider`'ın KENDİ bellek-içi
+      // listesi bundan habersiz kalırsa, ekrandaki rozet ikonu (Profil
+      // fotoğrafının köşesi) uygulama yeniden başlamadan GÖRÜNMEZ VE bir
+      // SONRAKİ ilgisiz `CostumeProvider._save()` bu Firestore yazımını
+      // sessizce ÜZERİNE YAZABİLİR (bkz. `FounderBadgeProvider`
+      // dokümantasyonu). `markOwned` idempotent, yalnızca bellek-içi
+      // durumu senkronlayıp normal `_save()` yolundan aynı veriyi tekrar
+      // (zararsızca) yazıyor.
+      unawaited(
+        context.read<CostumeProvider>().markOwned(founderBadgeCostumeId),
+      );
+    }
+
+    if (!context.mounted) return;
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(l10n.googleLinkSuccessMessage)));
+      ..showSnackBar(
+        SnackBar(
+          content: Text(
+            wonFounderBadge
+                ? '${l10n.googleLinkSuccessMessage} ${l10n.founderBadgeClaimedMessage}'
+                : l10n.googleLinkSuccessMessage,
+          ),
+        ),
+      );
   } on GoogleAccountAlreadyLinkedElsewhereException {
     if (!context.mounted) return;
     await _offerSignInInstead(context, l10n, authLink);

@@ -1337,6 +1337,18 @@ class AppLocalizationsEs extends AppLocalizations {
   String get founderBadgeTooltip => 'Miembro Fundador';
 
   @override
+  String get founderBadgePromoTitle => 'Gana la Insignia de Miembro Fundador';
+
+  @override
+  String founderBadgePromoBody(int remaining) {
+    return 'Sé uno de los primeros 500 en vincular una cuenta de Google — ¡quedan $remaining lugares!';
+  }
+
+  @override
+  String get founderBadgeClaimedMessage =>
+      '🏅 ¡Ganaste la insignia de Miembro Fundador!';
+
+  @override
   String get widgetTitleGoals => 'Seguimiento de Metas';
 
   @override

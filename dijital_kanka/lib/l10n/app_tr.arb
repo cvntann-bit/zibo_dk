@@ -1798,6 +1798,21 @@
   "@founderBadgeTooltip": {
     "description": "Profil fotoğrafının köşesindeki Kurucu Üye rozetinin tooltip/erişilebilirlik etiketi"
   },
+  "founderBadgePromoTitle": "Kurucu Üye Rozeti Kazan",
+  "@founderBadgePromoTitle": {
+    "description": "Google hesabına bağlanma satırının üstündeki, henüz bağlanmamış kullanıcılara gösterilen teşvik kartının başlığı"
+  },
+  "founderBadgePromoBody": "Google hesabını bağlayan ilk 500 kişiden biri ol — {remaining} hak kaldı!",
+  "@founderBadgePromoBody": {
+    "description": "Kurucu Üye teşvik kartının alt metni — kaç hakkın kaldığını canlı gösterir",
+    "placeholders": {
+      "remaining": {"type": "int"}
+    }
+  },
+  "founderBadgeClaimedMessage": "🏅 Kurucu Üye rozetini kazandın!",
+  "@founderBadgeClaimedMessage": {
+    "description": "Google hesabı bağlanırken Kurucu Üye kontenjanından bir hak da kazanıldığında, bağlanma başarı mesajının ARDINDAN gösterilen ikinci SnackBar"
+  },
   "widgetTitleGoals": "Hedef Takibi",
   "@widgetTitleGoals": {
     "description": "Hedef Takibi ana ekran widget'ının başlığı (widget içinde + Widget'lar ekranındaki satırda)"

@@ -16,6 +16,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:dijital_kanka/l10n/app_localizations.dart';
 import 'package:dijital_kanka/providers/auth_link_provider.dart';
+import 'package:dijital_kanka/providers/founder_badge_provider.dart';
 import 'package:dijital_kanka/providers/locale_provider.dart';
 import 'package:dijital_kanka/providers/sound_effects_provider.dart';
 import 'package:dijital_kanka/providers/theme_provider.dart';
@@ -63,6 +64,7 @@ Widget _buildTestApp(AuthLinkProvider authLink) {
       ChangeNotifierProvider(create: (_) => ThemeProvider()),
       ChangeNotifierProvider(create: (_) => SoundEffectsProvider()),
       ChangeNotifierProvider(create: (_) => LocaleProvider()),
+      ChangeNotifierProvider(create: (_) => FounderBadgeProvider()),
       ChangeNotifierProvider.value(value: authLink),
     ],
     child: MaterialApp(

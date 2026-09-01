@@ -1,0 +1,54 @@
+name: Kurucu Üye Sayacını Başlat
+
+# BİR KERELİK kurulum işi (bkz. notification-scripts/src/
+# initFounderBadgeCounter.js dokümantasyonu VE CLAUDE.md "Kurucu Üye
+# Rozeti" bölümü) — Kurucu Üye rozeti artık uygulama içi CANLI bir sayaçla
+# çalışıyor (Google hesabına bağlanan ilk 500 kullanıcı); bu workflow o
+# sayacın `founderBadgeStatus/status` Firestore dokümanını BİR KEZ seed
+# eder. `cleanup-stale-anonymous-users.yml` ile AYNI desen — yalnızca elle
+# (`workflow_dispatch`) tetiklenir, `schedule:` YOK.
+#
+# GÜVENLİK: `dry_run` girdisi VARSAYILAN `true` — önce çalıştırıp kaç
+# kullanıcının (eski, artık kaldırılan grantFounderBadges.js betiğinden
+# kalma) zaten rozete sahip olduğunu Actions log'unda gözden geçirin,
+# sonra emin olunca `dry_run`ı `false` yaparak TEKRAR tetikleyin. Doküman
+# ZATEN VARSA (canlıya alınıp gerçek kullanıcı bağlamalarıyla ilerliyor
+# olabilir) `force: true` AÇIKÇA verilmedikçe ÜZERİNE YAZILMAZ.
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'true: yalnızca say ve logla (varsayılan, güvenli). false: GERÇEKTEN seed et.'
+        required: true
+        default: 'true'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+      force:
+        description: 'founderBadgeStatus/status ZATEN varsa bile üzerine yaz (dikkatli kullanın).'
+        required: true
+        default: 'false'
+        type: choice
+        options:
+          - 'false'
+          - 'true'
+
+jobs:
+  init:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: notification-scripts
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm install
+      - run: npm run init-founder-badge-counter
+        env:
+          FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
+          DRY_RUN: ${{ inputs.dry_run }}
+          FORCE: ${{ inputs.force }}

@@ -26,6 +26,7 @@ import 'package:dijital_kanka/providers/custom_messages_provider.dart';
 import 'package:dijital_kanka/providers/daily_rewards_provider.dart';
 import 'package:dijital_kanka/providers/dream_journal_provider.dart';
 import 'package:dijital_kanka/providers/favorite_quotes_provider.dart';
+import 'package:dijital_kanka/providers/founder_badge_provider.dart';
 import 'package:dijital_kanka/providers/goals_provider.dart';
 import 'package:dijital_kanka/providers/gratitude_provider.dart';
 import 'package:dijital_kanka/providers/locale_provider.dart';
@@ -130,6 +131,7 @@ Widget _buildAppWithClock(DateTime Function() now) {
       ChangeNotifierProvider(create: (_) => DailyRewardsProvider(now: now)),
       ChangeNotifierProvider(create: (_) => DreamJournalProvider()),
       ChangeNotifierProvider(create: (_) => FavoriteQuotesProvider()),
+      ChangeNotifierProvider(create: (_) => FounderBadgeProvider()),
       ChangeNotifierProvider(create: (_) => GoalsProvider(now: now)),
       ChangeNotifierProvider(create: (_) => GratitudeProvider(now: now)),
       ChangeNotifierProvider(create: (_) => LocaleProvider()),
