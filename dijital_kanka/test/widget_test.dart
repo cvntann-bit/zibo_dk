@@ -2013,6 +2013,39 @@ void main() {
   );
 
   testWidgets(
+    'Günlük Ruh Hali Takibi: emoji seçilip not yazılınca ikisi birlikte '
+    'kaydedilir ve geçmişte görünür',
+    (WidgetTester tester) async {
+      await _pumpPastOnboarding(tester, const DijitalKankaApp());
+
+      await _openModulesMenu(tester);
+      await tester.tap(find.text('Günlük Ruh Hali Takibi'));
+      await tester.pumpAndSettle();
+
+      // Ruh hali seçilmeden önce not alanı hiç görünmüyor (bkz.
+      // mood_tracking_screen.dart — `todayMood == null` iken gizli).
+      expect(find.byType(TextField), findsNothing);
+
+      await tester.tap(find.text('😄')); // veryHappy
+      await tester.pumpAndSettle();
+
+      // Şimdi not alanı belirdi.
+      expect(find.byType(TextField), findsOneWidget);
+
+      await tester.enterText(find.byType(TextField), 'Harika bir gündü!');
+      await tester.testTextInput.receiveAction(TextInputAction.done);
+      await tester.pumpAndSettle();
+
+      // Geçmiş listesinde hem ruh hali etiketi hem yazılan not görünüyor —
+      // `find.text` hem hâlâ odaktaki `TextField`'ın `EditableText`'ini HEM
+      // geçmiş listesindeki yeni `Text`'i eşleştirdiği için `findsWidgets`
+      // (en az bir tane) kullanılıyor, `findsOneWidget` DEĞİL.
+      expect(find.text('Çok iyi'), findsOneWidget);
+      expect(find.text('Harika bir gündü!'), findsWidgets);
+    },
+  );
+
+  testWidgets(
     'Su Takibi: 8 bardak işaretlenince hedef tamamlanır ve 5 Zibo Coin kazanılır',
     (WidgetTester tester) async {
       await _pumpPastOnboarding(tester, const DijitalKankaApp());

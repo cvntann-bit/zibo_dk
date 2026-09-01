@@ -240,6 +240,7 @@
   "moodWeekSummaryTitle": "Últimos 7 Días",
   "moodHistoryTitle": "Historial",
   "moodHistoryEmpty": "Aún no hay registros.",
+  "moodNoteHint": "Puedes escribir brevemente cómo te sientes hoy (opcional)",
   "moodLabelVeryUnhappy": "Muy mal",
   "moodLabelUnhappy": "Mal",
   "moodLabelNeutral": "Neutral",

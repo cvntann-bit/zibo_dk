@@ -142,6 +142,99 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
   değişken ataması) artık `_currentHomeMessage(tester)` (YENİ yardımcı — `SpeechBubble`'ın İÇİNDEKİ
   `Text`'i doğrudan okuyor) ile o anki GERÇEK mesajı okuyup üyelik/eşitlik kontrolü yapıyor, belirli
   bir sabit metne güvenmiyor.
+  > **TARİHSEL — bu bug düzeltmesindeki `_messageIndex`/`_pickNewMessageIndex()` artık kod
+  > tabanında YOK, altta belgelenen "Motivasyon Sözü Sistemi"nin `_currentQuote`/`_pickAndSetQuote`
+  > çiftiyle DEĞİŞTİRİLDİ** — kök neden analizi (ilk sözün rastgele başlaması gerektiği) hâlâ
+  > geçerli, yeni sistem de AYNI garantiyi (rastgele başlangıç + art arda tekrarsızlık) koruyor.
+
+#### Motivasyon Sözü Sistemi — zaman dilimi + ruh hali ağırlıklı seçim ([motivation_pools.dart](lib/data/motivation_pools.dart), [motivation_quote_selector.dart](lib/utils/motivation_quote_selector.dart))
+
+- **2026 yeni özellik.** Kullanıcı isteği (verbatim özet): Zibo'nun sözü artık cihazın YEREL
+  saatine göre zaman dilimine (sabah/öğle/akşam/gece) duyarlı olsun, kullanıcının EN SON kaydettiği
+  ruh haline göre de tavrı değişsin (düşük ruh halinde teselli edici, yüksekte enerjiyi
+  pekiştirici), ama TEK DÜZE olmasın — ağırlıklı bir karışım (zaman %50-60, ruh hali %20-30, kalan
+  genel havuzdan) + kısa süreli tekrar-önleme. Kullanıcı masaüstünde yedi TXT dosyası hazırladı
+  (`sozler_sabah/ogle/aksam/gece.txt` + `sozler_dusuk/notr/yuksek_ruhhali.txt`, 51'er satır) —
+  bunlar `lib/data/motivation_pools.dart`'a elle aktarıldı.
+  - **Kapsam BİLEREK dar tutuldu — yalnızca Ana Sayfa'nın Zibo konuşma balonu.**
+    `zibo_messages.dart`'ın 279 sözü ATILMADI — "genel/rastgele" dilimin kaynağı olarak KALDI
+    (kullanıcının "kalan yüzde genel havuzdan gelsin" isteğiyle birebir). Ruh Hali Takibi
+    ekranının KENDİ küçük, ilgisiz `mood_quotes.dart` havuzu (10 söz, Timer'lı rotasyon)
+    DEĞİŞMEDİ — o ekrana yalnızca aşağıdaki not alanı eklendi.
+  - **Zaman dilimi — DÜZ `DateTime.now()`, `TrustedTimeProvider` DEĞİL.**
+    `TrustedTimeProvider.now()` cihaz saati manipülasyonuna karşı (günlük ödül/streak gibi
+    GÜVENLİK-kritik özellikler için) `Stopwatch`+doğrulanmış-UTC-çıpa tabanlı — kullanıcı FARKLI
+    bir saat dilimine seyahat ederse bu çıpa yeni yerel saate otomatik uymayabilir. Bu özellik
+    kozmetik/UX amaçlı (güvenlik DEĞİL) ve kullanıcı AÇIKÇA "cihazın kendi saatine göre... hangi
+    ülkede olursa olsun" dediği için BİLEREK düz `DateTime.now()` kullanıldı —
+    `timeBucketFor(DateTime)` saat sınırları: Sabah 05:00-11:59, Öğle 12:00-17:59, Akşam
+    18:00-21:59, Gece 22:00-04:59 (elle seçilen makul varsayılanlar).
+  - **`motivation_pools.dart`** — `zibo_messages.dart`'ın AYNI `xTr/En/Es` + `xForLocale` deseni,
+    yedi havuz için. İngilizce/İspanyolca listeler BİLEREK BOŞ (kullanıcı ileride dolduracak) —
+    `timeBucketQuotes`/`moodPoolQuotes` HER POOL'U AYRI AYRI kontrol edip boşsa Türkçe'ye düşüyor,
+    tek bir dil eksik diye TÜM sistem Türkçe'ye düşmüyor.
+  - **`MoodEnergy.isHighEnergy`** (`models/mood.dart`, YENİ) — mevcut `MoodLowness.isLow`'un
+    (index<=1) simetriği (index>=3). `moodPoolTagFor(Mood?)` bu ikisiyle üç havuza eşliyor:
+    low={veryUnhappy,unhappy}, neutral={neutral, VEYA hiç kayıt yoksa}, high={happy,veryHappy}.
+    Kullanılan ruh hali `MoodProvider.entries.first.mood` (liste zaten en-yeni-önce sıralı) —
+    kullanıcının "SON ruh hali kaydına göre" isteğiyle birebir, `todayMood` gibi yalnızca bugünle
+    SINIRLI DEĞİL (bugün kayıt yoksa en son GEÇMİŞ kayda düşer).
+  - **`pickMotivationQuote(...)`** (`motivation_quote_selector.dart`) — saf, test edilebilir bir
+    fonksiyon (enjekte edilebilir `DateTime`/`Random`, `wheel_prizes.dart`'taki `pickWeightedPrize`
+    ile AYNI felsefe). Ağırlıklar: %55 zaman dilimi, %25 ruh hali, %20 genel (kullanıcının "%50-60/
+    %20-30" aralığının ortası). **`recentLowMoodRatio(entries, now)`** — son 14 günün ne kadarının
+    "düşük" olduğunu 0.0-1.0 oranla hesaplayan SAF bir fonksiyon (AI/network YOK, kullanıcının
+    "gerçek bir yapay zeka değil, biriken veriye dayalı basit bir ağırlıklandırma" isteğiyle
+    birebir) — oran 0.5'i geçerse ruh hali payına "hafifçe" (+10 puan) bir kişiselleşme nüansı
+    ekleniyor (zaman diliminden yarısı + genelden yarısı düşülerek).
+  - **Tekrar-önleme — `MotivationQuotePick.id` (`"time:morning:12"` gibi) tabanlı, sonsuz döngüye
+    KARŞI KORUMALI.** `_pickFrom` bir havuzdan `recentIds`'te olmayan bir index'i EN FAZLA 20
+    denemede arıyor; bulunamazsa (havuz küçük + neredeyse tamamı hariç) hariç tutmayı YOK SAYIP
+    yine de bir sonuç dönüyor — `HomeScreen`'in eski `_pickNewMessageIndex()`'indeki
+    `do-while` deseninin (sabit bir test `Random`'ı ile SONSUZ DÖNGÜYE girebildiği, bkz. yukarıdaki
+    "Zibo'ya Art Arda Dokunma" bölümündeki `adPromoRandom` notu) AYNI dersinin bir daha
+    tekrarlanmaması için BİLEREK sınırlı deneme sayısıyla tasarlandı.
+  - **KRİTİK tasarım kararı — `_currentQuote` sözün METNİNİ DEĞİL, KİMLİĞİNİ tutuyor.**
+    `MotivationQuotePick{source, tag, index}` — `resolveMotivationQuoteText(pick, locale,
+    generalPool)` her `build()`'de o anki `locale`'e göre metni YENİDEN çözüyor. **Neden:**
+    projedeki TÜM diğer locale-portable söz sistemleri (`_quoteIndex` deseni, bkz. "Yerelleştirme"
+    bölümü) bir sözü "hangi havuzun kaçıncı elemanı" olarak saklayıp gösterim anında o anki dile
+    göre metni tazeliyor — TEXT'i sabitlemiş olsaydık, kullanıcı bir söz ekrandayken dili
+    değiştirirse (Ayarlar > Dil) konuşma balonu ESKİ dildeki metinde DONUP kalırdı. `pick.index`
+    havuz boyutundan büyükse (dil değişince farklı uzunlukta bir havuza düşülürse) `%` ile güvenle
+    sarılıyor — projenin diğer TÜM locale-portable indekslerindeki AYNI güvenlik deseni.
+  - **`HomeScreen._pickAndSetQuote()`** hem `initState()`'te DEĞİL ilk `build()`'de (`_currentQuote
+    == null` koşuluyla, `context`'e — locale/ruh hali/özel mesajlar — ihtiyaç duyduğu için) HEM
+    `_onZiboTap()`'te (dokunuşta, `setState` içinde) çağrılıyor — `initState()`'in `context`
+    kullanmaması gereken erken zamanlama kısıtlamasını bu şekilde aştı, `setState` OLMADAN (build()
+    zaten AYNI çağrıda taze değeri kullanacağı için) doğrudan alan mutasyonu yapıyor.
+  - **Test:** YENİ `test/motivation_quote_selector_test.dart` — `timeBucketFor` sınır saatleri
+    (04:59/05:00/11:59/12:00/17:59/18:00/21:59/22:00), `moodPoolTagFor` beş `Mood` + `null`,
+    `resolveMotivationQuoteText`'in üç kaynağı da doğru çözdüğü + havuz taşmasında `%` güvenliği +
+    boş EN havuzunda TR'ye düştüğü, `pickMotivationQuote`'un sabit `Random` ile deterministik
+    kaynak seçtiği, tekrar-önlemenin gerçekten hariç tuttuğu, TÜM havuz hariç tutulunca sonsuz
+    döngüye GİRMEDEN (testin kendisi TAMAMLANMASI zaten bunun kanıtı) bir sonuç döndüğü,
+    `recentLowMoodRatio > 0.5` iken ruh hali payının GERÇEKTEN büyüdüğü. **Gotcha (gerçekten
+    yaşandı) — `home_screen_rapid_tap_test.dart`/`home_screen_sound_test.dart` (HomeScreen'i
+    minimal bir `MultiProvider` ağacında izole test eden iki dosya) `MoodProvider`'ı hiç
+    sağlamıyordu** — `HomeScreen` artık `_pickAndSetQuote()` içinde `context.read<MoodProvider>()`
+    çağırdığı için bu iki dosyadaki TÜM testler `ProviderNotFoundException` ile (ağaç hiç
+    render OLMADAN, `find.byKey('ziboCharacterImage')` "0 widget bulundu" diye çöktü) başarısız
+    oldu — düzeltme her ikisine de `ChangeNotifierProvider(create: (_) => MoodProvider())`
+    eklemekti. **Ders (proje genelinde tekrarlayan bir kalıp):** `HomeScreen`'e yeni bir
+    `context.read<X>()`/`context.watch<X>()` bağımlılığı eklerken, `HomeScreen`'i MİNİMAL bir
+    provider ağacında (TAM `DijitalKankaApp` DEĞİL) kuran TÜM test dosyalarını (`grep -rl
+    "HomeScreen(" test/`) kontrol edin — `widget_test.dart`'ın `_buildAppWithClock`/`RootScreen`
+    kuralından FARKLI, AYRI bir "minimal ağaç" kategorisi bu.
+  - **Gerçek cihazda doğrulama bu turda YAPILMADI** — bu özellik saf Dart/UI (native tarafa hiç
+    dokunmuyor), `flutter test` (tam suite, yalnızca ÖNCEDEN belgelenmiş `audioplayers` flake'i
+    hariç) + `flutter build apk --debug` (sorunsuz) ile doğrulandı, düşük risk kabul edildi.
+    **Kullanıcının kendi cihazında doğrulaması gereken:** farklı saatlerde (özellikle gece/sabah
+    sınırında) Ana Sayfa'yı açıp sözün beklenen zaman dilimine uygun geldiği, bir ruh hali kaydı
+    girdikten sonra Zibo'nun tavrının (düşükte teselli edici, yüksekte enerjik) gerçekten
+    hissedilir şekilde değiştiği, ve dil değiştirilince ekrandaki sözün ANINDA yeni dile geçtiği
+    (yalnızca TR dolu olduğu için şu an hep Türkçe kalacak, EN/ES havuzları doldurulunca test
+    edilmeli).
 
 ### Konuşma Balonu ([speech_bubble.dart](lib/widgets/speech_bubble.dart))
 - **2026 bug düzeltmesi — kısa sözlerde favori/paylaş/söz-ekle butonları metnin ÜSTÜNE biniyordu.**
@@ -2244,6 +2337,31 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
   farklı bir emoji'ye tekrar dokunma — listede İKİNCİ bir kayıt oluşmadığı, tek kaydın güncellendiği)
   `adb` ile açık temada doğrulandı (koyu tema, diğer tüm ekranlarla aynı ortak `_buildTheme`
   altyapısını kullandığı için ayrıca test edilmedi, ama aynı garantiye sahip).
+- **2026 yeni özellik — bugünün ruh haline eşlik eden serbest not/günlük alanı** (bkz. "Motivasyon
+  Sözü Sistemi" bölümündeki aynı turun diğer yarısı). `MoodEntry.note` (`String?`, opsiyonel) +
+  `MoodProvider.setTodayMood(mood, {String? note})` — **`note` HİÇ VERİLMEZSE bugünün MEVCUT notu
+  KORUNUR** (yalnızca emoji'ye dokunmak notu SİLMEZ), **AÇIKÇA verilirse** (boş string DAHİL)
+  trim'lenip boşsa notu SİLER doluysa günceller — tek parametreyle hem "sadece emoji" hem "notu
+  güncelle/temizle" akışları karşılanıyor. Eski (bu alan eklenmeden ÖNCE) kayıtlı veride `note`
+  alanı hiç yok — `map['note'] as String?` bunu sessizce `null`'a düşürüyor, ayrı bir göç adımı
+  GEREKMEDİ (zaten nullable).
+  - **UI — emoji satırının ALTINDA, `todayMood == null` iken GİZLİ bir `TextField`.** Bir ruh hali
+    seçilmeden önce "hangi güne ait olacağı" belirsiz olduğu için önce emoji seçilmeli.
+    `ProfileProvider`'ın isim alanındaki "onSubmitted/odak kaybında kaydet" deseniyle AYNI —
+    HER tuş vuruşunda DEĞİL, yalnızca gönderilince/odak kaybedilince `setTodayMood(mood, note:
+    ...)` çağrılıyor (`FocusNode` + `!hasFocus` listener'ı).
+  - **Geçmiş listesinde de gösteriliyor** — `entry.note != null` iken `ListTile.subtitle`
+    ruh hali etiketinin ALTINA notu (3 satırla sınırlı, `TextOverflow.ellipsis`) ekliyor,
+    `isThreeLine: true` ile.
+  - **Test:** `mood_provider_test.dart`'a yeni bir grup (`note` verilmeden korunur, verilirse
+    kaydedilir, boş/boşluk AÇIKÇA verilirse siler, trim edilir, kalıcı depoya yazılıp yeniden
+    başlatmada hatırlanır) + `widget_test.dart`'a bir uçtan uca senaryo (emoji seç → not alanı
+    BELİRİR → not yaz → gönder → geçmişte hem etiket hem not görünür). **Gotcha (test) —
+    `find.text(not)` HEM hâlâ odaktaki `TextField`'ın `EditableText`'ini HEM geçmişteki yeni
+    `Text`'i eşleştirdiği için `findsOneWidget` DEĞİL `findsWidgets` kullanılmalı** (Flutter'ın
+    `find.text` finder'ı hem `Text` hem `EditableText` widget'larını aynı literal string için
+    eşleştiriyor — bir alan hem yazılıp hem SONUÇ olarak başka bir yerde göründüğünde bu ikisi
+    çakışıyor).
 
 ### Su Takibi ([water_tracking_screen.dart](lib/screens/water_tracking_screen.dart), [water_provider.dart](lib/providers/water_provider.dart), [water_entry.dart](lib/models/water_entry.dart), [water_quotes.dart](lib/data/water_quotes.dart))
 - **Yerleşim: alt çubuktaki Z butonunun açtığı modül menüsünden erişiliyor**, dördüncü `_ModuleCard`
@@ -4351,11 +4469,17 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
   Bildirimleri" bölümündeki "günlük ödül 1. günde takılı kalıyor" bug düzeltmesi — cross-session
   staleness'ı doğrudan hedefleyen 5 test), YENİ `widget_status_test.dart`/
   `home_widget_sync_coordinator_test.dart`/`widgets_screen_test.dart` (2026 — bkz. "Ana Ekran
-  Widget'ları" bölümü). **`test/wheel_screen_test.dart` KISA SÜRE var oldu,
-  SONRA SİLİNDİ** — Şans Çarkı sonrası reklam denemesiyle birlikte geldi, kullanıcı o özelliği
-  istemeyince (bkz. "Zibo'ya Art Arda Dokunma → Geçiş Reklamı" bölümündeki geri alma notu) testi
-  de anlamsızlaştığı için kaldırıldı.
-  **Toplam: 359 test** (2026 — `costume_provider_test.dart`'a `reconcileGoalUnlocks` grubu +
+  Widget'ları" bölümü), YENİ `motivation_quote_selector_test.dart` (2026 — bkz. "Motivasyon Sözü
+  Sistemi" bölümü, 11 test — `timeBucketFor`/`moodPoolTagFor`/`recentLowMoodRatio`/
+  `resolveMotivationQuoteText`/`pickMotivationQuote`'un saf fonksiyon testleri). **`test/
+  wheel_screen_test.dart` KISA SÜRE var oldu, SONRA SİLİNDİ** — Şans Çarkı sonrası reklam
+  denemesiyle birlikte geldi, kullanıcı o özelliği istemeyince (bkz. "Zibo'ya Art Arda Dokunma →
+  Geçiş Reklamı" bölümündeki geri alma notu) testi de anlamsızlaştığı için kaldırıldı.
+  **Toplam: 380 test** (2026 — bu turda `motivation_quote_selector_test.dart` [11 YENİ test] +
+  `mood_provider_test.dart`'a not (note) alanı grubu [6 YENİ test] + `widget_test.dart`'a bir
+  uçtan uca senaryo [1 YENİ test] eklendi, bkz. "Motivasyon Sözü Sistemi"/"Günlük Ruh Hali Takibi"
+  bölümleri — bu 18 testin ÖNCESİNDEKİ birikimli tarihçe için: `costume_provider_test.dart`'a
+  `reconcileGoalUnlocks` grubu +
   `water_provider_test.dart`'a `completedDaysCount` testi [bkz. "Kostümler" bölümü] +
   `dream_sentiment_test.dart` [bkz. "Rüya Günlüğü" bölümündeki korelasyon notu] +
   `referral_provider_test.dart` [bkz. "Davet Et (Referral) Sistemi" bölümü] +

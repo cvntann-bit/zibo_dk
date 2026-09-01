@@ -1117,6 +1117,10 @@
   "@moodHistoryTitle": {
     "description": "Tüm geçmiş ruh hali kayıtları listesinin başlığı"
   },
+  "moodNoteHint": "Bugün nasıl hissettiğini kısaca yazabilirsin (opsiyonel)",
+  "@moodNoteHint": {
+    "description": "Bugünün ruh haline eşlik eden serbest not alanının ipucu metni"
+  },
   "moodHistoryEmpty": "Henüz bir kayıt yok.",
   "@moodHistoryEmpty": {
     "description": "Geçmiş kayıt listesi boşken gösterilen metin"

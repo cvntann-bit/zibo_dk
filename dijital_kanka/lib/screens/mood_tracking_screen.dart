@@ -44,6 +44,15 @@ class _MoodTrackingScreenState extends State<MoodTrackingScreen> {
   int _quoteIndex = 0;
   Timer? _timer;
 
+  // 2026 yeni özellik — bugünün ruh haline eşlik eden serbest not/günlük
+  // alanı. `ProfileProvider`'ın isim alanındaki "onSubmitted/odak kaybında
+  // kaydet" deseniyle AYNI — HER tuş vuruşunda DEĞİL, yalnızca gönderilince/
+  // odak kaybedilince `MoodProvider.setTodayMood(...)` çağrılıyor.
+  late final _noteController = TextEditingController(
+    text: context.read<MoodProvider>().entryForDate(DateTime.now())?.note ?? '',
+  );
+  final _noteFocusNode = FocusNode();
+
   @override
   void initState() {
     super.initState();
@@ -51,12 +60,30 @@ class _MoodTrackingScreenState extends State<MoodTrackingScreen> {
       const Duration(seconds: 5),
       (_) => _showNewQuote(),
     );
+    _noteFocusNode.addListener(_onNoteFocusChange);
   }
 
   @override
   void dispose() {
     _timer?.cancel();
+    _noteFocusNode.removeListener(_onNoteFocusChange);
+    _noteFocusNode.dispose();
+    _noteController.dispose();
     super.dispose();
+  }
+
+  void _onNoteFocusChange() {
+    if (!_noteFocusNode.hasFocus) _saveNote();
+  }
+
+  void _saveNote() {
+    final provider = context.read<MoodProvider>();
+    final mood = provider.todayMood;
+    // Henüz bir ruh hali seçilmediyse kaydedecek bir gün kaydı yok — alan
+    // zaten UI'da devre dışı/gizli oluyor (bkz. build()), bu ekstra bir
+    // güvenlik.
+    if (mood == null) return;
+    provider.setTodayMood(mood, note: _noteController.text);
   }
 
   void _showNewQuote() {
@@ -138,6 +165,29 @@ class _MoodTrackingScreenState extends State<MoodTrackingScreen> {
                 ),
               ),
             ),
+            // 2026 yeni özellik — bugünün ruh haline eşlik eden serbest not.
+            // Bir ruh hali seçilmeden önce anlamsız (hangi güne ait olacağı
+            // belirsiz) olduğu için `todayMood == null`'ken GÖSTERİLMİYOR.
+            if (provider.todayMood != null) ...[
+              const SizedBox(height: 12),
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: TextField(
+                    controller: _noteController,
+                    focusNode: _noteFocusNode,
+                    minLines: 2,
+                    maxLines: 4,
+                    textInputAction: TextInputAction.done,
+                    decoration: InputDecoration(
+                      hintText: l10n.moodNoteHint,
+                      border: InputBorder.none,
+                    ),
+                    onSubmitted: (_) => _saveNote(),
+                  ),
+                ),
+              ),
+            ],
             const SizedBox(height: 24),
             Text(l10n.moodWeekSummaryTitle, style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 12),
@@ -184,7 +234,25 @@ class _MoodTrackingScreenState extends State<MoodTrackingScreen> {
                         child: Text(entry.mood.emoji, style: const TextStyle(fontSize: 20)),
                       ),
                       title: Text(formatLongDate(entry.date, locale)),
-                      subtitle: Text(_moodLabel(l10n, entry.mood)),
+                      // 2026 yeni özellik — o güne yazılmış not varsa ruh
+                      // hali etiketinin ALTINA ikinci bir satır olarak
+                      // ekleniyor; yoksa (eski kayıtlar dahil, `note` zaten
+                      // nullable) yalnızca ruh hali etiketi görünür.
+                      subtitle: entry.note == null
+                          ? Text(_moodLabel(l10n, entry.mood))
+                          : Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(_moodLabel(l10n, entry.mood)),
+                                Text(
+                                  entry.note!,
+                                  maxLines: 3,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                            ),
+                      isThreeLine: entry.note != null,
                     ),
                   ),
                 ),

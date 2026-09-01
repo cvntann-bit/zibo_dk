@@ -96,5 +96,53 @@ void main() {
         expect(secondLaunch.todayMood, Mood.veryHappy);
       },
     );
+
+    // 2026 yeni özellik — bugünün ruh haline eşlik eden serbest not.
+    group('not (note) alanı', () {
+      test('note verilmeden setTodayMood çağrılırsa not null kalır', () {
+        provider.setTodayMood(Mood.happy);
+        expect(provider.entries.single.note, isNull);
+      });
+
+      test('note verilirse kaydedilir', () {
+        provider.setTodayMood(Mood.happy, note: 'Bugün harika geçti');
+        expect(provider.entries.single.note, 'Bugün harika geçti');
+      });
+
+      test(
+        'note VERİLMEDEN yalnızca ruh hali değiştirilirse MEVCUT not korunur',
+        () {
+          provider.setTodayMood(Mood.happy, note: 'İlk notum');
+          provider.setTodayMood(Mood.veryHappy); // note parametresi YOK
+          expect(provider.todayMood, Mood.veryHappy);
+          expect(provider.entries.single.note, 'İlk notum');
+        },
+      );
+
+      test('boş/yalnızca boşluk içeren note AÇIKÇA verilirse mevcut notu SİLER', () {
+        provider.setTodayMood(Mood.happy, note: 'Silinecek not');
+        provider.setTodayMood(Mood.happy, note: '   ');
+        expect(provider.entries.single.note, isNull);
+      });
+
+      test('note trim edilir', () {
+        provider.setTodayMood(Mood.happy, note: '  boşluklu  ');
+        expect(provider.entries.single.note, 'boşluklu');
+      });
+
+      test(
+        'Kayıtlı not kalıcı depoya yazılır; yeniden başlatmada hatırlanır',
+        () async {
+          final firstLaunch = MoodProvider(now: () => currentDate);
+          firstLaunch.setTodayMood(Mood.happy, note: 'Kalıcı not');
+          await Future<void>.delayed(Duration.zero);
+
+          final secondLaunch = MoodProvider(now: () => currentDate);
+          await Future<void>.delayed(Duration.zero);
+
+          expect(secondLaunch.entries.single.note, 'Kalıcı not');
+        },
+      );
+    });
   });
 }

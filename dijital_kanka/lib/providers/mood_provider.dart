@@ -73,12 +73,16 @@ class MoodProvider extends ChangeNotifier {
       _entries
         ..clear()
         ..addAll(
-          decoded.map(
-            (raw) => MoodEntry(
-              date: DateTime.parse((raw as Map<String, dynamic>)['date'] as String),
-              mood: Mood.values.byName(raw['mood'] as String),
-            ),
-          ),
+          decoded.map((raw) {
+            final map = raw as Map<String, dynamic>;
+            return MoodEntry(
+              date: DateTime.parse(map['date'] as String),
+              mood: Mood.values.byName(map['mood'] as String),
+              // Eski (bu alan eklenmeden ÖNCE) kayıtlarda `note` hiç yok —
+              // `as String?` bunu sessizce `null`'a düşürür.
+              note: map['note'] as String?,
+            );
+          }),
         );
       notifyListeners();
     } catch (_) {
@@ -101,7 +105,13 @@ class MoodProvider extends ChangeNotifier {
   Future<void> _save() async {
     await _store.save({
       'entries': _entries
-          .map((e) => {'date': e.date.toIso8601String(), 'mood': e.mood.name})
+          .map(
+            (e) => {
+              'date': e.date.toIso8601String(),
+              'mood': e.mood.name,
+              'note': e.note,
+            },
+          )
           .toList(),
     });
   }
@@ -110,9 +120,26 @@ class MoodProvider extends ChangeNotifier {
   /// yerine geçer (üzerine yazar), yoksa yeni bir kayıt oluşturur. Şükran
   /// Günlüğü'ndeki `saveToday`'in aksine kilitleme yok, bu yüzden bir
   /// başarı/başarısızlık dönmesine gerek yok — her çağrı başarılı olur.
-  void setTodayMood(Mood mood) {
+  ///
+  /// [note] — 2026 yeni özellik, opsiyonel serbest metin (bkz. `MoodEntry.
+  /// note` dokümantasyonu). **`note` HİÇ VERİLMEZSE** (parametre atlanırsa,
+  /// örn. yalnızca bir emoji'ye dokunulduğunda) bugünün MEVCUT notu
+  /// KORUNUR — yalnızca ruh hali değişir. **`note` AÇIKÇA verilirse**
+  /// (boş string DAHİL — `mood_tracking_screen.dart`'ın not alanı temizlenip
+  /// kaydedildiğinde) trim'lenip boşsa `null`'a (notu SİLER), doluysa yeni
+  /// metne güncellenir. Bu tek parametreyle hem "yalnızca emoji'ye dokun"
+  /// hem "notu güncelle/temizle" akışlarının İKİSİ de karşılanıyor.
+  void setTodayMood(Mood mood, {String? note}) {
+    String? resolvedNote;
+    if (note == null) {
+      final existingToday = _entries.where((e) => e.date == _today);
+      resolvedNote = existingToday.isEmpty ? null : existingToday.first.note;
+    } else {
+      final trimmed = note.trim();
+      resolvedNote = trimmed.isEmpty ? null : trimmed;
+    }
     _entries.removeWhere((e) => e.date == _today);
-    _entries.add(MoodEntry(date: _today, mood: mood));
+    _entries.add(MoodEntry(date: _today, mood: mood, note: resolvedNote));
     notifyListeners();
     _save();
   }

@@ -1492,6 +1492,12 @@ abstract class AppLocalizations {
   /// **'Geçmiş'**
   String get moodHistoryTitle;
 
+  /// Bugünün ruh haline eşlik eden serbest not alanının ipucu metni
+  ///
+  /// In tr, this message translates to:
+  /// **'Bugün nasıl hissettiğini kısaca yazabilirsin (opsiyonel)'**
+  String get moodNoteHint;
+
   /// Geçmiş kayıt listesi boşken gösterilen metin
   ///
   /// In tr, this message translates to:

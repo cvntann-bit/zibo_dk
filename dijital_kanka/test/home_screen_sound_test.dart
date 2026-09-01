@@ -16,6 +16,7 @@ import 'package:dijital_kanka/providers/app_theme_provider.dart';
 import 'package:dijital_kanka/providers/costume_provider.dart';
 import 'package:dijital_kanka/providers/custom_messages_provider.dart';
 import 'package:dijital_kanka/providers/favorite_quotes_provider.dart';
+import 'package:dijital_kanka/providers/mood_provider.dart';
 import 'package:dijital_kanka/providers/profile_provider.dart';
 import 'package:dijital_kanka/providers/sound_effects_provider.dart';
 import 'package:dijital_kanka/providers/theme_provider.dart';
@@ -60,6 +61,7 @@ Widget _buildTestApp(SoundEffectsService soundEffectsService) {
       ChangeNotifierProvider(create: (_) => CostumeProvider()),
       ChangeNotifierProvider(create: (_) => CustomMessagesProvider()),
       ChangeNotifierProvider(create: (_) => FavoriteQuotesProvider()),
+      ChangeNotifierProvider(create: (_) => MoodProvider()),
       ChangeNotifierProvider(create: (_) => ProfileProvider()),
       ChangeNotifierProvider(create: (_) => SoundEffectsProvider()),
       ChangeNotifierProvider(create: (_) => ThemeProvider()),

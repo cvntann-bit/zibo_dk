@@ -797,6 +797,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get moodHistoryTitle => 'Historial';
 
   @override
+  String get moodNoteHint =>
+      'Puedes escribir brevemente cómo te sientes hoy (opcional)';
+
+  @override
   String get moodHistoryEmpty => 'Aún no hay registros.';
 
   @override

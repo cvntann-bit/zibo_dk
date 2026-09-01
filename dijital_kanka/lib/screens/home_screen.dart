@@ -13,12 +13,14 @@ import '../providers/app_theme_provider.dart';
 import '../providers/coin_provider.dart';
 import '../providers/costume_provider.dart';
 import '../providers/custom_messages_provider.dart';
+import '../providers/mood_provider.dart';
 import '../providers/profile_provider.dart';
 import '../providers/sound_effects_provider.dart';
 import '../providers/theme_provider.dart';
 import '../providers/zibo_pose_provider.dart';
 import '../services/sound_effects_service.dart';
 import '../utils/address_term.dart';
+import '../utils/motivation_quote_selector.dart';
 import '../widgets/ad_free_promo_sheet.dart';
 import '../widgets/custom_messages_button.dart';
 import '../widgets/favorite_quote_button.dart';
@@ -38,11 +40,14 @@ class HomeScreen extends StatefulWidget {
   /// Art arda dokunmada reklam/Reklamsız Zibo teklifi seçimini test
   /// ortamında SABİT bir sonuca zorlayabilmek için — `wheel_prizes_test.
   /// dart`'taki `_FixedRandom` deseniyle AYNI amaç. **BİLEREK [_random]'dan
-  /// (mesaj seçimi) AYRI bir alan** — `_pickNewMessageIndex()`'in "farklı
-  /// bir sonuç gelene kadar tekrar dene" `do-while` döngüsü, SABİT bir
-  /// `Random` (her zaman aynı değeri döndüren) ile beslenirse SONSUZ
-  /// DÖNGÜYE girer (gerçekten yaşandı, testte tespit edildi) — bu yüzden
-  /// test amaçlı sabit `Random` YALNIZCA bu alana enjekte edilebiliyor.
+  /// (söz seçimi) AYRI bir alan** — söz seçim motoru (`motivation_quote_
+  /// selector.dart`) SABİT bir `Random` (her zaman aynı değeri döndüren)
+  /// ile beslendiğinde "farklı bir sonuç gelene kadar tekrar dene" tarzı
+  /// bir döngüye girebilir (eski `_pickNewMessageIndex()`'in `do-while`'ında
+  /// GERÇEKTEN yaşanmış, testte tespit edilmiş bir sonsuz döngü riski — yeni
+  /// motor bunu `maxAttempts` sınırıyla ele alıyor ama AYNI ihtiyatı
+  /// korumak için test amaçlı sabit `Random` YİNE DE YALNIZCA bu alana
+  /// enjekte edilebiliyor, `_random`'a DEĞİL).
   final Random? adPromoRandom;
 
   @override
@@ -55,16 +60,52 @@ class _HomeScreenState extends State<HomeScreen>
   late final Random _adPromoRandom = widget.adPromoRandom ?? Random();
   late final SoundEffectsService _soundEffectsService =
       widget.soundEffectsService ?? AudioPlayersSoundEffectsService();
-  // Dizin tabanlı tutuluyor (metnin kendisi değil) ki dil değişince (bkz.
-  // LocaleProvider) aynı "konum" korunarak build()'de doğru dildeki karşılığı
-  // gösterilebilsin — bkz. `ziboMessagesForLocale`. **Rastgele bir başlangıç
-  // değeriyle başlatılıyor** — eskiden sabit `0` idi, bu yüzden uygulama HER
-  // açılışta havuzdaki AYNI (ilk) sözle başlıyordu (kullanıcı raporu: "hep
-  // aynı söz ile başlıyor"). Gerçek pool uzunluğu `build()`'de (dil/özel
-  // mesajlara göre) değişebildiği için burada kesin bir aralığa gerek yok —
-  // `build()`'deki `_messageIndex % messagePool.length` her zaman geçerli bir
-  // indekse indirgiyor.
-  int _messageIndex = Random().nextInt(1 << 16);
+  // 2026 güncellemesi — Motivasyon Sözü Sistemi (bkz. CLAUDE.md): söz artık
+  // saf rastgele DEĞİL, `motivation_quote_selector.dart`'ın zaman dilimi +
+  // ruh hali ağırlıklı seçimiyle geliyor. `_currentQuote` sözün METNİNİ
+  // DEĞİL, KİMLİĞİNİ (hangi havuzun kaçıncı elemanı) tutuyor — eski
+  // `_messageIndex`'in "dil değişince aynı konumun yeni dildeki karşılığına
+  // ANINDA geçmesi" garantisini `resolveMotivationQuoteText` ile koruyor
+  // (bkz. o dosyadaki dokümantasyon). `null` yalnızca ilk `build()`'den
+  // ÖNCE — `_pickAndSetQuote()` `context`'e ihtiyaç duyduğu için (locale/
+  // ruh hali/özel mesajlar) `initState()`'te DEĞİL, ilk `build()`'de
+  // (`_currentQuote == null` koşuluyla) hesaplanıyor.
+  MotivationQuotePick? _currentQuote;
+
+  /// Tekrar-önleme — son gösterilen sözlerin kimlikleri (kısa süreliğine,
+  /// yalnızca bu oturum boyunca — `_recentZiboTaps` ile AYNI "kalıcılık
+  /// gerektirmeyen, kısa ömürlü liste" deseni). Sabit bir üst sınırda
+  /// tutuluyor ki liste sınırsız büyümesin.
+  final List<String> _recentQuoteIds = [];
+  static const _maxRecentQuoteIds = 20;
+
+  /// `context.read`/`Localizations.localeOf(context)` kullandığı için
+  /// yalnızca `build()` çalıştıktan SONRA (ilk `build()` dahil, `_currentQuote
+  /// == null` koşuluyla) çağrılabilir — `initState()`'te DEĞİL.
+  void _pickAndSetQuote() {
+    final locale = Localizations.localeOf(context);
+    final generalPool = [
+      ...ziboMessagesForLocale(locale),
+      ...context.read<CustomMessagesProvider>().messages,
+    ];
+    final moodEntries = context.read<MoodProvider>().entries;
+    final latestMood = moodEntries.isEmpty ? null : moodEntries.first.mood;
+    final now = DateTime.now();
+    final pick = pickMotivationQuote(
+      localNow: now,
+      locale: locale,
+      latestMood: latestMood,
+      recentLowMoodRatio: recentLowMoodRatio(moodEntries, now),
+      generalPool: generalPool,
+      recentIds: _recentQuoteIds.toSet(),
+      random: _random,
+    );
+    _currentQuote = pick;
+    _recentQuoteIds.add(pick.id);
+    if (_recentQuoteIds.length > _maxRecentQuoteIds) {
+      _recentQuoteIds.removeAt(0);
+    }
+  }
 
   /// 2026 güncellemesi — kullanıcı isteği: Zibo'ya art arda hızlı
   /// dokunulunca (5-6 kez, birkaç saniye içinde) bir reklam VEYA (daha
@@ -127,7 +168,7 @@ class _HomeScreenState extends State<HomeScreen>
 
   void _onZiboTap() {
     _bounceController.forward(from: 0);
-    setState(() => _messageIndex = _pickNewMessageIndex());
+    setState(_pickAndSetQuote);
     // Poz HER dokunuşta değil, rastgele 5-10 dokunuşta bir ilerler — bkz.
     // ZiboPoseProvider dokümantasyonu.
     context.read<ZiboPoseProvider>().registerZiboTap();
@@ -172,30 +213,23 @@ class _HomeScreenState extends State<HomeScreen>
     }
   }
 
-  int _pickNewMessageIndex() {
-    final messages = ziboMessagesForLocale(Localizations.localeOf(context));
-    final customMessages = context.read<CustomMessagesProvider>().messages;
-    final poolLength = messages.length + customMessages.length;
-    if (poolLength <= 1) return 0;
-    int next;
-    do {
-      next = _random.nextInt(poolLength);
-    } while (next == _messageIndex);
-    return next;
-  }
-
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final locale = Localizations.localeOf(context);
-    final messages = ziboMessagesForLocale(locale);
-    // Kullanıcının kendi eklediği özel mesajlar, standart söz havuzunun
-    // SONUNA eklenip aynı havuzdan seçiliyor — bkz. `_pickNewMessageIndex`.
+    // Kullanıcının kendi eklediği özel mesajlar, "genel" dilimin (bkz.
+    // `motivation_quote_selector.dart`) SONUNA eklenip aynı havuzdan
+    // seçiliyor — bkz. `_pickAndSetQuote`.
     final customMessages = context.watch<CustomMessagesProvider>().messages;
-    final messagePool = [...messages, ...customMessages];
+    final generalPool = [...ziboMessagesForLocale(locale), ...customMessages];
+    // İlk `build()`'den ÖNCE `_currentQuote` `null` — `initState()` bu
+    // pick'i yapamıyor çünkü `context`'e (locale/ruh hali) ihtiyaç duyuyor
+    // (bkz. `_pickAndSetQuote` dokümantasyonu). `setState` GEREKMİYOR —
+    // build() zaten BU ÇAĞRIDA taze değeri kullanacak.
+    if (_currentQuote == null) _pickAndSetQuote();
     final addressTerm = context.watch<ProfileProvider>().addressTerm;
     final message = applyAddressTerm(
-      messagePool[_messageIndex % messagePool.length],
+      resolveMotivationQuoteText(_currentQuote!, locale, generalPool),
       addressTerm,
       locale,
     );

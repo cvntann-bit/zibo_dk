@@ -791,6 +791,10 @@ class AppLocalizationsTr extends AppLocalizations {
   String get moodHistoryTitle => 'Geçmiş';
 
   @override
+  String get moodNoteHint =>
+      'Bugün nasıl hissettiğini kısaca yazabilirsin (opsiyonel)';
+
+  @override
   String get moodHistoryEmpty => 'Henüz bir kayıt yok.';
 
   @override

@@ -24,13 +24,28 @@ extension MoodLowness on Mood {
   bool get isLow => index <= 1;
 }
 
+/// 2026 yeni özellik — Motivasyon Sözü Sistemi (bkz. `lib/utils/
+/// motivation_quote_selector.dart`) için: [MoodLowness.isLow]'un simetriği —
+/// enum'un en iyi İKİ değeri "yüksek enerjili" sayılır. `neutral` (index 2)
+/// ne düşük ne yüksek — üçüncü, ayrı bir kategori (bkz. `MoodPoolTag`).
+extension MoodEnergy on Mood {
+  bool get isHighEnergy => index >= 3;
+}
+
 /// Günlük Ruh Hali Takibi'nde tek bir güne ait kayıt.
 class MoodEntry {
-  const MoodEntry({required this.date, required this.mood});
+  const MoodEntry({required this.date, required this.mood, this.note});
 
   /// Saat bileşeni olmadan (gece yarısı) — bir güne yalnızca bir kayıt
   /// düşer, bkz. `MoodProvider.setTodayMood` (üzerine yazar).
   final DateTime date;
 
   final Mood mood;
+
+  /// 2026 yeni özellik — kullanıcının o gün nasıl hissettiğine dair
+  /// serbestçe yazdığı kısa not/günlük (opsiyonel, `null` veya boşsa hiç
+  /// yazılmamış demektir). Eski (bu alan eklenmeden ÖNCE) kayıtlı veride bu
+  /// alan hiç yok — `MoodProvider._loadFromPrefs` bunu `null`'a düşürüyor,
+  /// zaten nullable olduğu için ayrı bir göç adımı GEREKMİYOR.
+  final String? note;
 }
