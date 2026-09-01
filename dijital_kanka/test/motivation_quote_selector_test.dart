@@ -120,13 +120,28 @@ void main() {
       );
     });
 
-    test('İngilizce havuz boşken Türkçe\'ye düşer', () {
-      // EN havuzları bu turda bilerek boş — bkz. motivation_pools.dart.
+    test('İngilizce/İspanyolca havuzlar doldurulduktan sonra KENDİ metinlerini döner', () {
+      // Havuzlar bu turda İngilizce/İspanyolca'ya çevrildi (bkz.
+      // motivation_pools.dart) — artık Türkçe'ye DÜŞMÜYOR, gerçek çeviriyi
+      // dönüyor. Per-pool geri düşüş mekanizması (bir havuz BOŞ kalırsa
+      // Türkçe'ye düşme) kod tarafında hâlâ duruyor (bkz. `timeBucketQuotes`/
+      // `moodPoolQuotes`'un `isEmpty` kontrolü) ama şu an test edecek boş
+      // bir havuz kalmadığı için bu test yalnızca ÇEVİRİLERİN doğru
+      // bağlandığını doğruluyor.
       final pick = MotivationQuotePick(source: 'mood', tag: 'high', index: 2);
       expect(
         resolveMotivationQuoteText(pick, const Locale('en'), const []),
-        motivationHighMoodTr[2],
+        motivationHighMoodEn[2],
       );
+      expect(
+        resolveMotivationQuoteText(pick, const Locale('es'), const []),
+        motivationHighMoodEs[2],
+      );
+      // Üçü de FARKLI metinler olmalı (aynı index, üç dilde de gerçekten
+      // farklı içerik) — kopyala-yapıştır bir hata (ör. EN'in yanlışlıkla
+      // TR'nin aynısı kalması) olursa bu assertion yakalar.
+      expect(motivationHighMoodEn[2], isNot(equals(motivationHighMoodTr[2])));
+      expect(motivationHighMoodEs[2], isNot(equals(motivationHighMoodTr[2])));
     });
   });
 
@@ -221,5 +236,46 @@ void main() {
       );
       expect(withBoost.source, 'mood'); // 0.53 artık timeWeight'in (0.50) ÜSTÜNDE
     });
+  });
+
+  // 2026 güncellemesi — 7 havuz × 3 dil çeviri/uyarlama sonrası: `zibo_
+  // messages.dart`'a yeni söz eklenirken kurulan AYNI convansiyon (bkz.
+  // CLAUDE.md "Profil" bölümündeki "İKİNCİ güncelleme" notu) — her havuzun
+  // KENDİ İÇİNDE birebir tekrar İÇERMEDİĞİNİ VE üç dilin her birinin tam
+  // 51 uzunlukta olduğunu doğrular. `.toSet().length` GERÇEK Dart string
+  // eşitliğiyle çalıştığı için tırnak-tipi farklılıkları (tek/çift tırnak)
+  // gibi salt metinsel `grep` kontrolünün kaçırabileceği yanlış-negatifleri
+  // YAKALAMIYOR ama gerçek kopyala-yapıştır tekrarlarını güvenilir yakalar.
+  group('motivation_pools.dart — havuz bütünlüğü', () {
+    void checkPool(String label, List<String> pool) {
+      test('$label: 51 uzunlukta ve tekrarsız', () {
+        expect(pool, hasLength(51));
+        expect(pool.toSet(), hasLength(51));
+      });
+    }
+
+    checkPool('motivationMorningTr', motivationMorningTr);
+    checkPool('motivationAfternoonTr', motivationAfternoonTr);
+    checkPool('motivationEveningTr', motivationEveningTr);
+    checkPool('motivationNightTr', motivationNightTr);
+    checkPool('motivationLowMoodTr', motivationLowMoodTr);
+    checkPool('motivationNeutralMoodTr', motivationNeutralMoodTr);
+    checkPool('motivationHighMoodTr', motivationHighMoodTr);
+
+    checkPool('motivationMorningEn', motivationMorningEn);
+    checkPool('motivationAfternoonEn', motivationAfternoonEn);
+    checkPool('motivationEveningEn', motivationEveningEn);
+    checkPool('motivationNightEn', motivationNightEn);
+    checkPool('motivationLowMoodEn', motivationLowMoodEn);
+    checkPool('motivationNeutralMoodEn', motivationNeutralMoodEn);
+    checkPool('motivationHighMoodEn', motivationHighMoodEn);
+
+    checkPool('motivationMorningEs', motivationMorningEs);
+    checkPool('motivationAfternoonEs', motivationAfternoonEs);
+    checkPool('motivationEveningEs', motivationEveningEs);
+    checkPool('motivationNightEs', motivationNightEs);
+    checkPool('motivationLowMoodEs', motivationLowMoodEs);
+    checkPool('motivationNeutralMoodEs', motivationNeutralMoodEs);
+    checkPool('motivationHighMoodEs', motivationHighMoodEs);
   });
 }

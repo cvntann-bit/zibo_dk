@@ -170,9 +170,26 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
     `timeBucketFor(DateTime)` saat sınırları: Sabah 05:00-11:59, Öğle 12:00-17:59, Akşam
     18:00-21:59, Gece 22:00-04:59 (elle seçilen makul varsayılanlar).
   - **`motivation_pools.dart`** — `zibo_messages.dart`'ın AYNI `xTr/En/Es` + `xForLocale` deseni,
-    yedi havuz için. İngilizce/İspanyolca listeler BİLEREK BOŞ (kullanıcı ileride dolduracak) —
-    `timeBucketQuotes`/`moodPoolQuotes` HER POOL'U AYRI AYRI kontrol edip boşsa Türkçe'ye düşüyor,
-    tek bir dil eksik diye TÜM sistem Türkçe'ye düşmüyor.
+    yedi havuz için. **2026 güncellemesi — İngilizce/İspanyolca havuzlar da dolduruldu** (kullanıcı
+    isteği: "İngilizce İspanyolcaya sen çevir otomatik söz havuzlarını") — `zibo_messages.dart`'taki
+    AYNI felsefeyle (kelimesi kelimesine ÇEVİRİ değil, Zibo'nun sıcak/samimi tonunu o dilde doğal
+    duracak şekilde koruyan bir UYARLAMA) TR'den EN/ES'e asistan tarafından uyarlandı — kaynak TR
+    havuzlarında "Kanka" hiç geçmediği için (grep ile doğrulandı) EN/ES uyarlamalarında da BİLEREK
+    bir hitap kelimesi (Buddy vb.) zorlanmadı. `timeBucketQuotes`/`moodPoolQuotes`'un HER POOL'U
+    AYRI AYRI kontrol edip boşsa Türkçe'ye düşen mekanizması KOD TARAFINDA hâlâ duruyor (ileride
+    tek bir dil/havuz eksik kalırsa yine devreye girer) ama şu an fiilen TÜM 21 havuz (7×3 dil)
+    dolu.
+    - **Gerçek bug, testte yakalandı — çeviri sırasında İKİ ayrı kopyala-yapıştır tekrarı
+      oluşmuştu.** `motivationNeutralMoodTr`'deki İKİ FARKLI Türkçe cümle ("...hedef koymaya ne
+      dersin?" / "...hedef belirlemeye ne dersin?") hem İngilizce'ye hem İspanyolca'ya YANLIŞLIKLA
+      AYNI tek cümleye uyarlanmıştı — `test/motivation_quote_selector_test.dart`'a eklenen
+      "havuz bütünlüğü" testi (`pool.toSet().length == pool.length`, `zibo_messages.dart`'a yeni
+      söz eklenirken kurulan AYNI convansiyon) bunu GERÇEK Dart string eşitliğiyle yakaladı —
+      düzeltildi (`"How about setting yourself a goal today?"` → ikinci geçiş `"How about deciding
+      on a goal for yourself today?"`e, İspanyolca karşılığı da benzer şekilde ayrıştırıldı). **Bu
+      turdan itibaren TÜM 21 havuz (357×3=1071 satır) `pool.toSet().length == 51` testiyle
+      KAPSANIYOR** — ileride yeni bir çeviri/uyarlama turu yapılırsa aynı testi çalıştırmak
+      benzer kopyala-yapıştır hatalarını anında yakalar.
   - **`MoodEnergy.isHighEnergy`** (`models/mood.dart`, YENİ) — mevcut `MoodLowness.isLow`'un
     (index<=1) simetriği (index>=3). `moodPoolTagFor(Mood?)` bu ikisiyle üç havuza eşliyor:
     low={veryUnhappy,unhappy}, neutral={neutral, VEYA hiç kayıt yoksa}, high={happy,veryHappy}.
@@ -232,9 +249,9 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
     **Kullanıcının kendi cihazında doğrulaması gereken:** farklı saatlerde (özellikle gece/sabah
     sınırında) Ana Sayfa'yı açıp sözün beklenen zaman dilimine uygun geldiği, bir ruh hali kaydı
     girdikten sonra Zibo'nun tavrının (düşükte teselli edici, yüksekte enerjik) gerçekten
-    hissedilir şekilde değiştiği, ve dil değiştirilince ekrandaki sözün ANINDA yeni dile geçtiği
-    (yalnızca TR dolu olduğu için şu an hep Türkçe kalacak, EN/ES havuzları doldurulunca test
-    edilmeli).
+    hissedilir şekilde değiştiği, VE — EN/ES havuzları artık dolu olduğu için ARTIK GERÇEKTEN test
+    edilebilir — dil İngilizce/İspanyolca'ya çevrilince ekrandaki sözün ANINDA (bir sonraki
+    dokunuşta) o dildeki karşılığına geçtiği.
 
 ### Konuşma Balonu ([speech_bubble.dart](lib/widgets/speech_bubble.dart))
 - **2026 bug düzeltmesi — kısa sözlerde favori/paylaş/söz-ekle butonları metnin ÜSTÜNE biniyordu.**
@@ -4475,10 +4492,14 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
   wheel_screen_test.dart` KISA SÜRE var oldu, SONRA SİLİNDİ** — Şans Çarkı sonrası reklam
   denemesiyle birlikte geldi, kullanıcı o özelliği istemeyince (bkz. "Zibo'ya Art Arda Dokunma →
   Geçiş Reklamı" bölümündeki geri alma notu) testi de anlamsızlaştığı için kaldırıldı.
-  **Toplam: 380 test** (2026 — bu turda `motivation_quote_selector_test.dart` [11 YENİ test] +
-  `mood_provider_test.dart`'a not (note) alanı grubu [6 YENİ test] + `widget_test.dart`'a bir
-  uçtan uca senaryo [1 YENİ test] eklendi, bkz. "Motivasyon Sözü Sistemi"/"Günlük Ruh Hali Takibi"
-  bölümleri — bu 18 testin ÖNCESİNDEKİ birikimli tarihçe için: `costume_provider_test.dart`'a
+  **Toplam: 400 test** (399 geçti + 1 önceden belgelenmiş `audioplayers` flake'i — 2026, EN/ES
+  söz havuzu çevirisi turunda `motivation_quote_selector_test.dart`'a 21 YENİ "havuz bütünlüğü"
+  testi [`pool.toSet().length == 51`, 7 Tr + 7 En + 7 Es] eklendi, bkz. `motivation_pools.dart`
+  bülteni. Bu turdan BİR ÖNCEKİ (Türkçe-yalnızca) turda `motivation_quote_selector_test.dart`'a
+  [11 YENİ test] + `mood_provider_test.dart`'a not (note) alanı grubu [6 YENİ test] +
+  `widget_test.dart`'a bir uçtan uca senaryo [1 YENİ test] eklenmişti, bkz. "Motivasyon Sözü
+  Sistemi"/"Günlük Ruh Hali Takibi" bölümleri — bu testlerin ÖNCESİNDEKİ birikimli tarihçe için:
+  `costume_provider_test.dart`'a
   `reconcileGoalUnlocks` grubu +
   `water_provider_test.dart`'a `completedDaysCount` testi [bkz. "Kostümler" bölümü] +
   `dream_sentiment_test.dart` [bkz. "Rüya Günlüğü" bölümündeki korelasyon notu] +
