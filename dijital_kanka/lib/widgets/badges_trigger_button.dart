@@ -17,6 +17,15 @@ import '../screens/badges_gallery_screen.dart';
 ///
 /// Tıklanınca ARA bir pop-up/önizleme OLMADAN doğrudan [BadgesGalleryScreen]
 /// açılır (kullanıcının açık isteği).
+///
+/// **2026 güncellemesi — arkasındaki dairesel `RadialGradient`/`boxShadow`
+/// dekorasyonu TAMAMEN kaldırıldı.** Kullanıcı Ana Sayfa'nın bir ekran
+/// görüntüsünü paylaşıp "şu rozet popup'ının siyah yuvarlak diye
+/// bahsettiğim yer bu" diye AÇIKÇA bu düğmenin arkasındaki koyu daireyi
+/// işaret etti — "sadece rozet popup ikonunu kullan" isteği doğrultusunda
+/// artık yalnızca çıplak PNG (`Transform.scale` ile pulse animasyonu
+/// UYGULANMIŞ hâliyle) render ediliyor, hiçbir Container/gradyan/gölge YOK.
+/// `_size` de (64 → 80) biraz büyütüldü.
 class BadgesTriggerButton extends StatefulWidget {
   const BadgesTriggerButton({super.key});
 
@@ -26,7 +35,7 @@ class BadgesTriggerButton extends StatefulWidget {
 
 class _BadgesTriggerButtonState extends State<BadgesTriggerButton>
     with SingleTickerProviderStateMixin {
-  static const _size = 64.0;
+  static const _size = 80.0;
 
   late final _pulseController = AnimationController(
     vsync: this,
@@ -70,7 +79,6 @@ class _BadgesTriggerButtonState extends State<BadgesTriggerButton>
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final colorScheme = Theme.of(context).colorScheme;
 
     return Material(
       color: Colors.transparent,
@@ -90,45 +98,18 @@ class _BadgesTriggerButtonState extends State<BadgesTriggerButton>
               child: SizedBox(
                 width: _size,
                 height: _size,
+                // Arkada hiçbir Container/gradyan/gölge YOK (bkz. yukarıdaki
+                // sınıf dokümantasyonu) — pulse animasyonu doğrudan çıplak
+                // PNG'ye uygulanıyor.
                 child: AnimatedBuilder(
                   animation: _pulseController,
                   builder: (context, child) {
                     final scale = _pulseScaleFor(_pulseController.value);
-                    final glow = (scale - 1.0) / 0.07; // 0..1
-                    return Transform.scale(
-                      scale: scale,
-                      child: Container(
-                        width: _size,
-                        height: _size,
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          gradient: RadialGradient(
-                            colors: [
-                              colorScheme.secondaryContainer,
-                              colorScheme.secondary,
-                            ],
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: colorScheme.secondary.withValues(
-                                alpha: 0.25 + 0.25 * glow,
-                              ),
-                              blurRadius: 6 + 8 * glow,
-                              spreadRadius: 1 + 1.5 * glow,
-                            ),
-                          ],
-                        ),
-                        child: child,
-                      ),
-                    );
+                    return Transform.scale(scale: scale, child: child);
                   },
-                  child: Padding(
-                    padding: const EdgeInsets.all(10),
-                    child: Image.asset(
-                      'assets/images/popup_rozet_icon.png',
-                      fit: BoxFit.contain,
-                    ),
+                  child: Image.asset(
+                    'assets/images/popup_rozet_icon.png',
+                    fit: BoxFit.contain,
                   ),
                 ),
               ),

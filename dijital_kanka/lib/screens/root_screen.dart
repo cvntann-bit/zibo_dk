@@ -432,24 +432,33 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
             // Şans Çarkı tetikleyicisi: yalnızca Ana Sayfa sekmesindeyken
             // görünür (IndexedStack'in dışında olduğu için sekme geçişlerinde
             // kendisi yeniden kurulmuyor, sadece görünürlüğü değişiyor).
+            // 2026 güncellemesi — kullanıcı ekran görüntüsüyle Günlük Ödül/
+            // Rozetler tetikleyicilerinin "çok iç içe" (üst üste biner gibi)
+            // durduğunu bildirdi; Çark/Günlük Ödül biraz daha yukarı
+            // (-0.8 → -0.88) taşındı, Rozetler ile Günlük Ödül arasındaki
+            // boşluk da büyütüldü (bkz. altta).
             if (_selectedIndex == 0)
               const Align(
-                alignment: Alignment(-1, -0.8),
+                alignment: Alignment(-1, -0.88),
                 child: WheelTriggerButton(),
               ),
             // Günlük Giriş Ödülleri tetikleyicisi: çarkın SİMETRİĞİ, sağ
             // kenarda, aynı koşullu-görünürlük deseniyle.
             if (_selectedIndex == 0)
               const Align(
-                alignment: Alignment(1, -0.8),
+                alignment: Alignment(1, -0.88),
                 child: DailyRewardsTriggerButton(),
               ),
-            // Rozetler tetikleyicisi: Günlük Ödül'ün HEMEN ALTINDA, aynı
-            // sağ kenarda, aynı koşullu-görünürlük deseniyle (bkz. CLAUDE.md
-            // "Rozet Sistemi" bölümü).
+            // Rozetler tetikleyicisi: Günlük Ödül'ün ALTINDA, aynı sağ
+            // kenarda, aynı koşullu-görünürlük deseniyle (bkz. CLAUDE.md
+            // "Rozet Sistemi" bölümü). Aradaki boşluk -0.8/-0.55'teki
+            // (0.25) eski değerden biraz büyütüldü (0.30) — artık arkasında
+            // dairesel bir dekorasyon/gölge OLMADIĞI için (bkz.
+            // BadgesTriggerButton dokümantasyonu) daha az gerekli olsa da,
+            // fazladan bir nefes payı bırakıldı.
             if (_selectedIndex == 0)
               const Align(
-                alignment: Alignment(1, -0.55),
+                alignment: Alignment(1, -0.58),
                 child: BadgesTriggerButton(),
               ),
           ],
