@@ -467,5 +467,12 @@
   "badgeRequirementFashionIcon": "Own 10 different costumes",
   "badgeRequirementFullWardrobe": "Own EVERY costume in the store",
   "badgeRequirementThemeHunter": "Own 3 different themes",
-  "badgeSpecialRewardComingSoon": "Special Reward (Coming Soon)"
+  "badgeSpecialRewardComingSoon": "Special Reward (Coming Soon)",
+  "badgeCategoryLoyalty": "Loyalty Badges",
+  "badgeNameFirstWeek": "First Week",
+  "badgeNameLoyalFriend": "Loyal Friend",
+  "badgeNameAnniversary": "Anniversary",
+  "badgeRequirementFirstWeek": "Open the app on a total of 7 different days",
+  "badgeRequirementLoyalFriend": "Open the app on a total of 100 different days",
+  "badgeRequirementAnniversary": "It's been 1 year since you met Zibo"
 }

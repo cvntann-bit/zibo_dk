@@ -29,6 +29,8 @@ class BadgesGalleryScreen extends StatelessWidget {
         return l10n.badgeCategoryModuleMastery;
       case BadgeCategory.collection:
         return l10n.badgeCategoryCollection;
+      case BadgeCategory.loyalty:
+        return l10n.badgeCategoryLoyalty;
     }
   }
 

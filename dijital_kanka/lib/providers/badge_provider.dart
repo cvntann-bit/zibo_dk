@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 
 import '../data/collection_badges.dart';
 import '../data/consistency_badges.dart';
+import '../data/loyalty_badges.dart';
 import '../data/module_mastery_badges.dart';
 import '../models/badge_definition.dart';
 import '../models/badge_record.dart';
@@ -81,8 +82,8 @@ class BadgeProvider extends ChangeNotifier {
   }
 
   /// İstikrar Rozetleri'nin kazanma kontrolü (bkz. altta
-  /// [reconcileModuleMasteryBadges]/[reconcileCollectionBadges] — Modül
-  /// Ustalığı/Koleksiyon Rozetleri için AYNI desenin diğer kategorileri).
+  /// [reconcileModuleMasteryBadges]/[reconcileCollectionBadges]/
+  /// [reconcileLoyaltyBadges] — diğer kategoriler için AYNI desen).
   /// [hasCompletedFirstGoalCycle] — `GoalsProvider.completions.isNotEmpty`.
   /// [appOpenStreak] — `AppStreakProvider.currentStreak` (uygulamayı her gün
   /// açma serisi, Hedef Takibi'nden BAĞIMSIZ — bkz. o provider'ın
@@ -173,6 +174,37 @@ class BadgeProvider extends ChangeNotifier {
         'fashion_icon' => ownedCostumeCount >= 10,
         'full_wardrobe' => ownsAllCostumes,
         'theme_hunter' => ownedThemeCount >= 3,
+        _ => false,
+      };
+      if (meetsRequirement) {
+        _earned[badge.id] = BadgeRecord(earnedAt: DateTime.now(), claimed: false);
+        lastNewlyEarned = badge;
+      }
+    }
+    if (lastNewlyEarned != null) {
+      notifyListeners();
+      unawaited(_save());
+      pendingBadgePopup.value = lastNewlyEarned;
+    }
+  }
+
+  /// Sadakat Rozetleri'nin kazanma kontrolü — AYNI "tek slot" deseni ama
+  /// İSTİKRAR'ın AKSİNE ARDIŞIKLIK gerektirmiyor (bkz. `loyalty_badges.
+  /// dart`). [totalDaysOpened] — `AppStreakProvider.totalDaysOpened`
+  /// (uygulamanın açıldığı TOPLAM benzersiz gün, `currentStreak`'ten
+  /// FARKLI — bir gün kaçırılsa da sıfırlanmaz). [daysSinceFirstUsed] —
+  /// `ProfileProvider.daysSinceFirstUsed()`.
+  void reconcileLoyaltyBadges({
+    required int totalDaysOpened,
+    required int daysSinceFirstUsed,
+  }) {
+    ZiboBadgeDefinition? lastNewlyEarned;
+    for (final badge in loyaltyBadges) {
+      if (_earned.containsKey(badge.id)) continue;
+      final meetsRequirement = switch (badge.id) {
+        'first_week' => totalDaysOpened >= 7,
+        'loyal_friend' => totalDaysOpened >= 100,
+        'anniversary' => daysSinceFirstUsed >= 365,
         _ => false,
       };
       if (meetsRequirement) {

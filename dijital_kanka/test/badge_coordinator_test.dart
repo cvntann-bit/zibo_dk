@@ -1,15 +1,17 @@
 // BadgeCoordinator'ın GoalsProvider/AppStreakProvider (İstikrar),
-// Gratitude/Water/Mood/Money/Manifest/Dream (Modül Ustalığı) VE Costume/
-// AppTheme (Koleksiyon) provider'ları değiştiğinde BadgeProvider.
-// reconcileConsistencyBadges/reconcileModuleMasteryBadges/
-// reconcileCollectionBadges'i OTOMATİK tetiklediğini doğrudan (widget
+// Gratitude/Water/Mood/Money/Manifest/Dream (Modül Ustalığı), Costume/
+// AppTheme (Koleksiyon) VE AppStreak/Profile (Sadakat) provider'ları
+// değiştiğinde BadgeProvider.reconcileConsistencyBadges/
+// reconcileModuleMasteryBadges/reconcileCollectionBadges/
+// reconcileLoyaltyBadges'i OTOMATİK tetiklediğini doğrudan (widget
 // pump'lamadan) test eder — HomeWidgetSyncCoordinator testlerindeki "sahte/
 // gerçek provider'ları kur, addListener'ın gerçekten tetiklendiğini
 // doğrula" deseniyle aynı. Modüle özel eşik/kazanma mantığının kendisi
 // `badge_provider_test.dart`ta zaten kapsamlı test edildiği için burada
 // yalnızca "koordinatör GERÇEKTEN dinliyor mu" doğrulanıyor — provider'ların
-// HEPSİ için ayrı ayrı senaryo YAZILMADI, MoneyProvider/CostumeProvider
-// (en basit, tarih kilidi olmayan) birer TEMSİLCİ olarak yeterli.
+// HEPSİ için ayrı ayrı senaryo YAZILMADI, MoneyProvider/CostumeProvider/
+// AppStreakProvider (en basit, tarih kilidi olmayan/zaten kurulu) birer
+// TEMSİLCİ olarak yeterli.
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -26,6 +28,7 @@ import 'package:dijital_kanka/providers/gratitude_provider.dart';
 import 'package:dijital_kanka/providers/manifest_provider.dart';
 import 'package:dijital_kanka/providers/money_provider.dart';
 import 'package:dijital_kanka/providers/mood_provider.dart';
+import 'package:dijital_kanka/providers/profile_provider.dart';
 import 'package:dijital_kanka/providers/water_provider.dart';
 import 'package:dijital_kanka/services/badge_coordinator.dart';
 import 'package:dijital_kanka/utils/badge_celebration_signal.dart';
@@ -49,6 +52,7 @@ void main() {
     late DreamJournalProvider dream;
     late CostumeProvider costume;
     late AppThemeProvider appTheme;
+    late ProfileProvider profile;
 
     setUp(() async {
       currentDate = DateTime(2026, 1, 5);
@@ -63,6 +67,7 @@ void main() {
       dream = DreamJournalProvider();
       costume = CostumeProvider();
       appTheme = AppThemeProvider();
+      profile = ProfileProvider(now: () => currentDate);
       await Future<void>.delayed(Duration.zero);
     });
 
@@ -78,6 +83,7 @@ void main() {
       dream: dream,
       costume: costume,
       appTheme: appTheme,
+      profile: profile,
     );
 
     test(
@@ -233,6 +239,57 @@ void main() {
         }
 
         expect(badges.isEarned('collector'), isFalse);
+      },
+    );
+
+    // 7 ARDIŞIK OLMAYAN (boşluklu) gün — "ardışıklık şart değil" isteğinin
+    // koordinatör seviyesinde de doğru davrandığının kanıtı.
+    void openSevenNonConsecutiveDays() {
+      for (final day in [5, 6, 9, 10, 15, 20, 25]) {
+        currentDate = DateTime(2026, 1, day);
+        appStreak.recordOpenForToday();
+      }
+    }
+
+    test(
+      'Constructor EAGER ilk reconcile Sadakat rozetlerini de kapsıyor '
+      '— kuruluştan ÖNCE zaten karşılanmış bir eşik (ARDIŞIK OLMAYAN 7 '
+      'gün) hemen ödüllendirilir',
+      () {
+        openSevenNonConsecutiveDays();
+        expect(appStreak.totalDaysOpened, 7);
+        expect(appStreak.currentStreak, 1); // ardışık DEĞİL
+        expect(badges.isEarned('first_week'), isFalse);
+
+        buildCoordinator();
+
+        expect(badges.isEarned('first_week'), isTrue);
+      },
+    );
+
+    test(
+      'AppStreakProvider SONRADAN değişince koordinatör Sadakat rozetini '
+      'de reconcile eder',
+      () {
+        final coordinator = buildCoordinator();
+        expect(badges.isEarned('first_week'), isFalse);
+
+        openSevenNonConsecutiveDays();
+
+        expect(badges.isEarned('first_week'), isTrue);
+        coordinator.dispose();
+      },
+    );
+
+    test(
+      'dispose() sonrası Sadakat provider değişiklikleri de tetiklenmez',
+      () {
+        final coordinator = buildCoordinator();
+        coordinator.dispose();
+
+        openSevenNonConsecutiveDays();
+
+        expect(badges.isEarned('first_week'), isFalse);
       },
     );
   });

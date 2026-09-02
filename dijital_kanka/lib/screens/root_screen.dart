@@ -207,6 +207,10 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
         // 2026 güncellemesi — Koleksiyon Rozetleri için iki yeni provider.
         costume: context.read<CostumeProvider>(),
         appTheme: context.read<AppThemeProvider>(),
+        // 2026 güncellemesi — Sadakat Rozetleri için (ProfileProvider zaten
+        // bu context'te mevcut, bkz. yukarıdaki HomeWidgetSyncCoordinator
+        // kurulumu).
+        profile: context.read<ProfileProvider>(),
       );
     });
   }

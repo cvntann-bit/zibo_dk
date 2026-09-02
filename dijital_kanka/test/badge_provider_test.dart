@@ -334,4 +334,78 @@ void main() {
       },
     );
   });
+
+  group('BadgeProvider — reconcileLoyaltyBadges', () {
+    late BadgeProvider provider;
+
+    setUp(() async {
+      provider = BadgeProvider();
+      await Future<void>.delayed(Duration.zero);
+    });
+
+    void reconcile({int totalDaysOpened = 0, int daysSinceFirstUsed = 0}) {
+      provider.reconcileLoyaltyBadges(
+        totalDaysOpened: totalDaysOpened,
+        daysSinceFirstUsed: daysSinceFirstUsed,
+      );
+    }
+
+    test('Eşik dolmadan hiçbir sadakat rozeti kazanılmaz', () {
+      reconcile(totalDaysOpened: 6, daysSinceFirstUsed: 364);
+
+      expect(provider.isEarned('first_week'), isFalse);
+      expect(provider.isEarned('loyal_friend'), isFalse);
+      expect(provider.isEarned('anniversary'), isFalse);
+      expect(pendingBadgePopup.value, isNull);
+    });
+
+    test('totalDaysOpened >= 7 iken İlk Hafta kazanılır', () {
+      reconcile(totalDaysOpened: 7);
+
+      expect(provider.isEarned('first_week'), isTrue);
+      expect(pendingBadgePopup.value?.id, 'first_week');
+    });
+
+    test(
+      'totalDaysOpened >= 100 iken İlk Hafta VE Sadık Dost BİRLİKTE '
+      'kazanılır, kutlama sinyali EN SONuncuya (loyal_friend) ayarlanır',
+      () {
+        reconcile(totalDaysOpened: 100);
+
+        expect(provider.isEarned('first_week'), isTrue);
+        expect(provider.isEarned('loyal_friend'), isTrue);
+        expect(pendingBadgePopup.value?.id, 'loyal_friend');
+      },
+    );
+
+    test('daysSinceFirstUsed >= 365 iken Yıl Dönümü kazanılır', () {
+      reconcile(daysSinceFirstUsed: 365);
+
+      expect(provider.isEarned('anniversary'), isTrue);
+      expect(pendingBadgePopup.value?.id, 'anniversary');
+    });
+
+    test('Zaten kazanılmış bir sadakat rozeti tekrar bildirmez', () {
+      reconcile(totalDaysOpened: 7);
+      pendingBadgePopup.value = null;
+
+      reconcile(totalDaysOpened: 7);
+
+      expect(pendingBadgePopup.value, isNull);
+    });
+
+    test(
+      'Kalıcılık: kazanılan sadakat rozeti yeniden başlatmada hatırlanır',
+      () async {
+        reconcile(daysSinceFirstUsed: 365);
+        await provider.markClaimed('anniversary');
+
+        final reloaded = BadgeProvider();
+        await Future<void>.delayed(Duration.zero);
+
+        expect(reloaded.isEarned('anniversary'), isTrue);
+        expect(reloaded.isClaimed('anniversary'), isTrue);
+      },
+    );
+  });
 }

@@ -1,5 +1,6 @@
 import '../models/badge_definition.dart';
 import 'collection_badges.dart';
+import 'loyalty_badges.dart';
 import 'module_mastery_badges.dart';
 
 /// İstikrar Rozetleri — bkz. CLAUDE.md "Rozet Sistemi" bölümü. Beşi de
@@ -45,11 +46,12 @@ const consistencyBadges = <ZiboBadgeDefinition>[
 ];
 
 /// TÜM kategorilerin TÜM rozetleri — [consistencyBadges] +
-/// [moduleMasteryBadges] + [collectionBadges]. Yeni bir kategori
-/// eklendiğinde yalnızca bu listeye eklenmesi yeterli — `BadgesGalleryScreen`
-/// bunu kategoriye göre gruplayıp gösteriyor.
+/// [moduleMasteryBadges] + [collectionBadges] + [loyaltyBadges]. Yeni bir
+/// kategori eklendiğinde yalnızca bu listeye eklenmesi yeterli —
+/// `BadgesGalleryScreen` bunu kategoriye göre gruplayıp gösteriyor.
 const allBadges = <ZiboBadgeDefinition>[
   ...consistencyBadges,
   ...moduleMasteryBadges,
   ...collectionBadges,
+  ...loyaltyBadges,
 ];

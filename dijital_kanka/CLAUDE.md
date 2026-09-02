@@ -8260,3 +8260,74 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
     panelinin artık BU dört rozeti de rastgele kazandırabildiği, VE
     (gerçek kullanım senaryosu) 5/10 kostüme veya 3 temaya sahip olununca
     ilgili rozetlerin GERÇEKTEN otomatik kazanıldığı.
+
+#### Dördüncü kategori — Sadakat Rozetleri (3 rozet)
+
+- **2026 yeni özellik.** Kullanıcı isteği: yine AYNI mimari, ama İSTİKRAR
+  Rozetleri'nden BİLEREK FARKLI — ARDIŞIKLIK (streak) GEREKTİRMİYOR,
+  yalnızca TOPLAM kullanım gün SAYISINI veya geçen takvim SÜRESİNİ baz
+  alıyor (kullanıcının kendi ifadesiyle: "kullanıcı ara sıra kullansa bile
+  zamanla bu rozetleri kazanabilmeli").
+  - **İlk Hafta** (`first_week`) — uygulamayı toplam 7 farklı günde aç
+    (ardışık OLMASI ŞART DEĞİL) — 15 ZC. **Sadık Dost** (`loyal_friend`) —
+    toplam 100 farklı gün — 100 ZC. **Yıl Dönümü** (`anniversary`) —
+    Zibo ile tanışmanın (ilk kayıt/hesap oluşturma) üzerinden 1 yıl (365
+    gün) geçsin — 300 ZC.
+  - **YENİ bir sayaç — `AppStreakProvider.totalDaysOpened`.** Kullanıcının
+    "Teknik detay" notu AÇIKÇA İKİ badge'in (İlk Hafta + Sadık Dost) AYNI
+    "benzersiz gün sayacı"nı paylaşacağını belirtti — bu, mevcut
+    `currentStreak`'ten (bir gün kaçırılınca SIFIRLANIR) BİLEREK FARKLI,
+    YENİ bir alan: `totalDaysOpened`, `recordOpenForToday()` YENİ bir gün
+    kaydettiği HER SEFERİNDE (streak devam etsin ya da sıfırlansın FARK
+    ETMEZ) +1 artan, MONOTONİK bir sayaç. **Göç:** bu alan eklenmeden
+    ÖNCEki kayıtlı veride yoksa `currentStreak`'e düşülüyor (en azından o
+    kadar gün açıldığı KESİN biliniyor — gerçek toplam daha BÜYÜK olabilir
+    ama bu göç ASLA fazla SAYMAZ, yalnızca olası bir az sayım — bilinçli
+    bir sadeleştirme).
+  - **`ProfileProvider.firstUsedAt`/`daysSinceFirstUsed()` ZATEN VARDI —
+    "Yıl Dönümü" için YENİ HİÇBİR ŞEY EKLENMEDİ.** Bu alan "Zibo ile Bağ
+    Seviyesi" özelliği için önceden eklenmişti (bkz. "Profil" bölümü) —
+    Sadakat Rozetleri onu DOĞRUDAN yeniden kullanıyor.
+  - **`BadgeProvider.reconcileLoyaltyBadges(...)`** —
+    `reconcileCollectionBadges` ile AYNI "tek slot" deseni, iki parametre
+    (`totalDaysOpened`/`daysSinceFirstUsed`).
+  - **`BadgeCoordinator` genişletildi — artık ON BİR provider'ı dinliyor**
+    (önceki ona `ProfileProvider` eklendi — `AppStreakProvider` zaten
+    vardı, `totalDaysOpened` için AYRI bir provider GEREKMEDİ). `_reconcile()`
+    ARTIK DÖRT kategoriyi de art arda çağırıyor. `RootScreen`'e YENİ bir
+    import GEREKMEDİ (`ProfileProvider` zaten `HomeWidgetSyncCoordinator`
+    kurulumu için import ediliyordu).
+  - **`BadgesGalleryScreen`'in `_categoryTitle` switch'ine `BadgeCategory.
+    loyalty` case'i eklendi** — mevcut gruplama/ayraç mantığı YİNE HİÇBİR
+    DEĞİŞİKLİK GEREKTİRMEDİ.
+  - **Görseller** kullanıcının masaüstündeki `rozetler/sadakat rozetleri`
+    klasöründen `tool/process_loyalty_badge_images.dart` (YENİ, AYNI desen)
+    ile kopyalandı — üçü de kopyalamadan ÖNCE piksel-alfa ölçümüyle temiz/
+    şeffaf olduğu doğrulandı.
+  - **ARB — 10 yeni anahtar (TR/EN/ES):** `badgeCategoryLoyalty` + 3×
+    `badgeName<X>` + 3× `badgeRequirement<X>`.
+  - **`BadgeProvider.debugGrantRandomBadge()` YİNE HİÇBİR DEĞİŞİKLİK
+    GEREKTİRMEDİ** — artık on sekiz rozetin (5+6+4+3) HERHANGİ birini
+    rastgele kazandırabiliyor.
+  - **Test: 16 YENİ test.** `app_streak_provider_test.dart`'a 7 yeni test
+    (`totalDaysOpened`'in sıfırdan başlaması, ilk çağrıda 1 olması, aynı
+    gün tekrar ARTMAMASI, bir gün ATLANIP `currentStreak` sıfırlansa BİLE
+    `totalDaysOpened`'in SIFIRLANMAMASI [en kritik test — Sadakat'in TÜM
+    "ardışık değil" garantisinin kanıtı], 7 ARDIŞIK OLMAYAN günde 7 olması,
+    kalıcılık, ve eski-format göç testi [`totalDaysOpened` alanı OLMAYAN
+    kayıtlı veriden `currentStreak`'e düşme]). `badge_provider_test.dart`'a
+    `reconcileLoyaltyBadges` grubu (6 test). `badge_coordinator_test.dart`'a
+    3 yeni test (AppStreakProvider'ın KENDİSİ TEMSİLCİ — zaten kurulu
+    olduğu için yeni bir provider setUp'ı gerekmedi; hepsi 7 ARDIŞIK
+    OLMAYAN gün açılışıyla kuruluyor). **Toplam: 491 test** (490 geçti + 1
+    önceden belgelenmiş `audioplayers`/`home_widget` flake'i).
+  - **Gerçek cihazda GÖRSEL doğrulama bu turda YAPILMADI** — yalnızca
+    `flutter test` (491 test) + `flutter build apk --debug` (sorunsuz) ile
+    doğrulandı; APK cihaza SESSİZCE kuruldu (kullanıcı o an aktif olarak
+    bir oyun oynuyordu, açılmadı). **Kullanıcının kendi cihazında
+    doğrulaması gereken:** Rozetler Galerisi'nde Koleksiyon'un ALTINDA
+    "Sadakat Rozetleri" başlığı + üç rozetin doğru görsel/ad/koşul/ödülle
+    göründüğü, Ayarlar'daki test panelinin artık BU üç rozeti de rastgele
+    kazandırabildiği, VE (gerçek kullanım senaryosu, GÜNLER/AYLAR sürer)
+    uygulamayı ARA SIRA (ardışık olmadan) toplam 7/100 farklı günde açınca
+    veya 1 yıl geçince ilgili rozetlerin GERÇEKTEN otomatik kazanıldığı.

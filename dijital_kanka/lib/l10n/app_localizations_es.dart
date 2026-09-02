@@ -1587,4 +1587,28 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get badgeSpecialRewardComingSoon =>
       'Recompensa Especial (Próximamente)';
+
+  @override
+  String get badgeCategoryLoyalty => 'Insignias de Lealtad';
+
+  @override
+  String get badgeNameFirstWeek => 'Primera Semana';
+
+  @override
+  String get badgeNameLoyalFriend => 'Amigo Fiel';
+
+  @override
+  String get badgeNameAnniversary => 'Aniversario';
+
+  @override
+  String get badgeRequirementFirstWeek =>
+      'Abre la app un total de 7 días diferentes';
+
+  @override
+  String get badgeRequirementLoyalFriend =>
+      'Abre la app un total de 100 días diferentes';
+
+  @override
+  String get badgeRequirementAnniversary =>
+      'Ha pasado 1 año desde que conociste a Zibo';
 }

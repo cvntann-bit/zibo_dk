@@ -467,5 +467,12 @@
   "badgeRequirementFashionIcon": "Ten 10 disfraces diferentes",
   "badgeRequirementFullWardrobe": "Ten TODOS los disfraces de la tienda",
   "badgeRequirementThemeHunter": "Ten 3 temas diferentes",
-  "badgeSpecialRewardComingSoon": "Recompensa Especial (Próximamente)"
+  "badgeSpecialRewardComingSoon": "Recompensa Especial (Próximamente)",
+  "badgeCategoryLoyalty": "Insignias de Lealtad",
+  "badgeNameFirstWeek": "Primera Semana",
+  "badgeNameLoyalFriend": "Amigo Fiel",
+  "badgeNameAnniversary": "Aniversario",
+  "badgeRequirementFirstWeek": "Abre la app un total de 7 días diferentes",
+  "badgeRequirementLoyalFriend": "Abre la app un total de 100 días diferentes",
+  "badgeRequirementAnniversary": "Ha pasado 1 año desde que conociste a Zibo"
 }

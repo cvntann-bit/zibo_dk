@@ -2098,5 +2098,33 @@
   "badgeSpecialRewardComingSoon": "Özel Ödül (Yakında)",
   "@badgeSpecialRewardComingSoon": {
     "description": "Standart ZC ödülüne ek olarak özel bir ödül (henüz tanımlanmadı) taşıyan rozetlerin (ör. Tam Gardırop) yanında gösterilen yer tutucu etiket"
+  },
+  "badgeCategoryLoyalty": "Sadakat Rozetleri",
+  "@badgeCategoryLoyalty": {
+    "description": "Rozetler Galerisi'ndeki Sadakat kategorisinin bölüm başlığı"
+  },
+  "badgeNameFirstWeek": "İlk Hafta",
+  "@badgeNameFirstWeek": {
+    "description": "Sadakat Rozetleri'nin birinci rozetinin adı"
+  },
+  "badgeNameLoyalFriend": "Sadık Dost",
+  "@badgeNameLoyalFriend": {
+    "description": "Sadakat Rozetleri'nin ikinci rozetinin adı"
+  },
+  "badgeNameAnniversary": "Yıl Dönümü",
+  "@badgeNameAnniversary": {
+    "description": "Sadakat Rozetleri'nin üçüncü rozetinin adı"
+  },
+  "badgeRequirementFirstWeek": "Uygulamayı toplam 7 farklı günde aç",
+  "@badgeRequirementFirstWeek": {
+    "description": "İlk Hafta rozetinin kazanma koşulu"
+  },
+  "badgeRequirementLoyalFriend": "Uygulamayı toplam 100 farklı günde aç",
+  "@badgeRequirementLoyalFriend": {
+    "description": "Sadık Dost rozetinin kazanma koşulu"
+  },
+  "badgeRequirementAnniversary": "Zibo ile tanışmanın üzerinden 1 yıl geçsin",
+  "@badgeRequirementAnniversary": {
+    "description": "Yıl Dönümü rozetinin kazanma koşulu"
   }
 }

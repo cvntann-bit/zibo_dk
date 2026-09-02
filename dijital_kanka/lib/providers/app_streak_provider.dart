@@ -40,10 +40,18 @@ class AppStreakProvider extends ChangeNotifier {
 
   DateTime? _lastOpenDate;
   int _currentStreak = 0;
+  int _totalDaysOpened = 0;
   bool _isReady = false;
 
   bool get isReady => _isReady;
   int get currentStreak => _currentStreak;
+
+  /// Uygulamanın açıldığı TOPLAM benzersiz gün sayısı — [currentStreak]'in
+  /// AKSİNE bir gün kaçırılınca SIFIRLANMAZ, yalnızca MONOTONİK artar.
+  /// Sadakat Rozetleri'nin `first_week`/`loyal_friend` eşikleri için (bkz.
+  /// `loyalty_badges.dart` — "ardışık olması şart değil" isteği tam olarak
+  /// bu alan sayesinde karşılanıyor).
+  int get totalDaysOpened => _totalDaysOpened;
 
   DateTime _dateOnly(DateTime d) => DateTime(d.year, d.month, d.day);
 
@@ -54,6 +62,14 @@ class AppStreakProvider extends ChangeNotifier {
         final rawDate = data['lastOpenDate'] as String?;
         _lastOpenDate = rawDate != null ? DateTime.tryParse(rawDate) : null;
         _currentStreak = data['currentStreak'] as int? ?? 0;
+        // 2026 güncellemesi — bu alan eklenmeden ÖNCEki kayıtlı veride yok;
+        // bulunmazsa `currentStreak`'e düşülüyor (en azından o kadar gün
+        // açıldığı KESİN biliniyor — GERÇEK toplam daha önce bir kez bile
+        // seri kırıldıysa bundan BÜYÜK olabilir, ama bu göç HİÇBİR ZAMAN
+        // fazla SAYMAZ, yalnızca olası bir AZ sayım — kabul edilebilir bir
+        // bilinçli sadeleştirme, `WaterProvider`'daki eski-format-göçü
+        // dersleriyle AYNI ruhta).
+        _totalDaysOpened = data['totalDaysOpened'] as int? ?? _currentStreak;
       }
     } catch (_) {
       // Bozuk/okunamayan veri — sıfırdan başla, diğer provider'lardaki AYNI
@@ -67,6 +83,7 @@ class AppStreakProvider extends ChangeNotifier {
     return _store.save({
       'lastOpenDate': _lastOpenDate?.toIso8601String(),
       'currentStreak': _currentStreak,
+      'totalDaysOpened': _totalDaysOpened,
     });
   }
 
@@ -87,6 +104,7 @@ class AppStreakProvider extends ChangeNotifier {
     } else {
       _currentStreak = 1;
     }
+    _totalDaysOpened += 1;
     _lastOpenDate = today;
     notifyListeners();
     _save();

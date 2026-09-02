@@ -1576,4 +1576,27 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get badgeSpecialRewardComingSoon => 'Özel Ödül (Yakında)';
+
+  @override
+  String get badgeCategoryLoyalty => 'Sadakat Rozetleri';
+
+  @override
+  String get badgeNameFirstWeek => 'İlk Hafta';
+
+  @override
+  String get badgeNameLoyalFriend => 'Sadık Dost';
+
+  @override
+  String get badgeNameAnniversary => 'Yıl Dönümü';
+
+  @override
+  String get badgeRequirementFirstWeek => 'Uygulamayı toplam 7 farklı günde aç';
+
+  @override
+  String get badgeRequirementLoyalFriend =>
+      'Uygulamayı toplam 100 farklı günde aç';
+
+  @override
+  String get badgeRequirementAnniversary =>
+      'Zibo ile tanışmanın üzerinden 1 yıl geçsin';
 }

@@ -8,18 +8,20 @@ import '../providers/gratitude_provider.dart';
 import '../providers/manifest_provider.dart';
 import '../providers/money_provider.dart';
 import '../providers/mood_provider.dart';
+import '../providers/profile_provider.dart';
 import '../providers/water_provider.dart';
 
-/// Rozet Sistemi'nin ÜÇ kategorisinin de (İstikrar + Modül Ustalığı +
-/// Koleksiyon) kazanma kontrolünü, ilgili kaynak veri her güncellendiğinde
-/// OTOMATİK tetikleyen koordinatör — bkz. CLAUDE.md "Rozet Sistemi" bölümü.
-/// `HomeWidgetSyncCoordinator`'ın AYNI "constructor'dan değil PARAMETRE
-/// olarak al, dışarıdan `addListener` ekle" deseni: bu obje on provider'ın
-/// (Badges, Goals, AppStreak, Gratitude, Water, Mood, Money, Manifest,
-/// Dream, Costume, AppTheme) HİÇBİRİNE KALICI bağımlı değil, yalnızca onları
-/// dinleyip [BadgeProvider.reconcileConsistencyBadges]/[BadgeProvider.
-/// reconcileModuleMasteryBadges]/[BadgeProvider.reconcileCollectionBadges]'i
-/// çağırıyor.
+/// Rozet Sistemi'nin DÖRT kategorisinin de (İstikrar + Modül Ustalığı +
+/// Koleksiyon + Sadakat) kazanma kontrolünü, ilgili kaynak veri her
+/// güncellendiğinde OTOMATİK tetikleyen koordinatör — bkz. CLAUDE.md "Rozet
+/// Sistemi" bölümü. `HomeWidgetSyncCoordinator`'ın AYNI "constructor'dan
+/// değil PARAMETRE olarak al, dışarıdan `addListener` ekle" deseni: bu obje
+/// on bir provider'ın (Badges, Goals, AppStreak, Gratitude, Water, Mood,
+/// Money, Manifest, Dream, Costume, AppTheme, Profile) HİÇBİRİNE KALICI
+/// bağımlı değil, yalnızca onları dinleyip [BadgeProvider.
+/// reconcileConsistencyBadges]/[BadgeProvider.reconcileModuleMasteryBadges]/
+/// [BadgeProvider.reconcileCollectionBadges]/[BadgeProvider.
+/// reconcileLoyaltyBadges]'i çağırıyor.
 ///
 /// `RootScreen.initState()`'te BİR KEZ oluşturulur (constructor'ın kendisi de
 /// EAGER bir ilk kontrol yapar — uygulama açılışında zaten karşılanmış bir
@@ -38,6 +40,7 @@ class BadgeCoordinator {
     required this.dream,
     required this.costume,
     required this.appTheme,
+    required this.profile,
   }) {
     goals.addListener(_reconcile);
     appStreak.addListener(_reconcile);
@@ -49,6 +52,7 @@ class BadgeCoordinator {
     dream.addListener(_reconcile);
     costume.addListener(_reconcile);
     appTheme.addListener(_reconcile);
+    profile.addListener(_reconcile);
     _reconcile();
   }
 
@@ -63,6 +67,7 @@ class BadgeCoordinator {
   final DreamJournalProvider dream;
   final CostumeProvider costume;
   final AppThemeProvider appTheme;
+  final ProfileProvider profile;
 
   void _reconcile() {
     badges.reconcileConsistencyBadges(
@@ -82,6 +87,10 @@ class BadgeCoordinator {
       ownsAllCostumes: costume.ownsAllCostumes,
       ownedThemeCount: appTheme.ownedIds.length,
     );
+    badges.reconcileLoyaltyBadges(
+      totalDaysOpened: appStreak.totalDaysOpened,
+      daysSinceFirstUsed: profile.daysSinceFirstUsed(),
+    );
   }
 
   void dispose() {
@@ -95,5 +104,6 @@ class BadgeCoordinator {
     dream.removeListener(_reconcile);
     costume.removeListener(_reconcile);
     appTheme.removeListener(_reconcile);
+    profile.removeListener(_reconcile);
   }
 }
