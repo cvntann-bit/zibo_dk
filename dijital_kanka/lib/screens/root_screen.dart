@@ -7,11 +7,13 @@ import '../l10n/app_localizations.dart';
 import '../models/push_notification_type.dart';
 import '../providers/app_streak_provider.dart';
 import '../providers/app_theme_provider.dart';
+import '../providers/auth_link_provider.dart';
 import '../providers/badge_provider.dart';
 import '../providers/costume_provider.dart';
 import '../providers/currency_provider.dart';
 import '../providers/daily_rewards_provider.dart';
 import '../providers/dream_journal_provider.dart';
+import '../providers/founder_badge_provider.dart';
 import '../providers/goals_provider.dart';
 import '../providers/gratitude_provider.dart';
 import '../providers/hidden_badge_provider.dart';
@@ -29,6 +31,7 @@ import '../services/home_widget_service.dart';
 import '../services/home_widget_sync_coordinator.dart';
 import '../services/notification_service.dart';
 import '../services/push_notification_service.dart';
+import '../utils/founder_badge_reconcile.dart';
 import '../utils/tab_navigation.dart';
 import '../utils/widget_module.dart';
 import '../widgets/badges_trigger_button.dart';
@@ -223,6 +226,8 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
         // Kuş) için.
         hiddenBadge: context.read<HiddenBadgeProvider>(),
       );
+      // Kurucu Üye rozeti — bkz. `_maybeClaimFounderBadge()` dokümantasyonu.
+      unawaited(_maybeClaimFounderBadge());
     });
     // 2026 güncellemesi — Sosyal/Paylaşım Rozetleri: `ReferralProvider.
     // successfulReferralCount` sunucu tarafında (GitHub Actions cron'u)
@@ -230,6 +235,19 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
     // `DailyRewardsProvider.reconcileForToday()` ile AYNI "reconcile-on-
     // resume" felsefesi, bkz. `ReferralProvider.refresh()`'in dokümantasyonu.
     context.read<ReferralProvider>().refresh();
+  }
+
+  /// bkz. `utils/founder_badge_reconcile.dart`'taki `maybeClaimFounderBadge`
+  /// dokümantasyonu — gerçek mantık orada, saf/test edilebilir bir üst
+  /// düzey fonksiyon olarak; burası yalnızca o anki provider'ları
+  /// (`mounted` kontrolüyle) geçiren ince bir sarmalayıcı.
+  Future<void> _maybeClaimFounderBadge() {
+    if (!mounted) return Future.value();
+    return maybeClaimFounderBadge(
+      authLink: context.read<AuthLinkProvider>(),
+      costume: context.read<CostumeProvider>(),
+      founderBadge: context.read<FounderBadgeProvider>(),
+    );
   }
 
   /// **2026 bug düzeltmesi — kullanıcı raporu: "uygulama İspanyolca ama
@@ -313,6 +331,8 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
       // Actions çalıştırmasında) artırılan `successfulReferralCount`'un
       // istemciye yansıması için AYNI "reconcile-on-resume" tetikleyicisi.
       context.read<ReferralProvider>().refresh();
+      // Kurucu Üye rozeti — bkz. `_maybeClaimFounderBadge()` dokümantasyonu.
+      unawaited(_maybeClaimFounderBadge());
     }
   }
 
