@@ -242,5 +242,18 @@ void main() {
         expect(secondLaunch.completions.first.goalName, goal.name);
       },
     );
+
+    test(
+      'hasAnyRecordToday: bugün HİÇBİR hedef işaretlenmemişse false, '
+      'HERHANGİ biri işaretlenince true döner (Denge Ustası — Gizli/'
+      'Eğlenceli Rozetler)',
+      () {
+        expect(provider.hasAnyRecordToday, isFalse);
+
+        provider.toggleToday(provider.goals.first.id);
+
+        expect(provider.hasAnyRecordToday, isTrue);
+      },
+    );
   });
 }

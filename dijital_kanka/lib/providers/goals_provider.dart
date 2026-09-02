@@ -58,6 +58,12 @@ class GoalsProvider extends ChangeNotifier {
   int _longestStreak = 0;
   int get longestStreak => _longestStreak;
 
+  /// Bugün HERHANGİ bir hedefte en az bir gün işaretlenmiş mi —
+  /// "Denge Ustası" (Gizli/Eğlenceli Rozetler, bkz. `hidden_badges.dart`)
+  /// rozetinin YEDİ modül kontrolünden biri.
+  bool get hasAnyRecordToday =>
+      _goals.any((g) => g.completedDates.contains(today));
+
   Future<void> _loadFromPrefs() async {
     final decoded = await _store.load();
     if (decoded == null) {

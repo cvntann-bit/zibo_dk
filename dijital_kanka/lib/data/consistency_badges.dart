@@ -1,5 +1,6 @@
 import '../models/badge_definition.dart';
 import 'collection_badges.dart';
+import 'hidden_badges.dart';
 import 'loyalty_badges.dart';
 import 'module_mastery_badges.dart';
 import 'social_badges.dart';
@@ -48,13 +49,14 @@ const consistencyBadges = <ZiboBadgeDefinition>[
 
 /// TÜM kategorilerin TÜM rozetleri — [consistencyBadges] +
 /// [moduleMasteryBadges] + [collectionBadges] + [loyaltyBadges] +
-/// [socialBadges]. Yeni bir kategori eklendiğinde yalnızca bu listeye
-/// eklenmesi yeterli — `BadgesGalleryScreen` bunu kategoriye göre
-/// gruplayıp gösteriyor.
+/// [socialBadges] + [hiddenBadges]. Yeni bir kategori eklendiğinde yalnızca
+/// bu listeye eklenmesi yeterli — `BadgesGalleryScreen` bunu kategoriye
+/// göre gruplayıp gösteriyor.
 const allBadges = <ZiboBadgeDefinition>[
   ...consistencyBadges,
   ...moduleMasteryBadges,
   ...collectionBadges,
   ...loyaltyBadges,
   ...socialBadges,
+  ...hiddenBadges,
 ];

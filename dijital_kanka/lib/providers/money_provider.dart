@@ -41,6 +41,18 @@ class MoneyProvider extends ChangeNotifier {
   int get totalEntryCount =>
       _entries.values.fold(0, (sum, list) => sum + list.length);
 
+  /// Bugün (HANGİ kategoriden olursa olsun) en az bir kayıt eklenmiş mi —
+  /// "Denge Ustası" (Gizli/Eğlenceli Rozetler, bkz. `hidden_badges.dart`)
+  /// rozetinin YEDİ modül kontrolünden biri.
+  bool get hasEntryToday {
+    final now = _now();
+    return _entries.values.any(
+      (list) => list.any(
+        (e) => e.date.year == now.year && e.date.month == now.month && e.date.day == now.day,
+      ),
+    );
+  }
+
   /// **2026 güncellemesi** — ilgili kategorideki kayıtları PARA BİRİMİNE
   /// göre gruplayıp her birinin kendi toplamını döner (ör.
   /// `{'TRY': 500, 'USD': 50}`) — kullanıcının açık isteği "otomatik kur

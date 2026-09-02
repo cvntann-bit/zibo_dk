@@ -481,5 +481,13 @@
   "badgeNameCommunityFounder": "Community Founder",
   "badgeRequirementFirstShare": "Share a Zibo card for the first time",
   "badgeRequirementAmbassador": "Successfully invite 1 friend with Invite a Friend",
-  "badgeRequirementCommunityFounder": "Successfully invite 5 friends with Invite a Friend"
+  "badgeRequirementCommunityFounder": "Successfully invite 5 friends with Invite a Friend",
+  "badgeCategoryHidden": "Hidden Badges",
+  "badgeHiddenPlaceholder": "???",
+  "badgeNameNightOwl": "Night Owl",
+  "badgeNameEarlyBird": "Early Bird",
+  "badgeNameBalanceMaster": "Balance Master",
+  "badgeRequirementNightOwl": "Open the app 30 times between midnight and 5 AM",
+  "badgeRequirementEarlyBird": "Open the app 30 times between 6 AM and 8 AM",
+  "badgeRequirementBalanceMaster": "Add an entry to all 7 modules in the app on the same day"
 }

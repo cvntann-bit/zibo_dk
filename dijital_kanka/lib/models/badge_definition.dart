@@ -1,10 +1,10 @@
 import '../l10n/app_localizations.dart';
 
 /// Rozet Sistemi'ndeki kategoriler — bkz. CLAUDE.md "Rozet Sistemi" bölümü.
-/// [consistency] + [moduleMastery] + [collection] + [loyalty] + [social]
-/// dolu; kullanıcının planladığı diğer kategoriler (Gizli/Eğlenceli) ayrı
-/// bir turda eklenecek.
-enum BadgeCategory { consistency, moduleMastery, collection, loyalty, social }
+/// Altısı da dolu: [consistency] + [moduleMastery] + [collection] +
+/// [loyalty] + [social] + [hidden] (Gizli/Eğlenceli — bkz. altta
+/// [ZiboBadgeDefinition.isHidden]).
+enum BadgeCategory { consistency, moduleMastery, collection, loyalty, social, hidden }
 
 /// Tek bir rozetin SABİT tanımı (id, kategori, görsel, ödül) — HANGİ
 /// KOŞULDA kazanıldığı BURADA DEĞİL, `BadgeProvider`'ın kategoriye özel
@@ -24,6 +24,7 @@ class ZiboBadgeDefinition {
     required this.imageAsset,
     required this.zcReward,
     this.hasSpecialReward = false,
+    this.isHidden = false,
   });
 
   final String id;
@@ -41,6 +42,20 @@ class ZiboBadgeDefinition {
   /// popup'ı) `l10n.badgeSpecialRewardComingSoon` etiketini göstermek için
   /// kullanılıyor.
   final bool hasSpecialReward;
+
+  /// **Gizli/Eğlenceli Rozetler'e özel — bkz. `hidden_badges.dart`.**
+  /// `true` iken, bu rozet KAZANILANA kadar `BadgesGalleryScreen`'in
+  /// `_BadgeGalleryCard`'ı [imageAsset]/[localizedName]/[localizedRequirement]/
+  /// [zcReward]'ın HİÇBİRİNİ göstermez — bunun yerine paylaşılan bir gizem
+  /// görseli (`hiddenBadgeMysteryImageAsset`) + `l10n.badgeHiddenPlaceholder`
+  /// ("???") gösterir, kullanıcı rozeti TESADÜFEN/KEŞFEDEREK kazansın diye
+  /// (kullanıcının açık isteği). **Kazanıldıktan SONRA bu bayrağın HİÇBİR
+  /// etkisi kalmaz** — `BadgeCelebrationOverlay`'in kutlama popup'ı VE
+  /// galerideki kart, TÜM diğer rozetlerle AYNI şekilde gerçek görsel/isim/
+  /// koşul/ödülü gösterir (`_BadgeGalleryCard`'daki kontrol
+  /// `badge.isHidden && !earned`'a bağlı, yalnızca `earned` DEĞİLKEN
+  /// devrede).
+  final bool isHidden;
 
   String localizedName(AppLocalizations l10n) {
     switch (id) {
@@ -86,6 +101,12 @@ class ZiboBadgeDefinition {
         return l10n.badgeNameAmbassador;
       case 'community_founder':
         return l10n.badgeNameCommunityFounder;
+      case 'night_owl':
+        return l10n.badgeNameNightOwl;
+      case 'early_bird':
+        return l10n.badgeNameEarlyBird;
+      case 'balance_master':
+        return l10n.badgeNameBalanceMaster;
       default:
         return id;
     }
@@ -135,6 +156,12 @@ class ZiboBadgeDefinition {
         return l10n.badgeRequirementAmbassador;
       case 'community_founder':
         return l10n.badgeRequirementCommunityFounder;
+      case 'night_owl':
+        return l10n.badgeRequirementNightOwl;
+      case 'early_bird':
+        return l10n.badgeRequirementEarlyBird;
+      case 'balance_master':
+        return l10n.badgeRequirementBalanceMaster;
       default:
         return '';
     }

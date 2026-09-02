@@ -1622,4 +1622,31 @@ class AppLocalizationsTr extends AppLocalizations {
   @override
   String get badgeRequirementCommunityFounder =>
       'Davet Et ile 5 arkadaşını başarıyla davet et';
+
+  @override
+  String get badgeCategoryHidden => 'Gizli Rozetler';
+
+  @override
+  String get badgeHiddenPlaceholder => '???';
+
+  @override
+  String get badgeNameNightOwl => 'Gece Kuşu';
+
+  @override
+  String get badgeNameEarlyBird => 'Erken Kuş';
+
+  @override
+  String get badgeNameBalanceMaster => 'Denge Ustası';
+
+  @override
+  String get badgeRequirementNightOwl =>
+      'Gece yarısı ile sabah 05:00 arası 30 kez uygulamayı aç';
+
+  @override
+  String get badgeRequirementEarlyBird =>
+      'Sabah 06:00-08:00 arası 30 kez uygulamayı aç';
+
+  @override
+  String get badgeRequirementBalanceMaster =>
+      'Aynı gün içinde uygulamadaki 7 modülün hepsine kayıt ekle';
 }

@@ -1635,4 +1635,31 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get badgeRequirementCommunityFounder =>
       'Invita con éxito a 5 amigos con Invitar a un Amigo';
+
+  @override
+  String get badgeCategoryHidden => 'Insignias Ocultas';
+
+  @override
+  String get badgeHiddenPlaceholder => '???';
+
+  @override
+  String get badgeNameNightOwl => 'Búho Nocturno';
+
+  @override
+  String get badgeNameEarlyBird => 'Madrugador';
+
+  @override
+  String get badgeNameBalanceMaster => 'Maestro del Equilibrio';
+
+  @override
+  String get badgeRequirementNightOwl =>
+      'Abre la app 30 veces entre la medianoche y las 5 AM';
+
+  @override
+  String get badgeRequirementEarlyBird =>
+      'Abre la app 30 veces entre las 6 AM y las 8 AM';
+
+  @override
+  String get badgeRequirementBalanceMaster =>
+      'Añade un registro a los 7 módulos de la app el mismo día';
 }

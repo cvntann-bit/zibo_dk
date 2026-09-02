@@ -104,5 +104,19 @@ void main() {
         expect(restored.single.text, 'Bu kaybolmamalı.');
       },
     );
+
+    test(
+      'hasEntryToday: hiç rüya yokken false, eklenince true döner (Denge '
+      'Ustası — Gizli/Eğlenceli Rozetler)',
+      () {
+        final provider = DreamJournalProvider();
+
+        expect(provider.hasEntryToday, isFalse);
+
+        provider.addDream(title: 'Rüya', text: 'Metin');
+
+        expect(provider.hasEntryToday, isTrue);
+      },
+    );
   });
 }

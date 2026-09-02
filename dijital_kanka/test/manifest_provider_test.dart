@@ -140,5 +140,17 @@ void main() {
         expect(migrated.isTodayRewardClaimed, isFalse); // eski kayıt DÜNE ait
       },
     );
+
+    test(
+      'hasEntryToday: bugün hiç giriş yokken false, eklenince true döner '
+      '(Denge Ustası — Gizli/Eğlenceli Rozetler)',
+      () {
+        expect(provider.hasEntryToday, isFalse);
+
+        provider.addEntry(photoPath: '/tmp/photo.jpg', intentionText: 'Niyet');
+
+        expect(provider.hasEntryToday, isTrue);
+      },
+    );
   });
 }

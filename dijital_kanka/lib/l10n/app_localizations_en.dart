@@ -1626,4 +1626,31 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get badgeRequirementCommunityFounder =>
       'Successfully invite 5 friends with Invite a Friend';
+
+  @override
+  String get badgeCategoryHidden => 'Hidden Badges';
+
+  @override
+  String get badgeHiddenPlaceholder => '???';
+
+  @override
+  String get badgeNameNightOwl => 'Night Owl';
+
+  @override
+  String get badgeNameEarlyBird => 'Early Bird';
+
+  @override
+  String get badgeNameBalanceMaster => 'Balance Master';
+
+  @override
+  String get badgeRequirementNightOwl =>
+      'Open the app 30 times between midnight and 5 AM';
+
+  @override
+  String get badgeRequirementEarlyBird =>
+      'Open the app 30 times between 6 AM and 8 AM';
+
+  @override
+  String get badgeRequirementBalanceMaster =>
+      'Add an entry to all 7 modules in the app on the same day';
 }

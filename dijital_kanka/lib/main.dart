@@ -28,6 +28,7 @@ import 'providers/favorite_quotes_provider.dart';
 import 'providers/founder_badge_provider.dart';
 import 'providers/goals_provider.dart';
 import 'providers/gratitude_provider.dart';
+import 'providers/hidden_badge_provider.dart';
 import 'providers/locale_provider.dart';
 import 'providers/manifest_provider.dart';
 import 'providers/money_provider.dart';
@@ -431,6 +432,11 @@ class DijitalKankaApp extends StatelessWidget {
           ),
         ),
         ChangeNotifierProvider(create: (_) => BadgeProvider(uid: uid)),
+        // Gizli/Eğlenceli Rozetler ("Gece Kuşu"/"Erken Kuş") — BİLEREK
+        // `AppStreakProvider`'ın AKSİNE `TrustedTimeProvider` VERİLMİYOR,
+        // varsayılan (cihazın kendi `DateTime.now()`) kullanılıyor — bkz.
+        // `HiddenBadgeProvider`'ın "BİLEREK cihaz saati" dokümantasyonu.
+        ChangeNotifierProvider(create: (_) => HiddenBadgeProvider(uid: uid)),
         // SoundEffectsProvider de CoinProvider'dan ÖNCE olmalı — AYNI
         // gerekçe: CoinProvider'ın `create` callback'i coin kazanma/satın
         // alma seslerini açık/kapalı tercihine bağlamak için `context.read<

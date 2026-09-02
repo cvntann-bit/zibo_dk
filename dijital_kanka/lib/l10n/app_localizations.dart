@@ -2949,6 +2949,54 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'Davet Et ile 5 arkadaşını başarıyla davet et'**
   String get badgeRequirementCommunityFounder;
+
+  /// Rozetler Galerisi'ndeki Gizli/Eğlenceli kategorisinin bölüm başlığı
+  ///
+  /// In tr, this message translates to:
+  /// **'Gizli Rozetler'**
+  String get badgeCategoryHidden;
+
+  /// Henüz kazanılmamış gizli bir rozetin galeri kartında isim/koşul yerine gösterilen gizemli etiket
+  ///
+  /// In tr, this message translates to:
+  /// **'???'**
+  String get badgeHiddenPlaceholder;
+
+  /// Gizli Rozetler'in birinci rozetinin adı — yalnızca rozet KAZANILDIKTAN sonra görünür
+  ///
+  /// In tr, this message translates to:
+  /// **'Gece Kuşu'**
+  String get badgeNameNightOwl;
+
+  /// Gizli Rozetler'in ikinci rozetinin adı — yalnızca rozet KAZANILDIKTAN sonra görünür
+  ///
+  /// In tr, this message translates to:
+  /// **'Erken Kuş'**
+  String get badgeNameEarlyBird;
+
+  /// Gizli Rozetler'in üçüncü rozetinin adı — yalnızca rozet KAZANILDIKTAN sonra görünür
+  ///
+  /// In tr, this message translates to:
+  /// **'Denge Ustası'**
+  String get badgeNameBalanceMaster;
+
+  /// Gece Kuşu rozetinin kazanma koşulu
+  ///
+  /// In tr, this message translates to:
+  /// **'Gece yarısı ile sabah 05:00 arası 30 kez uygulamayı aç'**
+  String get badgeRequirementNightOwl;
+
+  /// Erken Kuş rozetinin kazanma koşulu
+  ///
+  /// In tr, this message translates to:
+  /// **'Sabah 06:00-08:00 arası 30 kez uygulamayı aç'**
+  String get badgeRequirementEarlyBird;
+
+  /// Denge Ustası rozetinin kazanma koşulu
+  ///
+  /// In tr, this message translates to:
+  /// **'Aynı gün içinde uygulamadaki 7 modülün hepsine kayıt ekle'**
+  String get badgeRequirementBalanceMaster;
 }
 
 class _AppLocalizationsDelegate

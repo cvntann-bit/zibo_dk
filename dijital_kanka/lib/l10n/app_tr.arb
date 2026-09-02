@@ -2154,5 +2154,37 @@
   "badgeRequirementCommunityFounder": "Davet Et ile 5 arkadaşını başarıyla davet et",
   "@badgeRequirementCommunityFounder": {
     "description": "Topluluk Kurucusu rozetinin kazanma koşulu"
+  },
+  "badgeCategoryHidden": "Gizli Rozetler",
+  "@badgeCategoryHidden": {
+    "description": "Rozetler Galerisi'ndeki Gizli/Eğlenceli kategorisinin bölüm başlığı"
+  },
+  "badgeHiddenPlaceholder": "???",
+  "@badgeHiddenPlaceholder": {
+    "description": "Henüz kazanılmamış gizli bir rozetin galeri kartında isim/koşul yerine gösterilen gizemli etiket"
+  },
+  "badgeNameNightOwl": "Gece Kuşu",
+  "@badgeNameNightOwl": {
+    "description": "Gizli Rozetler'in birinci rozetinin adı — yalnızca rozet KAZANILDIKTAN sonra görünür"
+  },
+  "badgeNameEarlyBird": "Erken Kuş",
+  "@badgeNameEarlyBird": {
+    "description": "Gizli Rozetler'in ikinci rozetinin adı — yalnızca rozet KAZANILDIKTAN sonra görünür"
+  },
+  "badgeNameBalanceMaster": "Denge Ustası",
+  "@badgeNameBalanceMaster": {
+    "description": "Gizli Rozetler'in üçüncü rozetinin adı — yalnızca rozet KAZANILDIKTAN sonra görünür"
+  },
+  "badgeRequirementNightOwl": "Gece yarısı ile sabah 05:00 arası 30 kez uygulamayı aç",
+  "@badgeRequirementNightOwl": {
+    "description": "Gece Kuşu rozetinin kazanma koşulu"
+  },
+  "badgeRequirementEarlyBird": "Sabah 06:00-08:00 arası 30 kez uygulamayı aç",
+  "@badgeRequirementEarlyBird": {
+    "description": "Erken Kuş rozetinin kazanma koşulu"
+  },
+  "badgeRequirementBalanceMaster": "Aynı gün içinde uygulamadaki 7 modülün hepsine kayıt ekle",
+  "@badgeRequirementBalanceMaster": {
+    "description": "Denge Ustası rozetinin kazanma koşulu"
   }
 }

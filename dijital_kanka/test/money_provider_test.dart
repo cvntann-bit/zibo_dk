@@ -241,5 +241,26 @@ void main() {
         expect(migrated.entriesFor(MoneyCategory.expense).single.currencyCode, 'TRY');
       },
     );
+
+    test(
+      'hasEntryToday: bugün hiç kayıt yokken false, HANGİ kategoriden '
+      'gelirse gelsin bir kayıt eklenince true döner (Denge Ustası — '
+      'Gizli/Eğlenceli Rozetler)',
+      () {
+        final currentDate = DateTime(2026, 1, 5);
+        final provider = MoneyProvider(now: () => currentDate);
+
+        expect(provider.hasEntryToday, isFalse);
+
+        provider.addEntry(
+          MoneyCategory.income,
+          name: 'Maaş',
+          amount: 100,
+          currencyCode: 'TRY',
+        );
+
+        expect(provider.hasEntryToday, isTrue);
+      },
+    );
   });
 }

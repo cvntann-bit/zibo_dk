@@ -2,20 +2,23 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../data/consistency_badges.dart';
+import '../data/hidden_badges.dart';
 import '../l10n/app_localizations.dart';
 import '../models/badge_definition.dart';
 import '../providers/badge_provider.dart';
 
 /// Rozetler Galerisi — bkz. CLAUDE.md "Rozet Sistemi" bölümü. Kazanılan
 /// rozetler net/renkli, kazanılmamış rozetler gri tonlu/soluk görünür ama
-/// adı ve kazanma koşulu HER ZAMAN görünür kalır (bu kural "gizli" rozetler
-/// kategorisine — henüz eklenmedi — uygulanmayacak, ayrıca ele alınacak).
+/// adı ve kazanma koşulu HER ZAMAN görünür kalır — **TEK istisna Gizli/
+/// Eğlenceli Rozetler kategorisi** (bkz. `_BadgeGalleryCard`'daki
+/// `hiddenLocked` kontrolü ve `ZiboBadgeDefinition.isHidden` dokümantasyonu).
 ///
-/// **2026 güncellemesi — iki kategori: İstikrar Rozetleri + Modül Ustalığı
-/// Rozetleri.** `allBadges` kategoriye göre gruplanıp `BadgeCategory.values`
-/// SIRASIYLA render ediliyor, her bölüm kendi başlığı ile geliyor ve
-/// (ilk hariç) HER bölümün ÜSTÜNE ince bir `Divider` ile diğerinden görsel
-/// olarak ayrılıyor (kullanıcının açık isteği). Yeni bir kategori eklendiğinde
+/// **2026 güncellemesi — altı kategori: İstikrar + Modül Ustalığı +
+/// Koleksiyon + Sadakat + Sosyal/Paylaşım + Gizli/Eğlenceli.** `allBadges`
+/// kategoriye göre gruplanıp `BadgeCategory.values` SIRASIYLA render
+/// ediliyor, her bölüm kendi başlığı ile geliyor ve (ilk hariç) HER
+/// bölümün ÜSTÜNE ince bir `Divider` ile diğerinden görsel olarak
+/// ayrılıyor (kullanıcının açık isteği). Yeni bir kategori eklendiğinde
 /// yalnızca `allBadges`'e (bkz. `consistency_badges.dart`) ve buradaki
 /// `_categoryTitle` switch'ine bir `case` eklemek yeterli.
 class BadgesGalleryScreen extends StatelessWidget {
@@ -33,6 +36,8 @@ class BadgesGalleryScreen extends StatelessWidget {
         return l10n.badgeCategoryLoyalty;
       case BadgeCategory.social:
         return l10n.badgeCategorySocial;
+      case BadgeCategory.hidden:
+        return l10n.badgeCategoryHidden;
     }
   }
 
@@ -116,9 +121,19 @@ class _BadgeGalleryCard extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
     final earned = context.watch<BadgeProvider>().isEarned(badge.id);
 
+    // Gizli/Eğlenceli Rozetler — KAZANILMADAN önce hiçbir şey (görsel/isim/
+    // koşul/ödül) ifşa edilmez, bkz. `ZiboBadgeDefinition.isHidden`
+    // dokümantasyonu. Kazanıldıktan SONRA `hiddenLocked` `false` olur ve
+    // kart TÜM diğer rozetlerle BİREBİR aynı şekilde render edilir.
+    final hiddenLocked = badge.isHidden && !earned;
+
     // Kullanıcı isteği: rozet görseli biraz DAHA büyütülsün, çok değil
     // (88 → 108 → 118).
-    final image = Image.asset(badge.imageAsset, width: 118, height: 118);
+    final image = Image.asset(
+      hiddenLocked ? hiddenBadgeMysteryImageAsset : badge.imageAsset,
+      width: 118,
+      height: 118,
+    );
 
     return Card(
       margin: EdgeInsets.zero,
@@ -127,7 +142,11 @@ class _BadgeGalleryCard extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            earned
+            // Gizem görseli KENDİSİ zaten "bilinmiyor" hissini taşıyan bir
+            // tasarım (`gizli_rozet.png`) — normal kazanılmamış rozetlerdeki
+            // gibi AYRICA gri tonlamaya/soluklaştırmaya TABİ TUTULMUYOR, tam
+            // renkli gösteriliyor.
+            earned || hiddenLocked
                 ? image
                 : ColorFiltered(
                     colorFilter: const ColorFilter.matrix(_greyscaleMatrix),
@@ -138,7 +157,7 @@ class _BadgeGalleryCard extends StatelessWidget {
             // ad titleSmall → titleMedium'a, açıklama bodySmall →
             // bodyMedium'a büyütüldü.
             Text(
-              badge.localizedName(l10n),
+              hiddenLocked ? l10n.badgeHiddenPlaceholder : badge.localizedName(l10n),
               textAlign: TextAlign.center,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
@@ -150,7 +169,9 @@ class _BadgeGalleryCard extends StatelessWidget {
             const SizedBox(height: 4),
             Flexible(
               child: Text(
-                badge.localizedRequirement(l10n),
+                hiddenLocked
+                    ? l10n.badgeHiddenPlaceholder
+                    : badge.localizedRequirement(l10n),
                 textAlign: TextAlign.center,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
@@ -163,29 +184,33 @@ class _BadgeGalleryCard extends StatelessWidget {
             // Coin ikonu PNG'siyle birlikte gösterilsin — `CoinBalanceWidget`/
             // `CostumeCard`'daki AYNI `assets/images/zibo_coin.png` kullanımı.
             // 2026 güncellemesi: hem ikon hem metin büyütüldü ("10zc/30zc
-            // ve zc ikonunun boyutunu büyüt").
-            const SizedBox(height: 6),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Image.asset('assets/images/zibo_coin.png', width: 20, height: 20),
-                const SizedBox(width: 5),
-                Text(
-                  l10n.storeCoinAmount(badge.zcReward),
-                  style: textTheme.labelMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: earned
-                        ? colorScheme.primary
-                        : colorScheme.onSurfaceVariant,
+            // ve zc ikonunun boyutunu büyüt"). **Gizli/Eğlenceli Rozetler
+            // KAZANILMADAN önce bu satır TAMAMEN GİZLİ** — kullanıcının açık
+            // isteği "kazanma koşulu VE ödül miktarı ÖNCEDEN gösterilmesin".
+            if (!hiddenLocked) ...[
+              const SizedBox(height: 6),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Image.asset('assets/images/zibo_coin.png', width: 20, height: 20),
+                  const SizedBox(width: 5),
+                  Text(
+                    l10n.storeCoinAmount(badge.zcReward),
+                    style: textTheme.labelMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: earned
+                          ? colorScheme.primary
+                          : colorScheme.onSurfaceVariant,
+                    ),
                   ),
-                ),
-              ],
-            ),
+                ],
+              ),
+            ],
             // "Tam Gardırop" gibi standart ZC ödülüne EK bir özel ödül
             // taşıyan rozetler için — bkz. `ZiboBadgeDefinition.
             // hasSpecialReward` dokümantasyonundaki "ŞU AN yalnızca bir YER
             // TUTUCU" notu, henüz hiçbir şey OTOMATİK VERİLMİYOR.
-            if (badge.hasSpecialReward) ...[
+            if (!hiddenLocked && badge.hasSpecialReward) ...[
               const SizedBox(height: 4),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,

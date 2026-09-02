@@ -11,6 +11,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:dijital_kanka/data/consistency_badges.dart';
+import 'package:dijital_kanka/data/hidden_badges.dart';
 import 'package:dijital_kanka/l10n/app_localizations.dart';
 import 'package:dijital_kanka/providers/badge_provider.dart';
 import 'package:dijital_kanka/screens/badges_gallery_screen.dart';
@@ -64,7 +65,14 @@ void main() {
       // 2026 güncellemesi — Modül Ustalığı Rozetleri eklendiği için artık
       // yalnızca `consistencyBadges` DEĞİL, `allBadges`'in TAMAMI (iki
       // kategori) HİÇ kazanılmamış durumda gri tonlu render ediliyor.
-      expect(find.byType(ColorFiltered), findsNWidgets(allBadges.length));
+      // **2026 İKİNCİ güncelleme — Gizli/Eğlenceli Rozetler İSTİSNA:**
+      // kazanılmamış hidden badge'ler `ColorFiltered`'a TABİ DEĞİL (bkz.
+      // `_BadgeGalleryCard`'daki `hiddenLocked` kontrolü) — üçü de bu
+      // sayımdan DIŞARIDA.
+      expect(
+        find.byType(ColorFiltered),
+        findsNWidgets(allBadges.length - hiddenBadges.length),
+      );
       expect(tester.takeException(), isNull);
     },
   );
@@ -83,8 +91,58 @@ void main() {
 
       expect(
         find.byType(ColorFiltered),
-        findsNWidgets(allBadges.length - 1),
+        findsNWidgets(allBadges.length - hiddenBadges.length - 1),
       );
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'Gizli/Eğlenceli Rozetler: kazanılmadan ÖNCE isim/koşul/ödül yerine '
+    'gizemli "???" etiketi + paylaşılan gizem görseli gösterir, gerçek '
+    'içerik hiçbir yerde SIZMAZ',
+    (tester) async {
+      final badges = BadgeProvider();
+      await tester.pumpWidget(_buildTestApp(badges));
+      await tester.pumpAndSettle();
+
+      // Üç gizli rozetin gerçek adı/koşulu HİÇ görünmüyor.
+      expect(find.text('Gece Kuşu'), findsNothing);
+      expect(find.text('Erken Kuş'), findsNothing);
+      expect(find.text('Denge Ustası'), findsNothing);
+      expect(
+        find.text('Gece yarısı ile sabah 05:00 arası 30 kez uygulamayı aç'),
+        findsNothing,
+      );
+      // Yerine "???" etiketi üçü için de İKİŞER kez (isim + koşul slotu)
+      // görünüyor — toplam 6.
+      expect(find.text('???'), findsNWidgets(6));
+      expect(find.text('Gizli Rozetler'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'Gizli/Eğlenceli Rozetler: KAZANILDIKTAN sonra diğer TÜM rozetlerle '
+    'BİREBİR aynı şekilde gerçek görsel/isim/koşul/ödül gösterir',
+    (tester) async {
+      final badges = BadgeProvider();
+      badges.reconcileHiddenBadges(
+        nightOwlDaysCount: 30,
+        earlyBirdDaysCount: 0,
+        hasAllModulesToday: false,
+      );
+      await tester.pumpWidget(_buildTestApp(badges));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Gece Kuşu'), findsOneWidget);
+      expect(
+        find.text('Gece yarısı ile sabah 05:00 arası 30 kez uygulamayı aç'),
+        findsOneWidget,
+      );
+      expect(find.text('777 ZC'), findsOneWidget);
+      // Kazanılmamış diğer iki gizli rozet HÂLÂ "???" gösteriyor (4 = 2×2).
+      expect(find.text('???'), findsNWidgets(4));
       expect(tester.takeException(), isNull);
     },
   );

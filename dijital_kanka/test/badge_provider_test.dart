@@ -490,4 +490,104 @@ void main() {
       },
     );
   });
+
+  group('BadgeProvider — reconcileHiddenBadges', () {
+    late BadgeProvider provider;
+
+    setUp(() async {
+      provider = BadgeProvider();
+      await Future<void>.delayed(Duration.zero);
+    });
+
+    void reconcile({
+      int nightOwlDaysCount = 0,
+      int earlyBirdDaysCount = 0,
+      bool hasAllModulesToday = false,
+    }) {
+      provider.reconcileHiddenBadges(
+        nightOwlDaysCount: nightOwlDaysCount,
+        earlyBirdDaysCount: earlyBirdDaysCount,
+        hasAllModulesToday: hasAllModulesToday,
+      );
+    }
+
+    test('Eşik dolmadan hiçbir gizli rozet kazanılmaz', () {
+      reconcile(nightOwlDaysCount: 29, earlyBirdDaysCount: 29);
+
+      expect(provider.isEarned('night_owl'), isFalse);
+      expect(provider.isEarned('early_bird'), isFalse);
+      expect(provider.isEarned('balance_master'), isFalse);
+      expect(pendingBadgePopup.value, isNull);
+    });
+
+    test('nightOwlDaysCount >= 30 iken Gece Kuşu kazanılır', () {
+      reconcile(nightOwlDaysCount: 30);
+
+      expect(provider.isEarned('night_owl'), isTrue);
+      expect(pendingBadgePopup.value?.id, 'night_owl');
+    });
+
+    test('earlyBirdDaysCount >= 30 iken Erken Kuş kazanılır', () {
+      reconcile(earlyBirdDaysCount: 30);
+
+      expect(provider.isEarned('early_bird'), isTrue);
+      expect(pendingBadgePopup.value?.id, 'early_bird');
+    });
+
+    test('hasAllModulesToday true iken Denge Ustası kazanılır', () {
+      reconcile(hasAllModulesToday: true);
+
+      expect(provider.isEarned('balance_master'), isTrue);
+      expect(pendingBadgePopup.value?.id, 'balance_master');
+    });
+
+    test(
+      'nightOwlDaysCount VE earlyBirdDaysCount AYNI ANDA eşiği geçerse '
+      'kutlama sinyali listedeki EN SONuncuya (early_bird) ayarlanır',
+      () {
+        reconcile(nightOwlDaysCount: 30, earlyBirdDaysCount: 30);
+
+        expect(provider.isEarned('night_owl'), isTrue);
+        expect(provider.isEarned('early_bird'), isTrue);
+        expect(pendingBadgePopup.value?.id, 'early_bird');
+      },
+    );
+
+    test('Zaten kazanılmış bir gizli rozet tekrar bildirmez', () {
+      reconcile(nightOwlDaysCount: 30);
+      pendingBadgePopup.value = null;
+
+      reconcile(nightOwlDaysCount: 30);
+
+      expect(pendingBadgePopup.value, isNull);
+    });
+
+    test(
+      'Kazanılan gizli rozet TAM diğer rozetlerle aynı şekilde isim/koşul/'
+      'ödül taşır — isHidden yalnızca GALERİDEKİ görüntülemeyi etkiler, bu '
+      'metodun kazanma mantığını DEĞİL',
+      () {
+        reconcile(hasAllModulesToday: true);
+
+        final badge = pendingBadgePopup.value!;
+        expect(badge.id, 'balance_master');
+        expect(badge.isHidden, isTrue);
+        expect(badge.zcReward, 777);
+      },
+    );
+
+    test(
+      'Kalıcılık: kazanılan gizli rozet yeniden başlatmada hatırlanır',
+      () async {
+        reconcile(nightOwlDaysCount: 30);
+        await provider.markClaimed('night_owl');
+
+        final reloaded = BadgeProvider();
+        await Future<void>.delayed(Duration.zero);
+
+        expect(reloaded.isEarned('night_owl'), isTrue);
+        expect(reloaded.isClaimed('night_owl'), isTrue);
+      },
+    );
+  });
 }

@@ -55,6 +55,13 @@ class ManifestProvider extends ChangeNotifier {
   /// (kaç yeni giriş eklenirse eklensin).
   bool get isTodayRewardClaimed => _rewardClaimedDates.contains(_today);
 
+  /// Bugün en az bir giriş eklenmiş mi — "Denge Ustası" (Gizli/Eğlenceli
+  /// Rozetler, bkz. `hidden_badges.dart`) rozetinin YEDİ modül
+  /// kontrolünden biri. [isTodayRewardClaimed]'dan FARKLI — ödül daha önce
+  /// alınmış olsa bile (ör. dün alındıysa bugün henüz alınmamıştır) bugüne
+  /// ait GERÇEK bir kayıt olup olmadığını soruyor.
+  bool get hasEntryToday => _entries.any((e) => e.date == _today);
+
   Future<void> _loadFromPrefs() async {
     var data = await _store.load();
     if (data == null) {

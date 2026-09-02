@@ -38,6 +38,18 @@ class DreamJournalProvider extends ChangeNotifier {
     return null;
   }
 
+  /// Bugün en az bir rüya kaydedilmiş mi — "Denge Ustası" (Gizli/Eğlenceli
+  /// Rozetler, bkz. `hidden_badges.dart`) rozetinin YEDİ modül kontrolünden
+  /// biri. Bu provider'ın enjekte edilebilir bir saati OLMADIĞI için
+  /// (bkz. sınıf dokümantasyonu — `addDream` de doğrudan `DateTime.now()`
+  /// kullanıyor) burada da AYNI şekilde ham `DateTime.now()` kullanılıyor.
+  bool get hasEntryToday {
+    final now = DateTime.now();
+    return _entries.any(
+      (e) => e.date.year == now.year && e.date.month == now.month && e.date.day == now.day,
+    );
+  }
+
   Future<void> _loadFromPrefs() async {
     final decoded = await _store.load();
     if (decoded == null) return;

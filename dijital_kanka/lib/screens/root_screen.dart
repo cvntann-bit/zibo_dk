@@ -14,6 +14,7 @@ import '../providers/daily_rewards_provider.dart';
 import '../providers/dream_journal_provider.dart';
 import '../providers/goals_provider.dart';
 import '../providers/gratitude_provider.dart';
+import '../providers/hidden_badge_provider.dart';
 import '../providers/locale_provider.dart';
 import '../providers/manifest_provider.dart';
 import '../providers/money_provider.dart';
@@ -193,6 +194,9 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       context.read<AppStreakProvider>().recordOpenForToday();
+      // Gizli/Eğlenceli Rozetler — "Gece Kuşu"/"Erken Kuş" sayaçları,
+      // `recordOpenForToday()` ile AYNI tetikleme anı (soğuk başlangıç).
+      context.read<HiddenBadgeProvider>().recordOpenForCurrentTime();
       _badgeCoordinator = BadgeCoordinator(
         badges: context.read<BadgeProvider>(),
         goals: context.read<GoalsProvider>(),
@@ -215,6 +219,9 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
         // 2026 güncellemesi — Sosyal/Paylaşım Rozetleri (Elçi/Topluluk
         // Kurucusu) için ReferralProvider.
         referral: context.read<ReferralProvider>(),
+        // 2026 güncellemesi — Gizli/Eğlenceli Rozetler (Gece Kuşu/Erken
+        // Kuş) için.
+        hiddenBadge: context.read<HiddenBadgeProvider>(),
       );
     });
     // 2026 güncellemesi — Sosyal/Paylaşım Rozetleri: `ReferralProvider.
@@ -297,6 +304,11 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
       // başlangıçta DEĞİL) "bugün açıldı" kaydı tazeleniyor, aynı
       // `touchLastActive`/`syncAll` tetikleyicisiyle.
       context.read<AppStreakProvider>().recordOpenForToday();
+      // Gizli/Eğlenceli Rozetler — "Gece Kuşu"/"Erken Kuş" sayaçları,
+      // uygulama HER öne geldiğinde (yalnızca soğuk başlangıçta DEĞİL)
+      // cihazın O ANKİ saatine göre tazeleniyor — kullanıcı gece yarısı
+      // civarında uygulamayı arka planda tutup öne getirse bile sayılıyor.
+      context.read<HiddenBadgeProvider>().recordOpenForCurrentTime();
       // Sosyal/Paylaşım Rozetleri — sunucu tarafında (bir SONRAKİ GitHub
       // Actions çalıştırmasında) artırılan `successfulReferralCount`'un
       // istemciye yansıması için AYNI "reconcile-on-resume" tetikleyicisi.

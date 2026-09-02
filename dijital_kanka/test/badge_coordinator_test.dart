@@ -1,24 +1,28 @@
 // BadgeCoordinator'ın GoalsProvider/AppStreakProvider (İstikrar),
 // Gratitude/Water/Mood/Money/Manifest/Dream (Modül Ustalığı), Costume/
-// AppTheme (Koleksiyon), AppStreak/Profile (Sadakat) VE Referral (Sosyal/
-// Paylaşım) provider'ları değiştiğinde BadgeProvider.
-// reconcileConsistencyBadges/reconcileModuleMasteryBadges/
-// reconcileCollectionBadges/reconcileLoyaltyBadges/reconcileSocialBadges'i
-// OTOMATİK tetiklediğini doğrudan (widget pump'lamadan) test eder —
-// HomeWidgetSyncCoordinator testlerindeki "sahte/gerçek provider'ları kur,
-// addListener'ın gerçekten tetiklendiğini doğrula" deseniyle aynı. Modüle
-// özel eşik/kazanma mantığının kendisi `badge_provider_test.dart`ta zaten
-// kapsamlı test edildiği için burada yalnızca "koordinatör GERÇEKTEN
-// dinliyor mu" doğrulanıyor — provider'ların HEPSİ için ayrı ayrı senaryo
-// YAZILMADI, MoneyProvider/CostumeProvider/AppStreakProvider/ReferralProvider
+// AppTheme (Koleksiyon), AppStreak/Profile (Sadakat), Referral (Sosyal/
+// Paylaşım) VE HiddenBadge (Gizli/Eğlenceli) provider'ları değiştiğinde
+// BadgeProvider.reconcileConsistencyBadges/reconcileModuleMasteryBadges/
+// reconcileCollectionBadges/reconcileLoyaltyBadges/reconcileSocialBadges/
+// reconcileHiddenBadges'i OTOMATİK tetiklediğini doğrudan (widget
+// pump'lamadan) test eder — HomeWidgetSyncCoordinator testlerindeki "sahte/
+// gerçek provider'ları kur, addListener'ın gerçekten tetiklendiğini
+// doğrula" deseniyle aynı. Modüle özel eşik/kazanma mantığının kendisi
+// `badge_provider_test.dart`ta zaten kapsamlı test edildiği için burada
+// yalnızca "koordinatör GERÇEKTEN dinliyor mu" doğrulanıyor —
+// provider'ların HEPSİ için ayrı ayrı senaryo YAZILMADI, MoneyProvider/
+// CostumeProvider/AppStreakProvider/ReferralProvider/HiddenBadgeProvider
 // (en basit, tarih kilidi olmayan/zaten kurulu) birer TEMSİLCİ olarak
-// yeterli.
+// yeterli — TEK istisna "Denge Ustası"nın YEDİ modülü BİRLEŞTİREN
+// `hasAllModulesToday` hesaplaması, bu BURADA (koordinatörün KENDİ mantığı,
+// başka hiçbir test dosyasında kapsanmıyor) ayrıca test ediliyor.
 
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:dijital_kanka/data/costumes.dart';
+import 'package:dijital_kanka/models/mood.dart';
 import 'package:dijital_kanka/models/money_entry.dart';
 import 'package:dijital_kanka/providers/app_streak_provider.dart';
 import 'package:dijital_kanka/providers/app_theme_provider.dart';
@@ -27,6 +31,7 @@ import 'package:dijital_kanka/providers/costume_provider.dart';
 import 'package:dijital_kanka/providers/dream_journal_provider.dart';
 import 'package:dijital_kanka/providers/goals_provider.dart';
 import 'package:dijital_kanka/providers/gratitude_provider.dart';
+import 'package:dijital_kanka/providers/hidden_badge_provider.dart';
 import 'package:dijital_kanka/providers/manifest_provider.dart';
 import 'package:dijital_kanka/providers/money_provider.dart';
 import 'package:dijital_kanka/providers/mood_provider.dart';
@@ -58,6 +63,7 @@ void main() {
     late ProfileProvider profile;
     late FakeFirebaseFirestore firestore;
     late ReferralProvider referral;
+    late HiddenBadgeProvider hiddenBadge;
 
     setUp(() async {
       currentDate = DateTime(2026, 1, 5);
@@ -75,6 +81,7 @@ void main() {
       profile = ProfileProvider(now: () => currentDate);
       firestore = FakeFirebaseFirestore();
       referral = ReferralProvider(uid: 'uidReferrer', firestore: firestore);
+      hiddenBadge = HiddenBadgeProvider(now: () => currentDate);
       await Future<void>.delayed(Duration.zero);
     });
 
@@ -92,6 +99,7 @@ void main() {
       appTheme: appTheme,
       profile: profile,
       referral: referral,
+      hiddenBadge: hiddenBadge,
     );
 
     // Sunucu tarafı `processReferralRewards.js`'in referrerUid'in
@@ -354,6 +362,104 @@ void main() {
         await setSuccessfulReferralCountAndRefresh(1);
 
         expect(badges.isEarned('ambassador'), isFalse);
+      },
+    );
+
+    void openThirtyNights() {
+      for (var i = 0; i < 30; i++) {
+        currentDate = DateTime(2026, 1, 1 + i, 2); // gece 02:00
+        hiddenBadge.recordOpenForCurrentTime();
+      }
+    }
+
+    test(
+      'Constructor EAGER ilk reconcile Gizli/Eğlenceli rozetlerini de '
+      'kapsıyor — kuruluştan ÖNCE zaten karşılanmış bir eşik (30 gece) '
+      'hemen ödüllendirilir',
+      () {
+        openThirtyNights();
+        expect(hiddenBadge.nightOwlDaysCount, 30);
+        expect(badges.isEarned('night_owl'), isFalse);
+
+        buildCoordinator();
+
+        expect(badges.isEarned('night_owl'), isTrue);
+      },
+    );
+
+    test(
+      'HiddenBadgeProvider SONRADAN değişince koordinatör Gizli/Eğlenceli '
+      'rozetini de reconcile eder',
+      () {
+        final coordinator = buildCoordinator();
+        expect(badges.isEarned('night_owl'), isFalse);
+
+        openThirtyNights();
+
+        expect(badges.isEarned('night_owl'), isTrue);
+        coordinator.dispose();
+      },
+    );
+
+    test(
+      'dispose() sonrası HiddenBadgeProvider değişiklikleri de tetiklenmez',
+      () {
+        final coordinator = buildCoordinator();
+        coordinator.dispose();
+
+        openThirtyNights();
+
+        expect(badges.isEarned('night_owl'), isFalse);
+      },
+    );
+
+    test(
+      'Denge Ustası: hasAllModulesToday, YEDİ modülün HEPSİNDE bugüne ait '
+      'bir kayıt olduğunda koordinatörün KENDİ hesaplamasıyla true olup '
+      'rozeti kazandırır',
+      () {
+        buildCoordinator();
+        expect(badges.isEarned('balance_master'), isFalse);
+
+        goals.addGoal('Test Hedefi');
+        goals.toggleToday(goals.goals.first.id);
+        gratitude.saveToday(text1: 'a', text2: 'b', text3: 'c');
+        mood.setTodayMood(Mood.happy);
+        water.incrementUnit();
+        manifest.addEntry(photoPath: 'p', intentionText: 'niyet');
+        dream.addDream(title: 'rüya', text: 'metin');
+        money.addEntry(
+          MoneyCategory.expense,
+          name: 'x',
+          amount: 1,
+          currencyCode: 'TRY',
+        );
+
+        expect(badges.isEarned('balance_master'), isTrue);
+      },
+    );
+
+    test(
+      'Denge Ustası: YEDİ modülden biri (burada Rüya Günlüğü) eksik '
+      'kalırsa kazanılmaz',
+      () {
+        buildCoordinator();
+
+        goals.addGoal('Test Hedefi');
+        goals.toggleToday(goals.goals.first.id);
+        gratitude.saveToday(text1: 'a', text2: 'b', text3: 'c');
+        mood.setTodayMood(Mood.happy);
+        water.incrementUnit();
+        manifest.addEntry(photoPath: 'p', intentionText: 'niyet');
+        money.addEntry(
+          MoneyCategory.expense,
+          name: 'x',
+          amount: 1,
+          currencyCode: 'TRY',
+        );
+        // dream.addDream(...) BİLEREK atlandı — Rüya Günlüğü eksik kalıyor.
+
+        expect(badges.isEarned('balance_master'), isFalse);
       },
     );
   });

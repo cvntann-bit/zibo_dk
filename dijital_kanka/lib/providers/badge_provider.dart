@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 
 import '../data/collection_badges.dart';
 import '../data/consistency_badges.dart';
+import '../data/hidden_badges.dart';
 import '../data/loyalty_badges.dart';
 import '../data/module_mastery_badges.dart';
 import '../data/social_badges.dart';
@@ -240,6 +241,45 @@ class BadgeProvider extends ChangeNotifier {
         'first_share' => hasSharedAtLeastOnce,
         'ambassador' => successfulReferralCount >= 1,
         'community_founder' => successfulReferralCount >= 5,
+        _ => false,
+      };
+      if (meetsRequirement) {
+        _earned[badge.id] = BadgeRecord(earnedAt: DateTime.now(), claimed: false);
+        lastNewlyEarned = badge;
+      }
+    }
+    if (lastNewlyEarned != null) {
+      notifyListeners();
+      unawaited(_save());
+      pendingBadgePopup.value = lastNewlyEarned;
+    }
+  }
+
+  /// Gizli/Eğlenceli Rozetler'in kazanma kontrolü — AYNI "tek slot" deseni.
+  /// [nightOwlDaysCount]/[earlyBirdDaysCount] — `HiddenBadgeProvider`'ın
+  /// cihaz saatine göre tuttuğu sayaçlar (bkz. o sınıfın "BİLEREK cihaz
+  /// saati" dokümantasyonu). [hasAllModulesToday] — `BadgeCoordinator`'ın
+  /// AYNI takvim gününde yedi modül provider'ının HEPSİNDE bir kayıt olup
+  /// olmadığını önceden hesaplayıp geçirdiği tek bir bool (bkz.
+  /// `hidden_badges.dart`'taki "balance_master" notu).
+  ///
+  /// **Bu üç rozetin [ZiboBadgeDefinition.isHidden] taşıması BURADAKİ
+  /// kazanma mantığını HİÇ ETKİLEMİYOR** — gizlilik yalnızca
+  /// `BadgesGalleryScreen`'in KAZANILMADAN ÖNCEki GÖRÜNTÜLEMESİNE ait bir
+  /// UI kararı; bu metot diğer TÜM `reconcileX` metotlarıyla BİREBİR AYNI
+  /// şekilde çalışıyor.
+  void reconcileHiddenBadges({
+    required int nightOwlDaysCount,
+    required int earlyBirdDaysCount,
+    required bool hasAllModulesToday,
+  }) {
+    ZiboBadgeDefinition? lastNewlyEarned;
+    for (final badge in hiddenBadges) {
+      if (_earned.containsKey(badge.id)) continue;
+      final meetsRequirement = switch (badge.id) {
+        'night_owl' => nightOwlDaysCount >= 30,
+        'early_bird' => earlyBirdDaysCount >= 30,
+        'balance_master' => hasAllModulesToday,
         _ => false,
       };
       if (meetsRequirement) {

@@ -5,6 +5,7 @@ import '../providers/costume_provider.dart';
 import '../providers/dream_journal_provider.dart';
 import '../providers/goals_provider.dart';
 import '../providers/gratitude_provider.dart';
+import '../providers/hidden_badge_provider.dart';
 import '../providers/manifest_provider.dart';
 import '../providers/money_provider.dart';
 import '../providers/mood_provider.dart';
@@ -12,24 +13,34 @@ import '../providers/profile_provider.dart';
 import '../providers/referral_provider.dart';
 import '../providers/water_provider.dart';
 
-/// Rozet Sistemi'nin BEŞ kategorisinin de (İstikrar + Modül Ustalığı +
-/// Koleksiyon + Sadakat + Sosyal/Paylaşım) kazanma kontrolünü, ilgili kaynak
-/// veri her güncellendiğinde OTOMATİK tetikleyen koordinatör — bkz.
-/// CLAUDE.md "Rozet Sistemi" bölümü. `HomeWidgetSyncCoordinator`'ın AYNI
-/// "constructor'dan değil PARAMETRE olarak al, dışarıdan `addListener`
-/// ekle" deseni: bu obje on iki provider'ın (Badges, Goals, AppStreak,
-/// Gratitude, Water, Mood, Money, Manifest, Dream, Costume, AppTheme,
-/// Profile, Referral) HİÇBİRİNE KALICI bağımlı değil, yalnızca onları
-/// dinleyip [BadgeProvider.reconcileConsistencyBadges]/[BadgeProvider.
-/// reconcileModuleMasteryBadges]/[BadgeProvider.reconcileCollectionBadges]/
-/// [BadgeProvider.reconcileLoyaltyBadges]/[BadgeProvider.
-/// reconcileSocialBadges]'i çağırıyor.
+/// Rozet Sistemi'nin ALTI kategorisinin de (İstikrar + Modül Ustalığı +
+/// Koleksiyon + Sadakat + Sosyal/Paylaşım + Gizli/Eğlenceli) kazanma
+/// kontrolünü, ilgili kaynak veri her güncellendiğinde OTOMATİK tetikleyen
+/// koordinatör — bkz. CLAUDE.md "Rozet Sistemi" bölümü.
+/// `HomeWidgetSyncCoordinator`'ın AYNI "constructor'dan değil PARAMETRE
+/// olarak al, dışarıdan `addListener` ekle" deseni: bu obje on üç
+/// provider'ın (Badges, Goals, AppStreak, Gratitude, Water, Mood, Money,
+/// Manifest, Dream, Costume, AppTheme, Profile, Referral, HiddenBadge)
+/// HİÇBİRİNE KALICI bağımlı değil, yalnızca onları dinleyip [BadgeProvider.
+/// reconcileConsistencyBadges]/[BadgeProvider.reconcileModuleMasteryBadges]/
+/// [BadgeProvider.reconcileCollectionBadges]/[BadgeProvider.
+/// reconcileLoyaltyBadges]/[BadgeProvider.reconcileSocialBadges]/
+/// [BadgeProvider.reconcileHiddenBadges]'i çağırıyor.
 ///
 /// **`reconcileSocialBadges`'in `hasSharedAtLeastOnce` parametresi BURADA
 /// HER ZAMAN `false` geçiriliyor** — `first_share`'in TEK gerçek tetikleyicisi
 /// `ZiboShareSheet._share()`'in KENDİSİ (bkz. o widget'taki AYRI çağrı); bu
 /// rutin geçiş yalnızca `ambassador`/`community_founder`'ı (ReferralProvider'a
 /// bağlı, DURUM-tabanlı) reaktif olarak kontrol ediyor.
+///
+/// **`hasAllModulesToday` ("Denge Ustası") BURADA hesaplanıp
+/// `reconcileHiddenBadges`'e tek bir bool olarak geçiriliyor** — YEDİ modül
+/// provider'ının ("Hedef Takibi, Şükran Günlüğü, Ruh Hali Takibi, Su
+/// Takibi, Manifest Günlüğü, Rüya Günlüğü, Para ve Birikim, bkz.
+/// `hidden_badges.dart`) HEPSİ zaten bu koordinatörün constructor
+/// parametreleri — yeni bir provider bağımlılığı GEREKMEDİ, yalnızca
+/// mevcut yedisinin "bugün bir kaydı var mı" getter'ları `&&` ile
+/// birleştirildi.
 ///
 /// `RootScreen.initState()`'te BİR KEZ oluşturulur (constructor'ın kendisi de
 /// EAGER bir ilk kontrol yapar — uygulama açılışında zaten karşılanmış bir
@@ -50,6 +61,7 @@ class BadgeCoordinator {
     required this.appTheme,
     required this.profile,
     required this.referral,
+    required this.hiddenBadge,
   }) {
     goals.addListener(_reconcile);
     appStreak.addListener(_reconcile);
@@ -63,6 +75,7 @@ class BadgeCoordinator {
     appTheme.addListener(_reconcile);
     profile.addListener(_reconcile);
     referral.addListener(_reconcile);
+    hiddenBadge.addListener(_reconcile);
     _reconcile();
   }
 
@@ -79,6 +92,7 @@ class BadgeCoordinator {
   final AppThemeProvider appTheme;
   final ProfileProvider profile;
   final ReferralProvider referral;
+  final HiddenBadgeProvider hiddenBadge;
 
   void _reconcile() {
     badges.reconcileConsistencyBadges(
@@ -106,6 +120,18 @@ class BadgeCoordinator {
       hasSharedAtLeastOnce: false,
       successfulReferralCount: referral.successfulReferralCount,
     );
+    badges.reconcileHiddenBadges(
+      nightOwlDaysCount: hiddenBadge.nightOwlDaysCount,
+      earlyBirdDaysCount: hiddenBadge.earlyBirdDaysCount,
+      hasAllModulesToday:
+          goals.hasAnyRecordToday &&
+          gratitude.isTodayComplete &&
+          mood.todayMood != null &&
+          water.todayEntry != null &&
+          manifest.hasEntryToday &&
+          dream.hasEntryToday &&
+          money.hasEntryToday,
+    );
   }
 
   void dispose() {
@@ -121,5 +147,6 @@ class BadgeCoordinator {
     appTheme.removeListener(_reconcile);
     profile.removeListener(_reconcile);
     referral.removeListener(_reconcile);
+    hiddenBadge.removeListener(_reconcile);
   }
 }

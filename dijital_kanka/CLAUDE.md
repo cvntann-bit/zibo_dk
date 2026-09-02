@@ -4690,7 +4690,9 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
   `CustomMessagesProvider`, `DailyRewardsProvider`, `DreamJournalProvider`,
   `FavoriteQuotesProvider`, `FounderBadgeProvider` (2026 — `ProfileScreen`/`SettingsScreen`'in
   `FounderBadgePromoCard` üzerinden izlediği, bkz. "Kurucu Üye Rozeti" bölümü), `GoalsProvider`,
-  `GratitudeProvider`, `LocaleProvider`,
+  `GratitudeProvider`, `HiddenBadgeProvider` (2026 — Gizli/Eğlenceli Rozetler'in
+  `BadgeCoordinator`'ı artık bunu da izlediği için, bkz. "Rozet Sistemi" bölümündeki "Altıncı ve
+  SON kategori"), `LocaleProvider`,
   `ManifestProvider`, `MoneyProvider`, `MoodProvider`, `NotificationProvider`, `ProfileProvider`,
   `ProfileStatsArchiveProvider`, `ReferralProvider` (2026 — Sosyal/Paylaşım Rozetleri'nin
   `BadgeCoordinator`'ı artık bunu da izlediği için, bkz. "Rozet Sistemi" bölümündeki "Beşinci
@@ -7940,6 +7942,10 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
   Eğlenceli) — `BadgeCategory` enum'una yeni değerler + `allBadges`'e yeni
   listeler eklemek yeterli olacak, `BadgesGalleryScreen`/`BadgeCelebrationOverlay`
   hâlihazırda kategoriden bağımsız/genel yazıldı.
+  > **TARİHSEL — bu not artık GEÇERSİZ, ALTI kategorinin HEPSİ tamamlandı**
+  > (bkz. bu bölümün altındaki "İkinci" → "Altıncı ve SON kategori" alt
+  > bölümleri) — yalnızca o anki planlama bağlamı için tutuluyor, projenin
+  > "geçmiş karar + neden değiştiği birlikte kalır" convansiyonuyla.
 - **2026 güncellemesi — USB üzerinden gerçek cihaz testinden sonra beş küçük
   UI/davranış düzeltmesi.** Kullanıcı isteği (verbatim özet): Çark/Günlük
   Giriş popup'ları biraz yukarı kaydırılsın; Rozet popup'ı DAHA FAZLA yukarı
@@ -8438,3 +8444,192 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
     kullanım senaryosu, sunucu tarafı cron'u gerektirir) Davet Et ile
     1/5 arkadaş başarıyla davet edilip uygulama bir SONRAKİ açılışta/
     öne gelişte Elçi/Topluluk Kurucusu rozetlerinin otomatik kazanıldığı.
+
+#### Altıncı ve SON kategori — Gizli/Eğlenceli Rozetler (3 rozet)
+
+- **2026 yeni özellik — bu kategori diğer beşinden İKİ yönden KÖKTEN
+  FARKLI: bir GİZLİLİK mekaniği taşıyor VE zaman penceresi BİLEREK cihazın
+  KENDİ saatine bağlı.** Kullanıcı isteği: **Gece Kuşu** (`night_owl`) —
+  cihaz saatine göre gece yarısı (00:00) ile sabah 05:00 arası 30 kez
+  uygulamayı aç — 777 ZC. **Erken Kuş** (`early_bird`) — cihaz saatine göre
+  sabah 06:00-08:00 arası 30 kez uygulamayı aç — 777 ZC. **Denge Ustası**
+  (`balance_master`) — AYNI takvim günü içinde uygulamadaki 7 modülün
+  (Hedef Takibi, Şükran Günlüğü, Ruh Hali Takibi, Su Takibi, Manifest
+  Günlüğü, Rüya Günlüğü, Para ve Birikim) HEPSİNE en az bir kayıt ekle —
+  777 ZC. Kullanıcının açık notu: "Kurucu Üye" rozeti (bkz. o bölüm) BU
+  kategoriye DAHİL EDİLMEDİ — görseli AYRI bir turda gelecek.
+  - **Belirsizlik netleştirmesi (kod yazmadan ÖNCE çözüldü, kullanıcıya
+    SORULMADAN):** kullanıcının "Gizlilik Mekaniği" paragrafı ORTADA
+    kendiyle çelişen tek bir cümle içeriyordu ("AMA 777zC VİTRİNDE
+    GÖRÜNSÜN SADECE") — ama paragrafın HEMEN ARDINDAN gelen, gramatik
+    olarak TAM ve açık son cümlesi ("Diğer kategorilerdeki rozetlerde
+    olduğu gibi kazanma koşulu ve ödül miktarı ÖNCEDEN gösterilmesin")
+    belirsizliği kesin olarak çözüyordu — o ortadaki cümle muhtemelen bir
+    yazım/otokorrekt kazası (belki de "sadece '???' etiketi görünsün"
+    demek isterken yanlışlıkla "777zC" yazılmış). Bu ikinci, net cümleye
+    göre hareket edildi: KAZANILMADAN ÖNCE isim/koşul/ÖDÜL MİKTARININ
+    ÜÇÜ de galeri kartında GİZLİ.
+  - **`ZiboBadgeDefinition`'a YENİ `bool isHidden` alanı eklendi**
+    (varsayılan `false`, `hasSpecialReward` ile AYNI "opsiyonel bayrak"
+    deseni). `BadgeCategory` enum'una `hidden` eklendi (artık ALTI değer).
+    YENİ `lib/data/hidden_badges.dart` — üç `ZiboBadgeDefinition`, hepsi
+    `isHidden: true` + `zcReward: 777`. Ayrıca `hiddenBadgeMysteryImageAsset`
+    (`assets/images/gizli_rozet.png`) sabiti — üçünün de kazanılana kadar
+    PAYLAŞTIĞI ortak "gizem" görseli (kullanıcının kendi tasarımı — bir
+    şapkalı gölge figür + "?" — zaten "bilinmiyor" hissini taşıyan bir
+    illüstrasyon).
+  - **`BadgesGalleryScreen`'in `_BadgeGalleryCard`'ına `hiddenLocked =
+    badge.isHidden && !earned` kontrolü eklendi.** `hiddenLocked` iken:
+    (1) görsel `hiddenBadgeMysteryImageAsset` (badge'in KENDİ görseli
+    DEĞİL) — ve normal kazanılmamış rozetlerin AKSİNE `ColorFiltered`/
+    `Opacity` ile GRİLEŞTİRİLMİYOR de (gizem görseli zaten "bilinmiyor"
+    hissini taşıyan bir tasarım, AYRICA soluklaştırmaya gerek YOK); (2)
+    isim VE koşul metinlerinin İKİSİ de `l10n.badgeHiddenPlaceholder`
+    ("???") — badge'in gerçek `localizedName`/`localizedRequirement`'ı HİÇ
+    ÇAĞRILMIYOR bile; (3) alttaki ZC ödül satırı (VE varsa `hasSpecialReward`
+    notu) TAMAMEN GİZLİ — `if (!hiddenLocked) ...` bloğuna alındı.
+    **Kazanıldıktan SONRA `hiddenLocked` `false` olur ve kart TÜM diğer
+    rozetlerle BİREBİR aynı kod yolundan render edilir** — `isHidden`
+    bayrağının kazanma MANTIĞINA (`BadgeProvider.reconcileHiddenBadges`)
+    hiçbir etkisi YOK, yalnızca bu GÖRÜNTÜLEME kararını etkiliyor.
+  - **`BadgeCelebrationOverlay`'in kutlama popup'ı HİÇBİR DEĞİŞİKLİK
+    GEREKTİRMEDİ** — zaten kayıtsız şartsız `badge.imageAsset`/
+    `localizedName`/`localizedRequirement`/`zcReward`'ı gösteriyordu; bu
+    popup'ın TETİKLENDİĞİ an ZATEN "rozet YENİ kazanıldı" anı olduğu için
+    (`pendingBadgePopup`, `reconcileHiddenBadges` içinde YALNIZCA yeni
+    kazanılan bir rozet için ayarlanıyor) hiçbir `isHidden` kontrolüne
+    gerek YOK — kullanıcının "kazanıldığı anda normal akış devam etsin"
+    isteği KOD DEĞİŞİKLİĞİ GEREKTİRMEDEN zaten karşılanıyordu.
+  - **YENİ `HiddenBadgeProvider`** (`lib/providers/hidden_badge_provider.dart`)
+    — `AppStreakProvider`'ın AYNI `CloudStateStore` (Varyant A) deseni,
+    `{'nightOwlDays': [...], 'earlyBirdDays': [...]}` (ISO tarih dizileri).
+    **BİLEREK `AppStreakProvider`'ın AKSİNE `TrustedTimeProvider` DEĞİL,
+    cihazın KENDİ `DateTime.now()`'unu kullanıyor** — kullanıcının "cihaz
+    saatine göre" ifadesini İKİ kez tekrarlaması, `motivation_quote_
+    selector.dart`'taki `timeBucketFor`'un AYNI "kozmetik/eğlenceli
+    özellik, kullanıcının O ANKİ GERÇEK yerel saatini yansıtmalı, doğrulanmış-
+    UTC-çıpaya bağlı KALMAMALI" gerekçesiyle TUTARLI. **Kabul edilen
+    ödünleşim, provider'ın kendi dokümantasyonunda AÇIKÇA belgelendi:** bu,
+    `AppStreakProvider`'daki "cihaz saatini manipüle ederek erken
+    kazanamaz" güvenlik garantisini TAŞIMIYOR — düşük-riskli/eğlence
+    odaklı kabul edilen bir özellik olduğu ve kullanıcının AÇIKÇA bunu
+    istediği için, `Coin Ekonomisi Güvenliği` bölümündeki genel
+    "client-authoritative ekonomi" risk kabulüyle AYNI kategoride kabul
+    edildi.
+    - **Gün-bazlı DEDUP — kullanıcının metninde AÇIKÇA istenmemiş ama
+      trivial-gaming'e karşı BİLİNÇLİ bir tasarım kararı.** "30 kez
+      uygulamayı aç" talimatı KELİMESİ KELİMESİNE "30 açılış olayı" olarak
+      okunabilirdi — ama bu, pencere içinde art arda hızlı aç/kapat ile
+      SANİYELER içinde 777 ZC kazanmaya izin verirdi. Bunun yerine
+      `recordOpenForCurrentTime()` `Set<DateTime>.add(today)` ile TEK bir
+      takvim gününü EN FAZLA BİR KEZ sayıyor (`Set.add`'in kendi idempotent
+      davranışı, ayrı bir "bugün zaten sayıldı mı" kontrolüne gerek
+      BIRAKMADAN) — bu, projenin `AppStreakProvider.totalDaysOpened`'daki
+      (Sadakat Rozetleri) AYNI "benzersiz GÜN sayacı" felsefesiyle tutarlı.
+  - **`BadgeProvider.reconcileHiddenBadges({nightOwlDaysCount,
+    earlyBirdDaysCount, hasAllModulesToday})`** — diğer beş `reconcileX`
+    metoduyla BİREBİR AYNI "tek slot, en son yeni kazanılan yazılır" deseni.
+  - **`BadgeCoordinator` genişletildi — artık ON ÜÇ provider'ı dinliyor**
+    (önceki on ikiye `HiddenBadgeProvider` eklendi). **`hasAllModulesToday`
+    ("Denge Ustası") koordinatörün KENDİ, BU turda YENİ bir hesaplaması** —
+    YEDİ modül provider'ının ("Hedef Takibi, Şükran Günlüğü, Ruh Hali
+    Takibi, Su Takibi, Manifest Günlüğü, Rüya Günlüğü, Para ve Birikim")
+    HEPSİ ZATEN koordinatörün constructor parametreleriydi (Modül Ustalığı
+    Rozetleri'nden beri) — YENİ bir provider bağımlılığı GEREKMEDİ, yalnızca
+    mevcut yedisinin "bugün bir kaydı var mı" getter'ları `&&` ile
+    birleştirildi (`goals.hasAnyRecordToday && gratitude.isTodayComplete &&
+    mood.todayMood != null && water.todayEntry != null && manifest.
+    hasEntryToday && dream.hasEntryToday && money.hasEntryToday`).
+  - **DÖRT provider'a "bugün bir kaydı var mı" getter'ı EKLENDİ** (üçü zaten
+    vardı — `GratitudeProvider.isTodayComplete`/`MoodProvider.todayMood`/
+    `WaterProvider.todayEntry`, doğrudan kullanılabiliyordu):
+    `GoalsProvider.hasAnyRecordToday` (`_goals.any((g) => g.completedDates.
+    contains(today))`), `ManifestProvider.hasEntryToday`, `MoneyProvider.
+    hasEntryToday` (HANGİ kategoriden geldiği önemsiz — üçünü de tarıyor),
+    `DreamJournalProvider.hasEntryToday`. **`DreamJournalProvider`'ınki
+    BİLEREK ham `DateTime.now()` kullanıyor** — bu provider'ın (diğer
+    modül provider'larının AKSİNE) hiç enjekte edilebilir bir saati YOK
+    (`addDream` da zaten doğrudan `DateTime.now()` kullanıyor), bu yüzden
+    yeni getter AYNI kaynağı paylaşarak öz-tutarlı kalıyor.
+  - **`RootScreen`'e kablolama — `AppStreakProvider.recordOpenForToday()`
+    ile BİREBİR AYNI İKİ tetikleme noktası:** `initState`'in
+    postFrameCallback'i (soğuk başlangıç) + `didChangeAppLifecycleState`'in
+    `resumed` dalı (uygulama HER öne gelişte — kullanıcı gece yarısı
+    civarında uygulamayı arka planda tutup öne getirse bile sayılsın diye).
+    `BadgeCoordinator(...)` çağrısına `hiddenBadge:
+    context.read<HiddenBadgeProvider>()` eklendi. `main.dart`'ta
+    `HiddenBadgeProvider(uid: uid)` — **BİLEREK `now:` parametresi
+    VERİLMİYOR** (varsayılan cihaz saati kullanılsın diye, `AppStreakProvider`'ın
+    `now: () => context.read<TrustedTimeProvider>().now()` enjeksiyonunun
+    TAM TERSİ).
+  - **Görseller** kullanıcının masaüstündeki İKİ AYRI klasörden geldi —
+    üç gerçek rozet `rozetler/GizliEğlenceli Rozetler` ALT klasöründe,
+    paylaşılan gizem görseli (`gizli_rozet.png`) bir üstteki `rozetler`
+    klasöründe (ALT klasörün DIŞINDA) — `tool/process_hidden_badge_images.dart`
+    (YENİ, önceki kategori betiklerinden FARKLI olarak bir `Directory.
+    listSync()` DEĞİL, açık bir dosya YOLU listesi kullanıyor, çünkü tek
+    bir kaynak klasörden okumuyor) bunu doğru şekilde ele alıp dördünü de
+    (dosya adları AYNEN korunarak, 512px'e küçültülerek) kopyaladı — hepsi
+    kopyalamadan ÖNCE piksel-alfa ölçümüyle temiz/şeffaf olduğu doğrulandı.
+  - **ARB — 10 yeni anahtar (TR/EN/ES):** `badgeCategoryHidden` +
+    `badgeHiddenPlaceholder` ("???", HER ÜÇ dilde de AYNI literal ama
+    projenin "kullanıcıya görünen HER metin ARB'de olmalı" konvansiyonu
+    gereği yine de bir ARB anahtarı) + 3× `badgeName<X>` + 3×
+    `badgeRequirement<X>`.
+  - **`BadgeProvider.debugGrantRandomBadge()` (Ayarlar'daki GEÇİCİ test
+    paneli) YİNE HİÇBİR DEĞİŞİKLİK GEREKTİRMEDİ** — artık yirmi bir rozetin
+    (5+6+4+3+3+3) HERHANGİ birini rastgele kazandırabiliyor; gizli
+    rozetlerden biri rastgele seçilirse bile `reconcileConsistencyBadges`
+    ile BİREBİR AYNI "gerçek akışla kazandır" yolundan geçtiği için galeri
+    kartı da doğru şekilde (kazanılmış olarak, gerçek görsel/isim/koşul/
+    ödülle) güncellenir — test paneli `isHidden`'ı hiç BİLMİYOR bile,
+    bilmesine de GEREK YOK.
+  - **Test: 29 YENİ test.** YENİ `hidden_badge_provider_test.dart` (10 test
+    — gündüz saatlerinde no-op, gece yarısı-05:00 arası HER saat sayaç
+    artışı, 06:00-08:00 arası HER saat sayaç artışı, saat TAM 05:00/08:00
+    sınırında HİÇBİR sayaç artmaz [aralığın KAPALI olduğunun kanıtı], AYNI
+    GÜN içinde pencerede birden fazla açılış sayacı YALNIZCA BİR KEZ artırır
+    [trivial-gaming koruması], 30 FARKLI gecede 30'a ulaşma, notifyListeners
+    yalnızca gerçek değişiklikte, kalıcılık, isReady). `badge_provider_
+    test.dart`'a `reconcileHiddenBadges` grubu (8 test — eşik altı no-op,
+    üç rozetin her biri için ayrı eşik-aşımı senaryosu [night_owl+early_bird
+    AYNI ANDA kazanılıp kutlama sinyalinin EN SONuncuya (early_bird)
+    yazıldığı dahil], kazanılan rozetin `isHidden: true` taşımasının
+    kazanma mantığını ETKİLEMEDİĞİNİN AÇIK kanıtı, tekrar-bildirmeme,
+    kalıcılık). `badge_coordinator_test.dart`'a 5 yeni test (HiddenBadgeProvider
+    TEMSİLCİ olarak EAGER/SONRADAN/dispose üçlüsü + `hasAllModulesToday`'in
+    koordinatörün KENDİ YEDİ-modül birleştirme mantığını doğrulayan İKİ
+    AYRI test — biri yedisi de dolunca kazanıyor, diğeri BİRİ [Rüya
+    Günlüğü] eksik kalınca kazanmıyor). `badges_gallery_screen_test.dart`'taki
+    mevcut iki test güncellendi (`ColorFiltered` sayımı artık `allBadges.
+    length - hiddenBadges.length` [kazanılmamış hidden badge'ler bu sayıma
+    HİÇ GİRMİYOR]) + 2 YENİ test (kazanılmadan önce "???"×6 + gerçek
+    isim/koşul HİÇBİR YERDE sızmıyor; kazanıldıktan sonra diğer TÜM
+    rozetlerle BİREBİR aynı görünüyor + kazanılmamış diğer ikisi HÂLÂ
+    "???" gösteriyor). DÖRT provider'ın kendi test dosyasına (`goals_
+    provider_test.dart`/`manifest_provider_test.dart`/`dream_journal_
+    provider_test.dart`/`money_provider_test.dart`) birer odaklı test
+    eklendi (yeni "bugün kaydı var mı" getter'larının HER biri için).
+    **Toplam: 529 test** (528 geçti + 1 önceden belgelenmiş `audioplayers`/
+    `home_widget` flake'i — `git stash` ile doğrulandı, DEĞİŞMEDEN ÖNCEKİ
+    baza karşı da AYNI şekilde başarısız oluyor, bu turun değişiklikleriyle
+    İLGİSİZ).
+  - **Gerçek cihazda GÖRSEL doğrulama bu turda YAPILAMADI — cihaz bu turun
+    sonunda bağlı DEĞİLDİ** (`adb devices` yalnızca offline bir emülatör
+    gösterdi, kullanıcının fiziksel cihazı [8b9a14f1] YOKTU) — yalnızca
+    `flutter test` (529 test) + `flutter build apk --debug` (sorunsuz,
+    APK diskte hazır bekliyor) ile doğrulandı, kuruluma dahi
+    GEÇİLEMEDİ. **Kullanıcının kendi cihazını bağlayıp kendi USB test
+    akışıyla (bu oturumda kurulan norm) doğrulaması gereken:** Rozetler
+    Galerisi'nde Sosyal'in ALTINDA "Gizli Rozetler" başlığı altında ÜÇ
+    kartın hepsinin AYNI gizem görseliyle + "???" etiketiyle (isim/koşul/
+    ödül HİÇBİRİ görünmeden) listelendiği; Ayarlar'daki test panelinin
+    artık bu üç rozeti de rastgele kazandırabildiği VE bir gizli rozet
+    rastgele kazanıldığında galeri kartının GERÇEK görsel/isim/koşul/ödülle
+    (artık "???" DEĞİL) güncellendiği; VE (gerçek kullanım senaryosu,
+    saatler/günler sürer) cihaz saatine göre gece yarısı-05:00 veya
+    06:00-08:00 arasında 30 farklı günde uygulamayı açınca veya aynı gün
+    7 modülün hepsine kayıt eklenince ilgili rozetlerin GERÇEKTEN otomatik
+    kazanıldığı, VE kazanıldığı anda kutlama popup'ının (konfeti + gerçek
+    görsel/isim/koşul/777 ZC + "Ödülü Al") NORMAL akışla (diğer
+    rozetlerden hiçbir farkı olmadan) çalıştığı.
