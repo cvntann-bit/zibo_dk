@@ -18,6 +18,10 @@ import 'package:audioplayers/audioplayers.dart';
 /// ([playCostumeBuy]), tema satın alma ([playThemeBuy]) ve Su Takibi'nde bir
 /// birim işaretleme ([playWaterDrop]) — AYNI desen (`CoinProvider`/
 /// `WaterTrackingScreen` KENDİ ayrı örneklerini çağırıyor).
+///
+/// **2026 ÜÇÜNCÜ güncelleme — rozet kazanma sesi ([playBadgeWin]).**
+/// `BadgeCelebrationOverlay` KENDİ ayrı örneğini oluşturup çağırıyor —
+/// AYNI desen.
 abstract class SoundEffectsService {
   const SoundEffectsService();
 
@@ -64,6 +68,11 @@ abstract class SoundEffectsService {
   /// `AnimatedContainer` geçişi) TAM EŞ ZAMANLI çalınan ses (bkz.
   /// `assets/sounds/water_drop.wav`, `WaterTrackingScreen`).
   Future<void> playWaterDrop();
+
+  /// Bir rozet YENİ kazanıldığında (bkz. `pendingBadgePopup`/
+  /// `BadgeCelebrationOverlay`), konfeti animasyonuyla TAM EŞ ZAMANLI
+  /// çalınan kutlama sesi (bkz. `assets/sounds/rozet_win_1.wav`).
+  Future<void> playBadgeWin();
 
   /// Uygulama kapanırken/widget dispose edilirken native oynatıcı
   /// kaynaklarını serbest bırakır.
@@ -112,6 +121,9 @@ class AudioPlayersSoundEffectsService extends SoundEffectsService {
   Future<void> playWaterDrop() => _play('sounds/water_drop.wav');
 
   @override
+  Future<void> playBadgeWin() => _play('sounds/rozet_win_1.wav');
+
+  @override
   void dispose() => _player.dispose();
 }
 
@@ -138,6 +150,9 @@ class FakeSoundEffectsService extends SoundEffectsService {
 
   @override
   Future<void> playWaterDrop() async {}
+
+  @override
+  Future<void> playBadgeWin() async {}
 
   @override
   void dispose() {}

@@ -7,7 +7,6 @@ import 'package:url_launcher/url_launcher.dart';
 import '../data/legal_texts.dart';
 import '../l10n/app_localizations.dart';
 import '../providers/auth_link_provider.dart';
-import '../providers/badge_provider.dart';
 import '../providers/locale_provider.dart';
 import '../providers/notification_provider.dart';
 import '../providers/sound_effects_provider.dart';
@@ -413,15 +412,6 @@ class SettingsScreen extends StatelessWidget {
             const SizedBox(height: 24),
             const _NotificationDebugPanel(),
           ],
-
-          // GEÇİCİ: rastgele bir rozet kazandırıp gerçek kazanma akışını
-          // (konfeti + kutlama popup'ı) test etmeyi sağlıyor — bkz.
-          // CLAUDE.md "Rozet Sistemi" bölümü. `_CoinTestPanel`'in AYNI
-          // deseni (açıkça "geçici" işaretli, izole widget, kolayca
-          // kaldırılabilir); rozet sistemi gerçek cihazda doğrulandıktan
-          // sonra tamamen kaldırılacak.
-          const SizedBox(height: 24),
-          const _BadgeTestPanel(),
         ],
       ),
     );
@@ -586,56 +576,6 @@ class _NotificationDebugPanelState extends State<_NotificationDebugPanel> {
                 style: Theme.of(context).textTheme.bodySmall,
               ),
             ],
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-/// GEÇİCİ: rastgele bir rozet kazandırıp gerçek kazanma akışını (kutlama
-/// popup'ı + uygulama genelindeki konfeti animasyonu) hızlıca test etmeyi
-/// sağlayan debug düğmesi — bkz. CLAUDE.md "Rozet Sistemi" bölümü. Rozet
-/// sistemi gerçek cihazda doğrulandıktan sonra tamamen kaldırılacak.
-class _BadgeTestPanel extends StatelessWidget {
-  const _BadgeTestPanel();
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Rozet Test Paneli (geçici)',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            const SizedBox(height: 4),
-            Text(
-              'Rastgele, henüz kazanılmamış bir rozeti kazandırır — gerçek '
-              "kazanma akışıyla (konfeti + kutlama popup'ı) birebir aynı.",
-              style: Theme.of(context).textTheme.bodySmall,
-            ),
-            const SizedBox(height: 12),
-            OutlinedButton(
-              onPressed: () {
-                final badge = context
-                    .read<BadgeProvider>()
-                    .debugGrantRandomBadge();
-                if (badge == null) {
-                  ScaffoldMessenger.of(context)
-                    ..hideCurrentSnackBar()
-                    ..showSnackBar(
-                      const SnackBar(
-                        content: Text('Tüm rozetler zaten kazanılmış.'),
-                      ),
-                    );
-                }
-              },
-              child: const Text('Rastgele Rozet Kazan'),
-            ),
           ],
         ),
       ),

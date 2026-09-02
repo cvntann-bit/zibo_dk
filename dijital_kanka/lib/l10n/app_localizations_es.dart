@@ -1589,6 +1589,14 @@ class AppLocalizationsEs extends AppLocalizations {
       'Recompensa Especial (Próximamente)';
 
   @override
+  String get badgeSpecialRewardThemeNote => '+ Un Tema Aleatorio de Regalo';
+
+  @override
+  String badgeSpecialRewardThemeGrantedMessage(String themeName) {
+    return 'Tu recompensa especial: ¡se te regaló el tema $themeName! 🎁';
+  }
+
+  @override
   String get badgeCategoryLoyalty => 'Insignias de Lealtad';
 
   @override

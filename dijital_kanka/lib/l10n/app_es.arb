@@ -468,6 +468,8 @@
   "badgeRequirementFullWardrobe": "Ten TODOS los disfraces de la tienda",
   "badgeRequirementThemeHunter": "Ten 3 temas diferentes",
   "badgeSpecialRewardComingSoon": "Recompensa Especial (Próximamente)",
+  "badgeSpecialRewardThemeNote": "+ Un Tema Aleatorio de Regalo",
+  "badgeSpecialRewardThemeGrantedMessage": "Tu recompensa especial: ¡se te regaló el tema {themeName}! 🎁",
   "badgeCategoryLoyalty": "Insignias de Lealtad",
   "badgeNameFirstWeek": "Primera Semana",
   "badgeNameLoyalFriend": "Amigo Fiel",

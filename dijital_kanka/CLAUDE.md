@@ -8709,3 +8709,188 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
     (veya daha önce zaten koşulu karşılanmış BAŞKA bir rozetin) uygulama
     yeniden açıldığında BİR DAHA popup olarak ÇIKMADIĞI (bir kez doğru
     kaydedildikten sonra kalıcı kalması gerekir).
+
+#### "Tam Gardırop" özel ödülü GERÇEKTEN uygulandı — rastgele bir tema hediye
+
+- **2026 güncellemesi.** Kullanıcının netleştirmesi (verbatim): "tam
+  gardrop rozetindki özel hediye rastgele bir tema hediye etsin özel
+  hedyemiz o." `ZiboBadgeDefinition.hasSpecialReward`'ın o ana kadarki
+  "ŞU AN yalnızca bir YER TUTUCU" durumu sona erdi — artık GERÇEKTEN
+  işlevsel.
+  - **YENİ `lib/utils/badge_special_reward.dart`** — saf/test edilebilir
+    `pickRandomUnownedTheme(Set<String> ownedThemeIds, {Random? random})`
+    (`wheel_prizes.dart`'taki `pickWeightedPrize` ile AYNI "enjekte
+    edilebilir rastgelelik" felsefesi): `appThemes`'ten sahip
+    OLUNMAYANLARI filtreleyip rastgele birini döner; kullanıcı TÜM
+    temalara zaten sahipse (teorik olarak neredeyse imkansız — bu rozet
+    zaten TÜM kostümlere sahip olmayı gerektiriyor, temalar TAMAMEN AYRI
+    bir ekonomi) `null` döner, hiçbir şey verilmez.
+  - **`BadgeCelebrationOverlay`'in "Ödülü Al" butonu** artık
+    `badge.hasSpecialReward` iken `context.read<AppThemeProvider>()`'dan
+    seçilen temayı `markOwned(theme.id)` ile mağazadan SATIN ALINMADAN
+    hediye ediyor — `_BadgeClaimCard.onClaim`'in imzası `VoidCallback`'ten
+    `void Function(String? specialRewardThemeName)`'e çevrildi, hediye
+    edilen temanın (varsa) yerelleştirilmiş adını taşıyor.
+  - **`BadgesGalleryScreen` `StatelessWidget`'tan `StatefulWidget`'a
+    çevrildi** — yeni `specialRewardThemeName` (opsiyonel) constructor
+    parametresi, `initState`'te `!hasSpecialReward` iken hiçbir şey
+    yapmıyor, doluysa `addPostFrameCallback` ile (build tamamlanmadan
+    SnackBar göstermek güvenli değil — `_maybeShowAdFreePromo` ile AYNI
+    gerekçe) `l10n.badgeSpecialRewardThemeGrantedMessage(themeName)`
+    metniyle bir SnackBar gösteriyor. **Neden burada, `_BadgeClaimCard`'ın
+    kendisinde DEĞİL:** kutlama kartı `MaterialApp.builder` seviyesinde,
+    HİÇBİR Scaffold ATASI OLMADAN mount ediliyor (bkz. dosyanın kendi
+    "`home:` İÇİNE DEĞİL, `builder:` seviyesine" notu) — `ScaffoldMessenger.
+    of(context)` orada güvenle çağrılamazdı; galeri ekranının KENDİ
+    `Scaffold`'u bu sorunu doğal olarak çözüyor.
+  - **ARB — iki YENİ anahtar (TR/EN/ES):** `badgeSpecialRewardThemeNote`
+    ("+ Rastgele Bir Tema Hediyesi" — hem galeri kartında hem kutlama
+    kartında, eski "Yakında" notunun YERİNE) ve
+    `badgeSpecialRewardThemeGrantedMessage` (`{themeName}` placeholder'lı
+    SnackBar metni). Eski `badgeSpecialRewardComingSoon` anahtarı proje
+    geneli "kullanılmayan ARB anahtarını silme" konvansiyonuyla dosyalarda
+    BIRAKILDI, yalnızca artık hiçbir yerden ÇAĞRILMIYOR.
+  - **Test:** `badge_celebration_overlay_test.dart`'a iki yeni senaryo —
+    "Tam Gardırop" (`collectionBadges`'ten, `reconcileCollectionBadges
+    (ownsAllCostumes: true, ...)` ile GERÇEKTEN kazandırılıp) "Ödülü Al"a
+    basılınca `AppThemeProvider.ownedIds`'in tam BİR yeni (gerçek
+    `appThemes` listesinden) tema id'siyle büyüdüğü VE bir `SnackBar`
+    göründüğü; `hasSpecialReward` TAŞIMAYAN bir rozette (İlk Adım) hiçbir
+    temanın hediye EDİLMEDİĞİ.
+  - **Doğrulama:** `flutter test` — tam suite yeşil (yalnızca önceden
+    belgelenmiş `audioplayers`/`home_widget` flake'i hariç). `flutter
+    build apk --debug` sorunsuz, APK cihaza SESSİZCE kuruldu (kullanıcı o
+    an BitLife oynuyordu, açılmadı). **Gerçek cihazda GÖRSEL doğrulama bu
+    turda YAPILMADI** — kullanıcının kendi cihazında (Tam Gardırop
+    rozetini gerçekten kazanınca, tüm kostümlere sahip olarak) "Ödülü
+    Al"a bastığında hem galeri kartındaki/kutlama kartındaki "+ Rastgele
+    Bir Tema Hediyesi" notunu HEM "Özel ödülün: {tema} teması hediye
+    edildi!" SnackBar'ını gördüğünü, VE Mağaza > Temalar'da o temanın
+    artık "Sahip Olunan" olarak göründüğünü doğrulaması gerekiyor.
+
+#### Rozet Kazanma Sesi ([sound_effects_service.dart](lib/services/sound_effects_service.dart), [badge_celebration_overlay.dart](lib/widgets/badge_celebration_overlay.dart))
+
+- **2026 yeni özellik.** Kullanıcı `assets/sounds/rozet_win_1.wav` ekledi
+  ("bu sesi rozet kazanıldığında kullan"). `SoundEffectsService`'e
+  "2026 ÜÇÜNCÜ güncelleme" olarak `playBadgeWin()` eklendi — diğer TÜM
+  ses efektleriyle AYNI `_play(String assetPath)` ortak yardımcısı
+  üzerinden.
+  - **`BadgeCelebrationOverlay`** artık `HomeScreen`/`GoalTrackingScreen`/
+    `WaterTrackingScreen` ile AYNI test-injection deseninde KENDİ ayrı
+    `SoundEffectsService` örneğini taşıyor (`late final SoundEffectsService
+    _soundEffectsService = widget.soundEffectsService ??
+    AudioPlayersSoundEffectsService();`, `dispose()`'ta serbest
+    bırakılıyor, `BadgeCelebrationOverlay` widget'ı YENİ bir opsiyonel
+    `soundEffectsService` constructor parametresi kazandı). `main.dart`'taki
+    kurulum DEĞİŞMEDİ (varsayılan gerçek servis kullanılmaya devam
+    ediyor).
+  - **`_onPendingBadgeChanged()`** konfeti animasyonu (`_confettiController.
+    forward(from: 0)`) ile TAM EŞ ZAMANLI, `SoundEffectsProvider.enabled`
+    kontrolünden geçerse `playBadgeWin()`'i çağırıyor — `HomeScreen.
+    _onZiboTap()`'in AYNI çağrı sitesi deseni.
+  - **Test:** `badge_celebration_overlay_test.dart`'a yeni bir
+    `_RecordingSoundEffectsService` + senaryo — `pendingBadgePopup`
+    ayarlanınca `playBadgeWin()`'in tam bir kez çağrıldığı doğrulanıyor.
+    Diğer dört test dosyasındaki (`coin_provider_test.dart`,
+    `goal_completion_celebration_test.dart`, `home_screen_sound_test.dart`,
+    `water_tracking_sound_test.dart`) yerel `SoundEffectsService` alt
+    sınıflarına, Dart'ın soyut sınıf sözleşmesini karşılamak için
+    (bu dosyalar rozet sesini test ETMİYOR) `playBadgeWin()`'in no-op
+    override'ı eklendi.
+  - **Gerçek cihazda GÖRSEL/İŞİTSEL doğrulama bu turda YAPILMADI** —
+    kullanıcının kendi cihazında bir rozet kazanınca sesin GERÇEKTEN
+    duyulduğunu (ve Ayarlar > Ses Efektleri kapalıyken SUSTUĞUNU)
+    dinleyerek doğrulaması gerekiyor.
+
+#### Rozet Test Paneli kaldırıldı, Google hesabından çıkışta hesap verisi artık gerçekten sıfırlanıyor
+
+- **2026 güncellemesi — üç talep birlikte ele alındı.**
+  1. **"Rozet Test Paneli (geçici)" tamamen kaldırıldı** — kullanıcı
+     isteği: "artık gerek yok" (rozet sistemi gerçek cihazda doğrulandı,
+     altı kategorinin tamamı tamamlandı). `settings_screen.dart`'taki
+     `_BadgeTestPanel` sınıfı ve kullanımı, `badge_provider.dart`'taki
+     `debugGrantRandomBadge()` metodu SİLİNDİ (deprecate edilmedi) —
+     `settings_screen.dart`'ın artık kullanılmayan `BadgeProvider` import'u
+     da temizlendi (`consistencyBadges`'in HÂLÂ `reconcileConsistencyBadges`
+     içinde kullanıldığı doğrulanıp `data/consistency_badges.dart`
+     import'u YANLIŞLIKLA kaldırılmadan korundu).
+  2. **Founder Badge promo kartı ile ilgili kullanıcı talebi — "kurucu
+     rozeti göstermiyor" — KÖK NEDEN daha önceki bir oturumda tespit
+     edilmişti (bkz. "Kurucu Üye Rozeti" bölümündeki "Kullanıcının Firebase
+     Console/GitHub Actions'ta tamamlaması gereken adımlar"): `founderBadgeStatus/
+     status` Firestore dokümanı HENÜZ seed EDİLMEMİŞ, `FounderBadgeProvider.
+     isLoaded` bu yüzden hiçbir zaman `true` olmuyor, promo kartı bu yüzden
+     görünmüyor.** Bu turda dry-run ile `init-founder-badge-counter.yml`
+     workflow'u `gh workflow run` ile tetiklenip log'u incelendi — TAMAMEN
+     TEMİZ çıktı verdi ("Toplam 117 Firebase Auth kullanıcısı tarandı... 0
+     kullanıcıda ZATEN 'Kurucu Üye' rozeti var... [DRY RUN] founderBadgeStatus/
+     status, count=0 ile OLUŞTURULACAKTI"). **GERÇEK (non-dry-run, `dry_run=
+     false`) çalıştırma Claude Code'un otomatik izin sınıflandırıcısı
+     tarafından ENGELLENDİ** ("genuine consequential/irreversible production
+     write" gerekçesiyle) — bu, bu turda TAMAMLANAMADI. **Kullanıcının kendi
+     kararı gerekiyor:** (a) bir sonraki mesajda asistana açıkça "gerçek
+     seed'i çalıştır" diye onay vermesi (sonraki turda tekrar denenecek),
+     VEYA (b) GitHub Actions sekmesinden kendisinin elle tetiklemesi (Actions
+     → "Kurucu Üye Sayacını Başlat" → Run workflow → `dry_run: false`,
+     `force: false`) — dry-run'ın sonucu SAFE olduğunu zaten kanıtladı,
+     yalnızca GERÇEK yazma adımı bekliyor.
+  3. **Gerçek bug düzeltmesi — Google hesabından çıkış yapınca (Ayarlar >
+     "Çıkış Yap") eski hesabın TÜM verisi (coin, satın alınan temalar/
+     kostümler, modül verileri) yeni/anonim oturumda KALMAYA devam
+     ediyordu.** Kullanıcı raporu (verbatim özet): kendi Gmail hesabıyla
+     girip çıkış yapınca coinler/temalar/kostümler/modül verileri
+     OLDUĞU GİBİ kalıyor — kullanıcı kendi hesabından çıkınca uygulama
+     SIFIR veriyle başlamalı. **Kök neden — `CloudStateStore.load()`'un
+     "migrasyon" mantığındaki, Firestore veri kalıcılığı bölümünde ZATEN
+     belgelenen "yerel `SharedPreferences` anahtarları uid'e göre
+     SCOPE'LANMIŞ DEĞİL, cihaz genelinde TÜM hesaplar arasında paylaşılıyor"
+     mimari gerçeğinin SOMUT bir sonucu:** `GoogleAuthService.signOut()`
+     (bkz. "Google Hesap Bağlama" bölümü) `signOut()` + `signInAnonymously()`
+     ile TAZE bir anonim uid oluşturuyor, ama bu YENİ uid'in Firestore
+     belgesi (`users/{yeniUid}/state/*`) HENÜZ HİÇ VAR OLMADIĞI için,
+     `CloudStateStore.load()`'un "Firestore'da veri yoksa yereldeki eski
+     veriyi Firestore'a GÖÇ ETTİR" mantığı (bu, YEREL→BULUT tek seferlik
+     migrasyon için TASARLANMIŞTI) devreye girip ÖNCEKİ (Google'a bağlı)
+     hesabın cihazda PAYLAŞILAN yerel önbelleğini SESSİZCE yeni anonim
+     oturuma "miras" bırakıyordu. **"Hesap Değiştir" akışı bu bug'dan
+     ETKİLENMİYOR** (bkz. o zamanki not) çünkü o akış VAR OLAN bir uid'e
+     geçiyor, Firestore'da ZATEN gerçek veri buluyor, migrasyon yolu hiç
+     tetiklenmiyor — yalnızca "Çıkış Yap" (taze/boş bir Firestore belgesi
+     yaratan) etkilendi.
+     - **`lib/utils/local_account_data.dart` (YENİ)** — `localAccountDataKeys`
+       (~27 hesaba özgü `SharedPreferences` anahtarı: coin/kostüm/tema/
+       hedefler/su/ruh hali/şükran/manifest/rüya/para/günlük ödüller/streak/
+       rozet/profil/favori sözler/özel mesajlar/davet/onboarding/push
+       bildirim tercihleri) + `clearLocalAccountData()` (bu anahtarların
+       HEPSİNİ `SharedPreferences`'tan siler). **Bilinçli olarak
+       KORUNAN** (silinMEYEN) anahtarlar: cihaz/UI tercihleri
+       (`isDarkMode`/`languageCode`/`soundEffectsState` — standart tüketici
+       uygulaması convansiyonu: Instagram/Google'dan çıkış yapmak cihazın
+       temasını/dilini SIFIRLAMAZ) VE hesap DIŞI önbellekler
+       (`trustedTimeLastVerifiedUtc`/`adFreePromoLastShownAtMillis`).
+       **Bu, kullanıcının literal "sıfır veriyle başlasın" ifadesinden
+       BİRAZ dar bir yorum — bilinçli bir ürün kararı olarak flagelendi,
+       kullanıcı isterse bu iki kategoriyi de sıfırlamayı isteyebilir.**
+     - **`FirebaseGoogleAuthService.signOut()`** artık `signInAnonymously()`
+       döndükten HEMEN SONRA `await clearLocalAccountData()` çağırıyor —
+       yeni anonim oturum artık GERÇEKTEN boş bir yerel önbellekle
+       başlıyor, `CloudStateStore.load()`'un migrasyon mantığı bu sefer
+       göç edecek HİÇBİR ŞEY bulamıyor.
+     - **Test:** YENİ `test/local_account_data_test.dart` (2 test) —
+       `localAccountDataKeys`'in TAMAMININ silindiğini VE 5 korunan
+       anahtarın (device preferences + non-account caches) DOKUNULMADAN
+       kaldığını doğrulayan bir round-trip testi, + listenin boş
+       olmadığı/tekrarsız olduğu.
+  - **Doğrulama:** `flutter test` — tam suite yeşil (534/535, yalnızca
+    önceden belgelenmiş `audioplayers`/`home_widget` flake'i hariç).
+    `flutter build apk --debug` sorunsuz, APK cihaza SESSİZCE kuruldu
+    (kullanıcı o an BitLife oynuyordu, açılmadı). **Gerçek cihazda GÖRSEL
+    doğrulama bu turda YAPILMADI** — kullanıcının kendi cihazında
+    doğrulaması gereken: Ayarlar'da artık "Rozet Test Paneli" satırının
+    HİÇ GÖRÜNMEDİĞİ; kendi Gmail hesabıyla bağlanıp coin/kostüm/tema/hedef
+    biriktirip "Çıkış Yap"a basınca uygulamanın GERÇEKTEN sıfır/taze
+    veriyle (Onboarding'den başlayarak) açıldığı — VE önceki Google
+    hesabına Ayarlar/Profil'den tekrar bağlanınca (bkz. "Google Hesap
+    Bağlama" bölümündeki "zaten bağlı, o hesaba geç" akışı) ESKİ verinin
+    GERÇEKTEN geri geldiği (veri KAYBOLMADI, yalnızca çıkışta GEÇİCİ
+    olarak gizlendi).

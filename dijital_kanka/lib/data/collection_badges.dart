@@ -7,12 +7,12 @@ import '../models/badge_definition.dart';
 /// `BadgeProvider.reconcileCollectionBadges`'in `CostumeProvider.
 /// ownedRealCostumeCount`/`ownsAllCostumes` kullanımı).
 ///
-/// **`full_wardrobe` — `hasSpecialReward: true`, kullanıcının açık isteği:**
-/// standart ZC ödülüne EK olarak, mağazada asla satılmayan, yalnızca bu
-/// rozetle kazanılabilen özel bir "Tamamlayıcı" kostüm/rozet verilecek.
-/// Görsel/detaylar AYRI bir turda netleştirilecek — bkz.
-/// `ZiboBadgeDefinition.hasSpecialReward` dokümantasyonundaki "ŞU AN
-/// yalnızca bir YER TUTUCU" notu.
+/// **`full_wardrobe` — `hasSpecialReward: true`, kullanıcının netleştirmesi
+/// ("özel hediyemiz o — rastgele bir tema hediye etsin"):** standart ZC
+/// ödülüne EK olarak, "Ödülü Al"a basılınca sahip OLUNMAYAN temalardan
+/// rastgele biri (`pickRandomUnownedTheme`, bkz.
+/// `utils/badge_special_reward.dart`) mağazadan SATIN ALINMADAN hediye
+/// edilir — bkz. `ZiboBadgeDefinition.hasSpecialReward` dokümantasyonu.
 ///
 /// Görseller kullanıcının masaüstündeki `rozetler/Koleksiyon rozetleri`
 /// klasöründen `tool/process_collection_badge_images.dart` ile (dosya

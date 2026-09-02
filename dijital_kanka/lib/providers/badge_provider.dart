@@ -294,27 +294,6 @@ class BadgeProvider extends ChangeNotifier {
     }
   }
 
-  /// **GEÇİCİ** — Ayarlar'daki "Rozet Test Paneli" için (bkz. o dosyadaki
-  /// `_BadgeTestPanel`, `_CoinTestPanel`'in AYNI "açıkça geçici, kolayca
-  /// kaldırılabilir" deseni). `allBadges`'ten henüz kazanılmamış rastgele
-  /// bir rozeti GERÇEK kazanma akışıyla (`reconcileConsistencyBadges`)
-  /// BİREBİR AYNI şekilde kazandırır — kazanılmış say, kalıcı hale getir,
-  /// `pendingBadgePopup`'a yaz (bu da uygulama genelindeki konfeti + kutlama
-  /// popup'ını tetikler). Ödül (ZC) burada VERİLMİYOR — gerçek akışla aynı
-  /// şekilde, yalnızca kullanıcı popup'taki "Ödülü Al"a bastığında
-  /// `CoinProvider.earnBadgeReward` çağrılır. Tüm rozetler zaten
-  /// kazanılmışsa `null` döner (no-op).
-  ZiboBadgeDefinition? debugGrantRandomBadge() {
-    final unearned = allBadges.where((b) => !_earned.containsKey(b.id)).toList();
-    if (unearned.isEmpty) return null;
-    final badge = (unearned..shuffle()).first;
-    _earned[badge.id] = BadgeRecord(earnedAt: DateTime.now(), claimed: false);
-    notifyListeners();
-    unawaited(_save());
-    pendingBadgePopup.value = badge;
-    return badge;
-  }
-
   /// Kutlama popup'ındaki "Ödülü Al" butonu çağırıyor — `claimed`'i kalıcı
   /// olarak `true` yapar. Zaten kazanılmamış VEYA zaten alınmış bir rozet
   /// için no-op (çift ödül verilmesin diye).

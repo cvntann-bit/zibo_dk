@@ -2,6 +2,8 @@ import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
 import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
+import '../utils/local_account_data.dart';
+
 /// Google ile hesap bağlama/giriş sonucu — bkz. [GoogleAuthService.signIn].
 class GoogleSignInOutcome {
   const GoogleSignInOutcome({required this.uid, required this.email});
@@ -308,6 +310,14 @@ class FirebaseGoogleAuthService extends GoogleAuthService {
     }
     await fb_auth.FirebaseAuth.instance.signOut();
     final result = await fb_auth.FirebaseAuth.instance.signInAnonymously();
+    // **2026 bug düzeltmesi — gerçek kullanıcı raporu: "çıkış yapınca
+    // coinlerim/temalarım/kostümlerim/verilerim olduğu gibi kalıyor".**
+    // Bkz. `local_account_data.dart`'ın tam dokümantasyonu — yeni anonim
+    // uid'in Firestore belgesi GERÇEKTEN boş olsa bile, `CloudStateStore`'un
+    // `uid`'den BAĞIMSIZ paylaşılan yerel önbelleği ESKİ hesabın verisini
+    // bu YENİ hesaba "göç ettirip" sessizce geri getiriyordu — bu satır
+    // olmadan "sıfır veriyle başlama" beklentisi TUTMUYORDU.
+    await clearLocalAccountData();
     return result.user?.uid;
   }
 }

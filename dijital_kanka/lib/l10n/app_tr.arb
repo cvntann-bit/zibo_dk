@@ -2097,7 +2097,20 @@
   },
   "badgeSpecialRewardComingSoon": "Özel Ödül (Yakında)",
   "@badgeSpecialRewardComingSoon": {
-    "description": "Standart ZC ödülüne ek olarak özel bir ödül (henüz tanımlanmadı) taşıyan rozetlerin (ör. Tam Gardırop) yanında gösterilen yer tutucu etiket"
+    "description": "ARTIK KULLANILMIYOR (bkz. badgeSpecialRewardThemeNote) — proje geneli 'kullanılmayan ARB anahtarını silme' konvansiyonuyla dosyada bırakıldı"
+  },
+  "badgeSpecialRewardThemeNote": "+ Rastgele Bir Tema Hediyesi",
+  "@badgeSpecialRewardThemeNote": {
+    "description": "Standart ZC ödülüne ek olarak sahip olunmayan temalardan rastgele birini hediye eden rozetlerin (ör. Tam Gardırop) yanında gösterilen etiket"
+  },
+  "badgeSpecialRewardThemeGrantedMessage": "Özel ödülün: {themeName} teması hediye edildi! 🎁",
+  "@badgeSpecialRewardThemeGrantedMessage": {
+    "description": "Tam Gardırop gibi bir rozet kazanılıp özel ödül olarak rastgele bir tema hediye edildiğinde gösterilen SnackBar metni",
+    "placeholders": {
+      "themeName": {
+        "type": "String"
+      }
+    }
   },
   "badgeCategoryLoyalty": "Sadakat Rozetleri",
   "@badgeCategoryLoyalty": {

@@ -32,15 +32,17 @@ class ZiboBadgeDefinition {
   final String imageAsset;
   final int zcReward;
 
-  /// Bu rozet, standart ZC ödülüne EK olarak özel bir ödül (ör. mağazada
-  /// asla satılmayan bir kostüm) taşıyor mu — bkz. `collection_badges.dart`
-  /// içindeki "full_wardrobe" notu. **ŞU AN yalnızca bir YER TUTUCU/bayrak
-  /// — kullanıcı özel ödülün görsel/detaylarını AYRI bir turda
-  /// netleştirecek.** `true` olduğunda kod tarafında HİÇBİR ŞEY otomatik
-  /// olarak VERİLMİYOR (`CoinProvider`/`CostumeProvider`'a bağlı bir "özel
-  /// ödül ver" çağrısı YOK) — yalnızca UI'da (galeri kartı + kutlama
-  /// popup'ı) `l10n.badgeSpecialRewardComingSoon` etiketini göstermek için
-  /// kullanılıyor.
+  /// Bu rozet, standart ZC ödülüne EK olarak özel bir ödül taşıyor mu —
+  /// bkz. `collection_badges.dart` içindeki "full_wardrobe" notu. **2026
+  /// güncellemesi — kullanıcının netleştirmesi ("özel hediyemiz o"): artık
+  /// GERÇEKTEN İŞLEVSEL** — `true` olan bir rozet "Ödülü Al"a basılınca
+  /// `BadgeCelebrationOverlay`'in `pickRandomUnownedTheme` (bkz.
+  /// `utils/badge_special_reward.dart`) ile sahip OLUNMAYAN temalardan
+  /// rastgele birini `AppThemeProvider.markOwned(...)` ile HEDİYE ediyor —
+  /// mağazadan asla SATIN ALINMADAN. UI'da (galeri kartı + kutlama popup'ı)
+  /// `l10n.badgeSpecialRewardThemeNote` etiketiyle gösteriliyor, kazanılınca
+  /// da `l10n.badgeSpecialRewardThemeGrantedMessage` ile hangi temanın
+  /// hediye edildiği bir SnackBar'la duyuruluyor.
   final bool hasSpecialReward;
 
   /// **Gizli/Eğlenceli Rozetler'e özel — bkz. `hidden_badges.dart`.**

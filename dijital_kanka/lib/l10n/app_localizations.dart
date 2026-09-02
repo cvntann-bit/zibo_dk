@@ -2860,11 +2860,23 @@ abstract class AppLocalizations {
   /// **'3 farklı temaya sahip ol'**
   String get badgeRequirementThemeHunter;
 
-  /// Standart ZC ödülüne ek olarak özel bir ödül (henüz tanımlanmadı) taşıyan rozetlerin (ör. Tam Gardırop) yanında gösterilen yer tutucu etiket
+  /// ARTIK KULLANILMIYOR (bkz. badgeSpecialRewardThemeNote) — proje geneli 'kullanılmayan ARB anahtarını silme' konvansiyonuyla dosyada bırakıldı
   ///
   /// In tr, this message translates to:
   /// **'Özel Ödül (Yakında)'**
   String get badgeSpecialRewardComingSoon;
+
+  /// Standart ZC ödülüne ek olarak sahip olunmayan temalardan rastgele birini hediye eden rozetlerin (ör. Tam Gardırop) yanında gösterilen etiket
+  ///
+  /// In tr, this message translates to:
+  /// **'+ Rastgele Bir Tema Hediyesi'**
+  String get badgeSpecialRewardThemeNote;
+
+  /// Tam Gardırop gibi bir rozet kazanılıp özel ödül olarak rastgele bir tema hediye edildiğinde gösterilen SnackBar metni
+  ///
+  /// In tr, this message translates to:
+  /// **'Özel ödülün: {themeName} teması hediye edildi! 🎁'**
+  String badgeSpecialRewardThemeGrantedMessage(String themeName);
 
   /// Rozetler Galerisi'ndeki Sadakat kategorisinin bölüm başlığı
   ///

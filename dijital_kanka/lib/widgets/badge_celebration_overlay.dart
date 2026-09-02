@@ -1,12 +1,18 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../l10n/app_localizations.dart';
 import '../models/badge_definition.dart';
+import '../providers/app_theme_provider.dart';
 import '../providers/badge_provider.dart';
 import '../providers/coin_provider.dart';
+import '../providers/sound_effects_provider.dart';
 import '../screens/badges_gallery_screen.dart';
+import '../services/sound_effects_service.dart';
 import '../utils/badge_celebration_signal.dart';
+import '../utils/badge_special_reward.dart';
 import '../utils/root_navigator_key.dart';
 import 'goal_confetti_burst.dart';
 
@@ -23,9 +29,19 @@ import 'goal_confetti_burst.dart';
 /// Rozetler Galerisi'ni açmak için `Navigator.of(context)` YERİNE global
 /// [rootNavigatorKey] kullanılıyor.
 class BadgeCelebrationOverlay extends StatefulWidget {
-  const BadgeCelebrationOverlay({super.key, required this.child});
+  const BadgeCelebrationOverlay({
+    super.key,
+    required this.child,
+    this.soundEffectsService,
+  });
 
   final Widget child;
+
+  /// Testte gerçek `audioplayers` platform kanalına dokunmadan sahte bir
+  /// implementasyon enjekte edebilmek için var — `HomeScreen`/
+  /// `GoalTrackingScreen`/`WaterTrackingScreen`'deki AYNI desen. `null` ise
+  /// gerçek `AudioPlayersSoundEffectsService()` kullanılır.
+  final SoundEffectsService? soundEffectsService;
 
   @override
   State<BadgeCelebrationOverlay> createState() =>
@@ -42,6 +58,12 @@ class _BadgeCelebrationOverlayState extends State<BadgeCelebrationOverlay>
   // test`'te — `AnimatedThemeOverlay`'deki AYNI dokümante edilmiş gotcha,
   // bkz. CLAUDE.md "Premium/Animasyonlu temalar" bölümü).
   late final AnimationController _confettiController;
+
+  // Diğer ses efekti çalan widget'larla AYNI desen (bkz. `HomeScreen.
+  // _soundEffectsService`) — bu overlay KENDİ ayrı `SoundEffectsService`
+  // örneğini oluşturur, diğer bağlamlardaki sesleri KESMESİN diye.
+  late final SoundEffectsService _soundEffectsService =
+      widget.soundEffectsService ?? AudioPlayersSoundEffectsService();
 
   ZiboBadgeDefinition? _badge;
 
@@ -60,19 +82,29 @@ class _BadgeCelebrationOverlayState extends State<BadgeCelebrationOverlay>
     if (badge == null) return;
     setState(() => _badge = badge);
     _confettiController.forward(from: 0);
+    // Konfeti ile TAM EŞ ZAMANLI kutlama sesi — kullanıcının Ayarlar > Ses
+    // Efektleri tercihine bağlı (bkz. SoundEffectsService.playBadgeWin).
+    if (mounted && context.read<SoundEffectsProvider>().enabled) {
+      _soundEffectsService.playBadgeWin();
+    }
   }
 
   @override
   void dispose() {
     pendingBadgePopup.removeListener(_onPendingBadgeChanged);
     _confettiController.dispose();
+    _soundEffectsService.dispose();
     super.dispose();
   }
 
-  void _dismissAndOpenGallery() {
+  void _dismissAndOpenGallery(String? specialRewardThemeName) {
     setState(() => _badge = null);
     rootNavigatorKey.currentState?.push(
-      MaterialPageRoute<void>(builder: (_) => const BadgesGalleryScreen()),
+      MaterialPageRoute<void>(
+        builder: (_) => BadgesGalleryScreen(
+          specialRewardThemeName: specialRewardThemeName,
+        ),
+      ),
     );
   }
 
@@ -117,7 +149,13 @@ class _BadgeClaimCard extends StatelessWidget {
   const _BadgeClaimCard({required this.badge, required this.onClaim});
 
   final ZiboBadgeDefinition badge;
-  final VoidCallback onClaim;
+
+  /// `hasSpecialReward` taşıyan bir rozette (ör. Tam Gardırop) bir tema
+  /// hediye edildiyse, o temanın yerelleştirilmiş adı — bkz.
+  /// `pickRandomUnownedTheme`/`BadgesGalleryScreen.specialRewardThemeName`.
+  /// Hediye edilmediyse (özel ödül yoksa VEYA kullanıcı zaten TÜM temalara
+  /// sahipse) `null`.
+  final void Function(String? specialRewardThemeName) onClaim;
 
   @override
   Widget build(BuildContext context) {
@@ -180,8 +218,9 @@ class _BadgeClaimCard extends StatelessWidget {
               ),
               // "Tam Gardırop" gibi standart ZC ödülüne EK bir özel ödül
               // taşıyan rozetler için — bkz. `ZiboBadgeDefinition.
-              // hasSpecialReward` dokümantasyonu, henüz hiçbir şey OTOMATİK
-              // VERİLMİYOR, yalnızca bir yer tutucu not.
+              // hasSpecialReward`/`pickRandomUnownedTheme` dokümantasyonu:
+              // "Ödülü Al"a basılınca sahip OLUNMAYAN temalardan rastgele
+              // biri GERÇEKTEN hediye ediliyor (bkz. altta onPressed).
               if (badge.hasSpecialReward) ...[
                 const SizedBox(height: 8),
                 Row(
@@ -194,7 +233,7 @@ class _BadgeClaimCard extends StatelessWidget {
                     ),
                     const SizedBox(width: 6),
                     Text(
-                      l10n.badgeSpecialRewardComingSoon,
+                      l10n.badgeSpecialRewardThemeNote,
                       style: textTheme.bodySmall?.copyWith(
                         color: colorScheme.tertiary,
                         fontWeight: FontWeight.bold,
@@ -213,8 +252,24 @@ class _BadgeClaimCard extends StatelessWidget {
                       badge.zcReward,
                       badge.id,
                     );
+                    // Özel ödül — kullanıcının netleştirmesi ("özel
+                    // hediyemiz o"): standart ZC'ye EK olarak, sahip
+                    // OLUNMAYAN temalardan rastgele biri hediye ediliyor.
+                    // Zaten TÜM temalara sahipse (bkz. `pickRandomUnownedTheme`
+                    // dokümantasyonu) sessizce hiçbir şey verilmiyor.
+                    String? grantedThemeName;
+                    if (badge.hasSpecialReward) {
+                      final themeProvider = context.read<AppThemeProvider>();
+                      final theme = pickRandomUnownedTheme(
+                        themeProvider.ownedIds,
+                      );
+                      if (theme != null) {
+                        unawaited(themeProvider.markOwned(theme.id));
+                        grantedThemeName = theme.localizedName(l10n);
+                      }
+                    }
                     pendingBadgePopup.value = null;
-                    onClaim();
+                    onClaim(grantedThemeName);
                   },
                   child: Text(l10n.badgeClaimRewardButton),
                 ),

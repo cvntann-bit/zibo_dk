@@ -24,8 +24,39 @@ import '../providers/badge_provider.dart';
 /// ayrılıyor (kullanıcının açık isteği). Yeni bir kategori eklendiğinde
 /// yalnızca `allBadges`'e (bkz. `consistency_badges.dart`) ve buradaki
 /// `_categoryTitle` switch'ine bir `case` eklemek yeterli.
-class BadgesGalleryScreen extends StatelessWidget {
-  const BadgesGalleryScreen({super.key});
+class BadgesGalleryScreen extends StatefulWidget {
+  const BadgesGalleryScreen({super.key, this.specialRewardThemeName});
+
+  /// "Tam Gardırop" gibi `hasSpecialReward` taşıyan bir rozet AZ ÖNCE
+  /// kazanılıp özel ödül olarak bir tema hediye edildiyse
+  /// (`BadgeCelebrationOverlay`/`pickRandomUnownedTheme`), o temanın
+  /// yerelleştirilmiş adı — ilk karede bir SnackBar ile duyurulur. `null`
+  /// ise (özel ödül yoksa VEYA kullanıcı zaten tüm temalara sahipse)
+  /// hiçbir şey gösterilmez, normal galeri açılışı.
+  final String? specialRewardThemeName;
+
+  @override
+  State<BadgesGalleryScreen> createState() => _BadgesGalleryScreenState();
+}
+
+class _BadgesGalleryScreenState extends State<BadgesGalleryScreen> {
+  @override
+  void initState() {
+    super.initState();
+    final themeName = widget.specialRewardThemeName;
+    if (themeName == null) return;
+    // `showModulesMenuSheet`/`_maybeShowAdFreePromo` ile AYNI "build
+    // tamamlanmadan bir SnackBar/dialog göstermek güvenli değil" gerekçesi.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final l10n = AppLocalizations.of(context)!;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(l10n.badgeSpecialRewardThemeGrantedMessage(themeName)),
+        ),
+      );
+    });
+  }
 
   String _categoryTitle(AppLocalizations l10n, BadgeCategory category) {
     switch (category) {
@@ -212,8 +243,9 @@ class _BadgeGalleryCard extends StatelessWidget {
             ),
             // "Tam Gardırop" gibi standart ZC ödülüne EK bir özel ödül
             // taşıyan rozetler için — bkz. `ZiboBadgeDefinition.
-            // hasSpecialReward` dokümantasyonundaki "ŞU AN yalnızca bir YER
-            // TUTUCU" notu, henüz hiçbir şey OTOMATİK VERİLMİYOR.
+            // hasSpecialReward`/`pickRandomUnownedTheme` dokümantasyonu:
+            // kazanılınca sahip OLUNMAYAN temalardan rastgele biri GERÇEKTEN
+            // hediye ediliyor (bkz. `BadgeCelebrationOverlay`).
             if (!hiddenLocked && badge.hasSpecialReward) ...[
               const SizedBox(height: 4),
               Row(
@@ -227,7 +259,7 @@ class _BadgeGalleryCard extends StatelessWidget {
                   const SizedBox(width: 4),
                   Flexible(
                     child: Text(
-                      l10n.badgeSpecialRewardComingSoon,
+                      l10n.badgeSpecialRewardThemeNote,
                       textAlign: TextAlign.center,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,

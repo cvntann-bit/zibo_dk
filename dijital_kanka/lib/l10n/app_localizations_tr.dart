@@ -1578,6 +1578,14 @@ class AppLocalizationsTr extends AppLocalizations {
   String get badgeSpecialRewardComingSoon => 'Özel Ödül (Yakında)';
 
   @override
+  String get badgeSpecialRewardThemeNote => '+ Rastgele Bir Tema Hediyesi';
+
+  @override
+  String badgeSpecialRewardThemeGrantedMessage(String themeName) {
+    return 'Özel ödülün: $themeName teması hediye edildi! 🎁';
+  }
+
+  @override
   String get badgeCategoryLoyalty => 'Sadakat Rozetleri';
 
   @override
