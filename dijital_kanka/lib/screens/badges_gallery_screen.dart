@@ -27,6 +27,8 @@ class BadgesGalleryScreen extends StatelessWidget {
         return l10n.badgeCategoryConsistency;
       case BadgeCategory.moduleMastery:
         return l10n.badgeCategoryModuleMastery;
+      case BadgeCategory.collection:
+        return l10n.badgeCategoryCollection;
     }
   }
 
@@ -175,6 +177,36 @@ class _BadgeGalleryCard extends StatelessWidget {
                 ),
               ],
             ),
+            // "Tam Gardırop" gibi standart ZC ödülüne EK bir özel ödül
+            // taşıyan rozetler için — bkz. `ZiboBadgeDefinition.
+            // hasSpecialReward` dokümantasyonundaki "ŞU AN yalnızca bir YER
+            // TUTUCU" notu, henüz hiçbir şey OTOMATİK VERİLMİYOR.
+            if (badge.hasSpecialReward) ...[
+              const SizedBox(height: 4),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.auto_awesome_rounded,
+                    size: 14,
+                    color: colorScheme.tertiary,
+                  ),
+                  const SizedBox(width: 4),
+                  Flexible(
+                    child: Text(
+                      l10n.badgeSpecialRewardComingSoon,
+                      textAlign: TextAlign.center,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: textTheme.labelSmall?.copyWith(
+                        color: colorScheme.tertiary,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ],
         ),
       ),

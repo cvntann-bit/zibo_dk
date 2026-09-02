@@ -1548,4 +1548,34 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get badgeRequirementDreamInterpreter =>
       'Create a total of 15 entries in the Dream Journal';
+
+  @override
+  String get badgeCategoryCollection => 'Collection Badges';
+
+  @override
+  String get badgeNameCollector => 'Collector';
+
+  @override
+  String get badgeNameFashionIcon => 'Fashion Icon';
+
+  @override
+  String get badgeNameFullWardrobe => 'Full Wardrobe';
+
+  @override
+  String get badgeNameThemeHunter => 'Theme Hunter';
+
+  @override
+  String get badgeRequirementCollector => 'Own 5 different costumes';
+
+  @override
+  String get badgeRequirementFashionIcon => 'Own 10 different costumes';
+
+  @override
+  String get badgeRequirementFullWardrobe => 'Own EVERY costume in the store';
+
+  @override
+  String get badgeRequirementThemeHunter => 'Own 3 different themes';
+
+  @override
+  String get badgeSpecialRewardComingSoon => 'Special Reward (Coming Soon)';
 }

@@ -7,6 +7,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:dijital_kanka/data/costumes.dart';
 import 'package:dijital_kanka/models/goal.dart';
 import 'package:dijital_kanka/providers/costume_provider.dart';
 import 'package:dijital_kanka/providers/goals_provider.dart';
@@ -226,4 +227,50 @@ void main() {
       expect(unlocked, isEmpty); // zaten sahipti, tekrar "açıldı" sayılmadı
     });
   });
+
+  group(
+    'ownedRealCostumeCount / ownsAllCostumes (2026 — Koleksiyon Rozetleri)',
+    () {
+      test('Hiçbir kostüm sahiplenilmemişken ikisi de sıfır/false', () async {
+        final provider = CostumeProvider();
+        await Future<void>.delayed(Duration.zero);
+
+        expect(provider.ownedRealCostumeCount, 0);
+        expect(provider.ownsAllCostumes, isFalse);
+      });
+
+      test('ownedRealCostumeCount yalnızca GERÇEK/satılabilir kostümleri sayar', () async {
+        final provider = CostumeProvider();
+        await Future<void>.delayed(Duration.zero);
+        await provider.markOwned('zibo_hippi');
+        await provider.markOwned('zibo_sporcu');
+        // `founder_badge` costumes.dart'taki satılabilir listede YOK (bkz.
+        // "Kurucu Üye Rozeti" bölümü) — ownedIds'e eklense bile SAYILMAMALI.
+        await provider.markOwned('founder_badge');
+
+        expect(provider.ownedRealCostumeCount, 2);
+      });
+
+      test(
+        'ownsAllCostumes — TÜM gerçek kostümlere sahip olmadan `founder_badge` '
+        'gibi bir pseudo-id ile YANLIŞ POZİTİF ÜRETMEZ',
+        () async {
+          final provider = CostumeProvider();
+          await Future<void>.delayed(Duration.zero);
+          // Gerçek kostümlerin yalnızca İLK N-1'ine sahip + founder_badge —
+          // toplam SAYI `costumes.length`'e eşit olabilir ama HERKESE sahip
+          // DEĞİL; `every` tabanlı ownsAllCostumes bunu YAKALAMALI.
+          for (final c in costumes.take(costumes.length - 1)) {
+            await provider.markOwned(c.id);
+          }
+          await provider.markOwned('founder_badge');
+          expect(provider.ownedIds.length, costumes.length); // sayı eşleşiyor
+          expect(provider.ownsAllCostumes, isFalse); // ama GERÇEKTE hepsi değil
+
+          await provider.markOwned(costumes.last.id);
+          expect(provider.ownsAllCostumes, isTrue);
+        },
+      );
+    },
+  );
 }

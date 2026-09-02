@@ -247,4 +247,91 @@ void main() {
       },
     );
   });
+
+  group('BadgeProvider — reconcileCollectionBadges', () {
+    late BadgeProvider provider;
+
+    setUp(() async {
+      provider = BadgeProvider();
+      await Future<void>.delayed(Duration.zero);
+    });
+
+    void reconcile({
+      int costumeCount = 0,
+      bool ownsAll = false,
+      int themeCount = 0,
+    }) {
+      provider.reconcileCollectionBadges(
+        ownedCostumeCount: costumeCount,
+        ownsAllCostumes: ownsAll,
+        ownedThemeCount: themeCount,
+      );
+    }
+
+    test('Eşik dolmadan hiçbir koleksiyon rozeti kazanılmaz', () {
+      reconcile(costumeCount: 4, themeCount: 2);
+
+      expect(provider.isEarned('collector'), isFalse);
+      expect(provider.isEarned('fashion_icon'), isFalse);
+      expect(provider.isEarned('full_wardrobe'), isFalse);
+      expect(provider.isEarned('theme_hunter'), isFalse);
+      expect(pendingBadgePopup.value, isNull);
+    });
+
+    test('ownedCostumeCount >= 5 iken Koleksiyoncu kazanılır', () {
+      reconcile(costumeCount: 5);
+
+      expect(provider.isEarned('collector'), isTrue);
+      expect(pendingBadgePopup.value?.id, 'collector');
+    });
+
+    test(
+      'ownedCostumeCount >= 10 iken Koleksiyoncu VE Moda İkonu BİRLİKTE '
+      'kazanılır, kutlama sinyali EN SONuncuya (fashion_icon) ayarlanır',
+      () {
+        reconcile(costumeCount: 10);
+
+        expect(provider.isEarned('collector'), isTrue);
+        expect(provider.isEarned('fashion_icon'), isTrue);
+        expect(pendingBadgePopup.value?.id, 'fashion_icon');
+      },
+    );
+
+    test('ownsAllCostumes true iken Tam Gardırop kazanılır', () {
+      reconcile(ownsAll: true);
+
+      expect(provider.isEarned('full_wardrobe'), isTrue);
+      expect(pendingBadgePopup.value?.id, 'full_wardrobe');
+    });
+
+    test('ownedThemeCount >= 3 iken Tema Avcısı kazanılır', () {
+      reconcile(themeCount: 3);
+
+      expect(provider.isEarned('theme_hunter'), isTrue);
+      expect(pendingBadgePopup.value?.id, 'theme_hunter');
+    });
+
+    test('Zaten kazanılmış bir koleksiyon rozeti tekrar bildirmez', () {
+      reconcile(themeCount: 3);
+      pendingBadgePopup.value = null;
+
+      reconcile(themeCount: 3);
+
+      expect(pendingBadgePopup.value, isNull);
+    });
+
+    test(
+      'Kalıcılık: kazanılan koleksiyon rozeti yeniden başlatmada hatırlanır',
+      () async {
+        reconcile(ownsAll: true);
+        await provider.markClaimed('full_wardrobe');
+
+        final reloaded = BadgeProvider();
+        await Future<void>.delayed(Duration.zero);
+
+        expect(reloaded.isEarned('full_wardrobe'), isTrue);
+        expect(reloaded.isClaimed('full_wardrobe'), isTrue);
+      },
+    );
+  });
 }

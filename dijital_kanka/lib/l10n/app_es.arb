@@ -457,5 +457,15 @@
   "badgeRequirementMoodChronicler": "Crea un total de 30 registros en el Seguimiento del Ánimo",
   "badgeRequirementSavingsMaster": "Crea un total de 20 registros en Dinero y Ahorros",
   "badgeRequirementDreamer": "Crea un total de 15 registros en el Diario de Manifestación",
-  "badgeRequirementDreamInterpreter": "Crea un total de 15 registros en el Diario de Sueños"
+  "badgeRequirementDreamInterpreter": "Crea un total de 15 registros en el Diario de Sueños",
+  "badgeCategoryCollection": "Insignias de Colección",
+  "badgeNameCollector": "Coleccionista",
+  "badgeNameFashionIcon": "Ícono de la Moda",
+  "badgeNameFullWardrobe": "Armario Completo",
+  "badgeNameThemeHunter": "Cazador de Temas",
+  "badgeRequirementCollector": "Ten 5 disfraces diferentes",
+  "badgeRequirementFashionIcon": "Ten 10 disfraces diferentes",
+  "badgeRequirementFullWardrobe": "Ten TODOS los disfraces de la tienda",
+  "badgeRequirementThemeHunter": "Ten 3 temas diferentes",
+  "badgeSpecialRewardComingSoon": "Recompensa Especial (Próximamente)"
 }

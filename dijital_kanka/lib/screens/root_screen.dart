@@ -6,7 +6,9 @@ import 'package:provider/provider.dart';
 import '../l10n/app_localizations.dart';
 import '../models/push_notification_type.dart';
 import '../providers/app_streak_provider.dart';
+import '../providers/app_theme_provider.dart';
 import '../providers/badge_provider.dart';
+import '../providers/costume_provider.dart';
 import '../providers/currency_provider.dart';
 import '../providers/daily_rewards_provider.dart';
 import '../providers/dream_journal_provider.dart';
@@ -195,13 +197,16 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
         goals: context.read<GoalsProvider>(),
         appStreak: context.read<AppStreakProvider>(),
         // 2026 güncellemesi — Modül Ustalığı Rozetleri (bkz. CLAUDE.md
-        // "Rozet Sistemi" bölümü) için altı yeni provider.
+        // "Rozet Sistemi" bölümü) için altı provider.
         gratitude: context.read<GratitudeProvider>(),
         water: context.read<WaterProvider>(),
         mood: context.read<MoodProvider>(),
         money: context.read<MoneyProvider>(),
         manifest: context.read<ManifestProvider>(),
         dream: context.read<DreamJournalProvider>(),
+        // 2026 güncellemesi — Koleksiyon Rozetleri için iki yeni provider.
+        costume: context.read<CostumeProvider>(),
+        appTheme: context.read<AppThemeProvider>(),
       );
     });
   }

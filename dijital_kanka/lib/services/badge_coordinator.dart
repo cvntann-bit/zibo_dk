@@ -1,5 +1,7 @@
 import '../providers/app_streak_provider.dart';
+import '../providers/app_theme_provider.dart';
 import '../providers/badge_provider.dart';
+import '../providers/costume_provider.dart';
 import '../providers/dream_journal_provider.dart';
 import '../providers/goals_provider.dart';
 import '../providers/gratitude_provider.dart';
@@ -8,15 +10,16 @@ import '../providers/money_provider.dart';
 import '../providers/mood_provider.dart';
 import '../providers/water_provider.dart';
 
-/// Rozet Sistemi'nin İKİ kategorisinin de (İstikrar + Modül Ustalığı)
-/// kazanma kontrolünü, ilgili kaynak veri her güncellendiğinde OTOMATİK
-/// tetikleyen koordinatör — bkz. CLAUDE.md "Rozet Sistemi" bölümü.
+/// Rozet Sistemi'nin ÜÇ kategorisinin de (İstikrar + Modül Ustalığı +
+/// Koleksiyon) kazanma kontrolünü, ilgili kaynak veri her güncellendiğinde
+/// OTOMATİK tetikleyen koordinatör — bkz. CLAUDE.md "Rozet Sistemi" bölümü.
 /// `HomeWidgetSyncCoordinator`'ın AYNI "constructor'dan değil PARAMETRE
-/// olarak al, dışarıdan `addListener` ekle" deseni: bu obje sekiz
-/// provider'ın (Badges, Goals, AppStreak, Gratitude, Water, Mood, Money,
-/// Manifest, Dream) HİÇBİRİNE KALICI bağımlı değil, yalnızca onları dinleyip
-/// [BadgeProvider.reconcileConsistencyBadges]/[BadgeProvider.
-/// reconcileModuleMasteryBadges]'i çağırıyor.
+/// olarak al, dışarıdan `addListener` ekle" deseni: bu obje on provider'ın
+/// (Badges, Goals, AppStreak, Gratitude, Water, Mood, Money, Manifest,
+/// Dream, Costume, AppTheme) HİÇBİRİNE KALICI bağımlı değil, yalnızca onları
+/// dinleyip [BadgeProvider.reconcileConsistencyBadges]/[BadgeProvider.
+/// reconcileModuleMasteryBadges]/[BadgeProvider.reconcileCollectionBadges]'i
+/// çağırıyor.
 ///
 /// `RootScreen.initState()`'te BİR KEZ oluşturulur (constructor'ın kendisi de
 /// EAGER bir ilk kontrol yapar — uygulama açılışında zaten karşılanmış bir
@@ -33,6 +36,8 @@ class BadgeCoordinator {
     required this.money,
     required this.manifest,
     required this.dream,
+    required this.costume,
+    required this.appTheme,
   }) {
     goals.addListener(_reconcile);
     appStreak.addListener(_reconcile);
@@ -42,6 +47,8 @@ class BadgeCoordinator {
     money.addListener(_reconcile);
     manifest.addListener(_reconcile);
     dream.addListener(_reconcile);
+    costume.addListener(_reconcile);
+    appTheme.addListener(_reconcile);
     _reconcile();
   }
 
@@ -54,6 +61,8 @@ class BadgeCoordinator {
   final MoneyProvider money;
   final ManifestProvider manifest;
   final DreamJournalProvider dream;
+  final CostumeProvider costume;
+  final AppThemeProvider appTheme;
 
   void _reconcile() {
     badges.reconcileConsistencyBadges(
@@ -68,6 +77,11 @@ class BadgeCoordinator {
       manifestCount: manifest.history.length,
       dreamCount: dream.dreams.length,
     );
+    badges.reconcileCollectionBadges(
+      ownedCostumeCount: costume.ownedRealCostumeCount,
+      ownsAllCostumes: costume.ownsAllCostumes,
+      ownedThemeCount: appTheme.ownedIds.length,
+    );
   }
 
   void dispose() {
@@ -79,5 +93,7 @@ class BadgeCoordinator {
     money.removeListener(_reconcile);
     manifest.removeListener(_reconcile);
     dream.removeListener(_reconcile);
+    costume.removeListener(_reconcile);
+    appTheme.removeListener(_reconcile);
   }
 }

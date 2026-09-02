@@ -2805,6 +2805,66 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'Rüya Günlüğü\'nde toplam 15 kayıt oluştur'**
   String get badgeRequirementDreamInterpreter;
+
+  /// Rozetler Galerisi'ndeki Koleksiyon kategorisinin bölüm başlığı
+  ///
+  /// In tr, this message translates to:
+  /// **'Koleksiyon Rozetleri'**
+  String get badgeCategoryCollection;
+
+  /// Koleksiyon Rozetleri'nin birinci rozetinin adı
+  ///
+  /// In tr, this message translates to:
+  /// **'Koleksiyoncu'**
+  String get badgeNameCollector;
+
+  /// Koleksiyon Rozetleri'nin ikinci rozetinin adı
+  ///
+  /// In tr, this message translates to:
+  /// **'Moda İkonu'**
+  String get badgeNameFashionIcon;
+
+  /// Koleksiyon Rozetleri'nin üçüncü rozetinin adı
+  ///
+  /// In tr, this message translates to:
+  /// **'Tam Gardırop'**
+  String get badgeNameFullWardrobe;
+
+  /// Koleksiyon Rozetleri'nin dördüncü rozetinin adı
+  ///
+  /// In tr, this message translates to:
+  /// **'Tema Avcısı'**
+  String get badgeNameThemeHunter;
+
+  /// Koleksiyoncu rozetinin kazanma koşulu
+  ///
+  /// In tr, this message translates to:
+  /// **'5 farklı kostüme sahip ol'**
+  String get badgeRequirementCollector;
+
+  /// Moda İkonu rozetinin kazanma koşulu
+  ///
+  /// In tr, this message translates to:
+  /// **'10 farklı kostüme sahip ol'**
+  String get badgeRequirementFashionIcon;
+
+  /// Tam Gardırop rozetinin kazanma koşulu
+  ///
+  /// In tr, this message translates to:
+  /// **'Mağazadaki TÜM kostümlere sahip ol'**
+  String get badgeRequirementFullWardrobe;
+
+  /// Tema Avcısı rozetinin kazanma koşulu
+  ///
+  /// In tr, this message translates to:
+  /// **'3 farklı temaya sahip ol'**
+  String get badgeRequirementThemeHunter;
+
+  /// Standart ZC ödülüne ek olarak özel bir ödül (henüz tanımlanmadı) taşıyan rozetlerin (ör. Tam Gardırop) yanında gösterilen yer tutucu etiket
+  ///
+  /// In tr, this message translates to:
+  /// **'Özel Ödül (Yakında)'**
+  String get badgeSpecialRewardComingSoon;
 }
 
 class _AppLocalizationsDelegate

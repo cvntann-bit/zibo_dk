@@ -457,5 +457,15 @@
   "badgeRequirementMoodChronicler": "Create a total of 30 entries in Mood Tracking",
   "badgeRequirementSavingsMaster": "Create a total of 20 entries in Money & Savings",
   "badgeRequirementDreamer": "Create a total of 15 entries in the Manifest Journal",
-  "badgeRequirementDreamInterpreter": "Create a total of 15 entries in the Dream Journal"
+  "badgeRequirementDreamInterpreter": "Create a total of 15 entries in the Dream Journal",
+  "badgeCategoryCollection": "Collection Badges",
+  "badgeNameCollector": "Collector",
+  "badgeNameFashionIcon": "Fashion Icon",
+  "badgeNameFullWardrobe": "Full Wardrobe",
+  "badgeNameThemeHunter": "Theme Hunter",
+  "badgeRequirementCollector": "Own 5 different costumes",
+  "badgeRequirementFashionIcon": "Own 10 different costumes",
+  "badgeRequirementFullWardrobe": "Own EVERY costume in the store",
+  "badgeRequirementThemeHunter": "Own 3 different themes",
+  "badgeSpecialRewardComingSoon": "Special Reward (Coming Soon)"
 }

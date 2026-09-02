@@ -178,6 +178,31 @@ class _BadgeClaimCard extends StatelessWidget {
                   ),
                 ),
               ),
+              // "Tam Gardırop" gibi standart ZC ödülüne EK bir özel ödül
+              // taşıyan rozetler için — bkz. `ZiboBadgeDefinition.
+              // hasSpecialReward` dokümantasyonu, henüz hiçbir şey OTOMATİK
+              // VERİLMİYOR, yalnızca bir yer tutucu not.
+              if (badge.hasSpecialReward) ...[
+                const SizedBox(height: 8),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.auto_awesome_rounded,
+                      size: 16,
+                      color: colorScheme.tertiary,
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      l10n.badgeSpecialRewardComingSoon,
+                      style: textTheme.bodySmall?.copyWith(
+                        color: colorScheme.tertiary,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
               const SizedBox(height: 20),
               SizedBox(
                 width: double.infinity,

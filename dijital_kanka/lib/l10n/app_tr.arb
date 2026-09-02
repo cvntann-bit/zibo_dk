@@ -2058,5 +2058,45 @@
   "badgeRequirementDreamInterpreter": "Rüya Günlüğü'nde toplam 15 kayıt oluştur",
   "@badgeRequirementDreamInterpreter": {
     "description": "Rüya Yorumcusu rozetinin kazanma koşulu"
+  },
+  "badgeCategoryCollection": "Koleksiyon Rozetleri",
+  "@badgeCategoryCollection": {
+    "description": "Rozetler Galerisi'ndeki Koleksiyon kategorisinin bölüm başlığı"
+  },
+  "badgeNameCollector": "Koleksiyoncu",
+  "@badgeNameCollector": {
+    "description": "Koleksiyon Rozetleri'nin birinci rozetinin adı"
+  },
+  "badgeNameFashionIcon": "Moda İkonu",
+  "@badgeNameFashionIcon": {
+    "description": "Koleksiyon Rozetleri'nin ikinci rozetinin adı"
+  },
+  "badgeNameFullWardrobe": "Tam Gardırop",
+  "@badgeNameFullWardrobe": {
+    "description": "Koleksiyon Rozetleri'nin üçüncü rozetinin adı"
+  },
+  "badgeNameThemeHunter": "Tema Avcısı",
+  "@badgeNameThemeHunter": {
+    "description": "Koleksiyon Rozetleri'nin dördüncü rozetinin adı"
+  },
+  "badgeRequirementCollector": "5 farklı kostüme sahip ol",
+  "@badgeRequirementCollector": {
+    "description": "Koleksiyoncu rozetinin kazanma koşulu"
+  },
+  "badgeRequirementFashionIcon": "10 farklı kostüme sahip ol",
+  "@badgeRequirementFashionIcon": {
+    "description": "Moda İkonu rozetinin kazanma koşulu"
+  },
+  "badgeRequirementFullWardrobe": "Mağazadaki TÜM kostümlere sahip ol",
+  "@badgeRequirementFullWardrobe": {
+    "description": "Tam Gardırop rozetinin kazanma koşulu"
+  },
+  "badgeRequirementThemeHunter": "3 farklı temaya sahip ol",
+  "@badgeRequirementThemeHunter": {
+    "description": "Tema Avcısı rozetinin kazanma koşulu"
+  },
+  "badgeSpecialRewardComingSoon": "Özel Ödül (Yakında)",
+  "@badgeSpecialRewardComingSoon": {
+    "description": "Standart ZC ödülüne ek olarak özel bir ödül (henüz tanımlanmadı) taşıyan rozetlerin (ör. Tam Gardırop) yanında gösterilen yer tutucu etiket"
   }
 }

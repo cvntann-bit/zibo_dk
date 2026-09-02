@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 
+import '../data/collection_badges.dart';
 import '../data/consistency_badges.dart';
 import '../data/module_mastery_badges.dart';
 import '../models/badge_definition.dart';
@@ -79,8 +80,9 @@ class BadgeProvider extends ChangeNotifier {
     });
   }
 
-  /// İstikrar Rozetleri'nin kazanma kontrolü (bkz. altta [reconcileModuleMasteryBadges]
-  /// — Modül Ustalığı Rozetleri için AYNI desenin İKİNCİ kategorisi).
+  /// İstikrar Rozetleri'nin kazanma kontrolü (bkz. altta
+  /// [reconcileModuleMasteryBadges]/[reconcileCollectionBadges] — Modül
+  /// Ustalığı/Koleksiyon Rozetleri için AYNI desenin diğer kategorileri).
   /// [hasCompletedFirstGoalCycle] — `GoalsProvider.completions.isNotEmpty`.
   /// [appOpenStreak] — `AppStreakProvider.currentStreak` (uygulamayı her gün
   /// açma serisi, Hedef Takibi'nden BAĞIMSIZ — bkz. o provider'ın
@@ -136,6 +138,41 @@ class BadgeProvider extends ChangeNotifier {
         'savings_master' => moneyCount >= 20,
         'dreamer' => manifestCount >= 15,
         'dream_interpreter' => dreamCount >= 15,
+        _ => false,
+      };
+      if (meetsRequirement) {
+        _earned[badge.id] = BadgeRecord(earnedAt: DateTime.now(), claimed: false);
+        lastNewlyEarned = badge;
+      }
+    }
+    if (lastNewlyEarned != null) {
+      notifyListeners();
+      unawaited(_save());
+      pendingBadgePopup.value = lastNewlyEarned;
+    }
+  }
+
+  /// Koleksiyon Rozetleri'nin kazanma kontrolü — `reconcileModuleMasteryBadges`
+  /// ile AYNI desen, yalnızca eşikler ilgili modülün TOPLAM KAYDI değil
+  /// sahip olunan kostüm/tema SAYISI (bkz. `collection_badges.dart`).
+  /// [ownedCostumeCount] — `CostumeProvider.ownedRealCostumeCount`.
+  /// [ownsAllCostumes] — `CostumeProvider.ownsAllCostumes` (sayım
+  /// KARŞILAŞTIRMASI değil, her kostümün TEK TEK doğrulanması — bkz. o
+  /// getter'ın dokümantasyonu). [ownedThemeCount] —
+  /// `AppThemeProvider.ownedIds.length`.
+  void reconcileCollectionBadges({
+    required int ownedCostumeCount,
+    required bool ownsAllCostumes,
+    required int ownedThemeCount,
+  }) {
+    ZiboBadgeDefinition? lastNewlyEarned;
+    for (final badge in collectionBadges) {
+      if (_earned.containsKey(badge.id)) continue;
+      final meetsRequirement = switch (badge.id) {
+        'collector' => ownedCostumeCount >= 5,
+        'fashion_icon' => ownedCostumeCount >= 10,
+        'full_wardrobe' => ownsAllCostumes,
+        'theme_hunter' => ownedThemeCount >= 3,
         _ => false,
       };
       if (meetsRequirement) {

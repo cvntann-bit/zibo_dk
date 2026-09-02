@@ -1,10 +1,10 @@
 import '../l10n/app_localizations.dart';
 
 /// Rozet Sistemi'ndeki kategoriler — bkz. CLAUDE.md "Rozet Sistemi" bölümü.
-/// [consistency] + [moduleMastery] dolu; kullanıcının planladığı diğer
-/// kategoriler (Koleksiyon, Sadakat, Sosyal/Paylaşım, Gizli/Eğlenceli) ayrı
-/// ayrı turlarda eklenecek.
-enum BadgeCategory { consistency, moduleMastery }
+/// [consistency] + [moduleMastery] + [collection] dolu; kullanıcının
+/// planladığı diğer kategoriler (Sadakat, Sosyal/Paylaşım, Gizli/Eğlenceli)
+/// ayrı ayrı turlarda eklenecek.
+enum BadgeCategory { consistency, moduleMastery, collection }
 
 /// Tek bir rozetin SABİT tanımı (id, kategori, görsel, ödül) — HANGİ
 /// KOŞULDA kazanıldığı BURADA DEĞİL, `BadgeProvider`'ın kategoriye özel
@@ -23,12 +23,24 @@ class ZiboBadgeDefinition {
     required this.category,
     required this.imageAsset,
     required this.zcReward,
+    this.hasSpecialReward = false,
   });
 
   final String id;
   final BadgeCategory category;
   final String imageAsset;
   final int zcReward;
+
+  /// Bu rozet, standart ZC ödülüne EK olarak özel bir ödül (ör. mağazada
+  /// asla satılmayan bir kostüm) taşıyor mu — bkz. `collection_badges.dart`
+  /// içindeki "full_wardrobe" notu. **ŞU AN yalnızca bir YER TUTUCU/bayrak
+  /// — kullanıcı özel ödülün görsel/detaylarını AYRI bir turda
+  /// netleştirecek.** `true` olduğunda kod tarafında HİÇBİR ŞEY otomatik
+  /// olarak VERİLMİYOR (`CoinProvider`/`CostumeProvider`'a bağlı bir "özel
+  /// ödül ver" çağrısı YOK) — yalnızca UI'da (galeri kartı + kutlama
+  /// popup'ı) `l10n.badgeSpecialRewardComingSoon` etiketini göstermek için
+  /// kullanılıyor.
+  final bool hasSpecialReward;
 
   String localizedName(AppLocalizations l10n) {
     switch (id) {
@@ -54,6 +66,14 @@ class ZiboBadgeDefinition {
         return l10n.badgeNameDreamer;
       case 'dream_interpreter':
         return l10n.badgeNameDreamInterpreter;
+      case 'collector':
+        return l10n.badgeNameCollector;
+      case 'fashion_icon':
+        return l10n.badgeNameFashionIcon;
+      case 'full_wardrobe':
+        return l10n.badgeNameFullWardrobe;
+      case 'theme_hunter':
+        return l10n.badgeNameThemeHunter;
       default:
         return id;
     }
@@ -83,6 +103,14 @@ class ZiboBadgeDefinition {
         return l10n.badgeRequirementDreamer;
       case 'dream_interpreter':
         return l10n.badgeRequirementDreamInterpreter;
+      case 'collector':
+        return l10n.badgeRequirementCollector;
+      case 'fashion_icon':
+        return l10n.badgeRequirementFashionIcon;
+      case 'full_wardrobe':
+        return l10n.badgeRequirementFullWardrobe;
+      case 'theme_hunter':
+        return l10n.badgeRequirementThemeHunter;
       default:
         return '';
     }

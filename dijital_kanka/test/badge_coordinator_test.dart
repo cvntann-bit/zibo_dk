@@ -1,24 +1,28 @@
-// BadgeCoordinator'ın GoalsProvider/AppStreakProvider (İstikrar) VE
-// Gratitude/Water/Mood/Money/Manifest/Dream (Modül Ustalığı) provider'ları
-// değiştiğinde BadgeProvider.reconcileConsistencyBadges/
-// reconcileModuleMasteryBadges'i OTOMATİK tetiklediğini doğrudan (widget
+// BadgeCoordinator'ın GoalsProvider/AppStreakProvider (İstikrar),
+// Gratitude/Water/Mood/Money/Manifest/Dream (Modül Ustalığı) VE Costume/
+// AppTheme (Koleksiyon) provider'ları değiştiğinde BadgeProvider.
+// reconcileConsistencyBadges/reconcileModuleMasteryBadges/
+// reconcileCollectionBadges'i OTOMATİK tetiklediğini doğrudan (widget
 // pump'lamadan) test eder — HomeWidgetSyncCoordinator testlerindeki "sahte/
 // gerçek provider'ları kur, addListener'ın gerçekten tetiklendiğini
 // doğrula" deseniyle aynı. Modüle özel eşik/kazanma mantığının kendisi
 // `badge_provider_test.dart`ta zaten kapsamlı test edildiği için burada
-// yalnızca "koordinatör GERÇEKTEN dinliyor mu" doğrulanıyor — altı yeni
-// provider'ın HEPSİ için ayrı ayrı senaryo YAZILMADI, MoneyProvider (tarih
-// kilidi olmayan, en basit) bir TEMSİLCİ olarak yeterli.
+// yalnızca "koordinatör GERÇEKTEN dinliyor mu" doğrulanıyor — provider'ların
+// HEPSİ için ayrı ayrı senaryo YAZILMADI, MoneyProvider/CostumeProvider
+// (en basit, tarih kilidi olmayan) birer TEMSİLCİ olarak yeterli.
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:dijital_kanka/data/costumes.dart';
+import 'package:dijital_kanka/models/money_entry.dart';
 import 'package:dijital_kanka/providers/app_streak_provider.dart';
+import 'package:dijital_kanka/providers/app_theme_provider.dart';
 import 'package:dijital_kanka/providers/badge_provider.dart';
+import 'package:dijital_kanka/providers/costume_provider.dart';
 import 'package:dijital_kanka/providers/dream_journal_provider.dart';
 import 'package:dijital_kanka/providers/goals_provider.dart';
 import 'package:dijital_kanka/providers/gratitude_provider.dart';
-import 'package:dijital_kanka/models/money_entry.dart';
 import 'package:dijital_kanka/providers/manifest_provider.dart';
 import 'package:dijital_kanka/providers/money_provider.dart';
 import 'package:dijital_kanka/providers/mood_provider.dart';
@@ -43,6 +47,8 @@ void main() {
     late MoneyProvider money;
     late ManifestProvider manifest;
     late DreamJournalProvider dream;
+    late CostumeProvider costume;
+    late AppThemeProvider appTheme;
 
     setUp(() async {
       currentDate = DateTime(2026, 1, 5);
@@ -55,6 +61,8 @@ void main() {
       money = MoneyProvider(now: () => currentDate);
       manifest = ManifestProvider(now: () => currentDate);
       dream = DreamJournalProvider();
+      costume = CostumeProvider();
+      appTheme = AppThemeProvider();
       await Future<void>.delayed(Duration.zero);
     });
 
@@ -68,6 +76,8 @@ void main() {
       money: money,
       manifest: manifest,
       dream: dream,
+      costume: costume,
+      appTheme: appTheme,
     );
 
     test(
@@ -177,6 +187,52 @@ void main() {
         }
 
         expect(badges.isEarned('savings_master'), isFalse);
+      },
+    );
+
+    test(
+      'Constructor EAGER ilk reconcile Koleksiyon rozetlerini de kapsıyor '
+      '— kuruluştan ÖNCE zaten karşılanmış bir eşik hemen ödüllendirilir',
+      () {
+        for (final c in costumes.take(5)) {
+          costume.markOwned(c.id);
+        }
+        expect(costume.ownedRealCostumeCount, 5);
+        expect(badges.isEarned('collector'), isFalse);
+
+        buildCoordinator();
+
+        expect(badges.isEarned('collector'), isTrue);
+      },
+    );
+
+    test(
+      'CostumeProvider SONRADAN değişince koordinatör Koleksiyon rozetini '
+      'de reconcile eder',
+      () {
+        final coordinator = buildCoordinator();
+        expect(badges.isEarned('collector'), isFalse);
+
+        for (final c in costumes.take(5)) {
+          costume.markOwned(c.id);
+        }
+
+        expect(badges.isEarned('collector'), isTrue);
+        coordinator.dispose();
+      },
+    );
+
+    test(
+      'dispose() sonrası Koleksiyon provider değişiklikleri de tetiklenmez',
+      () {
+        final coordinator = buildCoordinator();
+        coordinator.dispose();
+
+        for (final c in costumes.take(5)) {
+          costume.markOwned(c.id);
+        }
+
+        expect(badges.isEarned('collector'), isFalse);
       },
     );
   });

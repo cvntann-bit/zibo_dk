@@ -1545,4 +1545,35 @@ class AppLocalizationsTr extends AppLocalizations {
   @override
   String get badgeRequirementDreamInterpreter =>
       'Rüya Günlüğü\'nde toplam 15 kayıt oluştur';
+
+  @override
+  String get badgeCategoryCollection => 'Koleksiyon Rozetleri';
+
+  @override
+  String get badgeNameCollector => 'Koleksiyoncu';
+
+  @override
+  String get badgeNameFashionIcon => 'Moda İkonu';
+
+  @override
+  String get badgeNameFullWardrobe => 'Tam Gardırop';
+
+  @override
+  String get badgeNameThemeHunter => 'Tema Avcısı';
+
+  @override
+  String get badgeRequirementCollector => '5 farklı kostüme sahip ol';
+
+  @override
+  String get badgeRequirementFashionIcon => '10 farklı kostüme sahip ol';
+
+  @override
+  String get badgeRequirementFullWardrobe =>
+      'Mağazadaki TÜM kostümlere sahip ol';
+
+  @override
+  String get badgeRequirementThemeHunter => '3 farklı temaya sahip ol';
+
+  @override
+  String get badgeSpecialRewardComingSoon => 'Özel Ödül (Yakında)';
 }

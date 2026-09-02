@@ -8164,3 +8164,99 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
     çıkabildiği; VE (gerçek kullanım senaryosu, saatler/günler sürer)
     ilgili modüllerden birinde (ör. Şükran Günlüğü) 30 kayda ulaşınca
     rozetin GERÇEKTEN otomatik kazanıldığı.
+
+#### Üçüncü kategori — Koleksiyon Rozetleri (4 rozet)
+
+- **2026 yeni özellik.** Kullanıcı isteği: yine AYNI mimari, bu sefer sahip
+  olunan kostüm/tema SAYISINA bağlı dört rozet. **Kritik netleştirme,
+  kullanıcının kendi ifadesiyle:** "Kostüm/tema SAHİPLİĞİ nasıl kazanılmış
+  olursa olsun (parayla satın alınmış veya hedefle/başarıyla ücretsiz
+  açılmış fark etmeksizin) sayıma dahil edilsin — rozet, sadece sahip
+  olunan toplam kostüm/tema sayısına bakar, kaynağına bakmaz."
+  - **Koleksiyoncu** (`collector`) — 5 farklı kostüme sahip ol — 30 ZC.
+    **Moda İkonu** (`fashion_icon`) — 10 farklı kostüme sahip ol — 75 ZC.
+    **Tam Gardırop** (`full_wardrobe`) — mağazadaki TÜM kostümlere sahip
+    ol — 200 ZC **+ özel bir ödül (bkz. altta)**. **Tema Avcısı**
+    (`theme_hunter`) — 3 farklı temaya sahip ol — 25 ZC.
+  - **`ZiboBadgeDefinition`'a YENİ `hasSpecialReward` alanı (bool,
+    varsayılan `false`) eklendi — kullanıcının açık isteği doğrultusunda
+    BİLEREK bir YER TUTUCU/bayrak, HENÜZ İŞLEVSEL DEĞİL.** Kullanıcı:
+    "Tam Gardırop rozeti özel: kazanıldığında normal ZC ödülüne ek olarak,
+    mağazada asla satılmayan, sadece bu rozetle kazanılabilen özel bir
+    kostüm/rozet de kullanıcıya verilsin... bu özel ödülün görseli/
+    detayları için ayrı konuşacağız, şimdilik sistemde bir 'özel ödül'
+    alanı olarak yer tutucu bırak." Bu yüzden `full_wardrobe`
+    `hasSpecialReward: true` alıyor ama **kod tarafında HİÇBİR ŞEY
+    OTOMATİK VERİLMİYOR** (`CoinProvider`/`CostumeProvider`'a bağlı bir
+    "özel ödül ver" çağrısı YOK, henüz gerçek bir kostüm/asset tanımlı
+    DEĞİL — icat etmek yerine kullanıcının netleştirmesi bekleniyor) —
+    yalnızca UI'da (galeri kartı + kutlama popup'ı) yeni bir
+    `badgeSpecialRewardComingSoon` ("Özel Ödül (Yakında)") etiketi,
+    `Icons.auto_awesome_rounded` ikonuyla küçük bir NOT olarak gösteriliyor.
+  - **`CostumeProvider`'a İKİ yeni getter — `founder_badge` pseudo-kostüm
+    id'sini (bkz. "Kurucu Üye Rozeti" bölümü) SAYMAYAN, YANLIŞ POZİTİF
+    ÜRETMEYEN bir tasarım:**
+    - `ownedRealCostumeCount` — yalnızca `costumes.dart`'taki GERÇEK/
+      satılabilir kostümlerden kaçının sahiplenildiğini sayar
+      (`costumes.where((c) => isOwned(c.id)).length`) — "Koleksiyoncu"/
+      "Moda İkonu" için.
+    - `ownsAllCostumes` — **BİLEREK bir SAYIM karşılaştırması
+      (`ownedIds.length >= costumes.length`) DEĞİL**, `costumes.every((c)
+      => isOwned(c.id))` — her kostümü TEK TEK doğruluyor. Gerekçe: bir
+      kullanıcı `founder_badge`'e (satılabilir olmayan bir id) sahipse VE
+      gerçek kostümlerin yalnızca N-1'ine sahipse, SAYI zaten
+      `costumes.length`'e eşit olabilir — SAYIM tabanlı bir kontrol bunu
+      YANLIŞLIKLA "hepsine sahip" sayardı; `every` bu riski taşımıyor. Bu
+      ayrım `costume_provider_test.dart`'a eklenen özel bir testle (TAM
+      OLARAK bu senaryoyu kuran) KANITLANDI.
+  - **`BadgeProvider.reconcileCollectionBadges(...)`** —
+    `reconcileModuleMasteryBadges` ile AYNI "tek slot, en son yeni kazanılan
+    yazılır" deseni, üç parametre (`ownedCostumeCount`/`ownsAllCostumes`/
+    `ownedThemeCount`).
+  - **`BadgeCoordinator` genişletildi — artık ON provider'ı dinliyor**
+    (önceki sekize `CostumeProvider`/`AppThemeProvider` eklendi). `_reconcile()`
+    ARTIK ÜÇ kategoriyi de (`reconcileConsistencyBadges` +
+    `reconcileModuleMasteryBadges` + `reconcileCollectionBadges`) art arda
+    çağırıyor. `RootScreen.initState()`'teki kuruluş çağrısına iki yeni
+    provider eklendi — `CostumeProvider`/`AppThemeProvider` importları
+    root_screen.dart'a YENİ eklendi (`RootScreen` bunları daha önce hiç
+    okumuyordu).
+  - **`BadgesGalleryScreen`'in `_categoryTitle` switch'ine `BadgeCategory.
+    collection` case'i eklendi** — mevcut gruplama/ayraç mantığı (bkz.
+    "İkinci kategori" bölümü) HİÇBİR DEĞİŞİKLİK GEREKTİRMEDİ, zaten
+    `BadgeCategory.values` sırasını genel olarak dolaşıyordu.
+  - **Görseller** kullanıcının masaüstündeki `rozetler/Koleksiyon rozetleri`
+    klasöründen `tool/process_collection_badge_images.dart` (YENİ, AYNI
+    "dosya adlarını koru, 512px'e küçült" deseni) ile kopyalandı — dördü de
+    kopyalamadan ÖNCE piksel-alfa ölçümüyle temiz/şeffaf olduğu doğrulandı
+    (Yılmaz/Efsanevi rozetindeki bug'ın tekrarlanmadığı).
+  - **ARB — 14 yeni anahtar (TR/EN/ES):** `badgeCategoryCollection` + 4×
+    `badgeName<X>` + 4× `badgeRequirement<X>` + `badgeSpecialRewardComingSoon`.
+  - **`BadgeProvider.debugGrantRandomBadge()` (Ayarlar'daki GEÇİCİ test
+    paneli) YİNE HİÇBİR DEĞİŞİKLİK GEREKTİRMEDİ** — `allBadges` üzerinden
+    genel çalıştığı için artık on beş rozetin (5+6+4) HERHANGİ birini
+    rastgele kazandırabiliyor.
+  - **Test: 13 YENİ test.** `badge_provider_test.dart`'a `reconcileCollectionBadges`
+    grubu (7 test — eşik altı no-op, dört rozetin her biri için ayrı bir
+    eşik-aşımı senaryosu [Koleksiyoncu+Moda İkonu'nun AYNI ANDA kazanılıp
+    kutlama sinyalinin EN SONuncuya yazıldığı dahil], tekrar-bildirmeme,
+    kalıcılık). `badge_coordinator_test.dart`'a 3 yeni test (CostumeProvider
+    TEMSİLCİ — EAGER ilk reconcile Koleksiyon'u da kapsıyor, SONRADAN
+    değişince otomatik reconcile, dispose sonrası tetiklenmiyor).
+    `costume_provider_test.dart`'a YENİ bir grup (3 test — `ownedRealCostumeCount`/
+    `ownsAllCostumes`'un `founder_badge`'i doğru DIŞLADIĞI, özellikle
+    "sayı eşleşiyor ama gerçekte hepsi değil" YANLIŞ POZİTİF senaryosu
+    AÇIKÇA test edildi). **Toplam: 475 test** (474 geçti + 1 önceden
+    belgelenmiş `audioplayers`/`home_widget` flake'i).
+  - **Gerçek cihazda GÖRSEL doğrulama bu turda YAPILMADI** — yalnızca
+    `flutter test` (475 test) + `flutter build apk --debug` (sorunsuz) ile
+    doğrulandı; APK cihaza SESSİZCE kuruldu (kullanıcı o an ana ekran
+    launcher'ındaydı, aktif bir uygulama İÇİNDE değildi ama yine de
+    temkinli davranılıp AÇILMADI). **Kullanıcının kendi cihazında
+    doğrulaması gereken:** Rozetler Galerisi'nde Modül Ustalığı'nın
+    ALTINDA "Koleksiyon Rozetleri" başlığı + dört rozetin doğru görsel/ad/
+    koşul/ödülle göründüğü, "Tam Gardırop" kartının altında "Özel Ödül
+    (Yakında)" notunun (ikonla birlikte) belirdiği, Ayarlar'daki test
+    panelinin artık BU dört rozeti de rastgele kazandırabildiği, VE
+    (gerçek kullanım senaryosu) 5/10 kostüme veya 3 temaya sahip olununca
+    ilgili rozetlerin GERÇEKTEN otomatik kazanıldığı.

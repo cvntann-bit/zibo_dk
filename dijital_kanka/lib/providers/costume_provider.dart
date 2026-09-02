@@ -38,6 +38,23 @@ class CostumeProvider extends ChangeNotifier {
   bool isOwned(String id) => _ownedIds.contains(id);
   bool isEquipped(String id) => _equippedId == id;
 
+  /// `founder_badge` gibi mağazada SATILMAYAN pseudo-kostüm id'lerini (bkz.
+  /// "Kurucu Üye Rozeti" bölümü) SAYMAYAN, yalnızca `costumes.dart`'taki
+  /// GERÇEK/satılabilir kostümlerden kaçının sahiplenildiğini döner —
+  /// "Koleksiyoncu"/"Moda İkonu" rozetleri için (bkz. `collection_badges.
+  /// dart`). Sahiplik kaynağı (satın alma VEYA hedefle ücretsiz açma)
+  /// ÖNEMSİZ, `isOwned` zaten kaynaktan bağımsız.
+  int get ownedRealCostumeCount => costumes.where((c) => isOwned(c.id)).length;
+
+  /// Mağazadaki TÜM kostümlere (kaynağı ne olursa olsun) sahip olunmuş mu —
+  /// "Tam Gardırop" rozeti için. `ownedRealCostumeCount >= costumes.length`
+  /// KARŞILAŞTIRMASI BİLEREK KULLANILMIYOR — kullanıcı `founder_badge`
+  /// gibi satılamayan bir id'ye de sahipse bu SAYIM eşitliği YANLIŞ POZİTİF
+  /// üretebilirdi (16 gerçek kostümün 15'ine + founder_badge'e sahip biri
+  /// "16 sahip" görünürdü); `every` her kostümü TEK TEK doğruladığı için bu
+  /// riski taşımıyor.
+  bool get ownsAllCostumes => costumes.every((c) => isOwned(c.id));
+
   /// Bkz. `ThemeProvider.isReady` dokümantasyonu — aynı gerekçe (Ana
   /// Sayfa'daki Zibo görselinin giyili kostümü BAŞTAN doğru göstermesi,
   /// önce varsayılan görsele sonra kostüme "zıplamaması" için).
