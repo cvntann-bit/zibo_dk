@@ -6536,6 +6536,88 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
      `flutter build apk --debug` ile doğrulandı, gerçek Google kimlik doğrulaması + canlı Firestore
      transaction'ı bu ortamda test EDİLEMEDİ.
 
+### 2026 — sayaç seed edildikten SONRA bulunan iki gerçek düzeltme: eksik Firestore kuralı + "zaten bağlı hesap" kazanma fırsatı hiç bulamıyordu
+
+- **1) Kart hiç görünmüyordu — `founderBadgeStatus/status` kuralı Firestore
+  Console'a hiç YAYINLANMAMIŞTI.** Seed betiği (yukarıdaki 2. adım) sorunsuz
+  çalıştı (Admin SDK kuralları atlıyor), ama uygulamanın kendisi (normal bir
+  kullanıcı olarak) dokümanı okuyamıyordu — cihazın canlı `adb logcat`'inde
+  KANITLANDI: `Firestore: Listen for founderBadgeStatus/status failed:
+  Status{code=PERMISSION_DENIED, ...}`. Kullanıcı güncel `firestore.rules`
+  içeriğini Console'a yapıştırıp yayınladı. **Firestore'un bir dinleyicisi
+  `PERMISSION_DENIED` hatasından sonra KENDİLİĞİNDEN yeniden denemiyor** —
+  kurallar yayınlandıktan SONRA bile uygulamanın (`force-stop` + yeniden
+  açma ile) YENİDEN BAŞLATILMASI gerekti, ancak o zaman kart doğru
+  mesaj/kalan kontenjanla ("500 hak kaldı!") göründü.
+- **2) Gerçek bug — kullanıcı Google hesabını bağladı ama rozet hâlâ
+  görünmedi.** Cihazın canlı logunda kanıt bulundu:
+  ```
+  GoogleAuthService._authenticate authenticate() OK: email=cvntann@gmail.com...
+  GoogleAuthService.linkCurrentUser linkWithCredential FirebaseAuthException:
+    code=credential-already-in-use message=This credential is already
+    associated with a different user account.
+  ```
+  **Kök neden:** bu Google hesabı bu cihazda ÇOK DAHA ÖNCE (Google Hesap
+  Bağlama özelliği geliştirilirken/test edilirken, Kurucu Üye rozeti
+  var olmadan ÖNCE) BAŞKA bir Firebase kullanıcısına ZATEN bağlanmıştı. Bu
+  yüzden "bağla"ya her basıldığında `linkCurrentUser()` DEĞİL,
+  `credential-already-in-use` → "zaten bağlı, o hesaba GEÇMEK ister misin?"
+  → `_offerSignInInstead`/`signInWithGoogle` akışına düşüyordu.
+  `google_link_action.dart`'ın kendi dokümantasyonu BİLEREK bu akışlara
+  `FounderBadgeProvider.claimIfEligible()` EKLEMEMİŞTİ ("o hesap ya zaten
+  rozete sahip ya da bağlandığı anda kontenjan doluydu, tekrar denenecek
+  bir şey yok" varsayımıyla) — ama bu varsayım TAM OLARAK bu senaryoda
+  YANLIŞ: hesap, sayaç HENÜZ SEED EDİLMEDEN ÖNCE bağlanmıştı, bu yüzden
+  o zamanki (varsa) claim denemesi sessizce başarısız olmuştu, VE bu hesap
+  ARTIK bir daha ASLA "yeni/ilk kez bağlama" dalına düşmeyeceği için
+  (`credential-already-in-use` HER ZAMAN "geç" akışına yönlendiriyor)
+  tekrar deneme fırsatı hiç yoktu — kalıcı olarak sıkışmıştı.
+  - **Düzeltme — üç ayrı çağrı sitesine (fresh link/"geç"/"Hesap
+    Değiştir") elle claim eklemek YERİNE, `RootScreen`'e `AppStreakProvider`/
+    `ReferralProvider` ile AYNI "reconcile-on-resume" deseni eklendi.**
+    YENİ [founder_badge_reconcile.dart](lib/utils/founder_badge_reconcile.dart) —
+    `maybeClaimFounderBadge({authLink, costume, founderBadge})` saf/test
+    edilebilir bir üst düzey fonksiyon (RootScreen'in tam widget ağacını
+    kurmadan doğrudan test edilebilsin diye, `HomeWidgetSyncCoordinator`/
+    `BadgeCoordinator`'ın "provider'ları parametre olarak al" felsefesiyle
+    AYNI): `authLink.isLinked` DEĞİLSE VEYA `costume` zaten `founder_badge`'e
+    sahipse hiçbir şey yapmadan çıkar (gereksiz bir Firestore transaction'ı
+    önlüyor), aksi halde `claimIfEligible()`'ı sessizce (idempotent,
+    zararsız) yeniden dener.
+    - **`RootScreen`'in `initState`'indeki MEVCUT postFrameCallback'e VE
+      `didChangeAppLifecycleState`'in `resumed` dalına** (AppStreakProvider.
+      recordOpenForToday()/ReferralProvider.refresh() ile AYNI iki
+      tetikleme noktası) `_maybeClaimFounderBadge()` eklendi — uygulama HER
+      açılışta/öne gelişte, Google'a bağlıysa VE rozet henüz sahip
+      DEĞİLSE tekrar dener. **Neden burası (üç ayrı `google_link_action.dart`
+      çağrı sitesi DEĞİL) doğru yer:** `RootScreen` HER ZAMAN o anki
+      (doğru) uid'e bağlı TAZE provider örnekleriyle çalışıyor — bir uid
+      DEĞİŞİMİ (Hesap Değiştir/"geç" akışı) `main.dart`'taki `_AppRoot`'un
+      `KeyedSubtree`'sinin TÜM `RootScreen` ağacını YENİDEN kurmasını
+      gerektiriyor (bkz. "Google Hesap Bağlama" bölümü), bu yüzden
+      `RootScreen`'in `context.read<...>()`'i asla ESKİ/yanlış uid'in
+      provider'larına yanlışlıkla bağlanamıyor — üç ayrı akışa elle
+      eklemek bu garantiyi TEK TEK yeniden inşa etmeyi gerektirirdi.
+  - **Test:** YENİ `test/founder_badge_reconcile_test.dart` (4 test,
+    `fake_cloud_firestore` ile) — bağlı DEĞİLKEN no-op, sayaç henüz seed
+    edilmediyse sessizce başarısız, ZATEN sahipken `claimIfEligible()`
+    GEREKSİZ yere ÇAĞRILMIYOR (sayaç dolu olsa bile — erken çıkışın
+    KANITI), VE en kritik senaryo: sayaç seed EDİLMEDEN ÖNCE bağlanmış bir
+    hesap, sayaç SONRADAN seed edilip bu fonksiyon TEKRAR çağrılınca
+    rozeti GERÇEKTEN kazanıyor (bu test DÜZELTMEDEN ÖNCEKİ mimaride hiç
+    YAZILAMAZDI — o mimaride bu senaryoyu tetikleyecek hiçbir çağrı yolu
+    yoktu). `flutter test` tam yeşil (538/539, yalnızca önceden belgelenmiş
+    `audioplayers`/`home_widget` flake'i).
+  - **Doğrulama — gerçek cihazda, canlı `adb logcat` ile İKİ AYRI bug için
+    de kanıt toplanarak.** APK yeniden derlenip cihaza kuruldu (kullanıcı o
+    an başka bir uygulamayla meşgulken sessizce, sonra kendi zamanlamasında
+    kontrol edildi). **Kullanıcının kendi cihazında son adımı doğrulaması
+    gereken:** uygulamayı bir sonraki açışta/öne getirişte (Google hesabı
+    zaten bağlı olduğu için ekstra bir tıklama GEREKMİYOR — düzeltme
+    otomatik/arka planda tetikleniyor) Profil ekranındaki fotoğrafın
+    köşesinde küçük Kurucu Üye rozeti ikonunun GERÇEKTEN belirdiğini
+    görmek.
+
 ## Google Play Billing (IAP) Entegrasyonu ([purchase_service.dart](lib/services/purchase_service.dart), [iap_purchase_service.dart](lib/services/iap_purchase_service.dart))
 
 - **2026 — kullanıcı isteği: "gerçek pay billingle devam edelim."** Crashlytics'in HEMEN ardından
