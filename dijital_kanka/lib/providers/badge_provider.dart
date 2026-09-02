@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 
 import '../data/consistency_badges.dart';
+import '../data/module_mastery_badges.dart';
 import '../models/badge_definition.dart';
 import '../models/badge_record.dart';
 import '../services/cloud_state_store.dart';
@@ -78,7 +79,8 @@ class BadgeProvider extends ChangeNotifier {
     });
   }
 
-  /// İstikrar Rozetleri'nin (bu turda tek kategori) kazanma kontrolü.
+  /// İstikrar Rozetleri'nin kazanma kontrolü (bkz. altta [reconcileModuleMasteryBadges]
+  /// — Modül Ustalığı Rozetleri için AYNI desenin İKİNCİ kategorisi).
   /// [hasCompletedFirstGoalCycle] — `GoalsProvider.completions.isNotEmpty`.
   /// [appOpenStreak] — `AppStreakProvider.currentStreak` (uygulamayı her gün
   /// açma serisi, Hedef Takibi'nden BAĞIMSIZ — bkz. o provider'ın
@@ -96,6 +98,44 @@ class BadgeProvider extends ChangeNotifier {
         'month_streak' => appOpenStreak >= 30,
         'iron_will' => appOpenStreak >= 90,
         'unyielding' => appOpenStreak >= 180,
+        _ => false,
+      };
+      if (meetsRequirement) {
+        _earned[badge.id] = BadgeRecord(earnedAt: DateTime.now(), claimed: false);
+        lastNewlyEarned = badge;
+      }
+    }
+    if (lastNewlyEarned != null) {
+      notifyListeners();
+      unawaited(_save());
+      pendingBadgePopup.value = lastNewlyEarned;
+    }
+  }
+
+  /// Modül Ustalığı Rozetleri'nin kazanma kontrolü — `reconcileConsistencyBadges`
+  /// ile AYNI "tek slot, en son yeni kazanılan yazılır" desen, yalnızca
+  /// koşullar ARDIŞIK bir seri DEĞİL, ilgili modülün TOPLAM kayıt sayısı
+  /// (bkz. `module_mastery_badges.dart`). Parametreler `BadgeCoordinator`'ın
+  /// ilgili altı provider'dan (Şükran/Su/Ruh Hali/Para/Manifest/Rüya)
+  /// okuduğu güncel sayaçlar.
+  void reconcileModuleMasteryBadges({
+    required int gratitudeCount,
+    required int waterDaysCount,
+    required int moodCount,
+    required int moneyCount,
+    required int manifestCount,
+    required int dreamCount,
+  }) {
+    ZiboBadgeDefinition? lastNewlyEarned;
+    for (final badge in moduleMasteryBadges) {
+      if (_earned.containsKey(badge.id)) continue;
+      final meetsRequirement = switch (badge.id) {
+        'grateful_heart' => gratitudeCount >= 30,
+        'water_hero' => waterDaysCount >= 30,
+        'mood_chronicler' => moodCount >= 30,
+        'savings_master' => moneyCount >= 20,
+        'dreamer' => manifestCount >= 15,
+        'dream_interpreter' => dreamCount >= 15,
         _ => false,
       };
       if (meetsRequirement) {

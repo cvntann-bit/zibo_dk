@@ -1,15 +1,28 @@
-// BadgeCoordinator'ın GoalsProvider/AppStreakProvider değiştiğinde
-// BadgeProvider.reconcileConsistencyBadges'i OTOMATİK tetiklediğini
-// doğrudan (widget pump'lamadan) test eder — HomeWidgetSyncCoordinator
-// testlerindeki "sahte/gerçek provider'ları kur, addListener'ın gerçekten
-// tetiklendiğini doğrula" deseniyle aynı.
+// BadgeCoordinator'ın GoalsProvider/AppStreakProvider (İstikrar) VE
+// Gratitude/Water/Mood/Money/Manifest/Dream (Modül Ustalığı) provider'ları
+// değiştiğinde BadgeProvider.reconcileConsistencyBadges/
+// reconcileModuleMasteryBadges'i OTOMATİK tetiklediğini doğrudan (widget
+// pump'lamadan) test eder — HomeWidgetSyncCoordinator testlerindeki "sahte/
+// gerçek provider'ları kur, addListener'ın gerçekten tetiklendiğini
+// doğrula" deseniyle aynı. Modüle özel eşik/kazanma mantığının kendisi
+// `badge_provider_test.dart`ta zaten kapsamlı test edildiği için burada
+// yalnızca "koordinatör GERÇEKTEN dinliyor mu" doğrulanıyor — altı yeni
+// provider'ın HEPSİ için ayrı ayrı senaryo YAZILMADI, MoneyProvider (tarih
+// kilidi olmayan, en basit) bir TEMSİLCİ olarak yeterli.
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:dijital_kanka/providers/app_streak_provider.dart';
 import 'package:dijital_kanka/providers/badge_provider.dart';
+import 'package:dijital_kanka/providers/dream_journal_provider.dart';
 import 'package:dijital_kanka/providers/goals_provider.dart';
+import 'package:dijital_kanka/providers/gratitude_provider.dart';
+import 'package:dijital_kanka/models/money_entry.dart';
+import 'package:dijital_kanka/providers/manifest_provider.dart';
+import 'package:dijital_kanka/providers/money_provider.dart';
+import 'package:dijital_kanka/providers/mood_provider.dart';
+import 'package:dijital_kanka/providers/water_provider.dart';
 import 'package:dijital_kanka/services/badge_coordinator.dart';
 import 'package:dijital_kanka/utils/badge_celebration_signal.dart';
 
@@ -24,14 +37,38 @@ void main() {
     late BadgeProvider badges;
     late GoalsProvider goals;
     late AppStreakProvider appStreak;
+    late GratitudeProvider gratitude;
+    late WaterProvider water;
+    late MoodProvider mood;
+    late MoneyProvider money;
+    late ManifestProvider manifest;
+    late DreamJournalProvider dream;
 
     setUp(() async {
       currentDate = DateTime(2026, 1, 5);
       badges = BadgeProvider();
       goals = GoalsProvider(now: () => currentDate);
       appStreak = AppStreakProvider(now: () => currentDate);
+      gratitude = GratitudeProvider(now: () => currentDate);
+      water = WaterProvider(now: () => currentDate);
+      mood = MoodProvider(now: () => currentDate);
+      money = MoneyProvider(now: () => currentDate);
+      manifest = ManifestProvider(now: () => currentDate);
+      dream = DreamJournalProvider();
       await Future<void>.delayed(Duration.zero);
     });
+
+    BadgeCoordinator buildCoordinator() => BadgeCoordinator(
+      badges: badges,
+      goals: goals,
+      appStreak: appStreak,
+      gratitude: gratitude,
+      water: water,
+      mood: mood,
+      money: money,
+      manifest: manifest,
+      dream: dream,
+    );
 
     test(
       'Constructor EAGER bir ilk reconcile yapar — kuruluş anında zaten '
@@ -45,7 +82,7 @@ void main() {
         expect(appStreak.currentStreak, 7);
         expect(badges.isEarned('week_streak'), isFalse);
 
-        BadgeCoordinator(badges: badges, goals: goals, appStreak: appStreak);
+        buildCoordinator();
 
         expect(badges.isEarned('week_streak'), isTrue);
       },
@@ -55,11 +92,7 @@ void main() {
       'AppStreakProvider SONRADAN değişince koordinatör otomatik reconcile '
       'eder',
       () {
-        final coordinator = BadgeCoordinator(
-          badges: badges,
-          goals: goals,
-          appStreak: appStreak,
-        );
+        final coordinator = buildCoordinator();
         expect(badges.isEarned('week_streak'), isFalse);
 
         for (var i = 0; i < 7; i++) {
@@ -73,11 +106,7 @@ void main() {
     );
 
     test('dispose() sonrası listener\'lar tetiklenmez', () {
-      final coordinator = BadgeCoordinator(
-        badges: badges,
-        goals: goals,
-        appStreak: appStreak,
-      );
+      final coordinator = buildCoordinator();
       coordinator.dispose();
 
       for (var i = 0; i < 7; i++) {
@@ -87,5 +116,68 @@ void main() {
 
       expect(badges.isEarned('week_streak'), isFalse);
     });
+
+    test(
+      'Constructor EAGER ilk reconcile Modül Ustalığı rozetlerini de '
+      'kapsıyor — kuruluştan ÖNCE zaten karşılanmış bir eşik hemen '
+      'ödüllendirilir',
+      () {
+        for (var i = 0; i < 20; i++) {
+          money.addEntry(
+            MoneyCategory.saving,
+            name: 'Kayıt $i',
+            amount: 10,
+            currencyCode: 'TRY',
+          );
+        }
+        expect(money.totalEntryCount, 20);
+        expect(badges.isEarned('savings_master'), isFalse);
+
+        buildCoordinator();
+
+        expect(badges.isEarned('savings_master'), isTrue);
+      },
+    );
+
+    test(
+      'MoneyProvider SONRADAN değişince koordinatör Modül Ustalığı '
+      'rozetini de reconcile eder',
+      () {
+        final coordinator = buildCoordinator();
+        expect(badges.isEarned('savings_master'), isFalse);
+
+        for (var i = 0; i < 20; i++) {
+          money.addEntry(
+            MoneyCategory.saving,
+            name: 'Kayıt $i',
+            amount: 10,
+            currencyCode: 'TRY',
+          );
+        }
+
+        expect(badges.isEarned('savings_master'), isTrue);
+        coordinator.dispose();
+      },
+    );
+
+    test(
+      'dispose() sonrası Modül Ustalığı provider değişiklikleri de '
+      'tetiklenmez',
+      () {
+        final coordinator = buildCoordinator();
+        coordinator.dispose();
+
+        for (var i = 0; i < 20; i++) {
+          money.addEntry(
+            MoneyCategory.saving,
+            name: 'Kayıt $i',
+            amount: 10,
+            currencyCode: 'TRY',
+          );
+        }
+
+        expect(badges.isEarned('savings_master'), isFalse);
+      },
+    );
   });
 }

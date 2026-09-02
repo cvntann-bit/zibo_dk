@@ -35,6 +35,12 @@ class MoneyProvider extends ChangeNotifier {
   double totalFor(MoneyCategory category) =>
       _entries[category]!.fold(0, (sum, entry) => sum + entry.amount);
 
+  /// TÜM kategorilerdeki (Harcamalar + Birikimler + Gelen Para) kayıtların
+  /// toplam SAYISI — "Birikim Ustası" rozeti için (bkz. `module_mastery_
+  /// badges.dart` — "toplam 20 kayıt", hangi kategoriden geldiği ÖNEMSİZ).
+  int get totalEntryCount =>
+      _entries.values.fold(0, (sum, list) => sum + list.length);
+
   /// **2026 güncellemesi** — ilgili kategorideki kayıtları PARA BİRİMİNE
   /// göre gruplayıp her birinin kendi toplamını döner (ör.
   /// `{'TRY': 500, 'USD': 50}`) — kullanıcının açık isteği "otomatik kur

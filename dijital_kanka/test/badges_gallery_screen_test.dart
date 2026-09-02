@@ -61,7 +61,10 @@ void main() {
 
       expect(find.text('İlk Adım'), findsOneWidget);
       expect(find.text('7 gün üst üste giriş yap'), findsOneWidget);
-      expect(find.byType(ColorFiltered), findsNWidgets(consistencyBadges.length));
+      // 2026 güncellemesi — Modül Ustalığı Rozetleri eklendiği için artık
+      // yalnızca `consistencyBadges` DEĞİL, `allBadges`'in TAMAMI (iki
+      // kategori) HİÇ kazanılmamış durumda gri tonlu render ediliyor.
+      expect(find.byType(ColorFiltered), findsNWidgets(allBadges.length));
       expect(tester.takeException(), isNull);
     },
   );
@@ -80,7 +83,7 @@ void main() {
 
       expect(
         find.byType(ColorFiltered),
-        findsNWidgets(consistencyBadges.length - 1),
+        findsNWidgets(allBadges.length - 1),
       );
       expect(tester.takeException(), isNull);
     },

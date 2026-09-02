@@ -2727,6 +2727,84 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'Ödülü Al'**
   String get badgeClaimRewardButton;
+
+  /// Rozetler Galerisi'ndeki Modül Ustalığı kategorisinin bölüm başlığı
+  ///
+  /// In tr, this message translates to:
+  /// **'Modül Ustalığı Rozetleri'**
+  String get badgeCategoryModuleMastery;
+
+  /// Modül Ustalığı Rozetleri'nin birinci rozetinin adı
+  ///
+  /// In tr, this message translates to:
+  /// **'Şükreden Kalp'**
+  String get badgeNameGratefulHeart;
+
+  /// Modül Ustalığı Rozetleri'nin ikinci rozetinin adı
+  ///
+  /// In tr, this message translates to:
+  /// **'Su Kahramanı'**
+  String get badgeNameWaterHero;
+
+  /// Modül Ustalığı Rozetleri'nin üçüncü rozetinin adı
+  ///
+  /// In tr, this message translates to:
+  /// **'Ruh Hali Kaydedicisi'**
+  String get badgeNameMoodChronicler;
+
+  /// Modül Ustalığı Rozetleri'nin dördüncü rozetinin adı
+  ///
+  /// In tr, this message translates to:
+  /// **'Birikim Ustası'**
+  String get badgeNameSavingsMaster;
+
+  /// Modül Ustalığı Rozetleri'nin beşinci rozetinin adı
+  ///
+  /// In tr, this message translates to:
+  /// **'Hayalperest'**
+  String get badgeNameDreamer;
+
+  /// Modül Ustalığı Rozetleri'nin altıncı rozetinin adı
+  ///
+  /// In tr, this message translates to:
+  /// **'Rüya Yorumcusu'**
+  String get badgeNameDreamInterpreter;
+
+  /// Şükreden Kalp rozetinin kazanma koşulu
+  ///
+  /// In tr, this message translates to:
+  /// **'Şükran Günlüğü\'nde toplam 30 kayıt oluştur'**
+  String get badgeRequirementGratefulHeart;
+
+  /// Su Kahramanı rozetinin kazanma koşulu
+  ///
+  /// In tr, this message translates to:
+  /// **'Su Takibi\'nde toplam 30 gün kayıt yap'**
+  String get badgeRequirementWaterHero;
+
+  /// Ruh Hali Kaydedicisi rozetinin kazanma koşulu
+  ///
+  /// In tr, this message translates to:
+  /// **'Ruh Hali Takibi\'nde toplam 30 kayıt oluştur'**
+  String get badgeRequirementMoodChronicler;
+
+  /// Birikim Ustası rozetinin kazanma koşulu
+  ///
+  /// In tr, this message translates to:
+  /// **'Para ve Birikim\'de toplam 20 kayıt oluştur'**
+  String get badgeRequirementSavingsMaster;
+
+  /// Hayalperest rozetinin kazanma koşulu
+  ///
+  /// In tr, this message translates to:
+  /// **'Manifest Günlüğü\'nde toplam 15 kayıt oluştur'**
+  String get badgeRequirementDreamer;
+
+  /// Rüya Yorumcusu rozetinin kazanma koşulu
+  ///
+  /// In tr, this message translates to:
+  /// **'Rüya Günlüğü\'nde toplam 15 kayıt oluştur'**
+  String get badgeRequirementDreamInterpreter;
 }
 
 class _AppLocalizationsDelegate

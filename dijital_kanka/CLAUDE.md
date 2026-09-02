@@ -8019,3 +8019,148 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
     ZC ödül satırıyla (coin ikonu dahil) taşmadan göründüğü, ve Ayarlar'ın
     en altındaki geçici "Rozet Test Paneli"nin rastgele bir rozeti gerçek
     konfeti+popup akışıyla kazandırdığı.
+  - **2026 DÜZELTME — kullanıcı gerçek cihazda test edip bir ekran görüntüsüyle
+    "siyah yuvarlak" yorumunu netleştirdi: yukarıdaki asset-fix DOĞRU bir
+    bulguydu ama ASIL şikayet edilen yer FARKLIYDI.** Kullanıcı Ana Sayfa'nın
+    bir ekran görüntüsünü paylaşıp "şu rozet popup'ının siyah yuvarlak diye
+    bahsettiğim yer bu" diyerek doğrudan `BadgesTriggerButton`'ın (Ana
+    Sayfa'daki tetikleyici DÜĞMESİ, kutlama popup'ı DEĞİL) arkasındaki
+    `RadialGradient`/`boxShadow` DAİRESİNİ işaret etti — "popup" kelimesini
+    kullanıcı kutlama modalı için DEĞİL, bu tetikleyici düğme için kullanmış.
+    **Düzeltme:** `BadgesTriggerButton`'daki dairesel gradyan/gölge
+    `Container` dekorasyonu TAMAMEN kaldırıldı — pulse animasyonu artık
+    doğrudan çıplak `popup_rozet_icon.png`'ye uygulanıyor
+    (`Transform.scale(scale: scale, child: child)`, `child` = `Image.asset`),
+    hiçbir Container/gradyan/gölge YOK. `_size` de (64 → 80) büyütüldü.
+    Ayrıca kullanıcı Günlük Ödül/Rozetler tetikleyicilerinin "çok iç içe"
+    (üst üste biniyormuş gibi) durduğunu bildirdi — `root_screen.dart`'taki
+    `Align` konumları güncellendi: Çark/Günlük Ödül `Alignment(±1, -0.8)` →
+    `Alignment(±1, -0.88)` (biraz daha yukarı), Rozetler `Alignment(1,
+    -0.55)` → `Alignment(1, -0.58)` (Günlük Ödül'le arası büyütüldü — artık
+    arkasında dekorasyon/gölge OLMADIĞI için daha az gerekli olsa da fazladan
+    nefes payı bırakıldı). **Bir önceki turdaki `badge_celebration_overlay.
+    dart` değişiklikleri (kartın yukarı kayması, görselin büyütülmesi) GERİ
+    ALINMADI** — yanlış varsayıma dayansa da zararsız/olumlu bir iyileştirme
+    olduğu için korundu.
+  - **Rozet Galerisi kartları BİR TUR DAHA ince ayar gördü** — kullanıcı
+    isteği: görsel "biraz daha büyüsün, çok değil" (108→118), ad/açıklama
+    yazı boyutu büyüsün (`titleSmall`/`bodySmall` → `titleMedium`/
+    `bodyMedium`), "10 ZC/30 ZC" metni VE coin ikonu büyüsün (16px→20px ikon,
+    `labelSmall`→`labelMedium` metin), VE genel kart çerçevesi ("dikdörtgen
+    şeklinde uzun") biraz kısaltılsın — `childAspectRatio` `0.5`'ten `0.62`'ye
+    çıkarıldı (kartın FİKSE yüksekliği kısa metinli rozetlerde altta boşluk
+    bırakıyordu; oranı büyütmek hem kartı kısalttı hem büyümüş içerik için
+    yeterli pay bıraktı — `badges_gallery_screen_test.dart`'taki overflow
+    testi doğruluyor).
+  - **Doğrulama:** `flutter test` tam suite yeşil (450/450, yalnızca
+    önceden belgelenmiş flake hariç). Kullanıcı build'i kurdu ama telefonu
+    o an başka bir uygulamayla (Play Store) meşgul olduğu için asistan
+    ekranı açıp GÖRSEL doğrulama YAPMADI — kullanıcının kendi
+    zamanlamasında kontrol etmesi bekleniyor.
+
+#### İkinci kategori — Modül Ustalığı Rozetleri (6 rozet)
+
+- **2026 yeni özellik.** Kullanıcı isteği: İstikrar Rozetleri'nin AYNI
+  mimarisiyle (Firestore kaydı, otomatik tetikleme, kazanınca konfeti +
+  detaylı pop-up + "Ödülü Al" + galeriye dönüş) altı yeni rozet — bu sefer
+  ARDIŞIK bir seriye DEĞİL, ilgili modülün TOPLAM kayıt sayısına bağlı
+  (kullanıcının kendi ifadesiyle: "bu kayıt sayıları ARDIŞIK olmak zorunda
+  değil — streak gibi değil — toplam kayıt sayısı bazlı, kullanıcı istediği
+  zaman aralığında bu sayıya ulaşabilir").
+  - **Şükreden Kalp** (`grateful_heart`) — Şükran Günlüğü'nde toplam 30
+    kayıt — 55 ZC. **Su Kahramanı** (`water_hero`) — Su Takibi'nde toplam 30
+    GÜN kayıt (tamamlanmış olması ŞART DEĞİL, yalnızca o gün en az bir
+    dokunuş) — 55 ZC. **Ruh Hali Kaydedicisi** (`mood_chronicler`) — Ruh
+    Hali Takibi'nde toplam 30 kayıt — 55 ZC. **Birikim Ustası**
+    (`savings_master`) — Para ve Birikim'de (HANGİ kategoriden geldiği
+    önemsiz — Harcama/Birikim/Gelen Para) toplam 20 kayıt — 45 ZC.
+    **Hayalperest** (`dreamer`) — Manifest Günlüğü'nde toplam 15 kayıt —
+    40 ZC. **Rüya Yorumcusu** (`dream_interpreter`) — Rüya Günlüğü'nde
+    toplam 15 kayıt — 40 ZC.
+  - **`BadgeCategory` enum'una `moduleMastery` eklendi** (`consistency`'nin
+    yanına). YENİ `lib/data/module_mastery_badges.dart` — `consistency_
+    badges.dart`'taki `consistencyBadges` deseninin BİREBİR AYNISI, altı
+    `ZiboBadgeDefinition`. `allBadges` (hâlâ `consistency_badges.dart`'ta
+    tanımlı, dokümantasyonun ZATEN öngördüğü "yeni kategori eklendiğinde
+    yalnızca allBadges'e eklenmesi yeterli" notuna TAM uyarak)
+    `[...consistencyBadges, ...moduleMasteryBadges]`'e güncellendi.
+  - **Sayaç getter'ları — üçü ZATEN vardı, ikisi YENİ eklendi.**
+    `GratitudeProvider.entries.length`/`MoodProvider.entries.length`/
+    `ManifestProvider.history.length`/`DreamJournalProvider.dreams.length`
+    doğrudan kullanılabiliyordu. **YENİ `WaterProvider.totalDaysRecorded`**
+    (`_entries.length` — `completedDaysCount`'un AKSİNE hedefe ULAŞILMASINI
+    ŞART KOŞMUYOR, yalnızca o gün en az bir dokunuş olmuş mu diye bakıyor,
+    "Su Kahramanı"nın "toplam 30 gün KAYIT yap" isteğiyle birebir). **YENİ
+    `MoneyProvider.totalEntryCount`** (üç kategorinin [expense/saving/
+    income] toplam eleman sayısı — "Birikim Ustası"nın "hangi kategoriden
+    geldiği önemsiz" isteğiyle birebir).
+  - **`BadgeProvider.reconcileModuleMasteryBadges(...)`** —
+    `reconcileConsistencyBadges`'in BİREBİR AYNI "tek slot, en son yeni
+    kazanılan `pendingBadgePopup`'a yazılır" deseni, yalnızca altı sayaç
+    parametresi (`gratitudeCount`/`waterDaysCount`/`moodCount`/`moneyCount`/
+    `manifestCount`/`dreamCount`) alıyor.
+  - **`BadgeCoordinator` genişletildi — artık SEKİZ provider'ı dinliyor**
+    (Badges HARİÇ: Goals/AppStreak/Gratitude/Water/Mood/Money/Manifest/Dream).
+    `_reconcile()` HER İKİ kategoriyi de (`reconcileConsistencyBadges` +
+    `reconcileModuleMasteryBadges`) art arda çağırıyor — sekiz provider'dan
+    HERHANGİ biri değişince TÜM rozetler yeniden kontrol ediliyor (basit,
+    "gereksiz bir rebuild'in maliyeti neredeyse sıfır" felsefesiyle tutarlı,
+    bkz. "Günlük Giriş Ödülleri" bölümündeki AYNI genelleştirilebilir ders).
+    `RootScreen.initState()`'teki kuruluş çağrısına altı yeni provider
+    eklendi (`context.read<GratitudeProvider>()` vb.) — `MoodProvider`/
+    `DreamJournalProvider` importları root_screen.dart'a YENİ eklendi
+    (diğer dördü zaten import ediliyordu).
+  - **`BadgesGalleryScreen` artık kategoriye göre GRUPLU render ediyor.**
+    `allBadges` kategoriye göre bir `Map`'e toplanıp `BadgeCategory.values`
+    SIRASIYLA (İstikrar → Modül Ustalığı) gösteriliyor; İLK HARİÇ her bölümün
+    ÜSTÜNE `SizedBox(20) + Divider(height:1) + SizedBox(16)` ile ince bir
+    ayraç ekleniyor (kullanıcının "kategoriler birbirinden görsel olarak
+    ayrılsın, örn. ince bir ayraç çizgisiyle" isteği). Kartların kendisi
+    (`_BadgeGalleryCard`, `childAspectRatio: 0.62`) DEĞİŞMEDİ.
+  - **Görseller** kullanıcının masaüstündeki `rozetler/modul ustalıgı
+    rozetleri` klasöründen `tool/process_module_mastery_badge_images.dart`
+    (YENİ, `process_badge_images.dart`'ın AYNI "dosya adlarını koru, 512px'e
+    küçült" deseni, yalnızca kaynak klasör farklı) ile kopyalandı. **Bu altı
+    dosyanın HİÇBİRİNDE önceki `yilmaz_efsanevi_rozet.png` bug'ı (baked-in
+    siyah arka plan) YOKTU** — kopyalamadan ÖNCE hem görsel olarak (`Read`)
+    hem piksel-alfa ölçümüyle (`img.getPixel(...).a`) doğrulandı, hepsi
+    temiz/şeffaf.
+  - **ARB — 14 yeni anahtar (TR/EN/ES):** `badgeCategoryModuleMastery` +
+    6× `badgeName<X>` + 6× `badgeRequirement<X>` — `ZiboBadgeDefinition.
+    localizedName`/`localizedRequirement`'a altışar yeni `case` eklendi
+    (`Costume`/`AppThemeOption` ile AYNI "id → ARB-getter" deseni).
+  - **`BadgeProvider.debugGrantRandomBadge()` (Ayarlar'daki GEÇİCİ test
+    paneli) HİÇBİR DEĞİŞİKLİK GEREKTİRMEDİ** — zaten `allBadges` üzerinden
+    genel çalışıyordu, artık on bir rozetin (5+6) HERHANGİ birini rastgele
+    kazandırabiliyor.
+  - **Firestore rules — YENİ bir kural GEREKMEDİ** (mevcut genel
+    `users/{uid}/state/{stateDoc}` kuralı `badgeState`'i zaten kapsıyor,
+    bkz. "Coin Ekonomisi Güvenliği" bölümü).
+  - **Test: 12 YENİ test.** `badge_provider_test.dart`'a `reconcileModuleMasteryBadges`
+    grubu (9 test — eşik altı no-op, altı rozetin HER BİRİ için ayrı bir
+    eşik-aşımı senaryosu, çoklu-eş-zamanlı-kazanımda EN SONuncunun kutlama
+    sinyaline yazılması, tekrar-bildirmeme, kalıcılık). `badge_coordinator_
+    test.dart`'a 3 yeni test (MoneyProvider TEMSİLCİ olarak seçildi —
+    tarih kilidi olmayan EN BASİT modül provider'ı; EAGER ilk reconcile
+    Modül Ustalığı'nı da kapsıyor, SONRADAN değişince otomatik reconcile,
+    dispose sonrası tetiklenmiyor — altı provider'ın HEPSİ için ayrı
+    senaryo YAZILMADI, modüle özel eşik mantığı zaten `badge_provider_
+    test.dart`ta tam kapsandığı için koordinatörün yalnızca "GERÇEKTEN
+    dinliyor mu" doğrulanması yeterli). `badges_gallery_screen_test.dart`'taki
+    mevcut iki test `consistencyBadges.length` yerine `allBadges.length`
+    kullanacak şekilde güncellendi (artık HİÇ rozet kazanılmamışken 11
+    `ColorFiltered` render ediliyor, 5 değil). **Toplam: 462 test** (461
+    geçti + 1 önceden belgelenmiş `audioplayers`/`home_widget` flake'i).
+  - **Gerçek cihazda GÖRSEL doğrulama bu turda YAPILMADI** — yalnızca
+    `flutter test` (462 test) + `flutter build apk --debug` (sorunsuz) ile
+    doğrulandı; APK cihaza SESSİZCE kuruldu (kullanıcı o an başka bir
+    uygulamayla meşgul olduğu için AÇILMADI). **Kullanıcının kendi
+    cihazında doğrulaması gereken:** Rozetler Galerisi'nde İstikrar
+    Rozetleri'nin ALTINDA, ince bir ayraçla ayrılmış "Modül Ustalığı
+    Rozetleri" başlığı + altı yeni rozetin (Şükreden Kalp/Su Kahramanı/Ruh
+    Hali Kaydedicisi/Birikim Ustası/Hayalperest/Rüya Yorumcusu) doğru
+    görsel/ad/koşul/ödülle göründüğü; Ayarlar'daki geçici "Rastgele Rozet
+    Kazan" butonuna birkaç kez basınca artık BU altı rozetin de rastgele
+    çıkabildiği; VE (gerçek kullanım senaryosu, saatler/günler sürer)
+    ilgili modüllerden birinde (ör. Şükran Günlüğü) 30 kayda ulaşınca
+    rozetin GERÇEKTEN otomatik kazanıldığı.

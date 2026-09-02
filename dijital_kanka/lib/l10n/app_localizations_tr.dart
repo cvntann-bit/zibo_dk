@@ -1500,4 +1500,49 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get badgeClaimRewardButton => 'Ödülü Al';
+
+  @override
+  String get badgeCategoryModuleMastery => 'Modül Ustalığı Rozetleri';
+
+  @override
+  String get badgeNameGratefulHeart => 'Şükreden Kalp';
+
+  @override
+  String get badgeNameWaterHero => 'Su Kahramanı';
+
+  @override
+  String get badgeNameMoodChronicler => 'Ruh Hali Kaydedicisi';
+
+  @override
+  String get badgeNameSavingsMaster => 'Birikim Ustası';
+
+  @override
+  String get badgeNameDreamer => 'Hayalperest';
+
+  @override
+  String get badgeNameDreamInterpreter => 'Rüya Yorumcusu';
+
+  @override
+  String get badgeRequirementGratefulHeart =>
+      'Şükran Günlüğü\'nde toplam 30 kayıt oluştur';
+
+  @override
+  String get badgeRequirementWaterHero =>
+      'Su Takibi\'nde toplam 30 gün kayıt yap';
+
+  @override
+  String get badgeRequirementMoodChronicler =>
+      'Ruh Hali Takibi\'nde toplam 30 kayıt oluştur';
+
+  @override
+  String get badgeRequirementSavingsMaster =>
+      'Para ve Birikim\'de toplam 20 kayıt oluştur';
+
+  @override
+  String get badgeRequirementDreamer =>
+      'Manifest Günlüğü\'nde toplam 15 kayıt oluştur';
+
+  @override
+  String get badgeRequirementDreamInterpreter =>
+      'Rüya Günlüğü\'nde toplam 15 kayıt oluştur';
 }

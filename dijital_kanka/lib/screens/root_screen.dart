@@ -9,11 +9,13 @@ import '../providers/app_streak_provider.dart';
 import '../providers/badge_provider.dart';
 import '../providers/currency_provider.dart';
 import '../providers/daily_rewards_provider.dart';
+import '../providers/dream_journal_provider.dart';
 import '../providers/goals_provider.dart';
 import '../providers/gratitude_provider.dart';
 import '../providers/locale_provider.dart';
 import '../providers/manifest_provider.dart';
 import '../providers/money_provider.dart';
+import '../providers/mood_provider.dart';
 import '../providers/notification_provider.dart';
 import '../providers/profile_provider.dart';
 import '../providers/trusted_time_provider.dart';
@@ -192,6 +194,14 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
         badges: context.read<BadgeProvider>(),
         goals: context.read<GoalsProvider>(),
         appStreak: context.read<AppStreakProvider>(),
+        // 2026 güncellemesi — Modül Ustalığı Rozetleri (bkz. CLAUDE.md
+        // "Rozet Sistemi" bölümü) için altı yeni provider.
+        gratitude: context.read<GratitudeProvider>(),
+        water: context.read<WaterProvider>(),
+        mood: context.read<MoodProvider>(),
+        money: context.read<MoneyProvider>(),
+        manifest: context.read<ManifestProvider>(),
+        dream: context.read<DreamJournalProvider>(),
       );
     });
   }

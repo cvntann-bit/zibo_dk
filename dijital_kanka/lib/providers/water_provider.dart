@@ -87,6 +87,13 @@ class WaterProvider extends ChangeNotifier {
   int get completedDaysCount =>
       _entries.where((e) => e.unitCount >= e.goalUnitCount).length;
 
+  /// Su Takibi'nde (tamamlanmış olsun olmasın) kayıt YAPILMIŞ toplam gün
+  /// sayısı (bugün dahil) — [completedDaysCount]'un AKSİNE hedefe
+  /// ULAŞILMASINI ŞART koşmuyor, yalnızca o gün en az bir dokunuş olmuş mu
+  /// diye bakıyor. "Su Kahramanı" rozeti için (bkz. `module_mastery_badges.
+  /// dart` — "toplam 30 gün kayıt yap", 30 GÜN TAMAMLANMIŞ olması DEĞİL).
+  int get totalDaysRecorded => _entries.length;
+
   Future<void> _loadFromPrefs() async {
     final decoded = await _store.load();
     if (decoded == null) return;

@@ -1510,4 +1510,49 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get badgeClaimRewardButton => 'Reclamar Recompensa';
+
+  @override
+  String get badgeCategoryModuleMastery => 'Insignias de Maestría de Módulo';
+
+  @override
+  String get badgeNameGratefulHeart => 'Corazón Agradecido';
+
+  @override
+  String get badgeNameWaterHero => 'Héroe del Agua';
+
+  @override
+  String get badgeNameMoodChronicler => 'Cronista del Ánimo';
+
+  @override
+  String get badgeNameSavingsMaster => 'Maestro del Ahorro';
+
+  @override
+  String get badgeNameDreamer => 'Soñador';
+
+  @override
+  String get badgeNameDreamInterpreter => 'Intérprete de Sueños';
+
+  @override
+  String get badgeRequirementGratefulHeart =>
+      'Crea un total de 30 registros en el Diario de Gratitud';
+
+  @override
+  String get badgeRequirementWaterHero =>
+      'Registra tu consumo de agua durante un total de 30 días';
+
+  @override
+  String get badgeRequirementMoodChronicler =>
+      'Crea un total de 30 registros en el Seguimiento del Ánimo';
+
+  @override
+  String get badgeRequirementSavingsMaster =>
+      'Crea un total de 20 registros en Dinero y Ahorros';
+
+  @override
+  String get badgeRequirementDreamer =>
+      'Crea un total de 15 registros en el Diario de Manifestación';
+
+  @override
+  String get badgeRequirementDreamInterpreter =>
+      'Crea un total de 15 registros en el Diario de Sueños';
 }

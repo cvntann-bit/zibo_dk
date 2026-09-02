@@ -1503,4 +1503,49 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get badgeClaimRewardButton => 'Claim Reward';
+
+  @override
+  String get badgeCategoryModuleMastery => 'Module Mastery Badges';
+
+  @override
+  String get badgeNameGratefulHeart => 'Grateful Heart';
+
+  @override
+  String get badgeNameWaterHero => 'Water Hero';
+
+  @override
+  String get badgeNameMoodChronicler => 'Mood Chronicler';
+
+  @override
+  String get badgeNameSavingsMaster => 'Savings Master';
+
+  @override
+  String get badgeNameDreamer => 'Dreamer';
+
+  @override
+  String get badgeNameDreamInterpreter => 'Dream Interpreter';
+
+  @override
+  String get badgeRequirementGratefulHeart =>
+      'Create a total of 30 entries in the Gratitude Journal';
+
+  @override
+  String get badgeRequirementWaterHero =>
+      'Log your water intake on a total of 30 days';
+
+  @override
+  String get badgeRequirementMoodChronicler =>
+      'Create a total of 30 entries in Mood Tracking';
+
+  @override
+  String get badgeRequirementSavingsMaster =>
+      'Create a total of 20 entries in Money & Savings';
+
+  @override
+  String get badgeRequirementDreamer =>
+      'Create a total of 15 entries in the Manifest Journal';
+
+  @override
+  String get badgeRequirementDreamInterpreter =>
+      'Create a total of 15 entries in the Dream Journal';
 }

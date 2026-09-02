@@ -444,5 +444,18 @@
   "badgeRequirementMonthStreak": "Abre la app 30 días seguidos",
   "badgeRequirementIronWill": "Abre la app 90 días seguidos",
   "badgeRequirementUnyielding": "Abre la app 180 días seguidos",
-  "badgeClaimRewardButton": "Reclamar Recompensa"
+  "badgeClaimRewardButton": "Reclamar Recompensa",
+  "badgeCategoryModuleMastery": "Insignias de Maestría de Módulo",
+  "badgeNameGratefulHeart": "Corazón Agradecido",
+  "badgeNameWaterHero": "Héroe del Agua",
+  "badgeNameMoodChronicler": "Cronista del Ánimo",
+  "badgeNameSavingsMaster": "Maestro del Ahorro",
+  "badgeNameDreamer": "Soñador",
+  "badgeNameDreamInterpreter": "Intérprete de Sueños",
+  "badgeRequirementGratefulHeart": "Crea un total de 30 registros en el Diario de Gratitud",
+  "badgeRequirementWaterHero": "Registra tu consumo de agua durante un total de 30 días",
+  "badgeRequirementMoodChronicler": "Crea un total de 30 registros en el Seguimiento del Ánimo",
+  "badgeRequirementSavingsMaster": "Crea un total de 20 registros en Dinero y Ahorros",
+  "badgeRequirementDreamer": "Crea un total de 15 registros en el Diario de Manifestación",
+  "badgeRequirementDreamInterpreter": "Crea un total de 15 registros en el Diario de Sueños"
 }

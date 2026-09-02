@@ -444,5 +444,18 @@
   "badgeRequirementMonthStreak": "Open the app 30 days in a row",
   "badgeRequirementIronWill": "Open the app 90 days in a row",
   "badgeRequirementUnyielding": "Open the app 180 days in a row",
-  "badgeClaimRewardButton": "Claim Reward"
+  "badgeClaimRewardButton": "Claim Reward",
+  "badgeCategoryModuleMastery": "Module Mastery Badges",
+  "badgeNameGratefulHeart": "Grateful Heart",
+  "badgeNameWaterHero": "Water Hero",
+  "badgeNameMoodChronicler": "Mood Chronicler",
+  "badgeNameSavingsMaster": "Savings Master",
+  "badgeNameDreamer": "Dreamer",
+  "badgeNameDreamInterpreter": "Dream Interpreter",
+  "badgeRequirementGratefulHeart": "Create a total of 30 entries in the Gratitude Journal",
+  "badgeRequirementWaterHero": "Log your water intake on a total of 30 days",
+  "badgeRequirementMoodChronicler": "Create a total of 30 entries in Mood Tracking",
+  "badgeRequirementSavingsMaster": "Create a total of 20 entries in Money & Savings",
+  "badgeRequirementDreamer": "Create a total of 15 entries in the Manifest Journal",
+  "badgeRequirementDreamInterpreter": "Create a total of 15 entries in the Dream Journal"
 }

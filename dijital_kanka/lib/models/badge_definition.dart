@@ -1,10 +1,10 @@
 import '../l10n/app_localizations.dart';
 
 /// Rozet Sistemi'ndeki kategoriler — bkz. CLAUDE.md "Rozet Sistemi" bölümü.
-/// Şimdilik yalnızca [consistency] dolu; kullanıcının planladığı diğer
-/// kategoriler (Modül Ustalığı, Koleksiyon, Sadakat, Sosyal/Paylaşım,
-/// Gizli/Eğlenceli) ayrı ayrı turlarda eklenecek.
-enum BadgeCategory { consistency }
+/// [consistency] + [moduleMastery] dolu; kullanıcının planladığı diğer
+/// kategoriler (Koleksiyon, Sadakat, Sosyal/Paylaşım, Gizli/Eğlenceli) ayrı
+/// ayrı turlarda eklenecek.
+enum BadgeCategory { consistency, moduleMastery }
 
 /// Tek bir rozetin SABİT tanımı (id, kategori, görsel, ödül) — HANGİ
 /// KOŞULDA kazanıldığı BURADA DEĞİL, `BadgeProvider`'ın kategoriye özel
@@ -42,6 +42,18 @@ class ZiboBadgeDefinition {
         return l10n.badgeNameIronWill;
       case 'unyielding':
         return l10n.badgeNameUnyielding;
+      case 'grateful_heart':
+        return l10n.badgeNameGratefulHeart;
+      case 'water_hero':
+        return l10n.badgeNameWaterHero;
+      case 'mood_chronicler':
+        return l10n.badgeNameMoodChronicler;
+      case 'savings_master':
+        return l10n.badgeNameSavingsMaster;
+      case 'dreamer':
+        return l10n.badgeNameDreamer;
+      case 'dream_interpreter':
+        return l10n.badgeNameDreamInterpreter;
       default:
         return id;
     }
@@ -59,6 +71,18 @@ class ZiboBadgeDefinition {
         return l10n.badgeRequirementIronWill;
       case 'unyielding':
         return l10n.badgeRequirementUnyielding;
+      case 'grateful_heart':
+        return l10n.badgeRequirementGratefulHeart;
+      case 'water_hero':
+        return l10n.badgeRequirementWaterHero;
+      case 'mood_chronicler':
+        return l10n.badgeRequirementMoodChronicler;
+      case 'savings_master':
+        return l10n.badgeRequirementSavingsMaster;
+      case 'dreamer':
+        return l10n.badgeRequirementDreamer;
+      case 'dream_interpreter':
+        return l10n.badgeRequirementDreamInterpreter;
       default:
         return '';
     }

@@ -11,12 +11,13 @@ import '../providers/badge_provider.dart';
 /// adı ve kazanma koşulu HER ZAMAN görünür kalır (bu kural "gizli" rozetler
 /// kategorisine — henüz eklenmedi — uygulanmayacak, ayrıca ele alınacak).
 ///
-/// Şimdilik yalnızca "İstikrar Rozetleri" kategorisi var — `allBadges`
-/// büyüdükçe bu ekran kategoriye göre gruplayıp yeni bölüm başlıkları
-/// gösterecek şekilde genişletilebilir (bkz. `consistency_badges.dart`'taki
-/// "yeni kategori eklendiğinde yalnızca `allBadges`'e eklenmesi yeterli" notu
-/// — bu ekran şimdiden tek bir kategoriyi sabit varsaymıyor, `_categoryTitle`
-/// switch'i genişletilebilir).
+/// **2026 güncellemesi — iki kategori: İstikrar Rozetleri + Modül Ustalığı
+/// Rozetleri.** `allBadges` kategoriye göre gruplanıp `BadgeCategory.values`
+/// SIRASIYLA render ediliyor, her bölüm kendi başlığı ile geliyor ve
+/// (ilk hariç) HER bölümün ÜSTÜNE ince bir `Divider` ile diğerinden görsel
+/// olarak ayrılıyor (kullanıcının açık isteği). Yeni bir kategori eklendiğinde
+/// yalnızca `allBadges`'e (bkz. `consistency_badges.dart`) ve buradaki
+/// `_categoryTitle` switch'ine bir `case` eklemek yeterli.
 class BadgesGalleryScreen extends StatelessWidget {
   const BadgesGalleryScreen({super.key});
 
@@ -24,12 +25,25 @@ class BadgesGalleryScreen extends StatelessWidget {
     switch (category) {
       case BadgeCategory.consistency:
         return l10n.badgeCategoryConsistency;
+      case BadgeCategory.moduleMastery:
+        return l10n.badgeCategoryModuleMastery;
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final byCategory = <BadgeCategory, List<ZiboBadgeDefinition>>{};
+    for (final badge in allBadges) {
+      byCategory.putIfAbsent(badge.category, () => []).add(badge);
+    }
+    // `BadgeCategory.values`'ın kendi sırasını koruyor (İstikrar → Modül
+    // Ustalığı) — bu, kullanıcının "Modül Ustalığı, İstikrar'ın ALTINDA"
+    // isteğiyle birebir (enum'da bu sırayla tanımlı).
+    final sections = BadgeCategory.values
+        .where((category) => byCategory[category]?.isNotEmpty ?? false)
+        .toList();
+
     return Scaffold(
       appBar: AppBar(title: Text(l10n.badgesGalleryTitle)),
       body: SingleChildScrollView(
@@ -37,31 +51,39 @@ class BadgesGalleryScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              _categoryTitle(l10n, BadgeCategory.consistency),
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            const SizedBox(height: 8),
-            GridView.count(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              crossAxisCount: 2,
-              mainAxisSpacing: 12,
-              crossAxisSpacing: 12,
-              // 2026 güncellemesi — kullanıcı "genel olarak çerçeve dikdörtgen
-              // şeklinde uzun, biraz kısaltalım" dedi: kartın FİKSE yüksekliği
-              // (aspect ratio'dan gelen) kısa metinli rozetlerde altta boşluk
-              // bırakıyordu. Görsel/metin/ödül satırı BİR ÖNCEKİ turda
-              // büyütüldüğü için 0.5'ten biraz DAHA BÜYÜK (0.62) bir orana
-              // çıkarılıp hem kart kısaltıldı hem büyümüş içerik için yeterli
-              // pay bırakıldı — `badges_gallery_screen_test.dart` overflow
-              // olmadığını doğruluyor.
-              childAspectRatio: 0.62,
-              children: [
-                for (final badge in consistencyBadges)
-                  _BadgeGalleryCard(badge: badge),
+            for (final category in sections) ...[
+              if (category != sections.first) ...[
+                const SizedBox(height: 20),
+                const Divider(height: 1),
+                const SizedBox(height: 16),
               ],
-            ),
+              Text(
+                _categoryTitle(l10n, category),
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              const SizedBox(height: 8),
+              GridView.count(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                crossAxisCount: 2,
+                mainAxisSpacing: 12,
+                crossAxisSpacing: 12,
+                // 2026 güncellemesi — kullanıcı "genel olarak çerçeve
+                // dikdörtgen şeklinde uzun, biraz kısaltalım" dedi: kartın
+                // FİKSE yüksekliği (aspect ratio'dan gelen) kısa metinli
+                // rozetlerde altta boşluk bırakıyordu. Görsel/metin/ödül
+                // satırı BİR ÖNCEKİ turda büyütüldüğü için 0.5'ten biraz
+                // DAHA BÜYÜK (0.62) bir orana çıkarılıp hem kart kısaltıldı
+                // hem büyümüş içerik için yeterli pay bırakıldı —
+                // `badges_gallery_screen_test.dart` overflow olmadığını
+                // doğruluyor.
+                childAspectRatio: 0.62,
+                children: [
+                  for (final badge in byCategory[category]!)
+                    _BadgeGalleryCard(badge: badge),
+                ],
+              ),
+            ],
           ],
         ),
       ),

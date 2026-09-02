@@ -1,4 +1,5 @@
 import '../models/badge_definition.dart';
+import 'module_mastery_badges.dart';
 
 /// İstikrar Rozetleri — bkz. CLAUDE.md "Rozet Sistemi" bölümü. Beşi de
 /// `AppStreakProvider.currentStreak`'e (uygulamayı HER GÜN AÇMA serisi —
@@ -42,7 +43,10 @@ const consistencyBadges = <ZiboBadgeDefinition>[
   ),
 ];
 
-/// TÜM kategorilerin TÜM rozetleri — şimdilik yalnızca [consistencyBadges].
+/// TÜM kategorilerin TÜM rozetleri — [consistencyBadges] + [moduleMasteryBadges].
 /// Yeni bir kategori eklendiğinde yalnızca bu listeye eklenmesi yeterli —
 /// `BadgesGalleryScreen` bunu kategoriye göre gruplayıp gösteriyor.
-const allBadges = <ZiboBadgeDefinition>[...consistencyBadges];
+const allBadges = <ZiboBadgeDefinition>[
+  ...consistencyBadges,
+  ...moduleMasteryBadges,
+];

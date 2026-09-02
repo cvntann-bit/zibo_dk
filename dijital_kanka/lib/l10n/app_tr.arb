@@ -2006,5 +2006,57 @@
   "badgeClaimRewardButton": "Ödülü Al",
   "@badgeClaimRewardButton": {
     "description": "Rozet kazanma popup'ındaki ödül alma butonu"
+  },
+  "badgeCategoryModuleMastery": "Modül Ustalığı Rozetleri",
+  "@badgeCategoryModuleMastery": {
+    "description": "Rozetler Galerisi'ndeki Modül Ustalığı kategorisinin bölüm başlığı"
+  },
+  "badgeNameGratefulHeart": "Şükreden Kalp",
+  "@badgeNameGratefulHeart": {
+    "description": "Modül Ustalığı Rozetleri'nin birinci rozetinin adı"
+  },
+  "badgeNameWaterHero": "Su Kahramanı",
+  "@badgeNameWaterHero": {
+    "description": "Modül Ustalığı Rozetleri'nin ikinci rozetinin adı"
+  },
+  "badgeNameMoodChronicler": "Ruh Hali Kaydedicisi",
+  "@badgeNameMoodChronicler": {
+    "description": "Modül Ustalığı Rozetleri'nin üçüncü rozetinin adı"
+  },
+  "badgeNameSavingsMaster": "Birikim Ustası",
+  "@badgeNameSavingsMaster": {
+    "description": "Modül Ustalığı Rozetleri'nin dördüncü rozetinin adı"
+  },
+  "badgeNameDreamer": "Hayalperest",
+  "@badgeNameDreamer": {
+    "description": "Modül Ustalığı Rozetleri'nin beşinci rozetinin adı"
+  },
+  "badgeNameDreamInterpreter": "Rüya Yorumcusu",
+  "@badgeNameDreamInterpreter": {
+    "description": "Modül Ustalığı Rozetleri'nin altıncı rozetinin adı"
+  },
+  "badgeRequirementGratefulHeart": "Şükran Günlüğü'nde toplam 30 kayıt oluştur",
+  "@badgeRequirementGratefulHeart": {
+    "description": "Şükreden Kalp rozetinin kazanma koşulu"
+  },
+  "badgeRequirementWaterHero": "Su Takibi'nde toplam 30 gün kayıt yap",
+  "@badgeRequirementWaterHero": {
+    "description": "Su Kahramanı rozetinin kazanma koşulu"
+  },
+  "badgeRequirementMoodChronicler": "Ruh Hali Takibi'nde toplam 30 kayıt oluştur",
+  "@badgeRequirementMoodChronicler": {
+    "description": "Ruh Hali Kaydedicisi rozetinin kazanma koşulu"
+  },
+  "badgeRequirementSavingsMaster": "Para ve Birikim'de toplam 20 kayıt oluştur",
+  "@badgeRequirementSavingsMaster": {
+    "description": "Birikim Ustası rozetinin kazanma koşulu"
+  },
+  "badgeRequirementDreamer": "Manifest Günlüğü'nde toplam 15 kayıt oluştur",
+  "@badgeRequirementDreamer": {
+    "description": "Hayalperest rozetinin kazanma koşulu"
+  },
+  "badgeRequirementDreamInterpreter": "Rüya Günlüğü'nde toplam 15 kayıt oluştur",
+  "@badgeRequirementDreamInterpreter": {
+    "description": "Rüya Yorumcusu rozetinin kazanma koşulu"
   }
 }
