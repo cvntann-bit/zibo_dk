@@ -474,5 +474,12 @@
   "badgeNameAnniversary": "Anniversary",
   "badgeRequirementFirstWeek": "Open the app on a total of 7 different days",
   "badgeRequirementLoyalFriend": "Open the app on a total of 100 different days",
-  "badgeRequirementAnniversary": "It's been 1 year since you met Zibo"
+  "badgeRequirementAnniversary": "It's been 1 year since you met Zibo",
+  "badgeCategorySocial": "Social Badges",
+  "badgeNameFirstShare": "First Share",
+  "badgeNameAmbassador": "Ambassador",
+  "badgeNameCommunityFounder": "Community Founder",
+  "badgeRequirementFirstShare": "Share a Zibo card for the first time",
+  "badgeRequirementAmbassador": "Successfully invite 1 friend with Invite a Friend",
+  "badgeRequirementCommunityFounder": "Successfully invite 5 friends with Invite a Friend"
 }

@@ -1,10 +1,10 @@
 import '../l10n/app_localizations.dart';
 
 /// Rozet Sistemi'ndeki kategoriler — bkz. CLAUDE.md "Rozet Sistemi" bölümü.
-/// [consistency] + [moduleMastery] + [collection] + [loyalty] dolu;
-/// kullanıcının planladığı diğer kategoriler (Sosyal/Paylaşım, Gizli/
-/// Eğlenceli) ayrı ayrı turlarda eklenecek.
-enum BadgeCategory { consistency, moduleMastery, collection, loyalty }
+/// [consistency] + [moduleMastery] + [collection] + [loyalty] + [social]
+/// dolu; kullanıcının planladığı diğer kategoriler (Gizli/Eğlenceli) ayrı
+/// bir turda eklenecek.
+enum BadgeCategory { consistency, moduleMastery, collection, loyalty, social }
 
 /// Tek bir rozetin SABİT tanımı (id, kategori, görsel, ödül) — HANGİ
 /// KOŞULDA kazanıldığı BURADA DEĞİL, `BadgeProvider`'ın kategoriye özel
@@ -80,6 +80,12 @@ class ZiboBadgeDefinition {
         return l10n.badgeNameLoyalFriend;
       case 'anniversary':
         return l10n.badgeNameAnniversary;
+      case 'first_share':
+        return l10n.badgeNameFirstShare;
+      case 'ambassador':
+        return l10n.badgeNameAmbassador;
+      case 'community_founder':
+        return l10n.badgeNameCommunityFounder;
       default:
         return id;
     }
@@ -123,6 +129,12 @@ class ZiboBadgeDefinition {
         return l10n.badgeRequirementLoyalFriend;
       case 'anniversary':
         return l10n.badgeRequirementAnniversary;
+      case 'first_share':
+        return l10n.badgeRequirementFirstShare;
+      case 'ambassador':
+        return l10n.badgeRequirementAmbassador;
+      case 'community_founder':
+        return l10n.badgeRequirementCommunityFounder;
       default:
         return '';
     }

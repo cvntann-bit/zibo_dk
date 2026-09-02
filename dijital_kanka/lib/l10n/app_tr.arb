@@ -2126,5 +2126,33 @@
   "badgeRequirementAnniversary": "Zibo ile tanışmanın üzerinden 1 yıl geçsin",
   "@badgeRequirementAnniversary": {
     "description": "Yıl Dönümü rozetinin kazanma koşulu"
+  },
+  "badgeCategorySocial": "Sosyal Rozetler",
+  "@badgeCategorySocial": {
+    "description": "Rozetler Galerisi'ndeki Sosyal kategorisinin bölüm başlığı"
+  },
+  "badgeNameFirstShare": "İlk Paylaşım",
+  "@badgeNameFirstShare": {
+    "description": "Sosyal Rozetler'in birinci rozetinin adı"
+  },
+  "badgeNameAmbassador": "Elçi",
+  "@badgeNameAmbassador": {
+    "description": "Sosyal Rozetler'in ikinci rozetinin adı"
+  },
+  "badgeNameCommunityFounder": "Topluluk Kurucusu",
+  "@badgeNameCommunityFounder": {
+    "description": "Sosyal Rozetler'in üçüncü rozetinin adı"
+  },
+  "badgeRequirementFirstShare": "Bir Zibo kartını ilk kez paylaş",
+  "@badgeRequirementFirstShare": {
+    "description": "İlk Paylaşım rozetinin kazanma koşulu"
+  },
+  "badgeRequirementAmbassador": "Davet Et ile 1 arkadaşını başarıyla davet et",
+  "@badgeRequirementAmbassador": {
+    "description": "Elçi rozetinin kazanma koşulu"
+  },
+  "badgeRequirementCommunityFounder": "Davet Et ile 5 arkadaşını başarıyla davet et",
+  "@badgeRequirementCommunityFounder": {
+    "description": "Topluluk Kurucusu rozetinin kazanma koşulu"
   }
 }

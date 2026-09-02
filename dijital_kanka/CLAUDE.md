@@ -4692,7 +4692,9 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
   `FounderBadgePromoCard` üzerinden izlediği, bkz. "Kurucu Üye Rozeti" bölümü), `GoalsProvider`,
   `GratitudeProvider`, `LocaleProvider`,
   `ManifestProvider`, `MoneyProvider`, `MoodProvider`, `NotificationProvider`, `ProfileProvider`,
-  `ProfileStatsArchiveProvider`, `SoundEffectsProvider`,
+  `ProfileStatsArchiveProvider`, `ReferralProvider` (2026 — Sosyal/Paylaşım Rozetleri'nin
+  `BadgeCoordinator`'ı artık bunu da izlediği için, bkz. "Rozet Sistemi" bölümündeki "Beşinci
+  kategori"), `SoundEffectsProvider`,
   `ThemeProvider`, `TrustedTimeProvider`, `WaterProvider`, `ZiboPoseProvider`) — bunun sebebi
   `RootScreen`'in tüm sekmeleri hemen kurması (artık `ProfileScreen` de bir sekme olduğu için onun
   transitif olarak izlediği TÜM provider'lar da burada olmalı — bkz. "Alt Gezinme Çubuğu"
@@ -8331,3 +8333,108 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
     kazandırabildiği, VE (gerçek kullanım senaryosu, GÜNLER/AYLAR sürer)
     uygulamayı ARA SIRA (ardışık olmadan) toplam 7/100 farklı günde açınca
     veya 1 yıl geçince ilgili rozetlerin GERÇEKTEN otomatik kazanıldığı.
+
+#### Beşinci kategori — Sosyal/Paylaşım Rozetleri (3 rozet)
+
+- **2026 yeni özellik.** Kullanıcı isteği: yine AYNI mimari, bu sefer YENİ
+  bir mekanik İCAT ETMEDEN — mevcut "Zibonu Paylaş" özelliği VE "Arkadaşını
+  Davet Et" (Referral) sistemiyle DOĞRUDAN bağlantılı üç rozet. Kullanıcının
+  açık isteği: "paylaşım butonu tıklandığında veya referral sistemi başarılı
+  bir davet kaydettiğinde, ilgili rozet kontrolü otomatik tetiklensin."
+  - **İlk Paylaşım** (`first_share`) — kullanıcı bir başarı kartını
+    ("Zibonu Paylaş" özelliğiyle) sosyal medyaya/WhatsApp'a İLK KEZ
+    paylaştığında — 15 ZC. **Elçi** (`ambassador`) — Davet Et ile 1
+    arkadaşını BAŞARIYLA davet ettiğinde — 30 ZC. **Topluluk Kurucusu**
+    (`community_founder`) — Davet Et ile 5 arkadaşını BAŞARIYLA davet
+    ettiğinde — 150 ZC.
+  - **`BadgeCategory` enum'una `social` eklendi** (`loyalty`'nin yanına).
+    YENİ `lib/data/social_badges.dart` — önceki dört kategori dosyasının
+    BİREBİR AYNISI, üç `ZiboBadgeDefinition`. `allBadges`
+    `[...consistencyBadges, ...moduleMasteryBadges, ...collectionBadges,
+    ...loyaltyBadges, ...socialBadges]`'e güncellendi.
+  - **İKİ FARKLI kaynak türü — OLAY-tabanlı vs. DURUM-tabanlı reconcile,
+    bu kategoride İLK KEZ gerekli oldu.** Önceki dört kategorinin
+    HEPSİ saf DURUM (bir sayaç/eşik) sorguluyordu; `first_share` ise
+    GERÇEK bir OLAYA (bir paylaşımın BAŞARIYLA tamamlanması) bağlı —
+    `BadgeProvider.reconcileSocialBadges({required bool
+    hasSharedAtLeastOnce, required int successfulReferralCount})` bu
+    ikisini TEK bir metotta birleştiriyor, ama İKİ AYRI çağrı sitesinden
+    FARKLI değerlerle besleniyor:
+    1. **`ZiboShareSheet._share()`'in BAŞARI dalı** — paylaşım
+       `shareImageBytes(...)` GERÇEKTEN tamamlandıktan HEMEN SONRA (ama
+       `Navigator.pop()`'tan ÖNCE, `if (!mounted) return;` guard'ıyla)
+       `hasSharedAtLeastOnce: true` ile çağrılıyor — bu, `first_share`'in
+       kazanılabileceği TEK yer. **Ayrı bir kalıcı "hiç paylaştı mı"
+       bayrağı EKLENMEDİ** — `BadgeProvider._earned`'ın kendi idempotent
+       bookkeeping'i (`if (_earned.containsKey(badge.id)) continue;`)
+       zaten HER paylaşımda güvenle tekrar çağrılabilmesini sağlıyor.
+    2. **`BadgeCoordinator._reconcile()`'ın rutin geçişi** —
+       `hasSharedAtLeastOnce: false` (bu yoldan `first_share` ASLA
+       kazanılmıyor) + `successfulReferralCount:
+       referral.successfulReferralCount` ile, `ReferralProvider`
+       DEĞİŞTİĞİNDE (bkz. altta) `ambassador`/`community_founder`'ı
+       reaktif olarak kontrol ediyor.
+  - **`BadgeCoordinator` genişletildi — artık ON İKİ provider'ı dinliyor**
+    (önceki on bire `ReferralProvider` eklendi). `RootScreen.initState()`
+    hem `BadgeCoordinator(..., referral: context.read<ReferralProvider>())`
+    hem AYRICA (koordinatör kurulumundan BAĞIMSIZ, `postFrameCallback`'in
+    DIŞINDA) `context.read<ReferralProvider>().refresh()` çağırıyor —
+    `DailyRewardsProvider.reconcileForToday()` ile AYNI "reconcile-on-resume"
+    felsefesi: `successfulReferralCount` sunucu tarafında (`processReferralRewards.
+    js`'in bir SONRAKİ GitHub Actions çalıştırmasında) artırılıyor,
+    istemci bunu ANINDA GÖRMÜYOR, yalnızca `refresh()` çağrılınca. Bu yüzden
+    `RootScreen.didChangeAppLifecycleState`'in `resumed` dalına da (mevcut
+    `touchLastActive`/`syncAll`/`recordOpenForToday` çağrılarının YANINA)
+    `context.read<ReferralProvider>().refresh()` eklendi — uygulama HER
+    öne geldiğinde tazeleniyor, yalnızca soğuk başlangıçta DEĞİL.
+  - **`ZiboShareSheet`'e YENİ importlar (`provider`, `BadgeProvider`,
+    `ReferralProvider`) eklendi** — bu widget'ın önceden HİÇ Provider
+    bağımlılığı YOKTU (yalnızca constructor parametreleri + kendi state'i).
+  - **`BadgesGalleryScreen`'in `_categoryTitle` switch'ine `BadgeCategory.
+    social` case'i eklendi** — mevcut gruplama/ayraç mantığı YİNE HİÇBİR
+    DEĞİŞİKLİK GEREKTİRMEDİ.
+  - **Görseller** kullanıcının masaüstündeki `rozetler/sosyal paylaşım
+    rozetleri` klasöründen `tool/process_social_badge_images.dart` (YENİ,
+    AYNI "dosya adlarını koru, 512px'e küçült" deseni) ile kopyalandı —
+    üçü de kopyalamadan ÖNCE piksel-alfa ölçümüyle temiz/şeffaf olduğu
+    doğrulandı (Yılmaz/Efsanevi rozetindeki bug'ın tekrarlanmadığı).
+  - **ARB — 10 yeni anahtar (TR/EN/ES):** `badgeCategorySocial` + 3×
+    `badgeName<X>` + 3× `badgeRequirement<X>`.
+  - **`BadgeProvider.debugGrantRandomBadge()` (Ayarlar'daki GEÇİCİ test
+    paneli) YİNE HİÇBİR DEĞİŞİKLİK GEREKTİRMEDİ** — artık yirmi bir
+    rozetin (5+6+4+3+3) HERHANGİ birini rastgele kazandırabiliyor.
+  - **Test: 18 YENİ test.** `badge_provider_test.dart`'a
+    `reconcileSocialBadges` grubu (7 test — eşik altı no-op,
+    `hasSharedAtLeastOnce`/`ambassador`/`community_founder`'ın her biri
+    için ayrı bir senaryo [İKİSİNİN BİRLİKTE kazanılıp kutlama sinyalinin
+    EN SONuncuya yazıldığı dahil], tekrar-bildirmeme, kalıcılık).
+    `badge_coordinator_test.dart`'a (`FakeFirebaseFirestore` ile) 3 yeni
+    test — ReferralProvider TEMSİLCİ, sunucu tarafı sayaç artışı
+    `firestore.collection('users').doc(uid).collection('state').
+    doc('referralState').set({'successfulReferralCount': N})` ile DOĞRUDAN
+    simüle edilip `referral.refresh()` çağrılarak `notifyListeners()`
+    tetikleniyor (EAGER ilk reconcile Sosyal/Paylaşım'ı da kapsıyor,
+    SONRADAN `refresh()` ile değişince otomatik reconcile, dispose sonrası
+    tetiklenmiyor). **Gerçek bir test hatası bulunup düzeltildi —
+    `zibo_share_sheet_test.dart`'ın bağımsız test uygulaması hem
+    `BadgeProvider`/`ReferralProvider`'ı (yeni `context.read` çağrıları
+    yüzünden) HEM `SharedPreferences.setMockInitialValues({})`'ı
+    (`CloudStateStore`'un ikisi de kullandığı için) EKSİK bırakıyordu —
+    "Paylaş'a basınca..." testi ProviderNotFoundException'ı sessizce
+    yutup sheet'i HİÇ KAPATMIYORDU (`_share()`'in genel `catch (_)`
+    bloğu); `MultiProvider` sarmalayıcısı + `setUp`'a
+    `SharedPreferences.setMockInitialValues({})` eklenerek düzeltildi.**
+    **Toplam: 500 test** (499 geçti + 1 önceden belgelenmiş
+    `audioplayers`/`home_widget` flake'i).
+  - **Gerçek cihazda GÖRSEL doğrulama bu turda YAPILMADI** — yalnızca
+    `flutter test` (500 test) + `flutter build apk --debug` (sorunsuz) ile
+    doğrulandı; APK cihaza SESSİZCE kuruldu (kullanıcı o an aktif olarak
+    BitLife oynuyordu, açılmadı). **Kullanıcının kendi cihazında
+    doğrulaması gereken:** Rozetler Galerisi'nde Sadakat'in ALTINDA
+    "Sosyal Rozetler" başlığı + üç rozetin doğru görsel/ad/koşul/ödülle
+    göründüğü, Ayarlar'daki test panelinin artık BU üç rozeti de rastgele
+    kazandırabildiği, "Zibonu Paylaş"tan GERÇEKTEN bir paylaşım
+    tamamlanınca İlk Paylaşım rozetinin ANINDA kazanıldığı, VE (gerçek
+    kullanım senaryosu, sunucu tarafı cron'u gerektirir) Davet Et ile
+    1/5 arkadaş başarıyla davet edilip uygulama bir SONRAKİ açılışta/
+    öne gelişte Elçi/Topluluk Kurucusu rozetlerinin otomatik kazanıldığı.

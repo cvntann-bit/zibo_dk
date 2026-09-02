@@ -1611,4 +1611,28 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get badgeRequirementAnniversary =>
       'Ha pasado 1 año desde que conociste a Zibo';
+
+  @override
+  String get badgeCategorySocial => 'Insignias Sociales';
+
+  @override
+  String get badgeNameFirstShare => 'Primera Vez que Compartes';
+
+  @override
+  String get badgeNameAmbassador => 'Embajador';
+
+  @override
+  String get badgeNameCommunityFounder => 'Fundador de la Comunidad';
+
+  @override
+  String get badgeRequirementFirstShare =>
+      'Comparte una tarjeta de Zibo por primera vez';
+
+  @override
+  String get badgeRequirementAmbassador =>
+      'Invita con éxito a 1 amigo con Invitar a un Amigo';
+
+  @override
+  String get badgeRequirementCommunityFounder =>
+      'Invita con éxito a 5 amigos con Invitar a un Amigo';
 }

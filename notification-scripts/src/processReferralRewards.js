@@ -24,7 +24,15 @@
 // KULLANILMIYOR) — projenin genelindeki client-authoritative ekonomi risk
 // kabulüyle AYNI kategoride, kapsam dışı bırakıldı (bkz. CLAUDE.md "Coin
 // Ekonomisi Güvenliği" bölümü).
+//
+// **2026 güncellemesi — davet EDENİN `referralState` belgesine
+// `successfulReferralCount` sayacı eklendi (bkz. `creditReferralReward`).**
+// Sosyal/Paylaşım Rozetleri'nin ("Elçi"/"Topluluk Kurucusu", bkz. CLAUDE.md
+// "Rozet Sistemi" bölümü) istemci tarafında kaç başarılı davet olduğunu
+// öğrenebileceği TEK yol bu — `referralRedemptions` koleksiyonu istemciler
+// için tamamen OKUNAMAZ (bkz. firestore.rules).
 
+const admin = require('firebase-admin');
 const { db } = require('./common');
 
 // `lib/models/coin_economy.dart`'taki `CoinEconomy.referral` ile AYNI
@@ -43,8 +51,17 @@ const DRY_RUN = process.env.DRY_RUN === 'true';
  * `CoinProvider._save()`'in ürettiği JSON şekliyle (bkz. coin_provider.dart)
  * BİREBİR uyumlu bir işlem kaydı (`type: 'earn'`, `reason: 'Arkadaş
  * daveti'` — istemcideki dormant `CoinProvider.earnReferral()`'ın KULLANDIĞI
- * AYNI metin) en başa ekleniyor, ardından liste en yeni 200'e kırpılıyor. */
-async function creditReferralReward(uid) {
+ * AYNI metin) en başa ekleniyor, ardından liste en yeni 200'e kırpılıyor.
+ *
+ * [isReferrer] `true` ise AYRICA `referralState` belgesindeki
+ * `successfulReferralCount` sayacını +1 artırır — bkz. CLAUDE.md "Rozet
+ * Sistemi" bölümü, "Sosyal/Paylaşım Rozetleri" alt bölümü ("Elçi"/"Topluluk
+ * Kurucusu"). İstemciler `referralRedemptions` koleksiyonunu OKUYAMADIĞI
+ * için (bkz. firestore.rules) bu sayaç, davet EDENİN kaç başarılı daveti
+ * olduğunu istemci tarafında öğrenebileceği TEK yol — `merge: true` ile
+ * yazılıyor ki istemcinin AYNI belgeye (`redeemCode()` çağrısıyla) yazdığı
+ * `redeemed`/`referrerUid` alanları SİLİNMESİN. */
+async function creditReferralReward(uid, { isReferrer = false } = {}) {
   const coinRef = db.collection('users').doc(uid).collection('state').doc('coinState');
   const snap = await coinRef.get();
   const data = snap.exists ? snap.data() : {};
@@ -61,6 +78,18 @@ async function creditReferralReward(uid) {
   ].slice(0, MAX_STORED_TRANSACTIONS);
 
   await coinRef.set({ ...data, balance, totalEarned, transactions }, { merge: true });
+
+  if (isReferrer) {
+    const referralStateRef = db
+      .collection('users')
+      .doc(uid)
+      .collection('state')
+      .doc('referralState');
+    await referralStateRef.set(
+      { successfulReferralCount: admin.firestore.FieldValue.increment(1) },
+      { merge: true },
+    );
+  }
 }
 
 async function main() {
@@ -113,7 +142,7 @@ async function main() {
         `referrerUid=${referrerUid} refereeUid=${refereeUid} (+${REFERRAL_REWARD_ZC} ZC her ikisine)`,
     );
     if (!DRY_RUN) {
-      await creditReferralReward(referrerUid);
+      await creditReferralReward(referrerUid, { isReferrer: true });
       await creditReferralReward(refereeUid);
       await doc.ref.set(
         { status: 'completed', processedAt: new Date().toISOString() },

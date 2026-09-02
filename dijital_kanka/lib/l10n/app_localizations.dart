@@ -2907,6 +2907,48 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'Zibo ile tanışmanın üzerinden 1 yıl geçsin'**
   String get badgeRequirementAnniversary;
+
+  /// Rozetler Galerisi'ndeki Sosyal kategorisinin bölüm başlığı
+  ///
+  /// In tr, this message translates to:
+  /// **'Sosyal Rozetler'**
+  String get badgeCategorySocial;
+
+  /// Sosyal Rozetler'in birinci rozetinin adı
+  ///
+  /// In tr, this message translates to:
+  /// **'İlk Paylaşım'**
+  String get badgeNameFirstShare;
+
+  /// Sosyal Rozetler'in ikinci rozetinin adı
+  ///
+  /// In tr, this message translates to:
+  /// **'Elçi'**
+  String get badgeNameAmbassador;
+
+  /// Sosyal Rozetler'in üçüncü rozetinin adı
+  ///
+  /// In tr, this message translates to:
+  /// **'Topluluk Kurucusu'**
+  String get badgeNameCommunityFounder;
+
+  /// İlk Paylaşım rozetinin kazanma koşulu
+  ///
+  /// In tr, this message translates to:
+  /// **'Bir Zibo kartını ilk kez paylaş'**
+  String get badgeRequirementFirstShare;
+
+  /// Elçi rozetinin kazanma koşulu
+  ///
+  /// In tr, this message translates to:
+  /// **'Davet Et ile 1 arkadaşını başarıyla davet et'**
+  String get badgeRequirementAmbassador;
+
+  /// Topluluk Kurucusu rozetinin kazanma koşulu
+  ///
+  /// In tr, this message translates to:
+  /// **'Davet Et ile 5 arkadaşını başarıyla davet et'**
+  String get badgeRequirementCommunityFounder;
 }
 
 class _AppLocalizationsDelegate

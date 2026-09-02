@@ -20,6 +20,7 @@ import '../providers/money_provider.dart';
 import '../providers/mood_provider.dart';
 import '../providers/notification_provider.dart';
 import '../providers/profile_provider.dart';
+import '../providers/referral_provider.dart';
 import '../providers/trusted_time_provider.dart';
 import '../providers/water_provider.dart';
 import '../services/badge_coordinator.dart';
@@ -211,8 +212,17 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
         // bu context'te mevcut, bkz. yukarıdaki HomeWidgetSyncCoordinator
         // kurulumu).
         profile: context.read<ProfileProvider>(),
+        // 2026 güncellemesi — Sosyal/Paylaşım Rozetleri (Elçi/Topluluk
+        // Kurucusu) için ReferralProvider.
+        referral: context.read<ReferralProvider>(),
       );
     });
+    // 2026 güncellemesi — Sosyal/Paylaşım Rozetleri: `ReferralProvider.
+    // successfulReferralCount` sunucu tarafında (GitHub Actions cron'u)
+    // artırılıyor, istemci bunu ancak `refresh()` çağrılınca görüyor —
+    // `DailyRewardsProvider.reconcileForToday()` ile AYNI "reconcile-on-
+    // resume" felsefesi, bkz. `ReferralProvider.refresh()`'in dokümantasyonu.
+    context.read<ReferralProvider>().refresh();
   }
 
   /// **2026 bug düzeltmesi — kullanıcı raporu: "uygulama İspanyolca ama
@@ -287,6 +297,10 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
       // başlangıçta DEĞİL) "bugün açıldı" kaydı tazeleniyor, aynı
       // `touchLastActive`/`syncAll` tetikleyicisiyle.
       context.read<AppStreakProvider>().recordOpenForToday();
+      // Sosyal/Paylaşım Rozetleri — sunucu tarafında (bir SONRAKİ GitHub
+      // Actions çalıştırmasında) artırılan `successfulReferralCount`'un
+      // istemciye yansıması için AYNI "reconcile-on-resume" tetikleyicisi.
+      context.read<ReferralProvider>().refresh();
     }
   }
 

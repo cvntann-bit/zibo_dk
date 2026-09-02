@@ -13,8 +13,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:dijital_kanka/l10n/app_localizations.dart';
+import 'package:dijital_kanka/providers/badge_provider.dart';
+import 'package:dijital_kanka/providers/referral_provider.dart';
 import 'package:dijital_kanka/services/share_service.dart';
 import 'package:dijital_kanka/widgets/share_zibo_button.dart';
 
@@ -47,21 +51,32 @@ class _FakeShareService extends ShareService {
 const _testMessage = 'Bugün küçük bir adım, yarın büyük bir fark.';
 
 Widget _buildTestApp(ShareService shareService) {
-  return MaterialApp(
-    debugShowCheckedModeBanner: false,
-    locale: const Locale('tr'),
-    localizationsDelegates: const [
-      AppLocalizations.delegate,
-      GlobalMaterialLocalizations.delegate,
-      GlobalWidgetsLocalizations.delegate,
-      GlobalCupertinoLocalizations.delegate,
+  // 2026 — Sosyal/Paylaşım Rozetleri: ZiboShareSheet._share() artık başarılı
+  // bir paylaşımdan sonra context.read<BadgeProvider>()/
+  // context.read<ReferralProvider>() çağırıyor (bkz. reconcileSocialBadges
+  // hook'u) — bu bağımsız test uygulamasının ikisini de sağlaması gerekiyor,
+  // aksi halde ProviderNotFoundException sessizce yutulup sheet HİÇ kapanmaz.
+  return MultiProvider(
+    providers: [
+      ChangeNotifierProvider(create: (_) => BadgeProvider()),
+      ChangeNotifierProvider(create: (_) => ReferralProvider()),
     ],
-    supportedLocales: AppLocalizations.supportedLocales,
-    home: Scaffold(
-      body: Center(
-        child: ShareZiboButton(
-          message: _testMessage,
-          shareService: shareService,
+    child: MaterialApp(
+      debugShowCheckedModeBanner: false,
+      locale: const Locale('tr'),
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: AppLocalizations.supportedLocales,
+      home: Scaffold(
+        body: Center(
+          child: ShareZiboButton(
+            message: _testMessage,
+            shareService: shareService,
+          ),
         ),
       ),
     ),
@@ -73,6 +88,15 @@ void main() {
   // yavaşlık hem de ağ olmayan ortamlarda kararsızlık yaratmasın diye
   // kapatılıp yerel yedek (fallback) fontla devam edilmesi sağlanıyor.
   GoogleFonts.config.allowRuntimeFetching = false;
+
+  // 2026 — BadgeProvider/ReferralProvider (bkz. yukarıdaki MultiProvider
+  // notu) CloudStateStore üzerinden SharedPreferences'a dokunuyor —
+  // mock'lanmadan `SharedPreferences.getInstance()` bir
+  // MissingPluginException fırlatır (diğer TÜM provider testlerindeki AYNI
+  // gereklilik).
+  setUp(() {
+    SharedPreferences.setMockInitialValues({});
+  });
 
   testWidgets(
     'Paylaş ikonuna basınca sheet açılır ve önizlemede söz görünür',

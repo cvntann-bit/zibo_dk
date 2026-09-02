@@ -1599,4 +1599,27 @@ class AppLocalizationsTr extends AppLocalizations {
   @override
   String get badgeRequirementAnniversary =>
       'Zibo ile tanışmanın üzerinden 1 yıl geçsin';
+
+  @override
+  String get badgeCategorySocial => 'Sosyal Rozetler';
+
+  @override
+  String get badgeNameFirstShare => 'İlk Paylaşım';
+
+  @override
+  String get badgeNameAmbassador => 'Elçi';
+
+  @override
+  String get badgeNameCommunityFounder => 'Topluluk Kurucusu';
+
+  @override
+  String get badgeRequirementFirstShare => 'Bir Zibo kartını ilk kez paylaş';
+
+  @override
+  String get badgeRequirementAmbassador =>
+      'Davet Et ile 1 arkadaşını başarıyla davet et';
+
+  @override
+  String get badgeRequirementCommunityFounder =>
+      'Davet Et ile 5 arkadaşını başarıyla davet et';
 }

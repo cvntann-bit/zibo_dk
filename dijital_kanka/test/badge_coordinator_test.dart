@@ -1,18 +1,20 @@
 // BadgeCoordinator'ın GoalsProvider/AppStreakProvider (İstikrar),
 // Gratitude/Water/Mood/Money/Manifest/Dream (Modül Ustalığı), Costume/
-// AppTheme (Koleksiyon) VE AppStreak/Profile (Sadakat) provider'ları
-// değiştiğinde BadgeProvider.reconcileConsistencyBadges/
-// reconcileModuleMasteryBadges/reconcileCollectionBadges/
-// reconcileLoyaltyBadges'i OTOMATİK tetiklediğini doğrudan (widget
-// pump'lamadan) test eder — HomeWidgetSyncCoordinator testlerindeki "sahte/
-// gerçek provider'ları kur, addListener'ın gerçekten tetiklendiğini
-// doğrula" deseniyle aynı. Modüle özel eşik/kazanma mantığının kendisi
-// `badge_provider_test.dart`ta zaten kapsamlı test edildiği için burada
-// yalnızca "koordinatör GERÇEKTEN dinliyor mu" doğrulanıyor — provider'ların
-// HEPSİ için ayrı ayrı senaryo YAZILMADI, MoneyProvider/CostumeProvider/
-// AppStreakProvider (en basit, tarih kilidi olmayan/zaten kurulu) birer
-// TEMSİLCİ olarak yeterli.
+// AppTheme (Koleksiyon), AppStreak/Profile (Sadakat) VE Referral (Sosyal/
+// Paylaşım) provider'ları değiştiğinde BadgeProvider.
+// reconcileConsistencyBadges/reconcileModuleMasteryBadges/
+// reconcileCollectionBadges/reconcileLoyaltyBadges/reconcileSocialBadges'i
+// OTOMATİK tetiklediğini doğrudan (widget pump'lamadan) test eder —
+// HomeWidgetSyncCoordinator testlerindeki "sahte/gerçek provider'ları kur,
+// addListener'ın gerçekten tetiklendiğini doğrula" deseniyle aynı. Modüle
+// özel eşik/kazanma mantığının kendisi `badge_provider_test.dart`ta zaten
+// kapsamlı test edildiği için burada yalnızca "koordinatör GERÇEKTEN
+// dinliyor mu" doğrulanıyor — provider'ların HEPSİ için ayrı ayrı senaryo
+// YAZILMADI, MoneyProvider/CostumeProvider/AppStreakProvider/ReferralProvider
+// (en basit, tarih kilidi olmayan/zaten kurulu) birer TEMSİLCİ olarak
+// yeterli.
 
+import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -29,6 +31,7 @@ import 'package:dijital_kanka/providers/manifest_provider.dart';
 import 'package:dijital_kanka/providers/money_provider.dart';
 import 'package:dijital_kanka/providers/mood_provider.dart';
 import 'package:dijital_kanka/providers/profile_provider.dart';
+import 'package:dijital_kanka/providers/referral_provider.dart';
 import 'package:dijital_kanka/providers/water_provider.dart';
 import 'package:dijital_kanka/services/badge_coordinator.dart';
 import 'package:dijital_kanka/utils/badge_celebration_signal.dart';
@@ -53,6 +56,8 @@ void main() {
     late CostumeProvider costume;
     late AppThemeProvider appTheme;
     late ProfileProvider profile;
+    late FakeFirebaseFirestore firestore;
+    late ReferralProvider referral;
 
     setUp(() async {
       currentDate = DateTime(2026, 1, 5);
@@ -68,6 +73,8 @@ void main() {
       costume = CostumeProvider();
       appTheme = AppThemeProvider();
       profile = ProfileProvider(now: () => currentDate);
+      firestore = FakeFirebaseFirestore();
+      referral = ReferralProvider(uid: 'uidReferrer', firestore: firestore);
       await Future<void>.delayed(Duration.zero);
     });
 
@@ -84,7 +91,23 @@ void main() {
       costume: costume,
       appTheme: appTheme,
       profile: profile,
+      referral: referral,
     );
+
+    // Sunucu tarafı `processReferralRewards.js`'in referrerUid'in
+    // `referralState` belgesine yazdığı sayacı DOĞRUDAN simüle ediyor —
+    // `ReferralProvider.refresh()`'in `_loadFromPrefs()`'i yeniden
+    // çağırması, Firestore'daki (artık dolu) veriyi okuyup notifyListeners()
+    // tetiklemesi için gerekli.
+    Future<void> setSuccessfulReferralCountAndRefresh(int count) async {
+      await firestore
+          .collection('users')
+          .doc('uidReferrer')
+          .collection('state')
+          .doc('referralState')
+          .set({'successfulReferralCount': count});
+      await referral.refresh();
+    }
 
     test(
       'Constructor EAGER bir ilk reconcile yapar — kuruluş anında zaten '
@@ -290,6 +313,47 @@ void main() {
         openSevenNonConsecutiveDays();
 
         expect(badges.isEarned('first_week'), isFalse);
+      },
+    );
+
+    test(
+      'Constructor EAGER ilk reconcile Sosyal/Paylaşım rozetlerini de '
+      'kapsıyor — kuruluştan ÖNCE Firestore\'da zaten karşılanmış bir '
+      'eşik hemen ödüllendirilir',
+      () async {
+        await setSuccessfulReferralCountAndRefresh(1);
+        expect(referral.successfulReferralCount, 1);
+        expect(badges.isEarned('ambassador'), isFalse);
+
+        buildCoordinator();
+
+        expect(badges.isEarned('ambassador'), isTrue);
+      },
+    );
+
+    test(
+      'ReferralProvider SONRADAN değişince (refresh()) koordinatör Sosyal/'
+      'Paylaşım rozetini de reconcile eder',
+      () async {
+        final coordinator = buildCoordinator();
+        expect(badges.isEarned('ambassador'), isFalse);
+
+        await setSuccessfulReferralCountAndRefresh(1);
+
+        expect(badges.isEarned('ambassador'), isTrue);
+        coordinator.dispose();
+      },
+    );
+
+    test(
+      'dispose() sonrası ReferralProvider değişiklikleri de tetiklenmez',
+      () async {
+        final coordinator = buildCoordinator();
+        coordinator.dispose();
+
+        await setSuccessfulReferralCountAndRefresh(1);
+
+        expect(badges.isEarned('ambassador'), isFalse);
       },
     );
   });

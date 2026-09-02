@@ -9,19 +9,27 @@ import '../providers/manifest_provider.dart';
 import '../providers/money_provider.dart';
 import '../providers/mood_provider.dart';
 import '../providers/profile_provider.dart';
+import '../providers/referral_provider.dart';
 import '../providers/water_provider.dart';
 
-/// Rozet Sistemi'nin DÖRT kategorisinin de (İstikrar + Modül Ustalığı +
-/// Koleksiyon + Sadakat) kazanma kontrolünü, ilgili kaynak veri her
-/// güncellendiğinde OTOMATİK tetikleyen koordinatör — bkz. CLAUDE.md "Rozet
-/// Sistemi" bölümü. `HomeWidgetSyncCoordinator`'ın AYNI "constructor'dan
-/// değil PARAMETRE olarak al, dışarıdan `addListener` ekle" deseni: bu obje
-/// on bir provider'ın (Badges, Goals, AppStreak, Gratitude, Water, Mood,
-/// Money, Manifest, Dream, Costume, AppTheme, Profile) HİÇBİRİNE KALICI
-/// bağımlı değil, yalnızca onları dinleyip [BadgeProvider.
-/// reconcileConsistencyBadges]/[BadgeProvider.reconcileModuleMasteryBadges]/
-/// [BadgeProvider.reconcileCollectionBadges]/[BadgeProvider.
-/// reconcileLoyaltyBadges]'i çağırıyor.
+/// Rozet Sistemi'nin BEŞ kategorisinin de (İstikrar + Modül Ustalığı +
+/// Koleksiyon + Sadakat + Sosyal/Paylaşım) kazanma kontrolünü, ilgili kaynak
+/// veri her güncellendiğinde OTOMATİK tetikleyen koordinatör — bkz.
+/// CLAUDE.md "Rozet Sistemi" bölümü. `HomeWidgetSyncCoordinator`'ın AYNI
+/// "constructor'dan değil PARAMETRE olarak al, dışarıdan `addListener`
+/// ekle" deseni: bu obje on iki provider'ın (Badges, Goals, AppStreak,
+/// Gratitude, Water, Mood, Money, Manifest, Dream, Costume, AppTheme,
+/// Profile, Referral) HİÇBİRİNE KALICI bağımlı değil, yalnızca onları
+/// dinleyip [BadgeProvider.reconcileConsistencyBadges]/[BadgeProvider.
+/// reconcileModuleMasteryBadges]/[BadgeProvider.reconcileCollectionBadges]/
+/// [BadgeProvider.reconcileLoyaltyBadges]/[BadgeProvider.
+/// reconcileSocialBadges]'i çağırıyor.
+///
+/// **`reconcileSocialBadges`'in `hasSharedAtLeastOnce` parametresi BURADA
+/// HER ZAMAN `false` geçiriliyor** — `first_share`'in TEK gerçek tetikleyicisi
+/// `ZiboShareSheet._share()`'in KENDİSİ (bkz. o widget'taki AYRI çağrı); bu
+/// rutin geçiş yalnızca `ambassador`/`community_founder`'ı (ReferralProvider'a
+/// bağlı, DURUM-tabanlı) reaktif olarak kontrol ediyor.
 ///
 /// `RootScreen.initState()`'te BİR KEZ oluşturulur (constructor'ın kendisi de
 /// EAGER bir ilk kontrol yapar — uygulama açılışında zaten karşılanmış bir
@@ -41,6 +49,7 @@ class BadgeCoordinator {
     required this.costume,
     required this.appTheme,
     required this.profile,
+    required this.referral,
   }) {
     goals.addListener(_reconcile);
     appStreak.addListener(_reconcile);
@@ -53,6 +62,7 @@ class BadgeCoordinator {
     costume.addListener(_reconcile);
     appTheme.addListener(_reconcile);
     profile.addListener(_reconcile);
+    referral.addListener(_reconcile);
     _reconcile();
   }
 
@@ -68,6 +78,7 @@ class BadgeCoordinator {
   final CostumeProvider costume;
   final AppThemeProvider appTheme;
   final ProfileProvider profile;
+  final ReferralProvider referral;
 
   void _reconcile() {
     badges.reconcileConsistencyBadges(
@@ -91,6 +102,10 @@ class BadgeCoordinator {
       totalDaysOpened: appStreak.totalDaysOpened,
       daysSinceFirstUsed: profile.daysSinceFirstUsed(),
     );
+    badges.reconcileSocialBadges(
+      hasSharedAtLeastOnce: false,
+      successfulReferralCount: referral.successfulReferralCount,
+    );
   }
 
   void dispose() {
@@ -105,5 +120,6 @@ class BadgeCoordinator {
     costume.removeListener(_reconcile);
     appTheme.removeListener(_reconcile);
     profile.removeListener(_reconcile);
+    referral.removeListener(_reconcile);
   }
 }

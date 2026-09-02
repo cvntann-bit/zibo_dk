@@ -7,6 +7,7 @@ import '../data/collection_badges.dart';
 import '../data/consistency_badges.dart';
 import '../data/loyalty_badges.dart';
 import '../data/module_mastery_badges.dart';
+import '../data/social_badges.dart';
 import '../models/badge_definition.dart';
 import '../models/badge_record.dart';
 import '../services/cloud_state_store.dart';
@@ -205,6 +206,40 @@ class BadgeProvider extends ChangeNotifier {
         'first_week' => totalDaysOpened >= 7,
         'loyal_friend' => totalDaysOpened >= 100,
         'anniversary' => daysSinceFirstUsed >= 365,
+        _ => false,
+      };
+      if (meetsRequirement) {
+        _earned[badge.id] = BadgeRecord(earnedAt: DateTime.now(), claimed: false);
+        lastNewlyEarned = badge;
+      }
+    }
+    if (lastNewlyEarned != null) {
+      notifyListeners();
+      unawaited(_save());
+      pendingBadgePopup.value = lastNewlyEarned;
+    }
+  }
+
+  /// Sosyal/Paylaşım Rozetleri'nin kazanma kontrolü — AYNI "tek slot" deseni,
+  /// ama iki AYRI kaynak türünü birleştiriyor: [hasSharedAtLeastOnce] bir
+  /// OLAY sinyali (yalnızca `ZiboShareSheet._share()`'in BAŞARILI olduğu ANDA
+  /// `true` geçirilir — `first_share`'in TEK tetikleyicisi budur, `_earned`
+  /// map'inin kendi idempotent bookkeeping'i [`if (_earned.containsKey(...))
+  /// continue;`] sayesinde ayrı bir kalıcı "hiç paylaştı mı" bayrağına GEREK
+  /// YOK); [successfulReferralCount] ise `ReferralProvider.
+  /// successfulReferralCount`'a bağlı, `BadgeCoordinator`'ın rutin geçişinde
+  /// (`hasSharedAtLeastOnce: false` ile) DE kontrol edilen bir DURUM değeri.
+  void reconcileSocialBadges({
+    required bool hasSharedAtLeastOnce,
+    required int successfulReferralCount,
+  }) {
+    ZiboBadgeDefinition? lastNewlyEarned;
+    for (final badge in socialBadges) {
+      if (_earned.containsKey(badge.id)) continue;
+      final meetsRequirement = switch (badge.id) {
+        'first_share' => hasSharedAtLeastOnce,
+        'ambassador' => successfulReferralCount >= 1,
+        'community_founder' => successfulReferralCount >= 5,
         _ => false,
       };
       if (meetsRequirement) {

@@ -408,4 +408,86 @@ void main() {
       },
     );
   });
+
+  group('BadgeProvider — reconcileSocialBadges', () {
+    late BadgeProvider provider;
+
+    setUp(() async {
+      provider = BadgeProvider();
+      await Future<void>.delayed(Duration.zero);
+    });
+
+    void reconcile({
+      bool hasSharedAtLeastOnce = false,
+      int successfulReferralCount = 0,
+    }) {
+      provider.reconcileSocialBadges(
+        hasSharedAtLeastOnce: hasSharedAtLeastOnce,
+        successfulReferralCount: successfulReferralCount,
+      );
+    }
+
+    test('Eşik dolmadan hiçbir sosyal rozet kazanılmaz', () {
+      reconcile(successfulReferralCount: 0);
+
+      expect(provider.isEarned('first_share'), isFalse);
+      expect(provider.isEarned('ambassador'), isFalse);
+      expect(provider.isEarned('community_founder'), isFalse);
+      expect(pendingBadgePopup.value, isNull);
+    });
+
+    test(
+      'hasSharedAtLeastOnce true olunca İlk Paylaşım kazanılır + kutlama '
+      'sinyali ayarlanır',
+      () {
+        reconcile(hasSharedAtLeastOnce: true);
+
+        expect(provider.isEarned('first_share'), isTrue);
+        expect(pendingBadgePopup.value?.id, 'first_share');
+      },
+    );
+
+    test('successfulReferralCount >= 1 iken Elçi kazanılır', () {
+      reconcile(successfulReferralCount: 1);
+
+      expect(provider.isEarned('ambassador'), isTrue);
+      expect(pendingBadgePopup.value?.id, 'ambassador');
+    });
+
+    test(
+      'successfulReferralCount >= 5 iken Elçi VE Topluluk Kurucusu '
+      'BİRLİKTE kazanılır, kutlama sinyali EN SONuncuya '
+      '(community_founder) ayarlanır',
+      () {
+        reconcile(successfulReferralCount: 5);
+
+        expect(provider.isEarned('ambassador'), isTrue);
+        expect(provider.isEarned('community_founder'), isTrue);
+        expect(pendingBadgePopup.value?.id, 'community_founder');
+      },
+    );
+
+    test('Zaten kazanılmış bir sosyal rozet tekrar bildirmez', () {
+      reconcile(hasSharedAtLeastOnce: true);
+      pendingBadgePopup.value = null;
+
+      reconcile(hasSharedAtLeastOnce: true);
+
+      expect(pendingBadgePopup.value, isNull);
+    });
+
+    test(
+      'Kalıcılık: kazanılan sosyal rozet yeniden başlatmada hatırlanır',
+      () async {
+        reconcile(successfulReferralCount: 5);
+        await provider.markClaimed('community_founder');
+
+        final reloaded = BadgeProvider();
+        await Future<void>.delayed(Duration.zero);
+
+        expect(reloaded.isEarned('community_founder'), isTrue);
+        expect(reloaded.isClaimed('community_founder'), isTrue);
+      },
+    );
+  });
 }

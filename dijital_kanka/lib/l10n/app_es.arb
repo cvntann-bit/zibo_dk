@@ -474,5 +474,12 @@
   "badgeNameAnniversary": "Aniversario",
   "badgeRequirementFirstWeek": "Abre la app un total de 7 días diferentes",
   "badgeRequirementLoyalFriend": "Abre la app un total de 100 días diferentes",
-  "badgeRequirementAnniversary": "Ha pasado 1 año desde que conociste a Zibo"
+  "badgeRequirementAnniversary": "Ha pasado 1 año desde que conociste a Zibo",
+  "badgeCategorySocial": "Insignias Sociales",
+  "badgeNameFirstShare": "Primera Vez que Compartes",
+  "badgeNameAmbassador": "Embajador",
+  "badgeNameCommunityFounder": "Fundador de la Comunidad",
+  "badgeRequirementFirstShare": "Comparte una tarjeta de Zibo por primera vez",
+  "badgeRequirementAmbassador": "Invita con éxito a 1 amigo con Invitar a un Amigo",
+  "badgeRequirementCommunityFounder": "Invita con éxito a 5 amigos con Invitar a un Amigo"
 }

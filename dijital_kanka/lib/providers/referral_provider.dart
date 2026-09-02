@@ -87,12 +87,25 @@ class ReferralProvider extends ChangeNotifier {
   bool _hasRedeemed = false;
   String? _redeemedFromUid;
   bool _isRedeeming = false;
+  int _successfulReferralCount = 0;
 
   /// Kullanıcının PAYLAŞACAĞI davet kodu — kendi uid'i.
   String? get referralCode => uid;
 
   bool get hasRedeemed => _hasRedeemed;
   String? get redeemedFromUid => _redeemedFromUid;
+
+  /// Kullanıcının davet EDEREK (yani kendi kodunu paylaşıp) kaç arkadaşını
+  /// BAŞARIYLA kaydettirdiği — bkz. `notification-scripts/src/
+  /// processReferralRewards.js`'teki `creditReferralReward(uid, {isReferrer:
+  /// true})` notu. Sosyal/Paylaşım Rozetleri'nin ("Elçi"/"Topluluk
+  /// Kurucusu") kaynağı. **ANINDA GÜNCELLENMEZ** — [redeemCode] gibi
+  /// istemci tarafı bir eylemin SONUCU DEĞİL, sunucu tarafı betiğin (saatlik
+  /// GitHub Actions cron'u) bir SONRAKİ çalıştırmasında Firestore'a yazılır;
+  /// istemci bunu ancak [refresh] çağrıldığında (bkz. `RootScreen`'in
+  /// `resumed` yaşam döngüsü kancası) görür — `DailyRewardsProvider.
+  /// reconcileForToday()` ile AYNI "reconcile-on-resume" felsefesi.
+  int get successfulReferralCount => _successfulReferralCount;
 
   /// [ReferralScreen]'in kod gönderirken küçük bir yükleniyor göstergesi
   /// için — diğer provider'lardaki `isLinking`/`isRedeeming` deseniyle aynı.
@@ -103,8 +116,20 @@ class ReferralProvider extends ChangeNotifier {
     if (data == null) return;
     _hasRedeemed = data['redeemed'] as bool? ?? false;
     _redeemedFromUid = data['referrerUid'] as String?;
+    _successfulReferralCount = data['successfulReferralCount'] as int? ?? 0;
     notifyListeners();
   }
+
+  /// [successfulReferralCount]'u Firestore'dan YENİDEN okur — sunucu tarafı
+  /// betiğin (`processReferralRewards.js`) bir SONRAKİ çalıştırmasında
+  /// sessizce artırdığı sayacı istemcinin görebilmesinin TEK yolu, çünkü
+  /// `CloudStateStore.load()` [uid] varken HER ZAMAN önce Firestore'u
+  /// dener (bkz. o sınıfın dokümantasyonu) — bu yüzden `_loadFromPrefs()`'i
+  /// yeniden çağırmak yeterli, ayrı bir "zorla Firestore'dan oku" yolu
+  /// GEREKMEDİ. `BadgeCoordinator` bu provider'ı zaten dinlediği için,
+  /// sayaç GERÇEKTEN değiştiyse [notifyListeners] Sosyal/Paylaşım
+  /// Rozetleri'nin otomatik reconcile edilmesini tetikler.
+  Future<void> refresh() => _loadFromPrefs();
 
   /// [enteredCode]'u (bir başkasının davet kodu, yani onun uid'i) redeem
   /// etmeye çalışır. Bkz. sınıf dokümantasyonu — başarı, ANINDA coin
@@ -129,7 +154,16 @@ class ReferralProvider extends ChangeNotifier {
       });
       _hasRedeemed = true;
       _redeemedFromUid = code;
-      await _store.save({'redeemed': true, 'referrerUid': code});
+      // `_successfulReferralCount` de AÇIKÇA dahil ediliyor —
+      // `CloudStateStore.save()` TAM bir `.set()` (merge DEĞİL), bu satır
+      // olmadan bu kullanıcı AYRICA bir davet EDEN'se (yani sunucu tarafı
+      // betiğin daha önce artırdığı bir sayacı varsa) bu çağrı o sayacı
+      // SESSİZCE SIFIRA döndürürdü.
+      await _store.save({
+        'redeemed': true,
+        'referrerUid': code,
+        'successfulReferralCount': _successfulReferralCount,
+      });
       return ReferralRedeemResult.success;
     } catch (_) {
       return ReferralRedeemResult.networkError;

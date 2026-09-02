@@ -3,10 +3,13 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:provider/provider.dart';
 
 import '../data/share_card_backgrounds.dart';
 import '../data/share_card_text_styles.dart';
 import '../l10n/app_localizations.dart';
+import '../providers/badge_provider.dart';
+import '../providers/referral_provider.dart';
 import '../services/share_service.dart';
 import 'zibo_share_card.dart';
 
@@ -62,7 +65,19 @@ class _ZiboShareSheetState extends State<ZiboShareSheet> {
         fileName: 'zibo_soz.png',
         text: widget.message,
       );
-      if (mounted) Navigator.of(context).pop();
+      if (!mounted) return;
+      // Sosyal/Paylaşım Rozetleri — "İlk Paylaşım" rozetinin TEK
+      // tetikleyicisi: paylaşım GERÇEKTEN başarılı olduğunda,
+      // `BadgeProvider._earned`'ın kendi idempotent bookkeeping'i sayesinde
+      // (bkz. `reconcileSocialBadges` dokümantasyonu) ayrı bir kalıcı
+      // "hiç paylaştı mı" bayrağına gerek kalmadan güvenle her seferinde
+      // çağrılabilir.
+      context.read<BadgeProvider>().reconcileSocialBadges(
+        hasSharedAtLeastOnce: true,
+        successfulReferralCount:
+            context.read<ReferralProvider>().successfulReferralCount,
+      );
+      Navigator.of(context).pop();
     } catch (_) {
       if (!mounted) return;
       setState(() => _isSharing = false);
