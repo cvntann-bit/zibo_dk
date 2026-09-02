@@ -1458,4 +1458,46 @@ class AppLocalizationsTr extends AppLocalizations {
   @override
   String get settingsWidgetsRowSubtitle =>
       'Modül durumlarını ana ekranından takip et';
+
+  @override
+  String get badgesTriggerTooltip => 'Rozetler';
+
+  @override
+  String get badgesGalleryTitle => 'Rozetler';
+
+  @override
+  String get badgeCategoryConsistency => 'İstikrar Rozetleri';
+
+  @override
+  String get badgeNameFirstStep => 'İlk Adım';
+
+  @override
+  String get badgeNameWeekStreak => '1 Haftalık Seri';
+
+  @override
+  String get badgeNameMonthStreak => '1 Aylık Seri';
+
+  @override
+  String get badgeNameIronWill => 'Demir İrade';
+
+  @override
+  String get badgeNameUnyielding => 'Yılmaz';
+
+  @override
+  String get badgeRequirementFirstStep => 'İlk 7 günlük hedef döngünü tamamla';
+
+  @override
+  String get badgeRequirementWeekStreak => '7 gün üst üste giriş yap';
+
+  @override
+  String get badgeRequirementMonthStreak => '30 gün üst üste giriş yap';
+
+  @override
+  String get badgeRequirementIronWill => '90 gün üst üste giriş yap';
+
+  @override
+  String get badgeRequirementUnyielding => '180 gün üst üste giriş yap';
+
+  @override
+  String get badgeClaimRewardButton => 'Ödülü Al';
 }

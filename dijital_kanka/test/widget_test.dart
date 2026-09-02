@@ -17,8 +17,10 @@ import 'package:dijital_kanka/data/money_quotes.dart';
 import 'package:dijital_kanka/data/wheel_prizes.dart';
 import 'package:dijital_kanka/l10n/app_localizations.dart';
 import 'package:dijital_kanka/main.dart';
+import 'package:dijital_kanka/providers/app_streak_provider.dart';
 import 'package:dijital_kanka/providers/app_theme_provider.dart';
 import 'package:dijital_kanka/providers/auth_link_provider.dart';
+import 'package:dijital_kanka/providers/badge_provider.dart';
 import 'package:dijital_kanka/providers/coin_provider.dart';
 import 'package:dijital_kanka/providers/costume_provider.dart';
 import 'package:dijital_kanka/providers/currency_provider.dart';
@@ -122,8 +124,10 @@ Widget _buildAppWithClock(DateTime Function() now) {
   return MultiProvider(
     providers: [
       ChangeNotifierProvider(create: (_) => TrustedTimeProvider()),
+      ChangeNotifierProvider(create: (_) => AppStreakProvider(now: now)),
       ChangeNotifierProvider(create: (_) => AppThemeProvider()),
       ChangeNotifierProvider(create: (_) => AuthLinkProvider()),
+      ChangeNotifierProvider(create: (_) => BadgeProvider()),
       ChangeNotifierProvider(create: (_) => CoinProvider(now: now)),
       ChangeNotifierProvider(create: (_) => CostumeProvider()),
       ChangeNotifierProvider(create: (_) => CustomMessagesProvider()),

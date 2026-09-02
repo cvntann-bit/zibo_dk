@@ -430,5 +430,19 @@
   "widgetsScreenAddStep2": "Tap \"Widgets\" in the menu that opens.",
   "widgetsScreenAddStep3": "Find Zibo in the list and drag the widget you want to your home screen.",
   "widgetsScreenAddSheetGotIt": "Got It",
-  "settingsWidgetsRowSubtitle": "Track module status from your home screen"
+  "settingsWidgetsRowSubtitle": "Track module status from your home screen",
+  "badgesTriggerTooltip": "Badges",
+  "badgesGalleryTitle": "Badges",
+  "badgeCategoryConsistency": "Consistency Badges",
+  "badgeNameFirstStep": "First Step",
+  "badgeNameWeekStreak": "1-Week Streak",
+  "badgeNameMonthStreak": "1-Month Streak",
+  "badgeNameIronWill": "Iron Will",
+  "badgeNameUnyielding": "Unyielding",
+  "badgeRequirementFirstStep": "Complete your first 7-day goal cycle",
+  "badgeRequirementWeekStreak": "Open the app 7 days in a row",
+  "badgeRequirementMonthStreak": "Open the app 30 days in a row",
+  "badgeRequirementIronWill": "Open the app 90 days in a row",
+  "badgeRequirementUnyielding": "Open the app 180 days in a row",
+  "badgeClaimRewardButton": "Claim Reward"
 }

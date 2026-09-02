@@ -4684,8 +4684,9 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
   widget'ı için bu üç dosyaya eklenen 2 ek test [bkz. "Ana Ekran Widget'ları" bölümündeki 2026
   görsel yeniden tasarım notu] eklendi).
 - `widget_test.dart` içindeki `_buildAppWithClock()` yardımcı fonksiyonu enjekte edilebilir saatli
-  testler için — **`RootScreen`'in ihtiyaç duyduğu HER provider'ı içermeli** (`AppThemeProvider`,
-  `AuthLinkProvider`, `CoinProvider`, `CostumeProvider`, `CurrencyProvider`,
+  testler için — **`RootScreen`'in ihtiyaç duyduğu HER provider'ı içermeli** (`AppStreakProvider`
+  (2026 — Rozet Sistemi, bkz. "Rozet Sistemi" bölümü), `AppThemeProvider`,
+  `AuthLinkProvider`, `BadgeProvider` (aynı bölüm), `CoinProvider`, `CostumeProvider`, `CurrencyProvider`,
   `CustomMessagesProvider`, `DailyRewardsProvider`, `DreamJournalProvider`,
   `FavoriteQuotesProvider`, `FounderBadgeProvider` (2026 — `ProfileScreen`/`SettingsScreen`'in
   `FounderBadgePromoCard` üzerinden izlediği, bkz. "Kurucu Üye Rozeti" bölümü), `GoalsProvider`,
@@ -7789,3 +7790,151 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
   çapraz referans içindir): `CoinEconomy.gratitudeJournal`/`waterGoalCompleted`/`manifestJournal`
   ÜÇÜ BİRLİKTE 2'den 5'e yükseltildi + ilgili 4 hardcoded ARB metni (TR/EN/ES) + test
   assertion'ları güncellendi. `flutter test` 330/330 (bu değişikliğin kendisi için) yeşil.
+
+## Rozet Sistemi ([badge_definition.dart](lib/models/badge_definition.dart), [badge_record.dart](lib/models/badge_record.dart), [consistency_badges.dart](lib/data/consistency_badges.dart), [badge_provider.dart](lib/providers/badge_provider.dart), [app_streak_provider.dart](lib/providers/app_streak_provider.dart), [badge_coordinator.dart](lib/services/badge_coordinator.dart), [badges_trigger_button.dart](lib/widgets/badges_trigger_button.dart), [badge_celebration_overlay.dart](lib/widgets/badge_celebration_overlay.dart), [badges_gallery_screen.dart](lib/screens/badges_gallery_screen.dart))
+
+- **2026 yeni özellik — adım adım ilerlenen bir plan, bu turda YALNIZCA İLK
+  kategori (İstikrar Rozetleri, 5 rozet) tamamlandı.** Kullanıcının kalan
+  kategorileri (Modül Ustalığı, Koleksiyon, Sadakat, Sosyal/Paylaşım, Gizli/
+  Eğlenceli) AYRI turlarda istediği açıkça belirtildi — bu bölüm/altyapı
+  BİLEREK yalnızca `consistencyBadges`'i barındırıyor, `BadgeCategory` enum'u
+  şimdilik tek değerli (`consistency`).
+- **Kullanıcının netleştirdiği tek kritik tasarım kararı — "streak" hangi
+  veriye bağlı?** `GoalsProvider.longestStreak` mimari gereği ASLA 7'yi
+  aşamaz (bir 7 günlük döngü tamamlanınca/bozulunca sıfırlanıyor, bkz. "Hedef
+  Takibi" bölümü) — bu yüzden `AskUserQuestion` ile soruldu, kullanıcı
+  **"Uygulamayı her gün açma serisi"**ni seçti: Hedef Takibi'nden TAMAMEN
+  BAĞIMSIZ, YENİ bir `AppStreakProvider`.
+- **`AppStreakProvider`** — `CoinProvider`/`GoalsProvider` ile AYNI
+  `CloudStateStore` (Varyant A) deseni, `{lastOpenDate, currentStreak}`.
+  **GÜVENLİK-KRİTİK:** cihaz saatine değil `TrustedTimeProvider.now()`'a
+  bağlı (`main.dart`'ta `now: () => context.read<TrustedTimeProvider>().
+  now()` ile enjekte ediliyor) — diğer TÜM "güne bağlı" mekanizmalarla AYNI
+  garanti: kullanıcı cihaz saatini ileri alarak seriyi/rozetleri erken
+  kazanamaz. `recordOpenForToday()` bugün ZATEN kaydedilmişse no-op; dün
+  kaydedilmişse +1; aksi halde (gün ATLANMIŞSA) 1'e sıfırlar.
+- **`BadgeProvider`** — kazanılan rozetleri (`Map<String, BadgeRecord>`,
+  `earnedAt`/`claimed`) tutar, AYNI `CloudStateStore` deseni.
+  `reconcileConsistencyBadges({hasCompletedFirstGoalCycle, appOpenStreak})`
+  — beş rozetin HER BİRİNİN koşulunu (`first_step`=ilk 7 günlük hedef
+  döngüsü tamamlandı mı, diğer dördü=`appOpenStreak >= 7/30/90/180`)
+  kontrol edip YENİ kazanılanları kaydeder. **Tek slot kutlama sinyali —
+  `pendingZiboEvent`/`pendingBadgePopup` ile AYNI desen** (bkz.
+  `badge_celebration_signal.dart`): aynı reconcile çağrısında BİRDEN FAZLA
+  rozet aynı anda kazanılırsa (ör. `appOpenStreak` bir sıçramada 30'u geçip
+  hem `week_streak` hem `month_streak`'i tetiklerse) HEPSİ kalıcı olarak
+  kazanılmış sayılır ama yalnızca EN SONuncusu kutlama popup'ına yazılır.
+- **`BadgeCoordinator`** — `HomeWidgetSyncCoordinator`/`CostumeProvider.
+  reconcileGoalUnlocks` ile AYNI "constructor'dan değil PARAMETRE olarak al,
+  dışarıdan `addListener` ekle" felsefesi: `GoalsProvider`/`AppStreakProvider`'a
+  KALICI bağımlı değil, yalnızca dinliyor. Constructor'ı EAGER bir ilk
+  `reconcile()` de yapıyor (kuruluşta zaten karşılanmış bir koşul HEMEN
+  ödüllendirilsin diye). `RootScreen.initState()`'te, `HomeWidgetSyncCoordinator`
+  ile AYNI `addPostFrameCallback`'e (ilk frame TAMAMLANDIKTAN sonra)
+  kuruluyor — **gerçek bir bug'dan öğrenildi:** `initState`'in GÖVDESİNDE
+  senkron çağrılırsa (`AppStreakProvider.recordOpenForToday()`/
+  `BadgeCoordinator`'ın eager reconcile'ı `notifyListeners()` tetikleyebildiği
+  için) "setState() or markNeedsBuild() called during build" hatasıyla
+  ÇÖKÜYORDU (`flutter test`'te GERÇEKTEN yakalandı) — postFrameCallback'e
+  taşınarak düzeltildi. Uygulama her öne geldiğinde (`didChangeAppLifecycleState`'in
+  `resumed` dalı, `touchLastActive`/`syncAll` ile AYNI tetikleyici)
+  `recordOpenForToday()` tekrar çağrılıyor.
+- **Ana Sayfa Tetikleyicisi (`BadgesTriggerButton`)** — mevcut Günlük Ödül
+  tetikleyicisinin (`Alignment(1, -0.8)`) HEMEN ALTINDA (`Alignment(1,
+  -0.55)`), aynı koşullu-görünürlük deseni (`_selectedIndex == 0`).
+  **Kullanıcının açık isteği — `DailyRewardsTriggerButton`'ın sürekli
+  `repeat(reverse: true)` nabzından FARKLI, "sakin ve SÜREKLİ OLMAYAN" bir
+  animasyon** ("Şans Çarkı'nın titreşen coin animasyonu gibi dikkat dağıtıcı
+  OLMASIN"): `_pulseScaleFor(t)` bir döngünün yalnızca İLK %30'unda kısa bir
+  nabız (1.0→1.07→1.0) uygulayıp kalan %70'inde TAM DİNLENME (1.0, sabit)
+  döndürüyor — göz sürekli hareket görmüyor, arada bir "nefes alıyor".
+  Kullanıcının verdiği `popup_rozet_icon.png` görselini kullanıyor (kod-tabanlı
+  bir rozet DEĞİL). Dokununca ARA bir pop-up/önizleme OLMADAN DOĞRUDAN
+  `BadgesGalleryScreen` push ediliyor.
+- **Rozetler Galerisi (`BadgesGalleryScreen`)** — `GridView.count(crossAxisCount:
+  2, childAspectRatio: 0.6)`, bu projedeki tekrarlayan "yeni grid kartı ekleyince
+  overflow" bug sınıfına karşı BİLEREK muhafazakar seçildi (bkz. "Test
+  kalıpları" bölümü) ve `test/badges_gallery_screen_test.dart`'ta gerçekçi
+  dar bir viewport'ta (412×915) `tester.takeException()` ile doğrulandı.
+  Kazanılan rozetler net/renkli, kazanılmamışlar `ColorFiltered` (greyscale
+  matrisi) + `Opacity(0.5)` ile gri tonlu/soluk — ama adı VE kazanma koşulu
+  HER İKİ durumda da HER ZAMAN görünür (kullanıcının açık isteği; "gizli"
+  rozetler kategorisi için bu kural GEÇERLİ OLMAYACAK, ayrıca ele alınacak).
+- **Rozet Kazanma Anı (`BadgeCelebrationOverlay`)** — `AdBlurOverlay` ile
+  AYNI konumda, `MaterialApp.builder`'ın EN DIŞINDA (`home:` içindeki
+  içerik başka bir rota push edilince BOYANMADIĞI için "HER YERDE" görünürlük
+  yalnızca bu seviyede garanti ediliyor) mount ediliyor.
+  `pendingBadgePopup`'ı dinleyip değiştiğinde `GoalConfettiBurst` (Hedef
+  Tamamlama Kutlaması'ndaki AYNI widget, yeniden kullanıldı) + bir
+  `ModalBarrier(dismissible: false)` + ortalanmış bir kutlama kartı gösteriyor
+  (görsel + ad + hedef + `l10n.storeCoinAmount(zcReward)` ile ZC ödülü).
+  **`rootNavigatorKey` global anahtarı** (`utils/root_navigator_key.dart`,
+  `MaterialApp.navigatorKey`'e bağlı) — bu seviyenin `context`'i Navigator'ın
+  ATASI OLMADIĞI için "Ödülü Al"dan sonra Rozetler Galerisi'ni açmak
+  `Navigator.of(context)` YERİNE bunu kullanıyor (push bildirimi/deep-link
+  handler'larındaki standart Flutter çözümü). "Ödülü Al" butonu
+  `BadgeProvider.markClaimed(id)` + `CoinProvider.earnBadgeReward(amount,
+  badgeId)` + `pendingBadgePopup.value = null` + Rozetler Galerisi'ni açmayı
+  TEK `onPressed`'te yapıyor.
+  - **Gerçek bug, testte yakalandı — `late final AnimationController` field
+    initializer'ı `dispose()`'da çöküyordu.** `AnimatedThemeOverlay`'deki
+    (bkz. "Premium/Animasyonlu temalar" bölümü) BİREBİR AYNI gotcha: bir
+    rozet HİÇ kazanılmadan (yani `_confettiController`'a hiç erişilmeden)
+    bu widget dispose edilirse, `late final`'in tembel başlatıcısı İLK
+    erişimi `dispose()`'a denk getirip "Looking up a deactivated widget's
+    ancestor is unsafe" hatası fırlatıyordu — `flutter test`'te `widget_test.
+    dart`'taki 45 testin NEREDEYSE HEPSİ bu yüzden başarısız oldu (rozet HİÇ
+    tetiklenmeyen sıradan testler bile). **Düzeltme:** `_confettiController`
+    `initState()`'te KOŞULSUZ, erkenden oluşturuluyor.
+- **`CoinProvider.earnBadgeReward(int amount, String badgeId)`** — `earnDailyLoginReward`
+  ile AYNI "dinamik miktar, tek satırlık `_earn` çağrısı" deseni; `_earn`'ün
+  merkezi ses yolu sayesinde (bkz. "Zibo Dokunma Sesi" bölümü) coin kazanma
+  sesi OTOMATİK çalıyor, ayrı bir ses çağrısı EKLENMEDİ.
+- **İstikrar Rozetleri (5 rozet, `assets/images/*_rozet.png`):** İlk Adım
+  (`first_step`, ilk 7 günlük hedef döngüsü, 10 ZC), 1 Haftalık Seri
+  (`week_streak`, 7 gün, 30 ZC), 1 Aylık Seri (`month_streak`, 30 gün,
+  100 ZC), Demir İrade (`iron_will`, 90 gün, 250 ZC), Yılmaz (`unyielding`,
+  180 gün, 500 ZC). Görseller kullanıcının masaüstündeki `rozetler/istikrar
+  rozetleri` klasöründen `tool/process_badge_images.dart` ile (dosya adları
+  AYNEN korunarak, yalnızca 512px'e küçültülerek) `assets/images/`e
+  kopyalandı — `pubspec.yaml`'ın zaten bütün olarak dahil ettiği
+  `assets/images/` glob'u sayesinde ayrı bir pubspec değişikliği GEREKMEDİ.
+- **`Costume`/`AppThemeOption` ile AYNI "id → ARB-getter" `localizedName`/
+  `localizedRequirement` deseni** (`ZiboBadgeDefinition`, bkz. "Kostümler"
+  bölümündeki "const veri listesindeki sabit alan kullanıcıya görünüyorsa
+  ARB'ye taşınmalı" kuralı) — 10 yeni ARB anahtarı (`badgeName<X>`/
+  `badgeRequirement<X>`, TR/EN/ES) + `badgesTriggerTooltip`/
+  `badgesGalleryTitle`/`badgeCategoryConsistency`/`badgeClaimRewardButton`.
+  ZC ödül metni YENİ bir anahtar GEREKTİRMEDİ — mevcut `storeCoinAmount`
+  (`"{amount} ZC"`) yeniden kullanıldı.
+- **Firestore rules — YENİ bir kural GEREKMEDİ.** Mevcut genel
+  `users/{uid}/state/{stateDoc}` kuralı (`coinState` HARİÇ tam yetkili, bkz.
+  "Coin Ekonomisi Güvenliği" bölümü) zaten `badgeState`/`appStreakState`'i
+  kapsıyor.
+- **Test: 25 YENİ test** — `app_streak_provider_test.dart` (8, gün-değişimi/
+  atlama/kalıcılık), `badge_provider_test.dart` (9, eşik/eş-zamanlı-çoklu-
+  kazanım/markClaimed/kalıcılık), `badge_coordinator_test.dart` (3, eager
+  reconcile/dinleyici/dispose), `badges_gallery_screen_test.dart` (2,
+  ColorFiltered sayımı + overflow), `badge_celebration_overlay_test.dart` (2,
+  popup içeriği + tam claim akışı), `badges_trigger_button_test.dart` (1,
+  doğrudan galeri açılışı). `widget_test.dart`'ın `_buildAppWithClock()`
+  yardımcısına `AppStreakProvider`/`BadgeProvider` eklendi (`RootScreen`'in
+  ihtiyaç duyduğu HER provider kuralı, bkz. "Test kalıpları" bölümü — 
+  eklenmeseydi hata yalnızca ilgili testte değil ondan SONRAKİ TÜM testlerde
+  görünürdü). **Toplam: 450 test** (449 geçti + 1 önceden belgelenmiş
+  `audioplayers` flake'i).
+- **Gerçek cihazda GÖRSEL doğrulama bu turda YAPILMADI** — yalnızca `flutter
+  test` (450 test) + `flutter build apk --debug` (sorunsuz) ile doğrulandı.
+  **Kullanıcının kendi cihazında doğrulaması gereken:** Rozetler
+  tetikleyicisinin göz yormayan nabız animasyonuyla doğru konumda göründüğü,
+  dokununca ARA bir pop-up OLMADAN doğrudan galeri açıldığı, bir rozet
+  kazanıldığında (ör. uygulamayı 7 gün art arda açarak) konfetinin
+  UYGULAMANIN HER YERİNDE (hangi ekranda olunursa olsun) patladığı, kutlama
+  kartındaki görsel/ad/koşul/ödülün doğru göründüğü, "Ödülü Al"a basınca
+  ZC'nin bakiyeye eklenip galerinin açıldığı ve rozetin artık renkli/net
+  göründüğü.
+- **Sonraki adım (kullanıcı henüz İSTEMEDİ, proaktif başlanmayacak):** diğer
+  beş kategori (Modül Ustalığı, Koleksiyon, Sadakat, Sosyal/Paylaşım, Gizli/
+  Eğlenceli) — `BadgeCategory` enum'una yeni değerler + `allBadges`'e yeni
+  listeler eklemek yeterli olacak, `BadgesGalleryScreen`/`BadgeCelebrationOverlay`
+  hâlihazırda kategoriden bağımsız/genel yazıldı.

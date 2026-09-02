@@ -354,6 +354,14 @@ class CoinProvider extends ChangeNotifier {
   void earnDailyLoginReward(int amount) =>
       _earn(amount, 'Günlük giriş ödülü');
 
+  /// Rozet Sistemi: bir rozet kazanılıp "Ödülü Al" butonuna basıldığında
+  /// çağrılır (bkz. `BadgeCelebrationOverlay`/`BadgeProvider.markClaimed`) —
+  /// `earnDailyLoginReward` ile AYNI "dinamik miktar, tek satırlık `_earn`
+  /// çağrısı" deseni; `badgeId` yalnızca işlem geçmişi etiketinde ayırt
+  /// edici olması için.
+  void earnBadgeReward(int amount, String badgeId) =>
+      _earn(amount, 'Rozet: $badgeId');
+
   /// Şans Çarkı: reklam izlettikten (şimdilik [MockAdService] ile simüle
   /// edilir) sonra [wheelPrizes] içinden ağırlıklı rastgele bir ödül seçip
   /// ekler. Reklam tamamlanmazsa hiçbir şey eklenmez ve `null` döner;

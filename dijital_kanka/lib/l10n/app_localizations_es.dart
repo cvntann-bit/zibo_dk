@@ -1467,4 +1467,47 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get settingsWidgetsRowSubtitle =>
       'Sigue el estado de los módulos desde tu pantalla de inicio';
+
+  @override
+  String get badgesTriggerTooltip => 'Insignias';
+
+  @override
+  String get badgesGalleryTitle => 'Insignias';
+
+  @override
+  String get badgeCategoryConsistency => 'Insignias de Constancia';
+
+  @override
+  String get badgeNameFirstStep => 'Primer Paso';
+
+  @override
+  String get badgeNameWeekStreak => 'Racha de 1 Semana';
+
+  @override
+  String get badgeNameMonthStreak => 'Racha de 1 Mes';
+
+  @override
+  String get badgeNameIronWill => 'Voluntad de Hierro';
+
+  @override
+  String get badgeNameUnyielding => 'Inquebrantable';
+
+  @override
+  String get badgeRequirementFirstStep =>
+      'Completa tu primer ciclo de 7 días de un objetivo';
+
+  @override
+  String get badgeRequirementWeekStreak => 'Abre la app 7 días seguidos';
+
+  @override
+  String get badgeRequirementMonthStreak => 'Abre la app 30 días seguidos';
+
+  @override
+  String get badgeRequirementIronWill => 'Abre la app 90 días seguidos';
+
+  @override
+  String get badgeRequirementUnyielding => 'Abre la app 180 días seguidos';
+
+  @override
+  String get badgeClaimRewardButton => 'Reclamar Recompensa';
 }

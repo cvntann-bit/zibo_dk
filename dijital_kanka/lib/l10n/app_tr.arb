@@ -1950,5 +1950,61 @@
   "settingsWidgetsRowSubtitle": "Modül durumlarını ana ekranından takip et",
   "@settingsWidgetsRowSubtitle": {
     "description": "Ayarlar'daki 'Ana Ekran Widget'ları' satırının alt metni"
+  },
+  "badgesTriggerTooltip": "Rozetler",
+  "@badgesTriggerTooltip": {
+    "description": "Ana Sayfa'daki Rozetler tetikleyici butonunun tooltip/semantics etiketi"
+  },
+  "badgesGalleryTitle": "Rozetler",
+  "@badgesGalleryTitle": {
+    "description": "Rozetler Galerisi ekranının AppBar başlığı"
+  },
+  "badgeCategoryConsistency": "İstikrar Rozetleri",
+  "@badgeCategoryConsistency": {
+    "description": "Rozetler Galerisi'ndeki İstikrar kategorisinin bölüm başlığı"
+  },
+  "badgeNameFirstStep": "İlk Adım",
+  "@badgeNameFirstStep": {
+    "description": "İstikrar Rozetleri'nin ilk rozetinin adı"
+  },
+  "badgeNameWeekStreak": "1 Haftalık Seri",
+  "@badgeNameWeekStreak": {
+    "description": "İstikrar Rozetleri'nin ikinci rozetinin adı"
+  },
+  "badgeNameMonthStreak": "1 Aylık Seri",
+  "@badgeNameMonthStreak": {
+    "description": "İstikrar Rozetleri'nin üçüncü rozetinin adı"
+  },
+  "badgeNameIronWill": "Demir İrade",
+  "@badgeNameIronWill": {
+    "description": "İstikrar Rozetleri'nin dördüncü rozetinin adı"
+  },
+  "badgeNameUnyielding": "Yılmaz",
+  "@badgeNameUnyielding": {
+    "description": "İstikrar Rozetleri'nin beşinci/en yüksek rozetinin adı"
+  },
+  "badgeRequirementFirstStep": "İlk 7 günlük hedef döngünü tamamla",
+  "@badgeRequirementFirstStep": {
+    "description": "İlk Adım rozetinin kazanma koşulu"
+  },
+  "badgeRequirementWeekStreak": "7 gün üst üste giriş yap",
+  "@badgeRequirementWeekStreak": {
+    "description": "1 Haftalık Seri rozetinin kazanma koşulu"
+  },
+  "badgeRequirementMonthStreak": "30 gün üst üste giriş yap",
+  "@badgeRequirementMonthStreak": {
+    "description": "1 Aylık Seri rozetinin kazanma koşulu"
+  },
+  "badgeRequirementIronWill": "90 gün üst üste giriş yap",
+  "@badgeRequirementIronWill": {
+    "description": "Demir İrade rozetinin kazanma koşulu"
+  },
+  "badgeRequirementUnyielding": "180 gün üst üste giriş yap",
+  "@badgeRequirementUnyielding": {
+    "description": "Yılmaz rozetinin kazanma koşulu"
+  },
+  "badgeClaimRewardButton": "Ödülü Al",
+  "@badgeClaimRewardButton": {
+    "description": "Rozet kazanma popup'ındaki ödül alma butonu"
   }
 }

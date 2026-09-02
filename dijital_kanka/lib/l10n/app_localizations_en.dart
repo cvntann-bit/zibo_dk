@@ -1460,4 +1460,47 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get settingsWidgetsRowSubtitle =>
       'Track module status from your home screen';
+
+  @override
+  String get badgesTriggerTooltip => 'Badges';
+
+  @override
+  String get badgesGalleryTitle => 'Badges';
+
+  @override
+  String get badgeCategoryConsistency => 'Consistency Badges';
+
+  @override
+  String get badgeNameFirstStep => 'First Step';
+
+  @override
+  String get badgeNameWeekStreak => '1-Week Streak';
+
+  @override
+  String get badgeNameMonthStreak => '1-Month Streak';
+
+  @override
+  String get badgeNameIronWill => 'Iron Will';
+
+  @override
+  String get badgeNameUnyielding => 'Unyielding';
+
+  @override
+  String get badgeRequirementFirstStep =>
+      'Complete your first 7-day goal cycle';
+
+  @override
+  String get badgeRequirementWeekStreak => 'Open the app 7 days in a row';
+
+  @override
+  String get badgeRequirementMonthStreak => 'Open the app 30 days in a row';
+
+  @override
+  String get badgeRequirementIronWill => 'Open the app 90 days in a row';
+
+  @override
+  String get badgeRequirementUnyielding => 'Open the app 180 days in a row';
+
+  @override
+  String get badgeClaimRewardButton => 'Claim Reward';
 }

@@ -2643,6 +2643,90 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'Modül durumlarını ana ekranından takip et'**
   String get settingsWidgetsRowSubtitle;
+
+  /// Ana Sayfa'daki Rozetler tetikleyici butonunun tooltip/semantics etiketi
+  ///
+  /// In tr, this message translates to:
+  /// **'Rozetler'**
+  String get badgesTriggerTooltip;
+
+  /// Rozetler Galerisi ekranının AppBar başlığı
+  ///
+  /// In tr, this message translates to:
+  /// **'Rozetler'**
+  String get badgesGalleryTitle;
+
+  /// Rozetler Galerisi'ndeki İstikrar kategorisinin bölüm başlığı
+  ///
+  /// In tr, this message translates to:
+  /// **'İstikrar Rozetleri'**
+  String get badgeCategoryConsistency;
+
+  /// İstikrar Rozetleri'nin ilk rozetinin adı
+  ///
+  /// In tr, this message translates to:
+  /// **'İlk Adım'**
+  String get badgeNameFirstStep;
+
+  /// İstikrar Rozetleri'nin ikinci rozetinin adı
+  ///
+  /// In tr, this message translates to:
+  /// **'1 Haftalık Seri'**
+  String get badgeNameWeekStreak;
+
+  /// İstikrar Rozetleri'nin üçüncü rozetinin adı
+  ///
+  /// In tr, this message translates to:
+  /// **'1 Aylık Seri'**
+  String get badgeNameMonthStreak;
+
+  /// İstikrar Rozetleri'nin dördüncü rozetinin adı
+  ///
+  /// In tr, this message translates to:
+  /// **'Demir İrade'**
+  String get badgeNameIronWill;
+
+  /// İstikrar Rozetleri'nin beşinci/en yüksek rozetinin adı
+  ///
+  /// In tr, this message translates to:
+  /// **'Yılmaz'**
+  String get badgeNameUnyielding;
+
+  /// İlk Adım rozetinin kazanma koşulu
+  ///
+  /// In tr, this message translates to:
+  /// **'İlk 7 günlük hedef döngünü tamamla'**
+  String get badgeRequirementFirstStep;
+
+  /// 1 Haftalık Seri rozetinin kazanma koşulu
+  ///
+  /// In tr, this message translates to:
+  /// **'7 gün üst üste giriş yap'**
+  String get badgeRequirementWeekStreak;
+
+  /// 1 Aylık Seri rozetinin kazanma koşulu
+  ///
+  /// In tr, this message translates to:
+  /// **'30 gün üst üste giriş yap'**
+  String get badgeRequirementMonthStreak;
+
+  /// Demir İrade rozetinin kazanma koşulu
+  ///
+  /// In tr, this message translates to:
+  /// **'90 gün üst üste giriş yap'**
+  String get badgeRequirementIronWill;
+
+  /// Yılmaz rozetinin kazanma koşulu
+  ///
+  /// In tr, this message translates to:
+  /// **'180 gün üst üste giriş yap'**
+  String get badgeRequirementUnyielding;
+
+  /// Rozet kazanma popup'ındaki ödül alma butonu
+  ///
+  /// In tr, this message translates to:
+  /// **'Ödülü Al'**
+  String get badgeClaimRewardButton;
 }
 
 class _AppLocalizationsDelegate

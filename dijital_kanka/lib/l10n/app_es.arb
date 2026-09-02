@@ -430,5 +430,19 @@
   "widgetsScreenAddStep2": "Toca \"Widgets\" en el menú que aparece.",
   "widgetsScreenAddStep3": "Busca Zibo en la lista y arrastra el widget que quieras a tu pantalla de inicio.",
   "widgetsScreenAddSheetGotIt": "Entendido",
-  "settingsWidgetsRowSubtitle": "Sigue el estado de los módulos desde tu pantalla de inicio"
+  "settingsWidgetsRowSubtitle": "Sigue el estado de los módulos desde tu pantalla de inicio",
+  "badgesTriggerTooltip": "Insignias",
+  "badgesGalleryTitle": "Insignias",
+  "badgeCategoryConsistency": "Insignias de Constancia",
+  "badgeNameFirstStep": "Primer Paso",
+  "badgeNameWeekStreak": "Racha de 1 Semana",
+  "badgeNameMonthStreak": "Racha de 1 Mes",
+  "badgeNameIronWill": "Voluntad de Hierro",
+  "badgeNameUnyielding": "Inquebrantable",
+  "badgeRequirementFirstStep": "Completa tu primer ciclo de 7 días de un objetivo",
+  "badgeRequirementWeekStreak": "Abre la app 7 días seguidos",
+  "badgeRequirementMonthStreak": "Abre la app 30 días seguidos",
+  "badgeRequirementIronWill": "Abre la app 90 días seguidos",
+  "badgeRequirementUnyielding": "Abre la app 180 días seguidos",
+  "badgeClaimRewardButton": "Reclamar Recompensa"
 }

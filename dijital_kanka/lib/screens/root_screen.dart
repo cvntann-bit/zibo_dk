@@ -5,6 +5,8 @@ import 'package:provider/provider.dart';
 
 import '../l10n/app_localizations.dart';
 import '../models/push_notification_type.dart';
+import '../providers/app_streak_provider.dart';
+import '../providers/badge_provider.dart';
 import '../providers/currency_provider.dart';
 import '../providers/daily_rewards_provider.dart';
 import '../providers/goals_provider.dart';
@@ -16,12 +18,14 @@ import '../providers/notification_provider.dart';
 import '../providers/profile_provider.dart';
 import '../providers/trusted_time_provider.dart';
 import '../providers/water_provider.dart';
+import '../services/badge_coordinator.dart';
 import '../services/home_widget_service.dart';
 import '../services/home_widget_sync_coordinator.dart';
 import '../services/notification_service.dart';
 import '../services/push_notification_service.dart';
 import '../utils/tab_navigation.dart';
 import '../utils/widget_module.dart';
+import '../widgets/badges_trigger_button.dart';
 import '../widgets/coin_balance_widget.dart';
 import '../widgets/daily_rewards_trigger_button.dart';
 import '../widgets/main_bottom_bar.dart';
@@ -75,6 +79,11 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
   late final HomeWidgetService _homeWidgetService =
       widget.homeWidgetService ?? const HomeWidgetPluginService();
   HomeWidgetSyncCoordinator? _homeWidgetSync;
+  // 2026 yeni özellik — Rozet Sistemi. `_homeWidgetSync` ile AYNI "nullable
+  // field, dispose'ta güvenli temizlik" deseni (bkz. `BadgeCoordinator`
+  // dokümantasyonu — `GoalsProvider`/`AppStreakProvider`'a KALICI değil,
+  // yalnızca dinleyici olarak bağlı).
+  BadgeCoordinator? _badgeCoordinator;
   // **2026 yeni özellik — widget derin bağlantısı.** Uygulama ZATEN
   // AÇIKKEN bir widget'a dokunulduğunda `HomeWidgetService.moduleClicked`
   // akışını dinlemek için — bu sınıfta İLK `StreamSubscription` kullanımı
@@ -168,6 +177,23 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
       final initialModule = await _homeWidgetService.initialLaunchModule();
       if (mounted && initialModule != null) _handleWidgetModuleTap(initialModule);
     });
+    // **2026 yeni özellik — Rozet Sistemi.** `AppStreakProvider`'ın "bugün
+    // açıldı" kaydı + `BadgeCoordinator`'ın kurulumu (constructor'ı zaten
+    // EAGER bir ilk `reconcile()` yapıyor, bkz. o sınıfın dokümantasyonu)
+    // İKİSİ de `notifyListeners()` tetikleyebiliyor — `initState`'in
+    // GÖVDESİNDE senkron çağrılırsa "setState() or markNeedsBuild() called
+    // during build" hatasıyla ÇÖKÜYORDU (gerçekten yakalandı, `flutter
+    // test`'te). `sync.syncAll()`'un ZATEN kullandığı AYNI postFrameCallback'e
+    // taşınarak (ilk frame TAMAMLANDIKTAN sonra) düzeltildi.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      context.read<AppStreakProvider>().recordOpenForToday();
+      _badgeCoordinator = BadgeCoordinator(
+        badges: context.read<BadgeProvider>(),
+        goals: context.read<GoalsProvider>(),
+        appStreak: context.read<AppStreakProvider>(),
+      );
+    });
   }
 
   /// **2026 bug düzeltmesi — kullanıcı raporu: "uygulama İspanyolca ama
@@ -211,6 +237,7 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
       _localeProviderForCleanup?.removeListener(_onLocaleChangedForWidgetSync);
       sync.dispose();
     }
+    _badgeCoordinator?.dispose();
     super.dispose();
   }
 
@@ -237,6 +264,10 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
     // carousel de zaten ucuz, saf hesaplamalar).
     if (state == AppLifecycleState.resumed) {
       _homeWidgetSync?.syncAll();
+      // Rozet Sistemi — uygulama her öne geldiğinde (yalnızca soğuk
+      // başlangıçta DEĞİL) "bugün açıldı" kaydı tazeleniyor, aynı
+      // `touchLastActive`/`syncAll` tetikleyicisiyle.
+      context.read<AppStreakProvider>().recordOpenForToday();
     }
   }
 
@@ -412,6 +443,14 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
               const Align(
                 alignment: Alignment(1, -0.8),
                 child: DailyRewardsTriggerButton(),
+              ),
+            // Rozetler tetikleyicisi: Günlük Ödül'ün HEMEN ALTINDA, aynı
+            // sağ kenarda, aynı koşullu-görünürlük deseniyle (bkz. CLAUDE.md
+            // "Rozet Sistemi" bölümü).
+            if (_selectedIndex == 0)
+              const Align(
+                alignment: Alignment(1, -0.55),
+                child: BadgesTriggerButton(),
               ),
           ],
         ),

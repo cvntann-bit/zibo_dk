@@ -14,8 +14,10 @@ import 'package:stack_appodeal_flutter/stack_appodeal_flutter.dart';
 import 'config/appodeal_config.dart';
 import 'data/app_themes.dart';
 import 'l10n/app_localizations.dart';
+import 'providers/app_streak_provider.dart';
 import 'providers/app_theme_provider.dart';
 import 'providers/auth_link_provider.dart';
+import 'providers/badge_provider.dart';
 import 'providers/coin_provider.dart';
 import 'providers/costume_provider.dart';
 import 'providers/currency_provider.dart';
@@ -43,6 +45,7 @@ import 'providers/water_provider.dart';
 import 'providers/zibo_pose_provider.dart';
 import 'utils/ad_free_promo_trigger.dart';
 import 'utils/auth_switch.dart';
+import 'utils/root_navigator_key.dart';
 import 'models/app_theme_option.dart';
 import 'screens/onboarding/onboarding_screen.dart';
 import 'screens/root_screen.dart';
@@ -57,6 +60,7 @@ import 'services/sound_effects_service.dart';
 import 'widgets/ad_blur_overlay.dart';
 import 'widgets/animated_theme_overlay.dart';
 import 'widgets/app_loading_screen.dart';
+import 'widgets/badge_celebration_overlay.dart';
 import 'widgets/theme_fade_overlay.dart';
 
 // Zibo'nun tombul, sıcak, samimi karakterine uygun bal/hardal/krem paleti
@@ -413,6 +417,20 @@ class DijitalKankaApp extends StatelessWidget {
           ),
         ),
         ChangeNotifierProvider(create: (_) => AppThemeProvider(uid: uid)),
+        // 2026 yeni özellik — Rozet Sistemi (bkz. CLAUDE.md "Rozet Sistemi"
+        // bölümü). `AppStreakProvider`, GoalsProvider'ın per-goal 7 günlük
+        // döngüsünden BAĞIMSIZ, "uygulamayı her gün açma" serisini tutuyor —
+        // güvenlik-kritik olduğu için diğer "güne bağlı" provider'larla AYNI
+        // gerekçeyle `TrustedTimeProvider.now()`'u kullanıyor. `BadgeProvider`
+        // kazanılan rozetleri tutuyor, ikisi de `BadgeCoordinator` tarafından
+        // (bkz. `RootScreen`) DIŞARIDAN dinleniyor.
+        ChangeNotifierProvider(
+          create: (context) => AppStreakProvider(
+            now: () => context.read<TrustedTimeProvider>().now(),
+            uid: uid,
+          ),
+        ),
+        ChangeNotifierProvider(create: (_) => BadgeProvider(uid: uid)),
         // SoundEffectsProvider de CoinProvider'dan ÖNCE olmalı — AYNI
         // gerekçe: CoinProvider'ın `create` callback'i coin kazanma/satın
         // alma seslerini açık/kapalı tercihine bağlamak için `context.read<
@@ -543,6 +561,7 @@ class DijitalKankaApp extends StatelessWidget {
               : _buildTheme(equippedTheme.colorScheme(true));
 
           return MaterialApp(
+            navigatorKey: rootNavigatorKey,
             onGenerateTitle: (context) =>
                 AppLocalizations.of(context)!.appTitle,
             debugShowCheckedModeBanner: false,
@@ -554,19 +573,26 @@ class DijitalKankaApp extends StatelessWidget {
             // yol açtığı için bilerek kullanılmıyor). AnimatedThemeOverlay
             // İÇERİDE (fade perdesinin ALTINDA) sarılıyor ki tema değişince
             // parçacık katmanı da aynı yumuşak geçişe dahil olsun, aniden
-            // belirip kaybolmasın. AdBlurOverlay EN DIŞTA — reklam
+            // belirip kaybolmasın. AdBlurOverlay reklam katmanı — reklam
             // gösterilirken (bkz. `AppodealAdService`) uygulamanın TAMAMININ
             // (AppBar dahil) üzerine bir yedek bulanıklaştırma katmanı
             // bindirebilsin diye (bkz. o dosyadaki dokümantasyon).
-            builder: (context, child) => AdBlurOverlay(
-              child: ThemeFadeOverlay(
-                themeMode: themeProvider.themeMode,
-                equippedThemeId: equippedId,
-                child: AnimatedThemeOverlay(
-                  animationType:
-                      equippedTheme?.animationType ?? ThemeAnimationType.none,
-                  isDark: themeProvider.isDarkMode,
-                  child: child!,
+            // BadgeCelebrationOverlay EN DIŞTA — bir rozet HANGİ EKRANDA
+            // olursa olsun (bkz. `home:` içindeki içeriğin başka bir rota
+            // push edilince boyanmaması gotcha'sı, `BadgeCelebrationOverlay`
+            // dokümantasyonu) konfeti/kutlama popup'ı görünsün diye.
+            builder: (context, child) => BadgeCelebrationOverlay(
+              child: AdBlurOverlay(
+                child: ThemeFadeOverlay(
+                  themeMode: themeProvider.themeMode,
+                  equippedThemeId: equippedId,
+                  child: AnimatedThemeOverlay(
+                    animationType:
+                        equippedTheme?.animationType ??
+                        ThemeAnimationType.none,
+                    isDark: themeProvider.isDarkMode,
+                    child: child!,
+                  ),
                 ),
               ),
             ),
