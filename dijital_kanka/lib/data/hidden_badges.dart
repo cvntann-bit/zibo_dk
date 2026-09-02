@@ -14,9 +14,13 @@ const hiddenBadgeMysteryImageAsset = 'assets/images/gizli_rozet.png';
 ///
 /// 1. **Gizlilik mekaniği** — üçü de `isHidden: true` taşıyor (bkz. o alanın
 ///    dokümantasyonu). Kullanıcı bunları KAZANANA kadar galeri kartında ne
-///    isim/koşul ne ödül miktarı görünür — yalnızca [hiddenBadgeMysteryImageAsset]
-///    + "???" etiketi. Kazanıldığı ANDA (kutlama popup'ında VE ondan sonraki
-///    galeri kartında) her şey diğer rozetlerle AYNI şekilde açıklanıyor.
+///    isim ne koşul görünür — yalnızca [hiddenBadgeMysteryImageAsset] +
+///    "???" etiketi. **ZC ödül miktarı/ikonu İSTİSNA — bu HER ZAMAN
+///    görünür** (2026 İKİNCİ güncelleme, kullanıcının netleştirmesi: "bu
+///    gizli rozetlerin altına 777 ZC ve ikonu ekle" — ilk sürümde ödül de
+///    isim/koşulla BİRLİKTE gizlenmişti). Kazanıldığı ANDA (kutlama
+///    popup'ında VE ondan sonraki galeri kartında) her şey diğer
+///    rozetlerle AYNI şekilde açıklanıyor.
 /// 2. **`night_owl`/`early_bird`'ün zaman penceresi BİLEREK cihazın kendi
 ///    saatine (`DateTime.now()`) bağlı, `TrustedTimeProvider`/`AppStreakProvider`
 ///    GİBİ güvenlik-kritik bir kaynağa DEĞİL** — kullanıcının açık isteği

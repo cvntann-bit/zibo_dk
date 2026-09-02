@@ -18,10 +18,11 @@ import '../providers/water_provider.dart';
 /// kontrolünü, ilgili kaynak veri her güncellendiğinde OTOMATİK tetikleyen
 /// koordinatör — bkz. CLAUDE.md "Rozet Sistemi" bölümü.
 /// `HomeWidgetSyncCoordinator`'ın AYNI "constructor'dan değil PARAMETRE
-/// olarak al, dışarıdan `addListener` ekle" deseni: bu obje on üç
-/// provider'ın (Badges, Goals, AppStreak, Gratitude, Water, Mood, Money,
-/// Manifest, Dream, Costume, AppTheme, Profile, Referral, HiddenBadge)
-/// HİÇBİRİNE KALICI bağımlı değil, yalnızca onları dinleyip [BadgeProvider.
+/// olarak al, dışarıdan `addListener` ekle" deseni: bu obje on dört
+/// provider'ın (Badges DAHİL — bkz. altta "2026 bug düzeltmesi" notu —,
+/// Goals, AppStreak, Gratitude, Water, Mood, Money, Manifest, Dream,
+/// Costume, AppTheme, Profile, Referral, HiddenBadge) HİÇBİRİNE KALICI
+/// bağımlı değil, yalnızca onları dinleyip [BadgeProvider.
 /// reconcileConsistencyBadges]/[BadgeProvider.reconcileModuleMasteryBadges]/
 /// [BadgeProvider.reconcileCollectionBadges]/[BadgeProvider.
 /// reconcileLoyaltyBadges]/[BadgeProvider.reconcileSocialBadges]/
@@ -46,6 +47,31 @@ import '../providers/water_provider.dart';
 /// EAGER bir ilk kontrol yapar — uygulama açılışında zaten karşılanmış bir
 /// koşul varsa ilk `addListener` tetiklenene kadar beklenmez), `dispose()`'da
 /// listener'lar temizlenir.
+///
+/// **2026 bug düzeltmesi — gerçek kullanıcı raporu: "uygulamayı her
+/// açtığımda Tema Avcısı rozeti [tekrar tekrar] çıkıyor".** Kök neden,
+/// `ProfileProvider`'ın Onboarding'de yaşadığı AYNI sınıf yarış koşuluydu
+/// (bkz. "Açılış yükleme ekranı" bölümündeki "Kritik yarış koşulu" notu):
+/// `badges` (`BadgeProvider`) KENDİSİ `uid` != null iken Firestore'dan
+/// ASENKRON yükleniyor (`_loadFromPrefs()`, `isReady` ta ki BU tamamlanana
+/// kadar `false`) — ama bu koordinatör (a) `badges`'ı HİÇ DİNLEMİYORDU VE
+/// (b) EAGER `_reconcile()` çağrısı `badges.isReady`'yi HİÇ KONTROL
+/// ETMİYORDU. Sonuç: eğer BAŞKA bir provider'ın (ör. `appTheme`) kendi
+/// yüklemesi TAMAMLANIP bir `notifyListeners()` tetiklerken `badges`'in
+/// KENDİ Firestore okuması HENÜZ dönmemişse, `_reconcile()` `_earned`'i
+/// (o an hâlâ BOŞ, `{}`) doğrudan mutasyona uğratıp bir rozeti "yeni
+/// kazanıldı" sayıp popup'ı tetikliyordu — SONRA `badges._loadFromPrefs()`
+/// nihayet tamamlanınca bu YENİ kazanılan kaydı SESSİZCE SİLİP kalıcı
+/// depodaki (henüz bu kazanımı İÇERMEYEN) ESKİ veriyle EZİYORDU. Rozet bu
+/// yüzden ASLA kalıcı olarak kaydedilemiyor, HER açılışta aynı yarış
+/// tekrarlanıp popup'ı yeniden tetikliyordu. **Düzeltme — iki parça:**
+/// (1) `_reconcile()`'ın EN BAŞINA `if (!badges.isReady) return;` guard'ı
+/// eklendi — `badges` henüz yüklenmeden HİÇBİR reconcile ÇALIŞMAZ; (2)
+/// `badges` de artık DİNLENEN on dördüncü provider — `isReady` `false`'tan
+/// `true`'ya geçtiğinde kendi `notifyListeners()`'ı BU koordinatörün
+/// `_reconcile()`'ını (artık `_earned` GERÇEKTEN yüklenmiş haldeyken)
+/// yeniden tetikliyor, aksi halde `badges` hazır olduktan SONRA HİÇBİR
+/// BAŞKA provider değişmezse reconcile bir daha HİÇ çalışmayabilirdi.
 class BadgeCoordinator {
   BadgeCoordinator({
     required this.badges,
@@ -63,6 +89,7 @@ class BadgeCoordinator {
     required this.referral,
     required this.hiddenBadge,
   }) {
+    badges.addListener(_reconcile);
     goals.addListener(_reconcile);
     appStreak.addListener(_reconcile);
     gratitude.addListener(_reconcile);
@@ -95,6 +122,13 @@ class BadgeCoordinator {
   final HiddenBadgeProvider hiddenBadge;
 
   void _reconcile() {
+    // Bkz. yukarıdaki "2026 bug düzeltmesi" notu — `badges` henüz kendi
+    // Firestore yüklemesini TAMAMLAMADAN (bkz. `BadgeProvider.isReady`)
+    // reconcile ÇALIŞTIRILIRSA, `_earned` o an hâlâ BOŞ olduğu için TÜM
+    // eşik kontrolleri "yeni kazanıldı" sanılır; bu kazanımlar birazdan
+    // gelen GERÇEK yüklemeyle SESSİZCE SİLİNİR (kalıcı olmaz), rozet HER
+    // açılışta yeniden "kazanılıyormuş" gibi popup açar.
+    if (!badges.isReady) return;
     badges.reconcileConsistencyBadges(
       hasCompletedFirstGoalCycle: goals.completions.isNotEmpty,
       appOpenStreak: appStreak.currentStreak,
@@ -135,6 +169,7 @@ class BadgeCoordinator {
   }
 
   void dispose() {
+    badges.removeListener(_reconcile);
     goals.removeListener(_reconcile);
     appStreak.removeListener(_reconcile);
     gratitude.removeListener(_reconcile);

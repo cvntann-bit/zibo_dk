@@ -8633,3 +8633,79 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
     kazanıldığı, VE kazanıldığı anda kutlama popup'ının (konfeti + gerçek
     görsel/isim/koşul/777 ZC + "Ödülü Al") NORMAL akışla (diğer
     rozetlerden hiçbir farkı olmadan) çalıştığı.
+
+#### Kurulumdan hemen sonraki iki düzeltme — gizli rozetlerde ödül miktarı + "Tema Avcısı" tekrar tekrar çıkma bug'ı
+
+- **1) Gizli/Eğlenceli Rozetler'de ödül miktarı ARTIK kazanılmadan önce de
+  görünüyor.** Kullanıcı gerçek cihazda test ettikten hemen sonra
+  netleştirdi: "bu gizli rozetlerin altına 777 ZC ve ikonu ekle" — bir
+  önceki turdaki ilk yorumum ("AMA 777zC VİTRİNDE GÖRÜNSÜN SADECE" cümlesi
+  bir yazım kazası olmalı, isim/koşulLA BİRLİKTE ödül de gizlensin
+  demek istiyor olmalı) YANLIŞ çıktı — kullanıcı GERÇEKTEN o cümleyi
+  kastetmiş: yalnızca isim/koşul "???" kalsın, ZC ödül miktarı/ikonu HER
+  ZAMAN görünsün. `_BadgeGalleryCard`'daki ZC ödül `Row`'unu saran `if
+  (!hiddenLocked) ...` koşulu KALDIRILIP satır koşulsuz render edilecek
+  şekilde değiştirildi — `hiddenLocked` kontrolü artık YALNIZCA isim/koşul
+  metinlerini ("???" ile) ve görseli (mystery image) etkiliyor.
+  `ZiboBadgeDefinition.isHidden`/`hidden_badges.dart`'ın doc yorumları da
+  buna göre güncellendi. `badges_gallery_screen_test.dart`'taki iki gizli-
+  rozet testi güncellendi (kazanılmadan ÖNCE "777 ZC" ÜÇ kez, kazanıldıktan
+  SONRA da hâlâ ÜÇ kez — artık kazanılmış/kazanılmamış farketmiyor).
+- **2) Gerçek bug düzeltmesi — "uygulamayı her açtığımda Tema Avcısı
+  rozeti [tekrar tekrar] çıkıyor" (kullanıcı raporu).** Kök neden,
+  `ProfileProvider`'ın Onboarding'de daha önce yaşadığı BİREBİR AYNI sınıf
+  yarış koşuluydu (bkz. "Açılış yükleme ekranı" bölümündeki "Kritik yarış
+  koşulu" notu): `badges` (`BadgeProvider`) `uid` varken Firestore'dan
+  ASENKRON yükleniyor (`_loadFromPrefs()`, `isReady` bu TAMAMLANANA kadar
+  `false`) — ama `BadgeCoordinator` (a) `badges`'ı HİÇ DİNLEMİYORDU VE (b)
+  EAGER `_reconcile()` çağrısı `badges.isReady`'yi HİÇ KONTROL ETMİYORDU.
+  Eğer BAŞKA bir provider'ın (ör. `appTheme`) kendi yüklemesi
+  TAMAMLANIP bir `notifyListeners()` tetiklerken `badges`'in KENDİ
+  Firestore okuması HENÜZ dönmemişse, `_reconcile()` `_earned`'i (o an
+  hâlâ BOŞ, `{}`) doğrudan mutasyona uğratıp bir rozeti "yeni kazanıldı"
+  sayıp popup'ı tetikliyordu — SONRA `badges._loadFromPrefs()` nihayet
+  tamamlanınca bu YENİ kazanılan kaydı SESSİZCE SİLİP kalıcı depodaki
+  (henüz bu kazanımı İÇERMEYEN) ESKİ veriyle EZİYORDU. Rozet bu yüzden
+  ASLA kalıcı olarak kaydedilemiyor, HER açılışta AYNI yarış tekrarlanıp
+  popup'ı yeniden tetikliyordu — kullanıcının hesabında `theme_hunter`
+  (3+ tema sahipliği eşiği, `AppThemeProvider`'ın kendi yüklemesi genelde
+  `BadgeProvider`'ınkinden ÖNCE tamamlandığı için özellikle bu rozette
+  yakalanmış olmalı, ama TEORİK olarak herhangi bir rozeti etkileyebilirdi).
+  - **Düzeltme — iki parça, `badge_coordinator.dart`:** (1) `_reconcile()`'ın
+    EN BAŞINA `if (!badges.isReady) return;` guard'ı eklendi — `badges`
+    henüz yüklenmeden HİÇBİR reconcile ÇALIŞMAZ, `_earned`'in BOŞ haliyle
+    yanlış bir "yeni kazanım" ASLA üretilemez; (2) `badges` da artık
+    DİNLENEN on dördüncü provider (`badges.addListener(_reconcile)` +
+    `dispose()`'da `removeListener`) — `isReady` `false`'tan `true`'ya
+    geçtiğinde `badges`'in KENDİ `notifyListeners()`'ı koordinatörün
+    `_reconcile()`'ını (artık `_earned` GERÇEKTEN yüklenmiş haldeyken)
+    yeniden tetikliyor; bu ikinci parça olmasaydı, `badges` hazır
+    olduktan SONRA HİÇBİR BAŞKA provider değişmezse reconcile bir daha
+    HİÇ çalışmayabilir, GERÇEKTEN kazanılmış bir rozet asla tespit
+    edilmeyebilirdi.
+  - **Test — gerçek race'i yeniden üreten bir regresyon testi eklendi**
+    (`badge_coordinator_test.dart`): `BadgeProvider()` BİLEREK `await
+    Future<void>.delayed(Duration.zero)` OLMADAN (henüz `isReady ==
+    false` iken) `BadgeCoordinator`'a geçiriliyor, eşik ÖNCEDEN
+    karşılanmış (5 kostüm sahipliği) — EAGER reconcile'ın NO-OP olduğu
+    (`isEarned('collector') == false`) doğrulanıyor, SONRA `await
+    Future<void>.delayed(Duration.zero)` ile yüklemenin tamamlanmasına
+    izin verilip coordinator'ın OTOMATİK olarak doğru şekilde (VE
+    KALICI olarak) reconcile ettiği (`isEarned('collector') == true`)
+    kanıtlanıyor — bu test DÜZELTMEDEN ÖNCEKİ kodda BAŞARISIZ olurdu.
+  - **Bu düzeltme TÜM altı kategoriyi de kapsıyor** — `theme_hunter`'a
+    özgü bir yama DEĞİL, `BadgeCoordinator._reconcile()`'ın KENDİSİNDEKİ
+    genel bir güvenlik açığıydı, bu yüzden hangi rozet/kategori olursa
+    olsun AYNI yarışa açık HERHANGİ bir gelecekteki kazanım için de
+    kalıcı olarak kapatıldı.
+  - **Doğrulama:** `flutter test` — tam suite yeşil, **530 test** (529
+    geçti + 1 önceden belgelenmiş `audioplayers`/`home_widget` flake'i,
+    bu değişikliklerle İLGİSİZ). `flutter build apk --debug` sorunsuz,
+    APK telefona SESSİZCE kuruldu (kullanıcı o an Instagram kullanıyordu,
+    açılmadı). **Gerçek cihazda GÖRSEL doğrulama bu turda YAPILMADI** —
+    kullanıcının kendi cihazında doğrulaması gereken: Rozetler
+    Galerisi'ndeki üç gizli rozetin ARTIK altında "777 ZC" + coin ikonu
+    gösterdiği (isim/koşul HÂLÂ "???"), ve "Tema Avcısı" rozetinin
+    (veya daha önce zaten koşulu karşılanmış BAŞKA bir rozetin) uygulama
+    yeniden açıldığında BİR DAHA popup olarak ÇIKMADIĞI (bir kez doğru
+    kaydedildikten sonra kalıcı kalması gerekir).

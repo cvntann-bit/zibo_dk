@@ -117,6 +117,9 @@ void main() {
       // Yerine "???" etiketi üçü için de İKİŞER kez (isim + koşul slotu)
       // görünüyor — toplam 6.
       expect(find.text('???'), findsNWidgets(6));
+      // 2026 İKİNCİ güncelleme — ÖDÜL MİKTARI İSTİSNA, kazanılmadan önce
+      // de HER ÜÇ kart için görünür (kullanıcının netleştirmesi).
+      expect(find.text('777 ZC'), findsNWidgets(3));
       expect(find.text('Gizli Rozetler'), findsOneWidget);
       expect(tester.takeException(), isNull);
     },
@@ -140,7 +143,9 @@ void main() {
         find.text('Gece yarısı ile sabah 05:00 arası 30 kez uygulamayı aç'),
         findsOneWidget,
       );
-      expect(find.text('777 ZC'), findsOneWidget);
+      // 2026 İKİNCİ güncelleme — "777 ZC" ARTIK kazanılmamış iki rozette
+      // de görünüyor (ödül miktarı gizli DEĞİL) — toplam üçü de gösteriyor.
+      expect(find.text('777 ZC'), findsNWidgets(3));
       // Kazanılmamış diğer iki gizli rozet HÂLÂ "???" gösteriyor (4 = 2×2).
       expect(find.text('???'), findsNWidgets(4));
       expect(tester.takeException(), isNull);

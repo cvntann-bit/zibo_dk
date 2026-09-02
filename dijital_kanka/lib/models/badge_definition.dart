@@ -45,16 +45,17 @@ class ZiboBadgeDefinition {
 
   /// **Gizli/Eğlenceli Rozetler'e özel — bkz. `hidden_badges.dart`.**
   /// `true` iken, bu rozet KAZANILANA kadar `BadgesGalleryScreen`'in
-  /// `_BadgeGalleryCard`'ı [imageAsset]/[localizedName]/[localizedRequirement]/
-  /// [zcReward]'ın HİÇBİRİNİ göstermez — bunun yerine paylaşılan bir gizem
-  /// görseli (`hiddenBadgeMysteryImageAsset`) + `l10n.badgeHiddenPlaceholder`
+  /// `_BadgeGalleryCard`'ı [imageAsset]/[localizedName]/[localizedRequirement]'ı
+  /// GİZLER — bunun yerine paylaşılan bir gizem görseli
+  /// (`hiddenBadgeMysteryImageAsset`) + `l10n.badgeHiddenPlaceholder`
   /// ("???") gösterir, kullanıcı rozeti TESADÜFEN/KEŞFEDEREK kazansın diye
-  /// (kullanıcının açık isteği). **Kazanıldıktan SONRA bu bayrağın HİÇBİR
-  /// etkisi kalmaz** — `BadgeCelebrationOverlay`'in kutlama popup'ı VE
-  /// galerideki kart, TÜM diğer rozetlerle AYNI şekilde gerçek görsel/isim/
-  /// koşul/ödülü gösterir (`_BadgeGalleryCard`'daki kontrol
-  /// `badge.isHidden && !earned`'a bağlı, yalnızca `earned` DEĞİLKEN
-  /// devrede).
+  /// (kullanıcının açık isteği). **[zcReward] İSTİSNA — HER ZAMAN görünür**
+  /// (2026 İKİNCİ güncelleme, kullanıcının netleştirmesi — ilk sürümde
+  /// ödül de gizliydi). **Kazanıldıktan SONRA bu bayrağın HİÇBİR etkisi
+  /// kalmaz** — `BadgeCelebrationOverlay`'in kutlama popup'ı VE galerideki
+  /// kart, TÜM diğer rozetlerle AYNI şekilde gerçek görsel/isim/koşul/ödülü
+  /// gösterir (`_BadgeGalleryCard`'daki kontrol `badge.isHidden &&
+  /// !earned`'a bağlı, yalnızca `earned` DEĞİLKEN devrede).
   final bool isHidden;
 
   String localizedName(AppLocalizations l10n) {

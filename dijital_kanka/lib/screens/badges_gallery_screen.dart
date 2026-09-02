@@ -11,7 +11,10 @@ import '../providers/badge_provider.dart';
 /// rozetler net/renkli, kazanılmamış rozetler gri tonlu/soluk görünür ama
 /// adı ve kazanma koşulu HER ZAMAN görünür kalır — **TEK istisna Gizli/
 /// Eğlenceli Rozetler kategorisi** (bkz. `_BadgeGalleryCard`'daki
-/// `hiddenLocked` kontrolü ve `ZiboBadgeDefinition.isHidden` dokümantasyonu).
+/// `hiddenLocked` kontrolü ve `ZiboBadgeDefinition.isHidden` dokümantasyonu):
+/// isim VE koşul KAZANILMADAN önce "???" — **ama ZC ödül miktarı/ikonu HER
+/// ZAMAN görünür** (2026 İKİNCİ güncelleme — kullanıcının netleştirmesi,
+/// ilk sürümde ödül de gizliydi).
 ///
 /// **2026 güncellemesi — altı kategori: İstikrar + Modül Ustalığı +
 /// Koleksiyon + Sadakat + Sosyal/Paylaşım + Gizli/Eğlenceli.** `allBadges`
@@ -184,28 +187,29 @@ class _BadgeGalleryCard extends StatelessWidget {
             // Coin ikonu PNG'siyle birlikte gösterilsin — `CoinBalanceWidget`/
             // `CostumeCard`'daki AYNI `assets/images/zibo_coin.png` kullanımı.
             // 2026 güncellemesi: hem ikon hem metin büyütüldü ("10zc/30zc
-            // ve zc ikonunun boyutunu büyüt"). **Gizli/Eğlenceli Rozetler
-            // KAZANILMADAN önce bu satır TAMAMEN GİZLİ** — kullanıcının açık
-            // isteği "kazanma koşulu VE ödül miktarı ÖNCEDEN gösterilmesin".
-            if (!hiddenLocked) ...[
-              const SizedBox(height: 6),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Image.asset('assets/images/zibo_coin.png', width: 20, height: 20),
-                  const SizedBox(width: 5),
-                  Text(
-                    l10n.storeCoinAmount(badge.zcReward),
-                    style: textTheme.labelMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: earned
-                          ? colorScheme.primary
-                          : colorScheme.onSurfaceVariant,
-                    ),
+            // ve zc ikonunun boyutunu büyüt"). **2026 İKİNCİ güncelleme —
+            // Gizli/Eğlenceli Rozetler'de bu satır KAZANILMADAN önce de
+            // GÖRÜNÜR** (kullanıcının netleştirmesi: yalnızca isim/koşul
+            // "???" kalsın, ödül miktarı/ikonu HER ZAMAN görünsün) — ilk
+            // yazımda `hiddenLocked` iken TAMAMEN gizlenmişti, bu satır
+            // gizlemeyi KALDIRIP koşulsuz render etmeye çevrildi.
+            const SizedBox(height: 6),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Image.asset('assets/images/zibo_coin.png', width: 20, height: 20),
+                const SizedBox(width: 5),
+                Text(
+                  l10n.storeCoinAmount(badge.zcReward),
+                  style: textTheme.labelMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: earned
+                        ? colorScheme.primary
+                        : colorScheme.onSurfaceVariant,
                   ),
-                ],
-              ),
-            ],
+                ),
+              ],
+            ),
             // "Tam Gardırop" gibi standart ZC ödülüne EK bir özel ödül
             // taşıyan rozetler için — bkz. `ZiboBadgeDefinition.
             // hasSpecialReward` dokümantasyonundaki "ŞU AN yalnızca bir YER

@@ -16,6 +16,19 @@
 // yeterli — TEK istisna "Denge Ustası"nın YEDİ modülü BİRLEŞTİREN
 // `hasAllModulesToday` hesaplaması, bu BURADA (koordinatörün KENDİ mantığı,
 // başka hiçbir test dosyasında kapsanmıyor) ayrıca test ediliyor.
+//
+// **2026 bug düzeltmesi — "Tema Avcısı her açılışta tekrar çıkıyor" gerçek
+// kullanıcı raporu.** Kök neden: `badges` (BadgeProvider) kendi Firestore
+// yüklemesini TAMAMLAMADAN (bkz. `BadgeProvider.isReady`) `_reconcile()`
+// çalışırsa, `_earned` o an hâlâ BOŞ olduğu için zaten karşılanmış bir
+// eşik "yeni kazanıldı" sanılıp popup açılıyor — SONRA `badges`'in KENDİ
+// yüklemesi tamamlanınca bu kazanım SESSİZCE SİLİNİYOR (kalıcı depodaki
+// henüz bu kazanımı içermeyen ESKİ veriyle EZİLİYOR), rozet HİÇBİR ZAMAN
+// kalıcı hale gelmiyor — HER açılışta AYNI yarış tekrarlanıyor. Aşağıdaki
+// "isReady DEĞİLKEN kurulur" testi bu TAM senaryoyu (bilerek
+// `SharedPreferences.setMockInitialValues({})`'ın bile senkron
+// TAMAMLANMADIĞI gerçek asenkron açığı kullanarak) yeniden üretip
+// düzeltmenin (guard + `badges`'ı DA dinleme) işe yaradığını kanıtlıyor.
 
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -460,6 +473,59 @@ void main() {
         // dream.addDream(...) BİLEREK atlandı — Rüya Günlüğü eksik kalıyor.
 
         expect(badges.isEarned('balance_master'), isFalse);
+      },
+    );
+
+    test(
+      '2026 bug düzeltmesi: badges HENÜZ isReady DEĞİLKEN (kendi yüklemesi '
+      'sürerken) coordinator kurulursa EAGER reconcile NO-OP olur — zaten '
+      'karşılanmış bir eşik "sahte" kazanılmış SAYILMAZ; yükleme '
+      'tamamlanınca coordinator OTOMATİK yeniden reconcile edip rozeti '
+      'DOĞRU (ve KALICI) şekilde kazandırır',
+      () async {
+        // BİLEREK `await Future<void>.delayed(Duration.zero)` YOK — bu,
+        // `freshBadges._loadFromPrefs()`'in henüz TAMAMLANMADIĞI GERÇEK
+        // asenkron pencereyi (Firestore'da çok daha uzun sürebilen AYNI
+        // yarışı, bkz. yukarıdaki dosya-başı notu) yeniden üretiyor.
+        final freshBadges = BadgeProvider();
+        expect(freshBadges.isReady, isFalse);
+
+        for (final c in costumes.take(5)) {
+          costume.markOwned(c.id); // eşik ZATEN karşılanmış
+        }
+        expect(costume.ownedRealCostumeCount, 5);
+
+        final coordinator = BadgeCoordinator(
+          badges: freshBadges,
+          goals: goals,
+          appStreak: appStreak,
+          gratitude: gratitude,
+          water: water,
+          mood: mood,
+          money: money,
+          manifest: manifest,
+          dream: dream,
+          costume: costume,
+          appTheme: appTheme,
+          profile: profile,
+          referral: referral,
+          hiddenBadge: hiddenBadge,
+        );
+
+        // EAGER reconcile NO-OP oldu — `badges` henüz ready DEĞİLDİ, bu
+        // yüzden zaten karşılanmış eşik BURADA "sahte" kazanılmadı.
+        expect(freshBadges.isEarned('collector'), isFalse);
+
+        // `freshBadges`'in KENDİ yüklemesi tamamlanınca `notifyListeners()`
+        // tetikler — coordinator artık `badges`'ı DA dinlediği için (bkz.
+        // yukarıdaki "2026 bug düzeltmesi" notu) bu OTOMATİK bir reconcile
+        // daha tetikliyor, bu sefer `_earned` GERÇEKTEN yüklenmiş haldeyken.
+        await Future<void>.delayed(Duration.zero);
+
+        expect(freshBadges.isReady, isTrue);
+        expect(freshBadges.isEarned('collector'), isTrue);
+
+        coordinator.dispose();
       },
     );
   });
