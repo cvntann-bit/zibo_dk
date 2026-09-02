@@ -48,7 +48,13 @@ class BadgesGalleryScreen extends StatelessWidget {
               crossAxisCount: 2,
               mainAxisSpacing: 12,
               crossAxisSpacing: 12,
-              childAspectRatio: 0.6,
+              // Kullanıcı isteği ile görsel büyütülüp bir ZC ödül satırı
+              // eklendiği için kartın içeriği uzadı — bkz. CLAUDE.md'deki
+              // tekrarlayan "yeni içerik eski childAspectRatio'yu taşırıyor"
+              // dersi (Kostüm/Tema/Manifest kartları) — 0.6'dan düşürüldü,
+              // `badges_gallery_screen_test.dart` overflow olmadığını
+              // doğruluyor.
+              childAspectRatio: 0.5,
               children: [
                 for (final badge in consistencyBadges)
                   _BadgeGalleryCard(badge: badge),
@@ -80,7 +86,8 @@ class _BadgeGalleryCard extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
     final earned = context.watch<BadgeProvider>().isEarned(badge.id);
 
-    final image = Image.asset(badge.imageAsset, width: 88, height: 88);
+    // Kullanıcı isteği: rozet görseli biraz büyütülsün (88 → 108).
+    final image = Image.asset(badge.imageAsset, width: 108, height: 108);
 
     return Card(
       margin: EdgeInsets.zero,
@@ -95,7 +102,9 @@ class _BadgeGalleryCard extends StatelessWidget {
                     colorFilter: const ColorFilter.matrix(_greyscaleMatrix),
                     child: Opacity(opacity: 0.5, child: image),
                   ),
-            const SizedBox(height: 8),
+            // Kullanıcı isteği: ad/açıklama görselden biraz daha aşağıya
+            // kaydırılsın — aradaki boşluk 8'den 14'e büyütüldü.
+            const SizedBox(height: 14),
             Text(
               badge.localizedName(l10n),
               textAlign: TextAlign.center,
@@ -117,6 +126,26 @@ class _BadgeGalleryCard extends StatelessWidget {
                   color: colorScheme.onSurfaceVariant,
                 ),
               ),
+            ),
+            // Kullanıcı isteği: en altta kaç Zibo Coin ödülü olduğu, Zibo
+            // Coin ikonu PNG'siyle birlikte gösterilsin — `CoinBalanceWidget`/
+            // `CostumeCard`'daki AYNI `assets/images/zibo_coin.png` kullanımı.
+            const SizedBox(height: 6),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Image.asset('assets/images/zibo_coin.png', width: 16, height: 16),
+                const SizedBox(width: 4),
+                Text(
+                  l10n.storeCoinAmount(badge.zcReward),
+                  style: textTheme.labelSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: earned
+                        ? colorScheme.primary
+                        : colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
             ),
           ],
         ),

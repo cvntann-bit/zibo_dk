@@ -7938,3 +7938,84 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
   Eğlenceli) — `BadgeCategory` enum'una yeni değerler + `allBadges`'e yeni
   listeler eklemek yeterli olacak, `BadgesGalleryScreen`/`BadgeCelebrationOverlay`
   hâlihazırda kategoriden bağımsız/genel yazıldı.
+- **2026 güncellemesi — USB üzerinden gerçek cihaz testinden sonra beş küçük
+  UI/davranış düzeltmesi.** Kullanıcı isteği (verbatim özet): Çark/Günlük
+  Giriş popup'ları biraz yukarı kaydırılsın; Rozet popup'ı DAHA FAZLA yukarı
+  kaydırılsın + arkasındaki "siyah yuvarlak arkaplan" kaldırılsın (yalnızca
+  PNG kullanılsın) + görsel biraz büyütülsün + konfeti animasyonu AYNEN
+  kalsın; Rozetler Galerisi'ndeki rozet boyutları büyütülsün + ad/açıklama
+  biraz aşağı kaydırılsın + en alta Zibo Coin ikonuyla ödül miktarı
+  eklensin; Ayarlar'a GEÇİCİ bir "rastgele rozet kazan" test düğmesi
+  eklensin.
+  - **Popup konumları:** `WheelScreen`'in `Expanded(child: Center(...))`'ı
+    `Expanded(child: Align(alignment: Alignment(0, -0.25), ...))`'a,
+    `DailyRewardsScreen`'in `Dialog(...)`'ı `alignment: Alignment(0, -0.2)`
+    almaya, `BadgeCelebrationOverlay`'in `Center(...)`'ı (diğerlerinden
+    DAHA FAZLA yukarı) `Align(alignment: Alignment(0, -0.45), ...)`'e
+    çevrildi — üçü de yalnızca DÜŞEY konum, hiçbir animasyon/mantık
+    DEĞİŞMEDİ (`GoalConfettiBurst`/`_confettiController` hiç dokunulmadı).
+  - **GERÇEK, önemli bir asset bug'ı bulunup düzeltildi — "siyah yuvarlak
+    arkaplan" kullanıcının hayal ettiği bir widget dekorasyonu DEĞİL,
+    `yilmaz_efsanevi_rozet.png`nin (Yılmaz/Efsanevi, en üst tier İstikrar
+    rozeti) kaynak dosyasına GERÇEKTEN BAKILI, ŞEFFAF OLMAYAN düz siyah bir
+    kare arka plandı.** Diğer 4 rozet PNG'si (+ `popup_rozet_icon.png`)
+    incelenip TAMAMEN temiz/şeffaf olduğu doğrulandı — yalnızca bu TEK
+    dosya farklıydı (muhtemelen üretici görsel aracın "transparent" yerine
+    "black" arka planla dışa aktarması). Mevcut `tool/remove_bg.dart`
+    yalnızca BEYAZ arka planları hedeflediği için (`r/g/b >= 245` eşiği) bu
+    dosyada hiçbir şey YAPMADI — bu yüzden **YENİ, kalıcı bir araç**
+    ([tool/remove_black_bg.dart](tool/remove_black_bg.dart)) yazıldı:
+    `remove_bg.dart` ile BİREBİR AYNI kenar-flood-fill + feather deseni,
+    yalnızca eşik SİYAHA çevrilmiş (`r/g/b <= 12` "arka plan", dekontaminasyon
+    255'e değil 0'a doğru). **Doğrulama, Read/önizleme aracına GÜVENİLMEDEN
+    pikselin GERÇEK alfa değeri ölçülerek yapıldı** — düzeltmeden sonra bile
+    önizleme aracı köşeleri SİYAH göstermeye devam etti (bu aracın tam
+    saydam pikselleri `(0,0,0,0)` RGB'siyle, beyaz değil SİYAH bir kanvasa
+    kompozit ettiği anlaşıldı — bir görüntüleyici tuhaflığı, gerçek bir veri
+    sorunu DEĞİL); geçici bir pixel-inceleme betiğiyle köşe bölgesinin
+    `alpha=0` olduğu VE sanat eserinin merkezinin (`alpha≈252`) etkilenmediği
+    KANITLANDI, sonra inceleme betiği silindi. **Ders — genelleştirilebilir:**
+    bir PNG önizlemesinin transparanlığı YANLIŞ/tutarsız gösterebileceği
+    unutulmamalı — kuşkulu bir asset için nihai kanıt her zaman pikselin
+    HAM alfa değeri, önizleme aracının o pikseli hangi renkte "gösterdiği"
+    DEĞİL.
+    `badge_celebration_overlay.dart`'ın `_BadgeClaimCard`'ında zaten PNG'yi
+    saran bir Container/dekorasyon YOKTU — "arkaplanı kaldırma" işi TAMAMEN
+    asset düzeltmesinden ibaretti, widget kodunda kaldırılacak bir şey
+    çıkmadı. Görsel boyutu da `Image.asset(..., width: 128, height: 128)`'den
+    `width: 152, height: 152`'ye büyütüldü.
+  - **Rozetler Galerisi kartı** (`_BadgeGalleryCard`) — görsel 88'den 108'e
+    büyütüldü, görsel↔ad arası boşluk 8'den 14'e çıkarıldı (ad/açıklama
+    "biraz aşağı" kaydı), kartın en altına yeni bir satır eklendi
+    (`Image.asset('assets/images/zibo_coin.png', width: 16, height: 16)` +
+    `Text(l10n.storeCoinAmount(badge.zcReward))`) — `CoinBalanceWidget`/
+    `CostumeCard`'daki AYNI coin ikonu kullanımı. **`childAspectRatio`
+    overflow dersi (bu projede TEKRARLAYAN bir kategori — bkz. Kostüm/Tema/
+    Manifest kartları) yine devreye girdi:** eklenen içerik kartı
+    uzattığı için `0.6`'dan `0.5`'e düşürüldü; `badges_gallery_screen_test.
+    dart`'taki mevcut overflow testi (`tester.takeException()`) DEĞİŞİKLİKTEN
+    SONRA da temiz geçti.
+  - **`BadgeProvider.debugGrantRandomBadge()`** (YENİ, GEÇİCİ) —
+    `allBadges`'ten henüz kazanılmamış rastgele bir rozeti GERÇEK
+    `reconcileConsistencyBadges` akışıyla BİREBİR AYNI şekilde kazandırır
+    (kazanılmış say + kalıcı hale getir + `pendingBadgePopup`'a yaz) — ZC
+    ödülünü BURADA VERMİYOR, gerçek akışla TUTARLI şekilde yalnızca
+    kullanıcı popup'taki "Ödülü Al"a bastığında `CoinProvider.
+    earnBadgeReward` çağrılıyor. Tüm rozetler zaten kazanılmışsa `null`
+    döner. Ayarlar'a `_BadgeTestPanel` (YENİ, `_CoinTestPanel`/
+    `_NotificationDebugPanel` ile AYNI "açıkça GEÇİCİ işaretli, izole
+    widget" deseni) eklendi — tek bir "Rastgele Rozet Kazan" butonu, rozet
+    sistemi gerçek cihazda doğrulandıktan sonra TAMAMEN kaldırılacak.
+  - **Doğrulama:** `flutter test` — tam suite yeşil (450/450, yalnızca
+    önceden belgelenmiş `audioplayers`/`home_widget` flake'i hariç — bu
+    turun değişiklikleriyle İLGİSİZ). `flutter build apk --debug` sorunsuz.
+    **Gerçek cihazda GÖRSEL doğrulama bu turda YAPILMADI** — kullanıcı bu
+    APK'yı kendi USB kablosuyla kurup test edecek. Kontrol edilmesi
+    gerekenler: Çark/Günlük Giriş popup'larının hafifçe yukarı kaydığı,
+    Rozet kazanma popup'ının DAHA FAZLA yukarıda ve arkasında hiçbir siyah
+    arka plan OLMADAN (yalnızca PNG) büyümüş halde göründüğü (özellikle
+    Yılmaz/Efsanevi rozeti kazanıldığında/test edildiğinde), Rozetler
+    Galerisi'ndeki kartların büyümüş görsel + aşağı kaymış metin + alttaki
+    ZC ödül satırıyla (coin ikonu dahil) taşmadan göründüğü, ve Ayarlar'ın
+    en altındaki geçici "Rozet Test Paneli"nin rastgele bir rozeti gerçek
+    konfeti+popup akışıyla kazandırdığı.

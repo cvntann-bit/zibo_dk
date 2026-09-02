@@ -160,7 +160,12 @@ class _WheelScreenState extends State<WheelScreen>
               ),
             ],
             Expanded(
-              child: Center(
+              // Kullanıcı isteği: çark popup'ı biraz yukarıya kaydırılsın —
+              // `Center` yerine hafifçe yukarı kaymış bir `Align` kullanmak,
+              // çarkın kendisine/animasyonuna hiç dokunmadan yalnızca
+              // görsel konumunu değiştiriyor.
+              child: Align(
+                alignment: const Alignment(0, -0.25),
                 child: Stack(
                   alignment: Alignment.center,
                   children: [

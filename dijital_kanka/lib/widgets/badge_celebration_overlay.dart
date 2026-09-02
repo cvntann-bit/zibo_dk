@@ -96,7 +96,12 @@ class _BadgeCelebrationOverlayState extends State<BadgeCelebrationOverlay>
               ).colorScheme.scrim.withValues(alpha: 0.55),
             ),
           ),
-          Center(
+          // Kullanıcı isteği: rozet popup'ı diğerlerinden (Çark/Günlük
+          // Giriş) DAHA FAZLA yukarı kaydırılsın — konfeti animasyonu
+          // (yukarıdaki GoalConfettiBurst) hiç dokunulmadan aynen kalıyor,
+          // yalnızca kartın DÜŞEY konumu değişiyor.
+          Align(
+            alignment: const Alignment(0, -0.45),
             child: _BadgeClaimCard(
               badge: badge,
               onClaim: _dismissAndOpenGallery,
@@ -131,7 +136,14 @@ class _BadgeClaimCard extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Image.asset(badge.imageAsset, width: 128, height: 128),
+              // Kullanıcı isteği: görsel biraz büyütülsün. Bu Column'da PNG'nin
+              // ARKASINDA hiçbir dekoratif Container/daire YOK — kullanıcının
+              // gördüğü "siyah yuvarlak arkaplan" gerçekte
+              // `yilmaz_efsanevi_rozet.png`nin (Yılmaz/Efsanevi rozeti) kaynak
+              // dosyasına BAKILI, şeffaf OLMAYAN siyah bir kare arka plandı —
+              // `tool/remove_black_bg.dart` ile assetin kendisi düzeltildi,
+              // burada ayrıca kaldırılacak bir widget/dekorasyon yoktu.
+              Image.asset(badge.imageAsset, width: 152, height: 152),
               const SizedBox(height: 16),
               Text(
                 badge.localizedName(l10n),

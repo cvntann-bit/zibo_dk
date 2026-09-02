@@ -79,6 +79,9 @@ class _DailyRewardsScreenState extends State<DailyRewardsScreen> {
     }
 
     return Dialog(
+      // Kullanıcı isteği: popup biraz yukarıya kaydırılsın — merkezden
+      // hafifçe yukarı kaymış bir hizalama.
+      alignment: const Alignment(0, -0.2),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
       child: Padding(
         padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
