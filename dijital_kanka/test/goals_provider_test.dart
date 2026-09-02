@@ -185,6 +185,41 @@ void main() {
           provider.completions.first.completionDate,
           provider.completions.last.completionDate.add(const Duration(days: 7)),
         );
+        // 2026 güncellemesi — kullanıcı isteği: gün numaraları döngü
+        // tamamlanınca 1'e dönmesin, ardışık devam etsin (bkz.
+        // `completedCyclesFor` dokümantasyonu, `GoalCard`'ın bunu
+        // `* Goal.daysPerCycle + gün + 1` ile GÖRÜNTÜLEME için kullandığı).
+        expect(provider.completedCyclesFor(goal.id), 2);
+      },
+    );
+
+    test(
+      'completedCyclesFor: taze bir hedefte 0, YALNIZCA gerçekten '
+      'TAMAMLANAN döngülerde artar — kaçırılıp SIFIRLANAN bir döngü '
+      'saymaz',
+      () {
+        final goal = provider.goals.first;
+        expect(provider.completedCyclesFor(goal.id), 0);
+
+        // Gün 1'i işaretleyip Gün 2'yi kaçır — döngü sıfırlanır, ama HİÇ
+        // tamamlanmadığı için sayaç ARTMAZ.
+        provider.toggleToday(goal.id);
+        currentDate = currentDate.add(const Duration(days: 2));
+        provider.reconcileForToday();
+        expect(provider.completedCyclesFor(goal.id), 0);
+
+        // Başka bir hedefin tamamlanması BU hedefin sayacını ETKİLEMEZ.
+        provider.addGoal('Diğer hedef');
+        final otherGoal = provider.goals.last;
+        for (var day = 0; day < Goal.daysPerCycle; day++) {
+          provider.toggleToday(otherGoal.id);
+          if (day < Goal.daysPerCycle - 1) {
+            currentDate = currentDate.add(const Duration(days: 1));
+            provider.reconcileForToday();
+          }
+        }
+        expect(provider.completedCyclesFor(otherGoal.id), 1);
+        expect(provider.completedCyclesFor(goal.id), 0);
       },
     );
 

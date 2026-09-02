@@ -101,6 +101,15 @@ class CoinProvider extends ChangeNotifier {
   int _wheelSpinsUsedToday = 0;
   int _adWatchesUsedToday = 0;
 
+  /// **2026 güvenlik düzeltmesi — coin farming koruması, kullanıcı
+  /// raporuyla bulundu:** hedef eklemek ÜCRETSİZ (bkz. `GoalsProvider.
+  /// addGoal`) — bu alan olmadan bir kullanıcı 10 hedef açıp hepsini AYNI
+  /// hafta tamamlayarak `earnStreak7Bonus()`'u 10 KEZ tetikleyip 500 ZC
+  /// "kazanabilirdi" (gerçek bir alışkanlık ödülü DEĞİL, bir ekonomi
+  /// bug'ı). Son ödülün verildiği GÜN (saat bileşeni yok) — bkz.
+  /// [earnStreak7Bonus].
+  DateTime? _lastStreak7BonusDate;
+
   /// Bugün ZATEN kullanılmış Şans Çarkı hakkı — kayıtlı sayaç dünden
   /// kalmışsa (gün değiştiyse) 0 döner, ayrı bir sıfırlama adımı GEREKMEZ.
   int get wheelSpinsUsedToday =>
@@ -195,6 +204,14 @@ class CoinProvider extends ChangeNotifier {
           _wheelSpinsUsedToday = decoded['wheelSpinsUsedToday'] as int? ?? 0;
           _adWatchesUsedToday = decoded['adWatchesUsedToday'] as int? ?? 0;
         }
+        // Eski (bu alan eklenmeden ÖNCEki) kayıtlı veride yok — `null`
+        // kalıyor, yani göç anındaki İLK tamamlanma her zaman ödül alır
+        // (kullanıcıları geriye dönük CEZALANDIRMIYOR).
+        if (decoded['lastStreak7BonusDate'] != null) {
+          _lastStreak7BonusDate = DateTime.parse(
+            decoded['lastStreak7BonusDate'] as String,
+          );
+        }
         if (decoded.containsKey('totalEarned')) {
           _totalEarned = decoded['totalEarned'] as int;
           _totalSpent = decoded['totalSpent'] as int;
@@ -230,6 +247,7 @@ class CoinProvider extends ChangeNotifier {
       'dailyLimitsDate': _dailyLimitsDate?.toIso8601String(),
       'wheelSpinsUsedToday': _wheelSpinsUsedToday,
       'adWatchesUsedToday': _adWatchesUsedToday,
+      'lastStreak7BonusDate': _lastStreak7BonusDate?.toIso8601String(),
       'transactions': _transactions
           .take(_maxStoredTransactions)
           .map(
@@ -308,8 +326,26 @@ class CoinProvider extends ChangeNotifier {
   void earnDailyMiniTask() =>
       _earn(CoinEconomy.dailyMiniTask, 'Günlük mini görev');
 
-  void earnStreak7Bonus() =>
-      _earn(CoinEconomy.streak7Bonus, '7 günlük seri bonusu');
+  /// **2026 güvenlik düzeltmesi — kullanıcı raporu: "10 hedef açıp hepsini
+  /// aynı hafta tamamlayarak coin bug'ı yapılabilir."** Hedef eklemek
+  /// ÜCRETSİZ olduğu için bu +50 ZC ödülü, KAÇ TANE hedef tamamlanırsa
+  /// tamamlansın, GERİYE dönük bir rolling 7-GÜN penceresinde (son
+  /// ödülden bu yana 7 gün geçmediyse) YALNIZCA BİR KEZ veriliyor — `_now`
+  /// (`TrustedTimeProvider`) üzerinden, cihaz saatini ileri alarak
+  /// atlatılamaz (diğer TÜM "güne bağlı" mekanizmalarla AYNI garanti).
+  /// **Hedefin KENDİSİ (döngü/`GoalCompletion` arşivi) bu sınırdan HİÇ
+  /// ETKİLENMİYOR** — kullanıcı istediği kadar hedefi tamamlayabilir,
+  /// yalnızca coin ÖDÜLÜ haftada bir hedefe sınırlı (`WaterProvider`'ın
+  /// `rewardClaimed`'ıyla AYNI "coin farming koruması" felsefesi).
+  void earnStreak7Bonus() {
+    final today = _dateOnly(_now());
+    if (_lastStreak7BonusDate != null &&
+        today.difference(_lastStreak7BonusDate!).inDays < 7) {
+      return;
+    }
+    _lastStreak7BonusDate = today;
+    _earn(CoinEconomy.streak7Bonus, '7 günlük seri bonusu');
+  }
 
   void earnStreak30Bonus() {
     _earn(CoinEconomy.streak30Bonus, '30 günlük seri bonusu');

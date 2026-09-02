@@ -70,6 +70,15 @@ class GoalCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final colorScheme = Theme.of(context).colorScheme;
+    // 2026 güncellemesi — kullanıcı isteği: gün numaraları döngü
+    // tamamlanınca 1'e DÖNMESİN, ardışık devam etsin (1-7, sonra 8-14,
+    // sonra 15-21...) — bkz. `GoalsProvider.completedCyclesFor`
+    // dokümantasyonu. Yalnızca GÖRÜNTÜLENEN sayı değişiyor, `goal.
+    // statusForDay`'in (dolayısıyla döngü/kilit/tamamlanma mantığının)
+    // kendisi hiç dokunulmadı.
+    final completedCycles = context.watch<GoalsProvider>().completedCyclesFor(
+      goal.id,
+    );
 
     return Card(
       child: Padding(
@@ -105,7 +114,7 @@ class GoalCard extends StatelessWidget {
               children: [
                 for (var day = 0; day < Goal.daysPerCycle; day++)
                   _DayBox(
-                    dayNumber: day + 1,
+                    dayNumber: completedCycles * Goal.daysPerCycle + day + 1,
                     status: goal.statusForDay(day, today),
                     onTap: () => _onTodayTap(context),
                   ),

@@ -443,6 +443,78 @@ void main() {
     );
   });
 
+  group('CoinProvider - earnStreak7Bonus haftalık tavan (coin farming koruması)', () {
+    test(
+      'İLK çağrı her zaman ödül verir (kullanıcı yeni açtı, henüz hiç '
+      'ödül almadı)',
+      () {
+        final provider = CoinProvider(now: () => DateTime(2026, 8, 17));
+        provider.earnStreak7Bonus();
+        expect(provider.balance, CoinEconomy.streak7Bonus);
+      },
+    );
+
+    test(
+      'AYNI hafta içinde İKİNCİ (VE ÜÇÜNCÜ) çağrı — ör. 10 hedef açıp '
+      'hepsini aynı gün tamamlamayı simüle ediyor — ekstra ödül VERMEZ',
+      () {
+        final provider = CoinProvider(now: () => DateTime(2026, 8, 17));
+        provider.earnStreak7Bonus(); // 1. hedef
+        provider.earnStreak7Bonus(); // 2. hedef, AYNI gün
+        provider.earnStreak7Bonus(); // 3. hedef, AYNI gün
+
+        expect(provider.balance, CoinEconomy.streak7Bonus);
+      },
+    );
+
+    test(
+      '7 günden AZ bir süre sonra (ör. ertesi gün başka bir hedef '
+      'tamamlanınca) HÂLÂ ekstra ödül VERMEZ',
+      () {
+        var currentDate = DateTime(2026, 8, 17);
+        final provider = CoinProvider(now: () => currentDate);
+        provider.earnStreak7Bonus();
+
+        currentDate = DateTime(2026, 8, 22); // 5 gün sonra
+        provider.earnStreak7Bonus();
+
+        expect(provider.balance, CoinEconomy.streak7Bonus);
+      },
+    );
+
+    test(
+      'TAM 7 gün geçince (rolling pencere) bir SONRAKİ hedef tamamlaması '
+      'yeniden ödül verir',
+      () {
+        var currentDate = DateTime(2026, 8, 17);
+        final provider = CoinProvider(now: () => currentDate);
+        provider.earnStreak7Bonus();
+
+        currentDate = DateTime(2026, 8, 24); // TAM 7 gün sonra
+        provider.earnStreak7Bonus();
+
+        expect(provider.balance, CoinEconomy.streak7Bonus * 2);
+      },
+    );
+
+    test(
+      'Sınır kalıcı depoya yazılır; uygulama yeniden başlatılsa bile '
+      '(AYNI hafta içinde) hatırlanır',
+      () async {
+        final fixedNow = DateTime(2026, 8, 17);
+        final firstLaunch = CoinProvider(now: () => fixedNow);
+        firstLaunch.earnStreak7Bonus();
+        await Future<void>.delayed(Duration.zero);
+
+        final secondLaunch = CoinProvider(now: () => fixedNow);
+        await Future<void>.delayed(Duration.zero);
+        secondLaunch.earnStreak7Bonus();
+
+        expect(secondLaunch.balance, CoinEconomy.streak7Bonus);
+      },
+    );
+  });
+
   group('CoinProvider - kalıcılık', () {
     const package = CoinPackage(
       id: 'coins_500',

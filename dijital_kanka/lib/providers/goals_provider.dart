@@ -58,6 +58,21 @@ class GoalsProvider extends ChangeNotifier {
   int _longestStreak = 0;
   int get longestStreak => _longestStreak;
 
+  /// **2026 güncellemesi — kullanıcı isteği: "hedef silinmesin, döngü
+  /// tamamlanınca 1-7 yerine 8-14, sonra 15-21 şeklinde ardışık devam
+  /// etsin."** Bu hedefin şimdiye kadar TAMAMLANMIŞ (arşive/`completions`'a
+  /// düşmüş) döngü sayısı — `GoalCard`'ın gün kutucuklarını kümülatif
+  /// numaralandırması için (`completedCyclesFor(id) * Goal.daysPerCycle +
+  /// gün + 1`). **Bu YALNIZCA bir GÖSTERİM hesaplaması** — döngü/veri
+  /// mekaniği (7 günlük pencere, `cycleStartDate`, kaçırılan günde
+  /// sıfırlama, `GoalCompletion` arşivi) HİÇ değişmedi; bir döngü
+  /// TAMAMLANMADAN (yalnızca kaçırılıp sıfırlandığında) bu sayı ARTMIYOR —
+  /// yeniden denenen bir döngü, bir önceki BAŞARISIZ denemeyle AYNI
+  /// baştan (ör. hep 8-14) başlar, yalnızca GERÇEKTEN tamamlanan döngüler
+  /// sayacı ilerletir.
+  int completedCyclesFor(String goalId) =>
+      _completions.where((c) => c.goalId == goalId).length;
+
   /// Bugün HERHANGİ bir hedefte en az bir gün işaretlenmiş mi —
   /// "Denge Ustası" (Gizli/Eğlenceli Rozetler, bkz. `hidden_badges.dart`)
   /// rozetinin YEDİ modül kontrolünden biri.

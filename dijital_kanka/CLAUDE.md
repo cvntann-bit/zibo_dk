@@ -8976,3 +8976,101 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
     Bağlama" bölümündeki "zaten bağlı, o hesaba geç" akışı) ESKİ verinin
     GERÇEKTEN geri geldiği (veri KAYBOLMADI, yalnızca çıkışta GEÇİCİ
     olarak gizlendi).
+
+### Hedef Takibi — gün numaraları artık ARDIŞIK + coin farming koruması
+
+- **2026 güncellemesi — iki ayrı istek AYNI turda ele alındı.**
+  1. **Kullanıcı isteği (verbatim özet): "hedef tamamlanınca 'Tamamlanan
+     Hedefler'e gitmesi yine olsun ama hedef SİLİNMESİN ve gün numaraları
+     her döngüde 1'e DÖNMESİN — 1-7, sonra 8-14, sonra 15-21 şeklinde
+     ARDIŞIK devam etsin."** İncelemede döngü mekaniği zaten hedefi HİÇ
+     SİLMİYORDU (bkz. "Hedef Takibi" bölümündeki "tamamlanan döngülerin
+     kalıcı geçmişi" notu — `GoalCompletion` arşivleniyor, `Goal` nesnesinin
+     kendisi `_goals` listesinde kalıyor) — kullanıcının asıl gözlemi, her
+     YENİ döngünün kutucuk numaralarının 1'den YENİDEN başlamasıydı.
+     - **YENİ `GoalsProvider.completedCyclesFor(String goalId)`** — bu
+       hedefin şimdiye kadar GERÇEKTEN tamamlanmış (arşive düşmüş) döngü
+       sayısını döner (`_completions.where((c) => c.goalId == goalId).
+       length`). **Bilerek YALNIZCA bir GÖSTERİM hesaplaması** — döngü/veri
+       mekaniği (7 günlük pencere, `cycleStartDate`, kaçırılan günde
+       sıfırlama, arşiv) HİÇ değişmedi; bir döngü kaçırılıp SIFIRLANDIĞINDA
+       (tamamlanmadan) bu sayı ARTMIYOR — yeniden denenen bir döngü, bir
+       önceki BAŞARISIZ denemeyle AYNI baştan (ör. hep 8-14) başlıyor,
+       yalnızca GERÇEKTEN tamamlanan döngüler sayacı ilerletiyor.
+     - **`GoalCard.build()`** artık `context.watch<GoalsProvider>().
+       completedCyclesFor(goal.id)`'i okuyup gün kutucuklarının
+       `dayNumber`'ını `completedCycles * Goal.daysPerCycle + day + 1`
+       olarak hesaplıyor (eskiden düz `day + 1`, HER ZAMAN 1-7). `_DayBox`'ın
+       kendisi/`goal.statusForDay`'in (dolayısıyla kilit/tamamlanma
+       mantığının) hiçbir satırına dokunulmadı — yalnızca GÖRÜNTÜLENEN
+       sayı değişti.
+     - **Test:** `goals_provider_test.dart`'a `completedCyclesFor` için iki
+       yeni test (ikinci döngü tamamlanınca 2 döner; kaçırılıp sıfırlanan
+       bir döngü ARTIRMAZ + başka bir hedefin tamamlanması BU hedefin
+       sayacını etkilemez) + mevcut "ikinci tamamlanma kaydı" testine bir
+       assertion eklendi. YENİ `test/goal_card_test.dart` (`GoalCard`'ı
+       `RootScreen`'in tam ağacını kurmadan doğrudan test eden, `badges_
+       gallery_screen_test.dart` ile AYNI "bağımsız test uygulaması"
+       deseni) — ilk döngüde 1-7, döngü tamamlanıp ikinci döngü başlayınca
+       numaraların 1'e DÖNMEDEN 8-14'e geçtiği doğrulanıyor.
+       - **Gotcha (gerçekten yaşandı, 10 dakikalık test timeout'una
+         çarptı) — `testWidgets()` içinde çıplak `await Future<void>.
+         delayed(Duration.zero)` KULLANMAK, `goals_provider_test.dart`/
+         `coin_provider_test.dart`'taki (düz `test()` blokları, GERÇEK
+         async ortamı) AYNI deseni KÖRÜ KÖRÜNE `testWidgets()`'ın
+         fake-async ortamına taşıyınca SONSUZA KADAR hanglendi — bu proje
+         genelinde ZATEN belgelenmiş "Ana Ekran Widget'ları" bölümündeki
+         AYNI gotcha'nın BİR DAHA tekrarlanan somut bir örneği. **Çözüm:**
+         o satır tamamen kaldırıldı — `SharedPreferences.
+         setMockInitialValues({})` ile taze `_loadFromPrefs()` zaten
+         `decoded == null` dalına düşüp `_goals`'a dokunmadan döndüğü için
+         `addGoal()` SONRASI gelen `pumpWidget`/`pumpAndSettle()` tek
+         başına yeterliydi.
+  2. **Kullanıcı isteği (verbatim özet): "kullanıcı 10 hedef açıp hepsini
+     aynı hafta tamamlayarak coin bug'ı yapabilir, haftada sadece BİR
+     hedef tamamlamaya 50 ZC ödül versin."** Gerçek bir ekonomi açığı —
+     hedef eklemek ÜCRETSİZ (`GoalsProvider.addGoal`), ve `GoalCard.
+     _onTodayTap`'in her `cycleCompleted == true` anında çağırdığı
+     `CoinProvider.earnStreak7Bonus()` (+50 ZC) hiçbir sınıra sahip
+     DEĞİLDİ — çok sayıda hedef açıp hepsini aynı takvim penceresinde
+     tamamlayan bir kullanıcı N × 50 ZC "kazanabilirdi."
+     - **YENİ `CoinProvider._lastStreak7BonusDate`** (kalıcı, `coinState`
+       belgesine `lastStreak7BonusDate` olarak yazılıyor/okunuyor — eski
+       [bu alan eklenmeden ÖNCEki] kayıtlı veride yoksa `null` kalıyor,
+       yani göç anındaki İLK tamamlanma her zaman ödül alıyor, kullanıcılar
+       GERİYE dönük cezalandırılmıyor). `earnStreak7Bonus()` artık
+       `_dailyLimitsDate`/günlük reklam haklarıyla AYNI "cihaz saatine
+       değil `_now()`'a [`TrustedTimeProvider`] bağlı" deseninde: son
+       ödülden bu yana rolling 7 GÜN geçmediyse SESSİZCE hiçbir şey
+       yapmadan döner (ne coin eklenir ne `_save()` tetiklenir) — geçtiyse
+       (veya İLK çağrıysa) normal şekilde ödül veriyor.
+     - **Hedefin KENDİSİ (döngü/`GoalCompletion` arşivi/"Tamamlanan
+       Hedefler" ekranı) bu sınırdan HİÇ ETKİLENMİYOR** — kullanıcı
+       istediği kadar hedefi/döngüyü tamamlayabilir, konfeti/kutlama/
+       "Tamamlanan Hedefler" kaydı HER ZAMAN normal çalışıyor; yalnızca
+       coin ÖDÜLÜ haftada bir hedefe sınırlı. `WaterProvider`'daki
+       `rewardClaimed` coin-farming korumasıyla (bkz. "Su Takibi" bölümü)
+       AYNI felsefe — BİLEREK SESSİZ (kullanıcıya "haftalık hakkın bitti"
+       gibi bir uyarı GÖSTERİLMİYOR, çünkü hedef tamamlama bir CTA/buton
+       tarafından ÖNCEDEN gate'lenen bir eylem DEĞİL, doğal bir oyun
+       sonucu — böyle bir uyarı gerçek/dürüst kullanıcıları gereksiz yere
+       caydırabilirdi).
+     - **Test:** `coin_provider_test.dart`'a YENİ bir grup (5 test — İLK
+       çağrı her zaman ödül verir, AYNI hafta içinde 2./3. çağrı [10 hedef
+       açıp hepsini aynı gün tamamlama senaryosunun SİMÜLASYONU] ekstra
+       ödül VERMEZ, 7 günden AZ süre sonra HÂLÂ vermez, TAM 7 gün geçince
+       bir SONRAKİ tamamlama yeniden ödül verir, sınır kalıcı depoya
+       yazılıp uygulama yeniden başlatılsa bile [AYNI hafta içinde]
+       hatırlanır).
+  - **Doğrulama:** `flutter test` — tam suite yeşil (545/546, yalnızca
+    önceden belgelenmiş `audioplayers`/`home_widget` flake'i hariç).
+    `flutter build apk --debug` sorunsuz. **Gerçek cihazda GÖRSEL
+    doğrulama bu turda YAPILAMADI** — cihaz bu turun sonunda bağlı
+    DEĞİLDİ. **Kullanıcının kendi cihazında doğrulaması gereken:** bir
+    hedefi 7 gün tamamlayıp "Tamamlanan Hedefler"e düştükten sonra AYNI
+    hedefin kutucuklarının artık "1"den DEĞİL "8"den başladığı (üçüncü
+    döngüde "15"ten); VE (asıl güvenlik testi) birden fazla hedef açıp
+    hepsini AYNI hafta içinde tamamlayınca +50 ZC'nin yalnızca İLK
+    tamamlamada bir kez eklendiği, sonraki tamamlamalarda bakiyenin
+    ARTMADIĞI (konfeti/kutlama/"Tamamlanan Hedefler" kaydının yine de HER
+    tamamlamada normal çalıştığı).
