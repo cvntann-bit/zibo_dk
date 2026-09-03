@@ -35,6 +35,25 @@ import '../widgets/founder_badge_promo_card.dart';
 import '../widgets/profile_stat_card.dart';
 import '../widgets/zibo_share_sheet.dart';
 
+/// **2026 bug düzeltmesi — Crashlytics'teki EN BÜYÜK tekrarlayan hata**
+/// (`_File.length` → `PathNotFoundException`, `FileImage._loadAsync`
+/// üzerinden — bkz. `manifest_journal_screen.dart`'taki `_SafeFileImage`
+/// dokümantasyonu, AYNI kök neden: "cihazlar arası fotoğraf taşınmaz"
+/// sınırlaması yüzünden `photoPath` cihazda artık var olmayan bir dosyaya
+/// işaret edebiliyor). Profil fotoğrafı BİR TANE olduğu ve `CircleAvatar.
+/// backgroundImage` bir `ImageProvider` (widget DEĞİL, `Image.file`'ın
+/// `errorBuilder`'ı gibi bir savunma mekanizması hiç YOK) beklediği için,
+/// dosyanın gerçekten OKUNABİLİR olup olmadığını `build()` sırasında
+/// senkron kontrol eden küçük bir yardımcı.
+bool _hasReadablePhoto(String? photoPath) {
+  if (photoPath == null) return false;
+  try {
+    return File(photoPath).existsSync();
+  } catch (_) {
+    return false;
+  }
+}
+
 /// Profil sayfası: üstte kullanıcının fotoğrafı + ismi (ikisi de kalıcı,
 /// `ProfileProvider` üzerinden Firestore'a senkronize), altında
 /// "İstatistiklerim" — dört sabit kategorinin (bkz. `ProfileStats`) her biri
@@ -231,16 +250,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         CircleAvatar(
                           radius: 56,
                           backgroundColor: colorScheme.surfaceContainerHigh,
-                          backgroundImage: profile.photoPath != null
+                          // **2026 bug düzeltmesi — Crashlytics'teki EN BÜYÜK
+                          // tekrarlayan hata (bkz. `manifest_journal_screen.
+                          // dart`'taki `_SafeFileImage` dokümantasyonu — AYNI
+                          // kök neden, AYNI çözüm). Burada `errorBuilder` BİLE
+                          // YOKTU (`backgroundImage` bir `ImageProvider`,
+                          // `Image.file` widget'ı DEĞİL) — dosya var mı diye
+                          // ÖNCEDEN `existsSync()` ile kontrol edip yoksa
+                          // `person_rounded` ikonuna düşüyoruz, hiç `FileImage`
+                          // OLUŞTURMUYORUZ.
+                          backgroundImage: _hasReadablePhoto(profile.photoPath)
                               ? FileImage(File(profile.photoPath!))
                               : null,
-                          child: profile.photoPath == null
-                              ? Icon(
+                          child: _hasReadablePhoto(profile.photoPath)
+                              ? null
+                              : Icon(
                                   Icons.person_rounded,
                                   size: 56,
                                   color: colorScheme.onSurfaceVariant,
-                                )
-                              : null,
+                                ),
                         ),
                         Positioned(
                           right: 0,

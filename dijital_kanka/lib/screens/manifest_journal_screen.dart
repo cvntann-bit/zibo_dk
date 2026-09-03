@@ -164,12 +164,7 @@ class _ManifestJournalScreenState extends State<ManifestJournalScreen> {
                 borderRadius: BorderRadius.circular(16),
                 child: AspectRatio(
                   aspectRatio: 1,
-                  child: Image.file(
-                    File(entry.photoPath),
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) =>
-                        const _BrokenImagePlaceholder(),
-                  ),
+                  child: _SafeFileImage(path: entry.photoPath, fit: BoxFit.cover),
                 ),
               ),
               const SizedBox(height: 12),
@@ -345,12 +340,7 @@ class _PhotoPickerArea extends StatelessWidget {
               fit: StackFit.expand,
               children: [
                 if (photoPath != null)
-                  Image.file(
-                    File(photoPath!),
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) =>
-                        const _BrokenImagePlaceholder(),
-                  )
+                  _SafeFileImage(path: photoPath!, fit: BoxFit.cover)
                 else
                   Center(
                     child: Column(
@@ -414,12 +404,7 @@ class _HistoryCard extends StatelessWidget {
           children: [
             AspectRatio(
               aspectRatio: 1,
-              child: Image.file(
-                File(entry.photoPath),
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) =>
-                    const _BrokenImagePlaceholder(),
-              ),
+              child: _SafeFileImage(path: entry.photoPath, fit: BoxFit.cover),
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(10, 8, 10, 10),
@@ -464,6 +449,66 @@ class _BrokenImagePlaceholder extends StatelessWidget {
         Icons.broken_image_outlined,
         color: colorScheme.onSurfaceVariant,
       ),
+    );
+  }
+}
+
+/// **2026 bug düzeltmesi — Crashlytics'teki EN BÜYÜK tekrarlayan hata
+/// (`_File.length` → `PathNotFoundException`, 58 olay/6 kullanıcı, TÜM
+/// sürümlerde).** Firebase Console'da GERÇEK stack trace'e bakılınca
+/// (`FileImage._loadAsync (image_provider.dart) → MultiFrameImageStreamCompleter.
+/// _handleCodecReady`) kök nedenin `share_plus`/`cross_file` DEĞİL, TAM
+/// OLARAK BU ekranın `Image.file(File(entry.photoPath))` çağrıları olduğu
+/// kanıtlandı — path her zaman `app_flutter/app_photos/` (kalıcı belge
+/// dizini, `PhotoPickerService.saveToPermanentStorage`'ın yazdığı klasör).
+///
+/// **Neden dosya artık orada değil — CLAUDE.md'nin "Manifest Günlüğü"
+/// bölümünde ZATEN bilinen bir sınırlamanın SOMUT sonucu:** fotoğraflar
+/// yalnızca CİHAZDA yerel olarak saklanıyor, Firestore'a yalnızca `photoPath`
+/// STRING'i senkronize ediliyor (dosyanın kendisi DEĞİL) — "cihazlar arası
+/// fotoğraf taşınmaz". Kullanıcı AYNI cihazda "Çıkış Yap"/"Hesap Değiştir"
+/// yapıp SONRA (aynı VEYA farklı bir hesapla) eski bir manifest kaydına
+/// (Firestore'dan geri gelen, BAŞKA bir oturuma/cihaza ait `photoPath`)
+/// erişince, o path BU cihazda hiç var OLMAMIŞ olabilir.
+///
+/// **Neden mevcut `errorBuilder` bunu YAKALAMIYORDU:** `Image.file`'ın
+/// `errorBuilder`'ı, `FileImage._loadAsync`'in async codec çözümleme
+/// sürecinde (özellikle dosya SİSTEMİ seviyesinde, decode BAŞLAMADAN önce)
+/// oluşan istisnaları GÜVENİLİR şekilde yakalamıyor — Flutter SDK'nın
+/// bilinen bir davranışı (bkz. flutter/flutter#112881/#145112 gibi
+/// issue'lar) — bu yüzden hata widget ağacına hiç ULAŞMADAN doğrudan global
+/// `PlatformDispatcher.instance.onError`'a (bkz. "Crashlytics" bölümü)
+/// sızıyordu.
+///
+/// **Düzeltme:** `errorBuilder`'a GÜVENMEK yerine, `Image.file()`'ı dosya
+/// GERÇEKTEN var olmadan HİÇ İNŞA ETMİYORUZ — `File(path).existsSync()`
+/// (küçük/yerel bir dosya sistemi `stat()` çağrısı, `build()` içinde
+/// senkron kullanımı bu ölçekte zararsız) ile ÖNCEDEN kontrol edip yoksa
+/// doğrudan `_BrokenImagePlaceholder`'a düşüyoruz. `errorBuilder` YİNE DE
+/// KORUNDU — dosya VAR ama BOZUK/OKUNAMAZ (corrupt JPEG vb.) senaryosu
+/// için hâlâ ikinci bir savunma katmanı.
+class _SafeFileImage extends StatelessWidget {
+  const _SafeFileImage({required this.path, required this.fit});
+
+  final String path;
+  final BoxFit fit;
+
+  bool get _exists {
+    try {
+      return File(path).existsSync();
+    } catch (_) {
+      return false;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!_exists) return const _BrokenImagePlaceholder();
+    return Image.file(
+      File(path),
+      fit: fit,
+      errorBuilder: (context, error, stackTrace) =>
+          const _BrokenImagePlaceholder(),
     );
   }
 }

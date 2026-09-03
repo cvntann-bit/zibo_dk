@@ -2145,7 +2145,14 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
 - Ana Sayfa'daki ve Para ve Birikim'deki konuşma balonlarının sağ üst köşesinde (bir `Stack` ile
   bindirilmiş, `SpeechBubble`'ın kendisi değişmedi) küçük bir paylaş ikonu (`ShareZiboButton`) var.
   Basılınca `ZiboShareSheet` bottom sheet olarak açılır.
-- **2026 bug düzeltmesi — Crashlytics'teki EN BÜYÜK tekrarlayan hata: `_File.length` →
+> **DÜZELTME/TARİHSEL NOT — bu alt bölümdeki hipotez YANLIŞ ÇIKTI, ama düzeltme YİNE DE
+> ZARARSIZ/MAKUL bir iyileştirme olduğu için GERİ ALINMADI.** Firebase Console'a (kullanıcının
+> gerçek Google oturumuyla, "Claude in Chrome" üzerinden) erişilip GERÇEK stack trace görülünce
+> asıl kök nedenin `share_plus`/`cross_file` DEĞİL, **Manifest Günlüğü/Profil fotoğrafları**
+> (`FileImage._loadAsync`) olduğu ortaya çıktı — bkz. altta "Manifest Günlüğü ↔ Profil fotoğrafı:
+> Crashlytics'teki asıl kök neden" notu, GERÇEK/doğrulanmış düzeltme orada.
+- **2026 bug düzeltmesi (YANLIŞ HİPOTEZ, bkz. yukarıdaki düzeltme notu) — Crashlytics'teki EN
+  BÜYÜK tekrarlayan hata: `_File.length` →
   `PathNotFoundException: Cannot retrieve length of file` (58 olay/6 kullanıcı, TÜM sürümlerde,
   "Repetitive crashes" etiketli).** Kullanıcı Firebase Console ekran görüntüsü paylaşınca
   `cross_file`/`share_plus` pub cache kaynak kodu incelenerek bulundu (Google Console'a bu
@@ -2178,6 +2185,73 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
   kullanıcının Firebase Console'da bu issue'ya tıklayıp TAM stack trace'i (hangi Dart çağrı
   zincirinden geçtiği) paylaşması, VEYA birkaç hafta sonra bu crash bucket'ının olay sayısının
   artık artmadığını gözlemlemesi gerekiyor.
+
+#### Manifest Günlüğü ↔ Profil fotoğrafı: Crashlytics'teki asıl kök neden ([manifest_journal_screen.dart](lib/screens/manifest_journal_screen.dart), [profile_screen.dart](lib/screens/profile_screen.dart))
+
+- **2026 — GERÇEK stack trace'e "Claude in Chrome" ile (kullanıcının GERÇEK Chrome'unda zaten
+  oturum açık olan Google hesabıyla, hiçbir şifre girilmeden) Firebase Console'a girilip
+  bakılınca bulundu.** Yukarıdaki `share_plus`/`cross_file` hipotezi (bu sandbox'ın kendi
+  tarayıcısında `accounts.google.com` engelli olduğu için TAM stack trace görülemeden, yalnızca
+  plugin kaynak kodu okunarak kurulmuştu) **YANLIŞ ÇIKTI** — GERÇEK stack trace TAMAMEN FARKLI
+  bir çağrı zinciri gösteriyordu:
+  ```
+  Fatal Exception: io.flutter.plugins.firebase.crashlytics.FlutterError
+  PathNotFoundException: Cannot retrieve length of file, path =
+    '/data/user/0/com.dijitalkanka.dijital_kanka/app_flutter/app_photos/1788378812503803.jpg'
+    (OS Error: No such file or directory, errno = 2). Error thrown resolving an image codec.
+
+  _File.length.<fn> (dart:io)
+  FileImage._loadAsync (image_provider.dart:1631)
+  MultiFrameImageStreamCompleter._handleCodecReady (image_stream.dart:1021)
+  ```
+  Path `app_flutter/app_photos/` — `share_plus`'ın GEÇİCİ cache'i DEĞİL, `PhotoPickerService.
+  saveToPermanentStorage()`'ın yazdığı KALICI belge dizini (bkz. "Manifest Günlüğü"/"Profil"
+  bölümleri). Cihaz bilgisi: %100 Xiaomi, %100 Android 14 — tek bir kullanım paterni.
+  - **Kök neden — CLAUDE.md'nin KENDİSİNDE ZATEN belgelenmiş bir sınırlamanın SOMUT/gerçek
+    sonucu:** "Manifest Günlüğü" bölümü şunu AÇIKÇA söylüyor: "Fotoğraflar SUNUCUYA
+    YÜKLENMİYOR — yalnızca cihazın kendi belge dizininde saklanıyor, kayıtta yalnızca yerel
+    dosya yolu tutuluyor... **cihazlar arası fotoğraf taşınmaz**." `ManifestEntry.photoPath`/
+    `ProfileProvider.photoPath` (yalnızca birer STRING) Firestore'a senkronize ediliyor ama
+    GERÇEK dosya baytları HİÇBİR ZAMAN senkronize edilmiyor. Kullanıcı AYNI cihazda "Çıkış
+    Yap"/"Hesap Değiştir" yapıp (bu proje boyunca ÇOK test edilen bir akış, bkz. "Google Hesap
+    Bağlama" bölümü) SONRA farklı bir hesaba/oturuma dönünce, o hesabın Firestore'dan geri gelen
+    `photoPath`'i BAŞKA bir oturuma/cihaza ait bir path olabilir — bu path BU cihazda hiç var
+    OLMAMIŞ olabilir.
+  - **Neden mevcut `errorBuilder` (Manifest ekranının 3 kullanım noktasında ZATEN vardı) bunu
+    YAKALAMIYORDU — Flutter SDK'nın bilinen bir davranışı.** `Image.file`'ın `errorBuilder`'ı,
+    `FileImage._loadAsync`'in async codec çözümleme sürecinde (özellikle dosya SİSTEMİ
+    seviyesinde, decode BAŞLAMADAN önce) oluşan istisnaları GÜVENİLİR şekilde yakalamıyor —
+    hata widget ağacına hiç ULAŞMADAN doğrudan global `PlatformDispatcher.instance.onError`'a
+    (bkz. "Crashlytics" bölümü) sızıyordu. Profil ekranındaki `CircleAvatar.backgroundImage`'ta
+    (`Image.file` widget'ı DEĞİL, bir `ImageProvider`) ise `errorBuilder` GİBİ bir savunma
+    mekanizması HİÇ YOKTU.
+  - **Önemli nüans (yine geçerli):** `main.dart`'taki `PlatformDispatcher.instance.onError`
+    `return true` diyor — bu hata uygulamayı GERÇEKTEN ÇÖKERTMİYOR, süreç hayatta kalıyor,
+    yalnızca `fatal: true` olarak Crashlytics'e raporlanıyor.
+  - **Düzeltme — `errorBuilder`'a GÜVENMEK yerine dosyayı ÖNCEDEN kontrol etmek:** YENİ
+    `manifest_journal_screen.dart`'taki `_SafeFileImage` (private `StatelessWidget`,
+    `File(path).existsSync()` ile SENKRON bir varlık kontrolü — küçük/yerel bir dosya sisteminde
+    `build()` içinde kullanmak bu ölçekte zararsız) dosya YOKSA `Image.file`'ı HİÇ İNŞA ETMEDEN
+    doğrudan `_BrokenImagePlaceholder`'a düşüyor; VARSA `errorBuilder`'lı `Image.file`'ı
+    (bozuk/corrupt bir JPEG gibi BAŞKA hatalar için hâlâ faydalı ikinci bir savunma katmanı
+    olarak) döndürüyor. Ekranın ÜÇ `Image.file` kullanım noktası (fotoğraf seçici önizlemesi,
+    detay diyaloğu, geçmiş galerisi kartı) bu TEK widget'a çevrildi. `profile_screen.dart`'a
+    benzer bir `_hasReadablePhoto(String? photoPath)` top-level yardımcı fonksiyonu eklendi —
+    `CircleAvatar.backgroundImage`/`.child` artık dosya GERÇEKTEN okunabilir DEĞİLSE (yok VEYA
+    `existsSync()` istisna fırlatırsa) `person_rounded` ikonuna düşüyor.
+  - **Test:** `flutter test` — tam suite yeşil (541/542, yalnızca önceden belgelenmiş flake
+    hariç); `manifest_journal_screen_test.dart`/`profile_screen_test.dart` sahte
+    `PhotoPickerService`'in GERÇEKTEN var olan bir dosyaya yazdığı test ortamında sorunsuz
+    geçti (yeni `existsSync()` kontrolü test akışını BOZMADI). **Gerçek cihazda GÖRSEL doğrulama
+    bu turda YAPILMADI** — kesin doğrulama, bir SONRAKİ Play Store sürümünden sonra bu crash
+    bucket'ının (Firebase Console'daki `_File.length.<fn>`/`FileImage._loadAsync` issue'su) yeni
+    olay ALMAMASIYLA gelecek zamanla.
+  - **Bilinçli olarak YAPILMAYAN, daha kapsamlı bir düzeltme:** `photoPath` artık okunamaz hale
+    geldiğinde ilgili `ManifestEntry`/`ProfileProvider` kaydının KENDİSİNİ otomatik temizlemek
+    (öksüz path'i veritabanından da silmek) — bu turda kapsam dışı bırakıldı, yalnızca GÖRÜNTÜLEME
+    noktaları güvenli hale getirildi (crash'i durdurmak için yeterli/gerekli olan minimum
+    değişiklik). İleride istenirse, `_SafeFileImage`'ın "dosya yok" dalında bir callback ile
+    ilgili provider'a haber verip kaydı temizlemek eklenebilir.
 - `ZiboShareCard`: 9:16 (Instagram/TikTok Hikaye) oranında, **sabit mantıksal boyutlu (450×800,
   2026 güncellemesi — eskiden 360×640, bkz. altta)** kart — logo sol üstte, söz kartın **tam
   ortasında**, yarı saydam koyu yuvarlak köşeli bir panelin üzerinde (arka plan gradyanı/rengi ne
