@@ -89,9 +89,74 @@ function userDateKey(user, date) {
   return `${year}-${month}-${day}`;
 }
 
+/** 2026 GÜNCELLEMESİ — "hâlâ 2 kez geliyor" (özellikle Günlük Motivasyon,
+ * günde 4 hedef saatiyle en sık tetiklenen tür olduğu için istatistiksel
+ * olarak İLK bu türde fark edildi) kullanıcı raporu üzerine bulunan gerçek
+ * kök neden: `users/{uid}.fcmToken` yalnızca YAZILIYOR
+ * (`PushNotificationService._saveToken`), hesap değişimlerinde (Ayarlar >
+ * "Çıkış Yap"/"Hesap Değiştir", bkz. `GoogleAuthService.signOut`/`signIn`)
+ * ESKİ uid'in belgesinden HİÇ SİLİNMİYORDU. FCM token'ı Firebase Auth
+ * kullanıcısından BAĞIMSIZ, cihazın/uygulama kurulumunun kendisine ait
+ * olduğu için, bir kullanıcı AYNI fiziksel cihazda birden fazla Firebase
+ * uid'i arasında geçiş yaparsa (anonim → Google'a bağlı → çıkış → yeni
+ * anonim → farklı bir hesaba geçiş, vb. — bu proje boyunca test cihazında
+ * SIK yaşanan bir senaryo), o cihazın `fcmToken`'ı BİRDEN FAZLA `users/{uid}`
+ * belgesinde AYNI ANDA canlı kalabiliyordu — her iki uid de bağımsız olarak
+ * "eligible" olduğunda AYNI fiziksel cihaza İKİ AYRI FCM mesajı gidiyordu
+ * (istemci tarafındaki `messageId` dedup'ı bunu YAKALAYAMAZ, çünkü bunlar
+ * GERÇEKTEN iki farklı mesaj/messageId — bkz. `push_notification_service.
+ * dart`).
+ *
+ * Asıl/kök düzeltme istemci tarafında (`GoogleAuthService.signOut`/`signIn`
+ * artık uid değişmeden HEMEN ÖNCE eski uid'in `fcmToken`'ını temizliyor) —
+ * ama bu, YENİ hesap geçişleri için geçerli; bu değişiklikten ÖNCE zaten
+ * oluşmuş ESKİ duplicate token'lar Firestore'da hâlâ duruyor olabilir. Bu
+ * yüzden BURADA, sunucu tarafında da bir GÜVENLİK AĞI: `fetchAllUsers()`'ın
+ * döndürdüğü listede AYNI `fcmToken` değerine sahip birden fazla kullanıcı
+ * varsa yalnızca `fcmTokenUpdatedAt`'i EN YENİ olan (o token'ın o anki
+ * GERÇEK/aktif sahibi — eski/terk edilmiş uid'ler token'ı bir daha hiç
+ * YENİLEMEDİĞİ için zaman damgaları DONMUŞ kalır, bkz. `_saveToken`'ın her
+ * `initialize()`'da çağrıldığı notu) TUTULUYOR, diğerleri elenip AYNI
+ * fiziksel cihaza tekrar gönderim yapılması ENGELLENİYOR. Token'ı OLMAYAN
+ * kullanıcılar (henüz izin vermemiş/hiç açmamış) bu filtrelemeden hiç
+ * ETKİLENMİYOR. */
+function dedupeByFcmToken(users) {
+  const withoutToken = [];
+  const byToken = new Map();
+  for (const user of users) {
+    if (!user.fcmToken) {
+      withoutToken.push(user);
+      continue;
+    }
+    const existing = byToken.get(user.fcmToken);
+    if (!existing) {
+      byToken.set(user.fcmToken, user);
+      continue;
+    }
+    const existingTime = existing.fcmTokenUpdatedAt
+      ? existing.fcmTokenUpdatedAt.toMillis()
+      : 0;
+    const candidateTime = user.fcmTokenUpdatedAt ? user.fcmTokenUpdatedAt.toMillis() : 0;
+    if (candidateTime > existingTime) {
+      console.warn(
+        `dedupeByFcmToken: AYNI cihaz için birden fazla uid bulundu (${existing.uid} yerine ` +
+          `${user.uid} tutuluyor, daha yeni fcmTokenUpdatedAt) — eski uid ATLANACAK.`,
+      );
+      byToken.set(user.fcmToken, user);
+    } else {
+      console.warn(
+        `dedupeByFcmToken: AYNI cihaz için birden fazla uid bulundu (${user.uid} ATLANIYOR, ` +
+          `${existing.uid} daha yeni fcmTokenUpdatedAt taşıyor).`,
+      );
+    }
+  }
+  return [...withoutToken, ...byToken.values()];
+}
+
 async function fetchAllUsers() {
   const snap = await db.collection('users').get();
-  return snap.docs.map((doc) => ({ uid: doc.id, ...doc.data() }));
+  const users = snap.docs.map((doc) => ({ uid: doc.id, ...doc.data() }));
+  return dedupeByFcmToken(users);
 }
 
 /** 2026 GÜNCELLEMESİ — "catch-up" penceresi: eskiden her betik

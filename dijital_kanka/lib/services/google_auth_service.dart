@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
 import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -251,12 +252,46 @@ class FirebaseGoogleAuthService extends GoogleAuthService {
   Future<GoogleSignInOutcome?> signIn() async {
     final credential = await _authenticate();
     if (credential == null) return null;
+    // **2026 bug düzeltmesi — "bildirimler 2 kez geliyor" kullanıcı raporu.**
+    // Bu, ("Hesap Değiştir" VEYA "zaten bağlı, o hesaba geç" akışlarından
+    // gelen) bir uid SWITCH'i — `signInWithCredential` çağrısından SONRA
+    // `FirebaseAuth.instance.currentUser` artık YENİ uid'e döner, bu yüzden
+    // ESKİ uid'in fcmToken'ını o ANDAN SONRA temizlemeye çalışmak Firestore
+    // rules'a (`request.auth.uid == uid`) TAKILIP sessizce başarısız olurdu
+    // — bu yüzden HÂLÂ eski kullanıcı olarak kimlik doğrulanmışken, switch'ten
+    // HEMEN ÖNCE temizleniyor. Bkz. `notification-scripts/src/common.js`'teki
+    // `dedupeByFcmToken` dokümantasyonu — token temizlenmezse AYNI fiziksel
+    // cihaz hem eski hem yeni uid üzerinden push alıp "2 kez geliyor" gibi
+    // görünürdü.
+    await _clearFcmTokenForCurrentUser();
     final result = await fb_auth.FirebaseAuth.instance.signInWithCredential(
       credential,
     );
     final user = result.user;
     if (user == null) return null;
     return GoogleSignInOutcome(uid: user.uid, email: user.email);
+  }
+
+  /// [signIn]/[signOut] ikisi de bu cihazın Firebase Auth kimliğini BAŞKA
+  /// bir uid'e değiştiriyor — FCM token'ı (Firebase Auth kullanıcısından
+  /// BAĞIMSIZ, cihazın/kurulumun kendisine ait) `PushNotificationService.
+  /// _saveToken` tarafından o ANKİ uid'in belgesine yazılıyor ama uid
+  /// DEĞİŞİNCE eski belgeden HİÇ silinmiyordu — bkz. yukarıdaki [signIn]
+  /// notu. Switch'ten HEMEN ÖNCE (hâlâ eski uid olarak kimlik doğrulanmışken)
+  /// çağrılmalı; başarısız olursa (ağ/izin) sessizce yutulur — kritik olan
+  /// asıl hesap değişimi, temizlik en kötü ihtimalle sunucu tarafındaki
+  /// `dedupeByFcmToken` güvenlik ağına düşer.
+  Future<void> _clearFcmTokenForCurrentUser() async {
+    final oldUid = fb_auth.FirebaseAuth.instance.currentUser?.uid;
+    if (oldUid == null) return;
+    try {
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(oldUid)
+          .set({'fcmToken': null}, SetOptions(merge: true));
+    } catch (_) {
+      // Yoksayılır.
+    }
   }
 
   /// **Güvenlik notu:** `AuthLinkProvider`'ın constructor'ı bu getter'ı
@@ -299,6 +334,10 @@ class FirebaseGoogleAuthService extends GoogleAuthService {
 
   @override
   Future<String?> signOut() async {
+    // Bkz. [signIn]'deki "bildirimler 2 kez geliyor" notu — AYNI gerekçe,
+    // burada da uid gerçekten değişmeden (hâlâ eski kullanıcı olarak
+    // kimlik doğrulanmışken) çağrılmalı.
+    await _clearFcmTokenForCurrentUser();
     try {
       await _ensureInitialized();
       await _signIn.signOut();

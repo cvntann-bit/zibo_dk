@@ -3993,6 +3993,62 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
     deterministik tutun" tavsiyesine dayanan, doğru/standart bir düzeltme** — kullanıcının birkaç
     gün gerçek kullanımda "2 tane geliyor" örüntüsünün TEKRARLANIP tekrarlanmadığını gözlemlemesi
     gerekiyor.
+- **2026 YEDİNCİ güncelleme — kullanıcı raporu: ALTINCI güncellemeden SONRA "3 kez" gitti ama
+  Günlük Motivasyon (günde 4 hedef saatiyle en sık tetiklenen tür) ÖZELLİKLE hâlâ 2 kez geliyor.**
+  Yine kanıta dayalı — kör tahminle başlanmadı: (1) `.github/workflows/daily-motivation.yml`'de
+  TEK bir `cron:` girdisi olduğu, GİZLİ bir ikinci tetikleyici OLMADIĞI doğrulandı; (2)
+  `gh run list --workflow=daily-motivation.yml` ile son ~30 çalıştırma (tam bir gün) çekilip her
+  birinin `event: schedule`, TEKİL ve saatlik aralıklarla geldiği (GitHub'ın workflow'u ÇİFT
+  TETİKLEMEDİĞİ) doğrulandı; (3) `gh run view --log` ile bu 30 çalıştırmanın TAMAMINDAKİ
+  `"Gönderildi: uid=..."` satırları çıkarılıp AYNI uid'in İKİ ARDIŞIK saatlik çalıştırmada
+  (dolayısıyla AYNI hedef saat için) tekrar ETMEDİĞİ doğrulandı — sunucu YİNE tek bir çalıştırma
+  İÇİNDE çift göndermiyordu.
+  - **Gerçek kök neden — `users/{uid}.fcmToken` hesap DEĞİŞİMLERİNDE (Ayarlar > "Çıkış Yap"/
+    "Hesap Değiştir") ESKİ uid'in belgesinden HİÇ SİLİNMİYORDU.** FCM token'ı Firebase Auth
+    kullanıcısından BAĞIMSIZ, cihazın/uygulama kurulumunun kendisine ait — `_saveToken(uid, token)`
+    yalnızca O ANKİ uid'in belgesine YAZIYOR, `signOut()`/`signIn()` (Google hesap değiştirme/çıkış,
+    bkz. "Google Hesap Bağlama" bölümü) sonrasında ESKİ uid'in `fcmToken`'ı orada YAŞAMAYA devam
+    ediyordu. Bu projenin test cihazı (ve muhtemelen kullanıcının kendi telefonu) bu turdan ÖNCE
+    onlarca kez anonim↔Google-bağlı↔farklı-hesap geçişi yaptığı için (bkz. "Google Hesap Bağlama"
+    bölümündeki uzun geçmiş), AYNI fiziksel cihazın `fcmToken`'ı BİRDEN FAZLA `users/{uid}`
+    belgesinde AYNI ANDA canlı kalabiliyordu — iki (veya daha fazla) uid BAĞIMSIZ olarak
+    "eligible" olduğunda AYNI cihaza İKİ AYRI FCM mesajı (İKİ FARKLI `messageId`) gidiyordu.
+    **ALTINCI güncellemenin `messageId` dedup'ı bunu YAKALAYAMAZ** — bunlar GERÇEKTEN iki farklı
+    sunucu-kaynaklı mesaj, FCM'in kendi yeniden-teslimatı DEĞİL. Günlük Motivasyon'un günde DÖRT
+    hedef saati olması (diğer dört türün her biri yalnızca BİR), bu riske istatistiksel olarak DÖRT
+    KAT daha fazla maruz kalması anlamına geliyordu — kullanıcının yalnızca bu türü fark etmesinin
+    doğal açıklaması.
+  - **Düzeltme — iki katmanlı, kök neden + geriye dönük güvenlik ağı:**
+    1. **Kök/asıl düzeltme (istemci) — `GoogleAuthService.signOut()`/`signIn()`'e YENİ
+       `_clearFcmTokenForCurrentUser()` çağrısı eklendi**, uid GERÇEKTEN değişmeden HEMEN ÖNCE
+       (hâlâ ESKİ kullanıcı olarak kimlik doğrulanmışken — Firestore rules `request.auth.uid ==
+       uid` gerektirdiği için switch'ten SONRA yazmaya çalışmak sessizce reddedilirdi) eski uid'in
+       `fcmToken`'ını `null`'a set ediyor. `linkCurrentUser()` (uid'i DEĞİŞTİRMEYEN "bağlama" akışı)
+       BİLEREK bu çağrıyı YAPMIYOR — orada bir uid switch'i yok, temizlenecek bir "eski" uid de yok.
+    2. **Geriye dönük güvenlik ağı (sunucu) — `notification-scripts/src/common.js`'e YENİ
+       `dedupeByFcmToken(users)`.** `fetchAllUsers()`'ın (5 bildirim betiğinin TAMAMININ paylaştığı
+       TEK kaynak — `cleanupStaleAnonymousUsers.js`/`processReferralRewards.js`/`initFounderBadge
+       Counter.js` bunu kullanmıyor, etkilenmiyor) döndürdüğü listede AYNI `fcmToken` değerine
+       sahip birden fazla kullanıcı varsa, yalnızca `fcmTokenUpdatedAt`'i EN YENİ olan (o token'ın
+       o anki GERÇEK/aktif sahibi — terk edilmiş eski uid'ler token'ı bir daha hiç YENİLEMEDİĞİ
+       için zaman damgaları DONMUŞ kalır, `_saveToken` her `initialize()`'da/uygulama açılışında
+       çağrıldığı için AKTİF uid'in damgası SÜREKLİ tazeleniyor) tutulup diğerleri elenir — AYNI
+       fiziksel cihaza tekrar gönderim ENGELLENİR. Bu, (1)'den ÖNCE oluşmuş ESKİ duplicate
+       token'ları da kapsıyor — kullanıcının uygulamayı güncellemesini/tekrar oturum açmasını
+       BEKLEMEDEN, bir SONRAKİ zamanlanmış çalıştırmada devreye giriyor. Token'ı OLMAYAN
+       kullanıcılar (henüz izin vermemiş) bu filtrelemeden hiç ETKİLENMİYOR.
+  - **Test:** `flutter test` — tam suite yeşil (541/542, yalnızca önceden belgelenmiş
+    `audioplayers`/`home_widget` flake'i hariç, bu değişiklikle İLGİSİZ). `common.js` (Node.js,
+    bu ortamda ÇALIŞTIRILAMIYOR — bkz. bölümün başındaki AYNI sınırlama) yalnızca dikkatli kod
+    incelemesiyle doğrulandı. **Doğrulanamadı** — hem istemci düzeltmesi (gerçek bir hesap
+    değişimi + ardından iki farklı hedef saatte notification alıp almadığının GÜNLER süren gözlemi
+    gerektiriyor) hem sunucu güvenlik ağı (bir SONRAKİ zamanlanmış çalıştırmada `dedupeByFcmToken`
+    log satırlarının GERÇEKTEN bir çift bulup bulmadığı) bu turda GÖZLEMLENEMEDİ. **Kullanıcının
+    doğrulaması gereken:** birkaç gün gerçek kullanımda Günlük Motivasyon'un artık TEK geldiğini
+    gözlemlemek; isterse GitHub Actions > "Günlük Motivasyon Bildirimi" workflow'unun bir SONRAKİ
+    çalıştırma logunda `"dedupeByFcmToken: AYNI cihaz için birden fazla uid bulundu..."` satırı
+    ARANARAK geçmişte GERÇEKTEN bir duplicate token'ın var olup olmadığı (VE artık elendiği)
+    somut olarak teyit edilebilir.
 - **`firestore.rules` — DEĞİŞİKLİK GEREKMEDİ (Cloud Functions taslağındaki gerekçeyle AYNI).**
   Mevcut kural zaten `match /users/{userId}/{document=**}` (bkz. "Firestore Veri Kalıcılığı"
   bölümü) ile `users/{uid}` dokümanının TÜM alanlarını (`fcmToken`/`lastActiveAt` dahil) sahibine
