@@ -2145,6 +2145,39 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
 - Ana Sayfa'daki ve Para ve Birikim'deki konuşma balonlarının sağ üst köşesinde (bir `Stack` ile
   bindirilmiş, `SpeechBubble`'ın kendisi değişmedi) küçük bir paylaş ikonu (`ShareZiboButton`) var.
   Basılınca `ZiboShareSheet` bottom sheet olarak açılır.
+- **2026 bug düzeltmesi — Crashlytics'teki EN BÜYÜK tekrarlayan hata: `_File.length` →
+  `PathNotFoundException: Cannot retrieve length of file` (58 olay/6 kullanıcı, TÜM sürümlerde,
+  "Repetitive crashes" etiketli).** Kullanıcı Firebase Console ekran görüntüsü paylaşınca
+  `cross_file`/`share_plus` pub cache kaynak kodu incelenerek bulundu (Google Console'a bu
+  ortamdan doğrudan erişilemedi — `accounts.google.com` sandbox'ta engelli — bu yüzden TAM stack
+  trace değil, plugin kaynak kodu + gerçek GitHub issue'larıyla çapraz doğrulanmış bir kanıt
+  zinciri kullanıldı). **Kök neden:** `SharePlusService.shareImageBytes()` eskiden `XFile.
+  fromData(bytes, ...)` (path'SİZ) veriyordu — `share_plus`'ın Android tarafı
+  (`MethodChannelShare._getFile`, `share_plus_platform_interface` paketi) path'i boş bulunca
+  bytes'ı KENDİ SEÇTİĞİ bir geçici (cache) dosyaya yazıp o path'ten YENİ bir `XFile` üretiyor —
+  plugin'in kendi kod yorumu AÇIKÇA "the system will automatically delete files in this
+  TemporaryDirectory as disk space is needed elsewhere on the device" diyor. Bu dosya paylaşım
+  TAMAMLANMADAN Android tarafından temizlenirse sonraki bir okuma/uzunluk kontrolü
+  `PathNotFoundException` fırlatıyor — VE bu, `ZiboShareSheet._share()`'in KENDİ try/catch'inin
+  DIŞINDA (plugin'in kendi iç async akışında) gerçekleştiği için doğrudan Crashlytics'e sızıyordu.
+  **Önemli nüans:** `main.dart`'taki `PlatformDispatcher.instance.onError`/`FlutterError.onError`
+  (bkz. "Crashlytics" bölümü) `return true` diyor — yani bu hata uygulamayı GERÇEKTEN
+  ÇÖKERTMİYOR (süreç hayatta kalıyor, yalnızca `fatal: true` olarak Crashlytics'e raporlanıyor) —
+  kullanıcı muhtemelen "Paylaş"a bastı, sheet donuk kaldı/kapanmadı, hiçbir hata mesajı görmeden
+  tekrar denedi. **Düzeltme:** `SharePlusService.shareImageBytes()` artık bytes'ı `share_plus`'ın
+  belirsiz iç mekanizmasına BIRAKMIYOR — `path_provider`'ın geçici dizinine BİZ önceden bilinen
+  bir path'e yazıp GERÇEK path'li bir `XFile(path, ...)` veriyor. Bu, `_getFile()`'ın riskli
+  path'siz fallback dalını (dolayısıyla o dalın kendi AYRI temp-dosya yazma/okuma zamanlamasını)
+  TAMAMEN atlıyor. **Dosya BİLEREK SİLİNMİYOR** — share_plus'ın kendi ürettiği temp dosyaları da
+  hiç silmediği gibi, erken silmek paylaşım hedef uygulamaya (WhatsApp vb.) devrederken dosyayı
+  hâlâ okuyor olabileceği için AYNI türden yeni bir yarış koşulu yaratırdı; OS zaten cache
+  dizinini kendi zamanlamasında temizliyor. `flutter test` (541/542, yalnızca önceden belgelenmiş
+  flake hariç) — `zibo_share_sheet_test.dart` testte SAHTE bir `ShareService` enjekte ettiği için
+  bu değişiklikten etkilenmedi. **Doğrulanamadı** — bu, Android'in KENDİ cache-eviction
+  zamanlamasına bağlı, kontrollü şekilde tetiklenmesi zor bir yarış koşulu; kesin kanıt için
+  kullanıcının Firebase Console'da bu issue'ya tıklayıp TAM stack trace'i (hangi Dart çağrı
+  zincirinden geçtiği) paylaşması, VEYA birkaç hafta sonra bu crash bucket'ının olay sayısının
+  artık artmadığını gözlemlemesi gerekiyor.
 - `ZiboShareCard`: 9:16 (Instagram/TikTok Hikaye) oranında, **sabit mantıksal boyutlu (450×800,
   2026 güncellemesi — eskiden 360×640, bkz. altta)** kart — logo sol üstte, söz kartın **tam
   ortasında**, yarı saydam koyu yuvarlak köşeli bir panelin üzerinde (arka plan gradyanı/rengi ne

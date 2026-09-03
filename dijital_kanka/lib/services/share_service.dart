@@ -1,5 +1,7 @@
+import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
 /// Bir görseli cihazın native paylaşım menüsüne göndermekten sorumlu
@@ -38,13 +40,36 @@ class SharePlusService extends ShareService {
     required String fileName,
     String? text,
   }) async {
-    final file = XFile.fromData(bytes, mimeType: 'image/png', name: fileName);
+    // **2026 bug düzeltmesi — Crashlytics'te en büyük tekrarlayan hata
+    // (58 olay/6 kullanıcı, TÜM sürümlerde): `_File.length` →
+    // `PathNotFoundException: Cannot retrieve length of file`.**
+    // Kök neden: `XFile.fromData(bytes, ...)` (path'siz) verildiğinde,
+    // `share_plus`'ın Android tarafı (`MethodChannelShare._getFile`) bizim
+    // yerimize bytes'ı KENDİ SEÇTİĞİ bir geçici (cache) dosyaya yazıp o
+    // path'ten yeni bir `XFile` üretiyor — plugin'in kendi kod yorumu
+    // AÇIKÇA "the system will automatically delete files in this
+    // TemporaryDirectory as disk space is needed elsewhere on the device"
+    // diyor; bu dosya paylaşım TAMAMLANMADAN silinirse sonraki bir okuma/
+    // uzunluk kontrolü `PathNotFoundException` fırlatıyor — ve bu, bizim
+    // `ZiboShareSheet._share()`'deki try/catch'in DIŞINDA (plugin'in kendi
+    // iç async akışında) gerçekleştiği için Crashlytics'e kadar sızıyordu.
+    // **Düzeltme:** bytes'ı `share_plus`'ın belirsiz iç mekanizmasına
+    // bırakmak yerine dosyayı BİZ, önceden bilinen bir path'e yazıp GERÇEK
+    // path'li bir `XFile` veriyoruz — bu, `_getFile()`'ın riskli path'siz
+    // fallback dalını (dolayısıyla o dalın kendi ayrı temp-dosya yazma/
+    // okuma zamanlamasını) TAMAMEN atlıyor. Dosya BİLEREK SİLİNMİYOR
+    // (share_plus'ın kendi dosyalarını da hiç silmediği gibi) — erken
+    // silmek, paylaşım hedef uygulamaya (WhatsApp vb.) devrederken hâlâ
+    // dosyayı okuyor olabileceği için AYNI türden bir yarış koşulu
+    // yaratırdı; OS zaten cache dizinini kendi zamanlamasında temizliyor.
+    final tempDir = await getTemporaryDirectory();
+    final path =
+        '${tempDir.path}/zibo_share_${DateTime.now().microsecondsSinceEpoch}.png';
+    await File(path).writeAsBytes(bytes);
+    final file = XFile(path, mimeType: 'image/png', name: fileName);
     await SharePlus.instance.share(
       ShareParams(
         files: [file],
-        // XFile.fromData'nın name'i web dışındaki platformlarda cross_file
-        // tarafından yok sayılır; dosya adının her yerde doğru gitmesi için
-        // ayrıca fileNameOverrides veriliyor.
         fileNameOverrides: [fileName],
         text: text,
       ),
