@@ -838,6 +838,17 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
   overflow'u varsayılan olarak assertion'a çevirmiyor, sessizce geçebilir). `0.66`'ya düşürülünce
   düzeldi. Bir kart tasarımını değiştirirken en UZUN durumu (burada: kilitli, buton dahil) göz önünde
   bulundurun.
+> **TARİHSEL — bu alt bölümün TAMAMI (goal-tabanlı ücretsiz kostüm açma mekaniği) 2026'da
+> KULLANICI İSTEĞİYLE TAMAMEN KALDIRILDI** (bkz. altta "Kostüm/Tema Hediye Sistemi — Rozet
+> Kazanımına Bağlı" bölümü, `data/badge_gift_rewards.dart`) — `CostumeUnlockType`/
+> `CostumeUnlockRequirement`/`Costume.unlockRequirement`/`CostumeProvider.reconcileGoalUnlocks`/
+> `CostumeCard`'ın ilerleme satırı hepsi SİLİNDİ. Kullanıcının gerekçesi: kostümler artık YALNIZCA
+> parayla satın alınabilsin VEYA (çok daha DAR kapsamlı, yalnızca DOKUZ belirli rozetin verdiği)
+> bir rozet hediyesiyle kazanılsın — "TÜM kostümler hedefle açılabilsin" mantığı TAMAMEN terk
+> edildi. Bu bölüm SİLİNMEDİ, yalnızca o zamanki kararın GEREKÇESİNİ (özellikle
+> `childAspectRatio`/fiyat-zorluk ölçekleme dersleri) kaybetmemek için tarihsel bağlam olarak
+> tutuluyor — aşağıdaki `CostumeUnlockType`/`reconcileGoalUnlocks`/`unlockRequirement`
+> referanslarının HİÇBİRİ artık koda karşılık GELMİYOR.
 - **2026 güncellemesi — TÜM kostümler hedef tamamlayarak da (ücretsiz) açılabilir, zorluk fiyata
   göre ölçeklenir.** Kullanıcı isteği: kostümler yalnızca parayla değil, ilgili bir hedefi
   tamamlayınca da açılabilsin; ucuz kostümler kolay/kısa vadeli hedeflerle, pahalı kostümler zor/
@@ -9074,3 +9085,136 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
     tamamlamada bir kez eklendiği, sonraki tamamlamalarda bakiyenin
     ARTMADIĞI (konfeti/kutlama/"Tamamlanan Hedefler" kaydının yine de HER
     tamamlamada normal çalıştığı).
+
+### Kostüm/Tema Hediye Sistemi — Rozet Kazanımına Bağlı ([badge_gift_reward.dart](lib/models/badge_gift_reward.dart), [badge_gift_rewards.dart](lib/data/badge_gift_rewards.dart), [badge_special_reward.dart](lib/utils/badge_special_reward.dart))
+
+- **2026 — kapsamlı bir mimari değişiklik: TAMAMEN AYRI iki eski mekanizma
+  TEK, çok daha DAR kapsamlı bir sisteme birleştirildi.** Kullanıcının
+  verbatim isteği (özetlenmeden): "1) Eski Sistemi Kaldır — 'Tüm Kostümler
+  Hedefle Açılabilir Olsun' özelliğini devre dışı bırak/kaldır. Kostümler
+  artık sadece PARAYLA satın alınabilsin VEYA aşağıda tanımlayacağımız
+  rozet sistemi üzerinden hediye olarak kazanılsın. 2) Rozet Kazanımına
+  Kostüm/Tema Hediyesi Ekle — belirli rozetler ZC ödülüne EK OLARAK bir
+  kostüm/tema hediyesi versin" — dokuz rozet AÇIKÇA sayılıp eşlendi
+  (yedisi sabit bir kostüm, ikisi rastgele bir standart tema), "diğer
+  TÜM rozetler ... sadece ZC ödülü versin" diye AÇIKÇA belirtilerek.
+  - **1) Kaldırılan sistem** — bkz. yukarıdaki "Kostümler" bölümündeki
+    "TARİHSEL — bu alt bölümün TAMAMI ... KALDIRILDI" notu:
+    `CostumeUnlockType`/`CostumeUnlockRequirement`/`Costume.
+    unlockRequirement`/`CostumeProvider.reconcileGoalUnlocks`/
+    `CostumeCard`'ın ilerleme satırı hepsi SİLİNDİ. `costumes.dart`'taki
+    16 kostüm artık yalnızca `id`/`imageAsset`/`name`/`price` taşıyor.
+    `StoreScreen`'in `_maybeReconcileCostumeUnlocks()` çağrıları/metodu
+    + ilgili `costumeUnlockedViaGoalMessage` SnackBar akışı kaldırıldı.
+  - **2) YENİ, KASITLI DAR eşleme — `badgeGiftRewards`
+    (`data/badge_gift_rewards.dart`)** — küçük, EXPLICIT bir
+    `Map<String, BadgeGiftReward>` (id çakışması/typo riskine karşı
+    `grep` ile TÜM badge/costume id'leri doğrulanarak elle yazıldı), ESKİ
+    `ZiboBadgeDefinition.hasSpecialReward` bool bayrağının (yalnızca
+    "Tam Gardırop" için kullanılıyordu, bkz. yukarıdaki "Tam Gardırop"
+    bölümü) YERİNE geçti — o alan `ZiboBadgeDefinition`'dan TAMAMEN
+    kaldırıldı:
+    ```
+    iron_will (Demir İrade)         → costume(zibo_sporcu)   — Sporcu Zibo
+    grateful_heart (Şükreden Kalp)  → costume(zibo_hippi)    — Hippi Zibo
+    unyielding (Yılmaz)             → costume(zibo_gladyator)— Gladyatör Zibo
+    loyal_friend (Sadık Dost)       → costume(zibo_king)     — Kral Zibo
+    anniversary (Yıl Dönümü)        → costume(zibo_altin)    — Altın Zibo
+    ambassador (Elçi)               → costume(zibo_hoca)     — Hoca Zibo
+    community_founder (T. Kurucusu) → costume(zibo_korsan)   — Korsan Zibo
+    first_share (İlk Paylaşım)      → theme()  — rastgele standart tema
+    dreamer (Hayalperest)           → theme()  — rastgele standart tema
+    ```
+    **Diğer TÜM rozetler** (İlk Adım/1 Haftalık Seri/1 Aylık Seri/Su
+    Kahramanı/Ruh Hali Kaydedicisi/Rüya Yorumcusu/Birikim Ustası/
+    Koleksiyoncu/Moda İkonu/**Tam Gardırop**/Tema Avcısı/İlk Hafta/Gizli
+    Rozetlerin ÜÇÜ) `badgeGiftRewards`'ta HİÇ YOK — yalnızca ZC ödülü
+    veriyorlar.
+  - **⚠️ BİLEREK GERİ ALINAN bir önceki karar — "Tam Gardırop" artık
+    özel ödül VERMİYOR.** Bkz. yukarıdaki "'Tam Gardırop' özel ödülü
+    GERÇEKTEN uygulandı" bölümü — BİR ÖNCEKİ turda kullanıcı AÇIKÇA "tam
+    gardrop rozetindki özel hediye rastgele bir tema hediye etsin" demiş
+    ve bu uygulanmıştı. Bu turun kullanıcı isteği ise dokuz rozeti TEK
+    TEK, exhaustive şekilde sayıp "Tam Gardırop"u BUNLARIN DIŞINDA
+    bırakarak "diğer TÜM rozetler sadece ZC ödülü versin" dedi —
+    `full_wardrobe` bu listede YOK, `collection_badges.dart`'taki
+    `hasSpecialReward: true` satırı kaldırıldı. **Bu, önceki turun
+    işini BİLEREK GERİ ÇEVİRİYOR** — kullanıcının yeni mesajı çok
+    açık/exhaustive bir liste olduğu için soru sormadan harfiyen
+    uygulandı, ama bu tersine çevrim kullanıcıya AÇIKÇA raporlandı
+    (istenmeyen bir yan etkiyse kolayca geri alınabilir — yalnızca
+    `badgeGiftRewards`'a `'full_wardrobe': BadgeGiftReward.costume(...)`
+    veya `.theme()` eklemek yeterli olur).
+  - **`BadgeGiftType` enum + `BadgeGiftReward` sınıfı**
+    (`models/badge_gift_reward.dart`) — `costume`/`theme` iki tür,
+    `BadgeGiftReward.costume(id)`/`.theme()` named constructor'lar (Dart
+    3 tarzı). **`GrantedBadgeGift` typedef** (AYNI dosyada) —
+    `({BadgeGiftType type, String name})` bir Dart record — BİLEREK
+    `badge_celebration_overlay.dart` YERİNE bu NÖTR model dosyasında
+    tanımlı: `BadgeCelebrationOverlay` zaten `BadgesGalleryScreen`'i
+    import ediyor (Ödülü Al sonrası galeriye push etmek için), tersi
+    yönde bir import DAİRESEL bağımlılık yaratırdı.
+  - **`pickRandomUnownedTheme` → `pickRandomUnownedStandardTheme`
+    olarak yeniden adlandırıldı, filtre genişletildi** — artık
+    `!theme.isPremiumAnimated && !ownedThemeIds.contains(...)` (eskiden
+    yalnızca ikincisi) — kullanıcının "standart temalardan biri hediye
+    etsin (kostüm değil)" ifadesiyle, Premium/Animasyonlu 7 temanın
+    (bkz. "Temalar" bölümü) rastgele hediyeden HARİÇ tutulması gerektiği
+    yorumlanarak.
+  - **Kazanma anı popup'ı — deterministik vs. rastgele gösterim
+    asimetrisi, BİLİNÇLİ bir tasarım kararı.** Kostüm hediyeleri SABİT/
+    önceden bilindiği için (`gift.costumeId`) `_BadgeClaimCard.build()`
+    "Ödülü Al"a basılmadan ÖNCE bile `l10n.badgeGiftCostumeMessage
+    (costume.localizedName(l10n))` + kostümün küçük görseliyle TAM
+    gösteriliyor ("Ayrıca Sporcu Zibo kazandın! 🎁"). Tema hediyeleri
+    ÇALIŞMA ZAMANINDA rastgele seçildiği için ("hangi tema" ancak
+    GERÇEKTEN talep edilince belli oluyor) popup'ta yalnızca genel bir
+    yer tutucu not (`l10n.badgeSpecialRewardThemeNote`, eski Tam Gardırop
+    metni YENİDEN kullanıldı) gösteriliyor; GERÇEK tema adı yalnızca
+    "Ödülü Al"dan SONRA, `BadgesGalleryScreen`'in SnackBar'ında
+    (`l10n.badgeSpecialRewardThemeGrantedMessage`) açığa çıkıyor.
+  - **`_BadgeClaimCard`'ın `onClaim` imzası `VoidCallback` →
+    `void Function(GrantedBadgeGift? grantedGift)`'e çevrildi** —
+    `onPressed` artık gift türüne göre `CostumeProvider.markOwned(...)`
+    VEYA `AppThemeProvider.markOwned(pickRandomUnownedStandardTheme(...)
+    .id)` çağırıp sonucu `BadgesGalleryScreen(grantedGift: ...)`'e
+    taşıyor (`_dismissAndOpenGallery` parametresi `String?
+    specialRewardThemeName` yerine `GrantedBadgeGift?` alıyor).
+  - **`BadgesGalleryScreen._BadgeGalleryCard`** — ZC ödül yazısının HEMEN
+    ALTINA, `!hiddenLocked && gift != null` iken küçük bir 🎁 satırı
+    ekleniyor: kostüm hediyesi varsa kostümün küçük görseli, tema
+    hediyesi varsa `Icons.palette_rounded` — kullanıcının "kullanıcının
+    rozeti kazanmadan önce ne hediye alacağını görmesi" isteği, Gizli
+    Rozetler kategorisinde (`hiddenLocked`) bu satır DA gizli kalıyor
+    (isim/koşulla AYNI kural).
+  - **ARB — iki yeni anahtar (TR/EN/ES):** `badgeGiftCostumeMessage`
+    (`"Ayrıca {costumeName} kazandın! 🎁"`) + `badgeGiftPreviewLabel`
+    (`"Hediye: {itemName}"`, galeri kartının Semantics etiketi için).
+  - **Test:** `test/badge_celebration_overlay_test.dart` YENİDEN
+    yazıldı — eski "Tam Gardırop rastgele tema" testi kaldırılıp yerine
+    (a) kostüm-türü hediye testi (`iron_will` → `zibo_sporcu`, popup
+    "Ödülü Al"dan ÖNCE bile kostüm adını gösteriyor, sonra
+    `CostumeProvider.isOwned('zibo_sporcu')` gerçekten `true` oluyor),
+    (b) tema-türü hediye testi (`first_share`, `AppThemeProvider.
+    ownedIds` tam bir standart/non-premium tema kazanıyor), (c) hediyesiz
+    rozet testinde (`first_step`) hem `CostumeProvider` hem
+    `AppThemeProvider`'ın ETKİLENMEDİĞİ AÇIKÇA doğrulanıyor eklendi.
+    `test/costume_provider_test.dart`'taki `reconcileGoalUnlocks` test
+    grubu (5 test) + artık kullanılmayan `Goal`/`GoalsProvider`/
+    `WaterProvider` importları kaldırıldı.
+  - **Doğrulama:** `flutter test` — tam suite yeşil (541/542, yalnızca
+    önceden belgelenmiş `audioplayers`/`home_widget` flake'i hariç;
+    `badges_gallery_screen_test.dart`'ın MEVCUT `childAspectRatio: 0.62`
+    overflow testi yeni gift-preview satırıyla da TEMİZ geçti, bir
+    ayarlama GEREKMEDİ). **Gerçek cihazda GÖRSEL doğrulama bu turda
+    YAPILMADI** — kullanıcının kendi cihazında doğrulaması gereken:
+    Rozetler Galerisi'nde hediyesi olan dokuz rozetin kartında ZC
+    yazısının hemen altında 🎁 + küçük önizleme göründüğü, bir kostüm-
+    hediyeli rozet (ör. Demir İrade) kazanılınca popup'ın "Ödülü Al"a
+    basılmadan ÖNCE bile kostüm adını/görselini gösterdiği ve
+    basıldıktan sonra o kostümün GERÇEKTEN Mağaza'da "Sahip Olunan"
+    göründüğü, bir tema-hediyeli rozet (İlk Paylaşım/Hayalperest)
+    kazanılınca popup'ta önce genel bir not gösterip "Ödülü Al"dan SONRA
+    gerçek tema adını SnackBar'da açıkladığı ve o temanın Mağaza'da
+    sahiplenildiği, ve "Tam Gardırop" rozetinin ARTIK hiçbir kostüm/tema
+    hediye ETMEDİĞİ (yalnızca 200 ZC).

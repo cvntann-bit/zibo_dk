@@ -2105,9 +2105,27 @@
   },
   "badgeSpecialRewardThemeGrantedMessage": "Özel ödülün: {themeName} teması hediye edildi! 🎁",
   "@badgeSpecialRewardThemeGrantedMessage": {
-    "description": "Tam Gardırop gibi bir rozet kazanılıp özel ödül olarak rastgele bir tema hediye edildiğinde gösterilen SnackBar metni",
+    "description": "İlk Paylaşım/Hayalperest gibi tema hediyesi taşıyan bir rozet kazanılıp rastgele bir standart tema hediye edildiğinde gösterilen SnackBar metni",
     "placeholders": {
       "themeName": {
+        "type": "String"
+      }
+    }
+  },
+  "badgeGiftCostumeMessage": "Ayrıca {costumeName} kazandın! 🎁",
+  "@badgeGiftCostumeMessage": {
+    "description": "Kostüm hediyesi taşıyan bir rozetin (ör. Demir İrade → Sporcu Zibo) kazanma popup'ında (ödül alınmadan önce) VE ödül alındıktan sonraki SnackBar'da gösterilen metin",
+    "placeholders": {
+      "costumeName": {
+        "type": "String"
+      }
+    }
+  },
+  "badgeGiftPreviewLabel": "Hediye: {itemName}",
+  "@badgeGiftPreviewLabel": {
+    "description": "Rozetler Galerisi'ndeki kostüm/tema hediyesi önizleme satırının erişilebilirlik (semantics) etiketi",
+    "placeholders": {
+      "itemName": {
         "type": "String"
       }
     }

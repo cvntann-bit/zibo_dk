@@ -470,6 +470,8 @@
   "badgeSpecialRewardComingSoon": "Recompensa Especial (Próximamente)",
   "badgeSpecialRewardThemeNote": "+ Un Tema Aleatorio de Regalo",
   "badgeSpecialRewardThemeGrantedMessage": "Tu recompensa especial: ¡se te regaló el tema {themeName}! 🎁",
+  "badgeGiftCostumeMessage": "¡También ganaste {costumeName}! 🎁",
+  "badgeGiftPreviewLabel": "Regalo: {itemName}",
   "badgeCategoryLoyalty": "Insignias de Lealtad",
   "badgeNameFirstWeek": "Primera Semana",
   "badgeNameLoyalFriend": "Amigo Fiel",

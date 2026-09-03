@@ -1,8 +1,8 @@
 // BadgeCelebrationOverlay'in `pendingBadgePopup` sinyalini tüketip konfeti +
 // kutlama kartını gösterdiğini, "Ödülü Al" butonunun rozeti claimed yaptığını
-// + coin eklediğini + sinyali sıfırladığını + Rozetler Galerisi'ni açtığını
-// (rootNavigatorKey üzerinden) doğrular — bkz. CLAUDE.md "Rozet Sistemi"
-// bölümü.
+// + coin eklediğini + (varsa) kostüm/tema hediyesini VERDİĞİNİ + sinyali
+// sıfırladığını + Rozetler Galerisi'ni açtığını (rootNavigatorKey üzerinden)
+// doğrular — bkz. CLAUDE.md "Rozet Sistemi" bölümü.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -11,12 +11,14 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:dijital_kanka/data/app_themes.dart';
-import 'package:dijital_kanka/data/collection_badges.dart';
 import 'package:dijital_kanka/data/consistency_badges.dart';
+import 'package:dijital_kanka/data/social_badges.dart';
 import 'package:dijital_kanka/l10n/app_localizations.dart';
+import 'package:dijital_kanka/models/app_theme_option.dart';
 import 'package:dijital_kanka/providers/app_theme_provider.dart';
 import 'package:dijital_kanka/providers/badge_provider.dart';
 import 'package:dijital_kanka/providers/coin_provider.dart';
+import 'package:dijital_kanka/providers/costume_provider.dart';
 import 'package:dijital_kanka/providers/sound_effects_provider.dart';
 import 'package:dijital_kanka/screens/badges_gallery_screen.dart';
 import 'package:dijital_kanka/services/sound_effects_service.dart';
@@ -62,6 +64,7 @@ Widget _buildTestApp(
   CoinProvider coin, {
   SoundEffectsService? soundEffectsService,
   AppThemeProvider? appTheme,
+  CostumeProvider? costume,
 }) {
   return MultiProvider(
     providers: [
@@ -72,6 +75,9 @@ Widget _buildTestApp(
       ),
       ChangeNotifierProvider<AppThemeProvider>.value(
         value: appTheme ?? AppThemeProvider(),
+      ),
+      ChangeNotifierProvider<CostumeProvider>.value(
+        value: costume ?? CostumeProvider(),
       ),
     ],
     child: MaterialApp(
@@ -102,6 +108,8 @@ void main() {
   });
 
   final firstStep = consistencyBadges.firstWhere((b) => b.id == 'first_step');
+  final ironWill = consistencyBadges.firstWhere((b) => b.id == 'iron_will');
+  final firstShare = socialBadges.firstWhere((b) => b.id == 'first_share');
 
   testWidgets(
     'pendingBadgePopup ayarlanınca kutlama kartı rozet adı/koşulu/ödülüyle '
@@ -170,13 +178,47 @@ void main() {
     },
   );
 
-  final fullWardrobe = collectionBadges.firstWhere(
-    (b) => b.id == 'full_wardrobe',
+  testWidgets(
+    'Kostüm hediyesi taşıyan bir rozette (Demir İrade → Sporcu Zibo) '
+    'kazanma popup\'ı "Ödülü Al"a basılmadan ÖNCE bile kostüm adını '
+    'gösterir; basılınca kostüm GERÇEKTEN hediye edilir ve SnackBar ile '
+    'duyurulur',
+    (tester) async {
+      final badges = BadgeProvider();
+      final coin = CoinProvider();
+      final costume = CostumeProvider();
+      await tester.pumpWidget(
+        _buildTestApp(badges, coin, costume: costume),
+      );
+      await tester.pumpAndSettle();
+      expect(costume.ownedIds, isEmpty);
+
+      badges.reconcileConsistencyBadges(
+        hasCompletedFirstGoalCycle: false,
+        appOpenStreak: 90,
+      );
+      await tester.pump();
+      expect(pendingBadgePopup.value?.id, 'iron_will');
+
+      // "Ödülü Al"a basılmadan ÖNCE bile — kostüm hediyesi SABİT/
+      // deterministik olduğu için popup'ta HANGİ kostümün verileceği zaten
+      // gösteriliyor.
+      expect(find.text('Ayrıca Sporcu Zibo kazandın! 🎁'), findsOneWidget);
+
+      await tester.tap(find.text('Ödülü Al'));
+      await tester.pumpAndSettle();
+
+      expect(badges.isClaimed('iron_will'), isTrue);
+      expect(costume.isOwned('zibo_sporcu'), isTrue);
+      expect(find.byType(SnackBar), findsOneWidget);
+      expect(find.text('Ayrıca Sporcu Zibo kazandın! 🎁'), findsOneWidget);
+    },
   );
 
   testWidgets(
-    '"Tam Gardırop" (hasSpecialReward) için "Ödülü Al"a basınca sahip '
-    'OLUNMAYAN bir tema RASTGELE hediye edilir ve SnackBar ile duyurulur',
+    'Tema hediyesi taşıyan bir rozette (İlk Paylaşım) "Ödülü Al"a '
+    'basılınca sahip OLUNMAYAN bir STANDART (premium/animasyonlu OLMAYAN) '
+    'tema rastgele hediye edilir ve SnackBar ile duyurulur',
     (tester) async {
       final badges = BadgeProvider();
       final coin = CoinProvider();
@@ -187,33 +229,35 @@ void main() {
       await tester.pumpAndSettle();
       expect(appTheme.ownedIds, isEmpty);
 
-      badges.reconcileCollectionBadges(
-        ownedCostumeCount: 0,
-        ownsAllCostumes: true,
-        ownedThemeCount: 0,
+      badges.reconcileSocialBadges(
+        hasSharedAtLeastOnce: true,
+        successfulReferralCount: 0,
       );
       await tester.pump();
-      expect(pendingBadgePopup.value?.id, 'full_wardrobe');
+      expect(pendingBadgePopup.value?.id, 'first_share');
 
       await tester.tap(find.text('Ödülü Al'));
       await tester.pumpAndSettle();
 
-      expect(badges.isClaimed('full_wardrobe'), isTrue);
+      expect(badges.isClaimed('first_share'), isTrue);
       expect(appTheme.ownedIds, hasLength(1));
-      expect(appThemes.map((t) => t.id), contains(appTheme.ownedIds.single));
+      final grantedId = appTheme.ownedIds.single;
+      final grantedTheme = appThemes.firstWhere((t) => t.id == grantedId);
+      expect(grantedTheme.isPremiumAnimated, isFalse);
       expect(find.byType(SnackBar), findsOneWidget);
     },
   );
 
   testWidgets(
-    'hasSpecialReward TAŞIMAYAN bir rozette (ör. İlk Adım) hiçbir tema '
+    'Hediyesi OLMAYAN bir rozette (ör. İlk Adım) hiçbir kostüm/tema '
     'hediye EDİLMEZ',
     (tester) async {
       final badges = BadgeProvider();
       final coin = CoinProvider();
       final appTheme = AppThemeProvider();
+      final costume = CostumeProvider();
       await tester.pumpWidget(
-        _buildTestApp(badges, coin, appTheme: appTheme),
+        _buildTestApp(badges, coin, appTheme: appTheme, costume: costume),
       );
       await tester.pumpAndSettle();
 
@@ -223,6 +267,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(appTheme.ownedIds, isEmpty);
+      expect(costume.ownedIds, isEmpty);
     },
   );
 }

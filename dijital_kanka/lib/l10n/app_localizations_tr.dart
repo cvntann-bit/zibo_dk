@@ -1586,6 +1586,16 @@ class AppLocalizationsTr extends AppLocalizations {
   }
 
   @override
+  String badgeGiftCostumeMessage(String costumeName) {
+    return 'Ayrıca $costumeName kazandın! 🎁';
+  }
+
+  @override
+  String badgeGiftPreviewLabel(String itemName) {
+    return 'Hediye: $itemName';
+  }
+
+  @override
   String get badgeCategoryLoyalty => 'Sadakat Rozetleri';
 
   @override

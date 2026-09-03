@@ -1597,6 +1597,16 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
+  String badgeGiftCostumeMessage(String costumeName) {
+    return '¡También ganaste $costumeName! 🎁';
+  }
+
+  @override
+  String badgeGiftPreviewLabel(String itemName) {
+    return 'Regalo: $itemName';
+  }
+
+  @override
   String get badgeCategoryLoyalty => 'Insignias de Lealtad';
 
   @override

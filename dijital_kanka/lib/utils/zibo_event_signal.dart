@@ -14,9 +14,9 @@ enum ZiboEventType {
   /// `GoalsProvider.reconcileForToday`).
   streakBroken,
 
-  /// Yeni bir kostüm veya tema açıldı — satın alınarak VEYA bir hedef
-  /// tamamlanarak (bkz. `CostumeCard`/`ThemeOptionCard._buy`,
-  /// `CostumeProvider.reconcileGoalUnlocks`).
+  /// Yeni bir kostüm veya tema açıldı — satın alınarak (bkz.
+  /// `CostumeCard`/`ThemeOptionCard._buy`) VEYA bir rozetle hediye edilerek
+  /// (bkz. `BadgeCelebrationOverlay`/`data/badge_gift_rewards.dart`).
   costumeOrThemeUnlocked,
 
   /// Günlük Giriş Ödülleri'nin 7. günü alındı (bkz.

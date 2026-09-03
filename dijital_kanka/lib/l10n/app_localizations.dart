@@ -2872,11 +2872,23 @@ abstract class AppLocalizations {
   /// **'+ Rastgele Bir Tema Hediyesi'**
   String get badgeSpecialRewardThemeNote;
 
-  /// Tam Gardırop gibi bir rozet kazanılıp özel ödül olarak rastgele bir tema hediye edildiğinde gösterilen SnackBar metni
+  /// İlk Paylaşım/Hayalperest gibi tema hediyesi taşıyan bir rozet kazanılıp rastgele bir standart tema hediye edildiğinde gösterilen SnackBar metni
   ///
   /// In tr, this message translates to:
   /// **'Özel ödülün: {themeName} teması hediye edildi! 🎁'**
   String badgeSpecialRewardThemeGrantedMessage(String themeName);
+
+  /// Kostüm hediyesi taşıyan bir rozetin (ör. Demir İrade → Sporcu Zibo) kazanma popup'ında (ödül alınmadan önce) VE ödül alındıktan sonraki SnackBar'da gösterilen metin
+  ///
+  /// In tr, this message translates to:
+  /// **'Ayrıca {costumeName} kazandın! 🎁'**
+  String badgeGiftCostumeMessage(String costumeName);
+
+  /// Rozetler Galerisi'ndeki kostüm/tema hediyesi önizleme satırının erişilebilirlik (semantics) etiketi
+  ///
+  /// In tr, this message translates to:
+  /// **'Hediye: {itemName}'**
+  String badgeGiftPreviewLabel(String itemName);
 
   /// Rozetler Galerisi'ndeki Sadakat kategorisinin bölüm başlığı
   ///

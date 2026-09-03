@@ -32,9 +32,9 @@ import 'home_widget_service.dart';
 /// değiştirmek yerine) her provider'a DIŞARIDAN bir `addListener` ekleyip,
 /// ilgili provider değiştiğinde SADECE o modülün widget'ını yeniden
 /// hesaplayıp [HomeWidgetService.pushStatus]/[HomeWidgetService.pushCarousel]
-/// ile native tarafa gönderiyor — `CostumeProvider.reconcileGoalUnlocks`'ın
-/// "constructor'dan değil, parametre olarak al" felsefesiyle AYNI gerekçe:
-/// bu obje diğer provider'lara KALICI bağımlı değil, yalnızca onları
+/// ile native tarafa gönderiyor — `BadgeCoordinator`'ın "constructor'dan
+/// değil, parametre olarak al" felsefesiyle AYNI gerekçe: bu obje diğer
+/// provider'lara KALICI bağımlı değil, yalnızca onları
 /// dinliyor.
 ///
 /// **2026 güncellemesi — beş "basit günlük/checkbox" widget'ı (Hedef

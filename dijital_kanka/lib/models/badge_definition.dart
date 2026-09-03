@@ -23,7 +23,6 @@ class ZiboBadgeDefinition {
     required this.category,
     required this.imageAsset,
     required this.zcReward,
-    this.hasSpecialReward = false,
     this.isHidden = false,
   });
 
@@ -32,18 +31,16 @@ class ZiboBadgeDefinition {
   final String imageAsset;
   final int zcReward;
 
-  /// Bu rozet, standart ZC ödülüne EK olarak özel bir ödül taşıyor mu —
-  /// bkz. `collection_badges.dart` içindeki "full_wardrobe" notu. **2026
-  /// güncellemesi — kullanıcının netleştirmesi ("özel hediyemiz o"): artık
-  /// GERÇEKTEN İŞLEVSEL** — `true` olan bir rozet "Ödülü Al"a basılınca
-  /// `BadgeCelebrationOverlay`'in `pickRandomUnownedTheme` (bkz.
-  /// `utils/badge_special_reward.dart`) ile sahip OLUNMAYAN temalardan
-  /// rastgele birini `AppThemeProvider.markOwned(...)` ile HEDİYE ediyor —
-  /// mağazadan asla SATIN ALINMADAN. UI'da (galeri kartı + kutlama popup'ı)
-  /// `l10n.badgeSpecialRewardThemeNote` etiketiyle gösteriliyor, kazanılınca
-  /// da `l10n.badgeSpecialRewardThemeGrantedMessage` ile hangi temanın
-  /// hediye edildiği bir SnackBar'la duyuruluyor.
-  final bool hasSpecialReward;
+  /// **Kostüm/tema hediyesi — 2026 mimari değişikliği.** Bu rozetin
+  /// standart ZC ödülüne EK olarak bir kostüm/tema hediye edip
+  /// ETMEDİĞİNİ/hangisini vereceğini BURADA (bu sınıfta) TUTMUYORUZ —
+  /// eski genel `hasSpecialReward` bool bayrağının YERİNE, `data/
+  /// badge_gift_rewards.dart`'taki SABİT, id→hediye eşlemesi
+  /// (`badgeGiftRewards[id]`) geçti. Yalnızca DOKUZ belirli rozet bir
+  /// hediye taşıyor (kullanıcının açık isteği/eşleme listesi) — diğer TÜM
+  /// rozetler yalnızca [zcReward] veriyor. Bkz. `BadgeCelebrationOverlay`
+  /// (kazanma anındaki hediye verme mantığı) ve `BadgesGalleryScreen`
+  /// (galeri kartındaki 🎁 önizleme satırı).
 
   /// **Gizli/Eğlenceli Rozetler'e özel — bkz. `hidden_badges.dart`.**
   /// `true` iken, bu rozet KAZANILANA kadar `BadgesGalleryScreen`'in

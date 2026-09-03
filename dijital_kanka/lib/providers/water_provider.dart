@@ -81,9 +81,12 @@ class WaterProvider extends ChangeNotifier {
 
   /// Su hedefinin TAMAMLANDIĞI toplam gün sayısı (bugün dahil, tarih sırası
   /// önemsiz) — sınırsız büyür, `GoalsProvider.longestStreak`'in aksine
-  /// 7 günlük bir döngüye bağlı değil. 2026 güncellemesi: kostüm mağazasının
-  /// "hedefle ücretsiz aç" özelliğinin (bkz. `CostumeProvider.
-  /// reconcileGoalUnlocks`) ikinci ilerleme metriği için eklendi.
+  /// 7 günlük bir döngüye bağlı değil. **2026 güncellemesi — artık HİÇBİR
+  /// YERDE kullanılmıyor:** başlangıçta kostüm mağazasının ("hedefle
+  /// ücretsiz aç") ikinci ilerleme metriği olarak eklenmişti, o mekanizma
+  /// TAMAMEN KALDIRILDI (bkz. `data/costumes.dart` TARİHÇESİ) — getter,
+  /// genel/potansiyel olarak faydalı bir metrik olduğu ve kendi testi
+  /// olduğu için BİLEREK SİLİNMEDİ.
   int get completedDaysCount =>
       _entries.where((e) => e.unitCount >= e.goalUnitCount).length;
 

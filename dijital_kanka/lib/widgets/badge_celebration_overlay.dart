@@ -3,11 +3,15 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../data/badge_gift_rewards.dart';
+import '../data/costumes.dart';
 import '../l10n/app_localizations.dart';
 import '../models/badge_definition.dart';
+import '../models/badge_gift_reward.dart';
 import '../providers/app_theme_provider.dart';
 import '../providers/badge_provider.dart';
 import '../providers/coin_provider.dart';
+import '../providers/costume_provider.dart';
 import '../providers/sound_effects_provider.dart';
 import '../screens/badges_gallery_screen.dart';
 import '../services/sound_effects_service.dart';
@@ -97,13 +101,11 @@ class _BadgeCelebrationOverlayState extends State<BadgeCelebrationOverlay>
     super.dispose();
   }
 
-  void _dismissAndOpenGallery(String? specialRewardThemeName) {
+  void _dismissAndOpenGallery(GrantedBadgeGift? grantedGift) {
     setState(() => _badge = null);
     rootNavigatorKey.currentState?.push(
       MaterialPageRoute<void>(
-        builder: (_) => BadgesGalleryScreen(
-          specialRewardThemeName: specialRewardThemeName,
-        ),
+        builder: (_) => BadgesGalleryScreen(grantedGift: grantedGift),
       ),
     );
   }
@@ -150,18 +152,26 @@ class _BadgeClaimCard extends StatelessWidget {
 
   final ZiboBadgeDefinition badge;
 
-  /// `hasSpecialReward` taşıyan bir rozette (ör. Tam Gardırop) bir tema
-  /// hediye edildiyse, o temanın yerelleştirilmiş adı — bkz.
-  /// `pickRandomUnownedTheme`/`BadgesGalleryScreen.specialRewardThemeName`.
-  /// Hediye edilmediyse (özel ödül yoksa VEYA kullanıcı zaten TÜM temalara
-  /// sahipse) `null`.
-  final void Function(String? specialRewardThemeName) onClaim;
+  /// `badgeGiftRewards`'ta bir hediyesi olan bir rozette "Ödülü Al"a
+  /// basılınca hediye GERÇEKTEN verildiyse türü + yerelleştirilmiş adı —
+  /// bkz. `BadgesGalleryScreen.grantedGift`. Hediye yoksa VEYA (yalnızca
+  /// tema tipinde, teorik olarak nadir) sahip olunmayan standart tema
+  /// kalmadıysa `null`.
+  final void Function(GrantedBadgeGift? grantedGift) onClaim;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
+    // Bu rozetin bir hediyesi var mı — bkz. `data/badge_gift_rewards.dart`.
+    // Kostüm tipi SABİT/deterministik olduğu için hangi kostümün
+    // verileceği "Ödülü Al"a basılmadan ÖNCE bile biliniyor (aşağıdaki
+    // notta gösteriliyor); tema tipi yalnızca claim anında belli oluyor.
+    final gift = badgeGiftRewards[badge.id];
+    final giftCostume = gift?.type == BadgeGiftType.costume
+        ? findCostumeById(gift!.costumeId!)
+        : null;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 32),
@@ -216,31 +226,54 @@ class _BadgeClaimCard extends StatelessWidget {
                   ),
                 ),
               ),
-              // "Tam Gardırop" gibi standart ZC ödülüne EK bir özel ödül
-              // taşıyan rozetler için — bkz. `ZiboBadgeDefinition.
-              // hasSpecialReward`/`pickRandomUnownedTheme` dokümantasyonu:
-              // "Ödülü Al"a basılınca sahip OLUNMAYAN temalardan rastgele
-              // biri GERÇEKTEN hediye ediliyor (bkz. altta onPressed).
-              if (badge.hasSpecialReward) ...[
+              // Kostüm/tema hediyesi taşıyan DOKUZ rozetten biri için —
+              // bkz. `data/badge_gift_rewards.dart`. Kostüm tipi SABİT
+              // olduğu için hangi kostümün verileceği burada, "Ödülü Al"a
+              // basılmadan ÖNCE bile gösteriliyor (görsel + isim); tema
+              // tipinde henüz HANGİ temanın çıkacağı belli olmadığı için
+              // genel bir "+ tema hediyesi" notu gösteriliyor, gerçek isim
+              // yalnızca claim SONRASI (SnackBar'la) açıklanıyor.
+              if (gift != null) ...[
                 const SizedBox(height: 8),
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.auto_awesome_rounded,
-                      size: 16,
-                      color: colorScheme.tertiary,
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      l10n.badgeSpecialRewardThemeNote,
-                      style: textTheme.bodySmall?.copyWith(
-                        color: colorScheme.tertiary,
-                        fontWeight: FontWeight.bold,
+                if (giftCostume != null)
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Image.asset(giftCostume.imageAsset, width: 28, height: 28),
+                      const SizedBox(width: 6),
+                      Flexible(
+                        child: Text(
+                          l10n.badgeGiftCostumeMessage(
+                            giftCostume.localizedName(l10n),
+                          ),
+                          textAlign: TextAlign.center,
+                          style: textTheme.bodySmall?.copyWith(
+                            color: colorScheme.tertiary,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ),
-                    ),
-                  ],
-                ),
+                    ],
+                  )
+                else
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.auto_awesome_rounded,
+                        size: 16,
+                        color: colorScheme.tertiary,
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        l10n.badgeSpecialRewardThemeNote,
+                        style: textTheme.bodySmall?.copyWith(
+                          color: colorScheme.tertiary,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
               ],
               const SizedBox(height: 20),
               SizedBox(
@@ -252,24 +285,41 @@ class _BadgeClaimCard extends StatelessWidget {
                       badge.zcReward,
                       badge.id,
                     );
-                    // Özel ödül — kullanıcının netleştirmesi ("özel
-                    // hediyemiz o"): standart ZC'ye EK olarak, sahip
-                    // OLUNMAYAN temalardan rastgele biri hediye ediliyor.
-                    // Zaten TÜM temalara sahipse (bkz. `pickRandomUnownedTheme`
-                    // dokümantasyonu) sessizce hiçbir şey verilmiyor.
-                    String? grantedThemeName;
-                    if (badge.hasSpecialReward) {
-                      final themeProvider = context.read<AppThemeProvider>();
-                      final theme = pickRandomUnownedTheme(
-                        themeProvider.ownedIds,
-                      );
-                      if (theme != null) {
-                        unawaited(themeProvider.markOwned(theme.id));
-                        grantedThemeName = theme.localizedName(l10n);
+                    // Hediye — kostüm tipi SABİT/deterministik (yukarıdaki
+                    // `giftCostume`'un AYNISI, `markOwned` idempotent olduğu
+                    // için kullanıcı zaten satın almış olsa bile GÜVENLE
+                    // tekrar çağrılabilir), tema tipi ise sahip OLUNMAYAN
+                    // standart temalardan rastgele seçiliyor. Verilecek
+                    // hiçbir şey kalmadıysa (yalnızca tema tipinde, teorik
+                    // olarak nadir) sessizce hiçbir şey verilmiyor.
+                    GrantedBadgeGift? granted;
+                    if (gift != null) {
+                      if (giftCostume != null) {
+                        unawaited(
+                          context.read<CostumeProvider>().markOwned(
+                            giftCostume.id,
+                          ),
+                        );
+                        granted = (
+                          type: BadgeGiftType.costume,
+                          name: giftCostume.localizedName(l10n),
+                        );
+                      } else {
+                        final themeProvider = context.read<AppThemeProvider>();
+                        final theme = pickRandomUnownedStandardTheme(
+                          themeProvider.ownedIds,
+                        );
+                        if (theme != null) {
+                          unawaited(themeProvider.markOwned(theme.id));
+                          granted = (
+                            type: BadgeGiftType.theme,
+                            name: theme.localizedName(l10n),
+                          );
+                        }
                       }
                     }
                     pendingBadgePopup.value = null;
-                    onClaim(grantedThemeName);
+                    onClaim(granted);
                   },
                   child: Text(l10n.badgeClaimRewardButton),
                 ),

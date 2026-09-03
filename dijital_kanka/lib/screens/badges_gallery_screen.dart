@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../data/badge_gift_rewards.dart';
 import '../data/consistency_badges.dart';
+import '../data/costumes.dart';
 import '../data/hidden_badges.dart';
 import '../l10n/app_localizations.dart';
 import '../models/badge_definition.dart';
+import '../models/badge_gift_reward.dart';
 import '../providers/badge_provider.dart';
 
 /// Rozetler Galerisi — bkz. CLAUDE.md "Rozet Sistemi" bölümü. Kazanılan
@@ -25,15 +28,15 @@ import '../providers/badge_provider.dart';
 /// yalnızca `allBadges`'e (bkz. `consistency_badges.dart`) ve buradaki
 /// `_categoryTitle` switch'ine bir `case` eklemek yeterli.
 class BadgesGalleryScreen extends StatefulWidget {
-  const BadgesGalleryScreen({super.key, this.specialRewardThemeName});
+  const BadgesGalleryScreen({super.key, this.grantedGift});
 
-  /// "Tam Gardırop" gibi `hasSpecialReward` taşıyan bir rozet AZ ÖNCE
-  /// kazanılıp özel ödül olarak bir tema hediye edildiyse
-  /// (`BadgeCelebrationOverlay`/`pickRandomUnownedTheme`), o temanın
-  /// yerelleştirilmiş adı — ilk karede bir SnackBar ile duyurulur. `null`
-  /// ise (özel ödül yoksa VEYA kullanıcı zaten tüm temalara sahipse)
-  /// hiçbir şey gösterilmez, normal galeri açılışı.
-  final String? specialRewardThemeName;
+  /// `badgeGiftRewards`'ta bir hediyesi olan bir rozet AZ ÖNCE kazanılıp
+  /// "Ödülü Al"a basılınca hediye GERÇEKTEN verildiyse (bkz.
+  /// `BadgeCelebrationOverlay`), türü + yerelleştirilmiş adı — ilk karede
+  /// bir SnackBar ile duyurulur. `null` ise (hediye yoksa VEYA — yalnızca
+  /// tema tipinde, teorik olarak nadir — sahip olunmayan standart tema
+  /// kalmadıysa) hiçbir şey gösterilmez, normal galeri açılışı.
+  final GrantedBadgeGift? grantedGift;
 
   @override
   State<BadgesGalleryScreen> createState() => _BadgesGalleryScreenState();
@@ -43,18 +46,19 @@ class _BadgesGalleryScreenState extends State<BadgesGalleryScreen> {
   @override
   void initState() {
     super.initState();
-    final themeName = widget.specialRewardThemeName;
-    if (themeName == null) return;
+    final granted = widget.grantedGift;
+    if (granted == null) return;
     // `showModulesMenuSheet`/`_maybeShowAdFreePromo` ile AYNI "build
     // tamamlanmadan bir SnackBar/dialog göstermek güvenli değil" gerekçesi.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       final l10n = AppLocalizations.of(context)!;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(l10n.badgeSpecialRewardThemeGrantedMessage(themeName)),
-        ),
-      );
+      final message = granted.type == BadgeGiftType.costume
+          ? l10n.badgeGiftCostumeMessage(granted.name)
+          : l10n.badgeSpecialRewardThemeGrantedMessage(granted.name);
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(message)));
     });
   }
 
@@ -161,6 +165,16 @@ class _BadgeGalleryCard extends StatelessWidget {
     // kart TÜM diğer rozetlerle BİREBİR aynı şekilde render edilir.
     final hiddenLocked = badge.isHidden && !earned;
 
+    // Kostüm/tema hediyesi taşıyan DOKUZ rozetten biri mi — bkz.
+    // `data/badge_gift_rewards.dart`. Gizli/Eğlenceli Rozetler kategorisi
+    // BİLEREK İSTİSNA (kullanıcının isteği: "Gizli Rozetler kategorisi
+    // hariç — onlarda bu bilgi de gizli kalmaya devam etsin") — bu yüzden
+    // `hiddenLocked` iken satır hiç GÖSTERİLMİYOR, tıpkı isim/koşul gibi.
+    final gift = badgeGiftRewards[badge.id];
+    final giftCostume = gift?.type == BadgeGiftType.costume
+        ? findCostumeById(gift!.costumeId!)
+        : null;
+
     // Kullanıcı isteği: rozet görseli biraz DAHA büyütülsün, çok değil
     // (88 → 108 → 118).
     final image = Image.asset(
@@ -241,35 +255,39 @@ class _BadgeGalleryCard extends StatelessWidget {
                 ),
               ],
             ),
-            // "Tam Gardırop" gibi standart ZC ödülüne EK bir özel ödül
-            // taşıyan rozetler için — bkz. `ZiboBadgeDefinition.
-            // hasSpecialReward`/`pickRandomUnownedTheme` dokümantasyonu:
-            // kazanılınca sahip OLUNMAYAN temalardan rastgele biri GERÇEKTEN
-            // hediye ediliyor (bkz. `BadgeCelebrationOverlay`).
-            if (!hiddenLocked && badge.hasSpecialReward) ...[
+            // Kostüm/tema hediyesi önizlemesi — kullanıcı isteği: "rozet
+            // kartında ZC ödül yazısının HEMEN ALTINA 🎁 emojisi + hediye
+            // edilen kostümün/temanın küçük bir önizleme görseli." Kostüm
+            // tipi SABİT olduğu için gerçek görseli gösteriyoruz; tema tipi
+            // rastgele (yalnızca claim anında belli olduğu) için genel bir
+            // palet ikonu gösteriyoruz.
+            if (!hiddenLocked && gift != null) ...[
               const SizedBox(height: 4),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.auto_awesome_rounded,
-                    size: 14,
-                    color: colorScheme.tertiary,
-                  ),
-                  const SizedBox(width: 4),
-                  Flexible(
-                    child: Text(
+              Semantics(
+                label: l10n.badgeGiftPreviewLabel(
+                  giftCostume?.localizedName(l10n) ??
                       l10n.badgeSpecialRewardThemeNote,
-                      textAlign: TextAlign.center,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: textTheme.labelSmall?.copyWith(
+                ),
+                excludeSemantics: true,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text('🎁', style: TextStyle(fontSize: 13)),
+                    const SizedBox(width: 4),
+                    if (giftCostume != null)
+                      Image.asset(
+                        giftCostume.imageAsset,
+                        width: 24,
+                        height: 24,
+                      )
+                    else
+                      Icon(
+                        Icons.palette_rounded,
+                        size: 18,
                         color: colorScheme.tertiary,
-                        fontWeight: FontWeight.bold,
                       ),
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ],
           ],

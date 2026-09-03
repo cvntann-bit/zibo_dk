@@ -1,15 +1,22 @@
 import '../l10n/app_localizations.dart';
-import 'costume_unlock_requirement.dart';
 
 /// Zibo Coin ile satın alınabilen, Ana Sayfa'daki Zibo'ya "giydirilebilen"
 /// bir kostüm.
+///
+/// **2026 mimari değişikliği — "hedefle ücretsiz açma" mekaniği TAMAMEN
+/// KALDIRILDI** (kullanıcı isteği: "kostümler artık sadece PARAYLA satın
+/// alınabilsin VEYA rozet sistemi üzerinden hediye olarak kazanılsın").
+/// Eski `unlockRequirement` alanı (bir hedefi tamamlayarak ücretsiz açma)
+/// ve onu tüketen `CostumeProvider.reconcileGoalUnlocks`/`CostumeCard`'ın
+/// ilerleme satırı SİLİNDİ — bkz. `data/badge_gift_rewards.dart`'taki YENİ,
+/// çok daha dar kapsamlı mekanizma (yalnızca DOKUZ belirli rozet bir kostüm/
+/// tema hediye ediyor, "TÜM kostümler" DEĞİL).
 class Costume {
   const Costume({
     required this.id,
     required this.imageAsset,
     required this.name,
     required this.price,
-    this.unlockRequirement,
   });
 
   /// Kalıcı depoda (SharedPreferences) sahiplik/giyili durumu bu id ile
@@ -22,14 +29,6 @@ class Costume {
   /// [localizedName] kullanın (bkz. o metodun dokümantasyonu).
   final String name;
   final int price;
-
-  /// 2026 güncellemesi — kullanıcı isteği: TÜM kostümler artık coin ile
-  /// satın almanın YANI SIRA ilgili bir hedefi tamamlayarak da (ücretsiz)
-  /// açılabilir. `null` olan bir kostüm yalnızca satın alınabilir (şu an
-  /// `costumes.dart`'taki 16 kostümün HEPSİ bir gereksinim taşıyor, ama alan
-  /// nullable — ileride gereksinimsiz bir kostüm eklenebilsin diye). Bkz.
-  /// `CostumeProvider.reconcileGoalUnlocks`.
-  final CostumeUnlockRequirement? unlockRequirement;
 
   /// [id]'ye göre kostümün o anki dildeki (TR/EN/ES) görünen adı — ARB'deki
   /// `costumeName<Id>` anahtarlarından okunur. `name` alanı yalnızca sabit/
