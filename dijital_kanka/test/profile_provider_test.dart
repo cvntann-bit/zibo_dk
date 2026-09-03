@@ -2,6 +2,8 @@
 // SharedPreferences üzerinden kalıcı olarak sakladığını (uygulama yeniden
 // başlatılsa bile hatırlandığını) doğrudan (widget pump'lamadan) test eder.
 
+import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -103,5 +105,68 @@ void main() {
 
     await provider.setAddressTerm('   ');
     expect(provider.addressTerm, 'Kanka');
+  });
+
+  group('reconcileMissingPhoto (2026 — Crashlytics bug düzeltmesi)', () {
+    late Directory tempDir;
+
+    setUp(() {
+      tempDir = Directory.systemTemp.createTempSync('profile_reconcile_test_');
+    });
+
+    tearDown(() {
+      if (tempDir.existsSync()) tempDir.deleteSync(recursive: true);
+    });
+
+    test(
+      'diskte GERÇEKTEN var olmayan bir photoPath kalıcı olarak null\'a çevrilir',
+      () async {
+        final provider = ProfileProvider();
+        await Future<void>.delayed(Duration.zero);
+        await provider.setPhotoPath('${tempDir.path}/hic-var-olmadi.jpg');
+
+        provider.reconcileMissingPhoto();
+
+        expect(provider.photoPath, isNull);
+      },
+    );
+
+    test('diskte GERÇEKTEN var olan bir photoPath\'e DOKUNULMAZ', () async {
+      final realFile = File('${tempDir.path}/gercek.jpg')..writeAsBytesSync([1, 2, 3]);
+      final provider = ProfileProvider();
+      await Future<void>.delayed(Duration.zero);
+      await provider.setPhotoPath(realFile.path);
+
+      provider.reconcileMissingPhoto();
+
+      expect(provider.photoPath, realFile.path);
+    });
+
+    test('photoPath zaten null iken no-op (dosya sistemine hiç dokunmaz)', () async {
+      final provider = ProfileProvider();
+      await Future<void>.delayed(Duration.zero);
+      expect(provider.photoPath, isNull);
+
+      var notifyCount = 0;
+      provider.addListener(() => notifyCount++);
+
+      provider.reconcileMissingPhoto();
+
+      expect(provider.photoPath, isNull);
+      expect(notifyCount, 0);
+    });
+
+    test('kalıcı depoya yazılır — yeniden başlatmada null olarak hatırlanır', () async {
+      final firstLaunch = ProfileProvider();
+      await Future<void>.delayed(Duration.zero);
+      await firstLaunch.setPhotoPath('${tempDir.path}/hic-var-olmadi.jpg');
+
+      firstLaunch.reconcileMissingPhoto();
+      await Future<void>.delayed(Duration.zero);
+
+      final secondLaunch = ProfileProvider();
+      await Future<void>.delayed(Duration.zero);
+      expect(secondLaunch.photoPath, isNull);
+    });
   });
 }

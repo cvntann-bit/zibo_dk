@@ -2246,12 +2246,59 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
     bu turda YAPILMADI** — kesin doğrulama, bir SONRAKİ Play Store sürümünden sonra bu crash
     bucket'ının (Firebase Console'daki `_File.length.<fn>`/`FileImage._loadAsync` issue'su) yeni
     olay ALMAMASIYLA gelecek zamanla.
-  - **Bilinçli olarak YAPILMAYAN, daha kapsamlı bir düzeltme:** `photoPath` artık okunamaz hale
-    geldiğinde ilgili `ManifestEntry`/`ProfileProvider` kaydının KENDİSİNİ otomatik temizlemek
-    (öksüz path'i veritabanından da silmek) — bu turda kapsam dışı bırakıldı, yalnızca GÖRÜNTÜLEME
-    noktaları güvenli hale getirildi (crash'i durdurmak için yeterli/gerekli olan minimum
-    değişiklik). İleride istenirse, `_SafeFileImage`'ın "dosya yok" dalında bir callback ile
-    ilgili provider'a haber verip kaydı temizlemek eklenebilir.
+  - **2026 GÜNCELLEMESİ — "bilinçli olarak yapılmayan" düzeltme SONRADAN, kullanıcının kendi
+    talebiyle GERÇEKTEN uygulandı: kırık `photoPath` kaydı artık kalıcı olarak TEMİZLENİYOR.**
+    Kullanıcı kendi cihazında GERÇEKTEN yaşadığını bildirdi ("profil fotoğrafı yüklüyordum,
+    manifest günlüğüne fotoğraf ekliyordum, Google hesabımdan çıkıp geri girdiğimde fotoğraflar
+    kayboluyordu") — bu, teşhisi kanıtlayan somut bir kullanıcı raporu. Gerçek fotoğraf kalıcılığı
+    için Firebase Storage entegrasyonu (upload/download, cihazlar arası GERÇEKTEN taşınan
+    fotoğraflar) TEKLİF EDİLDİ, ama **Şubat 2026'dan itibaren Cloud Storage for Firebase artık
+    Spark (ücretsiz) planda HİÇ kullanılamıyor** — proje daha önce hiç bucket oluşturmadığı için
+    Blaze'e (faturalandırma hesabı bağlı) geçmeden bucket bile OLUŞTURULAMIYOR
+    ([firebase.google.com/docs/storage/faqs-storage-changes-announced-sept-2024](https://firebase.google.com/docs/storage/faqs-storage-changes-announced-sept-2024)
+    — gerçek kullanım "Always Free" sınırları içinde [5GB-ay depolama, ayda 100GB North America
+    egress] kalırsa faturaya yansımıyor, ama Blaze'e geçmenin KENDİSİ hâlâ bir ön koşul). Kullanıcı
+    bu projede daha önce Blaze'den BİLEREK kaçınmıştı (bkz. "Push Bildirimleri" bölümündeki
+    GitHub Actions kararı) — `AskUserQuestion` ile netleştirilince kullanıcı Blaze'e GEÇMEMEYİ,
+    bunun yerine yalnızca "kırık kaydı temizle" seçeneğini tercih etti.
+    - **`ManifestEntry.photoPath`: `String` → `String?`'e çevrildi** (`ManifestProvider.
+      addEntry()`'de kayıt OLUŞTURULURKEN hâlâ ZORUNLU/dolu — bu davranış DEĞİŞMEDİ, yalnızca
+      SONRADAN, dosya kaybolursa `null` olabiliyor). **YENİ `ManifestProvider.
+      reconcileMissingPhotos()`** — `DailyRewardsProvider.reconcileForToday()`/`AppStreakProvider.
+      recordOpenForToday()` ile AYNI "reconcile-on-resume" felsefesi: TÜM `_entries`'i dolaşıp
+      `File(photoPath).existsSync()` (senkron, `dart:io`) ile kontrol eder, dosyası artık diskte
+      OLMAYAN her kaydın `photoPath`'ini kalıcı olarak `null`'a çevirir (niyet METNİ SİLİNMEZ,
+      yalnızca kırık dosya referansı temizlenir) — değişiklik varsa `notifyListeners()` + `_save()`.
+    - **YENİ `ProfileProvider.reconcileMissingPhoto()`** — `photoPath` ZATEN nullable olduğu için
+      model değişikliği gerekmedi, AYNI mantıkla (`existsSync()` kontrolü, dosya yoksa `null`'a
+      set edip kalıcı hale getir) TEK bir alanı temizliyor.
+    - **`RootScreen`'e kablolama — `AppStreakProvider.recordOpenForToday()` ile BİREBİR AYNI İKİ
+      tetikleme noktası:** `initState`'in postFrameCallback'i (soğuk başlangıç) + `didChangeAppLifecycleState`'in
+      `resumed` dalı (uygulama HER öne gelişte — hesap değiştirip/çıkış yapıp geri dönmek
+      uygulamayı KAPATMADAN da olabiliyor, bu yüzden yalnızca soğuk başlangıç YETMEZ).
+    - **`_SafeFileImage`'ın `path` parametresi `String?`'e çevrildi** — `path == null` iken dosya
+      sistemine HİÇ dokunmadan doğrudan `_BrokenImagePlaceholder`'a düşer (`path` dolu ama dosya
+      YOKSA ile AYNI görsel sonuç). Manifest ekranının üç kullanım noktası (`entry.photoPath` artık
+      nullable) buna göre otomatik uyumlu.
+    - **Katmanlı savunma BİLEREK korundu — `reconcileMissingPhotos()`/`reconcileMissingPhoto()`
+      TEK BAŞINA yeterli DEĞİL:** bu reconcile bir `postFrameCallback`'te (BİR FRAME SONRA) çalışıyor
+      — İLK karede `photoPath` HÂLÂ eski/geçersiz path'i taşıyor olabilir. `_SafeFileImage`'ın
+      KENDİ `existsSync()` kontrolü (build() içinde SENKRON) bu ilk karede bile crash'i önlüyor —
+      reconcile "kalıcı temizlik", `_SafeFileImage`/`_hasReadablePhoto` "anlık/senkron güvenlik ağı"
+      sağlıyor, ikisi BİRLİKTE tutuluyor.
+    - **Test:** `manifest_provider_test.dart`/`profile_provider_test.dart`'a YENİ birer grup
+      (`Directory.systemTemp.createTempSync(...)` ile GERÇEK geçici dosyalar oluşturup/silen,
+      `existsSync()` kontrolünün GERÇEK dosya sistemi davranışına karşı doğrulandığı testler —
+      diskte var olmayan path `null`'a çevrilir + kayıt/niyet metni SİLİNMEZ, GERÇEKTEN var olan
+      path'e DOKUNULMAZ, değişiklik yoksa `notifyListeners` GEREKSİZ çağrılmaz, kalıcı depoya
+      yazılıp yeniden başlatmada `null` olarak hatırlanır). `flutter test` tam yeşil (549/550,
+      yalnızca önceden belgelenmiş flake hariç).
+    - **Gerçek cihazda GÖRSEL doğrulama bu turda YAPILMADI** — kullanıcının kendi cihazında (bir
+      SONRAKİ Play Store sürümünden sonra) kendi bildirdiği senaryoyu (Google hesabından çıkıp
+      geri girme) tekrarlayıp fotoğrafların artık ÇÖKME OLMADAN "kişi"/"kırık resim" ikonuna
+      (fotoğraf hiç eklenmemiş gibi TEMİZ bir görünüme) döndüğünü doğrulaması gerekiyor — fotoğraf
+      GERİ GELMEZ (bu, Firebase Storage entegrasyonu OLMADAN mimari olarak mümkün değil), yalnızca
+      arayüz artık kırık/tutarsız görünmüyor.
 - `ZiboShareCard`: 9:16 (Instagram/TikTok Hikaye) oranında, **sabit mantıksal boyutlu (450×800,
   2026 güncellemesi — eskiden 360×640, bkz. altta)** kart — logo sol üstte, söz kartın **tam
   ortasında**, yarı saydam koyu yuvarlak köşeli bir panelin üzerinde (arka plan gradyanı/rengi ne

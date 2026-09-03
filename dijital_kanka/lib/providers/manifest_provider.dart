@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -87,7 +88,7 @@ class ManifestProvider extends ChangeNotifier {
           (raw) => ManifestEntry(
             id: (raw as Map<String, dynamic>)['id'] as String,
             date: DateTime.parse(raw['date'] as String),
-            photoPath: raw['photoPath'] as String,
+            photoPath: raw['photoPath'] as String?,
             intentionText: raw['intentionText'] as String,
           ),
         ),
@@ -175,5 +176,46 @@ class ManifestProvider extends ChangeNotifier {
     notifyListeners();
     _save();
     return !alreadyClaimed;
+  }
+
+  /// **2026 bug düzeltmesi — Crashlytics'teki EN BÜYÜK tekrarlayan hata,
+  /// bkz. CLAUDE.md "Manifest Günlüğü ↔ Profil fotoğrafı" bölümü.**
+  /// "Cihazlar arası fotoğraf taşınmaz" sınırlaması yüzünden (yalnızca
+  /// `photoPath` STRING'i Firestore'a senkronize ediliyor, dosya baytları
+  /// DEĞİL) bir hesap değişiminden/eski oturumdan gelen kayıt, BU cihazda
+  /// hiç var OLMAMIŞ bir dosyaya işaret edebilir. `manifest_journal_
+  /// screen.dart`'taki `_SafeFileImage` bu durumda artık ÇÖKMÜYOR (kırık
+  /// resim ikonuna düşüyor) ama entry HÂLÂ o geçersiz path'i kalıcı olarak
+  /// taşımaya devam ediyordu. `RootScreen`'in her açılış/öne-gelişinde
+  /// (`AppStreakProvider.recordOpenForToday()` ile AYNI "reconcile-on-
+  /// resume" deseni) çağrılır — dosyası artık diskte OLMAYAN her kaydın
+  /// `photoPath`'ini kalıcı olarak `null`'a çevirir, ekran "fotoğraf
+  /// kaybolmuş" (kırık resim) durumuna sabit şekilde döner. Fotoğraf/
+  /// kaydın kendisi (niyet metni) GERİ GETİRİLMİYOR/SİLİNMİYOR — yalnızca
+  /// kırık dosya referansı temizleniyor.
+  void reconcileMissingPhotos() {
+    var changed = false;
+    for (var i = 0; i < _entries.length; i++) {
+      final entry = _entries[i];
+      final path = entry.photoPath;
+      if (path == null) continue;
+      bool exists;
+      try {
+        exists = File(path).existsSync();
+      } catch (_) {
+        exists = false;
+      }
+      if (exists) continue;
+      _entries[i] = ManifestEntry(
+        id: entry.id,
+        date: entry.date,
+        photoPath: null,
+        intentionText: entry.intentionText,
+      );
+      changed = true;
+    }
+    if (!changed) return;
+    notifyListeners();
+    _save();
   }
 }

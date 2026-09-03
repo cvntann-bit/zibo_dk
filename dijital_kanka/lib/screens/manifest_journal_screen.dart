@@ -490,12 +490,20 @@ class _BrokenImagePlaceholder extends StatelessWidget {
 class _SafeFileImage extends StatelessWidget {
   const _SafeFileImage({required this.path, required this.fit});
 
-  final String path;
+  /// **2026 güncellemesi — nullable'a çevrildi.** `ManifestEntry.photoPath`
+  /// artık `ManifestProvider.reconcileMissingPhotos()` tarafından `null`'a
+  /// çevrilebiliyor (bkz. o metodun dokümantasyonu) — `null` iken bu widget
+  /// dosya sistemine HİÇ dokunmadan doğrudan `_BrokenImagePlaceholder`'a
+  /// düşer, `path == null` ile "dosya var ama okunamıyor" durumu AYNI
+  /// görsel sonuca (kırık resim ikonu) varır.
+  final String? path;
   final BoxFit fit;
 
   bool get _exists {
+    final p = path;
+    if (p == null) return false;
     try {
-      return File(path).existsSync();
+      return File(p).existsSync();
     } catch (_) {
       return false;
     }
@@ -505,7 +513,7 @@ class _SafeFileImage extends StatelessWidget {
   Widget build(BuildContext context) {
     if (!_exists) return const _BrokenImagePlaceholder();
     return Image.file(
-      File(path),
+      File(path!),
       fit: fit,
       errorBuilder: (context, error, stackTrace) =>
           const _BrokenImagePlaceholder(),

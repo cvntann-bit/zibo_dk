@@ -200,6 +200,12 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
       // Gizli/Eğlenceli Rozetler — "Gece Kuşu"/"Erken Kuş" sayaçları,
       // `recordOpenForToday()` ile AYNI tetikleme anı (soğuk başlangıç).
       context.read<HiddenBadgeProvider>().recordOpenForCurrentTime();
+      // **2026 bug düzeltmesi — Crashlytics'teki EN BÜYÜK tekrarlayan hata**
+      // (bkz. CLAUDE.md "Manifest Günlüğü ↔ Profil fotoğrafı" bölümü) —
+      // `recordOpenForToday()` ile AYNI tetikleme anı (soğuk başlangıç).
+      // Dosyası artık cihazda OLMAYAN fotoğraf referanslarını temizler.
+      context.read<ManifestProvider>().reconcileMissingPhotos();
+      context.read<ProfileProvider>().reconcileMissingPhoto();
       _badgeCoordinator = BadgeCoordinator(
         badges: context.read<BadgeProvider>(),
         goals: context.read<GoalsProvider>(),
@@ -331,6 +337,13 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
       // Actions çalıştırmasında) artırılan `successfulReferralCount`'un
       // istemciye yansıması için AYNI "reconcile-on-resume" tetikleyicisi.
       context.read<ReferralProvider>().refresh();
+      // Kırık fotoğraf referansları — bkz. yukarıdaki `initState`'teki AYNI
+      // çağrının dokümantasyonu (CLAUDE.md "Manifest Günlüğü ↔ Profil
+      // fotoğrafı" bölümü) — uygulama HER öne geldiğinde tazeleniyor,
+      // yalnızca soğuk başlangıçta DEĞİL (hesap değiştirip/çıkış yapıp geri
+      // dönmek uygulamayı kapatmadan da olabiliyor).
+      context.read<ManifestProvider>().reconcileMissingPhotos();
+      context.read<ProfileProvider>().reconcileMissingPhoto();
       // Kurucu Üye rozeti — bkz. `_maybeClaimFounderBadge()` dokümantasyonu.
       unawaited(_maybeClaimFounderBadge());
     }

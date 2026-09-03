@@ -5,6 +5,8 @@
 // deseniyle aynı, ama artık GÜN düzeyinde), gün değişince yeniden
 // kazanılabilmeli ve kayıtlar kalıcı olmalı.
 
+import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -152,5 +154,69 @@ void main() {
         expect(provider.hasEntryToday, isTrue);
       },
     );
+
+    group('reconcileMissingPhotos (2026 — Crashlytics bug düzeltmesi)', () {
+      late Directory tempDir;
+
+      setUp(() {
+        tempDir = Directory.systemTemp.createTempSync('manifest_reconcile_test_');
+      });
+
+      tearDown(() {
+        if (tempDir.existsSync()) tempDir.deleteSync(recursive: true);
+      });
+
+      test(
+        'diskte GERÇEKTEN var olmayan bir photoPath kalıcı olarak null\'a '
+        'çevrilir, kayıt (niyet metni) SİLİNMEZ',
+        () async {
+          provider.addEntry(
+            photoPath: '${tempDir.path}/hic-var-olmadi.jpg',
+            intentionText: 'Bu niyet kalmalı',
+          );
+          expect(provider.history.single.photoPath, isNotNull);
+
+          provider.reconcileMissingPhotos();
+
+          expect(provider.history.single.photoPath, isNull);
+          expect(provider.history.single.intentionText, 'Bu niyet kalmalı');
+        },
+      );
+
+      test('diskte GERÇEKTEN var olan bir photoPath\'e DOKUNULMAZ', () {
+        final realFile = File('${tempDir.path}/gercek.jpg')..writeAsBytesSync([1, 2, 3]);
+        provider.addEntry(photoPath: realFile.path, intentionText: 'Gerçek fotoğraf');
+
+        provider.reconcileMissingPhotos();
+
+        expect(provider.history.single.photoPath, realFile.path);
+      });
+
+      test('kalıcı depoya yazılır — yeniden başlatmada null olarak hatırlanır', () async {
+        provider.addEntry(
+          photoPath: '${tempDir.path}/hic-var-olmadi.jpg',
+          intentionText: 'Niyet',
+        );
+        provider.reconcileMissingPhotos();
+        await Future<void>.delayed(Duration.zero);
+
+        final restarted = ManifestProvider(now: () => currentDate);
+        await Future<void>.delayed(Duration.zero);
+
+        expect(restarted.history.single.photoPath, isNull);
+      });
+
+      test('değişiklik yoksa notifyListeners GEREKSİZ yere ÇAĞRILMAZ', () {
+        final realFile = File('${tempDir.path}/gercek.jpg')..writeAsBytesSync([1]);
+        provider.addEntry(photoPath: realFile.path, intentionText: 'Niyet');
+
+        var notifyCount = 0;
+        provider.addListener(() => notifyCount++);
+
+        provider.reconcileMissingPhotos();
+
+        expect(notifyCount, 0);
+      });
+    });
   });
 }

@@ -21,7 +21,17 @@ class ManifestEntry {
   /// Fotoğrafın cihazdaki KALICI yerel dosya yolu (uygulamanın belge
   /// dizini altında — bkz. `PhotoPickerService.saveToPermanentStorage`).
   /// Sunucuya yüklenmez, yalnızca bu cihazda saklanır.
-  final String photoPath;
+  ///
+  /// **2026 güncellemesi — nullable'a çevrildi (`ManifestProvider.
+  /// addEntry()`'de kayıt OLUŞTURULURKEN hâlâ ZORUNLU/dolu).** "Cihazlar
+  /// arası fotoğraf taşınmaz" sınırlaması yüzünden (bkz. sınıfın kendi
+  /// dokümantasyonu) bir hesap değişiminden gelen kayıt BU cihazda hiç var
+  /// olmamış bir path taşıyabiliyordu — Crashlytics'teki en büyük
+  /// tekrarlayan crash buradan geliyordu (bkz. CLAUDE.md "Manifest Günlüğü
+  /// ↔ Profil fotoğrafı" bölümü). `ManifestProvider.reconcileMissingPhotos()`
+  /// artık dosya diskte YOKSA bu alanı kalıcı olarak `null`'a çeviriyor —
+  /// `null`, "bu kaydın fotoğrafı SONRADAN kayboldu" anlamına geliyor.
+  final String? photoPath;
 
   final String intentionText;
 }

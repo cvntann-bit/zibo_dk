@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 
 import '../data/address_terms.dart';
@@ -107,6 +110,36 @@ class ProfileProvider extends ChangeNotifier {
     _photoPath = path;
     notifyListeners();
     await _save();
+  }
+
+  /// **2026 bug düzeltmesi — Crashlytics'teki EN BÜYÜK tekrarlayan hata,
+  /// bkz. CLAUDE.md "Manifest Günlüğü ↔ Profil fotoğrafı" bölümü.**
+  /// "Cihazlar arası fotoğraf taşınmaz" sınırlaması yüzünden (yalnızca
+  /// `photoPath` STRING'i Firestore'a senkronize ediliyor, dosya baytları
+  /// DEĞİL) bir hesap değişiminden/eski oturumdan gelen kayıt, BU cihazda
+  /// hiç var OLMAMIŞ bir dosyaya işaret edebilir — `manifest_journal_
+  /// screen.dart`'taki `_SafeFileImage`/`profile_screen.dart`'taki
+  /// `_hasReadablePhoto` bu durumda artık ÇÖKMÜYOR (kırık/kişi ikonuna
+  /// düşüyor) ama `_photoPath` HÂLÂ o geçersiz path'i kalıcı olarak
+  /// taşımaya devam ediyordu. `RootScreen`'in her açılış/öne-gelişinde
+  /// (`AppStreakProvider`/`ManifestProvider.reconcileMissingPhotos()` ile
+  /// AYNI "reconcile-on-resume" deseni) çağrılır — dosya artık diskte
+  /// yoksa `_photoPath`'i kalıcı olarak `null`'a çevirir, ekran "kişi"
+  /// ikonuna (fotoğraf HİÇ eklenmemiş durumla AYNI görünüme) döner.
+  /// Fotoğraf GERİ GETİRİLMİYOR — yalnızca kırık referans temizleniyor.
+  void reconcileMissingPhoto() {
+    final path = _photoPath;
+    if (path == null) return;
+    bool exists;
+    try {
+      exists = File(path).existsSync();
+    } catch (_) {
+      exists = false;
+    }
+    if (exists) return;
+    _photoPath = null;
+    notifyListeners();
+    unawaited(_save());
   }
 
   /// [value] boşsa (kullanıcı hitap kutusunu tamamen silerse) varsayılana
