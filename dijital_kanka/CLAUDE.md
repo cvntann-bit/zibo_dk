@@ -4847,13 +4847,45 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
   tamamlanan/durdurulan oturumu BİRİKTİRİR (üzerine yazmaz); `durationSeconds < 60` ise (kaza
   eseri anlık başlat/durdur) sessizce reddedilip `false` döner — `WaterProvider`'daki "bariz-
   anlamsız girdiyi reddet" deseni. `totalFocusSeconds` tüm oturumların toplamı.
-- **`FocusTimerScreen`** — dört mod (`Serbest`/`15 dk`/`25 dk`/`45 dk`, `ChoiceChip` seçici,
-  çalışırken devre dışı), ortada dairesel bir ilerleme göstergesiyle sarılı büyük bir `MM:SS`
-  sayaç (`Timer.periodic(1sn)`), "Başlat"/"Duraklat" + "Bitir ve Kaydet" + (ilerleme varsa)
-  "Sıfırla" butonları, altta toplam odak süresi kartı. Belirli süreli modda hedefe ulaşınca
-  OTOMATİK kaydediliyor (`_finish()`); Serbest modda kullanıcı elle "Bitir ve Kaydet"e basmalı.
+- **`FocusTimerScreen`** — dört mod (`Serbest`/`15 dk`/`25 dk`/`45 dk`, `ChoiceChip` seçici) + bir
+  "Başlat" butonu (kurulum/setup ekranı, normal tema renkleriyle). Belirli süreli modda hedefe
+  ulaşınca OTOMATİK kaydediliyor (`_finish()`); Serbest modda kullanıcı "Bitir"e basmalı.
   Kaydedilince kazanılan dakika kadar XP veriliyor (`(duration/60).floor().clamp(1, 60)` — tek bir
   oturumun aşırı büyük bir seviye atlamasına yol açmaması için üst sınır) + bir SnackBar.
+  - **2026 GÜNCELLEMESİ — çalışırken ekran TAMAMEN KARANLIK/immersive, kullanıcının açık
+    isteğiyle.** "Başladığında ekran kapkaranlık olsun, sadece sayaç gözüksün, dikkat dağıtıcı
+    hiçbir şey olmasın" — `build()` artık `_isRunning`'e göre TAMAMEN FARKLI iki görünüme
+    dallanıyor: `_buildSetupView` (yukarıdaki, mod seçici + "Başlat") ve `_buildImmersiveView`
+    (`Scaffold(backgroundColor: Colors.black)`, AppBar YOK, mod seçici/toplam süre kartı gibi
+    HİÇBİR ŞEY görünmüyor — yalnızca ortada parlayan bir halka içinde büyük bir `MM:SS` sayaç,
+    altında soluk (`Opacity(0.4)`) bir "Bitir ve Kaydet" metni, dokununca `_finish()`'i çağırıyor).
+    **"Duraklat" BİLEREK TAMAMEN KALDIRILDI** — oturum ya çalışıyor ya bitmiş, ara (duraklatılmış)
+    durum yok; kullanıcının minimalist isteğiyle tutarlı bir basitleştirme. `SystemUiOverlayStyle.
+    light` ile durum çubuğu ikonları da (saat/pil vb.) açık renge dönüp siyah zeminle bütünleşiyor
+    — sistem çubuklarını TAMAMEN gizleyen bir "immersive mode" BİLEREK kullanılmadı (çıkış akışını
+    karmaşıklaştırma riski, düşük fayda).
+    - **`_GlowRing`** (YENİ, private) — dairesel ilerleme göstergesinin ETRAFINA, kullanıcının
+      "yuvarlak sayacın içinde dolan renkli şey biraz parlama efekti" isteğiyle, rengin kendisiyle
+      bulanık bir `BoxShadow` halesi ekliyor (gerçek bir shader/blur efekti YERİNE — bu ölçekte
+      gereksiz maliyetli — ucuz ve yeterince inandırıcı bir teknik). Renk (`_immersiveAccentColor`,
+      sabit bir Zibo altın tonu `0xFFE8B44A`) aktif temadan BİLEREK BAĞIMSIZ — zemin HER ZAMAN düz
+      siyah olduğu için rengin temaya göre değişmesi (ör. bir Premium temanın parçacık rengiyle
+      çarpışması) tutarsız görünürdü, `Zibo ADS` banner'ının "aktif temadan bağımsız sabit marka
+      rengi" felsefesiyle AYNI karar.
+    - **`_FadingTimerText`** (YENİ, private) — kullanıcının "sayaç saniyesi dakikası geçişinde
+      fade efekti" isteği: `AnimatedSwitcher(duration: 280ms)` + `ValueKey(text)`, HER saniye
+      değişiminde metni "yeni" saydırıp varsayılan `FadeTransition` geçişini tetikliyor — ekstra
+      bir `transitionBuilder` YAZILMADI, `AnimatedSwitcher`'ın varsayılanı zaten tam istenen efekt.
+    - **"Hareketli temalara dikkat et" — gerçek bir bilinen sınırlamayı hedefleyen bilinçli bir
+      düzeltme.** Bu ekranın ömrü boyunca `isHomeTabActive` (bkz. `tab_navigation.dart`) BİLEREK
+      `false`'a sabitlenip (`initState`) çıkışta ESKİ değerine geri döndürülüyor (`dispose`).
+      **Neden gerekli:** Ana Sayfa'da aktif bir Premium/Animasyonlu tema varsa (bkz.
+      `AnimatedThemeOverlay`), o parçacık katmanı yalnızca sekme GEÇİŞLERİNDE
+      (`RootScreen._setSelectedIndex`) güncellenen bu bayrağa bakıyor — bir ekran PUSH etmek
+      bayrağı DEĞİŞTİRMEZ (CLAUDE.md "Premium/Animasyonlu temalar" bölümündeki ÖNCEDEN dokümante
+      edilmiş bilinen sınırlama), yani Ana Sayfa'dan açılan bu ekranın ÜSTÜNE kar/galaksi/konfeti
+      gibi bir efekt çizilmeye devam edebilirdi — tam da bu ekranın önlemeye çalıştığı türden bir
+      dikkat dağınıklığı, "kapkaranlık" hissini bozardı.
 - **Modül menüsü girişi** — Z butonu modül menüsüne (`modules_menu_sheet.dart`) YEDİNCİ bir
   `_ModuleCard` olarak eklendi (`Icons.timer_outlined`), Para ve Birikim kartının hemen ardına.
 - **Profil'deki "Odak Süresi" satırı — BİLİNÇLİ bir kapsam kararı: mevcut 4 kategorili
@@ -4866,16 +4898,17 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
   `_formatFocusDuration(seconds)` ile "{saat} sa {dakika} dk" / "{dakika} dk" biçiminde
   gösteriliyor. **Bu kapsam kararı kullanıcıya AÇIKÇA FLAGLENMELİ** — istenirse ileride gerçek
   5. kategori olarak `ProfileStats`'a taşınabilir, ama bu daha büyük/riskli bir refactor gerektirir.
-- **Test:** YENİ `test/focus_provider_test.dart` (6 test — boş başlangıç, 60sn altı reddi, geçerli
+- **Test:** `test/focus_provider_test.dart` (6 test — boş başlangıç, 60sn altı reddi, geçerli
   oturum kaydı, birden fazla oturumun BİRİKTİĞİ + en-yeni-önce sıralandığı, toplam süre hesaplaması,
-  kalıcılık). Ekranın kendisi (Timer-tabanlı UI) için ayrı bir widget testi YAZILMADI —
-  `Timer.periodic` + gerçek zaman geçişini test etmek `manifest_journal_screen_test.dart` gibi
-  sahte servis enjeksiyonu gerektirmeyen basit bir ekran için kapsam dışı bırakıldı, sağlam
-  provider testi + kod incelemesiyle yetinildi.
-- **Gerçek cihazda GÖRSEL doğrulama bu turda YAPILMADI.** **Kullanıcının kendi cihazında
-  doğrulaması gereken:** bir süre seçip başlatıp durdurunca oturumun kaydedildiği, Profil'deki
-  "Odak Süresi" satırının GERÇEKTEN arttığı, 25/45 dakikalık modların hedefe ulaşınca OTOMATİK
-  kaydettiği.
+  kalıcılık) + YENİ `test/focus_timer_screen_test.dart` (4 test — kurulum ekranının mod seçici/
+  "Başlat" gösterdiği, "Başlat"a basınca ekranın karanlık moda geçip mod seçici/toplam süre
+  kartının GİZLENDİĞİ + `Scaffold.backgroundColor == Colors.black` olduğu, `isHomeTabActive`'in
+  ekran açıkken `false`'a sabitlenip kapanınca eski değerine döndüğü, sayacın ilerleyip "Bitir ve
+  Kaydet" ile kaydedildiği).
+- **Gerçek cihazda GÖRSEL doğrulama bu turda debug APK ile YAPILDI** (kullanıcı isteğiyle) —
+  kullanıcının kendi cihazında kontrol ettiği: karanlık modun gerçekten tam siyah olduğu, halkanın
+  parlama efektinin görünür olduğu, sayaç geçişlerinin fade ile yumuşak olduğu, ve (varsa) aktif
+  bir Premium/Animasyonlu temanın parçacık efektinin bu ekranın ÜSTÜNE SIZMADIĞI.
 
 ## Instagram Takip Kartı ve Ödülü ([instagram_follow_provider.dart](lib/providers/instagram_follow_provider.dart), [instagram_follow_card.dart](lib/widgets/instagram_follow_card.dart))
 
