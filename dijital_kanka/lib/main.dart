@@ -25,10 +25,12 @@ import 'providers/custom_messages_provider.dart';
 import 'providers/daily_rewards_provider.dart';
 import 'providers/dream_journal_provider.dart';
 import 'providers/favorite_quotes_provider.dart';
+import 'providers/focus_provider.dart';
 import 'providers/founder_badge_provider.dart';
 import 'providers/goals_provider.dart';
 import 'providers/gratitude_provider.dart';
 import 'providers/hidden_badge_provider.dart';
+import 'providers/instagram_follow_provider.dart';
 import 'providers/locale_provider.dart';
 import 'providers/manifest_provider.dart';
 import 'providers/money_provider.dart';
@@ -43,6 +45,7 @@ import 'providers/sound_effects_provider.dart';
 import 'providers/theme_provider.dart';
 import 'providers/trusted_time_provider.dart';
 import 'providers/water_provider.dart';
+import 'providers/xp_provider.dart';
 import 'providers/zibo_pose_provider.dart';
 import 'utils/ad_free_promo_trigger.dart';
 import 'utils/auth_switch.dart';
@@ -62,6 +65,7 @@ import 'widgets/ad_blur_overlay.dart';
 import 'widgets/animated_theme_overlay.dart';
 import 'widgets/app_loading_screen.dart';
 import 'widgets/badge_celebration_overlay.dart';
+import 'widgets/level_celebration_overlay.dart';
 import 'widgets/theme_fade_overlay.dart';
 
 // Zibo'nun tombul, sıcak, samimi karakterine uygun bal/hardal/krem paleti
@@ -442,6 +446,12 @@ class DijitalKankaApp extends StatelessWidget {
         // alma seslerini açık/kapalı tercihine bağlamak için `context.read<
         // SoundEffectsProvider>()` kullanıyor (bkz. altta).
         ChangeNotifierProvider(create: (_) => SoundEffectsProvider(uid: uid)),
+        // 2026 yeni özellik — Level/XP Sistemi (bkz. CLAUDE.md "Level/XP
+        // Sistemi" bölümü). `SoundEffectsProvider` ile AYNI gerekçeyle
+        // `CoinProvider`'dan ÖNCE olmalı — `CoinProvider`'ın `create`
+        // callback'i kazanılan HER ZC için otomatik XP vermek üzere
+        // `context.read<XpProvider>()` kullanıyor (bkz. altta).
+        ChangeNotifierProvider(create: (_) => XpProvider(uid: uid)),
         ChangeNotifierProvider(
           create: (context) => CoinProvider(
             uid: uid,
@@ -451,6 +461,7 @@ class DijitalKankaApp extends StatelessWidget {
             isSoundEnabled: () =>
                 context.read<SoundEffectsProvider>().enabled,
             now: () => context.read<TrustedTimeProvider>().now(),
+            onXpEarned: (amount) => context.read<XpProvider>().addXp(amount),
           ),
         ),
         ChangeNotifierProvider(create: (_) => CostumeProvider(uid: uid)),
@@ -478,6 +489,17 @@ class DijitalKankaApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => DreamJournalProvider(uid: uid)),
         ChangeNotifierProvider(
           create: (_) => FavoriteQuotesProvider(uid: uid),
+        ),
+        // 2026 yeni özellik — Odak Sayacı modülü (bkz. CLAUDE.md).
+        ChangeNotifierProvider(
+          create: (context) => FocusProvider(
+            now: () => context.read<TrustedTimeProvider>().now(),
+            uid: uid,
+          ),
+        ),
+        // 2026 yeni özellik — Instagram Takip Kartı ve Ödülü (bkz. CLAUDE.md).
+        ChangeNotifierProvider(
+          create: (_) => InstagramFollowProvider(uid: uid),
         ),
         ChangeNotifierProvider(
           create: (context) => GoalsProvider(
@@ -588,16 +610,18 @@ class DijitalKankaApp extends StatelessWidget {
             // push edilince boyanmaması gotcha'sı, `BadgeCelebrationOverlay`
             // dokümantasyonu) konfeti/kutlama popup'ı görünsün diye.
             builder: (context, child) => BadgeCelebrationOverlay(
-              child: AdBlurOverlay(
-                child: ThemeFadeOverlay(
-                  themeMode: themeProvider.themeMode,
-                  equippedThemeId: equippedId,
-                  child: AnimatedThemeOverlay(
-                    animationType:
-                        equippedTheme?.animationType ??
-                        ThemeAnimationType.none,
-                    isDark: themeProvider.isDarkMode,
-                    child: child!,
+              child: LevelCelebrationOverlay(
+                child: AdBlurOverlay(
+                  child: ThemeFadeOverlay(
+                    themeMode: themeProvider.themeMode,
+                    equippedThemeId: equippedId,
+                    child: AnimatedThemeOverlay(
+                      animationType:
+                          equippedTheme?.animationType ??
+                          ThemeAnimationType.none,
+                      isDark: themeProvider.isDarkMode,
+                      child: child!,
+                    ),
                   ),
                 ),
               ),

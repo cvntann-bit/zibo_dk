@@ -10,6 +10,7 @@ import '../data/share_card_text_styles.dart';
 import '../l10n/app_localizations.dart';
 import '../providers/badge_provider.dart';
 import '../providers/referral_provider.dart';
+import '../providers/xp_provider.dart';
 import '../services/share_service.dart';
 import 'zibo_share_card.dart';
 
@@ -77,6 +78,10 @@ class _ZiboShareSheetState extends State<ZiboShareSheet> {
         successfulReferralCount:
             context.read<ReferralProvider>().successfulReferralCount,
       );
+      // 2026 yeni özellik — Level/XP Sistemi: bir paylaşım tamamlanma
+      // koşulundan bağımsız (coin VERMEYEN bir aksiyon), her başarılı
+      // paylaşımda sabit XP (bkz. CLAUDE.md "Level/XP Sistemi" bölümü).
+      context.read<XpProvider>().addXp(10);
       Navigator.of(context).pop();
     } catch (_) {
       if (!mounted) return;

@@ -2217,5 +2217,146 @@
   "badgeRequirementBalanceMaster": "Aynı gün içinde uygulamadaki 7 modülün hepsine kayıt ekle",
   "@badgeRequirementBalanceMaster": {
     "description": "Denge Ustası rozetinin kazanma koşulu"
+  },
+  "levelUpCelebrationTitle": "Seviye {level}'e Ulaştın!",
+  "@levelUpCelebrationTitle": {
+    "description": "Seviye atlama kutlama kartının başlığı",
+    "placeholders": {
+      "level": {
+        "type": "int"
+      }
+    }
+  },
+  "levelUpCelebrationBody": "Zibo ile harika gidiyorsun, büyümeye devam et!",
+  "@levelUpCelebrationBody": {
+    "description": "Seviye atlama kutlama kartının açıklama metni"
+  },
+  "levelUpShareButton": "Paylaş",
+  "@levelUpShareButton": {
+    "description": "Seviye atlama kartındaki paylaşma butonu"
+  },
+  "levelUpCloseButton": "Kapat",
+  "@levelUpCloseButton": {
+    "description": "Seviye atlama kartındaki kapatma butonu"
+  },
+  "levelUpShareMessage": "Zibo'da Seviye {level}'e ulaştım! 🎉",
+  "@levelUpShareMessage": {
+    "description": "Seviye atlama paylaşım kartının mesaj metni",
+    "placeholders": {
+      "level": {
+        "type": "int"
+      }
+    }
+  },
+  "profileLevelRowTitle": "Seviyen",
+  "@profileLevelRowTitle": {
+    "description": "Profildeki seviye/XP ilerleme kartının başlığı"
+  },
+  "profileLevelProgressLabel": "{current}/{needed} XP",
+  "@profileLevelProgressLabel": {
+    "description": "Profildeki seviye ilerleme çubuğunun altında gösterilen XP metni",
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "needed": {
+        "type": "int"
+      }
+    }
+  },
+  "focusTimerTooltip": "Odak Sayacı",
+  "@focusTimerTooltip": {
+    "description": "Z butonu modül menüsündeki Odak Sayacı kartının başlığı"
+  },
+  "focusModuleDescription": "Odaklanma sürelerini takip et, üretkenliğini artır.",
+  "@focusModuleDescription": {
+    "description": "Z butonu modül menüsündeki Odak Sayacı kartının açıklama metni"
+  },
+  "focusTimerScreenTitle": "Odak Sayacı",
+  "@focusTimerScreenTitle": {
+    "description": "Odak Sayacı sayfasının AppBar başlığı"
+  },
+  "focusModeFreeLabel": "Serbest",
+  "@focusModeFreeLabel": {
+    "description": "Odak Sayacı'nın serbest kronometre modu seçici etiketi"
+  },
+  "focusModeMinutesLabel": "{minutes} dk",
+  "@focusModeMinutesLabel": {
+    "description": "Odak Sayacı'nın belirli süreli (Pomodoro tarzı) mod seçici etiketi",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "focusStartButton": "Başlat",
+  "@focusStartButton": {
+    "description": "Odak Sayacı'nı başlatma butonu"
+  },
+  "focusPauseButton": "Duraklat",
+  "@focusPauseButton": {
+    "description": "Odak Sayacı'nı duraklatma butonu"
+  },
+  "focusResumeButton": "Devam Et",
+  "@focusResumeButton": {
+    "description": "Duraklatılmış Odak Sayacı'nı devam ettirme butonu"
+  },
+  "focusFinishButton": "Bitir ve Kaydet",
+  "@focusFinishButton": {
+    "description": "Odak seansını bitirip kaydetme butonu"
+  },
+  "focusResetButton": "Sıfırla",
+  "@focusResetButton": {
+    "description": "Odak seansını kaydetmeden sıfırlama butonu"
+  },
+  "focusSessionSavedMessage": "{minutes} dakika odaklandın! Harika iş.",
+  "@focusSessionSavedMessage": {
+    "description": "Bir odak seansı kaydedilince gösterilen SnackBar metni",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "focusSessionTooShortMessage": "En az 1 dakika odaklanmalısın.",
+  "@focusSessionTooShortMessage": {
+    "description": "Bir dakikadan kısa bir odak seansı kaydedilmeye çalışılınca gösterilen mesaj"
+  },
+  "focusTotalTimeLabel": "Toplam Odak Süren",
+  "@focusTotalTimeLabel": {
+    "description": "Odak Sayacı sayfasındaki toplam odak süresi etiketi"
+  },
+  "profileFocusRowTitle": "Odak Süresi",
+  "@profileFocusRowTitle": {
+    "description": "Profildeki 'Zibo ile Bağın' listesinde toplam odak süresini gösteren satırın başlığı"
+  },
+  "profileFocusRowSubtitle": "Toplam {durationText} odaklandın",
+  "@profileFocusRowSubtitle": {
+    "description": "Profildeki Odak Süresi satırının alt metni",
+    "placeholders": {
+      "durationText": {
+        "type": "String"
+      }
+    }
+  },
+  "instagramFollowCardTitle": "Bizi Instagram'da Takip Edin",
+  "@instagramFollowCardTitle": {
+    "description": "Instagram takip kartının başlığı"
+  },
+  "instagramFollowCardBody": "@zibo.app hesabımızı takip et; 100 ZC, bir tema ve bir kostüm kazan!",
+  "@instagramFollowCardBody": {
+    "description": "Instagram takip kartının açıklama metni"
+  },
+  "instagramFollowOpenButton": "Instagram'ı Aç",
+  "@instagramFollowOpenButton": {
+    "description": "Instagram takip kartındaki Instagram'ı açma butonu"
+  },
+  "instagramFollowClaimButton": "Takip Ettim",
+  "@instagramFollowClaimButton": {
+    "description": "Instagram takip kartındaki ödül talep butonu"
+  },
+  "instagramFollowRewardGrantedMessage": "Ödülün hesabına eklendi! 🎉",
+  "@instagramFollowRewardGrantedMessage": {
+    "description": "Instagram takip ödülü verilince gösterilen SnackBar metni"
   }
 }

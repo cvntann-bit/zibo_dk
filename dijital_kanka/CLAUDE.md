@@ -2352,6 +2352,11 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
 - `share_plus`'ın modern (deprecated olmayan) API'si kullanılıyor: `SharePlus.instance.share
   (ShareParams(files: [XFile.fromData(...)], fileNameOverrides: [...], text: ...))` —
   eski `Share.shareXFiles` statik metodu artık `@Deprecated`.
+- **2026 yeni özellik — Level/XP Sistemi entegrasyonu: her BAŞARILI paylaşım +10 XP verir.**
+  `_share()`'in başarı dalında, Sosyal/Paylaşım Rozetleri'nin `reconcileSocialBadges` çağrısının
+  HEMEN ardından, `Navigator.pop()`'tan ÖNCE `context.read<XpProvider>().addXp(10)` çağrılıyor —
+  paylaşım coin VERMEYEN bir aksiyon olduğu için (`CoinProvider._earn()`'ün merkezi kancasından
+  GEÇMİYOR) doğrudan burada. Bkz. "Level/XP Sistemi" bölümü.
 
 ### Alt Gezinme Çubuğu ([main_bottom_bar.dart](lib/widgets/main_bottom_bar.dart), [z_floating_button.dart](lib/widgets/z_floating_button.dart), [modules_menu_sheet.dart](lib/widgets/modules_menu_sheet.dart))
 - **Tamamen kod-tabanlı — hiçbir özel görsele bağımlı DEĞİL.** Standart Flutter'ın
@@ -2643,6 +2648,28 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
   dönünce AppBar'daki bakiye +2 artmış). Gerçek cihazda tam akış (3 alanı doldur → kaydet → yeşil
   tik + kutlama kartı + SnackBar → bakiyenin 70'ten 72'ye çıktığı) `adb` ile doğrulandı (2026
   güncellemesinin görüntüle/düzenle akışı henüz cihazda AYRICA doğrulanmadı, yalnızca testlerle).
+- **2026 yeni özellik — örnek öneri metinleri (placeholder), her gün değişen.** Kullanıcı isteği:
+  bugünün formundaki üç metin kutusuna, kullanıcı yazmaya başlamadan önce ilham verici bir öneri
+  (`hintText`) gösterilsin, her gün değişsin. YENİ [gratitude_prompts.dart](lib/data/gratitude_prompts.dart)
+  — 27 Türkçe öneri (`gratitudePromptsTr`) + `gratitudePromptForField(DateTime, int)` saf/
+  deterministik fonksiyonu.
+  - **BİLEREK yalnızca Türkçe** — `zibo_event_messages.dart`'ın "TR only for now" kararıyla AYNI
+    gerekçe (kullanıcı yalnızca Türkçe örnek verdi, çeviri istenmedi) — `motivation_pools.dart`'ın
+    tam TR/EN/ES çevirisinden FARKLI, daha dar bir kapsam kararı.
+  - **Rotasyon deterministik gün-bazlı, gerçek rastgele DEĞİL** — `gratitudePromptForField(date,
+    fieldIndex)` yıl+ay+gün'den türeyen basit bir "gün sırası" + `fieldIndex * 9`'luk sabit bir
+    ofsetle (havuzun üçte biri, 27/3=9) havuzdan seçim yapıyor — üç alan AYNI ANDA farklı
+    önerilerle dolup HEPSİ birlikte, HER GÜN değişiyor. Gerçek rastgelelik/tekrar-önleme mekanizması
+    GEREKMEDİ çünkü placeholder yalnızca kullanıcı yazmaya BAŞLAMADAN ÖNCE görünüyor (normal
+    `TextField` placeholder davranışı, `hintText` metin girilince otomatik kayboluyor) —
+    `motivation_pools.dart`'taki gibi bir "art arda tekrar etmesin" garantisine ihtiyaç yok.
+  - **`gratitude_journal_screen.dart`'ın ana formundaki (bugünün girişi) ÜÇ `TextField`'a
+    eklendi** — `_GratitudeEditDialogContent`'in (geçmiş bir günü DÜZENLEME diyaloğu) alanlarına
+    BİLEREK eklenmedi, çünkü o alanlar zaten MEVCUT metinle dolu geliyor, placeholder hiç
+    görünmeyecekti.
+  - **Test:** YENİ `test/gratitude_prompts_test.dart` (5 test — havuz büyüklüğü/tekrarsızlığı, aynı
+    gün üç alanın farklı öneriler döndüğü, aynı gün+alan için deterministik olduğu, gün değişince
+    önerinin değiştiği, döndürülen her önerinin gerçekten havuzda olduğu).
 
 ### Günlük Ruh Hali Takibi ([mood_tracking_screen.dart](lib/screens/mood_tracking_screen.dart), [mood_provider.dart](lib/providers/mood_provider.dart), [mood.dart](lib/models/mood.dart), [mood_quotes.dart](lib/data/mood_quotes.dart))
 - **Yerleşim: alt çubuktaki Z butonunun açtığı modül menüsünden erişiliyor** (bkz. "Alt Gezinme
@@ -2706,6 +2733,13 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
     `find.text` finder'ı hem `Text` hem `EditableText` widget'larını aynı literal string için
     eşleştiriyor — bir alan hem yazılıp hem SONUÇ olarak başka bir yerde göründüğünde bu ikisi
     çakışıyor).
+- **2026 yeni özellik — Level/XP Sistemi entegrasyonu: günün İLK check-in'i +5 XP verir.**
+  `MoodProvider.setTodayMood()` coin VERMEDİĞİ için (`CoinProvider`'ı hiç bilmiyor) bu XP
+  `CoinProvider._earn()`'ün merkezi kancasından GEÇMİYOR — `mood_tracking_screen.dart`'taki YENİ
+  `_selectMood(mood)` yardımcısı, `setTodayMood()`'u çağırmadan ÖNCE `provider.todayMood == null`
+  kontrolü yapıp yalnızca GÜNÜN İLK seçiminde `context.read<XpProvider>().addXp(5)` çağırıyor —
+  aynı gün ruh halini DEĞİŞTİRMEK (üzerine yazma) ikinci bir XP tetiklemiyor. Bkz. "Level/XP
+  Sistemi" bölümü.
 
 ### Su Takibi ([water_tracking_screen.dart](lib/screens/water_tracking_screen.dart), [water_provider.dart](lib/providers/water_provider.dart), [water_entry.dart](lib/models/water_entry.dart), [water_quotes.dart](lib/data/water_quotes.dart))
 - **Yerleşim: alt çubuktaki Z butonunun açtığı modül menüsünden erişiliyor**, dördüncü `_ModuleCard`
@@ -4707,6 +4741,165 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
   tam 2 saniye sürüp konfetinin TAM o an başladığı, ve konfetinin artık düzgün bir "yağmur" değil
   gerçek bir "patlama" (üstten fışkırıp aşağı düşen, kalabalık) gibi göründüğü.
 
+## Level/XP Sistemi ([xp_level.dart](lib/models/xp_level.dart), [xp_provider.dart](lib/providers/xp_provider.dart), [level_up_signal.dart](lib/utils/level_up_signal.dart), [level_celebration_overlay.dart](lib/widgets/level_celebration_overlay.dart))
+
+- **2026 yeni özellik.** Kullanıcı isteği: uygulamanın yaptığı HER anlamlı aksiyon genel bir
+  seviye/XP puanı kazandırsın, belirli eşiklerde seviye atlansın, seviye atladığında kutlama
+  animasyonu + otomatik paylaşılabilir bir kart gösterilsin, Profil'de mevcut seviye + ilerleme
+  çubuğu görünsün.
+- **İlerleme eğrisi — [xp_level.dart](lib/models/xp_level.dart), saf/test edilebilir matematik.**
+  Level L'den L+1'e geçmek için gereken XP = `50*L` (doğrusal ARTAN maliyet — 1→2: 50, 2→3: 100,
+  9→10: 450) — kullanıcının "düşük seviyeler hızlı, yüksek seviyeler daha yavaş kazanılsın"
+  isteğini basit/öngörülebilir bir şekilde karşılıyor. `cumulativeXpForLevel(level)` bu doğrusal
+  serinin kapalı biçimi (`25*level*(level-1)`); `levelForTotalXp`/`levelProgressForTotalXp` bir
+  toplam XP'den seviye + seviye-içi ilerlemeyi (`LevelProgress{level, xpIntoLevel, xpForNextLevel,
+  fraction}`) hesaplıyor.
+- **`XpProvider`** — diğer basit provider'larla (`ReferralProvider`/`FavoriteQuotesProvider`) AYNI
+  `CloudStateStore` Varyant A (`{'totalXp': ...}`) deseni. `addXp(amount)` toplamı artırıp, bir veya
+  daha fazla seviye eşiği aşılırsa `pendingLevelUp` sinyaline ULAŞILAN YENİ seviyeyi yazıyor.
+- **XP kaynağı — İKİ yol:**
+  1. **`CoinProvider._earn()`'ün merkezi kancası (`onXpEarned`, `_isSoundEnabled` ile AYNI enjekte
+     edilebilir callback deseni — `CoinProvider` bir widget OLMADIĞI için `context.read<
+     XpProvider>()`'ı doğrudan çağıramıyor).** Kazanılan HER ZC kadar XP veriliyor (1:1) —
+     `_earn()`'ü çağıran TÜM mekanikler (günlük check-in, Şükran/Su/Manifest günlüğü, 7 günlük
+     hedef bonusu, günlük giriş ödülleri, rozet ödülleri, Şans Çarkı, referans, Instagram takip
+     ödülü) OTOMATİK olarak XP veriyor — hiçbir çağıran site'ye elle dokunmaya gerek KALMADI.
+     **İSTİSNA — `purchaseCoinPackage()`/yetim satın alma teslimi `awardXp: false` geçiyor:**
+     gerçek parayla coin SATIN ALMAK bir "başarı" değil, XP verilmesi yanıltıcı olurdu
+     (`playRewardSound: false` ile AYNI ayrım felsefesi).
+  2. **Coin VERMEYEN üç aksiyon için doğrudan `context.read<XpProvider>().addXp(...)` çağrıları:**
+     Ruh Hali Takibi'nin günün İLK check-in'i (+5, bkz. "Günlük Ruh Hali Takibi" bölümü), bir
+     paylaşımın başarıyla tamamlanması (+10, bkz. "Zibonu Paylaş" bölümü), bir Odak Sayacı
+     seansının kaydedilmesi (odaklanılan dakika kadar, en fazla 60 — bkz. "Odak Sayacı" bölümü).
+- **Kutlama — `LevelCelebrationOverlay`, `BadgeCelebrationOverlay` ile BİREBİR AYNI mimari.**
+  `MaterialApp.builder` zincirinde `BadgeCelebrationOverlay`'in İÇİNE sarılı (`main.dart`) —
+  `home:` içindeki içerik başka bir rota push edilince boyanmadığı için "HER YERDE" görünürlük bu
+  seviyede garanti ediliyor. `pendingLevelUp`'ı dinleyip değiştiğinde `GoalConfettiBurst` (Hedef
+  Tamamlama'daki AYNI widget, yeniden kullanıldı) + `ModalBarrier(dismissible: false)` + ortalanmış
+  bir kutlama kartı (Zibo görseli + "Seviye X'e Ulaştın!" + "Paylaş"/"Kapat") gösteriyor. `late
+  final AnimationController` `initState()`'te KOŞULSUZ oluşturuluyor — `BadgeCelebrationOverlay`'
+  deki AYNI dokümante edilmiş gotcha (hiç seviye atlanmadan dispose edilirse "Looking up a
+  deactivated widget's ancestor is unsafe" hatası).
+  - **"Paylaş" butonu DOĞRUDAN `showModalBottomSheet` ÇAĞIRAMIYOR** — bu overlay seviyesinin
+    `context`'i Navigator'ın ATASI DEĞİL (`BadgeCelebrationOverlay`'deki AYNI kısıtlama, bkz. o
+    widget'ın dokümantasyonu). `rootNavigatorKey` hack'i YERİNE (daha basit, `dailyRewardsPopupRequest`
+    ile AYNI "iste, Navigator'ın İÇİNDEKİ bir widget karşılasın" deseni tercih edildi) YENİ bir
+    sinyal — `pendingLevelShareMessage` (`ValueNotifier<String?>`) — ayarlanıyor;
+    `RootScreen._onLevelShareRequested()` bunu dinleyip KENDİ (Navigator'ın altındaki) context'iyle
+    mevcut `ZiboShareSheet`i açıyor. Yeni bir paylaşım kartı tasarımı YAZILMADI — kullanıcının
+    "mevcut paylaşım kartı sistemine benzer tasarımda" isteği `ZiboShareSheet`in DOĞRUDAN yeniden
+    kullanılmasıyla karşılandı (Profil Kartı Paylaşımı'ndaki AYNI "yeni widget yazma, mevcut genel
+    `message: String` parametresini doldur" yaklaşımı).
+- **Profil ekranına ilerleme çubuğu** — isim alanının HEMEN ALTINA (İstatistiklerim'den ÖNCE) YENİ
+  `_LevelProgressCard` (`profile_screen.dart` içinde private): "Seviyen" başlığı + `Lv. N` rozeti +
+  `LinearProgressIndicator` + "{xpIntoLevel}/{xpForNextLevel} XP" metni.
+- **`main.dart`'a kablolama — `XpProvider`, `SoundEffectsProvider` ile AYNI gerekçeyle
+  `CoinProvider`'DAN ÖNCE olmalı** (`CoinProvider`'ın `create` callback'i `context.read<
+  XpProvider>()` kullanıyor).
+- **Test:** YENİ `test/xp_level_test.dart` (8 test — saf matematik fonksiyonları), YENİ
+  `test/xp_provider_test.dart` (7 test — toplam XP birikimi, seviye eşiği aşımı + `pendingLevelUp`
+  sinyali, eşik ALTINDA sinyal DEĞİŞMEZ, negatif/sıfır no-op, çoklu-eşik tek seferde aşılabilir,
+  kalıcılık) + `coin_provider_test.dart`'a yeni bir grup (3 test — `onXpEarned` kancasının HER
+  kazanma mekaniğinde tetiklendiği, satın almanın XP VERMEDİĞİ, callback verilmezse çökmediği) +
+  `zibo_share_sheet.dart`/`mood_tracking_screen.dart` değişikliklerini kapsayan mevcut testler.
+  **Gerçek bir test-pollution bug'ı bulunup düzeltildi:** `widget_test.dart`'taki birkaç test,
+  yalnızca hızlıca test bakiyesi biriktirmek için `CoinProvider.earnReferral()`'ı 3-11 kez art arda
+  çağırıyordu — bu artık YENİ XP kancası yüzünden gerçek bir seviye atlamayı tetikleyip
+  `LevelCelebrationOverlay`'in TAM EKRAN, `dismissible: false` popup'ını gösteriyor, bu da
+  SONRAKİ `tester.tap(...)` çağrılarının yanlış hedefe isabet etmesine yol açıyordu. **Düzeltme —
+  yalnızca `pendingLevelUp.value = null` YETERLİ DEĞİLDİ** (overlay'in KENDİ `_level` state'i
+  sinyal DEĞİŞTİĞİ anda zaten senkron olarak ayarlanmış oluyordu) — YENİ `_dismissLevelUpIfShown
+  (tester)` yardımcı fonksiyonu, gösterilmişse popup'ı GERÇEKTEN `levelUpCloseButton` (yeni eklenen
+  `Key`) ile kapatıp testin normal akışına devam etmesini sağlıyor; `setUp()`'a da (`isHomeTabActive`
+  ile AYNI "paylaşılan global sinyali testler arası izole et" gerekçesiyle) `pendingLevelUp.value =
+  null`/`pendingLevelShareMessage.value = null` sıfırlaması eklendi. **Toplam: 588 test** (587
+  geçti + 1 önceden belgelenmiş `audioplayers` flake'i).
+- **Gerçek cihazda GÖRSEL doğrulama bu turda YAPILMADI** — yalnızca `flutter test` ile doğrulandı.
+  **Kullanıcının kendi cihazında doğrulaması gereken:** herhangi bir aksiyonla (ör. Şükran
+  Günlüğü'nü tamamlamak) bir seviye eşiği aşılınca konfeti + kutlama kartının UYGULAMANIN HER
+  YERİNDE göründüğü, "Paylaş"a basınca native paylaşım sayfasının açıldığı, Profil'deki ilerleme
+  çubuğunun doğru seviye/XP'yi yansıttığı.
+
+## Odak Sayacı (Kronometre/Pomodoro) Modülü ([focus_session.dart](lib/models/focus_session.dart), [focus_provider.dart](lib/providers/focus_provider.dart), [focus_timer_screen.dart](lib/screens/focus_timer_screen.dart))
+
+- **2026 yeni özellik.** Kullanıcı isteği: bir süre belirleyip (veya serbest kronometre olarak)
+  odaklanma/çalışma sürelerini takip edebileceği basit bir zamanlayıcı modülü; Profil'deki
+  İstatistiklerim'e toplam odak süresini gösteren yeni bir satır.
+- **`FocusProvider`** — `DreamJournalProvider`/`ManifestProvider` ile AYNI "id ile ayrı ayrı
+  biriken kayıt" `CloudStateStore` deseni (`{nextId, sessions: [...]}`). `addSession(seconds)` her
+  tamamlanan/durdurulan oturumu BİRİKTİRİR (üzerine yazmaz); `durationSeconds < 60` ise (kaza
+  eseri anlık başlat/durdur) sessizce reddedilip `false` döner — `WaterProvider`'daki "bariz-
+  anlamsız girdiyi reddet" deseni. `totalFocusSeconds` tüm oturumların toplamı.
+- **`FocusTimerScreen`** — dört mod (`Serbest`/`15 dk`/`25 dk`/`45 dk`, `ChoiceChip` seçici,
+  çalışırken devre dışı), ortada dairesel bir ilerleme göstergesiyle sarılı büyük bir `MM:SS`
+  sayaç (`Timer.periodic(1sn)`), "Başlat"/"Duraklat" + "Bitir ve Kaydet" + (ilerleme varsa)
+  "Sıfırla" butonları, altta toplam odak süresi kartı. Belirli süreli modda hedefe ulaşınca
+  OTOMATİK kaydediliyor (`_finish()`); Serbest modda kullanıcı elle "Bitir ve Kaydet"e basmalı.
+  Kaydedilince kazanılan dakika kadar XP veriliyor (`(duration/60).floor().clamp(1, 60)` — tek bir
+  oturumun aşırı büyük bir seviye atlamasına yol açmaması için üst sınır) + bir SnackBar.
+- **Modül menüsü girişi** — Z butonu modül menüsüne (`modules_menu_sheet.dart`) YEDİNCİ bir
+  `_ModuleCard` olarak eklendi (`Icons.timer_outlined`), Para ve Birikim kartının hemen ardına.
+- **Profil'deki "Odak Süresi" satırı — BİLİNÇLİ bir kapsam kararı: mevcut 4 kategorili
+  `ProfileStats` sistemine DAHİL EDİLMEDİ.** Bu sistem (Para/Şükür-Manifest/İstikrar/Öz Saygı-
+  Sağlık) tam sayıda kategoriyle sıkı sıkıya bağlı (home-widget carousel'i tam 4 öğe varsayıyor,
+  aylık arşiv snapshot formatı vb.) — beşinci bir kategori eklemek riskli/invaziv olurdu. Bunun
+  yerine `_ProfileStatRow` (YENİ, `profile_screen.dart` içinde private) — `_ProfileLinkRow`'un
+  AKSİNE bir sayfaya NAVİGE ETMEYEN salt bilgi satırı (ok/onTap yok, Odak Sayacı zaten Z-menüsünden
+  erişiliyor) — "Zibo ile Bağın" bölümüne, "En Uzun Seri Rekoru"nun hemen ardına eklendi. Süre
+  `_formatFocusDuration(seconds)` ile "{saat} sa {dakika} dk" / "{dakika} dk" biçiminde
+  gösteriliyor. **Bu kapsam kararı kullanıcıya AÇIKÇA FLAGLENMELİ** — istenirse ileride gerçek
+  5. kategori olarak `ProfileStats`'a taşınabilir, ama bu daha büyük/riskli bir refactor gerektirir.
+- **Test:** YENİ `test/focus_provider_test.dart` (6 test — boş başlangıç, 60sn altı reddi, geçerli
+  oturum kaydı, birden fazla oturumun BİRİKTİĞİ + en-yeni-önce sıralandığı, toplam süre hesaplaması,
+  kalıcılık). Ekranın kendisi (Timer-tabanlı UI) için ayrı bir widget testi YAZILMADI —
+  `Timer.periodic` + gerçek zaman geçişini test etmek `manifest_journal_screen_test.dart` gibi
+  sahte servis enjeksiyonu gerektirmeyen basit bir ekran için kapsam dışı bırakıldı, sağlam
+  provider testi + kod incelemesiyle yetinildi.
+- **Gerçek cihazda GÖRSEL doğrulama bu turda YAPILMADI.** **Kullanıcının kendi cihazında
+  doğrulaması gereken:** bir süre seçip başlatıp durdurunca oturumun kaydedildiği, Profil'deki
+  "Odak Süresi" satırının GERÇEKTEN arttığı, 25/45 dakikalık modların hedefe ulaşınca OTOMATİK
+  kaydettiği.
+
+## Instagram Takip Kartı ve Ödülü ([instagram_follow_provider.dart](lib/providers/instagram_follow_provider.dart), [instagram_follow_card.dart](lib/widgets/instagram_follow_card.dart))
+
+- **2026 yeni özellik.** Kullanıcı isteği: Profil'de "Bizi Instagram'da Takip Edin" kartı — bir
+  buton @zibo.app hesabını açsın, "Takip Ettim" butonuna basınca (gerçek takip doğrulaması teknik
+  olarak MÜMKÜN OLMADIĞI için kullanıcı BEYANINA dayalı) 100 ZC + 1 standart tema + düşük fiyatlı
+  bir kostüm versin, SADECE BİR KEZ.
+- **`InstagramFollowProvider`** — `ThemeProvider`/`OnboardingProvider` ile AYNI "tek bir kalıcı
+  bool bayrak" (Varyant C) `CloudStateStore` deseni. `markClaimed()` idempotent — `_claimed` bir
+  kez `true` olduktan sonra HER ZAMAN `false` döner, çağıran taraf bu durumda ödünlerin HİÇBİRİNİ
+  vermez. Kart ayrıca `claimed == true` iken kendini TAMAMEN GİZLER — bu yüzden gerçek kullanımda
+  bu yola hiç girilmiyor, ama API seviyesinde çift bir güvenlik katmanı.
+- **`CoinProvider.earnInstagramFollowReward()`** — sabit 100 ZC (`CoinEconomy.
+  instagramFollowReward`), `_earn()`'ün merkezi kancasından geçtiği için otomatik XP + ses de
+  veriyor.
+- **Kostüm/tema hediyesi — `badge_special_reward.dart`'taki (Rozet Sistemi'nin "Kostüm/Tema
+  Hediye Sistemi") AYNI saf/enjekte edilebilir-`Random` desenleri yeniden kullanıldı:**
+  `pickRandomUnownedStandardTheme` (mevcut, değişmedi) + YENİ `pickRandomUnownedLowPricedCostume`
+  — `costumes.dart`'ın fiyata göre sıralı listesinin (ucuzdan pahalıya) İLK ÜÇTE BİRİNDEN
+  ("düşük fiyatlı kostümler"), henüz sahip olunmamış birini rastgele seçer. Uygun kostüm/tema
+  kalmadıysa (teorik olarak nadir) `null` döner, o ödül sessizce atlanır — Rozet Sistemi'nin gift
+  reward mantığındaki AYNI "hiçbir şey kalmadıysa sessizce ver-me" davranışı.
+- **`InstagramFollowCard`** — Profil ekranında, isim alanının hemen altında (Level/XP ilerleme
+  kartının HEMEN ALTINDA) gösteriliyor; `claimed == true` iken `SizedBox.shrink()`. "Instagram'ı
+  Aç" (`url_launcher`, `https://www.instagram.com/zibo.app`, `LaunchMode.externalApplication`) +
+  "Takip Ettim" (yükleniyor göstergeli) iki buton. **"Ara sıra gösterilsin" isteği, gerçek bir
+  olasılıksal zamanlama YERİNE basitçe "henüz alınmadığı sürece HER ZAMAN görünür" olarak
+  yorumlandı** — bu kapsam kararı kullanıcıya AÇIKÇA FLAGLENMELİ, istenirse Ana Sayfa'da/rastgele
+  aralıklarla gösterilecek şekilde genişletilebilir.
+- **Test:** YENİ `test/instagram_follow_provider_test.dart` (4 test — başlangıç durumu, İLK
+  `markClaimed()` başarılı, İKİNCİ çağrı reddedilir, kalıcılık) + YENİ `test/badge_special_reward_test.dart`
+  (4 test — `pickRandomUnownedLowPricedCostume`'un yalnızca ucuz/sahip-olunmayan kostümlerden
+  seçtiği, sahiplenilmiş adayların listeden çıktığı, hepsine sahipken `null` döndüğü, pahalı
+  kostümlerin ASLA seçilmediği). Widget testi (kartın kendisi) YAZILMADI — `url_launcher`'ın
+  platform kanalına dokunduğu için (`ad_free_promo_sheet.dart`'taki benzer harici link butonlarıyla
+  AYNI gerekçe) kapsam dışı bırakıldı, provider/saf-fonksiyon testleriyle yetinildi.
+- **Gerçek cihazda GÖRSEL doğrulama bu turda YAPILMADI.** **Kullanıcının kendi cihazında
+  doğrulaması gereken:** "Instagram'ı Aç"ın gerçekten Instagram uygulamasını/tarayıcıyı açtığı,
+  "Takip Ettim"e basınca coin bakiyesinin +100 arttığı VE Mağaza'da yeni bir tema/kostümün "Sahip
+  Olunan" göründüğü, kartın SONRASINDA bir daha HİÇ görünmediği (uygulama yeniden başlatılsa bile).
+
 ## Yerelleştirme (i18n) — Türkçe / İngilizce / İspanyolca
 
 - Resmi Flutter `gen-l10n` pipeline'ı kullanılıyor (`easy_localization` gibi üçüncü parti paket
@@ -4909,16 +5102,20 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
   (2026 — Rozet Sistemi, bkz. "Rozet Sistemi" bölümü), `AppThemeProvider`,
   `AuthLinkProvider`, `BadgeProvider` (aynı bölüm), `CoinProvider`, `CostumeProvider`, `CurrencyProvider`,
   `CustomMessagesProvider`, `DailyRewardsProvider`, `DreamJournalProvider`,
-  `FavoriteQuotesProvider`, `FounderBadgeProvider` (2026 — `ProfileScreen`/`SettingsScreen`'in
+  `FavoriteQuotesProvider`, `FocusProvider` (2026 — Odak Sayacı, bkz. o bölüm),
+  `FounderBadgeProvider` (2026 — `ProfileScreen`/`SettingsScreen`'in
   `FounderBadgePromoCard` üzerinden izlediği, bkz. "Kurucu Üye Rozeti" bölümü), `GoalsProvider`,
   `GratitudeProvider`, `HiddenBadgeProvider` (2026 — Gizli/Eğlenceli Rozetler'in
   `BadgeCoordinator`'ı artık bunu da izlediği için, bkz. "Rozet Sistemi" bölümündeki "Altıncı ve
-  SON kategori"), `LocaleProvider`,
+  SON kategori"), `InstagramFollowProvider` (2026 — Instagram Takip Kartı, bkz. o bölüm),
+  `LocaleProvider`,
   `ManifestProvider`, `MoneyProvider`, `MoodProvider`, `NotificationProvider`, `ProfileProvider`,
   `ProfileStatsArchiveProvider`, `ReferralProvider` (2026 — Sosyal/Paylaşım Rozetleri'nin
   `BadgeCoordinator`'ı artık bunu da izlediği için, bkz. "Rozet Sistemi" bölümündeki "Beşinci
   kategori"), `SoundEffectsProvider`,
-  `ThemeProvider`, `TrustedTimeProvider`, `WaterProvider`, `ZiboPoseProvider`) — bunun sebebi
+  `ThemeProvider`, `TrustedTimeProvider`, `WaterProvider`, `XpProvider` (2026 — Level/XP Sistemi,
+  `ProfileScreen`'in ilerleme çubuğu üzerinden izlediği, bkz. o bölüm), `ZiboPoseProvider`) —
+  bunun sebebi
   `RootScreen`'in tüm sekmeleri hemen kurması (artık `ProfileScreen` de bir sekme olduğu için onun
   transitif olarak izlediği TÜM provider'lar da burada olmalı — bkz. "Alt Gezinme Çubuğu"
   bölümündeki Profil↔Birikim yer değiştirme notu). **ARTIK GEÇERSİZ NOT (tarihsel bağlam için

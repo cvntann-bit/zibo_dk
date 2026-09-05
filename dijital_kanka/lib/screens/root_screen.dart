@@ -32,6 +32,7 @@ import '../services/home_widget_sync_coordinator.dart';
 import '../services/notification_service.dart';
 import '../services/push_notification_service.dart';
 import '../utils/founder_badge_reconcile.dart';
+import '../utils/level_up_signal.dart';
 import '../utils/tab_navigation.dart';
 import '../utils/widget_module.dart';
 import '../widgets/badges_trigger_button.dart';
@@ -41,6 +42,7 @@ import '../widgets/main_bottom_bar.dart';
 import '../widgets/modules_menu_sheet.dart';
 import '../widgets/wheel_trigger_button.dart';
 import '../widgets/z_floating_button.dart';
+import '../widgets/zibo_share_sheet.dart';
 import 'completed_goals_screen.dart';
 import 'daily_rewards_screen.dart';
 import 'goal_tracking_screen.dart';
@@ -146,6 +148,11 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
     waterModuleRequest.addListener(_onWaterModuleRequested);
     moneyModuleRequest.addListener(_onMoneyModuleRequested);
     profileTabRequest.addListener(_onProfileTabRequested);
+    // 2026 yeni özellik — Level/XP Sistemi. `LevelCelebrationOverlay`'in
+    // "Paylaş" butonu Navigator'a erişemediği için (bkz. o dosyanın
+    // dokümantasyonu) bu sinyali kullanıp burada, Navigator'ın ALTINDAKİ bu
+    // context'le paylaşım sheet'ini açıyoruz.
+    pendingLevelShareMessage.addListener(_onLevelShareRequested);
     // **2026 yeni özellik — widget derin bağlantısı.** Uygulama ZATEN
     // açıkken bir widget'a dokunulursa bu akıştan gelir.
     _widgetClickSub = _homeWidgetService.moduleClicked.listen((module) {
@@ -291,6 +298,7 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
     waterModuleRequest.removeListener(_onWaterModuleRequested);
     moneyModuleRequest.removeListener(_onMoneyModuleRequested);
     profileTabRequest.removeListener(_onProfileTabRequested);
+    pendingLevelShareMessage.removeListener(_onLevelShareRequested);
     _widgetClickSub?.cancel();
     final sync = _homeWidgetSync;
     if (sync != null) {
@@ -367,6 +375,27 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
           builder: (_) => const DailyRewardsScreen(),
         );
       }
+    });
+  }
+
+  /// **2026 yeni özellik — Level/XP Sistemi.** `LevelCelebrationOverlay`'in
+  /// "Paylaş" butonundan gelen istek — bkz. `pendingLevelShareMessage`
+  /// dokümantasyonu. `dailyRewardsPopupRequest` ile AYNI "bir sonraki kareye
+  /// ertele, sonra bu context'le aç" deseni.
+  void _onLevelShareRequested() {
+    final message = pendingLevelShareMessage.value;
+    if (!mounted || message == null) return;
+    pendingLevelShareMessage.value = null;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      showModalBottomSheet<void>(
+        context: context,
+        isScrollControlled: true,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        builder: (_) => ZiboShareSheet(message: message),
+      );
     });
   }
 

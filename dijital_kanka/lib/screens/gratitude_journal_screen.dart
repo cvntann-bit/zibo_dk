@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 
 import '../data/costume_poses.dart';
 import '../data/costumes.dart';
+import '../data/gratitude_prompts.dart';
 import '../data/gratitude_quotes.dart';
 import '../data/localized_calendar_names.dart';
 import '../l10n/app_localizations.dart';
@@ -191,6 +192,15 @@ class _GratitudeJournalScreenState extends State<GratitudeJournalScreen> {
                           textCapitalization: TextCapitalization.sentences,
                           decoration: InputDecoration(
                             labelText: l10n.gratitudeFieldLabel(i + 1),
+                            // 2026 yeni özellik — kullanıcı yazmaya
+                            // başlamadan önce gösterilen, her gün değişen
+                            // ilham verici öneri (bkz. gratitude_prompts.dart).
+                            // Kullanıcı yazmaya başlayınca normal placeholder
+                            // davranışıyla kaybolur, ekstra bir kod GEREKMEZ.
+                            hintText: gratitudePromptForField(
+                              DateTime.now(),
+                              i,
+                            ),
                           ),
                         ),
                         if (i < 2) const SizedBox(height: 12),

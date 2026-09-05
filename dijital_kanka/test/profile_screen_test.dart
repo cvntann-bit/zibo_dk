@@ -17,9 +17,11 @@ import 'package:dijital_kanka/providers/auth_link_provider.dart';
 import 'package:dijital_kanka/providers/coin_provider.dart';
 import 'package:dijital_kanka/providers/costume_provider.dart';
 import 'package:dijital_kanka/providers/favorite_quotes_provider.dart';
+import 'package:dijital_kanka/providers/focus_provider.dart';
 import 'package:dijital_kanka/providers/founder_badge_provider.dart';
 import 'package:dijital_kanka/providers/goals_provider.dart';
 import 'package:dijital_kanka/providers/gratitude_provider.dart';
+import 'package:dijital_kanka/providers/instagram_follow_provider.dart';
 import 'package:dijital_kanka/providers/manifest_provider.dart';
 import 'package:dijital_kanka/providers/money_provider.dart';
 import 'package:dijital_kanka/providers/profile_provider.dart';
@@ -27,6 +29,7 @@ import 'package:dijital_kanka/providers/profile_stats_archive_provider.dart';
 import 'package:dijital_kanka/providers/referral_provider.dart';
 import 'package:dijital_kanka/providers/trusted_time_provider.dart';
 import 'package:dijital_kanka/providers/water_provider.dart';
+import 'package:dijital_kanka/providers/xp_provider.dart';
 import 'package:dijital_kanka/screens/profile_screen.dart';
 import 'package:dijital_kanka/services/photo_picker_service.dart';
 import 'package:dijital_kanka/services/trusted_time_service.dart';
@@ -79,6 +82,9 @@ Widget _buildTestApp(PhotoPickerService photoService) {
       ChangeNotifierProvider(create: (_) => CoinProvider()),
       ChangeNotifierProvider(create: (_) => CostumeProvider()),
       ChangeNotifierProvider(create: (_) => FavoriteQuotesProvider()),
+      ChangeNotifierProvider(create: (_) => XpProvider()),
+      ChangeNotifierProvider(create: (_) => FocusProvider()),
+      ChangeNotifierProvider(create: (_) => InstagramFollowProvider()),
     ],
     child: MaterialApp(
       debugShowCheckedModeBanner: false,

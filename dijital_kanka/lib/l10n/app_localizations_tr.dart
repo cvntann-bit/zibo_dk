@@ -1667,4 +1667,101 @@ class AppLocalizationsTr extends AppLocalizations {
   @override
   String get badgeRequirementBalanceMaster =>
       'Aynı gün içinde uygulamadaki 7 modülün hepsine kayıt ekle';
+
+  @override
+  String levelUpCelebrationTitle(int level) {
+    return 'Seviye $level\'e Ulaştın!';
+  }
+
+  @override
+  String get levelUpCelebrationBody =>
+      'Zibo ile harika gidiyorsun, büyümeye devam et!';
+
+  @override
+  String get levelUpShareButton => 'Paylaş';
+
+  @override
+  String get levelUpCloseButton => 'Kapat';
+
+  @override
+  String levelUpShareMessage(int level) {
+    return 'Zibo\'da Seviye $level\'e ulaştım! 🎉';
+  }
+
+  @override
+  String get profileLevelRowTitle => 'Seviyen';
+
+  @override
+  String profileLevelProgressLabel(int current, int needed) {
+    return '$current/$needed XP';
+  }
+
+  @override
+  String get focusTimerTooltip => 'Odak Sayacı';
+
+  @override
+  String get focusModuleDescription =>
+      'Odaklanma sürelerini takip et, üretkenliğini artır.';
+
+  @override
+  String get focusTimerScreenTitle => 'Odak Sayacı';
+
+  @override
+  String get focusModeFreeLabel => 'Serbest';
+
+  @override
+  String focusModeMinutesLabel(int minutes) {
+    return '$minutes dk';
+  }
+
+  @override
+  String get focusStartButton => 'Başlat';
+
+  @override
+  String get focusPauseButton => 'Duraklat';
+
+  @override
+  String get focusResumeButton => 'Devam Et';
+
+  @override
+  String get focusFinishButton => 'Bitir ve Kaydet';
+
+  @override
+  String get focusResetButton => 'Sıfırla';
+
+  @override
+  String focusSessionSavedMessage(int minutes) {
+    return '$minutes dakika odaklandın! Harika iş.';
+  }
+
+  @override
+  String get focusSessionTooShortMessage => 'En az 1 dakika odaklanmalısın.';
+
+  @override
+  String get focusTotalTimeLabel => 'Toplam Odak Süren';
+
+  @override
+  String get profileFocusRowTitle => 'Odak Süresi';
+
+  @override
+  String profileFocusRowSubtitle(String durationText) {
+    return 'Toplam $durationText odaklandın';
+  }
+
+  @override
+  String get instagramFollowCardTitle => 'Bizi Instagram\'da Takip Edin';
+
+  @override
+  String get instagramFollowCardBody =>
+      '@zibo.app hesabımızı takip et; 100 ZC, bir tema ve bir kostüm kazan!';
+
+  @override
+  String get instagramFollowOpenButton => 'Instagram\'ı Aç';
+
+  @override
+  String get instagramFollowClaimButton => 'Takip Ettim';
+
+  @override
+  String get instagramFollowRewardGrantedMessage =>
+      'Ödülün hesabına eklendi! 🎉';
 }

@@ -1,7 +1,9 @@
 import 'dart:math';
 
 import '../data/app_themes.dart';
+import '../data/costumes.dart';
 import '../models/app_theme_option.dart';
+import '../models/costume.dart';
 
 /// "İlk Paylaşım"/"Hayalperest" gibi tema hediyesi taşıyan rozetlerin
 /// (bkz. `data/badge_gift_rewards.dart`'taki `BadgeGiftReward.theme()`
@@ -29,6 +31,26 @@ AppThemeOption? pickRandomUnownedStandardTheme(
       .where(
         (theme) => !theme.isPremiumAnimated && !ownedThemeIds.contains(theme.id),
       )
+      .toList();
+  if (candidates.isEmpty) return null;
+  final r = random ?? Random();
+  return candidates[r.nextInt(candidates.length)];
+}
+
+/// Instagram Takip Ödülü'nün kostüm hediyesi — `costumes.dart`'ın fiyata
+/// göre sıralı listesinin (ucuzdan pahalıya, bkz. o dosyanın dokümantasyonu)
+/// İLK ÜÇTE BİRİNDEN ("düşük fiyatlı kostümler"), henüz SAHİP OLUNMAMIŞ
+/// birini rastgele seçer. [pickRandomUnownedStandardTheme] ile AYNI saf/
+/// test edilebilir desen. Uygun (ucuz + sahip olunmayan) kostüm kalmadıysa
+/// `null` döner.
+Costume? pickRandomUnownedLowPricedCostume(
+  Set<String> ownedCostumeIds, {
+  Random? random,
+}) {
+  final cutoff = (costumes.length / 3).ceil();
+  final candidates = costumes
+      .take(cutoff)
+      .where((c) => !ownedCostumeIds.contains(c.id))
       .toList();
   if (candidates.isEmpty) return null;
   final r = random ?? Random();

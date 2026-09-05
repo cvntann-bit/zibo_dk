@@ -1680,4 +1680,102 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get badgeRequirementBalanceMaster =>
       'Añade un registro a los 7 módulos de la app el mismo día';
+
+  @override
+  String levelUpCelebrationTitle(int level) {
+    return '¡Alcanzaste el Nivel $level!';
+  }
+
+  @override
+  String get levelUpCelebrationBody =>
+      '¡Lo estás haciendo genial con Zibo, sigue creciendo!';
+
+  @override
+  String get levelUpShareButton => 'Compartir';
+
+  @override
+  String get levelUpCloseButton => 'Cerrar';
+
+  @override
+  String levelUpShareMessage(int level) {
+    return '¡Alcancé el Nivel $level en Zibo! 🎉';
+  }
+
+  @override
+  String get profileLevelRowTitle => 'Tu Nivel';
+
+  @override
+  String profileLevelProgressLabel(int current, int needed) {
+    return '$current/$needed XP';
+  }
+
+  @override
+  String get focusTimerTooltip => 'Temporizador de Enfoque';
+
+  @override
+  String get focusModuleDescription =>
+      'Registra tus sesiones de enfoque y mejora tu productividad.';
+
+  @override
+  String get focusTimerScreenTitle => 'Temporizador de Enfoque';
+
+  @override
+  String get focusModeFreeLabel => 'Libre';
+
+  @override
+  String focusModeMinutesLabel(int minutes) {
+    return '$minutes min';
+  }
+
+  @override
+  String get focusStartButton => 'Iniciar';
+
+  @override
+  String get focusPauseButton => 'Pausar';
+
+  @override
+  String get focusResumeButton => 'Reanudar';
+
+  @override
+  String get focusFinishButton => 'Terminar y Guardar';
+
+  @override
+  String get focusResetButton => 'Reiniciar';
+
+  @override
+  String focusSessionSavedMessage(int minutes) {
+    return '¡Te enfocaste durante $minutes minutos! Buen trabajo.';
+  }
+
+  @override
+  String get focusSessionTooShortMessage =>
+      'Debes enfocarte al menos 1 minuto.';
+
+  @override
+  String get focusTotalTimeLabel => 'Tu Tiempo Total de Enfoque';
+
+  @override
+  String get profileFocusRowTitle => 'Tiempo de Enfoque';
+
+  @override
+  String profileFocusRowSubtitle(String durationText) {
+    return 'Te has enfocado $durationText en total';
+  }
+
+  @override
+  String get instagramFollowCardTitle => 'Síguenos en Instagram';
+
+  @override
+  String get instagramFollowCardBody =>
+      '¡Sigue @zibo.app y gana 100 ZC, un tema y un disfraz!';
+
+  @override
+  String get instagramFollowOpenButton => 'Abrir Instagram';
+
+  @override
+  String get instagramFollowClaimButton => 'Ya Sigo';
+
+  @override
+  String get instagramFollowRewardGrantedMessage =>
+      '¡Tu recompensa fue añadida! 🎉';
 }

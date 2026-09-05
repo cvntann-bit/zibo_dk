@@ -7,12 +7,15 @@ import 'package:provider/provider.dart';
 import '../data/founder_badge.dart';
 import '../l10n/app_localizations.dart';
 import '../models/bond_level.dart';
+import '../models/xp_level.dart';
 import '../providers/auth_link_provider.dart';
 import '../providers/coin_provider.dart';
 import '../providers/costume_provider.dart';
 import '../providers/favorite_quotes_provider.dart';
+import '../providers/focus_provider.dart';
 import '../providers/goals_provider.dart';
 import '../providers/gratitude_provider.dart';
+import '../providers/instagram_follow_provider.dart';
 import '../providers/manifest_provider.dart';
 import '../providers/money_provider.dart';
 import '../providers/profile_provider.dart';
@@ -20,6 +23,7 @@ import '../providers/profile_stats_archive_provider.dart';
 import '../providers/referral_provider.dart';
 import '../providers/trusted_time_provider.dart';
 import '../providers/water_provider.dart';
+import '../providers/xp_provider.dart';
 import '../screens/address_term_screen.dart';
 import '../screens/bond_level_screen.dart';
 import '../screens/coin_summary_screen.dart';
@@ -32,6 +36,7 @@ import '../utils/google_link_action.dart';
 import '../utils/profile_stats.dart';
 import '../widgets/costume_closet_preview.dart';
 import '../widgets/founder_badge_promo_card.dart';
+import '../widgets/instagram_follow_card.dart';
 import '../widgets/profile_stat_card.dart';
 import '../widgets/zibo_share_sheet.dart';
 
@@ -205,6 +210,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final goals = context.watch<GoalsProvider>();
     final water = context.watch<WaterProvider>();
     final coin = context.watch<CoinProvider>();
+    // 2026 yeni özellik — Level/XP Sistemi + Odak Sayacı (bkz. CLAUDE.md).
+    final xpProgress = context.watch<XpProvider>().progress;
+    final focus = context.watch<FocusProvider>();
     final favoriteQuotes = context.watch<FavoriteQuotesProvider>();
     final authLink = context.watch<AuthLinkProvider>();
     final referral = context.watch<ReferralProvider>();
@@ -339,7 +347,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
               textInputAction: TextInputAction.done,
               onSubmitted: (value) => context.read<ProfileProvider>().setName(value),
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: 20),
+            // 2026 yeni özellik — Level/XP Sistemi. Mevcut seviye + bir
+            // sonraki seviyeye ne kadar kaldığını gösteren bir ilerleme
+            // çubuğu (bkz. CLAUDE.md "Level/XP Sistemi" bölümü).
+            _LevelProgressCard(progress: xpProgress),
+            const SizedBox(height: 12),
+            // 2026 yeni özellik — Instagram Takip Kartı ve Ödülü. Zaten
+            // takip ödülü alınmışsa kart kendini gizler (bkz. widget'ın
+            // kendi dokümantasyonu) — bu yüzden koşulsuz her build'de eklenir.
+            const InstagramFollowCard(),
+            const SizedBox(height: 20),
             Text(
               l10n.profileStatsSectionTitle,
               style: Theme.of(
@@ -392,6 +410,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
               subtitle: l10n.profileStreakRowSubtitle(goals.longestStreak),
               onTap: () => Navigator.of(context).push(
                 MaterialPageRoute(builder: (_) => const LongestStreakScreen()),
+              ),
+            ),
+            const SizedBox(height: 12),
+            // 2026 yeni özellik — Odak Sayacı modülü. Mevcut 4 kategorili
+            // İstatistiklerim sistemine DAHİL EDİLMEDİ (bkz. CLAUDE.md
+            // "Odak Sayacı" bölümündeki kapsam kararı) — bunun yerine
+            // diğer basit istatistik satırlarıyla (Bağ Seviyesi/En Uzun
+            // Seri) AYNI görsel dilde, ayrı bir bilgi satırı. Bir sayfaya
+            // NAVİGE ETMİYOR (Odak Sayacı zaten Z-menüsünden erişiliyor),
+            // bu yüzden `_ProfileLinkRow` DEĞİL, ok/onTap'i olmayan
+            // `_ProfileStatRow` kullanılıyor.
+            _ProfileStatRow(
+              icon: Icons.timer_outlined,
+              title: l10n.profileFocusRowTitle,
+              subtitle: l10n.profileFocusRowSubtitle(
+                _formatFocusDuration(focus.totalFocusSeconds),
               ),
             ),
             const SizedBox(height: 12),
@@ -470,6 +504,110 @@ class _ProfileScreenState extends State<ProfileScreen> {
 /// push eder). `modules_menu_sheet.dart`'taki `_ModuleCard`'la aynı görsel
 /// dil (Card + ListTile), burada ayrı bir private widget olarak tutuldu
 /// çünkü bu dosyaya özel (dışa aktarılmaya gerek yok).
+/// 2026 yeni özellik — Level/XP Sistemi. Mevcut seviye + bir sonraki
+/// seviyeye ne kadar kaldığını gösteren küçük bir kart (bkz. CLAUDE.md
+/// "Level/XP Sistemi" bölümü) — `Card` + başlık + `LinearProgressIndicator`
+/// + XP metni, projedeki diğer basit özet kartlarıyla (`_TodayDoneCard`
+/// vb.) aynı görsel yoğunlukta.
+class _LevelProgressCard extends StatelessWidget {
+  const _LevelProgressCard({required this.progress});
+
+  final LevelProgress progress;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(l10n.profileLevelRowTitle, style: textTheme.titleMedium),
+                Text(
+                  'Lv. ${progress.level}',
+                  style: textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: colorScheme.primary,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(999),
+              child: LinearProgressIndicator(
+                value: progress.fraction,
+                minHeight: 10,
+                backgroundColor: colorScheme.surfaceContainerHigh,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              l10n.profileLevelProgressLabel(
+                progress.xpIntoLevel,
+                progress.xpForNextLevel,
+              ),
+              style: textTheme.bodySmall?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Basit saniye toplamını "{saat} sa {dakika} dk" / "{dakika} dk" biçiminde
+/// insan-okunur bir metne çevirir — `profileFocusRowSubtitle`'ın
+/// `{durationText}` parametresi için.
+String _formatFocusDuration(int totalSeconds) {
+  final totalMinutes = totalSeconds ~/ 60;
+  final hours = totalMinutes ~/ 60;
+  final minutes = totalMinutes % 60;
+  if (hours > 0) return '$hours sa $minutes dk';
+  return '$minutes dk';
+}
+
+/// "Zibo ile Bağın" bölümündeki, `_ProfileLinkRow`'un AKSİNE bir sayfaya
+/// NAVİGE ETMEYEN salt bilgi satırı (ok/onTap yok) — Odak Sayacı toplam
+/// süresi gibi, kendi ekranı zaten başka bir yoldan (Z-menüsü) erişilebilen
+/// istatistikler için.
+class _ProfileStatRow extends StatelessWidget {
+  const _ProfileStatRow({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+  });
+
+  final IconData icon;
+  final String title;
+  final String subtitle;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Card(
+      clipBehavior: Clip.antiAlias,
+      child: ListTile(
+        leading: CircleAvatar(
+          backgroundColor: colorScheme.primaryContainer,
+          foregroundColor: colorScheme.onPrimaryContainer,
+          child: Icon(icon),
+        ),
+        title: Text(title),
+        subtitle: Text(subtitle),
+      ),
+    );
+  }
+}
+
 class _ProfileLinkRow extends StatelessWidget {
   const _ProfileLinkRow({
     required this.icon,

@@ -13,6 +13,7 @@ import '../models/mood.dart';
 import '../providers/costume_provider.dart';
 import '../providers/mood_provider.dart';
 import '../providers/profile_provider.dart';
+import '../providers/xp_provider.dart';
 import '../providers/zibo_pose_provider.dart';
 import '../utils/address_term.dart';
 import '../widgets/speech_bubble.dart';
@@ -84,6 +85,22 @@ class _MoodTrackingScreenState extends State<MoodTrackingScreen> {
     // güvenlik.
     if (mood == null) return;
     provider.setTodayMood(mood, note: _noteController.text);
+  }
+
+  /// 2026 yeni özellik — Level/XP Sistemi. `MoodProvider.setTodayMood()`
+  /// coin VERMEDİĞİ için (bkz. CLAUDE.md "Günlük Ruh Hali Takibi" bölümü —
+  /// `CoinProvider`'ı hiç bilmiyor) buradaki XP, `CoinProvider._earn()`'ün
+  /// merkezi kancasından GEÇMİYOR — doğrudan burada, günün İLK seçimi
+  /// olduğunda (`todayMood == null`, seçimden ÖNCE kontrol edilmeli)
+  /// veriliyor. Aynı gün ruh halini DEĞİŞTİRMEK (üzerine yazma) ikinci bir
+  /// XP tetiklemiyor.
+  void _selectMood(Mood mood) {
+    final provider = context.read<MoodProvider>();
+    final isFirstToday = provider.todayMood == null;
+    provider.setTodayMood(mood);
+    if (isFirstToday) {
+      context.read<XpProvider>().addXp(5);
+    }
   }
 
   void _showNewQuote() {
@@ -159,7 +176,7 @@ class _MoodTrackingScreenState extends State<MoodTrackingScreen> {
                         mood: mood,
                         isSelected: provider.todayMood == mood,
                         label: _moodLabel(l10n, mood),
-                        onTap: () => context.read<MoodProvider>().setTodayMood(mood),
+                        onTap: () => _selectMood(mood),
                       ),
                   ],
                 ),

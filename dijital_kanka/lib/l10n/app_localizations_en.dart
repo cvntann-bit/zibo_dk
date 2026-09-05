@@ -1671,4 +1671,102 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get badgeRequirementBalanceMaster =>
       'Add an entry to all 7 modules in the app on the same day';
+
+  @override
+  String levelUpCelebrationTitle(int level) {
+    return 'You Reached Level $level!';
+  }
+
+  @override
+  String get levelUpCelebrationBody =>
+      'You\'re doing amazing with Zibo, keep growing!';
+
+  @override
+  String get levelUpShareButton => 'Share';
+
+  @override
+  String get levelUpCloseButton => 'Close';
+
+  @override
+  String levelUpShareMessage(int level) {
+    return 'I reached Level $level on Zibo! 🎉';
+  }
+
+  @override
+  String get profileLevelRowTitle => 'Your Level';
+
+  @override
+  String profileLevelProgressLabel(int current, int needed) {
+    return '$current/$needed XP';
+  }
+
+  @override
+  String get focusTimerTooltip => 'Focus Timer';
+
+  @override
+  String get focusModuleDescription =>
+      'Track your focus sessions and boost your productivity.';
+
+  @override
+  String get focusTimerScreenTitle => 'Focus Timer';
+
+  @override
+  String get focusModeFreeLabel => 'Free';
+
+  @override
+  String focusModeMinutesLabel(int minutes) {
+    return '$minutes min';
+  }
+
+  @override
+  String get focusStartButton => 'Start';
+
+  @override
+  String get focusPauseButton => 'Pause';
+
+  @override
+  String get focusResumeButton => 'Resume';
+
+  @override
+  String get focusFinishButton => 'Finish & Save';
+
+  @override
+  String get focusResetButton => 'Reset';
+
+  @override
+  String focusSessionSavedMessage(int minutes) {
+    return 'You focused for $minutes minutes! Great job.';
+  }
+
+  @override
+  String get focusSessionTooShortMessage =>
+      'You need to focus for at least 1 minute.';
+
+  @override
+  String get focusTotalTimeLabel => 'Your Total Focus Time';
+
+  @override
+  String get profileFocusRowTitle => 'Focus Time';
+
+  @override
+  String profileFocusRowSubtitle(String durationText) {
+    return 'You\'ve focused for $durationText total';
+  }
+
+  @override
+  String get instagramFollowCardTitle => 'Follow Us on Instagram';
+
+  @override
+  String get instagramFollowCardBody =>
+      'Follow @zibo.app and earn 100 ZC, a theme, and a costume!';
+
+  @override
+  String get instagramFollowOpenButton => 'Open Instagram';
+
+  @override
+  String get instagramFollowClaimButton => 'I Followed';
+
+  @override
+  String get instagramFollowRewardGrantedMessage =>
+      'Your reward has been added! 🎉';
 }

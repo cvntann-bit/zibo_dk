@@ -9,6 +9,10 @@ abstract final class CoinEconomy {
   static const int streak7Bonus = 50;
   static const int streak30Bonus = 250;
   static const int referral = 100;
+  // 2026 yeni özellik — Instagram Takip Kartı ve Ödülü (bkz.
+  // `InstagramFollowProvider`/`instagram_follow_card.dart`). Tek seferlik,
+  // kalıcı bir bayrakla korunuyor.
+  static const int instagramFollowReward = 100;
   // 2026 güncellemesi — kullanıcı isteğiyle 2 → 5 ZC'ye yükseltildi (üç
   // günlük-modül ödülü de tutarlı kalsın diye BİRLİKTE değiştirildi).
   static const int gratitudeJournal = 5;

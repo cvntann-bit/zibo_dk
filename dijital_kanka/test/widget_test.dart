@@ -28,10 +28,12 @@ import 'package:dijital_kanka/providers/custom_messages_provider.dart';
 import 'package:dijital_kanka/providers/daily_rewards_provider.dart';
 import 'package:dijital_kanka/providers/dream_journal_provider.dart';
 import 'package:dijital_kanka/providers/favorite_quotes_provider.dart';
+import 'package:dijital_kanka/providers/focus_provider.dart';
 import 'package:dijital_kanka/providers/founder_badge_provider.dart';
 import 'package:dijital_kanka/providers/goals_provider.dart';
 import 'package:dijital_kanka/providers/gratitude_provider.dart';
 import 'package:dijital_kanka/providers/hidden_badge_provider.dart';
+import 'package:dijital_kanka/providers/instagram_follow_provider.dart';
 import 'package:dijital_kanka/providers/locale_provider.dart';
 import 'package:dijital_kanka/providers/manifest_provider.dart';
 import 'package:dijital_kanka/providers/money_provider.dart';
@@ -44,6 +46,7 @@ import 'package:dijital_kanka/providers/sound_effects_provider.dart';
 import 'package:dijital_kanka/providers/theme_provider.dart';
 import 'package:dijital_kanka/providers/trusted_time_provider.dart';
 import 'package:dijital_kanka/providers/water_provider.dart';
+import 'package:dijital_kanka/providers/xp_provider.dart';
 import 'package:dijital_kanka/providers/zibo_pose_provider.dart';
 import 'package:dijital_kanka/screens/profile_screen.dart';
 import 'package:dijital_kanka/screens/root_screen.dart';
@@ -53,6 +56,7 @@ import 'package:dijital_kanka/services/home_widget_service.dart';
 import 'package:dijital_kanka/services/notification_service.dart';
 import 'package:dijital_kanka/services/purchase_service.dart';
 import 'package:dijital_kanka/utils/ad_free_promo_trigger.dart';
+import 'package:dijital_kanka/utils/level_up_signal.dart';
 import 'package:dijital_kanka/utils/tab_navigation.dart';
 import 'package:dijital_kanka/utils/widget_module.dart';
 import 'package:dijital_kanka/widgets/speech_bubble.dart';
@@ -136,10 +140,12 @@ Widget _buildAppWithClock(DateTime Function() now) {
       ChangeNotifierProvider(create: (_) => DailyRewardsProvider(now: now)),
       ChangeNotifierProvider(create: (_) => DreamJournalProvider()),
       ChangeNotifierProvider(create: (_) => FavoriteQuotesProvider()),
+      ChangeNotifierProvider(create: (_) => FocusProvider(now: now)),
       ChangeNotifierProvider(create: (_) => FounderBadgeProvider()),
       ChangeNotifierProvider(create: (_) => GoalsProvider(now: now)),
       ChangeNotifierProvider(create: (_) => GratitudeProvider(now: now)),
       ChangeNotifierProvider(create: (_) => HiddenBadgeProvider(now: now)),
+      ChangeNotifierProvider(create: (_) => InstagramFollowProvider()),
       ChangeNotifierProvider(create: (_) => LocaleProvider()),
       ChangeNotifierProvider(create: (_) => ManifestProvider(now: now)),
       ChangeNotifierProvider(create: (_) => MoneyProvider(now: now)),
@@ -154,6 +160,7 @@ Widget _buildAppWithClock(DateTime Function() now) {
       ChangeNotifierProvider(create: (_) => SoundEffectsProvider()),
       ChangeNotifierProvider(create: (_) => ThemeProvider()),
       ChangeNotifierProvider(create: (_) => WaterProvider(now: now)),
+      ChangeNotifierProvider(create: (_) => XpProvider()),
       ChangeNotifierProvider(create: (_) => ZiboPoseProvider()),
     ],
     child: MaterialApp(
@@ -202,6 +209,26 @@ Future<void> _pumpPastOnboarding(WidgetTester tester, Widget app) async {
   await tester.pumpAndSettle();
 }
 
+/// 2026 yeni özellik — Level/XP Sistemi: bazı testler yalnızca hızlıca test
+/// bakiyesi biriktirmek için (`CoinProvider.earnReferral()` gibi) büyük
+/// miktarda ZC/XP kazandırıyor — bu, testin KONUSU olmayan bir seviye
+/// atlamayı tetikleyip `LevelCelebrationOverlay`'in TAM EKRAN, dismissible:
+/// false bir popup göstermesine yol açabiliyor, bu da SONRAKİ `tester.
+/// tap(...)` çağrılarının yanlış hedefe isabet etmesine neden olurdu. Bu
+/// yardımcı, gösterilmişse popup'ı `levelUpCloseButton` ile GERÇEKTEN
+/// kapatıp testin normal akışına devam etmesini sağlıyor — global sinyali
+/// (`pendingLevelUp`) sıfırlamak TEK BAŞINA yetmiyor, çünkü overlay'in
+/// KENDİ `_level` state'i zaten (sinyal DEĞİŞTİĞİ anda, senkron olarak)
+/// ayarlanmış oluyor.
+Future<void> _dismissLevelUpIfShown(WidgetTester tester) async {
+  await tester.pumpAndSettle();
+  final closeButton = find.byKey(const Key('levelUpCloseButton'));
+  if (closeButton.evaluate().isNotEmpty) {
+    await tester.tap(closeButton);
+    await tester.pumpAndSettle();
+  }
+}
+
 /// Alt gezinme çubuğundaki Z butonuna basıp ek modüller menüsünü açar (bkz.
 /// main_bottom_bar.dart/modules_menu_sheet.dart) — bar tamamen görsel
 /// tabanlı olduğu için (ikon/etiketler PNG'nin içinde, gerçek Text widget'ı
@@ -236,6 +263,11 @@ void main() {
     // bir testin sekme geçişleri diğerinin başlangıç durumunu kirletmesin
     // diye her testte Ana Sayfa'ya sabitleniyor.
     isHomeTabActive.value = true;
+    // 2026 yeni özellik — Level/XP Sistemi: `pendingLevelUp`/
+    // `pendingLevelShareMessage` de `isHomeTabActive` ile AYNI "paylaşılan
+    // global sinyali testler arası izole et" gerekçesiyle sıfırlanıyor.
+    pendingLevelUp.value = null;
+    pendingLevelShareMessage.value = null;
     final dispatcher =
         TestWidgetsFlutterBinding.instance.platformDispatcher
             as TestPlatformDispatcher;
@@ -1335,7 +1367,10 @@ void main() {
       for (var i = 0; i < 5; i++) {
         coinProvider.earnReferral();
       }
-      await tester.pumpAndSettle();
+      // Bkz. `_dismissLevelUpIfShown` dokümantasyonu — bu bulk-earn testin
+      // KONUSU değil, ama bir seviye atlamayı tetikleyip SONRAKİ
+      // etkileşimleri engelleyebiliyor.
+      await _dismissLevelUpIfShown(tester);
       expect(find.text('500'), findsOneWidget); // AppBar'daki güncel bakiye
 
       buyButton().onPressed!();
@@ -1457,7 +1492,8 @@ void main() {
       for (var i = 0; i < 11; i++) {
         coinProvider.earnReferral();
       }
-      await tester.pumpAndSettle();
+      // Bkz. `_dismissLevelUpIfShown` dokümantasyonu.
+      await _dismissLevelUpIfShown(tester);
 
       buyButton().onPressed!();
       await tester.pumpAndSettle();
@@ -1524,7 +1560,8 @@ void main() {
       for (var i = 0; i < 3; i++) {
         coinProvider.earnReferral();
       }
-      await tester.pumpAndSettle();
+      // Bkz. `_dismissLevelUpIfShown` dokümantasyonu.
+      await _dismissLevelUpIfShown(tester);
 
       buyButton().onPressed!();
       await tester.pumpAndSettle();
@@ -1629,7 +1666,8 @@ void main() {
       for (var i = 0; i < 7; i++) {
         coinProvider.earnReferral();
       }
-      await tester.pumpAndSettle();
+      // Bkz. `_dismissLevelUpIfShown` dokümantasyonu.
+      await _dismissLevelUpIfShown(tester);
 
       buyButton().onPressed!();
       await tester.pumpAndSettle();

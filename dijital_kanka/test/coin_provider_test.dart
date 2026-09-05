@@ -541,4 +541,47 @@ void main() {
       },
     );
   });
+
+  group('CoinProvider - Level/XP Sistemi (onXpEarned kancası)', () {
+    test('Coin kazanan HER mekanik kazanılan ZC kadar XP kancasını tetikler', () {
+      final earnedXp = <int>[];
+      final provider = CoinProvider(onXpEarned: earnedXp.add);
+
+      provider.earnDailyCheckIn();
+      provider.earnGratitudeJournal();
+
+      expect(earnedXp, [CoinEconomy.dailyCheckIn, CoinEconomy.gratitudeJournal]);
+    });
+
+    test('purchaseCoinPackage (gerçek parayla satın alma) XP VERMEZ', () async {
+      final earnedXp = <int>[];
+      final provider = CoinProvider(
+        purchaseService: const MockPurchaseService(),
+        onXpEarned: earnedXp.add,
+      );
+      const package = CoinPackage(
+        id: 'coins_100',
+        coinAmount: 100,
+        imageAsset: 'assets/images/zibo_coin.png',
+      );
+
+      await provider.purchaseCoinPackage(package);
+
+      expect(earnedXp, isEmpty);
+    });
+
+    test('onXpEarned verilmezse (varsayılan) hiçbir şey çökmez', () {
+      final provider = CoinProvider();
+      expect(() => provider.earnDailyCheckIn(), returnsNormally);
+    });
+  });
+
+  group('CoinProvider - Instagram Takip Ödülü', () {
+    test('earnInstagramFollowReward sabit 100 ZC kazandırır', () {
+      final provider = CoinProvider();
+      provider.earnInstagramFollowReward();
+      expect(provider.balance, CoinEconomy.instagramFollowReward);
+      expect(provider.balance, 100);
+    });
+  });
 }

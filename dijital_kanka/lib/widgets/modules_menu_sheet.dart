@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../l10n/app_localizations.dart';
 import '../screens/dream_journal_screen.dart';
+import '../screens/focus_timer_screen.dart';
 import '../screens/gratitude_journal_screen.dart';
 import '../screens/manifest_journal_screen.dart';
 import '../screens/money_screen.dart';
@@ -98,6 +99,19 @@ Future<void> showModulesMenuSheet(BuildContext context) {
                   Navigator.of(
                     context,
                   ).push(MaterialPageRoute(builder: (_) => const MoneyScreen()));
+                },
+              ),
+              const SizedBox(height: 12),
+              // 2026 yeni özellik — Odak Sayacı (bkz. CLAUDE.md).
+              _ModuleCard(
+                icon: Icons.timer_outlined,
+                title: l10n.focusTimerTooltip,
+                description: l10n.focusModuleDescription,
+                onTap: () {
+                  Navigator.of(sheetContext).pop();
+                  Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const FocusTimerScreen()),
+                  );
                 },
               ),
             ],

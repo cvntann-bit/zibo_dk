@@ -32,12 +32,14 @@ class CoinProvider extends ChangeNotifier {
     String? uid,
     DateTime Function() now = DateTime.now,
     bool Function() isSoundEnabled = _alwaysTrue,
+    void Function(int amount)? onXpEarned,
   }) : _adService = adService,
        _purchaseService = purchaseService,
        _soundEffectsService = soundEffectsService ?? const FakeSoundEffectsService(),
        _random = random ?? Random(),
        _now = now,
        _isSoundEnabled = isSoundEnabled,
+       _onXpEarned = onXpEarned ?? _noopXpEarned,
        _store = CloudStateStore(prefsKey: _prefsKey, uid: uid) {
     _loadFromPrefs();
     _orphanedPurchaseSub = _purchaseService.orphanedPurchaseProductIds.listen(
@@ -46,6 +48,7 @@ class CoinProvider extends ChangeNotifier {
   }
 
   static bool _alwaysTrue() => true;
+  static void _noopXpEarned(int amount) {}
 
   static const _prefsKey = 'coinState';
   static const _maxStoredTransactions = 200;
@@ -74,6 +77,14 @@ class CoinProvider extends ChangeNotifier {
   /// yüzden `HomeScreen`'in yaptığı gibi doğrudan `context.read<...>()`
   /// çağıramıyor.
   final bool Function() _isSoundEnabled;
+
+  /// 2026 yeni özellik — Level/XP Sistemi. `main.dart`'ta
+  /// `XpProvider.addXp`'ye bağlanır (`_isSoundEnabled` ile AYNI enjekte
+  /// edilebilir callback deseni — `CoinProvider` bir widget OLMADIĞI için
+  /// `context.read<XpProvider>()`'ı doğrudan çağıramıyor). `_earn()`'ün
+  /// TÜM çağıranları (satın alma HARİÇ, bkz. `awardXp` parametresi)
+  /// otomatik olarak kazanılan ZC kadar XP verir.
+  final void Function(int amount) _onXpEarned;
 
   /// Şans Çarkı'nın ağırlıklı ödül seçimi için — testte sabit/kontrollü bir
   /// sonuç enjekte edebilmek amacıyla constructor'dan verilebilir.
@@ -282,12 +293,25 @@ class CoinProvider extends ChangeNotifier {
   /// playCoinReward]) sesiyle ÇAKIŞMASIN diye. Bu tek istisna dışında TÜM
   /// kazanma mekanikleri (aşağıdaki `earn*` metodları) buradan geçtiği için
   /// ses efekti tek bir yerde, merkezi olarak tetikleniyor.
-  void _earn(int amount, String reason, {bool playRewardSound = true}) {
+  ///
+  /// [awardXp] (2026 yeni özellik — Level/XP Sistemi) yalnızca
+  /// [purchaseCoinPackage]/[_onOrphanedPurchase] tarafından `false` geçilir —
+  /// gerçek parayla coin SATIN ALMAK bir "başarı" değil, XP verilmesi
+  /// yanıltıcı olurdu (`playRewardSound: false` ile AYNI ayrım felsefesi).
+  void _earn(
+    int amount,
+    String reason, {
+    bool playRewardSound = true,
+    bool awardXp = true,
+  }) {
     _balance += amount;
     _totalEarned += amount;
     _record(CoinTransactionType.earn, amount, reason);
     if (playRewardSound && _isSoundEnabled()) {
       _soundEffectsService.playCoinReward();
+    }
+    if (awardXp) {
+      _onXpEarned(amount);
     }
   }
 
@@ -360,6 +384,14 @@ class CoinProvider extends ChangeNotifier {
 
   void earnReferral() => _earn(CoinEconomy.referral, 'Arkadaş daveti');
 
+  /// Instagram Takip Kartı: kullanıcı "Takip Ettim"e bastığında (bkz.
+  /// `InstagramFollowProvider.markClaimed()` — tek seferlik, kalıcı bir
+  /// bayrakla korunuyor, bu yüzden burada ayrıca bir tekrar-önleme
+  /// kontrolüne gerek YOK, çağıran taraf zaten yalnızca İLK başarılı
+  /// `markClaimed()`'den sonra bunu çağırıyor) çağrılır — sabit 100 ZC.
+  void earnInstagramFollowReward() =>
+      _earn(CoinEconomy.instagramFollowReward, 'Instagram takip ödülü');
+
   /// Şükran Günlüğü: kullanıcı bugünün 3 şükran cümlesini doldurup
   /// kaydettiğinde çağrılır (bkz. `GratitudeJournalScreen` — `GoalCard`'ın
   /// `cycleCompleted` sonrası `earnStreak7Bonus()` çağırma deseniyle aynı:
@@ -430,6 +462,7 @@ class CoinProvider extends ChangeNotifier {
         package.coinAmount,
         'Satın alma: ${package.coinAmount} ZC',
         playRewardSound: false,
+        awardXp: false,
       );
       if (_isSoundEnabled()) _soundEffectsService.playCoinPurchase();
     }
@@ -460,6 +493,7 @@ class CoinProvider extends ChangeNotifier {
       package.coinAmount,
       'Satın alma (gecikmeli teslim): ${package.coinAmount} ZC',
       playRewardSound: false,
+      awardXp: false,
     );
     if (_isSoundEnabled()) _soundEffectsService.playCoinPurchase();
   }

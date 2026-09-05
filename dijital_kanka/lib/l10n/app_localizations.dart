@@ -3021,6 +3021,168 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'Aynı gün içinde uygulamadaki 7 modülün hepsine kayıt ekle'**
   String get badgeRequirementBalanceMaster;
+
+  /// Seviye atlama kutlama kartının başlığı
+  ///
+  /// In tr, this message translates to:
+  /// **'Seviye {level}\'e Ulaştın!'**
+  String levelUpCelebrationTitle(int level);
+
+  /// Seviye atlama kutlama kartının açıklama metni
+  ///
+  /// In tr, this message translates to:
+  /// **'Zibo ile harika gidiyorsun, büyümeye devam et!'**
+  String get levelUpCelebrationBody;
+
+  /// Seviye atlama kartındaki paylaşma butonu
+  ///
+  /// In tr, this message translates to:
+  /// **'Paylaş'**
+  String get levelUpShareButton;
+
+  /// Seviye atlama kartındaki kapatma butonu
+  ///
+  /// In tr, this message translates to:
+  /// **'Kapat'**
+  String get levelUpCloseButton;
+
+  /// Seviye atlama paylaşım kartının mesaj metni
+  ///
+  /// In tr, this message translates to:
+  /// **'Zibo\'da Seviye {level}\'e ulaştım! 🎉'**
+  String levelUpShareMessage(int level);
+
+  /// Profildeki seviye/XP ilerleme kartının başlığı
+  ///
+  /// In tr, this message translates to:
+  /// **'Seviyen'**
+  String get profileLevelRowTitle;
+
+  /// Profildeki seviye ilerleme çubuğunun altında gösterilen XP metni
+  ///
+  /// In tr, this message translates to:
+  /// **'{current}/{needed} XP'**
+  String profileLevelProgressLabel(int current, int needed);
+
+  /// Z butonu modül menüsündeki Odak Sayacı kartının başlığı
+  ///
+  /// In tr, this message translates to:
+  /// **'Odak Sayacı'**
+  String get focusTimerTooltip;
+
+  /// Z butonu modül menüsündeki Odak Sayacı kartının açıklama metni
+  ///
+  /// In tr, this message translates to:
+  /// **'Odaklanma sürelerini takip et, üretkenliğini artır.'**
+  String get focusModuleDescription;
+
+  /// Odak Sayacı sayfasının AppBar başlığı
+  ///
+  /// In tr, this message translates to:
+  /// **'Odak Sayacı'**
+  String get focusTimerScreenTitle;
+
+  /// Odak Sayacı'nın serbest kronometre modu seçici etiketi
+  ///
+  /// In tr, this message translates to:
+  /// **'Serbest'**
+  String get focusModeFreeLabel;
+
+  /// Odak Sayacı'nın belirli süreli (Pomodoro tarzı) mod seçici etiketi
+  ///
+  /// In tr, this message translates to:
+  /// **'{minutes} dk'**
+  String focusModeMinutesLabel(int minutes);
+
+  /// Odak Sayacı'nı başlatma butonu
+  ///
+  /// In tr, this message translates to:
+  /// **'Başlat'**
+  String get focusStartButton;
+
+  /// Odak Sayacı'nı duraklatma butonu
+  ///
+  /// In tr, this message translates to:
+  /// **'Duraklat'**
+  String get focusPauseButton;
+
+  /// Duraklatılmış Odak Sayacı'nı devam ettirme butonu
+  ///
+  /// In tr, this message translates to:
+  /// **'Devam Et'**
+  String get focusResumeButton;
+
+  /// Odak seansını bitirip kaydetme butonu
+  ///
+  /// In tr, this message translates to:
+  /// **'Bitir ve Kaydet'**
+  String get focusFinishButton;
+
+  /// Odak seansını kaydetmeden sıfırlama butonu
+  ///
+  /// In tr, this message translates to:
+  /// **'Sıfırla'**
+  String get focusResetButton;
+
+  /// Bir odak seansı kaydedilince gösterilen SnackBar metni
+  ///
+  /// In tr, this message translates to:
+  /// **'{minutes} dakika odaklandın! Harika iş.'**
+  String focusSessionSavedMessage(int minutes);
+
+  /// Bir dakikadan kısa bir odak seansı kaydedilmeye çalışılınca gösterilen mesaj
+  ///
+  /// In tr, this message translates to:
+  /// **'En az 1 dakika odaklanmalısın.'**
+  String get focusSessionTooShortMessage;
+
+  /// Odak Sayacı sayfasındaki toplam odak süresi etiketi
+  ///
+  /// In tr, this message translates to:
+  /// **'Toplam Odak Süren'**
+  String get focusTotalTimeLabel;
+
+  /// Profildeki 'Zibo ile Bağın' listesinde toplam odak süresini gösteren satırın başlığı
+  ///
+  /// In tr, this message translates to:
+  /// **'Odak Süresi'**
+  String get profileFocusRowTitle;
+
+  /// Profildeki Odak Süresi satırının alt metni
+  ///
+  /// In tr, this message translates to:
+  /// **'Toplam {durationText} odaklandın'**
+  String profileFocusRowSubtitle(String durationText);
+
+  /// Instagram takip kartının başlığı
+  ///
+  /// In tr, this message translates to:
+  /// **'Bizi Instagram\'da Takip Edin'**
+  String get instagramFollowCardTitle;
+
+  /// Instagram takip kartının açıklama metni
+  ///
+  /// In tr, this message translates to:
+  /// **'@zibo.app hesabımızı takip et; 100 ZC, bir tema ve bir kostüm kazan!'**
+  String get instagramFollowCardBody;
+
+  /// Instagram takip kartındaki Instagram'ı açma butonu
+  ///
+  /// In tr, this message translates to:
+  /// **'Instagram\'ı Aç'**
+  String get instagramFollowOpenButton;
+
+  /// Instagram takip kartındaki ödül talep butonu
+  ///
+  /// In tr, this message translates to:
+  /// **'Takip Ettim'**
+  String get instagramFollowClaimButton;
+
+  /// Instagram takip ödülü verilince gösterilen SnackBar metni
+  ///
+  /// In tr, this message translates to:
+  /// **'Ödülün hesabına eklendi! 🎉'**
+  String get instagramFollowRewardGrantedMessage;
 }
 
 class _AppLocalizationsDelegate
