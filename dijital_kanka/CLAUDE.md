@@ -2651,14 +2651,28 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
 - **2026 yeni özellik — örnek öneri metinleri (placeholder), her gün değişen.** Kullanıcı isteği:
   bugünün formundaki üç metin kutusuna, kullanıcı yazmaya başlamadan önce ilham verici bir öneri
   (`hintText`) gösterilsin, her gün değişsin. YENİ [gratitude_prompts.dart](lib/data/gratitude_prompts.dart)
-  — 27 Türkçe öneri (`gratitudePromptsTr`) + `gratitudePromptForField(DateTime, int)` saf/
-  deterministik fonksiyonu.
-  - **BİLEREK yalnızca Türkçe** — `zibo_event_messages.dart`'ın "TR only for now" kararıyla AYNI
-    gerekçe (kullanıcı yalnızca Türkçe örnek verdi, çeviri istenmedi) — `motivation_pools.dart`'ın
-    tam TR/EN/ES çevirisinden FARKLI, daha dar bir kapsam kararı.
+  — `gratitudePromptForField(DateTime, int, Locale)` saf/deterministik fonksiyonu.
+  > **TARİHSEL/DÜZELTME NOT — İLK sürüm BİLEREK yalnızca Türkçe bırakılmıştı**
+  > (`zibo_event_messages.dart`'ın "TR only for now" kararıyla AYNI gerekçe — kullanıcı yalnızca
+  > Türkçe örnek vermişti, çeviri İSTENMEMİŞTİ). Kullanıcı GERÇEK cihazda test edip "diğer dillere
+  > geçince de Türkçe kalıyor" diye bildirdi — bu, diğer TÜM söz havuzlarının
+  > (`motivation_pools.dart`/`zibo_messages.dart` vb.) zaten uyguladığı "uygulama dili neyse içerik
+  > de o dilde olsun" beklentisiyle tutarsızdı; İLK kapsam kararı YANLIŞ çıktı, düzeltildi (bkz.
+  > altta).
+  - **Artık `motivation_pools.dart`'taki BİREBİR AYNI `xTr/xEn/xEs` + `xForLocale(Locale)` deseni**
+    — `gratitudePromptsTr`/`gratitudePromptsEn`/`gratitudePromptsEs` (her biri 27 öneri, BİREBİR
+    aynı uzunlukta — index-tabanlı seçimin güvenle çalışması için şart), çeviriler kelimesi
+    kelimesine DEĞİL, Zibo'nun sıcak tonunu o dilde doğal duracak şekilde koruyan bir UYARLAMA
+    (`motivation_pools.dart`'ın AYNI felsefesi). `gratitudePromptsForLocale(Locale)` per-pool bir
+    Türkçe geri düşüşü de taşıyor (bir dil ileride boşaltılsa bile TÜM sistem Türkçe'ye düşmez).
+  - **`gratitude_journal_screen.dart`, `Localizations.localeOf(context)`'ten ZATEN türettiği
+    `locale` değişkenini** (aynı değişken `gratitudeQuotesForLocale`/`applyAddressTerm` için de
+    kullanılıyor) `gratitudePromptForField`'a üçüncü parametre olarak geçiriyor — dil değişince
+    (Ayarlar > Dil) konuşma balonlarındaki AYNI "index sabit, metin o anki dile göre çözülür"
+    deseniyle ANINDA doğru dile geçiyor.
   - **Rotasyon deterministik gün-bazlı, gerçek rastgele DEĞİL** — `gratitudePromptForField(date,
-    fieldIndex)` yıl+ay+gün'den türeyen basit bir "gün sırası" + `fieldIndex * 9`'luk sabit bir
-    ofsetle (havuzun üçte biri, 27/3=9) havuzdan seçim yapıyor — üç alan AYNI ANDA farklı
+    fieldIndex, locale)` yıl+ay+gün'den türeyen basit bir "gün sırası" + `fieldIndex * 9`'luk sabit
+    bir ofsetle (havuzun üçte biri, 27/3=9) havuzdan seçim yapıyor — üç alan AYNI ANDA farklı
     önerilerle dolup HEPSİ birlikte, HER GÜN değişiyor. Gerçek rastgelelik/tekrar-önleme mekanizması
     GEREKMEDİ çünkü placeholder yalnızca kullanıcı yazmaya BAŞLAMADAN ÖNCE görünüyor (normal
     `TextField` placeholder davranışı, `hintText` metin girilince otomatik kayboluyor) —
@@ -2667,9 +2681,12 @@ test/              # flutter_test testleri (provider'lar için birim, widget_tes
     eklendi** — `_GratitudeEditDialogContent`'in (geçmiş bir günü DÜZENLEME diyaloğu) alanlarına
     BİLEREK eklenmedi, çünkü o alanlar zaten MEVCUT metinle dolu geliyor, placeholder hiç
     görünmeyecekti.
-  - **Test:** YENİ `test/gratitude_prompts_test.dart` (5 test — havuz büyüklüğü/tekrarsızlığı, aynı
-    gün üç alanın farklı öneriler döndüğü, aynı gün+alan için deterministik olduğu, gün değişince
-    önerinin değiştiği, döndürülen her önerinin gerçekten havuzda olduğu).
+  - **Test:** `test/gratitude_prompts_test.dart` (10 test — üç havuzun da büyüklüğü/tekrarsızlığı/
+    BİREBİR eşit uzunluğu, aynı gün üç alanın farklı öneriler döndüğü, aynı gün+alan için
+    deterministik olduğu, gün değişince önerinin değiştiği, döndürülen her önerinin gerçekten
+    havuzda olduğu, EN/ES'in doğru havuzdan döndüğü, bilinmeyen bir dilin Türkçe'ye düştüğü, AYNI
+    gün+alan için üç dilin metninin FARKLI olduğu, `gratitudePromptsForLocale`'in doğru havuzu
+    döndürdüğü).
 
 ### Günlük Ruh Hali Takibi ([mood_tracking_screen.dart](lib/screens/mood_tracking_screen.dart), [mood_provider.dart](lib/providers/mood_provider.dart), [mood.dart](lib/models/mood.dart), [mood_quotes.dart](lib/data/mood_quotes.dart))
 - **Yerleşim: alt çubuktaki Z butonunun açtığı modül menüsünden erişiliyor** (bkz. "Alt Gezinme

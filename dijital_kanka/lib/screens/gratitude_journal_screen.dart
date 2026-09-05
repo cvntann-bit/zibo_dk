@@ -200,6 +200,7 @@ class _GratitudeJournalScreenState extends State<GratitudeJournalScreen> {
                             hintText: gratitudePromptForField(
                               DateTime.now(),
                               i,
+                              locale,
                             ),
                           ),
                         ),
