@@ -358,12 +358,27 @@ class _GlowRing extends StatelessWidget {
           SizedBox(
             width: size,
             height: size,
-            child: CircularProgressIndicator(
-              value: progress,
-              strokeWidth: 10,
-              backgroundColor: Colors.white.withValues(alpha: 0.12),
-              valueColor: AlwaysStoppedAnimation<Color>(color),
-            ),
+            // Serbest modda bir HEDEF (dolayısıyla bir "ilerleme oranı")
+            // olmadığı için `progress` `null` geliyor — `CircularProgressIndicator
+            // (value: null)` Material'ın VARSAYILAN belirsiz (indeterminate)
+            // döngüsüne düşer (sürekli hızlı dönen bir yay). Kullanıcı
+            // isteğiyle bu KALDIRILDI — Serbest modda sabit/durağan, DÖNMEYEN
+            // dolu bir halka (renkli border) çiziliyor; yalnızca belirli
+            // süreli modlarda (`progress != null`) gerçek ilerlemeyi
+            // gösteren dolan halka kullanılıyor.
+            child: progress == null
+                ? DecoratedBox(
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(color: color, width: 10),
+                    ),
+                  )
+                : CircularProgressIndicator(
+                    value: progress,
+                    strokeWidth: 10,
+                    backgroundColor: Colors.white.withValues(alpha: 0.12),
+                    valueColor: AlwaysStoppedAnimation<Color>(color),
+                  ),
           ),
           child,
         ],
