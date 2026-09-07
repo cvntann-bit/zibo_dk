@@ -172,7 +172,11 @@ class _BuyCoinsSection extends StatelessWidget {
           crossAxisCount: 2,
           mainAxisSpacing: 12,
           crossAxisSpacing: 12,
-          childAspectRatio: 0.8,
+          // 2026: kartlara "+N bonus" satırı eklendi (bkz. `_PackageCard`) —
+          // oran 0.8'den 0.72'ye düşürüldü ki ekstra satır taşmasın (bkz.
+          // CLAUDE.md'deki tekrarlayan "yeni içerik → childAspectRatio
+          // overflow" dersi; Mağaza widget testi doğruluyor).
+          childAspectRatio: 0.72,
           children: [
             for (final package in coinPackages) _PackageCard(package: package),
           ],
@@ -469,7 +473,8 @@ class _PackageCardState extends State<_PackageCard> {
     setState(() => _loading = false);
     if (!context.mounted) return;
     if (success) {
-      _showCoinsAddedSnackBar(context, widget.package.coinAmount);
+      // Bonus dahil GERÇEK eklenen tutar (bkz. CoinPackage.totalCoins).
+      _showCoinsAddedSnackBar(context, widget.package.totalCoins);
     } else {
       final l10n = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context)
@@ -505,6 +510,27 @@ class _PackageCardState extends State<_PackageCard> {
                 context,
               ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
             ),
+            if (widget.package.bonusCoins > 0) ...[
+              const SizedBox(height: 2),
+              // Yeşil, hafif "parlayan" (glow) bonus etiketi — kullanıcı
+              // isteği. Renk BİLEREK sabit (aktif temadan bağımsız), tıpkı
+              // "Zibo ADS" kırmızısı gibi — açık/koyu temada da aynı canlı
+              // yeşil okunur.
+              Text(
+                l10n.storeCoinBonus(widget.package.bonusCoins),
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: Color(0xFF00E676),
+                  fontWeight: FontWeight.w800,
+                  fontSize: 12.5,
+                  letterSpacing: 0.2,
+                  shadows: [
+                    Shadow(color: Color(0xB300E676), blurRadius: 10),
+                    Shadow(color: Color(0x6600E676), blurRadius: 20),
+                  ],
+                ),
+              ),
+            ],
             const SizedBox(height: 6),
             SizedBox(
               width: double.infinity,

@@ -12,6 +12,7 @@ class CoinPackage {
     required this.id,
     required this.coinAmount,
     required this.imageAsset,
+    this.bonusCoins = 0,
     this.price,
     this.imageScale = 1.0,
   });
@@ -19,6 +20,18 @@ class CoinPackage {
   final String id;
   final int coinAmount;
   final String imageAsset;
+
+  /// Paketin "temel" miktarına ([coinAmount]) EK olarak, satın almada
+  /// bakiyeye eklenen bonus ZC — Mağaza kartında ayrı, yeşil parlak bir
+  /// "+N bonus" satırı olarak gösterilir (bkz. `store_screen.dart`
+  /// `_PackageCard`). `0` (varsayılan) = bonus yok, satır hiç çizilmez.
+  /// Gerçekte teslim edilen tutar HER ZAMAN [totalCoins]'tir (bkz.
+  /// `CoinProvider.purchaseCoinPackage`/`_onOrphanedPurchase`).
+  final int bonusCoins;
+
+  /// Satın almada bakiyeye eklenen GERÇEK toplam: [coinAmount] + [bonusCoins].
+  int get totalCoins => coinAmount + bonusCoins;
+
   final PackagePrice? price;
 
   /// `_PackageCard`'ın ortak görsel çerçevesine (bkz. `store_screen.dart`)

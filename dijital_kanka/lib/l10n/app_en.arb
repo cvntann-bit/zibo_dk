@@ -88,6 +88,7 @@
   "storeAdFreeCardSubtitle": "Turn off all ads for good",
   "storePackagesSectionTitle": "Coin Packages",
   "storeCoinAmount": "{amount} ZC",
+  "storeCoinBonus": "+{amount} bonus",
   "storeBuyButton": "Buy",
   "storeFreeSectionTitle": "Free",
   "storeWatchAdTitle": "Watch an Ad",

@@ -767,15 +767,23 @@ void main() {
       expect(find.text('250 ZC'), findsOneWidget);
       expect(find.text('500 ZC'), findsOneWidget);
       expect(find.text('1000 ZC'), findsOneWidget);
+      expect(find.text('5000 ZC'), findsOneWidget);
       expect(find.text('10000 ZC'), findsOneWidget);
+
+      // Her paketin yeşil parlak "+N bonus" satırı (bkz. CoinPackage.
+      // bonusCoins / StoreScreen._PackageCard).
+      expect(find.text('+10 bonus'), findsOneWidget);
+      expect(find.text('+250 bonus'), findsOneWidget);
+      expect(find.text('+500 bonus'), findsOneWidget);
 
       // "Satın Al" yerine gerçek (şimdilik sabit/görsel) TL fiyatları
       // gösterilmeli (bkz. CoinPackage.price / PackagePrice.formatted).
-      expect(find.text('19,99 ₺'), findsOneWidget);
-      expect(find.text('44,99 ₺'), findsOneWidget);
-      expect(find.text('84,99 ₺'), findsOneWidget);
-      expect(find.text('159,99 ₺'), findsOneWidget);
-      expect(find.text('1.499,99 ₺'), findsOneWidget);
+      expect(find.text('16,99 ₺'), findsOneWidget);
+      expect(find.text('37,99 ₺'), findsOneWidget);
+      expect(find.text('69,99 ₺'), findsOneWidget);
+      expect(find.text('129,99 ₺'), findsOneWidget);
+      expect(find.text('599,99 ₺'), findsOneWidget);
+      expect(find.text('1.099,99 ₺'), findsOneWidget);
     },
   );
 
@@ -814,10 +822,11 @@ void main() {
     await tester.tap(find.byKey(const Key('googleLinkPromoSkipButton')));
     await tester.pumpAndSettle();
 
-    expect(find.textContaining('100 Zibo Coin hesabına eklendi'), findsOneWidget);
+    // 100 ZC paketi + 10 bonus = 110 (bkz. CoinPackage.totalCoins).
+    expect(find.textContaining('110 Zibo Coin hesabına eklendi'), findsOneWidget);
     // Mağaza artık bir sekme olduğu için başlık çubuğu (ve dolayısıyla
     // coin bakiyesi) sayfadan ayrılmadan hep görünür durumda.
-    expect(find.text('100'), findsOneWidget); // AppBar'daki güncel bakiye
+    expect(find.text('110'), findsOneWidget); // AppBar'daki güncel bakiye
   });
 
   testWidgets('Mağazadan reklam izleyince 20 Zibo Coin kazanılır', (

@@ -58,8 +58,10 @@ service cloud.firestore {
         //       CoinProvider._record), yani tek bir Firestore yazımı HER
         //       ZAMAN TEK bir mekaniğe karşılık gelir, asla birden fazlası
         //       birikmiş olarak gelmez.
-        //       - Kazanma üst sınırı 10000 = en büyük coin paketi
-        //         (coin_packages.dart, `coins_10000`).
+        //       - Kazanma üst sınırı 10500 = en büyük coin paketi
+        //         (coin_packages.dart, `coins_10000`): 10000 temel + 500
+        //         bonus (`CoinPackage.totalCoins`). **Bir pakete bonus
+        //         eklenince/paket büyüyünce bu sayı da büyümeli.**
         //       - Harcama üst sınırı 33000 = en pahalı kostüm
         //         (costumes.dart, Elmas Kaplama).
         //       **BU İKİ SAYI, ileride daha pahalı bir paket/kostüm/tema
@@ -80,7 +82,7 @@ service cloud.firestore {
               - (request.resource.data.totalSpent
                  - resource.data.get('totalSpent', 0))
           && (request.resource.data.totalEarned
-              - resource.data.get('totalEarned', 0)) <= 10000
+              - resource.data.get('totalEarned', 0)) <= 10500
           && (request.resource.data.totalSpent
               - resource.data.get('totalSpent', 0)) <= 33000;
 

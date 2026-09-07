@@ -404,6 +404,15 @@
       }
     }
   },
+  "storeCoinBonus": "+{amount} bonus",
+  "@storeCoinBonus": {
+    "description": "Bir coin paketinin temel miktarına ek olarak verilen bonus ZC'yi gösteren, kartta yeşil parlak yazılan kısa etiket",
+    "placeholders": {
+      "amount": {
+        "type": "int"
+      }
+    }
+  },
   "storeBuyButton": "Satın Al",
   "@storeBuyButton": {
     "description": "Gerçek fiyat henüz bağlanmamış bir paketin satın alma butonunun etiketi"

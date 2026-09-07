@@ -305,6 +305,11 @@ class AppLocalizationsTr extends AppLocalizations {
   }
 
   @override
+  String storeCoinBonus(int amount) {
+    return '+$amount bonus';
+  }
+
+  @override
   String get storeBuyButton => 'Satın Al';
 
   @override

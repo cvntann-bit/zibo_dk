@@ -458,9 +458,11 @@ class CoinProvider extends ChangeNotifier {
     if (success) {
       // `playRewardSound: false` — bu bir "kazanma" değil "satın alma";
       // kendi ayrı sesi aşağıda çalınıyor (bkz. _earn dokümantasyonu).
+      // Bakiyeye eklenen tutar `totalCoins` (miktar + bonus) — bkz.
+      // `CoinPackage.bonusCoins`.
       _earn(
-        package.coinAmount,
-        'Satın alma: ${package.coinAmount} ZC',
+        package.totalCoins,
+        _purchaseReason(package),
         playRewardSound: false,
         awardXp: false,
       );
@@ -490,12 +492,21 @@ class CoinProvider extends ChangeNotifier {
     }
     if (package == null) return;
     _earn(
-      package.coinAmount,
-      'Satın alma (gecikmeli teslim): ${package.coinAmount} ZC',
+      package.totalCoins,
+      'Gecikmeli teslim — ${_purchaseReason(package)}',
       playRewardSound: false,
       awardXp: false,
     );
     if (_isSoundEnabled()) _soundEffectsService.playCoinPurchase();
+  }
+
+  /// Satın alma işlem geçmişi etiketi — bonus varsa onu da yazar (ör.
+  /// "Satın alma: 1000 ZC (+100 bonus)").
+  static String _purchaseReason(CoinPackage package) {
+    final base = 'Satın alma: ${package.coinAmount} ZC';
+    return package.bonusCoins > 0
+        ? '$base (+${package.bonusCoins} bonus)'
+        : base;
   }
 
   // --- Harcama mekanikleri ---------------------------------------------

@@ -88,6 +88,7 @@
   "storeAdFreeCardSubtitle": "Desactiva todos los anuncios para siempre",
   "storePackagesSectionTitle": "Paquetes de Monedas",
   "storeCoinAmount": "{amount} ZC",
+  "storeCoinBonus": "+{amount} de regalo",
   "storeBuyButton": "Comprar",
   "storeFreeSectionTitle": "Gratis",
   "storeWatchAdTitle": "Ver un Anuncio",

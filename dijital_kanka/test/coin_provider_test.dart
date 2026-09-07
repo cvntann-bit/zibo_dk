@@ -6,6 +6,7 @@ import 'dart:async';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:dijital_kanka/data/coin_packages.dart';
 import 'package:dijital_kanka/models/coin_economy.dart';
 import 'package:dijital_kanka/models/coin_package.dart';
 import 'package:dijital_kanka/providers/coin_provider.dart';
@@ -123,6 +124,21 @@ void main() {
       expect(success, isFalse);
       expect(provider.balance, 0);
     });
+
+    test('Bonus\'lu bir paket satın alınca bakiyeye miktar + bonus eklenir', () async {
+      final provider = CoinProvider();
+      final bonusPackage = coinPackages.firstWhere((p) => p.id == 'coins_1000');
+      expect(bonusPackage.bonusCoins, greaterThan(0));
+
+      final success = await provider.purchaseCoinPackage(bonusPackage);
+
+      expect(success, isTrue);
+      expect(provider.balance, bonusPackage.totalCoins);
+      expect(
+        provider.balance,
+        bonusPackage.coinAmount + bonusPackage.bonusCoins,
+      );
+    });
   });
 
   group('CoinProvider - gerçek IAP: canlı fiyat + yetim satın alma teslimi', () {
@@ -154,8 +170,9 @@ void main() {
         service.emitOrphaned('coins_100'); // gerçek bir coinPackages id'si
         await Future<void>.delayed(Duration.zero);
 
-        expect(provider.balance, 100);
-        expect(provider.totalEarned, 100);
+        // coins_100 = 100 temel + 10 bonus (bkz. CoinPackage.totalCoins).
+        expect(provider.balance, 110);
+        expect(provider.totalEarned, 110);
       },
     );
 

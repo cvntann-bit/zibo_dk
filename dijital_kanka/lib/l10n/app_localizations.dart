@@ -628,6 +628,12 @@ abstract class AppLocalizations {
   /// **'{amount} ZC'**
   String storeCoinAmount(int amount);
 
+  /// Bir coin paketinin temel miktarına ek olarak verilen bonus ZC'yi gösteren, kartta yeşil parlak yazılan kısa etiket
+  ///
+  /// In tr, this message translates to:
+  /// **'+{amount} bonus'**
+  String storeCoinBonus(int amount);
+
   /// Gerçek fiyat henüz bağlanmamış bir paketin satın alma butonunun etiketi
   ///
   /// In tr, this message translates to:

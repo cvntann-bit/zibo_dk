@@ -308,6 +308,11 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
+  String storeCoinBonus(int amount) {
+    return '+$amount de regalo';
+  }
+
+  @override
   String get storeBuyButton => 'Comprar';
 
   @override
