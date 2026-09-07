@@ -333,13 +333,26 @@ void main() {
       max: 10,
     );
 
-    test('EN/ES havuzları henüz boş — TR\'ye düşer (bkz. dosya dokümantasyonu)', () {
+    test('EN/ES havuzları dolu — TR ile AYNI uzunlukta, tekrarsız, TR\'den farklı', () {
       for (final type in ZiboEventType.values) {
         final tr = eventMessagesForLocale(type, const Locale('tr'));
         final en = eventMessagesForLocale(type, const Locale('en'));
         final es = eventMessagesForLocale(type, const Locale('es'));
-        expect(en, tr);
-        expect(es, tr);
+        expect(en, hasLength(tr.length));
+        expect(es, hasLength(tr.length));
+        expect(en.toSet(), hasLength(en.length));
+        expect(es.toSet(), hasLength(es.length));
+        expect(en, isNot(tr));
+        expect(es, isNot(tr));
+      }
+    });
+
+    test('bilinmeyen bir dil TR\'ye düşer', () {
+      for (final type in ZiboEventType.values) {
+        expect(
+          eventMessagesForLocale(type, const Locale('de')),
+          eventMessagesForLocale(type, const Locale('tr')),
+        );
       }
     });
   });
