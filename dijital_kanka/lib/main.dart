@@ -360,6 +360,27 @@ class _AppRootState extends State<_AppRoot> {
   }
 }
 
+/// "Güne bağlı" bir provider'ın `now:` parametresi için, `create` context'ini
+/// KAPATMAYAN (capture etmeyen) bir saat closure'ı üretir.
+///
+/// **Crashlytics — `_InheritedProviderScopeElement.widget` / "Null check
+/// operator used on a null value" (Xiaomi + Android 14 activity restoration).**
+/// Eski desen `now: () => context.read<TrustedTimeProvider>().now()` idi:
+/// closure `create` context'ini SAKLIYORDU ve sonradan (uygulama arka plandan
+/// öne gelince `RootScreen.didChangeAppLifecycleState` → `HomeWidgetSync
+/// Coordinator` → `DailyRewardsProvider.todayIndex` → `_now()` zinciriyle)
+/// çağrıldığında, o context'in elementi geçici olarak "deactivated" olabildiği
+/// için `context.read`'in `visitAncestorElements` gezintisi unmount edilmiş bir
+/// elemente çarpıp çöküyordu. Burada `TrustedTimeProvider` BİR KEZ, `create`
+/// anında (ağaç kararlıyken) çözülüp elde edilen ÖRNEĞE bağlanıyor —
+/// döndürülen closure artık hiçbir `BuildContext`'e dokunmuyor. `Trusted
+/// TimeProvider` listede EN BAŞTA (bkz. altta) olduğu için onu kullanan her
+/// provider'dan daha uzun yaşıyor, dangling referans riski yok.
+DateTime Function() _trustedNow(BuildContext context) {
+  final trustedTime = context.read<TrustedTimeProvider>();
+  return trustedTime.now;
+}
+
 class DijitalKankaApp extends StatelessWidget {
   const DijitalKankaApp({
     super.key,
@@ -431,7 +452,7 @@ class DijitalKankaApp extends StatelessWidget {
         // (bkz. `RootScreen`) DIŞARIDAN dinleniyor.
         ChangeNotifierProvider(
           create: (context) => AppStreakProvider(
-            now: () => context.read<TrustedTimeProvider>().now(),
+            now: _trustedNow(context),
             uid: uid,
           ),
         ),
@@ -453,16 +474,24 @@ class DijitalKankaApp extends StatelessWidget {
         // `context.read<XpProvider>()` kullanıyor (bkz. altta).
         ChangeNotifierProvider(create: (_) => XpProvider(uid: uid)),
         ChangeNotifierProvider(
-          create: (context) => CoinProvider(
-            uid: uid,
-            adService: adService ?? AppodealAdService(),
-            purchaseService: purchaseService ?? InAppPurchasePurchaseService(),
-            soundEffectsService: AudioPlayersSoundEffectsService(),
-            isSoundEnabled: () =>
-                context.read<SoundEffectsProvider>().enabled,
-            now: () => context.read<TrustedTimeProvider>().now(),
-            onXpEarned: (amount) => context.read<XpProvider>().addXp(amount),
-          ),
+          create: (context) {
+            // `isSoundEnabled`/`onXpEarned`/`now` closure'ları da `create`
+            // context'ini KAPATMAMALI (bkz. `_trustedNow` dokümantasyonu —
+            // aynı "deactivated element" çökme sınıfı). İlgili provider'lar
+            // BİR KEZ, burada çözülüp örneklerine bağlanıyor.
+            final soundEffects = context.read<SoundEffectsProvider>();
+            final xp = context.read<XpProvider>();
+            return CoinProvider(
+              uid: uid,
+              adService: adService ?? AppodealAdService(),
+              purchaseService:
+                  purchaseService ?? InAppPurchasePurchaseService(),
+              soundEffectsService: AudioPlayersSoundEffectsService(),
+              isSoundEnabled: () => soundEffects.enabled,
+              now: _trustedNow(context),
+              onXpEarned: (amount) => xp.addXp(amount),
+            );
+          },
         ),
         ChangeNotifierProvider(create: (_) => CostumeProvider(uid: uid)),
         // 2026 yeni özellik — Kurucu Üye rozeti artık Google hesabına
@@ -482,7 +511,7 @@ class DijitalKankaApp extends StatelessWidget {
         // tetikleyemesin diye).
         ChangeNotifierProvider(
           create: (context) => DailyRewardsProvider(
-            now: () => context.read<TrustedTimeProvider>().now(),
+            now: _trustedNow(context),
             uid: uid,
           ),
         ),
@@ -493,7 +522,7 @@ class DijitalKankaApp extends StatelessWidget {
         // 2026 yeni özellik — Odak Sayacı modülü (bkz. CLAUDE.md).
         ChangeNotifierProvider(
           create: (context) => FocusProvider(
-            now: () => context.read<TrustedTimeProvider>().now(),
+            now: _trustedNow(context),
             uid: uid,
           ),
         ),
@@ -503,27 +532,27 @@ class DijitalKankaApp extends StatelessWidget {
         ),
         ChangeNotifierProvider(
           create: (context) => GoalsProvider(
-            now: () => context.read<TrustedTimeProvider>().now(),
+            now: _trustedNow(context),
             uid: uid,
           ),
         ),
         ChangeNotifierProvider(
           create: (context) => GratitudeProvider(
-            now: () => context.read<TrustedTimeProvider>().now(),
+            now: _trustedNow(context),
             uid: uid,
           ),
         ),
         ChangeNotifierProvider(create: (_) => LocaleProvider(uid: uid)),
         ChangeNotifierProvider(
           create: (context) => ManifestProvider(
-            now: () => context.read<TrustedTimeProvider>().now(),
+            now: _trustedNow(context),
             uid: uid,
           ),
         ),
         ChangeNotifierProvider(create: (_) => MoneyProvider(uid: uid)),
         ChangeNotifierProvider(
           create: (context) => MoodProvider(
-            now: () => context.read<TrustedTimeProvider>().now(),
+            now: _trustedNow(context),
             uid: uid,
           ),
         ),
@@ -548,7 +577,7 @@ class DijitalKankaApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => OnboardingProvider(uid: uid)),
         ChangeNotifierProvider(
           create: (context) => ProfileProvider(
-            now: () => context.read<TrustedTimeProvider>().now(),
+            now: _trustedNow(context),
             uid: uid,
           ),
         ),
@@ -559,7 +588,7 @@ class DijitalKankaApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => ThemeProvider(uid: uid)),
         ChangeNotifierProvider(
           create: (context) => WaterProvider(
-            now: () => context.read<TrustedTimeProvider>().now(),
+            now: _trustedNow(context),
             uid: uid,
           ),
         ),

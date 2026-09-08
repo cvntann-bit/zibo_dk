@@ -311,6 +311,10 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
+    // Bu geri çağrı, state ağaçtan ayrılırken (deactivate → dispose arası)
+    // hâlâ tetiklenebiliyor — aşağıdaki `context.read` çağrıları o anda
+    // güvenli değil. `mounted` guard'ı en ucuz savunma.
+    if (!mounted) return;
     // "Geri Kazanma" push bildiriminin (bkz. functions/src/index.ts)
     // "kaç gündür açılmadı" kontrolü için TEK veri kaynağı — uygulama her
     // öne geldiğinde tazeleniyor.
