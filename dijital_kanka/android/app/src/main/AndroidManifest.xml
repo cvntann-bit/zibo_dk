@@ -23,6 +23,21 @@
     <uses-permission
         android:name="android.permission.READ_EXTERNAL_STORAGE"
         android:maxSdkVersion="32"/>
+    <!-- 2026 — Appodeal reklam mediasyonu. Bazı reklam ağı adaptörleri
+         (özellikle ileride eklenebilecek Meta / Mintegral / InMobi) manifest
+         merge sırasında konum izinlerini sessizce enjekte edebiliyor. Zibo
+         konumu HİÇBİR özellik için kullanmıyor ve Google Play, konum iznini
+         "yalnızca reklam/analitik amacıyla" istemeyi AÇIKÇA yasaklıyor (bkz.
+         Appodeal "What's next" dokümanı). Bu yüzden merge'de gelseler bile
+         `tools:node="remove"` ile zorla çıkarılıyorlar — mevcut adaptör
+         setinde (Unity/AppLovin/BidMachine/Vungle) gelmiyorlar ama bu bir
+         güvenlik ağı. -->
+    <uses-permission
+        android:name="android.permission.ACCESS_COARSE_LOCATION"
+        tools:node="remove"/>
+    <uses-permission
+        android:name="android.permission.ACCESS_FINE_LOCATION"
+        tools:node="remove"/>
     <application
         android:label="Zibo"
         android:name="${applicationName}"

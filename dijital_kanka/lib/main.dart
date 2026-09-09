@@ -320,9 +320,57 @@ void main() async {
   // hatayı yutup uygulamanın reklamsız çalışmaya devam etmesine izin verir.
   try {
     Appodeal.setTesting(kDebugMode);
+    // **2026 — CMP (Consent Management Platform).** Reklam SDK'sı, ilk reklam
+    // isteğinden ÖNCE kullanıcının rıza durumunu bilmeli — bu yüzden
+    // `initialize` DOĞRUDAN değil, consent formu tamamlandıktan SONRA
+    // çağrılıyor. `loadAndShowIfRequired` yalnızca GEREKLİ olduğunda (AB/EEA
+    // kullanıcısı, düzenlemeye tabi ABD eyaletleri) form gösteriyor; Türkiye
+    // gibi yerlerde form HİÇ çıkmadan callback anında dönüyor.
+    var appodealStarted = false;
+    void startAppodealOnce() {
+      if (appodealStarted) return;
+      appodealStarted = true;
+      _initializeAppodeal();
+    }
+
+    Appodeal.ConsentForm.loadAndShowIfRequired(
+      appKey: AppodealConfig.appKey,
+      onConsentFormDismissed: (error) {
+        if (error != null) {
+          debugPrint('Appodeal consent error: ${error.description}');
+          try {
+            FirebaseCrashlytics.instance.recordError(
+              'Appodeal consent form error: ${error.description}',
+              null,
+              reason: 'appodeal-consent',
+              fatal: false,
+            );
+          } catch (_) {}
+        }
+        startAppodealOnce();
+      },
+    );
+    // Savunma katmanı: consent callback'i herhangi bir sebeple (plugin/native
+    // takılması) HİÇ gelmezse reklamlar o oturum boyunca sonsuza dek
+    // yüklenmez — 10 sn sonra yine de başlat.
+    Future<void>.delayed(const Duration(seconds: 10), startAppodealOnce);
+  } catch (_) {
+    _initializeAppodeal();
+  }
+  runApp(_AppRoot(initialUid: uid));
+}
+
+/// `Appodeal.initialize` çağrısı — consent formu tamamlandıktan sonra
+/// (`main()`'de) çağrılır. Ayrı bir fonksiyon çünkü İKİ yerden tetikleniyor:
+/// consent callback'i VE 10 sn'lik savunma zamanlayıcısı (bkz. `main()`).
+void _initializeAppodeal() {
+  try {
     Appodeal.initialize(
       appKey: AppodealConfig.appKey,
-      adTypes: const [AppodealAdType.RewardedVideo, AppodealAdType.Interstitial],
+      adTypes: const [
+        AppodealAdType.RewardedVideo,
+        AppodealAdType.Interstitial,
+      ],
       // Init hataları eskiden tamamen yutuluyordu — "reklam gelmiyor"
       // tanısını imkânsız kılıyordu. Artık Crashlytics'e non-fatal olarak
       // loglanıyor (bir ağ adaptörü eksik/uyumsuzsa veya App Key yanlışsa
@@ -344,7 +392,6 @@ void main() async {
       },
     );
   } catch (_) {}
-  runApp(_AppRoot(initialUid: uid));
 }
 
 /// `DijitalKankaApp`'i (dolayısıyla TÜM `MultiProvider` ağacını) hangi

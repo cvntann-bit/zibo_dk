@@ -31,7 +31,7 @@ library;
 import 'package:flutter/widgets.dart';
 
 const String privacyPolicyTr = '''
-Son güncelleme: 21 Ağustos 2026
+Son güncelleme: 9 Eylül 2026
 
 Bu Gizlilik Politikası, Zibo mobil uygulamasını ("Zibo", "uygulama") kullanırken hangi verilerin toplandığını, nasıl kullanıldığını ve haklarınızın neler olduğunu açıklar.
 
@@ -74,7 +74,7 @@ Verileriniz Google'ın Firebase altyapısında (Cloud Firestore, Authentication)
 
 5. Reklamlar
 
-Uygulamada Google AdMob ve benzeri reklam ortakları aracılığıyla reklamlar gösterilir. Bu ortaklar, reklam kişiselleştirmesi için cihazınızın reklam kimliği gibi verileri kullanabilir. Google'ın reklam politikaları hakkında bilgi için: https://policies.google.com/technologies/ads
+Uygulamada Appodeal mediasyon platformu ve onun reklam ortakları (AppLovin, Unity Ads, Vungle, BidMachine ve benzerleri) aracılığıyla reklamlar gösterilir. Bu ortaklar, reklam sunumu ve kişiselleştirmesi için cihazınızın reklam kimliği (Advertising ID), IP adresi ve uygulama kullanım verileri gibi bilgileri işleyebilir. Avrupa Ekonomik Alanı, Birleşik Krallık ve düzenlemeye tabi bazı bölgelerdeki kullanıcılara, reklam verisi işlenmeden önce bir rıza (consent) ekranı gösterilir. Appodeal'in gizlilik politikası için: https://www.appodeal.com/privacy-policy/ — Google'ın reklam politikaları için: https://policies.google.com/technologies/ads
 
 6. Verilerinizin Saklanma Süresi
 
@@ -98,7 +98,7 @@ Sorularınız için: contact@getzibo.com
 ''';
 
 const String privacyPolicyEn = '''
-Last updated: August 21, 2026
+Last updated: September 9, 2026
 
 This Privacy Policy explains what data is collected, how it is used, and what rights you have when using the Zibo mobile app ("Zibo", "the app").
 
@@ -141,7 +141,7 @@ Your data is stored on Google's Firebase infrastructure (Cloud Firestore, Authen
 
 5. Advertising
 
-The app displays ads through Google AdMob and similar ad partners. These partners may use data such as your device's advertising ID for ad personalization. For information on Google's advertising policies, see: https://policies.google.com/technologies/ads
+The app displays ads through the Appodeal mediation platform and its ad partners (AppLovin, Unity Ads, Vungle, BidMachine and others). These partners may process data such as your device's Advertising ID, IP address and app usage information to deliver and personalize ads. Users in the European Economic Area, the United Kingdom and certain regulated regions are shown a consent screen before any advertising data is processed. For Appodeal's privacy policy, see: https://www.appodeal.com/privacy-policy/ — For Google's advertising policies, see: https://policies.google.com/technologies/ads
 
 6. How Long We Keep Your Data
 
@@ -165,7 +165,7 @@ For questions: contact@getzibo.com
 ''';
 
 const String privacyPolicyEs = '''
-Última actualización: 21 de agosto de 2026
+Última actualización: 9 de septiembre de 2026
 
 Esta Política de Privacidad explica qué datos se recopilan, cómo se utilizan y cuáles son tus derechos al usar la aplicación móvil Zibo ("Zibo", "la aplicación").
 
@@ -208,7 +208,7 @@ Tus datos se almacenan en la infraestructura Firebase de Google (Cloud Firestore
 
 5. Publicidad
 
-La aplicación muestra anuncios a través de Google AdMob y socios publicitarios similares. Estos socios pueden usar datos como el identificador publicitario de tu dispositivo para personalizar los anuncios. Para información sobre las políticas publicitarias de Google: https://policies.google.com/technologies/ads
+La aplicación muestra anuncios a través de la plataforma de mediación Appodeal y sus socios publicitarios (AppLovin, Unity Ads, Vungle, BidMachine y otros). Estos socios pueden procesar datos como el identificador publicitario (Advertising ID) de tu dispositivo, tu dirección IP y datos de uso de la aplicación para mostrar y personalizar los anuncios. A los usuarios del Espacio Económico Europeo, el Reino Unido y ciertas regiones reguladas se les muestra una pantalla de consentimiento antes de procesar cualquier dato publicitario. Para la política de privacidad de Appodeal: https://www.appodeal.com/privacy-policy/ — Para las políticas publicitarias de Google: https://policies.google.com/technologies/ads
 
 6. Cuánto Tiempo Conservamos tus Datos
 
