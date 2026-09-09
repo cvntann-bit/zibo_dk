@@ -5,7 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/foundation.dart' show kDebugMode;
+import 'package:flutter/foundation.dart' show debugPrint, kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show MissingPluginException;
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -323,7 +323,25 @@ void main() async {
     Appodeal.initialize(
       appKey: AppodealConfig.appKey,
       adTypes: const [AppodealAdType.RewardedVideo, AppodealAdType.Interstitial],
-      onInitializationFinished: (errors) {},
+      // Init hataları eskiden tamamen yutuluyordu — "reklam gelmiyor"
+      // tanısını imkânsız kılıyordu. Artık Crashlytics'e non-fatal olarak
+      // loglanıyor (bir ağ adaptörü eksik/uyumsuzsa veya App Key yanlışsa
+      // burada görünür).
+      onInitializationFinished: (errors) {
+        if (errors == null || errors.isEmpty) return;
+        debugPrint('Appodeal init errors: $errors');
+        // Firebase başlatılamadıysa (web önizleme / test) Crashlytics
+        // çağrısı fırlatabilir — bu geç/asenkron callback ana try/catch'in
+        // DIŞINDA çalıştığı için kendi guard'ı gerekiyor.
+        try {
+          FirebaseCrashlytics.instance.recordError(
+            'Appodeal initialization finished with errors: $errors',
+            null,
+            reason: 'appodeal-init',
+            fatal: false,
+          );
+        } catch (_) {}
+      },
     );
   } catch (_) {}
   runApp(_AppRoot(initialUid: uid));

@@ -118,11 +118,24 @@ flutter {
 
 dependencies {
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
-    // Appodeal mediation adaptörü — Unity Ads. `stack_appodeal_flutter`'ın kendi
-    // build.gradle'ı yalnızca Appodeal'in çekirdek/IAB (bidding) adaptörünü
-    // getiriyor; GERÇEK bir ağdan reklam alabilmek için o ağın Appodeal
-    // adaptörünü BURADA elle eklemek gerekiyor (bkz. CLAUDE.md "AdMob →
-    // Appodeal geçişi" bölümü). Sürüm, Appodeal'in kendi README'sinde
-    // dokümante edilen 4.2.0 SDK setiyle uyumlu adaptör sürümü.
+    // --- Appodeal mediation ağ adaptörleri ---------------------------------
+    // `stack_appodeal_flutter`'ın kendi build.gradle'ı yalnızca Appodeal'in
+    // `core` + `iab` (bidding) adaptörünü getiriyor; GERÇEK bir ağdan reklam
+    // alabilmek için o ağın adaptörünü BURADA elle eklemek gerekiyor (bkz.
+    // CLAUDE.md "AdMob → Appodeal geçişi").
+    //
+    // **Bu liste Appodeal Console'da uygulama için AÇIK olan ağlarla BİREBİR
+    // eşleşmeli.** Console'da açık ama burada adaptörü YOKSA o ağ HİÇ fill
+    // vermez (SDK o ağın kodunu içermiyor) — "reklam gelmiyor"un baş sebebi
+    // buydu: Console'da AppLovin/BidMachine/Vungle/Unity açıktı ama APK yalnızca
+    // Unity adaptörünü taşıyordu. Console'da bir ağı açıp/kapatınca bu listeyi
+    // de güncelle + yeni AAB al.
+    //
+    // Sürümler Appodeal SDK 4.2.0'ın resmî adaptör setinden (bkz. Appodeal
+    // Flutter Plugin demo `build.gradle`). Yeni ağ eklerken aynı setten al —
+    // uyumsuz sürüm derleme/çalışma-zamanı hatası verir.
     implementation("com.appodeal.ads.sdk.adapters:unity_ads:4.17.0.0")
+    implementation("com.appodeal.ads.sdk.adapters:applovin:13.5.1.0")
+    implementation("com.appodeal.ads.sdk.adapters:bidmachine:3.7.1.0")
+    implementation("com.appodeal.ads.sdk.adapters:vungle:7.6.1.0")
 }
