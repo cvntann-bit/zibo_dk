@@ -7,6 +7,7 @@ import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show MissingPluginException;
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:stack_appodeal_flutter/stack_appodeal_flutter.dart';
@@ -210,6 +211,17 @@ ThemeData _buildTheme(ColorScheme colorScheme) {
 final _lightTheme = _buildTheme(_lightColorScheme);
 final _darkTheme = _buildTheme(_darkColorScheme);
 
+/// Bir Firestore transaction'ı bittikten sonra `cloud_firestore` plugin'inin,
+/// o transaction'a özel platform akışını kapatırken (engine detach anında)
+/// fırlattığı `MissingPluginException`'ı tanır — bkz.
+/// `PlatformDispatcher.instance.onError` içindeki uzun not. Kanal adı
+/// `plugins.flutter.io/firebase_firestore/transaction/<uuid>` desenini taşır.
+bool _isBenignFirestoreStreamTeardownError(Object error) {
+  if (error is! MissingPluginException) return false;
+  final message = error.message ?? '';
+  return message.contains('firebase_firestore/transaction');
+}
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   // "Zibo ADS" tanıtım sıklığının en son gösterim zamanını (kalıcı, oturumlar
@@ -270,6 +282,20 @@ void main() async {
     // Crashlytics'e KAYDETTİKTEN sonra uygulamanın MÜMKÜNSE çalışmaya
     // devam etmesi tercih edildi.
     PlatformDispatcher.instance.onError = (error, stack) {
+      // Bilinen, ZARARSIZ `cloud_firestore` yarışı — bir Firestore
+      // transaction'ı (bkz. `FounderBadgeProvider.claimIfEligible`) bittikten
+      // SONRA plugin, o transaction'a özel `EventChannel` akışını KAPATMAYA
+      // çalışıyor; uygulama tam o anda arka plana atılıp Flutter engine
+      // detach olursa native handler zaten kaldırılmış oluyor →
+      // `MissingPluginException(... firebase_firestore/transaction/<uuid> ...)`.
+      // Transaction'ın KENDİSİ çoktan tamamlanmış, veri ETKİLENMİYOR. FATAL
+      // olarak raporlamak crash-free oranını yanıltıyor ve gereksiz
+      // "regressed issue" uyarısı üretiyor — yine de non-fatal olarak
+      // kaydediyoruz ki büsbütün kör kalmayalım.
+      if (_isBenignFirestoreStreamTeardownError(error)) {
+        FirebaseCrashlytics.instance.recordError(error, stack, fatal: false);
+        return true;
+      }
       FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
       return true;
     };
