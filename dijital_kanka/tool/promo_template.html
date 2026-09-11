@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Zibo — Tanıtım</title>
+<style>
+  /* Zibo tanıtım reeli — ekran kaydedip CapCut'ta seslendirme/kurgu için
+     ham görüntü. Otomatik oynar; herhangi bir yere DOKUNMAK/TIKLAMAK o
+     anki sahneyi atlayıp bir SONRAKİNE geçer (manuel tempo istenirse). "R"
+     tuşu baştan başlatır. Ses YOK (seslendirme CapCut'ta eklenecek). */
+  :root{
+    --cream:#FFF8E8; --paper:#FBF1DA; --honey:#EFCB7A; --honey-deep:#F4E1B4;
+    --mustard:#A9711F; --mustard-bright:#C98A2E;
+    --espresso:#4A3620; --espresso-soft:#7A5C34;
+    --sand:#DCC28A; --win:#1E9F49; --glow:#00E676; --terracotta:#B5502A;
+    --display:"Arial Rounded MT Bold","Trebuchet MS","Segoe UI",system-ui,-apple-system,Roboto,sans-serif;
+    --ui:"Segoe UI",system-ui,-apple-system,Roboto,"Helvetica Neue",Arial,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  html,body{width:100%;height:100%;overflow:hidden;background:#1C1712;font-family:var(--ui);
+    color:var(--espresso);-webkit-user-select:none;user-select:none}
+
+  #stage{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;
+    justify-content:center;overflow:hidden;cursor:pointer;
+    background:radial-gradient(120% 90% at 50% -6%, #FFEFC6 0%, var(--cream) 55%, var(--honey-deep) 100%)}
+
+  /* --- üst ilerleme çubuğu (story-tarzı) --- */
+  #progressWrap{position:absolute;top:max(14px,env(safe-area-inset-top));left:16px;right:16px;
+    z-index:20;height:4px;background:rgba(74,54,32,.18);border-radius:99px;overflow:hidden}
+  #progressBar{width:0%;height:100%;background:linear-gradient(90deg,var(--mustard),var(--win));
+    border-radius:99px}
+
+  /* --- köşe marka --- */
+  #brandmark{position:absolute;top:max(28px,calc(env(safe-area-inset-top) + 14px));right:18px;
+    z-index:20;display:flex;align-items:center;gap:6px;opacity:0;transition:opacity .5s ease}
+  #brandmark.show{opacity:.92}
+  #brandmark img{height:22px;width:auto;display:block;filter:drop-shadow(0 2px 2px rgba(0,0,0,.15))}
+  #brandmark span{font-family:var(--display);font-weight:700;font-size:13px;color:var(--espresso);
+    letter-spacing:.02em}
+
+  /* --- sahne konteyneri --- */
+  #scene{position:relative;width:100%;height:100%;display:flex;align-items:center;
+    justify-content:center}
+  .layer{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;
+    justify-content:center;gap:18px;padding:0 8vw;text-align:center;
+    opacity:0;transform:scale(.92);transition:opacity .38s ease, transform .38s cubic-bezier(.25,1,.4,1)}
+  .layer.in{opacity:1;transform:scale(1)}
+  .layer.out{opacity:0;transform:scale(1.06);transition-duration:.28s}
+
+  /* --- intro --- */
+  .introLogo{width:min(48vw,210px);height:auto;filter:drop-shadow(0 10px 18px rgba(74,54,32,.28));
+    animation:floatSlow 3.2s ease-in-out infinite}
+  .wordmark{font-family:var(--display);font-weight:700;font-size:clamp(34px,11vw,58px);
+    color:var(--mustard);letter-spacing:.01em}
+  .tagline{font-family:var(--display);font-weight:700;font-size:clamp(15px,4.4vw,20px);
+    color:var(--espresso-soft);text-wrap:balance;max-width:26ch}
+  @keyframes floatSlow{0%,100%{transform:translateY(0)}50%{transform:translateY(-3.5%)}}
+
+  /* --- özellik kartı --- */
+  .featChip{width:clamp(96px,26vw,132px);height:clamp(96px,26vw,132px);border-radius:32px;
+    display:flex;align-items:center;justify-content:center;font-size:clamp(46px,13vw,64px);
+    box-shadow:0 10px 0 rgba(74,54,32,.14), inset 0 -6px 0 rgba(0,0,0,.06);
+    animation:chipPop .6s cubic-bezier(.3,1.5,.5,1)}
+  @keyframes chipPop{0%{transform:scale(.4) rotate(-8deg)}60%{transform:scale(1.08) rotate(3deg)}100%{transform:scale(1) rotate(0)}}
+  .featTitle{font-family:var(--display);font-weight:700;font-size:clamp(24px,7.2vw,36px);
+    color:var(--espresso);text-wrap:balance}
+  .featSub{font-family:var(--ui);font-weight:600;font-size:clamp(14px,4.2vw,18px);
+    color:var(--espresso-soft);max-width:28ch;line-height:1.35;text-wrap:balance}
+  .featBadge{position:absolute;bottom:9%;left:50%;transform:translateX(-50%);
+    font-family:var(--display);font-weight:700;font-size:12px;letter-spacing:.12em;
+    color:var(--espresso-soft);opacity:.55;text-transform:uppercase}
+
+  /* --- kostüm bölümü --- */
+  .costumeGlow{position:absolute;width:min(78vw,340px);height:min(78vw,340px);border-radius:50%;
+    background:radial-gradient(circle, rgba(255,216,115,.65) 0%, rgba(255,216,115,0) 70%);
+    animation:glowPulse 2.4s ease-in-out infinite}
+  @keyframes glowPulse{0%,100%{transform:scale(1);opacity:.8}50%{transform:scale(1.08);opacity:1}}
+  .costumeImg{position:relative;height:min(48vh,340px);width:auto;
+    filter:drop-shadow(0 16px 20px rgba(74,54,32,.3));animation:costumeIn .5s cubic-bezier(.25,1.4,.4,1)}
+  @keyframes costumeIn{0%{transform:translateY(18px) scale(.88);opacity:0}100%{transform:translateY(0) scale(1);opacity:1}}
+  .costumeName{position:relative;font-family:var(--display);font-weight:700;
+    font-size:clamp(22px,6.4vw,30px);color:var(--mustard)}
+  .costumePill{position:absolute;top:9%;left:50%;transform:translateX(-50%);
+    background:var(--espresso);color:var(--cream);font-family:var(--display);font-weight:700;
+    font-size:12px;letter-spacing:.08em;padding:5px 14px;border-radius:99px}
+
+  /* --- kostüm finali (mini fan) --- */
+  .fanRow{position:relative;display:flex;align-items:flex-end;justify-content:center;
+    height:min(30vh,190px);width:100%}
+  .fanItem{position:absolute;height:min(24vh,150px);width:auto;bottom:0;
+    filter:drop-shadow(0 8px 10px rgba(74,54,32,.22));animation:fanIn .5s cubic-bezier(.3,1.4,.5,1) backwards}
+  @keyframes fanIn{0%{transform:translateY(30px) scale(.7) rotate(var(--r,0deg));opacity:0}
+    100%{transform:translateY(0) scale(1) rotate(var(--r,0deg));opacity:1}}
+
+  /* --- end card --- */
+  .endLogo{width:min(30vw,130px);height:auto;filter:drop-shadow(0 10px 16px rgba(74,54,32,.28))}
+  .storeBadge{display:flex;align-items:center;gap:8px;background:var(--paper);
+    border:2px solid var(--sand);border-radius:14px;padding:9px 18px;
+    font-family:var(--display);font-weight:700;font-size:14px;color:var(--espresso)}
+  .storeBadge .play{font-size:18px}
+  #cta{border:0;cursor:pointer;text-decoration:none;display:inline-block;font-family:var(--display);
+    font-weight:700;font-size:clamp(18px,5.6vw,23px);letter-spacing:.05em;color:#08331A;
+    background:linear-gradient(180deg,#57E58C,#1FA34A);padding:16px 42px;border-radius:999px;
+    box-shadow:0 6px 0 #0E7C37, 0 0 0 0 rgba(0,230,118,.55);
+    animation:ctaPulse 1.8s ease-in-out infinite}
+  @keyframes ctaPulse{0%,100%{box-shadow:0 6px 0 #0E7C37, 0 0 0 0 rgba(0,230,118,.5)}
+    50%{box-shadow:0 6px 0 #0E7C37, 0 0 0 16px rgba(0,230,118,0)}}
+
+  #hint{position:absolute;bottom:max(16px,env(safe-area-inset-bottom));left:0;right:0;
+    text-align:center;font-family:var(--ui);font-weight:600;font-size:11px;letter-spacing:.05em;
+    color:var(--espresso-soft);opacity:.4;z-index:20}
+
+  @media (prefers-reduced-motion: reduce){
+    .introLogo,.costumeGlow,#cta{animation:none}
+    .layer{transition-duration:.15s}
+    .featChip,.costumeImg,.fanItem{animation:none}
+  }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="progressWrap"><div id="progressBar"></div></div>
+  <div id="brandmark"><img src="{{LOGO}}" alt=""><span>ZIBO</span></div>
+  <div id="scene"></div>
+  <div id="hint">ekranı kaydet · dokunarak sahneyi atla · "R" baştan başlat</div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var STORE = "https://play.google.com/store/apps/details?id=com.dijitalkanka.dijital_kanka";
+  var LOGO = "{{LOGO}}";
+  var reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  var COSTUMES = [
+    {img:"{{HIPPI}}", name:"Hippi Zibo"},
+    {img:"{{ASKER}}", name:"Asker Zibo"},
+    {img:"{{PUNK}}", name:"Punk Zibo"},
+    {img:"{{SAMURAI}}", name:"Samuray Zibo"},
+    {img:"{{GLADYATOR}}", name:"Gladyatör Zibo"},
+    {img:"{{KORSAN}}", name:"Korsan Zibo"},
+    {img:"{{ASTRONOT}}", name:"Astronot Zibo"},
+    {img:"{{KING}}", name:"Kral Zibo"},
+    {img:"{{ALTIN}}", name:"Altın Zibo"},
+    {img:"{{ELMAS}}", name:"Elmas Kaplama Zibo"}
+  ];
+
+  var FEATURES = [
+    {icon:"🎯", chip:"#F4E1B4", title:"Hedef Takibi", sub:"Hedeflerini belirle, günlük alışkanlığa dönüştür"},
+    {icon:"💧", chip:"#DCEEF7", title:"Su Takibi", sub:"Su içmeyi unutma, hedefini takip et"},
+    {icon:"🙏", chip:"#F6E3C9", title:"Şükran Günlüğü", sub:"Güne şükranla başla, güzel anları biriktir"},
+    {icon:"🙂", chip:"#FBEAD2", title:"Ruh Hali Takibi", sub:"Ruh halini kaydet, kendini daha iyi tanı"},
+    {icon:"🌙", chip:"#E4E1F0", title:"Rüya Günlüğü", sub:"Rüyalarını not al, bağlantıları keşfet"},
+    {icon:"✨", chip:"#F6E9C6", title:"Manifest Günlüğü", sub:"Hayallerini yaz, niyetini güçlendir"},
+    {icon:"💰", chip:"#DCEFE0", title:"Para ve Birikim", sub:"Harcamalarını ve birikimini kolayca yönet"},
+    {icon:"⏱️", chip:"#F0DCC9", title:"Odak Sayacı", sub:"Dikkatini dağıtmadan, odaklanarak üret"},
+    {icon:"🪙", chip:"#FBE7A8", title:"Zibo Coin & Rozetler", sub:"Kazan, seviye atla, ödülleri topla"}
+  ];
+
+  function buildScenes(){
+    var s = [];
+    s.push({type:"intro", dur:3000});
+    FEATURES.forEach(function(f, i){
+      s.push({type:"feature", dur:2200, data:f, badge:(i+1)+" / "+FEATURES.length});
+    });
+    s.push({type:"costumeIntro", dur:2000});
+    COSTUMES.forEach(function(c, i){
+      s.push({type:"costume", dur:1300, data:c, badge:"KOSTÜM "+(i+1)+" / "+COSTUMES.length});
+    });
+    s.push({type:"costumeFinale", dur:2600});
+    s.push({type:"endcard", dur:1e9});
+    return s;
+  }
+  var SCENES = buildScenes();
+
+  var sceneEl = document.getElementById("scene");
+  var progressBar = document.getElementById("progressBar");
+  var brandmark = document.getElementById("brandmark");
+  var idx = -1, advanceTimer = null, tickTimer = null, sceneStart = 0, current = null;
+
+  function el(tag, cls, html){
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (html !== undefined) e.innerHTML = html;
+    return e;
+  }
+
+  function renderIntro(layer){
+    layer.appendChild(el("img", "introLogo")).src = LOGO;
+    layer.appendChild(el("div", "wordmark", "Zibo"));
+    layer.appendChild(el("div", "tagline", "Küçük adımlar, büyük değişim"));
+  }
+  function renderFeature(layer, f, badge){
+    var chip = el("div", "featChip", f.icon);
+    chip.style.background = f.chip;
+    layer.appendChild(chip);
+    layer.appendChild(el("div", "featTitle", f.title));
+    layer.appendChild(el("div", "featSub", f.sub));
+    var b = el("div", "featBadge", badge); layer.appendChild(b);
+  }
+  function renderCostumeIntro(layer){
+    layer.appendChild(el("div", "featChip", "👕")).style.background = "#F4E1B4";
+    layer.appendChild(el("div", "featTitle", "Zibo'yu tarzına göre giydir"));
+    layer.appendChild(el("div", "featSub", "Kazandığın Zibo Coin ile onlarca kostüm ve tema aç"));
+  }
+  function renderCostume(layer, c, badge){
+    layer.appendChild(el("div", "costumeGlow"));
+    var b = el("div", "costumePill", badge); layer.appendChild(b);
+    layer.appendChild(el("img", "costumeImg")).src = c.img;
+    layer.appendChild(el("div", "costumeName", c.name));
+  }
+  function renderCostumeFinale(layer){
+    layer.appendChild(el("div", "featTitle", "40+ kostüm ve tema"));
+    var row = el("div", "fanRow");
+    var picks = [0,2,4,6,8]; // birkaç kostümü küçük fan olarak göster
+    var angles = [-18,-9,0,9,18];
+    picks.forEach(function(ci, i){
+      var im = el("img", "fanItem");
+      im.src = COSTUMES[ci].img;
+      im.style.setProperty("--r", angles[i]+"deg");
+      im.style.zIndex = String(10 - Math.abs(angles[i]));
+      im.style.left = "calc(50% - 60px + " + (angles[i]*3.1) + "px)";
+      im.style.animationDelay = (i*70)+"ms";
+      row.appendChild(im);
+    });
+    layer.appendChild(row);
+    layer.appendChild(el("div", "featSub", "Coin biriktir, Zibo'yu istediğin gibi giydir"));
+  }
+  function renderEndcard(layer){
+    layer.appendChild(el("img", "endLogo")).src = LOGO;
+    layer.appendChild(el("div", "wordmark", "Zibo — Dijital Kanka"));
+    layer.appendChild(el("div", "tagline", "Küçük adımlar, büyük değişim"));
+    layer.appendChild(el("div", "storeBadge", '<span class="play">▶</span> Google Play’de ücretsiz'));
+    var cta = document.createElement("a");
+    cta.id = "cta"; cta.href = STORE; cta.target = "_blank"; cta.rel = "noopener";
+    cta.textContent = "ÜCRETSİZ İNDİR";
+    cta.addEventListener("pointerdown", function(ev){ ev.stopPropagation(); });
+    layer.appendChild(cta);
+  }
+
+  var RENDER = {
+    intro: renderIntro,
+    feature: function(layer, s){ renderFeature(layer, s.data, s.badge); },
+    costumeIntro: renderCostumeIntro,
+    costume: function(layer, s){ renderCostume(layer, s.data, s.badge); },
+    costumeFinale: renderCostumeFinale,
+    endcard: renderEndcard
+  };
+
+  function stopTimers(){
+    clearTimeout(advanceTimer); advanceTimer = null;
+    clearInterval(tickTimer); tickTimer = null;
+  }
+
+  function showScene(i){
+    if (i >= SCENES.length) i = SCENES.length - 1;
+    idx = i;
+    var s = SCENES[idx];
+    stopTimers();
+
+    var prev = current;
+    var layer = el("div", "layer");
+    RENDER[s.type](layer, s);
+    sceneEl.appendChild(layer);
+    void layer.offsetWidth;
+    layer.classList.add("in");
+    current = layer;
+
+    if (prev){
+      prev.classList.remove("in");
+      prev.classList.add("out");
+      setTimeout(function(){ if (prev && prev.parentNode) prev.parentNode.removeChild(prev); }, 320);
+    }
+
+    if (idx >= 1) brandmark.classList.add("show");
+
+    sceneStart = performance.now();
+    if (s.dur < 1e9){
+      advanceTimer = setTimeout(function(){ showScene(idx+1); }, s.dur);
+      tickTimer = setInterval(updateProgress, 80);
+    }
+    // Son (sonsuz) sahnede sürekli setInterval'a gerek yok — çubuğu %100'e
+    // sabitleyip bırakıyoruz.
+    updateProgress();
+  }
+
+  function updateProgress(){
+    var total = 0, elapsed = 0;
+    for (var i=0;i<SCENES.length;i++){
+      var d = Math.min(SCENES[i].dur, 8000 /* endcard'ı sonsuz saymayalım */);
+      total += d;
+      if (i < idx) elapsed += d;
+      else if (i === idx) elapsed += Math.min(performance.now()-sceneStart, d);
+    }
+    var pct = Math.min(100, (elapsed/total)*100);
+    progressBar.style.width = pct.toFixed(2)+"%";
+  }
+
+  function restart(){
+    sceneEl.innerHTML = "";
+    current = null;
+    brandmark.classList.remove("show");
+    showScene(0);
+  }
+
+  document.getElementById("stage").addEventListener("pointerdown", function(){
+    showScene(Math.min(idx+1, SCENES.length-1));
+  });
+  document.addEventListener("keydown", function(e){
+    if (e.key === "r" || e.key === "R") restart();
+  });
+
+  restart();
+})();
+</script>
+</body>
+</html>
