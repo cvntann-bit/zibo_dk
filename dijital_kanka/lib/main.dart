@@ -7,7 +7,7 @@ import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart' show debugPrint, kDebugMode;
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart' show MissingPluginException;
+import 'package:flutter/services.dart' show MethodChannel, MissingPluginException;
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:stack_appodeal_flutter/stack_appodeal_flutter.dart';
@@ -222,6 +222,31 @@ bool _isBenignFirestoreStreamTeardownError(Object error) {
   return message.contains('firebase_firestore/transaction');
 }
 
+/// `MainActivity.kt`'deki `TikTokBusinessSdk.initializeSdk(...)` çağrısının
+/// sonucunu (başarı/hata/istisna) taşıyan tek yönlü kanal — bkz.
+/// `android/CLAUDE.md` "TikTok Business SDK" bölümü. SDK native tarafta
+/// tamamen kendi kendine çalıştığı için Dart'a normalde HİÇ köprü yok; bu
+/// TEK istisna, Events Manager'da event hiç görünmeyince (2026-09-12) cihaza
+/// fiziksel erişim/adb GEREKMEDEN init sonucunu uzaktan (Firebase Console)
+/// görebilmek için eklendi.
+const _tikTokDiagnosticChannel = MethodChannel(
+  'dijital_kanka/tiktok_sdk_diagnostic',
+);
+
+void _listenForTikTokDiagnostics() {
+  _tikTokDiagnosticChannel.setMethodCallHandler((call) async {
+    if (call.method != 'log') return;
+    final message = call.arguments as String? ?? 'bilinmeyen mesaj';
+    debugPrint('TikTok SDK diagnostic: $message');
+    await FirebaseCrashlytics.instance.recordError(
+      'TikTok SDK diagnostic: $message',
+      null,
+      reason: 'tiktok-sdk-diagnostic',
+      fatal: false,
+    );
+  });
+}
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   // "Zibo ADS" tanıtım sıklığının en son gösterim zamanını (kalıcı, oturumlar
@@ -299,6 +324,8 @@ void main() async {
       FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
       return true;
     };
+    // (3) TikTok SDK teşhis köprüsü — bkz. yukarıdaki dokümantasyon.
+    _listenForTikTokDiagnostics();
   } catch (_) {
     // Firebase/Auth başlatılamadı (ör. web önizlemesi, ağ yok, yapılandırma
     // eksik) — `uid` `null` kalır, uygulama Firebase'e bağımlı olmadan

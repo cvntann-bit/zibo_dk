@@ -37,6 +37,13 @@
 - TikTok Ads Manager'daki "Verify setup" adımı ancak SDK'lı bir build **gerçek cihazda açılınca**
   olayları görür — bu yüzden kampanya kurulumu, yeni AAB Play'e yüklenip bir cihazda çalıştırılana
   kadar tamamlanamaz.
+- **2026-09-12 — "No event data yet" teşhisi**: doğru build (1.10.0+29) cihazda kurulu/açık olsa ve
+  Events Manager'ın QR-kod "Test event" eşleşmesi ("Connected devices: 1") başarılı olsa bile hiç
+  event görünmedi. `initializeSdk(config)`'in callback'siz overload'u başarı/hatayı TAMAMEN sessiz
+  bırakıyor — teşhis için `TTInitCallback` + `setLogLevel(DEBUG)` eklendi, sonuç `MainActivity.kt` →
+  `MethodChannel("dijital_kanka/tiktok_sdk_diagnostic")` → `main.dart`'taki mevcut
+  `FirebaseCrashlytics.instance.recordError(..., fatal: false)` deseniyle (Appodeal init hatalarıyla
+  AYNI yol) Firebase Console'a taşınıyor — cihaza fiziksel erişim/adb GEREKMEDEN uzaktan okunabilir.
 
 ## RemoteViews (Ana Ekran Widget'ları — `.../kotlin/.../widgets/`)
 
