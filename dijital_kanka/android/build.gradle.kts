@@ -2,6 +2,10 @@ allprojects {
     repositories {
         google()
         mavenCentral()
+        // TikTok Business SDK (kurulum/olay takibi, bkz. app/build.gradle.kts)
+        // JitPack üzerinden dağıtılıyor — resmi Maven Central/Google
+        // deposunda YOK.
+        maven { url = uri("https://jitpack.io") }
     }
 }
 

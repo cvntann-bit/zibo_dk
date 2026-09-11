@@ -22,6 +22,22 @@
 - Appodeal `com.google.android.gms.ads.APPLICATION_ID` meta-data'sı GEREKTİRMEZ (AdMob'un aksine — o kaldırıldı). Appodeal App Key doğrudan Dart'tan (`AppodealConfig.appKey`).
 - `MainActivity.kt` `onCreate()`'te `WindowCompat.setDecorFitsSystemWindows(window, true)` — Android 15 edge-to-edge zorlamasına karşı savunmacı. (`AdActivity` tema override'ı AdMob kaldırılınca gitti.)
 
+## TikTok Business SDK (kurulum/olay takibi — UA kampanyaları)
+
+- 2026 — TikTok Ads Manager'da "App promotion" kampanyası için gerekli. Resmi Flutter paketi
+  (`tiktok_business_sdk`, pub.dev) 1 yıldır güncellenmemiş/deneysel (v0.0.1) — kullanılmadı. SDK
+  tamamen **native** tarafta: `TikTokConfig.kt` (App ID/TT App ID/Access Token — TikTok'un "App
+  Secret" dediği, ama Appodeal App Key'le AYNI sınıf: gerçek sunucu sırrı değil, APK'ya gömülen
+  istemci kimliği) + `MainActivity.onCreate()`'te `TikTokBusinessSdk.initializeSdk(...)`. Dart'a
+  HİÇ köprü YOK — SDK kurulum/açılış olaylarını `ProcessLifecycleOwner` ile kendisi otomatik izliyor.
+- Bağımlılık JitPack'ten (`com.github.tiktok:tiktok-business-android-sdk`) geliyor — Maven
+  Central/Google deposunda YOK, bu yüzden `android/build.gradle.kts`'e `maven { url =
+  uri("https://jitpack.io") }` eklendi. Sürüm yükseltirken resmi `tiktok/tiktok-business-android-sdk`
+  GitHub reposunun (ByteDance'in ARŞİVLENMİŞ `bytedance/...` fork'u DEĞİL) en güncel etiketini kullan.
+- TikTok Ads Manager'daki "Verify setup" adımı ancak SDK'lı bir build **gerçek cihazda açılınca**
+  olayları görür — bu yüzden kampanya kurulumu, yeni AAB Play'e yüklenip bir cihazda çalıştırılana
+  kadar tamamlanamaz.
+
 ## RemoteViews (Ana Ekran Widget'ları — `.../kotlin/.../widgets/`)
 
 - **YALNIZCA beyaz-listedeki view sınıfları inflate edilir**: `FrameLayout`/`LinearLayout`/`RelativeLayout`/`TextView`/`ImageView`/`ProgressBar`/`ViewFlipper`/`Button`/`Chronometer`. Ham `<View>` / `<Space>` DEĞİL → `InflateException: Class not allowed`. Boşluk için komşu elemanın `layout_margin*`'ini kullan.

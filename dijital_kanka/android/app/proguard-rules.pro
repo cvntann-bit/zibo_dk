@@ -56,6 +56,16 @@
 -keep @androidx.room.Entity class * { *; }
 -dontwarn androidx.room.**
 
+# TikTok Business SDK (kurulum/olay takibi, bkz. CLAUDE.md "TikTok Business
+# SDK" bölümü) — SDK'nın kendi belgelediği kural, reflection/JSON
+# serileştirme kullanan olay gönderim koduna karşı. `consumer-rules.pro`
+# taşıyıp taşımadığını doğrulamadan (JitPack üzerinden geldiği için garanti
+# değil) elle ekliyoruz — eksik olsa bile ZARARSIZ (sadece bu paketi biraz
+# daha az küçültür), eksikliği ise SESSİZCE çöken/olay göndermeyen bir SDK'ya
+# yol açar.
+-keep class com.tiktok.** { *; }
+-dontwarn com.tiktok.**
+
 # Genel güvenlik ağı — reflection/serialization için sık gereken
 # meta-veriyi koru (Firebase'in kendi Firestore/Auth model dönüşümleri
 # bunlara bağımlı olabiliyor).

@@ -2,6 +2,7 @@ package com.dijitalkanka.dijital_kanka
 
 import android.os.Bundle
 import androidx.core.view.WindowCompat
+import com.tiktok.TikTokBusinessSdk
 import io.flutter.embedding.android.FlutterActivity
 
 /**
@@ -22,5 +23,31 @@ class MainActivity : FlutterActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         WindowCompat.setDecorFitsSystemWindows(window, true)
+        initTikTokBusinessSdk()
+    }
+
+    /**
+     * TikTok Ads — kurulum/olay takibi (bkz. [TikTokConfig] dokümantasyonu).
+     * `TTConfig`'in kendi `ProcessLifecycleOwner` dinleyicisi "uygulama
+     * kuruldu/açıldı" olayını OTOMATİK gönderiyor — bu çağrının kendisi
+     * dışında hiçbir ek kod GEREKMİYOR. Uygulamanın tek `Activity`'si
+     * olduğu için burada (Application alt sınıfı açmaya gerek kalmadan)
+     * başlatmak yeterli — `getApplication()` zaten tüm süreç ömrü boyunca
+     * yaşayan tek örneği veriyor.
+     *
+     * Appodeal/Firebase gibi diğer HER üçüncü taraf SDK başlatmasıyla AYNI
+     * gerekçeyle try/catch'li: bir reklam/ölçüm SDK'sının başlatma hatası
+     * uygulamanın AÇILAMAMASINA yol açmamalı.
+     */
+    private fun initTikTokBusinessSdk() {
+        try {
+            val config =
+                TikTokBusinessSdk.TTConfig(application, TikTokConfig.ACCESS_TOKEN)
+                    .setAppId(TikTokConfig.APP_ID)
+                    .setTTAppId(TikTokConfig.TT_APP_ID)
+            TikTokBusinessSdk.initializeSdk(config)
+        } catch (e: Exception) {
+            // Sessizce yut — bkz. yukarıdaki dokümantasyon.
+        }
     }
 }

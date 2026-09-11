@@ -138,4 +138,26 @@ dependencies {
     implementation("com.appodeal.ads.sdk.adapters:applovin:13.5.1.0")
     implementation("com.appodeal.ads.sdk.adapters:bidmachine:3.7.1.0")
     implementation("com.appodeal.ads.sdk.adapters:vungle:7.6.1.0")
+
+    // --- TikTok Business SDK (kurulum/olay takibi, UA kampanyaları için) ---
+    // 2026 — TikTok Ads Manager'da "App promotion" kampanyası kurarken TikTok
+    // kurulumları sayabilmek/optimize edebilmek için ya kendi SDK'sını ya da
+    // bir mobile measurement partner (AppsFlyer/Adjust) istiyor; TikTok
+    // SDK'sı seçildi. Resmi Flutter paketi (`tiktok_business_sdk`, pub.dev)
+    // 1 yıldır güncellenmemiş/deneysel (v0.0.1, "unverified" yayıncı) —
+    // GÜVENMEDİK. Bunun yerine SDK doğrudan NATIVE tarafta (MainActivity.kt)
+    // başlatılıyor; Dart tarafına HİÇ köprü GEREKMİYOR çünkü SDK kurulum/
+    // açılış olaylarını kendisi otomatik izliyor (bkz. TTConfig'in
+    // "disableAutoStart/disableAutoEvents" seçenekleri — biz bunları
+    // KAPATMIYORUZ, varsayılan otomatik izleme açık kalsın istiyoruz).
+    // Sürüm 1.7.1 — resmi `tiktok/tiktok-business-android-sdk` deposunun
+    // (JitPack, `com.github.tiktok:...`) en güncel etiketi.
+    implementation("com.github.tiktok:tiktok-business-android-sdk:1.7.1")
+    // TTConfig'in ProcessLifecycleOwner ile "uygulama öne/arkaya geçti"
+    // olaylarını dinlemesi için (SDK'nın kendi kurulum talimatı).
+    implementation("androidx.lifecycle:lifecycle-process:2.3.1")
+    implementation("androidx.lifecycle:lifecycle-common-java8:2.3.1")
+    // Google Play "install referrer" — TikTok'un tıklama→kurulum ilişkisini
+    // kurabilmesi için (hangi reklamın hangi kurulumu getirdiğini bilme).
+    implementation("com.android.installreferrer:installreferrer:2.2")
 }
