@@ -31,13 +31,6 @@
   #progressBar{width:0%;height:100%;background:linear-gradient(90deg,var(--mustard),var(--win));
     border-radius:99px}
 
-  /* --- köşe marka --- */
-  #brandmark{position:absolute;top:max(28px,calc(env(safe-area-inset-top) + 14px));right:18px;
-    z-index:20;display:flex;align-items:center;gap:6px;opacity:0;transition:opacity .5s ease}
-  #brandmark.show{opacity:.92}
-  #brandmark img{height:22px;width:auto;display:block;filter:drop-shadow(0 2px 2px rgba(0,0,0,.15))}
-  #brandmark span{font-family:var(--display);font-weight:700;font-size:13px;color:var(--espresso);
-    letter-spacing:.02em}
 
   /* --- sahne konteyneri --- */
   #scene{position:relative;width:100%;height:100%;display:flex;align-items:center;
@@ -118,7 +111,6 @@
 <body>
 <div id="stage">
   <div id="progressWrap"><div id="progressBar"></div></div>
-  <div id="brandmark"><img src="{{LOGO}}" alt=""><span>ZIBO</span></div>
   <div id="scene"></div>
 </div>
 
@@ -176,7 +168,6 @@
 
   var sceneEl = document.getElementById("scene");
   var progressBar = document.getElementById("progressBar");
-  var brandmark = document.getElementById("brandmark");
   var idx = -1, advanceTimer = null, tickTimer = null, sceneStart = 0, current = null;
 
   function el(tag, cls, html){
@@ -228,7 +219,6 @@
   }
   function renderEndcard(layer){
     layer.appendChild(el("img", "endLogo")).src = LOGO;
-    layer.appendChild(el("div", "wordmark", "Zibo — Dijital Kanka"));
     layer.appendChild(el("div", "tagline", "Küçük adımlar, büyük değişim"));
     layer.appendChild(el("div", "storeBadge", '<span class="play">▶</span> Google Play’de ücretsiz'));
     var cta = document.createElement("a");
@@ -272,8 +262,6 @@
       setTimeout(function(){ if (prev && prev.parentNode) prev.parentNode.removeChild(prev); }, 320);
     }
 
-    if (idx >= 1) brandmark.classList.add("show");
-
     sceneStart = performance.now();
     if (s.dur < 1e9){
       advanceTimer = setTimeout(function(){ showScene(idx+1); }, s.dur);
@@ -299,7 +287,6 @@
   function restart(){
     sceneEl.innerHTML = "";
     current = null;
-    brandmark.classList.remove("show");
     showScene(0);
   }
 
