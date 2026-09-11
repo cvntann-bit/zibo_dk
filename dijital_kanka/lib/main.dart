@@ -233,22 +233,48 @@ const _tikTokDiagnosticChannel = MethodChannel(
   'dijital_kanka/tiktok_sdk_diagnostic',
 );
 
+/// `main()`'in `WidgetsFlutterBinding.ensureInitialized()`'tan SONRAKİ ilk
+/// satırında kaydediliyor — bir önceki sürümde `Firebase.initializeApp()` +
+/// `signInAnonymously()` + `logAppOpen()` `await`'lerinden SONRA
+/// kaydediliyordu, ve `MainActivity.kt`'deki native çağrı bu `await` zincirini
+/// bitirmeden dönebiliyordu: `MethodChannel.invokeMethod`, Dart tarafında
+/// HENÜZ hiçbir handler kayıtlı değilken gelirse mesaj sessizce KAYBOLUYOR
+/// (ne native tarafta ne Dart tarafta hiçbir hata/istisna görünmüyor) — bu
+/// yüzden Firebase Crashlytics'te "tiktok-sdk-diagnostic" hiç görünmedi.
+/// Mesaj bu değişkende, Crashlytics güvenle çağrılabilir hale gelene (bkz.
+/// `main()`'deki `_firebaseReady = true` satırı) kadar bekletiliyor.
+String? _pendingTikTokDiagnostic;
+bool _firebaseReadyForTikTokDiagnostic = false;
+
 void _listenForTikTokDiagnostics() {
   _tikTokDiagnosticChannel.setMethodCallHandler((call) async {
     if (call.method != 'log') return;
     final message = call.arguments as String? ?? 'bilinmeyen mesaj';
     debugPrint('TikTok SDK diagnostic: $message');
-    await FirebaseCrashlytics.instance.recordError(
-      'TikTok SDK diagnostic: $message',
-      null,
-      reason: 'tiktok-sdk-diagnostic',
-      fatal: false,
-    );
+    _pendingTikTokDiagnostic = message;
+    await _flushTikTokDiagnosticIfReady();
   });
+}
+
+Future<void> _flushTikTokDiagnosticIfReady() async {
+  if (!_firebaseReadyForTikTokDiagnostic) return;
+  final message = _pendingTikTokDiagnostic;
+  if (message == null) return;
+  _pendingTikTokDiagnostic = null;
+  await FirebaseCrashlytics.instance.recordError(
+    'TikTok SDK diagnostic: $message',
+    null,
+    reason: 'tiktok-sdk-diagnostic',
+    fatal: false,
+  );
 }
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // `Firebase.initializeApp()`'tan ÖNCE, herhangi bir `await`'in native
+  // taraftaki hızlı callback'i geride bırakmasına fırsat kalmadan — bkz.
+  // yukarıdaki `_pendingTikTokDiagnostic` dokümantasyonu.
+  _listenForTikTokDiagnostics();
   // "Zibo ADS" tanıtım sıklığının en son gösterim zamanını (kalıcı, oturumlar
   // arası) belleğe yükler — bkz. ad_free_promo_trigger.dart. `runApp`'tan
   // ÖNCE tamamlanması gerekiyor, aksi halde ilk Mağaza ziyaretinde henüz
@@ -324,8 +350,13 @@ void main() async {
       FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
       return true;
     };
-    // (3) TikTok SDK teşhis köprüsü — bkz. yukarıdaki dokümantasyon.
-    _listenForTikTokDiagnostics();
+    // (3) TikTok SDK teşhis köprüsü — dinleyici `main()`'in EN başında
+    // kaydedildi (bkz. yukarıdaki dokümantasyon); burada yalnızca
+    // `FirebaseCrashlytics.instance` artık güvenle çağrılabilir olduğunu
+    // işaretleyip native taraftan bu ana kadar gelmiş olabilecek mesajı
+    // (varsa) hemen gönderiyoruz.
+    _firebaseReadyForTikTokDiagnostic = true;
+    await _flushTikTokDiagnosticIfReady();
   } catch (_) {
     // Firebase/Auth başlatılamadı (ör. web önizlemesi, ağ yok, yapılandırma
     // eksik) — `uid` `null` kalır, uygulama Firebase'e bağımlı olmadan

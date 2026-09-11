@@ -44,6 +44,17 @@
   `MethodChannel("dijital_kanka/tiktok_sdk_diagnostic")` → `main.dart`'taki mevcut
   `FirebaseCrashlytics.instance.recordError(..., fatal: false)` deseniyle (Appodeal init hatalarıyla
   AYNI yol) Firebase Console'a taşınıyor — cihaza fiziksel erişim/adb GEREKMEDEN uzaktan okunabilir.
+- **1.10.1+30'da bu teşhis mesajının KENDİSİ de hiç gelmedi** (Crashlytics'te "tiktok-sdk-diagnostic"
+  diye bir kayıt hiç oluşmadı, ama AYNI sürümden diğer non-fatal'lar — Appodeal — normal şekilde
+  geliyordu, yani Crashlytics bağlantısının kendisi ÇALIŞIYORDU). Kök neden bir YARIŞ DURUMU: Dart
+  tarafındaki `_listenForTikTokDiagnostics()` çağrısı `main()`'de `Firebase.initializeApp()` +
+  `signInAnonymously()` + `logAppOpen()` `await`'lerinden SONRAYDI; native taraftaki
+  `TikTokBusinessSdk.initializeSdk(config, callback)` çağrısının callback'i bu zincir bitmeden
+  dönebiliyor — `MethodChannel.invokeMethod` Dart'ta HENÜZ hiçbir handler kayıtlı değilken gelirse
+  mesaj HİÇBİR YERDE hata vermeden kaybolur. 1.10.2+31'de dinleyici `main()`'in `Widgets
+  FlutterBinding.ensureInitialized()`'tan HEMEN sonraki ilk satırına taşındı; mesaj bir değişkende
+  bekletilip Firebase hazır olunca (`_firebaseReadyForTikTokDiagnostic = true`) gönderiliyor. Bu
+  desen (erken kayıt + "hazır olunca flush et") — native→Dart köprüsü kurarken bir daha akla gelsin.
 
 ## RemoteViews (Ana Ekran Widget'ları — `.../kotlin/.../widgets/`)
 
