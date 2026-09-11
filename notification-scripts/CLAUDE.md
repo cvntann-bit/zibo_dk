@@ -12,16 +12,29 @@ Node.js/npm bu geliştirme makinesinde YOK. `flutter test` bunları KAPSAMAZ. De
 
 ## Betikler
 
-| Betik | Cron dakikası | Hedef yerel saat(ler) | Ne yapar |
+**2026 GÜNCELLEMESİ — GitHub Actions ücretsiz kotası (2000 dk/ay) altı ayrı saatlik
+workflow'un HER BİRİNİN kendi `npm install`'unu yapması yüzünden tükendi.** İlk 6 betik artık
+TEK bir workflow'ta (`.github/workflows/hourly-jobs.yml`) TEK checkout + TEK `npm install` (+
+`node_modules` cache) ile, ayrı step'ler olarak art arda çalışıyor — aylık dakika tüketimi ~6 kat
+azaldı. "Cron dakikası" sütunu artık GEÇERSİZ (hepsi workflow'un TEK `:07` tetikleyicisinde
+çalışıyor) — yalnızca tarihsel referans için bırakıldı, betiklerin kendi `TARGET_LOCAL_HOURS`
+mantığı zaten hangi dakikada tetiklendiğinden bağımsız (bkz. altta "catch-up penceresi").
+
+| Betik | Workflow | Hedef yerel saat(ler) | Ne yapar |
 |---|---|---|---|
-| `dailyMotivation.js` | `:07` | 9, 12, 16, 20 | `content.js`'ten tekrar-önlemeli rastgele söz (`recentQuoteIndices`, son 20) |
-| `streakReminder.js` | `:14` | 21 | Bugün işaretlenmemiş hedef varsa (`users/{uid}/state/goals`) |
-| `dailyRewardReminder.js` | `:21` | 18 | Bugün Günlük Giriş Ödülü alınmamışsa |
-| `waterReminder.js` | `:49` | 14 | `waterState` var ama bugün yarım/başlanmamışsa |
-| `reEngagement.js` | `:42` | 11 | `users/{uid}.lastActiveAt` 2+ gün eski |
-| `processReferralRewards.js` | `:28` | (her çalıştırma) | `referralRedemptions` `pending` → her iki tarafa 100 ZC, `dry_run` varsayılan `false` |
-| `cleanupStaleAnonymousUsers.js` | yalnızca `workflow_dispatch` | — | 30+ gün terkedilmiş anonim kullanıcıları sil, `dry_run` varsayılan `true`, İKİ AŞAMALI onay |
-| `initFounderBadgeCounter.js` | yalnızca `workflow_dispatch` | — | `founderBadgeStatus/status`'u GERÇEK sayıyla seed et, `dry_run` varsayılan `true`, `FORCE` guard'ı |
+| `dailyMotivation.js` | `hourly-jobs.yml` | 9, 12, 16, 20 | `content.js`'ten tekrar-önlemeli rastgele söz (`recentQuoteIndices`, son 20) |
+| `streakReminder.js` | `hourly-jobs.yml` | 21 | Bugün işaretlenmemiş hedef varsa (`users/{uid}/state/goals`) |
+| `dailyRewardReminder.js` | `hourly-jobs.yml` | 18 | Bugün Günlük Giriş Ödülü alınmamışsa |
+| `waterReminder.js` | `hourly-jobs.yml` | 14 | `waterState` var ama bugün yarım/başlanmamışsa |
+| `reEngagement.js` | `hourly-jobs.yml` | 11 | `users/{uid}.lastActiveAt` 2+ gün eski |
+| `processReferralRewards.js` | `hourly-jobs.yml` | (her çalıştırma) | `referralRedemptions` `pending` → her iki tarafa 100 ZC, `dry_run` varsayılan `false` |
+| `cleanupStaleAnonymousUsers.js` | kendi dosyası, yalnızca `workflow_dispatch` | — | 30+ gün terkedilmiş anonim kullanıcıları sil, `dry_run` varsayılan `true`, İKİ AŞAMALI onay |
+| `initFounderBadgeCounter.js` | kendi dosyası, yalnızca `workflow_dispatch` | — | `founderBadgeStatus/status`'u GERÇEK sayıyla seed et, `dry_run` varsayılan `true`, `FORCE` guard'ı |
+
+`hourly-jobs.yml`'deki HER betik-step'i `if: ${{ !cancelled() }}` taşır — biri hata verirse
+(eskiden ayrı workflow oldukları için zaten birbirini etkilemiyorlardı) diğerleri yine de çalışır.
+Yeni bir saatlik betik eklerken bu dosyaya YENİ bir step olarak ekle, YENİ bir workflow dosyası
+AÇMA — aksi halde kota sorunu geri gelir.
 
 ## `common.js` — paylaşılan yardımcılar
 
@@ -35,9 +48,9 @@ Node.js/npm bu geliştirme makinesinde YOK. `flutter test` bunları KAPSAMAZ. De
 
 ## Cron dakikası KURALI
 
-`.github/workflows/*.yml`'de dakika alanı olarak ASLA `:00/:15/:30/:45` (GitHub'ın "yoğun"
-saatleri — gecikme/atlama). Her workflow farklı ve yuvarlak-olmayan bir dakika kullanır (yukarıdaki
-tablo). Cron'un kendisi SAATLİK (`X * * * *`), `TARGET_LOCAL_HOURS` filtresi JS tarafında.
+`.github/workflows/*.yml`'de `schedule:` taşıyan dosyalarda dakika alanı olarak ASLA
+`:00/:15/:30/:45` (GitHub'ın "yoğun" saatleri — gecikme/atlama) — `hourly-jobs.yml` `:07`
+kullanıyor. Cron'un kendisi SAATLİK (`X * * * *`), `TARGET_LOCAL_HOURS` filtresi JS tarafında.
 
 ## GitHub Secret ön koşulu
 

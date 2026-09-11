@@ -1,0 +1,97 @@
+name: Saatlik Bildirim ve Ödül İşleri
+
+# **2026 GÜNCELLEMESİ — GitHub Actions ücretsiz kotası (2000 dk/ay, özel repo)
+# TÜKENDİ.** Kök neden: 6 AYRI saatlik workflow (daily-motivation/streak-
+# reminder/daily-reward-reminder/re-engagement/water-reminder/process-
+# referral-rewards), HER BİRİ kendi checkout + `npm install`'unu (firebase-
+# admin ağır bir bağımlılık — soğuk kurulum saniyeler sürüyor) SIFIRDAN
+# yapıyordu → saatte 6 VM + 6 kurulum × 24 saat × 30 gün = kotayı günler
+# içinde tüketiyordu. Bu TEK workflow hepsini BİRLEŞTİRİYOR: TEK checkout +
+# TEK `npm install` (+ `node_modules` cache), ardından altı betik ayrı
+# STEP'ler olarak aynı job'da art arda çalışıyor. Aylık dakika tüketimi
+# ~6 kat azalıyor. Davranış DEĞİŞMEDİ — her betiğin kendi `TARGET_LOCAL_HOURS`
+# + "catch-up penceresi" mantığı (bkz. notification-scripts/CLAUDE.md
+# "common.js" bölümü) zaten HANGİ DAKİKADA çalıştığından bağımsız; yalnızca
+# saatte bir çalışması yeterli.
+#
+# Bir STEP başarısız olursa (ör. bir Firestore sorgusu hata verirse) DİĞER
+# betikler yine de çalışsın diye her step `if: ${{ !cancelled() }}` taşıyor
+# — eskiden her betik ayrı workflow olduğu için biri patlasa diğerleri zaten
+# etkilenmiyordu, bu davranış burada da KORUNUYOR.
+#
+# `cleanupStaleAnonymousUsers.js` (yalnızca workflow_dispatch, iki aşamalı
+# onay) ve `initFounderBadgeCounter.js` (yalnızca workflow_dispatch, tek
+# seferlik seed) BİLEREK bu dosyaya alınmadı — zaten zamanlanmış ÇALIŞMIYOR,
+# kota tüketimine katkıları yok, kendi ayrı dosyalarında kaldılar.
+
+on:
+  schedule:
+    - cron: '7 * * * *'
+  workflow_dispatch:
+    inputs:
+      dry_run_referral:
+        description: 'process-referral-rewards için dry run (true: yalnızca logla, kredileme)'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'false'
+          - 'true'
+
+jobs:
+  hourly:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: notification-scripts
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      # Lockfile YOK (tek bağımlılık: firebase-admin) — `setup-node`'un
+      # yerleşik `cache: npm`'i lockfile hash'i ister, bu yüzden
+      # `node_modules`'ı doğrudan `package.json` hash'ine göre önbelleğe
+      # alıyoruz. Önbellek isabet ederse `npm install` saniyeler içinde biter.
+      - uses: actions/cache@v4
+        with:
+          path: notification-scripts/node_modules
+          key: notification-scripts-npm-${{ hashFiles('notification-scripts/package.json') }}
+      - run: npm install
+
+      - name: Günlük Motivasyon (9/12/16/20 yerel saat)
+        if: ${{ !cancelled() }}
+        run: npm run daily-motivation
+        env:
+          FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
+
+      - name: Streak Hatırlatması (21 yerel saat)
+        if: ${{ !cancelled() }}
+        run: npm run streak-reminder
+        env:
+          FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
+
+      - name: Günlük Ödül Hatırlatması (18 yerel saat)
+        if: ${{ !cancelled() }}
+        run: npm run daily-reward-reminder
+        env:
+          FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
+
+      - name: Su Hatırlatması (14 yerel saat)
+        if: ${{ !cancelled() }}
+        run: npm run water-reminder
+        env:
+          FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
+
+      - name: Geri Kazanma (11 yerel saat, 2+ gün pasif)
+        if: ${{ !cancelled() }}
+        run: npm run re-engagement
+        env:
+          FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
+
+      - name: Davet Et Ödüllerini İşle
+        if: ${{ !cancelled() }}
+        run: npm run process-referral-rewards
+        env:
+          FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
+          DRY_RUN: ${{ inputs.dry_run_referral || 'false' }}
