@@ -70,13 +70,10 @@
     animation:glowPulse 2.4s ease-in-out infinite}
   @keyframes glowPulse{0%,100%{transform:scale(1);opacity:.8}50%{transform:scale(1.08);opacity:1}}
   .costumeImg{position:relative;height:min(48vh,340px);width:auto;
-    filter:drop-shadow(0 16px 20px rgba(74,54,32,.3));animation:costumeIn .5s cubic-bezier(.25,1.4,.4,1)}
+    filter:drop-shadow(0 16px 20px rgba(74,54,32,.3));animation:costumeIn .32s cubic-bezier(.25,1.4,.4,1)}
   @keyframes costumeIn{0%{transform:translateY(18px) scale(.88);opacity:0}100%{transform:translateY(0) scale(1);opacity:1}}
   .costumeName{position:relative;font-family:var(--display);font-weight:700;
     font-size:clamp(22px,6.4vw,30px);color:var(--mustard)}
-  .costumePill{position:absolute;top:9%;left:50%;transform:translateX(-50%);
-    background:var(--espresso);color:var(--cream);font-family:var(--display);font-weight:700;
-    font-size:12px;letter-spacing:.08em;padding:5px 14px;border-radius:99px}
 
   /* --- kostüm finali (mini fan) --- */
   .fanRow{position:relative;display:flex;align-items:flex-end;justify-content:center;
@@ -158,7 +155,7 @@
     });
     s.push({type:"costumeIntro", dur:1500});
     COSTUMES.forEach(function(c, i){
-      s.push({type:"costume", dur:800, data:c, badge:"KOSTÜM "+(i+1)+" / "+COSTUMES.length});
+      s.push({type:"costume", dur:480, data:c});
     });
     s.push({type:"costumeFinale", dur:2700});
     s.push({type:"endcard", dur:1e9});
@@ -194,9 +191,8 @@
     layer.appendChild(el("div", "featTitle", "Zibo'yu tarzına göre giydir"));
     layer.appendChild(el("div", "featSub", "Kazandığın Zibo Coin ile onlarca kostüm ve tema aç"));
   }
-  function renderCostume(layer, c, badge){
+  function renderCostume(layer, c){
     layer.appendChild(el("div", "costumeGlow"));
-    var b = el("div", "costumePill", badge); layer.appendChild(b);
     layer.appendChild(el("img", "costumeImg")).src = c.img;
     layer.appendChild(el("div", "costumeName", c.name));
   }
@@ -232,7 +228,7 @@
     intro: renderIntro,
     feature: function(layer, s){ renderFeature(layer, s.data, s.badge); },
     costumeIntro: renderCostumeIntro,
-    costume: function(layer, s){ renderCostume(layer, s.data, s.badge); },
+    costume: function(layer, s){ renderCostume(layer, s.data); },
     costumeFinale: renderCostumeFinale,
     endcard: renderEndcard
   };
@@ -259,7 +255,7 @@
     if (prev){
       prev.classList.remove("in");
       prev.classList.add("out");
-      setTimeout(function(){ if (prev && prev.parentNode) prev.parentNode.removeChild(prev); }, 320);
+      setTimeout(function(){ if (prev && prev.parentNode) prev.parentNode.removeChild(prev); }, 220);
     }
 
     sceneStart = performance.now();
