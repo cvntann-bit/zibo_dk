@@ -145,6 +145,7 @@
   "adFreePromoComingSoon": "Coming soon! The ad-free experience will be available soon.",
   "adFreePromoPurchaseSuccess": "Thank you! You won't see ads anymore.",
   "adFreePromoPurchaseFailed": "Purchase couldn't be completed, please try again.",
+  "adFreePromoPurchaseFailedDismissButton": "OK",
   "themeNameSunset": "Sunset",
   "themeNameOcean": "Ocean",
   "themeNameForest": "Forest",

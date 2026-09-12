@@ -66,6 +66,15 @@ class AdFreeProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Play Store'dan (varsa) canlı/yerelleştirilmiş fiyat metnini sorgular —
+  /// `CoinProvider.queryLocalizedPrice` ile AYNI gerekçe (KDV/vergi dahil
+  /// GERÇEK fiyat, `ad_free_promo_sheet.dart`'taki sabit `adFreePromoPrice`
+  /// TAHMİNDEN farklı olabiliyor — gerçek cihazda 159,90 TL yerine 189,90 TL
+  /// çıkması TAM BU yüzden, bkz. 2026-09-12 kullanıcı raporu). `null`
+  /// dönerse çağıran taraf sabit fiyata düşer.
+  Future<String?> queryLocalizedPrice() =>
+      _purchaseService.queryAdRemovalLocalizedPrice();
+
   /// Satın alma akışını başlatır. Başarılıysa reklamsız durumu HEMEN kalıcı
   /// hale getirir ve true döner; kullanıcı vazgeçerse/ödeme başarısız
   /// olursa false döner.

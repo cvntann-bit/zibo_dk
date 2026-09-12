@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -5,11 +7,16 @@ import '../l10n/app_localizations.dart';
 import '../models/coin_package.dart';
 import '../providers/ad_free_provider.dart';
 
-/// Reklamsız Zibo'nun gösterilen fiyatı — `CoinPackage`'ın zaten taşıdığı
-/// [PackagePrice] modeli yeniden kullanılıyor (bkz. o dosyadaki "ileride
-/// ülkeye göre farklı para birimi" notu — AYNI genişletme yolu burada da
-/// geçerli, şimdilik tek bir sabit TRY değeri). 159,90 ₺ kullanıcının
-/// verdiği gerçek fiyat.
+/// Reklamsız Zibo'nun SABİT/görsel yer tutucu fiyatı — `CoinPackage`'ın
+/// zaten taşıdığı [PackagePrice] modeli yeniden kullanılıyor. Yalnızca Play
+/// Store'un canlı fiyatı (bkz. `AdFreeProvider.queryLocalizedPrice`) HENÜZ
+/// gelmediyse gösterilen bir İLK TAHMİN — **KDV/vergi dahil GERÇEK fiyat
+/// FARKLI olabilir** (2026-09-12 kullanıcı raporu: bu sabit 159,90 TL
+/// gösteriyordu ama Play'in kendi ödeme ekranı 189,90 TL çıkardı). Coin
+/// paketlerindeki `CoinPackage.price`/`_PackageCardState._livePrice` ile
+/// AYNI "sessiz arka plan iyileştirmesi" deseni — canlı fiyat gelince
+/// yerini alır, gelmezse (mağaza kullanılamıyor, test ortamı) bu sabit
+/// kalır.
 const adFreePromoPrice = PackagePrice(amount: 159.90);
 
 /// "Zibo ADS" (reklamsız deneyim) tanıtım ekranı — bkz. CLAUDE.md "Zibo
@@ -21,93 +28,153 @@ const adFreePromoPrice = PackagePrice(amount: 159.90);
 /// AYNI `showModalBottomSheet` deseni — kullanıcı isteğiyle KAPATILABİLİR
 /// (zorunlu değil), sürükleme tutamacı + kapatma butonu ikisi de var.
 Future<void> showAdFreePromoSheet(BuildContext context) {
-  final l10n = AppLocalizations.of(context)!;
-  // 2026 güncellemesi — "Satın Al" buton YAZISI yerine gerçek fiyat
-  // gösteriliyor (kullanıcı isteği). Sayı biçimi arayüz diline göre uyarlanıyor
-  // (bkz. `PackagePrice.formattedForLocale`/`formatCurrencyAmount`) — para
-  // birimi henüz TRY'de sabit, yalnızca ondalık/binlik ayracı değişiyor.
-  final priceLabel = adFreePromoPrice.formattedForLocale(
-    Localizations.localeOf(context).languageCode,
-  );
-
   return showModalBottomSheet<void>(
     context: context,
     showDragHandle: true,
     isScrollControlled: true,
-    builder: (sheetContext) {
-      return SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
+    builder: (sheetContext) => _AdFreePromoSheetBody(outerContext: context),
+  );
+}
+
+/// Sheet'in gövdesi — `StatefulWidget` olmasının TEK sebebi Play Store'dan
+/// canlı fiyat sorgusu ([AdFreeProvider.queryLocalizedPrice]) VE satın alma
+/// sırasında butonun kendi "yükleniyor" durumu (bkz. `_PackageCardState`
+/// ile AYNI desen, store_screen.dart).
+class _AdFreePromoSheetBody extends StatefulWidget {
+  const _AdFreePromoSheetBody({required this.outerContext});
+
+  /// Sheet'i açan EKRANIN context'i — sheet kapandıktan SONRA da sonuç
+  /// mesajını (SnackBar/dialog) gösterebilmek için AYRI tutuluyor. Bu
+  /// widget'ın KENDİ `context`'i, `Navigator.pop()` çağrıldığı ANDA
+  /// unmount olacağı için o iş için kullanılamaz.
+  final BuildContext outerContext;
+
+  @override
+  State<_AdFreePromoSheetBody> createState() => _AdFreePromoSheetBodyState();
+}
+
+class _AdFreePromoSheetBodyState extends State<_AdFreePromoSheetBody> {
+  bool _purchasing = false;
+  String? _livePrice;
+
+  @override
+  void initState() {
+    super.initState();
+    unawaited(_loadLivePrice());
+  }
+
+  Future<void> _loadLivePrice() async {
+    final price = await context.read<AdFreeProvider>().queryLocalizedPrice();
+    if (mounted && price != null) setState(() => _livePrice = price);
+  }
+
+  Future<void> _buy() async {
+    final l10n = AppLocalizations.of(context)!;
+    final adFree = context.read<AdFreeProvider>();
+    setState(() => _purchasing = true);
+    final success = await adFree.purchase();
+    if (!mounted) return;
+    Navigator.of(context).pop();
+    if (!widget.outerContext.mounted) return;
+    if (success) {
+      ScaffoldMessenger.of(widget.outerContext)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(content: Text(l10n.adFreePromoPurchaseSuccess)));
+    } else {
+      await showDialog<void>(
+        context: widget.outerContext,
+        builder: (dialogContext) => AlertDialog(
+          content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              _RedBanner(l10n: l10n),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _Benefit(
-                      icon: Icons.block,
-                      label: l10n.adFreePromoBenefitNoAds,
-                    ),
-                    const SizedBox(height: 12),
-                    _Benefit(
-                      icon: Icons.bolt_outlined,
-                      label: l10n.adFreePromoBenefitUninterrupted,
-                    ),
-                    const SizedBox(height: 12),
-                    _Benefit(
-                      icon: Icons.favorite_outline,
-                      label: l10n.adFreePromoBenefitSupport,
-                    ),
-                    const SizedBox(height: 24),
-                    SizedBox(
-                      width: double.infinity,
-                      child: FilledButton(
-                        key: const Key('adFreePromoBuyButton'),
-                        onPressed: () async {
-                          // `AdFreeProvider` `sheetContext`'in DIŞARIDAKİ
-                          // `context`'inden okunuyor (sheet kapandıktan
-                          // SONRA da sonuç mesajını göstermek için) — ikisi
-                          // de AYNI `MultiProvider` ağacında, `read` hangi
-                          // context'ten yapılırsa yapılsın aynı örneği verir.
-                          final adFree = context.read<AdFreeProvider>();
-                          Navigator.of(sheetContext).pop();
-                          final success = await adFree.purchase();
-                          if (!context.mounted) return;
-                          ScaffoldMessenger.of(context)
-                            ..hideCurrentSnackBar()
-                            ..showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  success
-                                      ? l10n.adFreePromoPurchaseSuccess
-                                      : l10n.adFreePromoPurchaseFailed,
-                                ),
-                              ),
-                            );
-                        },
-                        child: Text(priceLabel),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    SizedBox(
-                      width: double.infinity,
-                      child: TextButton(
-                        key: const Key('adFreePromoDismissButton'),
-                        onPressed: () => Navigator.of(sheetContext).pop(),
-                        child: Text(l10n.adFreePromoDismissButton),
-                      ),
-                    ),
-                  ],
-                ),
+              const Text('😞', style: TextStyle(fontSize: 40)),
+              const SizedBox(height: 12),
+              Text(
+                l10n.adFreePromoPurchaseFailed,
+                textAlign: TextAlign.center,
               ),
             ],
           ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: Text(l10n.adFreePromoPurchaseFailedDismissButton),
+            ),
+          ],
         ),
       );
-    },
-  );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    // 2026 güncellemesi — "Satın Al" buton YAZISI yerine fiyat gösteriliyor
+    // (kullanıcı isteği). Sayı biçimi arayüz diline göre uyarlanıyor (bkz.
+    // `PackagePrice.formattedForLocale`/`formatCurrencyAmount`).
+    final priceLabel =
+        _livePrice ??
+        adFreePromoPrice.formattedForLocale(
+          Localizations.localeOf(context).languageCode,
+        );
+
+    return SafeArea(
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _RedBanner(l10n: l10n),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _Benefit(
+                    icon: Icons.block,
+                    label: l10n.adFreePromoBenefitNoAds,
+                  ),
+                  const SizedBox(height: 12),
+                  _Benefit(
+                    icon: Icons.bolt_outlined,
+                    label: l10n.adFreePromoBenefitUninterrupted,
+                  ),
+                  const SizedBox(height: 12),
+                  _Benefit(
+                    icon: Icons.favorite_outline,
+                    label: l10n.adFreePromoBenefitSupport,
+                  ),
+                  const SizedBox(height: 24),
+                  SizedBox(
+                    width: double.infinity,
+                    child: FilledButton(
+                      key: const Key('adFreePromoBuyButton'),
+                      onPressed: _purchasing ? null : _buy,
+                      child: _purchasing
+                          ? const SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : Text(priceLabel),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  SizedBox(
+                    width: double.infinity,
+                    child: TextButton(
+                      key: const Key('adFreePromoDismissButton'),
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: Text(l10n.adFreePromoDismissButton),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 /// Üstteki dikkat çekici kırmızı şerit — kullanıcı isteğiyle uygulamanın

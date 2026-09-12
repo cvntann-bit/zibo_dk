@@ -503,6 +503,9 @@ class AppLocalizationsEn extends AppLocalizations {
       'Purchase couldn\'t be completed, please try again.';
 
   @override
+  String get adFreePromoPurchaseFailedDismissButton => 'OK';
+
+  @override
   String get themeNameSunset => 'Sunset';
 
   @override

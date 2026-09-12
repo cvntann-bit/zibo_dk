@@ -273,15 +273,37 @@ class _ThemesGrid extends StatelessWidget {
 /// periyodik tanıtımın görünürlüğünü `find.text('Zibo ADS')` ile kontrol
 /// eden testleri (kart HER ZAMAN ekranda dururken bu metin artık BİRDEN
 /// FAZLA yerde bulunurdu) bozardı.
-class _AdFreeCard extends StatelessWidget {
+class _AdFreeCard extends StatefulWidget {
   const _AdFreeCard();
 
+  @override
+  State<_AdFreeCard> createState() => _AdFreeCardState();
+}
+
+class _AdFreeCardState extends State<_AdFreeCard> {
   /// "Zibo ADS" banner'ıyla AYNI sabit kırmızı (bkz. ad_free_promo_sheet.dart
   /// — kullanıcı isteğiyle uygulamanın aktif temasından BİLEREK BAĞIMSIZ),
   /// burada yalnızca ikonun rengi olarak kullanılıyor — kartın geri kalanı
   /// Mağaza'nın normal kart stiliyle (varsayılan `Card` rengi) tutarlı kalsın
   /// diye tüm kart kırmızıya boyanmadı.
   static const _brandRed = Color(0xFFD32F2F);
+
+  /// Play Store'dan sorgulanan canlı fiyat — `_PackageCardState._livePrice`
+  /// ile AYNI desen (bkz. `AdFreeProvider.queryLocalizedPrice`
+  /// dokümantasyonu: sabit `adFreePromoPrice` KDV/vergi yüzünden gerçek
+  /// fiyattan farklı çıkabiliyor).
+  String? _livePrice;
+
+  @override
+  void initState() {
+    super.initState();
+    unawaited(_loadLivePrice());
+  }
+
+  Future<void> _loadLivePrice() async {
+    final price = await context.read<AdFreeProvider>().queryLocalizedPrice();
+    if (mounted && price != null) setState(() => _livePrice = price);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -290,12 +312,11 @@ class _AdFreeCard extends StatelessWidget {
     // kart, sekmeden hiç çıkmadan/rebuild TETİKLEMEDEN otomatik "Satın
     // Alındı" durumuna geçmeli (IndexedStack'te sürekli monte kalıyor).
     final isAdFree = context.watch<AdFreeProvider>().isAdFree;
-    // "Yakında!" mockup akışıyla AYNI fiyat kaynağı (bkz.
-    // ad_free_promo_sheet.dart) — gerçek IAP bağlandığında ikisi de AYNI
-    // anda güncellenecek, tek bir kaynak.
-    final priceLabel = adFreePromoPrice.formattedForLocale(
-      Localizations.localeOf(context).languageCode,
-    );
+    final priceLabel =
+        _livePrice ??
+        adFreePromoPrice.formattedForLocale(
+          Localizations.localeOf(context).languageCode,
+        );
 
     return Card(
       child: Padding(

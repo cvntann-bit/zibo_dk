@@ -699,6 +699,10 @@
   "@adFreePromoPurchaseFailed": {
     "description": "Zibo ADS satın alma BAŞARISIZ olunca (vazgeçme, ödeme hatası vb.) gösterilen mesaj"
   },
+  "adFreePromoPurchaseFailedDismissButton": "Tamam",
+  "@adFreePromoPurchaseFailedDismissButton": {
+    "description": "Zibo ADS satın alma başarısızlık diyaloğunu kapatan buton"
+  },
   "themeNameSunset": "Gün Batımı",
   "@themeNameSunset": {
     "description": "sunset temasının görünen adı"

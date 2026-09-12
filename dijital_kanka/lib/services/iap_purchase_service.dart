@@ -49,6 +49,36 @@ class InAppPurchasePurchaseService extends PurchaseService {
   final Map<String, Completer<bool>> _pending = {};
   final _orphanedController = StreamController<String>.broadcast();
 
+  /// Kullanıcı, Play Billing ödeme ekranını başlattıktan SONRA (ör. sistem
+  /// GERİ tuşuyla) öyle bir şekilde kapatabiliyor ki `purchaseStream` HİÇBİR
+  /// olay yayınlamıyor (gerçek cihazda GÖZLEMLENEN bir davranış — 2026-09-12,
+  /// "Zibo ADS" satın alma testinde). Bu olmadan [_pending]'deki `Completer`
+  /// SONSUZA KADAR beklerdi — bir SONRAKİ "Satın Al" denemesi de hep bu AYNI
+  /// (hiç bitmeyen) `Future`'ı paylaşır, yani buton kalıcı olarak "yüklüyor"
+  /// durumunda TAKILI kalırdı (Play Store ekranı bir daha HİÇ açılmazdı).
+  /// Süre dolunca "başarısız" say ve [_pending]'den temizle — bir SONRAKİ
+  /// tıklama YENİ bir `buyConsumable`/`buyNonConsumable` çağrısı başlatabilsin.
+  /// Gerçek bir ödeme (ör. 3D Secure doğrulaması) daha uzun sürebileceği için
+  /// süre cömert tutuldu; eğer olay YİNE DE bu süreden SONRA gelirse
+  /// [_onPurchaseUpdate] onu zaten "yetim satın alma" olarak ele alıp
+  /// [orphanedPurchaseProductIds] üzerinden GEÇ de olsa teslim eder — coin/
+  /// reklamsız durumu KAYBOLMAZ, yalnızca kullanıcıya gösterilen anlık sonuç
+  /// mesajı bu durumda "başarısız" olabilir.
+  static const _purchaseTimeout = Duration(minutes: 2);
+
+  Future<bool> _awaitPendingWithTimeout(
+    String productId,
+    Completer<bool> completer,
+  ) {
+    return completer.future.timeout(
+      _purchaseTimeout,
+      onTimeout: () {
+        _pending.remove(productId);
+        return false;
+      },
+    );
+  }
+
   @override
   Stream<String> get orphanedPurchaseProductIds => _orphanedController.stream;
 
@@ -92,7 +122,7 @@ class InAppPurchasePurchaseService extends PurchaseService {
         return false;
       }
 
-      return await completer.future;
+      return await _awaitPendingWithTimeout(package.id, completer);
     } catch (_) {
       _pending.remove(package.id);
       return false;
@@ -131,7 +161,7 @@ class InAppPurchasePurchaseService extends PurchaseService {
         return false;
       }
 
-      return await completer.future;
+      return await _awaitPendingWithTimeout(productId, completer);
     } catch (_) {
       _pending.remove(productId);
       return false;
@@ -153,6 +183,21 @@ class InAppPurchasePurchaseService extends PurchaseService {
     try {
       if (!await _iap.isAvailable()) return null;
       final response = await _iap.queryProductDetails({package.id});
+      if (response.error != null || response.productDetails.isEmpty) {
+        return null;
+      }
+      return response.productDetails.first.price;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  @override
+  Future<String?> queryAdRemovalLocalizedPrice() async {
+    const productId = 'remove_ads_lifetime';
+    try {
+      if (!await _iap.isAvailable()) return null;
+      final response = await _iap.queryProductDetails({productId});
       if (response.error != null || response.productDetails.isEmpty) {
         return null;
       }

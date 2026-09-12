@@ -503,6 +503,9 @@ class AppLocalizationsTr extends AppLocalizations {
       'Satın alma tamamlanamadı, lütfen tekrar dene.';
 
   @override
+  String get adFreePromoPurchaseFailedDismissButton => 'Tamam';
+
+  @override
   String get themeNameSunset => 'Gün Batımı';
 
   @override

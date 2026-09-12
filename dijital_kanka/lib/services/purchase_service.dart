@@ -46,6 +46,15 @@ abstract class PurchaseService {
   /// stream'i üzerinden (varsa `AdFreeProvider`'a) ulaşır — bkz.
   /// `iap_purchase_service.dart`.
   Future<void> restorePurchases() async {}
+
+  /// "Reklamsız Zibo" ürününün Play Store'dan sorgulanan canlı/yerelleştirilmiş
+  /// fiyat metnini döner — [queryLocalizedPrice] ile AYNI gerekçe: Play
+  /// Console'da girilen fiyat KDV/vergi ile GERÇEKTE kullanıcıya gösterilenden
+  /// farklı olabiliyor (bkz. `AdFreeProvider.queryLocalizedPrice`
+  /// dokümantasyonu — gerçek cihazda 159,90 TL yerine 189,90 TL çıkması BU
+  /// yüzden). `null` dönerse çağıran taraf sabit/görsel fiyata (bkz.
+  /// `ad_free_promo_sheet.dart`'taki `adFreePromoPrice`) düşer.
+  Future<String?> queryAdRemovalLocalizedPrice() async => null;
 }
 
 /// Gerçek bir ödeme/mağaza SDK'sı bağlanana kadar kullanılan geçici/sahte

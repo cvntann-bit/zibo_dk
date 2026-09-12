@@ -506,6 +506,9 @@ class AppLocalizationsEs extends AppLocalizations {
       'No se pudo completar la compra, inténtalo de nuevo.';
 
   @override
+  String get adFreePromoPurchaseFailedDismissButton => 'Vale';
+
+  @override
   String get themeNameSunset => 'Atardecer';
 
   @override

@@ -970,6 +970,12 @@ abstract class AppLocalizations {
   /// **'Satın alma tamamlanamadı, lütfen tekrar dene.'**
   String get adFreePromoPurchaseFailed;
 
+  /// Zibo ADS satın alma başarısızlık diyaloğunu kapatan buton
+  ///
+  /// In tr, this message translates to:
+  /// **'Tamam'**
+  String get adFreePromoPurchaseFailedDismissButton;
+
   /// sunset temasının görünen adı
   ///
   /// In tr, this message translates to:
