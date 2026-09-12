@@ -17,6 +17,20 @@
 # DEĞİL, gerçek cihazda ana akışları (Google ile Bağlama, reklam,
 # bildirim, coin akışları) gezmek.
 
+# Sınıf yeniden paketleme — Play Console'un "App bundle explorer" >
+# "Ayrıntılar" sayfasında (2026-09-12) R8 yapılandırmasının Tam Mod/Kaynak
+# Küçültme/Kullanılmayan Kaynak Kaldırma'nın ÜÇÜ de zaten açıkken TEK eksik
+# kalemi buydu ("Sınıflar Yeniden Paketleniyor" işaretsizdi) — düşük
+# "Optimizasyon/Kod karartma/Küçültme yüzdesi" skorlarının sebebi.
+# AŞAĞIDAKİ `-keep` kurallarına HİÇ dokunmuyor: yalnızca zaten
+# obfuscate edilmeye (yeniden adlandırılmaya) İZİN VERİLEN — yani bir
+# `-keep` ile korunmayan — sınıfların paket hiyerarşisini tek bir düz
+# pakette topluyor (dex'teki paket adı string'lerini kısaltarak boyutu/
+# karartma oranını iyileştiriyor). Bu yüzden geçmişteki bildirim sesi/
+# Google ile Bağlama R8 çökmeleriyle (bkz. CLAUDE.md "Release İmzalama"
+# bölümü, `res/raw/keep.xml`) AYNI risk sınıfında DEĞİL.
+-repackageclasses ''
+
 # Flutter'ın kendi embedding sınıfları.
 -keep class io.flutter.app.** { *; }
 -keep class io.flutter.plugin.** { *; }

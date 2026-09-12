@@ -14,6 +14,7 @@
 - **`res/raw/keep.xml`** — yalnızca çalışma-zamanında STRING adıyla okunan kaynakları listeler (`@raw/zibo_notification`, `@string/default_web_client_id`). Eklenmezse R8 SESSİZCE siler → çökme (ses yok / Google Sign-In "hiçbir şey olmuyor"). Detay → `docs/decisions/010`.
 - **`proguard-rules.pro`** minimal — Flutter embedding, Play Core `-dontwarn`, Credential Manager `-keep`, **`androidx.work.**`/`androidx.room.**` `-keep`** (WorkManager'ın generated `_Impl` sınıfları — transitif plugin bağımlılığı, silinince açılışta `WorkDatabase` çökmesi).
 - **GERÇEK doğrulama = derleme BAŞARISI DEĞİL** — `flutter build apk --release` + gerçek cihaza kur + AÇ. WorkManager çökmesi ilk derlemede değil yalnızca cihazda uygulamayı açınca ortaya çıktı.
+- **Play Console "Uygulama optimizasyonu eşiğin altında" uyarısı (2026-09-12)**: App bundle explorer > Ayrıntılar, R8 yapılandırması Tam Mod/Kaynak Küçültme/Kullanılmayan Kaynak Kaldırma'nın üçü de AÇIKKEN tek eksik "Sınıfları Yeniden Paketleme" idi — düşük Optimizasyon/Kod karartma/Küçültme yüzdelerinin sebebi. Çözüm `-repackageclasses ''` — mevcut `-keep` kurallarına DOKUNMUYOR (yalnızca zaten obfuscate edilmeye izinli sınıfların paket yapısını düzleştiriyor), bu yüzden geçmişteki `res/raw/keep.xml` sınıfı riskte DEĞİL. Skor Play Console'da hemen değil, yeni sürüm birkaç gün Production'da kaldıktan sonra güncelleniyor.
 
 ## `AndroidManifest.xml`
 
