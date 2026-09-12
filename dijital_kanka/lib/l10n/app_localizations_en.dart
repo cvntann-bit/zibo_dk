@@ -297,6 +297,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get storeAdFreeCardSubtitle => 'Turn off all ads for good';
 
   @override
+  String get storeAdFreeCardPurchasedLabel => 'Purchased';
+
+  @override
   String get storePackagesSectionTitle => 'Coin Packages';
 
   @override
@@ -490,6 +493,14 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get adFreePromoComingSoon =>
       'Coming soon! The ad-free experience will be available soon.';
+
+  @override
+  String get adFreePromoPurchaseSuccess =>
+      'Thank you! You won\'t see ads anymore.';
+
+  @override
+  String get adFreePromoPurchaseFailed =>
+      'Purchase couldn\'t be completed, please try again.';
 
   @override
   String get themeNameSunset => 'Sunset';

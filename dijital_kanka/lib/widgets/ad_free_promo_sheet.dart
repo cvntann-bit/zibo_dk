@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../l10n/app_localizations.dart';
 import '../models/coin_package.dart';
+import '../providers/ad_free_provider.dart';
 
 /// Reklamsız Zibo'nun gösterilen fiyatı — `CoinPackage`'ın zaten taşıdığı
 /// [PackagePrice] modeli yeniden kullanılıyor (bkz. o dosyadaki "ileride
@@ -10,12 +12,14 @@ import '../models/coin_package.dart';
 /// verdiği gerçek fiyat.
 const adFreePromoPrice = PackagePrice(amount: 159.90);
 
-/// **GÖRSEL MOCKUP** — "Zibo ADS" (reklamsız deneyim) tanıtım ekranı. Bkz.
-/// CLAUDE.md "Zibo ADS" bölümü: gerçek bir satın alma akışı YOK (henüz Play
-/// Billing bağlanmadı), "Satın Al" butonu şimdilik yalnızca bir "Yakında!"
-/// mesajı gösteriyor. `showModulesMenuSheet` ile AYNI `showModalBottomSheet`
-/// deseni — kullanıcı isteğiyle KAPATILABİLİR (zorunlu değil), sürükleme
-/// tutamacı + kapatma butonu ikisi de var.
+/// "Zibo ADS" (reklamsız deneyim) tanıtım ekranı — bkz. CLAUDE.md "Zibo
+/// ADS" bölümü. 2026 güncellemesi: "Satın Al" artık [AdFreeProvider]
+/// üzerinden GERÇEK bir Play Billing (KALICI/`remove_ads_lifetime`) akışı
+/// başlatıyor (eskiden yalnızca bir "Yakında!" mesajı gösteren mockup'tı —
+/// bkz. `adFreePromoComingSoon`, HÂLÂ kullanılmayan bir ARB anahtarı olarak
+/// duruyor, proje konvansiyonu gereği silinmedi). `showModulesMenuSheet` ile
+/// AYNI `showModalBottomSheet` deseni — kullanıcı isteğiyle KAPATILABİLİR
+/// (zorunlu değil), sürükleme tutamacı + kapatma butonu ikisi de var.
 Future<void> showAdFreePromoSheet(BuildContext context) {
   final l10n = AppLocalizations.of(context)!;
   // 2026 güncellemesi — "Satın Al" buton YAZISI yerine gerçek fiyat
@@ -61,13 +65,25 @@ Future<void> showAdFreePromoSheet(BuildContext context) {
                       width: double.infinity,
                       child: FilledButton(
                         key: const Key('adFreePromoBuyButton'),
-                        onPressed: () {
+                        onPressed: () async {
+                          // `AdFreeProvider` `sheetContext`'in DIŞARIDAKİ
+                          // `context`'inden okunuyor (sheet kapandıktan
+                          // SONRA da sonuç mesajını göstermek için) — ikisi
+                          // de AYNI `MultiProvider` ağacında, `read` hangi
+                          // context'ten yapılırsa yapılsın aynı örneği verir.
+                          final adFree = context.read<AdFreeProvider>();
                           Navigator.of(sheetContext).pop();
+                          final success = await adFree.purchase();
+                          if (!context.mounted) return;
                           ScaffoldMessenger.of(context)
                             ..hideCurrentSnackBar()
                             ..showSnackBar(
                               SnackBar(
-                                content: Text(l10n.adFreePromoComingSoon),
+                                content: Text(
+                                  success
+                                      ? l10n.adFreePromoPurchaseSuccess
+                                      : l10n.adFreePromoPurchaseFailed,
+                                ),
                               ),
                             );
                         },

@@ -616,6 +616,12 @@ abstract class AppLocalizations {
   /// **'Tüm reklamları kalıcı olarak kapat'**
   String get storeAdFreeCardSubtitle;
 
+  /// Kullanıcı ZATEN 'Reklamsız Zibo' satın almışsa, kartın fiyat butonu YERİNE gösterilen etiket
+  ///
+  /// In tr, this message translates to:
+  /// **'Satın Alındı'**
+  String get storeAdFreeCardPurchasedLabel;
+
   /// Mağaza sayfasında satın alınabilir coin paketleri bölümünün başlığı
   ///
   /// In tr, this message translates to:
@@ -951,6 +957,18 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'Yakında! Reklamsız deneyim çok yakında sunulacak.'**
   String get adFreePromoComingSoon;
+
+  /// Zibo ADS satın alma BAŞARILI olunca gösterilen mesaj
+  ///
+  /// In tr, this message translates to:
+  /// **'Teşekkürler! Artık reklam görmeyeceksin.'**
+  String get adFreePromoPurchaseSuccess;
+
+  /// Zibo ADS satın alma BAŞARISIZ olunca (vazgeçme, ödeme hatası vb.) gösterilen mesaj
+  ///
+  /// In tr, this message translates to:
+  /// **'Satın alma tamamlanamadı, lütfen tekrar dene.'**
+  String get adFreePromoPurchaseFailed;
 
   /// sunset temasının görünen adı
   ///

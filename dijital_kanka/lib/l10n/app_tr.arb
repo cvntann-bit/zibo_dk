@@ -391,6 +391,10 @@
   "@storeAdFreeCardSubtitle": {
     "description": "Mağaza'daki kalıcı 'Reklamsız Zibo' satın alma kartının alt metni"
   },
+  "storeAdFreeCardPurchasedLabel": "Satın Alındı",
+  "@storeAdFreeCardPurchasedLabel": {
+    "description": "Kullanıcı ZATEN 'Reklamsız Zibo' satın almışsa, kartın fiyat butonu YERİNE gösterilen etiket"
+  },
   "storePackagesSectionTitle": "Coin Paketleri",
   "@storePackagesSectionTitle": {
     "description": "Mağaza sayfasında satın alınabilir coin paketleri bölümünün başlığı"
@@ -686,6 +690,14 @@
   "adFreePromoComingSoon": "Yakında! Reklamsız deneyim çok yakında sunulacak.",
   "@adFreePromoComingSoon": {
     "description": "Zibo ADS 'Satın Al' butonuna basılınca gösterilen mockup mesajı"
+  },
+  "adFreePromoPurchaseSuccess": "Teşekkürler! Artık reklam görmeyeceksin.",
+  "@adFreePromoPurchaseSuccess": {
+    "description": "Zibo ADS satın alma BAŞARILI olunca gösterilen mesaj"
+  },
+  "adFreePromoPurchaseFailed": "Satın alma tamamlanamadı, lütfen tekrar dene.",
+  "@adFreePromoPurchaseFailed": {
+    "description": "Zibo ADS satın alma BAŞARISIZ olunca (vazgeçme, ödeme hatası vb.) gösterilen mesaj"
   },
   "themeNameSunset": "Gün Batımı",
   "@themeNameSunset": {

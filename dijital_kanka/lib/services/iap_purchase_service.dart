@@ -100,6 +100,55 @@ class InAppPurchasePurchaseService extends PurchaseService {
   }
 
   @override
+  Future<bool> purchaseAdRemoval() async {
+    // `AdFreeProvider.productId` sabitini burada import ETMİYORUZ —
+    // `purchase_service.dart` (bu dosyanın uyguladığı arayüz) provider
+    // katmanına bağımlı olmamalı, bu yüzden ID doğrudan (coin paketlerinin
+    // Play Console id'leri gibi) burada sabit yazılı. İkisi de AYNI
+    // string'i taşımalı: `remove_ads_lifetime`.
+    const productId = 'remove_ads_lifetime';
+    final existing = _pending[productId];
+    if (existing != null) return existing.future;
+
+    try {
+      if (!await _iap.isAvailable()) return false;
+
+      final response = await _iap.queryProductDetails({productId});
+      if (response.error != null || response.productDetails.isEmpty) {
+        return false;
+      }
+
+      final completer = Completer<bool>();
+      _pending[productId] = completer;
+
+      final started = await _iap.buyNonConsumable(
+        purchaseParam: PurchaseParam(
+          productDetails: response.productDetails.first,
+        ),
+      );
+      if (!started) {
+        _pending.remove(productId);
+        return false;
+      }
+
+      return await completer.future;
+    } catch (_) {
+      _pending.remove(productId);
+      return false;
+    }
+  }
+
+  @override
+  Future<void> restorePurchases() async {
+    try {
+      await _iap.restorePurchases();
+    } catch (_) {
+      // Ağ yok/mağaza kullanılamıyor — sessizce yut, `AdFreeProvider` yerel
+      // kalıcı bayrağıyla (varsa) çalışmaya devam eder.
+    }
+  }
+
+  @override
   Future<String?> queryLocalizedPrice(CoinPackage package) async {
     try {
       if (!await _iap.isAvailable()) return null;

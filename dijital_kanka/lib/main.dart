@@ -15,6 +15,7 @@ import 'package:stack_appodeal_flutter/stack_appodeal_flutter.dart';
 import 'config/appodeal_config.dart';
 import 'data/app_themes.dart';
 import 'l10n/app_localizations.dart';
+import 'providers/ad_free_provider.dart';
 import 'providers/app_streak_provider.dart';
 import 'providers/app_theme_provider.dart';
 import 'providers/auth_link_provider.dart';
@@ -571,6 +572,12 @@ class DijitalKankaApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // `CoinProvider` VE `AdFreeProvider` AYNI `PurchaseService` örneğini
+    // paylaşmalı — ikisi de `orphanedPurchaseProductIds`'i dinliyor (bkz. o
+    // dosyadaki dokümantasyon); iki AYRI `InAppPurchasePurchaseService`
+    // örneği aynı satın almayı iki kez `completePurchase` etmeye çalışabilir.
+    final resolvedPurchaseService =
+        purchaseService ?? InAppPurchasePurchaseService();
     return MultiProvider(
       providers: [
         // TrustedTimeProvider EN BAŞTA olmalı — aşağıdaki "güne bağlı"
@@ -622,21 +629,34 @@ class DijitalKankaApp extends StatelessWidget {
         // callback'i kazanılan HER ZC için otomatik XP vermek üzere
         // `context.read<XpProvider>()` kullanıyor (bkz. altta).
         ChangeNotifierProvider(create: (_) => XpProvider(uid: uid)),
+        // "Zibo ADS" (reklamsız deneyim) — bkz. AdFreeProvider dokümantasyonu.
+        // `CoinProvider`'dan ÖNCE olmalı: AYNI `resolvedPurchaseService`
+        // örneğini paylaşır VE `CoinProvider`'ın `create` callback'i
+        // interstitial reklamları kapatmak için `context.read<
+        // AdFreeProvider>()` kullanıyor (bkz. altta).
+        ChangeNotifierProvider(
+          create: (_) => AdFreeProvider(
+            uid: uid,
+            purchaseService: resolvedPurchaseService,
+          ),
+        ),
         ChangeNotifierProvider(
           create: (context) {
-            // `isSoundEnabled`/`onXpEarned`/`now` closure'ları da `create`
-            // context'ini KAPATMAMALI (bkz. `_trustedNow` dokümantasyonu —
-            // aynı "deactivated element" çökme sınıfı). İlgili provider'lar
-            // BİR KEZ, burada çözülüp örneklerine bağlanıyor.
+            // `isSoundEnabled`/`isAdFree`/`onXpEarned`/`now` closure'ları da
+            // `create` context'ini KAPATMAMALI (bkz. `_trustedNow`
+            // dokümantasyonu — aynı "deactivated element" çökme sınıfı).
+            // İlgili provider'lar BİR KEZ, burada çözülüp örneklerine
+            // bağlanıyor.
             final soundEffects = context.read<SoundEffectsProvider>();
             final xp = context.read<XpProvider>();
+            final adFree = context.read<AdFreeProvider>();
             return CoinProvider(
               uid: uid,
               adService: adService ?? AppodealAdService(),
-              purchaseService:
-                  purchaseService ?? InAppPurchasePurchaseService(),
+              purchaseService: resolvedPurchaseService,
               soundEffectsService: AudioPlayersSoundEffectsService(),
               isSoundEnabled: () => soundEffects.enabled,
+              isAdFree: () => adFree.isAdFree,
               now: _trustedNow(context),
               onXpEarned: (amount) => xp.addXp(amount),
             );

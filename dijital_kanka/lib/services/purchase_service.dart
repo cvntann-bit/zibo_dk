@@ -27,8 +27,25 @@ abstract class PurchaseService {
   /// servisleri başlangıçta bunları platform mağazasından otomatik olarak
   /// tekrar oynatır. [CoinProvider] bu stream'i dinleyip coin'i GEÇ de olsa
   /// teslim eder (bkz. `iap_purchase_service.dart`'taki "orphaned purchase"
-  /// notu). Varsayılan: hiçbir zaman olay yayınlamayan boş bir stream.
+  /// notu). **`AdFreeProvider` da AYNI stream'i, cihaz/hesap değişiminde
+  /// [restorePurchases] sonrası geri gelen KALICI ürünü yakalamak için
+  /// dinler** — bu yüzden `main.dart`'ta CoinProvider'la AYNI
+  /// [PurchaseService] örneği paylaşılmalı. Varsayılan: hiçbir zaman olay
+  /// yayınlamayan boş bir stream.
   Stream<String> get orphanedPurchaseProductIds => const Stream.empty();
+
+  /// "Reklamsız Zibo" (bkz. `AdFreeProvider.productId`) KALICI/tek seferlik
+  /// ürününün satın alma akışını başlatır — [purchaseCoinPackage]'ın
+  /// tüketilebilir akışından FARKLI (`buyNonConsumable`). Kullanıcı ödemeyi
+  /// tamamladıysa true döner.
+  Future<bool> purchaseAdRemoval() async => false;
+
+  /// Cihaz/hesap değiştiğinde (yeniden kurulum, yeni telefon) daha önce
+  /// satın alınmış KALICI ürünleri Play Store'dan sorgulayıp geri oynatır.
+  /// Sonuç bu metodun kendi dönüş değeri DEĞİL, [orphanedPurchaseProductIds]
+  /// stream'i üzerinden (varsa `AdFreeProvider`'a) ulaşır — bkz.
+  /// `iap_purchase_service.dart`.
+  Future<void> restorePurchases() async {}
 }
 
 /// Gerçek bir ödeme/mağaza SDK'sı bağlanana kadar kullanılan geçici/sahte
@@ -39,6 +56,12 @@ class MockPurchaseService extends PurchaseService {
 
   @override
   Future<bool> purchaseCoinPackage(CoinPackage package) async {
+    await Future.delayed(const Duration(milliseconds: 600));
+    return true;
+  }
+
+  @override
+  Future<bool> purchaseAdRemoval() async {
     await Future.delayed(const Duration(milliseconds: 600));
     return true;
   }

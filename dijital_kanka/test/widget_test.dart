@@ -17,6 +17,7 @@ import 'package:dijital_kanka/data/money_quotes.dart';
 import 'package:dijital_kanka/data/wheel_prizes.dart';
 import 'package:dijital_kanka/l10n/app_localizations.dart';
 import 'package:dijital_kanka/main.dart';
+import 'package:dijital_kanka/providers/ad_free_provider.dart';
 import 'package:dijital_kanka/providers/app_streak_provider.dart';
 import 'package:dijital_kanka/providers/app_theme_provider.dart';
 import 'package:dijital_kanka/providers/auth_link_provider.dart';
@@ -54,7 +55,9 @@ import 'package:dijital_kanka/screens/wheel_screen.dart';
 import 'package:dijital_kanka/services/ad_service.dart';
 import 'package:dijital_kanka/services/home_widget_service.dart';
 import 'package:dijital_kanka/services/notification_service.dart';
+import 'package:dijital_kanka/models/coin_package.dart';
 import 'package:dijital_kanka/services/purchase_service.dart';
+import 'package:dijital_kanka/widgets/ad_free_promo_sheet.dart';
 import 'package:dijital_kanka/utils/ad_free_promo_trigger.dart';
 import 'package:dijital_kanka/utils/level_up_signal.dart';
 import 'package:dijital_kanka/utils/tab_navigation.dart';
@@ -123,12 +126,29 @@ class _RecordingHomeWidgetService implements HomeWidgetService {
   }
 }
 
+/// "Zibo ADS" satın alma BAŞARISIZ oldu senaryosunu test etmek için —
+/// gerçek `InAppPurchasePurchaseService`'i test ortamında kullanmak
+/// (platform kanalı yok) `pumpAndSettle()`'ın bitmemiş bir Timer'la
+/// karşılaşmasına yol açıyor (gerçek plugin'in kendi iç hata/yeniden
+/// deneme mekanizması) — bu yüzden [MockPurchaseService]'in "her zaman
+/// başarılı" varsayılanı YERİNE, KONTROLLÜ/kararlı bir sahte servis.
+class _FailingPurchaseService extends PurchaseService {
+  const _FailingPurchaseService();
+
+  @override
+  Future<bool> purchaseCoinPackage(CoinPackage package) async => false;
+
+  @override
+  Future<bool> purchaseAdRemoval() async => false;
+}
+
 /// Gerçek [DijitalKankaApp] ile aynı kurulum, ama testte tarihi kontrol
 /// edebilmek için [GoalsProvider]'a sahte bir saat enjekte eder.
 Widget _buildAppWithClock(DateTime Function() now) {
   return MultiProvider(
     providers: [
       ChangeNotifierProvider(create: (_) => TrustedTimeProvider()),
+      ChangeNotifierProvider(create: (_) => AdFreeProvider()),
       ChangeNotifierProvider(create: (_) => AppStreakProvider(now: now)),
       ChangeNotifierProvider(create: (_) => AppThemeProvider()),
       ChangeNotifierProvider(create: (_) => AuthLinkProvider()),
@@ -856,9 +876,16 @@ void main() {
 
   testWidgets(
     'Zibo ADS (reklamsız deneyim) tanıtımı 5. Mağaza ziyaretinde görünür, '
-    'Satın Al mockup mesajı gösterir',
+    '"Satın Al" BAŞARISIZ olunca hata mesajı gösterip sheet\'i kapatır',
     (WidgetTester tester) async {
-      await _pumpPastOnboarding(tester, const DijitalKankaApp());
+      // Gerçek `InAppPurchasePurchaseService` (platform kanalı yok) test
+      // ortamında `pumpAndSettle()`'ın bitirmediği bir Timer bırakıyor —
+      // bu yüzden BAŞARISIZ senaryoyu bile kararlı bir sahte servisle
+      // (`_FailingPurchaseService`) test ediyoruz.
+      await _pumpPastOnboarding(
+        tester,
+        const DijitalKankaApp(purchaseService: _FailingPurchaseService()),
+      );
 
       Future<void> visitStoreThenLeave() async {
         await tester.tap(find.byTooltip('Coin satın al'));
@@ -883,15 +910,61 @@ void main() {
       expect(find.text('Reklam yok'), findsOneWidget);
       expect(find.text('Kesintisiz kullanım'), findsOneWidget);
 
-      // "Satın Al" — gerçek bir işlem YAPMAZ, yalnızca mockup mesajı
-      // gösterip sheet'i kapatır (bkz. CLAUDE.md "Zibo ADS" bölümü).
+      // "Satın Al" — `_FailingPurchaseService` her zaman `false` döner;
+      // sheet yine de kapanır, hata mesajı gösterilir (bkz. AYRI "BAŞARILI"
+      // testi aşağıda, orada MockPurchaseService var).
       await tester.tap(find.byKey(const Key('adFreePromoBuyButton')));
       await tester.pumpAndSettle();
       expect(find.text('Zibo ADS'), findsNothing);
       expect(
-        find.textContaining('Reklamsız deneyim çok yakında sunulacak'),
+        find.textContaining('Satın alma tamamlanamadı'),
         findsOneWidget,
       );
+    },
+  );
+
+  testWidgets(
+    'Zibo ADS satın alma BAŞARILI olunca kalıcı hale gelir ve Mağaza '
+    'kartı "Satın Alındı" gösterir',
+    (WidgetTester tester) async {
+      await _pumpPastOnboarding(
+        tester,
+        const DijitalKankaApp(purchaseService: MockPurchaseService()),
+      );
+
+      await tester.tap(find.byTooltip('Coin satın al'));
+      await tester.pumpAndSettle();
+      // Mağaza'daki kalıcı kart — henüz satın alınmamış, fiyat butonu var.
+      expect(find.text('Satın Alındı'), findsNothing);
+
+      // Kalıcı `_AdFreeCard`'ın KENDİ fiyat butonuna basıp sheet'i aç —
+      // periyodik tanıtımın AKSİNE (5 ziyaret eşiği), bu kart HER ZAMAN
+      // ekranda durur (bkz. `store_screen.dart` dokümantasyonu).
+      await tester.tap(find.text(adFreePromoPrice.formattedForLocale('tr')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('adFreePromoBuyButton')), findsOneWidget);
+
+      // `MockPurchaseService.purchaseAdRemoval()`'ın çıplak
+      // `Future.delayed(600ms)`'i — `tester.tap()` sonrası TEK BAŞINA
+      // `pumpAndSettle()` bunu GÜVENİLİR şekilde ilerletmiyor (hiçbir
+      // animasyona/frame zamanlayıcısına bağlı olmadığı için `pumpAndSettle`
+      // "yerleşti" sanıp ERKEN dönebiliyor — coin satın alma testindeki AYNI
+      // gecikme, ARADA Google-bağlama sheet'inin KENDİ kapanış animasyonu
+      // olduğu için tesadüfen sorunsuz çalışıyor). Açık `pump(duration)` ile
+      // gecikmeyi BİZZAT ilerletip ANCAK ONDAN SONRA `pumpAndSettle()` ile
+      // ortaya çıkan SnackBar/kart animasyonlarını bitiriyoruz.
+      await tester.tap(find.byKey(const Key('adFreePromoBuyButton')));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 700));
+      await tester.pumpAndSettle();
+      expect(
+        find.textContaining('Artık reklam görmeyeceksin'),
+        findsOneWidget,
+      );
+      // Sheet kapandıktan sonra, sekmeden hiç çıkmadan kart otomatik
+      // "Satın Alındı" durumuna geçmeli (bkz. AdFreeProvider/`_AdFreeCard`
+      // `context.watch` dokümantasyonu).
+      expect(find.text('Satın Alındı'), findsOneWidget);
     },
   );
 

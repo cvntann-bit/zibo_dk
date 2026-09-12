@@ -10,6 +10,7 @@ import '../l10n/app_localizations.dart';
 import '../models/app_theme_option.dart';
 import '../models/coin_economy.dart';
 import '../models/coin_package.dart';
+import '../providers/ad_free_provider.dart';
 import '../providers/auth_link_provider.dart';
 import '../providers/coin_provider.dart';
 import '../utils/ad_free_promo_trigger.dart';
@@ -76,13 +77,16 @@ class _StoreScreenState extends State<StoreScreen> {
     }
   }
 
-  /// Görsel mockup tanıtımı (bkz. CLAUDE.md "Zibo ADS" bölümü) — her Mağaza
+  /// Tanıtım popup'ı (bkz. CLAUDE.md "Zibo ADS" bölümü) — her Mağaza
   /// ziyaretinde DEĞİL, `AdFreePromoTrigger`'ın basit sayacına göre ARA SIRA
   /// gösterilir. `addPostFrameCallback` ile ertelendi çünkü `initState`/
   /// `didUpdateWidget` sırasında henüz build tamamlanmadan `showModalBottomSheet`
   /// çağırmak (özellikle `didUpdateWidget`'ta, bir üst widget'ın kendi
-  /// build'i sürerken) güvenli değil.
+  /// build'i sürerken) güvenli değil. Kullanıcı ZATEN satın aldıysa hiç
+  /// tetiklenmiyor — zaten sahip olduğu bir şeyi tekrar tekrar satmaya
+  /// çalışmak can sıkıcı olurdu.
   void _maybeShowAdFreePromo() {
+    if (context.read<AdFreeProvider>().isAdFree) return;
     if (!AdFreePromoTrigger.shouldShowOnStoreVisit()) return;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) showAdFreePromoSheet(context);
@@ -259,8 +263,10 @@ class _ThemesGrid extends StatelessWidget {
 /// `_WatchAdCard` ile AYNI görsel dil (Card + ikon + başlık/alt metin +
 /// buton), ama "izleyip kazan" yerine "satın al" akışına bağlı. Basınca
 /// AYNI `showAdFreePromoSheet(...)`'i açar — periyodik tanıtımın kullandığı
-/// TAM fayda listesi + fiyat + mockup "Yakında!" akışı burada da birebir
-/// aynı, ikinci bir kopya YAZILMADI. **Kartın kendi başlığı/alt metni
+/// TAM fayda listesi + fiyat + GERÇEK Play Billing akışı burada da birebir
+/// aynı, ikinci bir kopya YAZILMADI. Kullanıcı ZATEN satın aldıysa (bkz.
+/// `AdFreeProvider.isAdFree`) buton yerine "Satın Alındı" rozeti gösterilir.
+/// **Kartın kendi başlığı/alt metni
 /// (`storeAdFreeCardTitle`/`storeAdFreeCardSubtitle`) BİLEREK sheet'in
 /// `adFreePromoTitle`/`adFreePromoSubtitle`'ından ("Zibo ADS"/"Reklamsız
 /// Deneyim") FARKLI** — aynı metni kullanmak `widget_test.dart`'taki
@@ -280,6 +286,10 @@ class _AdFreeCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    // `context.watch` — kullanıcı SHEET İÇİNDEN satın alma tamamlayınca bu
+    // kart, sekmeden hiç çıkmadan/rebuild TETİKLEMEDEN otomatik "Satın
+    // Alındı" durumuna geçmeli (IndexedStack'te sürekli monte kalıyor).
+    final isAdFree = context.watch<AdFreeProvider>().isAdFree;
     // "Yakında!" mockup akışıyla AYNI fiyat kaynağı (bkz.
     // ad_free_promo_sheet.dart) — gerçek IAP bağlandığında ikisi de AYNI
     // anda güncellenecek, tek bir kaynak.
@@ -313,10 +323,16 @@ class _AdFreeCard extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 12),
-            FilledButton(
-              onPressed: () => showAdFreePromoSheet(context),
-              child: Text(priceLabel),
-            ),
+            if (isAdFree)
+              Chip(
+                avatar: const Icon(Icons.check, size: 18),
+                label: Text(l10n.storeAdFreeCardPurchasedLabel),
+              )
+            else
+              FilledButton(
+                onPressed: () => showAdFreePromoSheet(context),
+                child: Text(priceLabel),
+              ),
           ],
         ),
       ),

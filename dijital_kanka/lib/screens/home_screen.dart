@@ -10,6 +10,7 @@ import '../data/costumes.dart';
 import '../data/zibo_event_messages.dart';
 import '../data/zibo_messages.dart';
 import '../l10n/app_localizations.dart';
+import '../providers/ad_free_provider.dart';
 import '../providers/app_theme_provider.dart';
 import '../providers/coin_provider.dart';
 import '../providers/costume_provider.dart';
@@ -246,8 +247,13 @@ class _HomeScreenState extends State<HomeScreen>
   /// Reklam VEYA (kullanıcının bazen "reklamsız ol" teklifiyle de
   /// karşılaşması için) Reklamsız Zibo tanıtım sheet'ini gösterir —
   /// İKİSİ BİRDEN asla aynı tetiklemede olmuyor, `_adPromoRandom` her
-  /// seferinde tek bir yol seçiyor.
+  /// seferinde tek bir yol seçiyor. Kullanıcı ZATEN "Zibo ADS" satın
+  /// aldıysa ikisi de anlamsız (reklam zaten `CoinProvider.
+  /// showInterstitialAd()` içinde engelleniyor, tanıtım sheet'i ise
+  /// zaten sahip olduğu bir şeyi tekrar tekrar satmaya çalışırdı) — bu
+  /// yüzden BURADA erken çıkılıyor.
   Future<void> _showRapidTapPromoOrAd() async {
+    if (context.read<AdFreeProvider>().isAdFree) return;
     _showingRapidTapPromo = true;
     try {
       if (_adPromoRandom.nextDouble() < _adFreePromoChanceOnRapidTap) {

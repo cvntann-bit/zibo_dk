@@ -32,6 +32,7 @@ class CoinProvider extends ChangeNotifier {
     String? uid,
     DateTime Function() now = DateTime.now,
     bool Function() isSoundEnabled = _alwaysTrue,
+    bool Function() isAdFree = _alwaysFalse,
     void Function(int amount)? onXpEarned,
   }) : _adService = adService,
        _purchaseService = purchaseService,
@@ -39,6 +40,7 @@ class CoinProvider extends ChangeNotifier {
        _random = random ?? Random(),
        _now = now,
        _isSoundEnabled = isSoundEnabled,
+       _isAdFree = isAdFree,
        _onXpEarned = onXpEarned ?? _noopXpEarned,
        _store = CloudStateStore(prefsKey: _prefsKey, uid: uid) {
     _loadFromPrefs();
@@ -48,6 +50,7 @@ class CoinProvider extends ChangeNotifier {
   }
 
   static bool _alwaysTrue() => true;
+  static bool _alwaysFalse() => false;
   static void _noopXpEarned(int amount) {}
 
   static const _prefsKey = 'coinState';
@@ -77,6 +80,15 @@ class CoinProvider extends ChangeNotifier {
   /// yüzden `HomeScreen`'in yaptığı gibi doğrudan `context.read<...>()`
   /// çağıramıyor.
   final bool Function() _isSoundEnabled;
+
+  /// 2026 yeni özellik — "Zibo ADS" (reklamsız deneyim, bkz.
+  /// `AdFreeProvider`). `_isSoundEnabled` ile AYNI enjekte edilebilir
+  /// callback deseni — `main.dart`'ta `AdFreeProvider.isAdFree`'ye bağlanır.
+  /// [showInterstitialAd] TEK giriş noktası olduğu için (bkz. HomeScreen/
+  /// DailyRewardsScreen/GoalTrackingScreen'deki ÜÇ çağrı sitesi) kontrolü
+  /// BURADA yapmak, her çağrı sitesine ayrı ayrı eklemek yerine, YENİ bir
+  /// interstitial çağrısının bu kontrolü unutma riskini ORTADAN KALDIRIYOR.
+  final bool Function() _isAdFree;
 
   /// 2026 yeni özellik — Level/XP Sistemi. `main.dart`'ta
   /// `XpProvider.addXp`'ye bağlanır (`_isSoundEnabled` ile AYNI enjekte
@@ -548,7 +560,14 @@ class CoinProvider extends ChangeNotifier {
   /// yalnızca zaten var olan (main.dart'ta gerçek Appodeal ile kurulan)
   /// [_adService] örneğini yeniden kullanmak için buradan geçiriliyor —
   /// ayrı bir ikinci `AdService` örneği/kablolaması gerekmesin diye.
-  Future<bool> showInterstitialAd() => _adService.showInterstitialAd();
+  /// Kullanıcı "Zibo ADS" satın aldıysa ([_isAdFree]) reklam HİÇ
+  /// yüklenmeye/gösterilmeye çalışılmadan `false` döner — ödüllü (rewarded)
+  /// reklamlar (kullanıcının KENDİ isteğiyle izlediği, coin karşılığı)
+  /// BİLEREK bu kontrolün DIŞINDA, yalnızca zorunlu/geçiş reklamı kapanıyor.
+  Future<bool> showInterstitialAd() {
+    if (_isAdFree()) return Future.value(false);
+    return _adService.showInterstitialAd();
+  }
 
   @override
   void dispose() {

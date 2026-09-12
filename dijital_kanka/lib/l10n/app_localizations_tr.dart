@@ -297,6 +297,9 @@ class AppLocalizationsTr extends AppLocalizations {
   String get storeAdFreeCardSubtitle => 'Tüm reklamları kalıcı olarak kapat';
 
   @override
+  String get storeAdFreeCardPurchasedLabel => 'Satın Alındı';
+
+  @override
   String get storePackagesSectionTitle => 'Coin Paketleri';
 
   @override
@@ -490,6 +493,14 @@ class AppLocalizationsTr extends AppLocalizations {
   @override
   String get adFreePromoComingSoon =>
       'Yakında! Reklamsız deneyim çok yakında sunulacak.';
+
+  @override
+  String get adFreePromoPurchaseSuccess =>
+      'Teşekkürler! Artık reklam görmeyeceksin.';
+
+  @override
+  String get adFreePromoPurchaseFailed =>
+      'Satın alma tamamlanamadı, lütfen tekrar dene.';
 
   @override
   String get themeNameSunset => 'Gün Batımı';

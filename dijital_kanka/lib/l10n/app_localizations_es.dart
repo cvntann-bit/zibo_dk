@@ -300,6 +300,9 @@ class AppLocalizationsEs extends AppLocalizations {
       'Desactiva todos los anuncios para siempre';
 
   @override
+  String get storeAdFreeCardPurchasedLabel => 'Comprado';
+
+  @override
   String get storePackagesSectionTitle => 'Paquetes de Monedas';
 
   @override
@@ -494,6 +497,13 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get adFreePromoComingSoon =>
       '¡Pronto! La experiencia sin anuncios estará disponible pronto.';
+
+  @override
+  String get adFreePromoPurchaseSuccess => '¡Gracias! Ya no verás anuncios.';
+
+  @override
+  String get adFreePromoPurchaseFailed =>
+      'No se pudo completar la compra, inténtalo de nuevo.';
 
   @override
   String get themeNameSunset => 'Atardecer';
