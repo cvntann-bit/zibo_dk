@@ -108,7 +108,7 @@ class _BadgesTriggerButtonState extends State<BadgesTriggerButton>
                     return Transform.scale(scale: scale, child: child);
                   },
                   child: Image.asset(
-                    'assets/images/popup_rozet_icon.png',
+                    'assets/images/popup_rozet_icon.webp',
                     fit: BoxFit.contain,
                   ),
                 ),

@@ -370,7 +370,7 @@ List<_ScreenshotSpec> _specsFor(String lang) {
       badgeLabel: t['mood_badge']!,
       headline: t['mood_headline']!,
       subtext: t['mood_subtext']!,
-      characterAsset: 'assets/images/zibo_yeni.png',
+      characterAsset: 'assets/images/zibo_yeni.webp',
       accentBuilder: () => _moodRow(3),
     ),
     _ScreenshotSpec(
@@ -379,7 +379,7 @@ List<_ScreenshotSpec> _specsFor(String lang) {
       badgeLabel: t['gratitude_badge']!,
       headline: t['gratitude_headline']!,
       subtext: t['gratitude_subtext']!,
-      characterAsset: 'assets/images/zibo_hoca.png',
+      characterAsset: 'assets/images/zibo_hoca.webp',
       accentBuilder: () => _checklistCard([
         t['gratitude_item1']!,
         t['gratitude_item2']!,
@@ -392,7 +392,7 @@ List<_ScreenshotSpec> _specsFor(String lang) {
       badgeLabel: t['water_badge']!,
       headline: t['water_headline']!,
       subtext: t['water_subtext']!,
-      characterAsset: 'assets/images/zibo_hippi.png',
+      characterAsset: 'assets/images/zibo_hippi.webp',
       accentBuilder: () => _waterAccent(t['water_stat']!),
     ),
     _ScreenshotSpec(
@@ -401,7 +401,7 @@ List<_ScreenshotSpec> _specsFor(String lang) {
       badgeLabel: t['manifest_badge']!,
       headline: t['manifest_headline']!,
       subtext: t['manifest_subtext']!,
-      characterAsset: 'assets/images/zibo_astronot.png',
+      characterAsset: 'assets/images/zibo_astronot.webp',
       accentBuilder: () => _manifestCard(t['manifest_quote']!),
     ),
     _ScreenshotSpec(
@@ -410,7 +410,7 @@ List<_ScreenshotSpec> _specsFor(String lang) {
       badgeLabel: t['goals_badge']!,
       headline: t['goals_headline']!,
       subtext: t['goals_subtext']!,
-      characterAsset: 'assets/images/zibo_sporcu.png',
+      characterAsset: 'assets/images/zibo_sporcu.webp',
       accentBuilder: () => _goalDaysRow(t['goals_stat']!, 3),
     ),
     _ScreenshotSpec(
@@ -419,7 +419,7 @@ List<_ScreenshotSpec> _specsFor(String lang) {
       badgeLabel: t['overview_badge']!,
       headline: t['overview_headline']!,
       subtext: t['overview_subtext']!,
-      characterAsset: 'assets/images/zibo_yeni.png',
+      characterAsset: 'assets/images/zibo_yeni.webp',
       accentBuilder: () => _pillWrap([
         t['overview_pill1']!,
         t['overview_pill2']!,
@@ -433,7 +433,7 @@ List<_ScreenshotSpec> _specsFor(String lang) {
       badgeLabel: t['store_badge']!,
       headline: t['store_headline']!,
       subtext: t['store_subtext']!,
-      characterAsset: 'assets/images/zibo_altin.png',
+      characterAsset: 'assets/images/zibo_altin.webp',
       accentBuilder: () => _storeAccent(
         [t['store_pill1']!, t['store_pill2']!, t['store_pill3']!],
         t['store_button']!,
@@ -445,7 +445,7 @@ List<_ScreenshotSpec> _specsFor(String lang) {
       badgeLabel: t['profile_badge']!,
       headline: t['profile_headline']!,
       subtext: t['profile_subtext']!,
-      characterAsset: 'assets/images/zibo_gentleman.png',
+      characterAsset: 'assets/images/zibo_gentleman.webp',
       accentBuilder: () => _profileAccent('8.5', t['profile_streak']!),
     ),
   ];
@@ -715,7 +715,7 @@ class _StoreShotGeneratorAppState extends State<_StoreShotGeneratorApp> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                Image.asset('assets/images/zibo_logo_new.png', height: 96),
+                Image.asset('assets/images/zibo_logo_new.webp', height: 96),
                 const SizedBox(height: 30),
                 _pill('${spec.badgeEmoji} ${spec.badgeLabel}'),
                 const SizedBox(height: 44),
@@ -820,7 +820,7 @@ class _StoreShotGeneratorAppState extends State<_StoreShotGeneratorApp> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Image.asset('assets/images/zibo_logo_new.png', height: 72),
+                        Image.asset('assets/images/zibo_logo_new.webp', height: 72),
                         const SizedBox(height: 24),
                         _pill('${spec.badgeEmoji} ${spec.badgeLabel}'),
                         const SizedBox(height: 32),
@@ -915,7 +915,7 @@ class _StoreShotGeneratorAppState extends State<_StoreShotGeneratorApp> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Image.asset('assets/images/zibo_logo_new.png', height: 38),
+                        Image.asset('assets/images/zibo_logo_new.webp', height: 38),
                         const SizedBox(height: 12),
                         for (var i = 0; i < copy.lines.length; i++)
                           Text(
@@ -946,7 +946,7 @@ class _StoreShotGeneratorAppState extends State<_StoreShotGeneratorApp> {
                     child: Align(
                       alignment: Alignment.bottomRight,
                       child: Image.asset(
-                        'assets/images/zibo_yeni.png',
+                        'assets/images/zibo_yeni.webp',
                         height: 420,
                         fit: BoxFit.contain,
                       ),

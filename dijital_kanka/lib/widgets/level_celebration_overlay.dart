@@ -160,7 +160,7 @@ class _LevelUpCard extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Image.asset('assets/images/zibo_yeni.png', width: 132, height: 132),
+              Image.asset('assets/images/zibo_yeni.webp', width: 132, height: 132),
               const SizedBox(height: 12),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),

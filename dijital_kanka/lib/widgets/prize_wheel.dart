@@ -32,13 +32,13 @@ class PrizeWheel extends StatelessWidget {
           Transform.rotate(
             angle: rotation,
             child: Image.asset(
-              'assets/images/zibo_cark_disk.png',
+              'assets/images/zibo_cark_disk.webp',
               width: size,
               height: size,
             ),
           ),
           Image.asset(
-            'assets/images/zibo_cark_frame.png',
+            'assets/images/zibo_cark_frame.webp',
             width: size,
             height: size,
           ),

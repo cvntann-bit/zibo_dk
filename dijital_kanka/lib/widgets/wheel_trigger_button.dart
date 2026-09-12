@@ -122,7 +122,7 @@ class _WheelTriggerButtonState extends State<WheelTriggerButton>
                           child: child,
                         ),
                         child: Image.asset(
-                          'assets/images/zibo_cark_katman1.png',
+                          'assets/images/zibo_cark_katman1.webp',
                           width: _size,
                           height: _size,
                         ),
@@ -179,7 +179,7 @@ class _PulsingCoin extends StatelessWidget {
         final scale = 1.0 + 0.2 * sin(t * 2 * pi).abs();
         return Transform.scale(scale: scale, child: child);
       },
-      child: Image.asset('assets/images/zibo_coin.png', width: size, height: size),
+      child: Image.asset('assets/images/zibo_coin.webp', width: size, height: size),
     );
   }
 }

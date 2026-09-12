@@ -28,6 +28,22 @@ Yeni bir rozet/kostüm görseli eklemeden ÖNCE piksel-alfa ile şeffaflık doğ
 yarıçap-kesriyle karşılaştırıldı → tüm aralığı yuttu. Bu tür radyal işlerde her zaman köşe/orta
 noktalarda alfa değerini SAYISAL ölç, yalnızca görsel önizlemeye güvenme.
 
+## Görsel varlıklar artık WebP (2026-09-12)
+
+`assets/images/`'daki üretim PNG'lerinin çoğu (`zibo_app_icon.png` HARİÇ — bkz. altta)
+`convert_images_to_webp.dart` ile KAYIPSIZ (VP8L) WebP'ye çevrildi (Play Console "Bit eşlem
+resim optimizasyonu" önerisi, bkz. `android/CLAUDE.md`) — ~%25 boyut kazancı, piksel-piksel
+doğrulanmış. **Bu dosyadaki DİĞER betikler (`crop_pose_content.dart`, `normalize_pose_sizes.dart`,
+`process_coin_theme.dart`, `crop_new_costume_covers.dart` vb.) HÂLÂ PNG okuyup/yazıyor,
+KASITLI olarak güncellenmedi** — her birini ayrı ayrı WebP'ye taşımak yerine, YENİ bir
+kostüm/rozet eklerken akış şöyle: (1) ham görseli her zamanki gibi PNG olarak bu betiklerden
+geçir, (2) TÜM işleme bittikten (kırpma/ölçekleme/pozisyonlama) SONRA, son adım olarak
+`dart run tool/convert_images_to_webp.dart` çalıştır — yeni dosya da otomatik WebP'ye döner.
+Mevcut bir kostüm/rozet görselini bu eski betiklerden biriyle YENİDEN işlemeye çalışırsan
+(artık `.webp` olduğu için) "dosya bulunamadı" hatası alırsın — bu BEKLENEN, sessiz bozulma
+DEĞİL. `zibo_app_icon.png` PNG olarak KALDI çünkü `flutter_launcher_icons`'ın (pubspec.yaml
+`image_path`) WebP kaynak desteği doğrulanmadı.
+
 ## Fake-async betikleri gerçek cihazda çalıştırma
 
 `flutter_test` + `RenderRepaintBoundary.toImage()` gerçek font/emoji yüklemez (tofu). Önizleme PNG'si

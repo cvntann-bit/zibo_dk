@@ -265,7 +265,7 @@ class _LanguageStep extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Image.asset('assets/images/zibo_logo_new.png', height: 56),
+          Image.asset('assets/images/zibo_logo_new.webp', height: 56),
           const SizedBox(height: 32),
           Text(
             l10n.onboardingLanguageStepTitle,
@@ -357,7 +357,7 @@ class _NameStep extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Image.asset('assets/images/zibo_logo_new.png', height: 56),
+          Image.asset('assets/images/zibo_logo_new.webp', height: 56),
           const SizedBox(height: 32),
           Text(
             l10n.onboardingNameStepTitle,
@@ -449,7 +449,7 @@ class _ClosingStep extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Image.asset('assets/images/zibo_yeni.png', height: 140),
+          Image.asset('assets/images/zibo_yeni.webp', height: 140),
           const SizedBox(height: 24),
           Text(
             l10n.onboardingClosingTitle,

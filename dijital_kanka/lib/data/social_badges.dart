@@ -26,19 +26,19 @@ const socialBadges = <ZiboBadgeDefinition>[
   ZiboBadgeDefinition(
     id: 'first_share',
     category: BadgeCategory.social,
-    imageAsset: 'assets/images/ilk_paylasim_rozet.png',
+    imageAsset: 'assets/images/ilk_paylasim_rozet.webp',
     zcReward: 15,
   ),
   ZiboBadgeDefinition(
     id: 'ambassador',
     category: BadgeCategory.social,
-    imageAsset: 'assets/images/elci_rozet.png',
+    imageAsset: 'assets/images/elci_rozet.webp',
     zcReward: 30,
   ),
   ZiboBadgeDefinition(
     id: 'community_founder',
     category: BadgeCategory.social,
-    imageAsset: 'assets/images/topluluk_kurucu_rozet.png',
+    imageAsset: 'assets/images/topluluk_kurucu_rozet.webp',
     zcReward: 150,
   ),
 ];

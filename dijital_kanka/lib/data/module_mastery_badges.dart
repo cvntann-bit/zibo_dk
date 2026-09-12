@@ -14,37 +14,37 @@ const moduleMasteryBadges = <ZiboBadgeDefinition>[
   ZiboBadgeDefinition(
     id: 'grateful_heart',
     category: BadgeCategory.moduleMastery,
-    imageAsset: 'assets/images/sükran_rozeti.png',
+    imageAsset: 'assets/images/sükran_rozeti.webp',
     zcReward: 55,
   ),
   ZiboBadgeDefinition(
     id: 'water_hero',
     category: BadgeCategory.moduleMastery,
-    imageAsset: 'assets/images/su_kahramani_rozet.png',
+    imageAsset: 'assets/images/su_kahramani_rozet.webp',
     zcReward: 55,
   ),
   ZiboBadgeDefinition(
     id: 'mood_chronicler',
     category: BadgeCategory.moduleMastery,
-    imageAsset: 'assets/images/ruh_hali_rozet.png',
+    imageAsset: 'assets/images/ruh_hali_rozet.webp',
     zcReward: 55,
   ),
   ZiboBadgeDefinition(
     id: 'savings_master',
     category: BadgeCategory.moduleMastery,
-    imageAsset: 'assets/images/birikim_ustasi_rozet.png',
+    imageAsset: 'assets/images/birikim_ustasi_rozet.webp',
     zcReward: 45,
   ),
   ZiboBadgeDefinition(
     id: 'dreamer',
     category: BadgeCategory.moduleMastery,
-    imageAsset: 'assets/images/hayalperest_rozet.png',
+    imageAsset: 'assets/images/hayalperest_rozet.webp',
     zcReward: 40,
   ),
   ZiboBadgeDefinition(
     id: 'dream_interpreter',
     category: BadgeCategory.moduleMastery,
-    imageAsset: 'assets/images/ruya_yorumcusu_rozet.png',
+    imageAsset: 'assets/images/ruya_yorumcusu_rozet.webp',
     zcReward: 40,
   ),
 ];

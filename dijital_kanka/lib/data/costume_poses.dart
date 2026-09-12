@@ -2,7 +2,7 @@
 /// giyili bir kostümün henüz poz seti YOKSA (bkz. [costumePoses]) bu tek
 /// statik görsele düşülür. `ZiboAnimatedImage`'ın `fallbackImage`'ı olarak
 /// kullanılıyor.
-const defaultZiboImage = 'assets/images/zibo_yeni.png';
+const defaultZiboImage = 'assets/images/zibo_yeni.webp';
 
 /// Kostümsüz Zibo'nun poz seti — Akinatör tarzı poz döngüsü
 /// (`ZiboAnimatedImage`, bkz. o widget'ın dokümantasyonu) bu beş görsel
@@ -10,11 +10,11 @@ const defaultZiboImage = 'assets/images/zibo_yeni.png';
 /// anahtarı `null` kostüm (giyili kostüm yok) durumuna karşılık geldiği için
 /// ayrı bir sabit olarak tutuluyor.
 const defaultZiboPoses = <String>[
-  'assets/images/zibo_df_pose1.png',
-  'assets/images/zibo_df_pose2.png',
-  'assets/images/zibo_df_pose3.png',
-  'assets/images/zibo_df_pose4.png',
-  'assets/images/zibo_df_pose5.png',
+  'assets/images/zibo_df_pose1.webp',
+  'assets/images/zibo_df_pose2.webp',
+  'assets/images/zibo_df_pose3.webp',
+  'assets/images/zibo_df_pose4.webp',
+  'assets/images/zibo_df_pose5.webp',
 ];
 
 /// Kostüm id → o kostüme ait poz görselleri listesi. **2026 güncellemesi —
@@ -37,67 +37,67 @@ const defaultZiboPoses = <String>[
 /// SABİT kalır (bkz. CLAUDE.md "Zibo Poz/Animasyon Sistemi" bölümü).
 const costumePoses = <String, List<String>>{
   'zibo_sporcu': [
-    'assets/images/zibo_sporcu_pose1.png',
-    'assets/images/zibo_sporcu_pose2.png',
-    'assets/images/zibo_sporcu_pose3.png',
-    'assets/images/zibo_sporcu_pose4.png',
+    'assets/images/zibo_sporcu_pose1.webp',
+    'assets/images/zibo_sporcu_pose2.webp',
+    'assets/images/zibo_sporcu_pose3.webp',
+    'assets/images/zibo_sporcu_pose4.webp',
   ],
   'zibo_rapci': [
-    'assets/images/zibo_rapci_pose1.png',
-    'assets/images/zibo_rapci_pose2.png',
-    'assets/images/zibo_rapci_pose3.png',
-    'assets/images/zibo_rapci_pose4.png',
+    'assets/images/zibo_rapci_pose1.webp',
+    'assets/images/zibo_rapci_pose2.webp',
+    'assets/images/zibo_rapci_pose3.webp',
+    'assets/images/zibo_rapci_pose4.webp',
   ],
   'zibo_punk': [
-    'assets/images/zibo_punk_pose1.png',
-    'assets/images/zibo_punk_pose2.png',
+    'assets/images/zibo_punk_pose1.webp',
+    'assets/images/zibo_punk_pose2.webp',
   ],
   'zibo_asker': [
-    'assets/images/zibo_asker_pose1.png',
-    'assets/images/zibo_asker_pose2.png',
-    'assets/images/zibo_asker_pose3.png',
+    'assets/images/zibo_asker_pose1.webp',
+    'assets/images/zibo_asker_pose2.webp',
+    'assets/images/zibo_asker_pose3.webp',
   ],
   'zibo_gladyator': [
-    'assets/images/zibo_gladyator_pose1.png',
-    'assets/images/zibo_gladyator_pose2.png',
-    'assets/images/zibo_gladyator_pose3.png',
-    'assets/images/zibo_gladyator_pose4.png',
+    'assets/images/zibo_gladyator_pose1.webp',
+    'assets/images/zibo_gladyator_pose2.webp',
+    'assets/images/zibo_gladyator_pose3.webp',
+    'assets/images/zibo_gladyator_pose4.webp',
   ],
   'zibo_hippi': [
-    'assets/images/zibo_hippi_pose1.png',
-    'assets/images/zibo_hippi_pose2.png',
-    'assets/images/zibo_hippi_pose3.png',
-    'assets/images/zibo_hippi_pose4.png',
+    'assets/images/zibo_hippi_pose1.webp',
+    'assets/images/zibo_hippi_pose2.webp',
+    'assets/images/zibo_hippi_pose3.webp',
+    'assets/images/zibo_hippi_pose4.webp',
   ],
   'zibo_hoca': [
-    'assets/images/zibo_hoca_pose1.png',
-    'assets/images/zibo_hoca_pose2.png',
-    'assets/images/zibo_hoca_pose3.png',
+    'assets/images/zibo_hoca_pose1.webp',
+    'assets/images/zibo_hoca_pose2.webp',
+    'assets/images/zibo_hoca_pose3.webp',
   ],
   // Kullanıcı "zibo_korsan_pose1-3" dedi ama eklenen dosyalarda 4. bir poz
   // da vardı (`zibo_koran_pose4.png` — dosya adında YAZIM HATASI, "korsan"
   // yerine "koran"; `zibo_korsan_pose4.png` olarak düzeltilip yeniden
   // adlandırıldı). Dördü de kullanılıyor.
   'zibo_korsan': [
-    'assets/images/zibo_korsan_pose1.png',
-    'assets/images/zibo_korsan_pose2.png',
-    'assets/images/zibo_korsan_pose3.png',
-    'assets/images/zibo_korsan_pose4.png',
+    'assets/images/zibo_korsan_pose1.webp',
+    'assets/images/zibo_korsan_pose2.webp',
+    'assets/images/zibo_korsan_pose3.webp',
+    'assets/images/zibo_korsan_pose4.webp',
   ],
   'zibo_zombi': [
-    'assets/images/zibo_zombi_pose1.png',
-    'assets/images/zibo_zombi_pose2.png',
-    'assets/images/zibo_zombi_pose3.png',
+    'assets/images/zibo_zombi_pose1.webp',
+    'assets/images/zibo_zombi_pose2.webp',
+    'assets/images/zibo_zombi_pose3.webp',
   ],
   'zibo_altin': [
-    'assets/images/zibo_altin_pose1.png',
-    'assets/images/zibo_altin_pose2.png',
-    'assets/images/zibo_altin_pose3.png',
+    'assets/images/zibo_altin_pose1.webp',
+    'assets/images/zibo_altin_pose2.webp',
+    'assets/images/zibo_altin_pose3.webp',
   ],
   'zibo_elmas': [
-    'assets/images/zibo_elmas_pose1.png',
-    'assets/images/zibo_elmas_pose2.png',
-    'assets/images/zibo_elmas_pose3.png',
+    'assets/images/zibo_elmas_pose1.webp',
+    'assets/images/zibo_elmas_pose2.webp',
+    'assets/images/zibo_elmas_pose3.webp',
   ],
   // Kullanıcı "gentleman_zibo_pose1-2" dedi ama eklenen dosyalarda 3. bir
   // poz da vardı (`gentleman_zibo_pose2.png` — dosya adında YAZIM HATASI,
@@ -105,27 +105,27 @@ const costumePoses = <String, List<String>>{
   // iki pozla ("zibo_gentleman_pose1/3.png") aynı düzene getirildi). Üçü de
   // kullanılıyor.
   'zibo_gentleman': [
-    'assets/images/zibo_gentleman_pose1.png',
-    'assets/images/zibo_gentleman_pose2.png',
-    'assets/images/zibo_gentleman_pose3.png',
+    'assets/images/zibo_gentleman_pose1.webp',
+    'assets/images/zibo_gentleman_pose2.webp',
+    'assets/images/zibo_gentleman_pose3.webp',
   ],
   'zibo_samurai': [
-    'assets/images/zibo_samurai_pose1.png',
-    'assets/images/zibo_samurai_pose2.png',
+    'assets/images/zibo_samurai_pose1.webp',
+    'assets/images/zibo_samurai_pose2.webp',
   ],
   'zibo_cyborg': [
-    'assets/images/zibo_cyborg_pose1.png',
-    'assets/images/zibo_cyborg_pose2.png',
+    'assets/images/zibo_cyborg_pose1.webp',
+    'assets/images/zibo_cyborg_pose2.webp',
   ],
   'zibo_astronot': [
-    'assets/images/zibo_astronot_pose1.png',
-    'assets/images/zibo_astronot_pose2.png',
-    'assets/images/zibo_astronot_pose3.png',
+    'assets/images/zibo_astronot_pose1.webp',
+    'assets/images/zibo_astronot_pose2.webp',
+    'assets/images/zibo_astronot_pose3.webp',
   ],
   'zibo_king': [
-    'assets/images/zibo_king_pose1.png',
-    'assets/images/zibo_king_pose2.png',
-    'assets/images/zibo_king_pose3.png',
+    'assets/images/zibo_king_pose1.webp',
+    'assets/images/zibo_king_pose2.webp',
+    'assets/images/zibo_king_pose3.webp',
   ],
 };
 

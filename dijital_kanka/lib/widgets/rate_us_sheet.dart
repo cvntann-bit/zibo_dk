@@ -88,7 +88,7 @@ class _RateUsSheetContentState extends State<_RateUsSheetContent> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Image.asset(
-              'assets/images/zibo_yeni.png',
+              'assets/images/zibo_yeni.webp',
               height: 130,
               semanticLabel: l10n.ziboImagePlaceholder,
             ),

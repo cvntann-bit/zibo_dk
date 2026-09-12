@@ -314,7 +314,7 @@ class _PreviewGeneratorAppState extends State<_PreviewGeneratorApp> {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            Image.asset('assets/images/zibo_yeni.png', height: 220),
+            Image.asset('assets/images/zibo_yeni.webp', height: 220),
             const SizedBox(width: 22),
             Expanded(
               child: Column(

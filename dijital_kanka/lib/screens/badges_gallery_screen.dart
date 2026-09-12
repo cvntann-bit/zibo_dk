@@ -230,7 +230,7 @@ class _BadgeGalleryCard extends StatelessWidget {
             ),
             // Kullanıcı isteği: en altta kaç Zibo Coin ödülü olduğu, Zibo
             // Coin ikonu PNG'siyle birlikte gösterilsin — `CoinBalanceWidget`/
-            // `CostumeCard`'daki AYNI `assets/images/zibo_coin.png` kullanımı.
+            // `CostumeCard`'daki AYNI `assets/images/zibo_coin.webp` kullanımı.
             // 2026 güncellemesi: hem ikon hem metin büyütüldü ("10zc/30zc
             // ve zc ikonunun boyutunu büyüt"). **2026 İKİNCİ güncelleme —
             // Gizli/Eğlenceli Rozetler'de bu satır KAZANILMADAN önce de
@@ -242,7 +242,7 @@ class _BadgeGalleryCard extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Image.asset('assets/images/zibo_coin.png', width: 20, height: 20),
+                Image.asset('assets/images/zibo_coin.webp', width: 20, height: 20),
                 const SizedBox(width: 5),
                 Text(
                   l10n.storeCoinAmount(badge.zcReward),

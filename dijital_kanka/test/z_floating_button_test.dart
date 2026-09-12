@@ -40,7 +40,7 @@ void main() {
       await tester.pumpWidget(_buildTestApp(costumeProvider));
       await tester.pump();
 
-      expect(_currentAsset(tester), 'assets/images/bottom_bar_z_coin.png');
+      expect(_currentAsset(tester), 'assets/images/bottom_bar_z_coin.webp');
     },
   );
 
@@ -56,7 +56,7 @@ void main() {
 
     expect(
       _currentAsset(tester),
-      'assets/images/bottom_bar_z_coin_altintema.png',
+      'assets/images/bottom_bar_z_coin_altintema.webp',
     );
   });
 
@@ -72,7 +72,7 @@ void main() {
 
     expect(
       _currentAsset(tester),
-      'assets/images/bottom_bar_z_coin_elmastema.png',
+      'assets/images/bottom_bar_z_coin_elmastema.webp',
     );
   });
 
@@ -86,7 +86,7 @@ void main() {
       await tester.pumpWidget(_buildTestApp(costumeProvider));
       await tester.pump();
 
-      expect(_currentAsset(tester), 'assets/images/bottom_bar_z_coin.png');
+      expect(_currentAsset(tester), 'assets/images/bottom_bar_z_coin.webp');
     },
   );
 
@@ -101,14 +101,14 @@ void main() {
       await tester.pump();
       expect(
         _currentAsset(tester),
-        'assets/images/bottom_bar_z_coin_altintema.png',
+        'assets/images/bottom_bar_z_coin_altintema.webp',
       );
 
       // Aynı karta tekrar dokununca çıkarılır (bkz. toggleEquipped).
       await costumeProvider.toggleEquipped('zibo_altin');
       await tester.pump();
 
-      expect(_currentAsset(tester), 'assets/images/bottom_bar_z_coin.png');
+      expect(_currentAsset(tester), 'assets/images/bottom_bar_z_coin.webp');
     },
   );
 }

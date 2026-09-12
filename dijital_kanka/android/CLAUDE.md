@@ -15,6 +15,7 @@
 - **`proguard-rules.pro`** minimal — Flutter embedding, Play Core `-dontwarn`, Credential Manager `-keep`, **`androidx.work.**`/`androidx.room.**` `-keep`** (WorkManager'ın generated `_Impl` sınıfları — transitif plugin bağımlılığı, silinince açılışta `WorkDatabase` çökmesi).
 - **GERÇEK doğrulama = derleme BAŞARISI DEĞİL** — `flutter build apk --release` + gerçek cihaza kur + AÇ. WorkManager çökmesi ilk derlemede değil yalnızca cihazda uygulamayı açınca ortaya çıktı.
 - **Play Console "Uygulama optimizasyonu eşiğin altında" uyarısı (2026-09-12)**: App bundle explorer > Ayrıntılar, R8 yapılandırması Tam Mod/Kaynak Küçültme/Kullanılmayan Kaynak Kaldırma'nın üçü de AÇIKKEN tek eksik "Sınıfları Yeniden Paketleme" idi — düşük Optimizasyon/Kod karartma/Küçültme yüzdelerinin sebebi. Çözüm `-repackageclasses ''` — mevcut `-keep` kurallarına DOKUNMUYOR (yalnızca zaten obfuscate edilmeye izinli sınıfların paket yapısını düzleştiriyor), bu yüzden geçmişteki `res/raw/keep.xml` sınıfı riskte DEĞİL. Skor Play Console'da hemen değil, yeni sürüm birkaç gün Production'da kaldıktan sonra güncelleniyor.
+- **Aynı uyarının "Bit eşlem resim optimizasyonu" kalemi**: `assets/images/`'daki büyük PNG'ler (kostüm/rozet/coin görselleri, toplam ~73MB) `tool/convert_images_to_webp.dart` ile kayıpsız WebP'ye çevrildi (~%25 küçülme, piksel-piksel doğrulandı) — bkz. `tool/CLAUDE.md` "Görsel varlıklar artık WebP" bölümü.
 
 ## `AndroidManifest.xml`
 

@@ -18,31 +18,31 @@ const consistencyBadges = <ZiboBadgeDefinition>[
   ZiboBadgeDefinition(
     id: 'first_step',
     category: BadgeCategory.consistency,
-    imageAsset: 'assets/images/ilk_adim_rozet.png',
+    imageAsset: 'assets/images/ilk_adim_rozet.webp',
     zcReward: 10,
   ),
   ZiboBadgeDefinition(
     id: 'week_streak',
     category: BadgeCategory.consistency,
-    imageAsset: 'assets/images/bir_hafta_seri_rozet.png',
+    imageAsset: 'assets/images/bir_hafta_seri_rozet.webp',
     zcReward: 30,
   ),
   ZiboBadgeDefinition(
     id: 'month_streak',
     category: BadgeCategory.consistency,
-    imageAsset: 'assets/images/bir_aylik_seri_rozet.png',
+    imageAsset: 'assets/images/bir_aylik_seri_rozet.webp',
     zcReward: 100,
   ),
   ZiboBadgeDefinition(
     id: 'iron_will',
     category: BadgeCategory.consistency,
-    imageAsset: 'assets/images/demir_irade_rozet.png',
+    imageAsset: 'assets/images/demir_irade_rozet.webp',
     zcReward: 250,
   ),
   ZiboBadgeDefinition(
     id: 'unyielding',
     category: BadgeCategory.consistency,
-    imageAsset: 'assets/images/yilmaz_efsanevi_rozet.png',
+    imageAsset: 'assets/images/yilmaz_efsanevi_rozet.webp',
     zcReward: 500,
   ),
 ];

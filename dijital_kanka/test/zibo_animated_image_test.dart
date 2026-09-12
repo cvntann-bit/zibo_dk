@@ -51,23 +51,23 @@ void main() {
         _buildTestApp(
           costumeId: costumeId,
           poseStep: 0,
-          fallback: 'assets/images/zibo_hippi.png',
+          fallback: 'assets/images/zibo_hippi.webp',
         ),
       );
       await tester.pump();
 
-      expect(_currentAsset(tester), 'assets/images/zibo_hippi.png');
+      expect(_currentAsset(tester), 'assets/images/zibo_hippi.webp');
 
       await tester.pumpWidget(
         _buildTestApp(
           costumeId: costumeId,
           poseStep: 7,
-          fallback: 'assets/images/zibo_hippi.png',
+          fallback: 'assets/images/zibo_hippi.webp',
         ),
       );
       await tester.pumpAndSettle();
 
-      expect(_currentAsset(tester), 'assets/images/zibo_hippi.png');
+      expect(_currentAsset(tester), 'assets/images/zibo_hippi.webp');
     },
   );
 
@@ -78,32 +78,32 @@ void main() {
         _buildTestApp(
           costumeId: null,
           poseStep: 0,
-          fallback: 'assets/images/zibo_yeni.png',
+          fallback: 'assets/images/zibo_yeni.webp',
         ),
       );
       await tester.pump();
-      expect(_currentAsset(tester), 'assets/images/zibo_df_pose1.png');
+      expect(_currentAsset(tester), 'assets/images/zibo_df_pose1.webp');
 
       await tester.pumpWidget(
         _buildTestApp(
           costumeId: null,
           poseStep: 1,
-          fallback: 'assets/images/zibo_yeni.png',
+          fallback: 'assets/images/zibo_yeni.webp',
         ),
       );
       await tester.pumpAndSettle();
-      expect(_currentAsset(tester), 'assets/images/zibo_df_pose2.png');
+      expect(_currentAsset(tester), 'assets/images/zibo_df_pose2.webp');
 
       // 5 pozluk listenin sonuna kadar ilerleyip başa (pose1) sarmalı.
       await tester.pumpWidget(
         _buildTestApp(
           costumeId: null,
           poseStep: 5,
-          fallback: 'assets/images/zibo_yeni.png',
+          fallback: 'assets/images/zibo_yeni.webp',
         ),
       );
       await tester.pumpAndSettle();
-      expect(_currentAsset(tester), 'assets/images/zibo_df_pose1.png');
+      expect(_currentAsset(tester), 'assets/images/zibo_df_pose1.webp');
     },
   );
 
@@ -114,11 +114,11 @@ void main() {
         _buildTestApp(
           costumeId: 'zibo_sporcu',
           poseStep: 2,
-          fallback: 'assets/images/zibo_sporcu.png',
+          fallback: 'assets/images/zibo_sporcu.webp',
         ),
       );
       await tester.pump();
-      expect(_currentAsset(tester), 'assets/images/zibo_sporcu_pose3.png');
+      expect(_currentAsset(tester), 'assets/images/zibo_sporcu_pose3.webp');
 
       // Kostüm değişti (poseStep AYNI kaldı — ZiboPoseProvider paylaşılan
       // TEK bir sayaç, kostüme özel değil) — yeni kostümün (rapçi) o anki
@@ -129,12 +129,12 @@ void main() {
         _buildTestApp(
           costumeId: 'zibo_rapci',
           poseStep: 2,
-          fallback: 'assets/images/zibo_rapci.png',
+          fallback: 'assets/images/zibo_rapci.webp',
         ),
       );
       await tester.pump();
 
-      expect(_currentAsset(tester), 'assets/images/zibo_rapci_pose3.png');
+      expect(_currentAsset(tester), 'assets/images/zibo_rapci_pose3.webp');
     },
   );
 
@@ -145,23 +145,23 @@ void main() {
         _buildTestApp(
           costumeId: 'zibo_punk',
           poseStep: 0,
-          fallback: 'assets/images/zibo_punk.png',
+          fallback: 'assets/images/zibo_punk.webp',
         ),
       );
       await tester.pump();
-      expect(_currentAsset(tester), 'assets/images/zibo_punk_pose1.png');
+      expect(_currentAsset(tester), 'assets/images/zibo_punk_pose1.webp');
 
       await tester.pumpWidget(
         _buildTestApp(
           costumeId: 'zibo_punk',
           poseStep: 1,
-          fallback: 'assets/images/zibo_punk.png',
+          fallback: 'assets/images/zibo_punk.webp',
         ),
       );
       // Crossfade (varsayılan 250ms x2) tamamlanana kadar bekle.
       await tester.pumpAndSettle();
 
-      expect(_currentAsset(tester), 'assets/images/zibo_punk_pose2.png');
+      expect(_currentAsset(tester), 'assets/images/zibo_punk_pose2.webp');
     },
   );
 }

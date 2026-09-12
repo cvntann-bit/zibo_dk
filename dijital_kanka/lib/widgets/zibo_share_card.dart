@@ -69,7 +69,7 @@ class ZiboShareCard extends StatelessWidget {
               top: 40,
               left: 32,
               child: Image.asset(
-                'assets/images/zibo_logo_new.png',
+                'assets/images/zibo_logo_new.webp',
                 width: 100,
                 semanticLabel: l10n.ziboImagePlaceholder,
               ),

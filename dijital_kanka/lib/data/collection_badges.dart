@@ -23,25 +23,25 @@ const collectionBadges = <ZiboBadgeDefinition>[
   ZiboBadgeDefinition(
     id: 'collector',
     category: BadgeCategory.collection,
-    imageAsset: 'assets/images/koleksiyoncu_rozet.png',
+    imageAsset: 'assets/images/koleksiyoncu_rozet.webp',
     zcReward: 30,
   ),
   ZiboBadgeDefinition(
     id: 'fashion_icon',
     category: BadgeCategory.collection,
-    imageAsset: 'assets/images/moda_ikonu_rozet.png',
+    imageAsset: 'assets/images/moda_ikonu_rozet.webp',
     zcReward: 75,
   ),
   ZiboBadgeDefinition(
     id: 'full_wardrobe',
     category: BadgeCategory.collection,
-    imageAsset: 'assets/images/tam_gardrop_rozet.png',
+    imageAsset: 'assets/images/tam_gardrop_rozet.webp',
     zcReward: 200,
   ),
   ZiboBadgeDefinition(
     id: 'theme_hunter',
     category: BadgeCategory.collection,
-    imageAsset: 'assets/images/tema_avcisi_rozet.png',
+    imageAsset: 'assets/images/tema_avcisi_rozet.webp',
     zcReward: 25,
   ),
 ];

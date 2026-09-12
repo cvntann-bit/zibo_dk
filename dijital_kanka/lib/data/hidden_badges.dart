@@ -7,7 +7,7 @@ import '../models/badge_definition.dart';
 /// ile kopyalandı. `BadgesGalleryScreen`'in `_BadgeGalleryCard`'ı
 /// `badge.isHidden && !earned` iken [ZiboBadgeDefinition.imageAsset] YERİNE
 /// bunu gösteriyor.
-const hiddenBadgeMysteryImageAsset = 'assets/images/gizli_rozet.png';
+const hiddenBadgeMysteryImageAsset = 'assets/images/gizli_rozet.webp';
 
 /// Gizli/Eğlenceli Rozetler — bkz. CLAUDE.md "Rozet Sistemi" bölümü. Önceki
 /// beş kategoriden İKİ yönden FARKLI:
@@ -46,21 +46,21 @@ const hiddenBadges = <ZiboBadgeDefinition>[
   ZiboBadgeDefinition(
     id: 'night_owl',
     category: BadgeCategory.hidden,
-    imageAsset: 'assets/images/gece_kusu_rozet.png',
+    imageAsset: 'assets/images/gece_kusu_rozet.webp',
     zcReward: 777,
     isHidden: true,
   ),
   ZiboBadgeDefinition(
     id: 'early_bird',
     category: BadgeCategory.hidden,
-    imageAsset: 'assets/images/erkenci_kus_rozet.png',
+    imageAsset: 'assets/images/erkenci_kus_rozet.webp',
     zcReward: 777,
     isHidden: true,
   ),
   ZiboBadgeDefinition(
     id: 'balance_master',
     category: BadgeCategory.hidden,
-    imageAsset: 'assets/images/denge_ustasi_rozet.png',
+    imageAsset: 'assets/images/denge_ustasi_rozet.webp',
     zcReward: 777,
     isHidden: true,
   ),

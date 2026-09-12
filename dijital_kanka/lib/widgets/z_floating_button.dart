@@ -17,11 +17,11 @@ const _coinSize = 64.0;
 String _coinAssetFor(String? equippedCostumeId) {
   switch (equippedCostumeId) {
     case 'zibo_altin':
-      return 'assets/images/bottom_bar_z_coin_altintema.png';
+      return 'assets/images/bottom_bar_z_coin_altintema.webp';
     case 'zibo_elmas':
-      return 'assets/images/bottom_bar_z_coin_elmastema.png';
+      return 'assets/images/bottom_bar_z_coin_elmastema.webp';
     default:
-      return 'assets/images/bottom_bar_z_coin.png';
+      return 'assets/images/bottom_bar_z_coin.webp';
   }
 }
 

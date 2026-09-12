@@ -101,7 +101,7 @@ void main() {
     const package = CoinPackage(
       id: 'coins_500',
       coinAmount: 500,
-      imageAsset: 'assets/images/zibo_coin.png',
+      imageAsset: 'assets/images/zibo_coin.webp',
     );
 
     test('Başarılı satın alma paket miktarı kadar coin ekler', () async {
@@ -151,7 +151,7 @@ void main() {
         const package = CoinPackage(
           id: 'coins_100',
           coinAmount: 100,
-          imageAsset: 'assets/images/zibo_coin.png',
+          imageAsset: 'assets/images/zibo_coin.webp',
         );
 
         final price = await provider.queryLocalizedPrice(package);
@@ -191,7 +191,7 @@ void main() {
     const package = CoinPackage(
       id: 'coins_500',
       coinAmount: 500,
-      imageAsset: 'assets/images/zibo_coin.png',
+      imageAsset: 'assets/images/zibo_coin.webp',
     );
 
     test(
@@ -536,7 +536,7 @@ void main() {
     const package = CoinPackage(
       id: 'coins_500',
       coinAmount: 500,
-      imageAsset: 'assets/images/zibo_coin.png',
+      imageAsset: 'assets/images/zibo_coin.webp',
     );
 
     test(
@@ -579,7 +579,7 @@ void main() {
       const package = CoinPackage(
         id: 'coins_100',
         coinAmount: 100,
-        imageAsset: 'assets/images/zibo_coin.png',
+        imageAsset: 'assets/images/zibo_coin.webp',
       );
 
       await provider.purchaseCoinPackage(package);

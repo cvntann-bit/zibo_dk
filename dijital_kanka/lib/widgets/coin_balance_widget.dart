@@ -101,7 +101,7 @@ class _CoinBalanceWidgetState extends State<CoinBalanceWidget>
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Image.asset('assets/images/zibo_coin.png', width: 20),
+                Image.asset('assets/images/zibo_coin.webp', width: 20),
                 const SizedBox(width: 6),
                 TweenAnimationBuilder<int>(
                   tween: tween,

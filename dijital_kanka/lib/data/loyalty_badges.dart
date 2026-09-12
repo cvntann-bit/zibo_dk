@@ -23,19 +23,19 @@ const loyaltyBadges = <ZiboBadgeDefinition>[
   ZiboBadgeDefinition(
     id: 'first_week',
     category: BadgeCategory.loyalty,
-    imageAsset: 'assets/images/ilk_hafta_rozet.png',
+    imageAsset: 'assets/images/ilk_hafta_rozet.webp',
     zcReward: 15,
   ),
   ZiboBadgeDefinition(
     id: 'loyal_friend',
     category: BadgeCategory.loyalty,
-    imageAsset: 'assets/images/sadik_dost_rozet.png',
+    imageAsset: 'assets/images/sadik_dost_rozet.webp',
     zcReward: 100,
   ),
   ZiboBadgeDefinition(
     id: 'anniversary',
     category: BadgeCategory.loyalty,
-    imageAsset: 'assets/images/yil_donumu_rozet.png',
+    imageAsset: 'assets/images/yil_donumu_rozet.webp',
     zcReward: 300,
   ),
 ];

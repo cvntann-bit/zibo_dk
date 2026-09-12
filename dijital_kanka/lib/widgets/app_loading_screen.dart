@@ -83,7 +83,7 @@ class _AppLoadingScreenState extends State<AppLoadingScreen>
             );
           },
           child: Image.asset(
-            'assets/images/zibo_logo_new.png',
+            'assets/images/zibo_logo_new.webp',
             width: 220,
             fit: BoxFit.contain,
           ),

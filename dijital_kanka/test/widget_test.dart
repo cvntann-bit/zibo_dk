@@ -1405,7 +1405,7 @@ void main() {
       );
       expect(
         (equippedImage.image as AssetImage).assetName,
-        'assets/images/zibo_hippi_pose1.png',
+        'assets/images/zibo_hippi_pose1.webp',
       );
 
       // Aynı kostüm Hedef Takibi sekmesindeki VE Para ve Birikim'deki
@@ -1419,7 +1419,7 @@ void main() {
                     .image
                 as AssetImage)
             .assetName,
-        'assets/images/zibo_hippi_pose1.png',
+        'assets/images/zibo_hippi_pose1.webp',
       );
 
       await tester.tap(find.bySemanticsLabel('Ana Sayfa'));
@@ -1436,7 +1436,7 @@ void main() {
         (tester.widget<Image>(find.byKey(const Key('ziboMoneyImage'))).image
                 as AssetImage)
             .assetName,
-        'assets/images/zibo_hippi_pose1.png',
+        'assets/images/zibo_hippi_pose1.webp',
       );
       await tester.tap(find.byTooltip('Geri'));
       await tester.pumpAndSettle();
@@ -1462,7 +1462,7 @@ void main() {
       // açılıyor — bkz. CLAUDE.md "Zibo Poz/Animasyon Sistemi" bölümü.
       expect(
         (defaultImage.image as AssetImage).assetName,
-        'assets/images/zibo_df_pose1.png',
+        'assets/images/zibo_df_pose1.webp',
       );
     },
   );
@@ -1525,7 +1525,7 @@ void main() {
       // setinin ilk karesini gösteriyor (poseStep=0).
       expect(
         (equippedImage.image as AssetImage).assetName,
-        'assets/images/zibo_king_pose1.png',
+        'assets/images/zibo_king_pose1.webp',
       );
     },
   );

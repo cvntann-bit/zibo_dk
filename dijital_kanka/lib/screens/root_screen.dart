@@ -504,7 +504,7 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
       appBar: AppBar(
         title: Semantics(
           label: l10n.homeAppBarTitle,
-          child: Image.asset('assets/images/zibo_logo_new.png', height: 28),
+          child: Image.asset('assets/images/zibo_logo_new.webp', height: 28),
         ),
         centerTitle: false,
         actions: [

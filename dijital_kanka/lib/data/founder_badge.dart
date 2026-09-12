@@ -17,4 +17,4 @@ const founderBadgeCostumeId = 'founder_badge';
 /// üretildi (basit, altın/hardal renkli bir daire+yıldız rozeti). Kullanıcı
 /// kendi tasarımını hazırladığında yalnızca bu YOLDAKİ dosyayı (aynı adla)
 /// DEĞİŞTİRMESİ yeterli — kodda başka HİÇBİR değişiklik gerekmez.
-const founderBadgeImageAsset = 'assets/images/founder_badge.png';
+const founderBadgeImageAsset = 'assets/images/founder_badge.webp';

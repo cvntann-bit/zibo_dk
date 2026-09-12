@@ -176,7 +176,7 @@ class ThemeOptionCard extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Image.asset('assets/images/zibo_coin.png', width: 16),
+                Image.asset('assets/images/zibo_coin.webp', width: 16),
                 const SizedBox(width: 4),
                 Text(
                   l10n.storeCoinAmount(theme.price),
