@@ -52,18 +52,24 @@ class InAppPurchasePurchaseService extends PurchaseService {
   /// Kullanıcı, Play Billing ödeme ekranını başlattıktan SONRA (ör. sistem
   /// GERİ tuşuyla) öyle bir şekilde kapatabiliyor ki `purchaseStream` HİÇBİR
   /// olay yayınlamıyor (gerçek cihazda GÖZLEMLENEN bir davranış — 2026-09-12,
-  /// "Zibo ADS" satın alma testinde). Bu olmadan [_pending]'deki `Completer`
-  /// SONSUZA KADAR beklerdi — bir SONRAKİ "Satın Al" denemesi de hep bu AYNI
-  /// (hiç bitmeyen) `Future`'ı paylaşır, yani buton kalıcı olarak "yüklüyor"
-  /// durumunda TAKILI kalırdı (Play Store ekranı bir daha HİÇ açılmazdı).
-  /// Süre dolunca "başarısız" say ve [_pending]'den temizle — bir SONRAKİ
-  /// tıklama YENİ bir `buyConsumable`/`buyNonConsumable` çağrısı başlatabilsin.
-  /// Gerçek bir ödeme (ör. 3D Secure doğrulaması) daha uzun sürebileceği için
-  /// süre cömert tutuldu; eğer olay YİNE DE bu süreden SONRA gelirse
-  /// [_onPurchaseUpdate] onu zaten "yetim satın alma" olarak ele alıp
-  /// [orphanedPurchaseProductIds] üzerinden GEÇ de olsa teslim eder — coin/
-  /// reklamsız durumu KAYBOLMAZ, yalnızca kullanıcıya gösterilen anlık sonuç
-  /// mesajı bu durumda "başarısız" olabilir.
+  /// "Zibo ADS" satın alma testinde). Bu olmadan o denemenin `Completer`'ı
+  /// SONSUZA KADAR beklerdi. **İLK düzeltmede bu tek başına yeterli
+  /// SANILDI ama DEĞİLDİ** — `purchaseCoinPackage`/`purchaseAdRemoval` HER
+  /// çağrıda [_pending]'de eski bir kayıt varsa onu PAYLAŞIP YENİ bir
+  /// `buyConsumable`/`buyNonConsumable` HİÇ BAŞLATMIYORDU; kullanıcı ilk
+  /// denemeden hemen SONRA (süre dolmadan, saniyeler içinde) tekrar
+  /// bastığında buton YİNE tepkisiz kalıyordu (Play Store ekranı bir daha
+  /// açılmıyordu) — bkz. 2026-09-12 ikinci kullanıcı raporu. Gerçek düzeltme
+  /// aşağıda: HER çağrı [_pending]'i KOŞULSUZ üzerine yazıp YENİ bir akış
+  /// başlatıyor (aynı-widget'ta hızlı çift-tıklamayı zaten arayüz katmanı
+  /// `_purchasing`/`_loading` bayrağıyla engelliyor, bkz. `ad_free_promo_
+  /// sheet.dart`/`store_screen.dart` — servis katmanının AYRICA bunu
+  /// engellemesine gerek YOK, tam tersi zararlı çıktı). Bu süre artık
+  /// yalnızca "kullanıcı hiç tekrar denemeden sonsuza dek beklerse" durumu
+  /// için bir güvenlik ağı — dolunca "başarısız" sayılır; olay YİNE DE bu
+  /// süreden SONRA gelirse [_onPurchaseUpdate] onu "yetim satın alma" olarak
+  /// ele alıp [orphanedPurchaseProductIds] üzerinden GEÇ de olsa teslim eder
+  /// — coin/reklamsız durumu hiçbir senaryoda KAYBOLMAZ.
   static const _purchaseTimeout = Duration(minutes: 2);
 
   Future<bool> _awaitPendingWithTimeout(
@@ -89,12 +95,6 @@ class InAppPurchasePurchaseService extends PurchaseService {
 
   @override
   Future<bool> purchaseCoinPackage(CoinPackage package) async {
-    // Aynı paket için ZATEN bekleyen bir satın alma varsa (ör. kullanıcı
-    // butona iki kez hızlıca bastı) ikinci bir `buyConsumable` çağrısı
-    // BAŞLATMA — aynı Completer'ın sonucunu paylaş.
-    final existing = _pending[package.id];
-    if (existing != null) return existing.future;
-
     // `isAvailable()`/`queryProductDetails()` de (`buyConsumable()` gibi)
     // platform kanalına dokunuyor — desteklenmeyen bir platformda/ortamda
     // (ör. flutter_test, mağaza hesabı bağlı olmayan bir emülatör) bunlar
@@ -137,8 +137,6 @@ class InAppPurchasePurchaseService extends PurchaseService {
     // Play Console id'leri gibi) burada sabit yazılı. İkisi de AYNI
     // string'i taşımalı: `remove_ads_lifetime`.
     const productId = 'remove_ads_lifetime';
-    final existing = _pending[productId];
-    if (existing != null) return existing.future;
 
     try {
       if (!await _iap.isAvailable()) return false;
