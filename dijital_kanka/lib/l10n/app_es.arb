@@ -525,5 +525,6 @@
   "instagramFollowCardBody": "¡Sigue @zibo.app y gana 100 ZC, un tema y un disfraz!",
   "instagramFollowOpenButton": "Abrir Instagram",
   "instagramFollowClaimButton": "Ya Sigo",
-  "instagramFollowRewardGrantedMessage": "¡Tu recompensa fue añadida! 🎉"
+  "instagramFollowRewardGrantedMessage": "¡Tu recompensa fue añadida! 🎉",
+  "commonOkButton": "Vale"
 }

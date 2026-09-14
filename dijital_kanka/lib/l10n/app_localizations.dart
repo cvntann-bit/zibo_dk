@@ -3213,6 +3213,12 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'Ödülün hesabına eklendi! 🎉'**
   String get instagramFollowRewardGrantedMessage;
+
+  /// Kısa bilgi/uyarı diyaloglarını kapatan genel 'Tamam' butonu
+  ///
+  /// In tr, this message translates to:
+  /// **'Tamam'**
+  String get commonOkButton;
 }
 
 class _AppLocalizationsDelegate

@@ -5,6 +5,7 @@ import '../l10n/app_localizations.dart';
 import '../models/goal.dart';
 import '../providers/coin_provider.dart';
 import '../providers/goals_provider.dart';
+import '../utils/info_dialog.dart';
 import '../utils/zibo_event_signal.dart';
 
 /// Tek bir hedefi; adını, ilerleme durumunu ve 7 günlük işaretleme
@@ -54,9 +55,7 @@ class GoalCard extends StatelessWidget {
 
     if (cycleCompleted) {
       context.read<CoinProvider>().earnStreak7Bonus();
-      ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text(l10n.goalCycleCompleted)));
+      showInfoDialog(context, l10n.goalCycleCompleted);
       // 2026 yeni özellik — Olay Tetiklemeli Özel Mesajlar (bkz. CLAUDE.md):
       // Ana Sayfa'nın konuşma balonu bir SONRAKİ seçiminde bu özel kutlama
       // havuzundan bir söz gösterecek, normal zaman/ruh hali seçimini

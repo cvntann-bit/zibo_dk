@@ -181,7 +181,7 @@ void main() {
   testWidgets(
     'Kostüm hediyesi taşıyan bir rozette (Demir İrade → Sporcu Zibo) '
     'kazanma popup\'ı "Ödülü Al"a basılmadan ÖNCE bile kostüm adını '
-    'gösterir; basılınca kostüm GERÇEKTEN hediye edilir ve SnackBar ile '
+    'gösterir; basılınca kostüm GERÇEKTEN hediye edilir ve bir dialog ile '
     'duyurulur',
     (tester) async {
       final badges = BadgeProvider();
@@ -210,7 +210,7 @@ void main() {
 
       expect(badges.isClaimed('iron_will'), isTrue);
       expect(costume.isOwned('zibo_sporcu'), isTrue);
-      expect(find.byType(SnackBar), findsOneWidget);
+      expect(find.byType(AlertDialog), findsOneWidget);
       expect(find.text('Ayrıca Sporcu Zibo kazandın! 🎁'), findsOneWidget);
     },
   );
@@ -218,7 +218,7 @@ void main() {
   testWidgets(
     'Tema hediyesi taşıyan bir rozette (İlk Paylaşım) "Ödülü Al"a '
     'basılınca sahip OLUNMAYAN bir STANDART (premium/animasyonlu OLMAYAN) '
-    'tema rastgele hediye edilir ve SnackBar ile duyurulur',
+    'tema rastgele hediye edilir ve bir dialog ile duyurulur',
     (tester) async {
       final badges = BadgeProvider();
       final coin = CoinProvider();
@@ -244,7 +244,7 @@ void main() {
       final grantedId = appTheme.ownedIds.single;
       final grantedTheme = appThemes.firstWhere((t) => t.id == grantedId);
       expect(grantedTheme.isPremiumAnimated, isFalse);
-      expect(find.byType(SnackBar), findsOneWidget);
+      expect(find.byType(AlertDialog), findsOneWidget);
     },
   );
 

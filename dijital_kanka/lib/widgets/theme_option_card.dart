@@ -7,6 +7,7 @@ import '../providers/app_theme_provider.dart';
 import '../providers/coin_provider.dart';
 import '../providers/theme_provider.dart';
 import '../utils/coin_feedback.dart';
+import '../utils/info_dialog.dart';
 import '../utils/zibo_event_signal.dart';
 import 'starry_gradient_background.dart';
 import 'theme_particle_effect.dart';
@@ -35,11 +36,7 @@ class ThemeOptionCard extends StatelessWidget {
     // havuzundan bir söz gösterecek — bkz. `zibo_event_signal.dart`.
     pendingZiboEvent.value = ZiboEventType.costumeOrThemeUnlocked;
 
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(content: Text(l10n.themePurchasedMessage(localizedName))),
-      );
+    showInfoDialog(context, l10n.themePurchasedMessage(localizedName));
   }
 
   /// Önizleme kutusunun içine bindirilecek dekoratif katman — en fazla

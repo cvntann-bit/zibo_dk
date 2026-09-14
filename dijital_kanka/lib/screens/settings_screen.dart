@@ -12,6 +12,7 @@ import '../providers/notification_provider.dart';
 import '../providers/sound_effects_provider.dart';
 import '../providers/theme_provider.dart';
 import '../utils/google_link_action.dart';
+import '../utils/info_dialog.dart';
 import '../widgets/founder_badge_promo_card.dart';
 import '../widgets/language_flag_circle.dart';
 import '../widgets/rate_us_sheet.dart';
@@ -33,9 +34,7 @@ Future<void> _launchOrShowError(BuildContext context, Uri uri) async {
   final l10n = AppLocalizations.of(context)!;
   final launched = await launchUrl(uri).catchError((_) => false);
   if (!launched && context.mounted) {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(l10n.settingsCouldNotOpenLink)));
+    showInfoDialog(context, l10n.settingsCouldNotOpenLink);
   }
 }
 

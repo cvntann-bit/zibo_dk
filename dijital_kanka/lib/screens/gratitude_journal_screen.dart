@@ -17,6 +17,7 @@ import '../providers/gratitude_provider.dart';
 import '../providers/profile_provider.dart';
 import '../providers/zibo_pose_provider.dart';
 import '../utils/address_term.dart';
+import '../utils/info_dialog.dart';
 import '../widgets/speech_bubble.dart';
 import '../widgets/zibo_animated_image.dart';
 
@@ -99,9 +100,7 @@ class _GratitudeJournalScreenState extends State<GratitudeJournalScreen> {
       // GratitudeProvider.saveToday dokümantasyonu.
       context.read<CoinProvider>().earnGratitudeJournal();
       final l10n = AppLocalizations.of(context)!;
-      ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text(l10n.gratitudeCoinRewardMessage)));
+      showInfoDialog(context, l10n.gratitudeCoinRewardMessage);
     }
   }
 

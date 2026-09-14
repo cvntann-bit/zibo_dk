@@ -8,6 +8,7 @@ import 'package:provider/provider.dart';
 import '../l10n/app_localizations.dart';
 import '../providers/focus_provider.dart';
 import '../providers/xp_provider.dart';
+import '../utils/info_dialog.dart';
 import '../utils/tab_navigation.dart';
 
 enum _FocusMode { free, min15, min25, min45 }
@@ -94,15 +95,9 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> {
       // diye üst sınır, bkz. CLAUDE.md "Level/XP Sistemi" bölümü).
       final minutes = (duration / 60).floor().clamp(1, 60);
       context.read<XpProvider>().addXp(minutes);
-      ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(
-          SnackBar(content: Text(l10n.focusSessionSavedMessage(minutes))),
-        );
+      showInfoDialog(context, l10n.focusSessionSavedMessage(minutes));
     } else {
-      ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text(l10n.focusSessionTooShortMessage)));
+      showInfoDialog(context, l10n.focusSessionTooShortMessage);
     }
   }
 

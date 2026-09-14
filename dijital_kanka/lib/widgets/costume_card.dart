@@ -6,6 +6,7 @@ import '../models/costume.dart';
 import '../providers/coin_provider.dart';
 import '../providers/costume_provider.dart';
 import '../utils/coin_feedback.dart';
+import '../utils/info_dialog.dart';
 import '../utils/zibo_event_signal.dart';
 
 /// Mağaza > Kostümler ızgarasındaki tek bir kostüm kartı. Üç durumu var:
@@ -32,11 +33,7 @@ class CostumeCard extends StatelessWidget {
     // havuzundan bir söz gösterecek — bkz. `zibo_event_signal.dart`.
     pendingZiboEvent.value = ZiboEventType.costumeOrThemeUnlocked;
 
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(content: Text(l10n.costumePurchasedMessage(localizedName))),
-      );
+    showInfoDialog(context, l10n.costumePurchasedMessage(localizedName));
   }
 
   @override

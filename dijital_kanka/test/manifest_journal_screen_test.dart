@@ -141,6 +141,11 @@ void main() {
 
       expect(fakeService.saveCount, 1);
       expect(find.text('+5 Zibo Coin kazandın!'), findsOneWidget);
+      // 2026 güncellemesi: bildirim artık SnackBar değil, `showInfoDialog`
+      // ile MODAL bir dialog — sonraki gerçek `tester.tap()`/kaydırma
+      // etkileşimlerinin barrier'a takılmaması için kapatılması gerekiyor.
+      await tester.tap(find.byKey(const Key('infoDialogOkButton')));
+      await tester.pumpAndSettle();
 
       final coinProvider = Provider.of<CoinProvider>(
         tester.element(find.byType(ManifestJournalScreen)),
@@ -192,6 +197,11 @@ void main() {
       );
       expect(coinProvider.balance, 5);
       expect(fakeService.saveCount, 1);
+      // 2026 güncellemesi: bildirim artık SnackBar değil, MODAL bir dialog —
+      // sonraki gerçek `tester.tap()` çağrılarının barrier'a takılmaması
+      // için kapatılması gerekiyor.
+      await tester.tap(find.byKey(const Key('infoDialogOkButton')));
+      await tester.pumpAndSettle();
 
       // Form boş — yeni bir fotoğraf seç ve ikinci bir giriş ekle.
       fakeService.nextPickedPath = '/fake/tmp/photo2.jpg';
@@ -206,6 +216,8 @@ void main() {
       // Coin bakiyesi DEĞİŞMEDİ — ikinci giriş coin tekrar tetiklemedi.
       expect(coinProvider.balance, 5);
       expect(find.text('Bugünün girişi kaydedildi.'), findsOneWidget);
+      await tester.tap(find.byKey(const Key('infoDialogOkButton')));
+      await tester.pumpAndSettle();
       // Hiçbir fotoğraf silinmedi — ikinci giriş birincinin ÜZERİNE YAZMADI.
       expect(fakeService.deletedPaths, isEmpty);
 

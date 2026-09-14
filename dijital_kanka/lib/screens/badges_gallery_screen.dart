@@ -9,6 +9,7 @@ import '../l10n/app_localizations.dart';
 import '../models/badge_definition.dart';
 import '../models/badge_gift_reward.dart';
 import '../providers/badge_provider.dart';
+import '../utils/info_dialog.dart';
 
 /// Rozetler Galerisi — bkz. CLAUDE.md "Rozet Sistemi" bölümü. Kazanılan
 /// rozetler net/renkli, kazanılmamış rozetler gri tonlu/soluk görünür ama
@@ -56,9 +57,7 @@ class _BadgesGalleryScreenState extends State<BadgesGalleryScreen> {
       final message = granted.type == BadgeGiftType.costume
           ? l10n.badgeGiftCostumeMessage(granted.name)
           : l10n.badgeSpecialRewardThemeGrantedMessage(granted.name);
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(message)));
+      showInfoDialog(context, message);
     });
   }
 

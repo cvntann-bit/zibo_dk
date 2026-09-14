@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import '../l10n/app_localizations.dart';
 import '../models/coin_package.dart';
 import '../providers/ad_free_provider.dart';
+import '../utils/info_dialog.dart';
 
 /// Reklamsız Zibo'nun SABİT/görsel yer tutucu fiyatı — `CoinPackage`'ın
 /// zaten taşıdığı [PackagePrice] modeli yeniden kullanılıyor. Yalnızca Play
@@ -77,9 +78,7 @@ class _AdFreePromoSheetBodyState extends State<_AdFreePromoSheetBody> {
     Navigator.of(context).pop();
     if (!widget.outerContext.mounted) return;
     if (success) {
-      ScaffoldMessenger.of(widget.outerContext)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text(l10n.adFreePromoPurchaseSuccess)));
+      await showInfoDialog(widget.outerContext, l10n.adFreePromoPurchaseSuccess);
     } else {
       await showDialog<void>(
         context: widget.outerContext,

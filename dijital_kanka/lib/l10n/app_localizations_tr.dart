@@ -1783,4 +1783,7 @@ class AppLocalizationsTr extends AppLocalizations {
   @override
   String get instagramFollowRewardGrantedMessage =>
       'Ödülün hesabına eklendi! 🎉';
+
+  @override
+  String get commonOkButton => 'Tamam';
 }

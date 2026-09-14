@@ -6,6 +6,7 @@ import '../l10n/app_localizations.dart';
 import '../models/coin_economy.dart';
 import '../providers/referral_provider.dart';
 import '../services/share_service.dart';
+import '../utils/info_dialog.dart';
 
 /// "Arkadaşını Davet Et" satırının açtığı ekran (bkz. `ProfileScreen`) —
 /// kullanıcının kendi davet kodunu (uid'i) gösterip paylaşmasını VE
@@ -35,9 +36,7 @@ class _ReferralScreenState extends State<ReferralScreen> {
   void _copyCode(BuildContext context, String code) {
     Clipboard.setData(ClipboardData(text: code));
     final l10n = AppLocalizations.of(context)!;
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(l10n.referralCodeCopiedMessage)));
+    showInfoDialog(context, l10n.referralCodeCopiedMessage);
   }
 
   Future<void> _shareCode(BuildContext context, String code) async {
@@ -60,9 +59,7 @@ class _ReferralScreenState extends State<ReferralScreen> {
       ReferralRedeemResult.unavailable ||
       ReferralRedeemResult.networkError => l10n.referralUnavailableMessage,
     };
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(message)));
+    showInfoDialog(context, message);
     if (result == ReferralRedeemResult.success) _codeController.clear();
   }
 

@@ -12,6 +12,7 @@ import '../providers/badge_provider.dart';
 import '../providers/referral_provider.dart';
 import '../providers/xp_provider.dart';
 import '../services/share_service.dart';
+import '../utils/info_dialog.dart';
 import 'zibo_share_card.dart';
 
 /// Yazı stili önizleme kartçıklarının arka planı — uygulamanın açık/koyu
@@ -87,9 +88,7 @@ class _ZiboShareSheetState extends State<ZiboShareSheet> {
       if (!mounted) return;
       setState(() => _isSharing = false);
       final l10n = AppLocalizations.of(context)!;
-      ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text(l10n.shareErrorMessage)));
+      showInfoDialog(context, l10n.shareErrorMessage);
     }
   }
 

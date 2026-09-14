@@ -11,6 +11,7 @@ import '../providers/costume_provider.dart';
 import '../providers/founder_badge_provider.dart';
 import '../services/google_auth_service.dart';
 import 'auth_switch.dart';
+import 'info_dialog.dart';
 
 /// Profil/Ayarlar'daki Google hesap bağlama satırının `onTap`'i — TEK
 /// yerde tutulup her iki ekrandan da çağrılıyor (kod tekrarını önlemek
@@ -42,9 +43,7 @@ Future<void> handleGoogleLinkTap(BuildContext context) async {
   final authLink = context.read<AuthLinkProvider>();
 
   if (authLink.isLinked) {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(authLink.linkedEmail ?? '')));
+    showInfoDialog(context, authLink.linkedEmail ?? '');
     return;
   }
 
@@ -71,17 +70,12 @@ Future<void> handleGoogleLinkTap(BuildContext context) async {
     }
 
     if (!context.mounted) return;
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          content: Text(
-            wonFounderBadge
-                ? '${l10n.googleLinkSuccessMessage} ${l10n.founderBadgeClaimedMessage}'
-                : l10n.googleLinkSuccessMessage,
-          ),
-        ),
-      );
+    showInfoDialog(
+      context,
+      wonFounderBadge
+          ? '${l10n.googleLinkSuccessMessage} ${l10n.founderBadgeClaimedMessage}'
+          : l10n.googleLinkSuccessMessage,
+    );
   } on GoogleAccountAlreadyLinkedElsewhereException {
     if (!context.mounted) return;
     await _offerSignInInstead(context, l10n, authLink);
@@ -90,9 +84,7 @@ Future<void> handleGoogleLinkTap(BuildContext context) async {
     // asıl GoogleSignInException kodu) `adb logcat`'te görünmesi için.
     debugPrint('handleGoogleLinkTap hata: $e\n$st');
     if (!context.mounted) return;
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(l10n.googleLinkFailedMessage)));
+    showInfoDialog(context, l10n.googleLinkFailedMessage);
   }
 }
 
@@ -118,15 +110,11 @@ Future<void> handleSwitchAccountTap(BuildContext context) async {
       // TÜM uygulamayı (main.dart'taki _AppRoot) seçilen hesabın uid'i ile
       // yeniden kurdurur — bkz. utils/auth_switch.dart.
       switchToUid.value = outcome.uid;
-      ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text(l10n.googleSignInSuccessMessage)));
+      showInfoDialog(context, l10n.googleSignInSuccessMessage);
     }
   } catch (_) {
     if (!context.mounted) return;
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(l10n.googleSignInFailedMessage)));
+    showInfoDialog(context, l10n.googleSignInFailedMessage);
   }
 }
 
@@ -168,15 +156,11 @@ Future<void> handleSignOutTap(BuildContext context) async {
     if (newUid != null) {
       switchToUid.value = newUid;
     } else {
-      ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text(l10n.googleSignOutFailedMessage)));
+      showInfoDialog(context, l10n.googleSignOutFailedMessage);
     }
   } catch (_) {
     if (!context.mounted) return;
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(l10n.googleSignOutFailedMessage)));
+    showInfoDialog(context, l10n.googleSignOutFailedMessage);
   }
 }
 
@@ -211,14 +195,10 @@ Future<void> _offerSignInInstead(
       // TÜM uygulamayı (main.dart'taki _AppRoot) kurtarılan hesabın uid'i
       // ile yeniden kurdurur — bkz. utils/auth_switch.dart.
       switchToUid.value = outcome.uid;
-      ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text(l10n.googleSignInSuccessMessage)));
+      showInfoDialog(context, l10n.googleSignInSuccessMessage);
     }
   } catch (_) {
     if (!context.mounted) return;
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(l10n.googleSignInFailedMessage)));
+    showInfoDialog(context, l10n.googleSignInFailedMessage);
   }
 }

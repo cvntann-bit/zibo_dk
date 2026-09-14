@@ -18,6 +18,7 @@ import '../providers/water_provider.dart';
 import '../providers/zibo_pose_provider.dart';
 import '../services/sound_effects_service.dart';
 import '../utils/address_term.dart';
+import '../utils/info_dialog.dart';
 import '../widgets/speech_bubble.dart';
 import '../widgets/zibo_animated_image.dart';
 
@@ -220,9 +221,7 @@ class _WaterTrackingScreenState extends State<WaterTrackingScreen> {
     if (justCompleted) {
       final l10n = AppLocalizations.of(context)!;
       context.read<CoinProvider>().earnWaterGoal();
-      ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text(l10n.waterGoalCompletedMessage)));
+      showInfoDialog(context, l10n.waterGoalCompletedMessage);
     }
   }
 

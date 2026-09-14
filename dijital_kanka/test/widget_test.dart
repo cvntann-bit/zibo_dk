@@ -249,6 +249,22 @@ Future<void> _dismissLevelUpIfShown(WidgetTester tester) async {
   }
 }
 
+/// 2026 güncellemesi — ödül/hata bildirimleri artık `SnackBar` değil,
+/// `showInfoDialog` (bkz. `utils/info_dialog.dart`) ile MODAL bir dialog.
+/// Bir SnackBar'ın aksine bu dialog barrier'ı ALTINDAKİ hiçbir widget'a
+/// gerçek `tester.tap()` isabet ETMEZ (doğrudan `onPressed!()` çağrısı
+/// etkilenmez, ama simüle edilen dokunuşlar kaydırmadan önce dialog
+/// KAPATILMALI) — bu yardımcı, gösterilmişse `infoDialogOkButton`'a basıp
+/// testin normal akışına devam etmesini sağlıyor.
+Future<void> _dismissInfoDialogIfShown(WidgetTester tester) async {
+  await tester.pumpAndSettle();
+  final okButton = find.byKey(const Key('infoDialogOkButton'));
+  if (okButton.evaluate().isNotEmpty) {
+    await tester.tap(okButton);
+    await tester.pumpAndSettle();
+  }
+}
+
 /// Alt gezinme çubuğundaki Z butonuna basıp ek modüller menüsünü açar (bkz.
 /// main_bottom_bar.dart/modules_menu_sheet.dart) — bar tamamen görsel
 /// tabanlı olduğu için (ikon/etiketler PNG'nin içinde, gerçek Text widget'ı
@@ -516,6 +532,7 @@ void main() {
         find.textContaining('7 günlük hedefi tamamladın'),
         findsOneWidget,
       );
+      await _dismissInfoDialogIfShown(tester);
       expect(find.text('50'), findsOneWidget); // AppBar'daki güncel bakiye
       expect(find.text('0/7 gün'), findsOneWidget); // yeni döngü hazır
 
@@ -1437,6 +1454,7 @@ void main() {
       buyButton().onPressed!();
       await tester.pumpAndSettle();
       expect(find.text('Yetersiz Zibo Coin'), findsOneWidget);
+      await _dismissInfoDialogIfShown(tester);
 
       // 440 ZC için yeterli bakiyeyi kazan (5 × Arkadaş daveti = 500).
       // Geçici Coin Test Paneli kaldırıldığı için (kullanıcı isteği) doğrudan
@@ -1459,6 +1477,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.textContaining('Hippi Zibo satın alındı'), findsOneWidget);
+      await _dismissInfoDialogIfShown(tester);
       expect(find.text('60'), findsOneWidget); // 500 - 440 = 60
       expect(find.text('Sahip olunan'), findsOneWidget);
 
@@ -1580,6 +1599,7 @@ void main() {
       buyButton().onPressed!();
       await tester.pumpAndSettle();
       expect(find.textContaining('Kral Zibo satın alındı'), findsOneWidget);
+      await _dismissInfoDialogIfShown(tester);
 
       InkWell kingInkWell() => tester.widget<InkWell>(
         find.descendant(of: kingCard, matching: find.byType(InkWell)),
@@ -1649,6 +1669,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.textContaining('Gün Batımı teması satın alındı'), findsOneWidget);
+      await _dismissInfoDialogIfShown(tester);
       expect(find.text('Sahip olunan'), findsOneWidget);
 
       InkWell sunsetInkWell() => tester.widget<InkWell>(
@@ -2088,6 +2109,7 @@ void main() {
       // Form yerine "tamamlandı" kartı görünüyor, coin kazanma mesajı geldi.
       expect(find.text('Bugün tamamlandı!'), findsOneWidget);
       expect(find.text('+5 Zibo Coin kazandın!'), findsOneWidget);
+      await _dismissInfoDialogIfShown(tester);
 
       // Yazılan üç şükran artık kartın kendisinde de GÖRÜNÜYOR (eskiden bir
       // daha hiç görünmüyordu — bkz. CLAUDE.md "Şükran Günlüğü" 2026
@@ -2200,6 +2222,7 @@ void main() {
         findsOneWidget,
       );
       expect(find.text('Bugün su hedefini tamamladın, harikasın kanka!'), findsOneWidget);
+      await _dismissInfoDialogIfShown(tester);
 
       // Coin farming koruması: bir bardağı boşaltıp tekrar doldurmak
       // (böylece hedefe İKİNCİ KEZ ulaşmak) yeniden coin vermemeli — bkz.

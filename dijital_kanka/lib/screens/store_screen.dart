@@ -14,6 +14,7 @@ import '../providers/ad_free_provider.dart';
 import '../providers/auth_link_provider.dart';
 import '../providers/coin_provider.dart';
 import '../utils/ad_free_promo_trigger.dart';
+import '../utils/info_dialog.dart';
 import '../widgets/ad_free_promo_sheet.dart';
 import '../widgets/costume_card.dart';
 import '../widgets/google_link_promo_sheet.dart';
@@ -363,9 +364,7 @@ class _AdFreeCardState extends State<_AdFreeCard> {
 
 void _showCoinsAddedSnackBar(BuildContext context, int amount) {
   final l10n = AppLocalizations.of(context)!;
-  ScaffoldMessenger.of(context)
-    ..hideCurrentSnackBar()
-    ..showSnackBar(SnackBar(content: Text(l10n.storeCoinsAdded(amount))));
+  showInfoDialog(context, l10n.storeCoinsAdded(amount));
 }
 
 class _WatchAdCard extends StatefulWidget {
@@ -514,11 +513,7 @@ class _PackageCardState extends State<_PackageCard> {
       _showCoinsAddedSnackBar(context, widget.package.totalCoins);
     } else {
       final l10n = AppLocalizations.of(context)!;
-      ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(
-          SnackBar(content: Text(l10n.storePurchaseFailedMessage)),
-        );
+      showInfoDialog(context, l10n.storePurchaseFailedMessage);
     }
   }
 

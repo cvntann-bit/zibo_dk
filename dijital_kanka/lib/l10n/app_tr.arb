@@ -2383,5 +2383,9 @@
   "instagramFollowRewardGrantedMessage": "Ödülün hesabına eklendi! 🎉",
   "@instagramFollowRewardGrantedMessage": {
     "description": "Instagram takip ödülü verilince gösterilen SnackBar metni"
+  },
+  "commonOkButton": "Tamam",
+  "@commonOkButton": {
+    "description": "Kısa bilgi/uyarı diyaloglarını kapatan genel 'Tamam' butonu"
   }
 }

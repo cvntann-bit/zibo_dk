@@ -10,6 +10,7 @@ import '../providers/coin_provider.dart';
 import '../providers/costume_provider.dart';
 import '../providers/instagram_follow_provider.dart';
 import '../utils/badge_special_reward.dart';
+import '../utils/info_dialog.dart';
 
 /// 2026 yeni özellik — Instagram Takip Kartı ve Ödülü (bkz. CLAUDE.md).
 /// Profil'de, ödül henüz alınmamışsa gösterilen bir teşvik kartı — kullanıcı
@@ -65,11 +66,7 @@ class _InstagramFollowCardState extends State<InstagramFollowCard> {
 
       if (!mounted) return;
       final l10n = AppLocalizations.of(context)!;
-      ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(
-          SnackBar(content: Text(l10n.instagramFollowRewardGrantedMessage)),
-        );
+      await showInfoDialog(context, l10n.instagramFollowRewardGrantedMessage);
     } finally {
       if (mounted) setState(() => _isClaiming = false);
     }

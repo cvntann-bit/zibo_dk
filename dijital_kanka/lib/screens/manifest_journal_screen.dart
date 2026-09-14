@@ -18,6 +18,7 @@ import '../providers/profile_provider.dart';
 import '../providers/zibo_pose_provider.dart';
 import '../services/photo_picker_service.dart';
 import '../utils/address_term.dart';
+import '../utils/info_dialog.dart';
 import '../widgets/speech_bubble.dart';
 import '../widgets/zibo_animated_image.dart';
 
@@ -133,17 +134,12 @@ class _ManifestJournalScreenState extends State<ManifestJournalScreen> {
         context.read<CoinProvider>().earnManifestJournal();
       }
       final l10n = AppLocalizations.of(context)!;
-      ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(
-          SnackBar(
-            content: Text(
-              justCompleted
-                  ? l10n.manifestCoinRewardMessage
-                  : l10n.manifestSavedMessage,
-            ),
-          ),
-        );
+      showInfoDialog(
+        context,
+        justCompleted
+            ? l10n.manifestCoinRewardMessage
+            : l10n.manifestSavedMessage,
+      );
     } finally {
       if (mounted) setState(() => _isSaving = false);
     }

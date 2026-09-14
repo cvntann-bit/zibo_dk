@@ -1796,4 +1796,7 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get instagramFollowRewardGrantedMessage =>
       '¡Tu recompensa fue añadida! 🎉';
+
+  @override
+  String get commonOkButton => 'Vale';
 }

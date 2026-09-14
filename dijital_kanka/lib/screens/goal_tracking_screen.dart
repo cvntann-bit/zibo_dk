@@ -17,6 +17,7 @@ import '../providers/sound_effects_provider.dart';
 import '../providers/zibo_pose_provider.dart';
 import '../services/sound_effects_service.dart';
 import '../utils/address_term.dart';
+import '../utils/info_dialog.dart';
 import '../utils/zibo_event_signal.dart';
 import '../widgets/goal_card.dart';
 import '../widgets/goal_confetti_burst.dart';
@@ -230,11 +231,7 @@ class _GoalTrackingScreenState extends State<GoalTrackingScreen>
     pendingZiboEvent.value = ZiboEventType.streakBroken;
 
     final l10n = AppLocalizations.of(context)!;
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(content: Text(l10n.goalStreakReset(resetNames.join(', ')))),
-      );
+    showInfoDialog(context, l10n.goalStreakReset(resetNames.join(', ')));
   }
 
   Future<void> _showAddGoalDialog(BuildContext context) async {
