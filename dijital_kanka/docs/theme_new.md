@@ -289,6 +289,42 @@ düz `GridView`, 2 sütun, gruplama/kategori/nadir seviyesi YOK — 16 kostüm,
 
 **Onaylandı** — [mockup](https://claude.ai/code/artifact/055bf163-abca-4428-94d0-56fdc57ad4d4).
 
+## Onaylanan: Mağaza — "Temalar" sekmesi
+
+Gerçek `_ThemesGrid` yapısı korunuyor — AppBar ve segmentli kontrol diğer
+iki segmentle BİREBİR aynı (yalnızca "Temalar" aktif). Gövde: Kostümler ile
+AYNI kart deseni (tek düz `GridView`, 2 sütun, başlık/gruplama YOK — eski
+"Standart/Premium" iki ayrı başlıklı ızgara 2026'da kaldırıldı), 22 tema,
+`app_themes.dart`'taki sırayla (ucuzdan pahalıya, 250 ZC → 900 ZC).
+
+- **Kritik istisna — renkli önizleme kutuları BİLEREK çok renkli**: her
+  kartın üst kısmındaki gradyan kutusu o temanın GERÇEK `lightColors`
+  değerlerini gösteriyor. Bu, sayfanın en üstündeki "tek vurgu rengi"
+  kuralını İHLAL ETMİYOR — o kural bizim KENDİ arayüz aksanımız (buton,
+  rozet, ikon, kontur) için geçerli; burada önizlenen çok renklilik
+  kullanıcının satın alabileceği GERÇEK farklı ürünlerin (temaların) doğru
+  temsili, bir tasarım tercihi değil. Kartın kendi yapısal konturu/gölgesi
+  yine SABİT kalıyor (siyah kontur, altın rozet/buton) — yalnızca İÇERİK
+  (önizlenen tema örneği) çok renkli.
+- **3 kart durumu** Kostümler ile birebir aynı desen (kilitli/sahip
+  olunan/aktif — kilitli: önizleme %55 opaklık + kilit rozeti + fiyat +
+  "Satın Al"; sahip olunan: nötr rozet, karta dokunmak uygular; aktif: kalın
+  altın kontur + altın rozet), **TEK fark rozet metni**: kostümde "Giyili",
+  temada **"Aktif"**.
+- **"Premium" rozeti**: yalnızca animasyonlu 7 temada (Parti Konfeti, Kalpli
+  Tema, Kış Teması, Çiçekli Tema, Nota Teması, Tropikal Tema, Galaksi) sol
+  üstte ayrıca görünen küçük ✨ rozeti — kilit rozetinden bağımsız bir ikinci
+  işaret, ekranda hafif hareket efekti olduğunu belirtiyor.
+- Satın alma akışı Kostümler ile birebir aynı: onay penceresi YOK, anında
+  düşer, `showInfoDialog` ile "Yetersiz Zibo Coin" / "{isim} teması satın
+  alındı!". **Satın almak otomatik giydirmez** — uygulamak için karta tekrar
+  dokunmak gerekir (Kostümler'de olmayan bir ekstra adım).
+- **Ücretsiz/varsayılan tema YOK** — en ucuz tema 250 ZC. Hiçbir tema
+  giyilmemişken uygulamanın kendi sabit bal/hardal teması kullanılıyor, bu
+  ızgarada bir kart olarak temsil edilmiyor.
+
+**Onaylandı** — [mockup](https://claude.ai/code/artifact/7a17c1d0-297b-43d9-b8f7-6335bb824f58).
+
 ## Kapsam dışı — kesinlikle DEĞİŞMEYECEK
 
 Kullanıcı açıkça belirtti, bu redesign'a DAHİL DEĞİL:
@@ -317,7 +353,7 @@ genişletilmek istenirse önce burada AÇIKÇA onaylanmalı.
 | Profil sekmesi | ✅ Onaylandı — koda dökülmeyi bekliyor |
 | Mağaza — Coin Al segmenti | ✅ Onaylandı — koda dökülmeyi bekliyor |
 | Mağaza — Kostümler segmenti | ✅ Onaylandı — koda dökülmeyi bekliyor |
-| Mağaza — Temalar segmenti | ⏳ Henüz mockup yapılmadı |
+| Mağaza — Temalar segmenti | ✅ Onaylandı — koda dökülmeyi bekliyor |
 | Alt bar + Z butonu (uygulama geneli bileşen) | ⏳ Ana Sayfa mockup'ında görsel dili belli ama ayrı bir Flutter implementasyon onayı gerekiyor |
 | Modül menüsü (Z butonu sheet'i) | ✅ Onaylandı — koda dökülmeyi bekliyor |
 | Modül ekranları (Su/Hedef/Şükran/Rüya/Ruh Hali/Manifest/Para/Odak) | ⏳ Henüz mockup yapılmadı |
