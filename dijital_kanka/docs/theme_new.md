@@ -325,6 +325,40 @@ AYNI kart deseni (tek düz `GridView`, 2 sütun, başlık/gruplama YOK — eski
 
 **Onaylandı** — [mockup](https://claude.ai/code/artifact/7a17c1d0-297b-43d9-b8f7-6335bb824f58).
 
+## Onaylanan: Ayarlar ekranı
+
+Gerçek `settings_screen.dart` yapısı korunuyor. **Bu ekran diğerlerinden
+FARKLI bir AppBar kullanıyor** — paylaşılan sekme AppBar'ı (logo/coin/mağaza
+kısayolu) YOK, çünkü bu bir `push` ekranı (bottom-nav sekmesi değil): sade
+geri oku + "Ayarlar" başlığı.
+
+Gövde **3 başlıklı bölüm**, her biri Profil'deki gibi satır-başına-ayrı-kart
+DEĞİL — TEK kart içinde ince çizgilerle ayrılmış satırlar (gerçek koddaki
+`Card` + `Divider` deseni):
+
+1. **"Genel"**: Görünüm (Açık/Koyu/Sistemi Takip Et seçim sayfası açar) →
+   Ses Efektleri (switch, satırın HERHANGİ bir yerine dokunmak açar/kapatır)
+   → Dil (Görünüm ile BİREBİR aynı seçim-sayfası deseni, ek olarak her
+   satırda bayrak rozeti) → Ana Ekran Widget'ları → Google hesabı satırı
+   (bağlıysa "Google Hesabın" + e-posta, değilse "Google ile Bağla" + bu
+   durumda ayrıca "Kurucu Üye Rozeti Kazan" promosyon kartı — Profil'de
+   zaten tasarlanan AYNI bileşen) → **yalnızca bağlıyken** Çıkış Yap (onay
+   penceresi VAR) + Hesap Değiştir (onay YOK) buton satırı.
+2. **"Destek"**: Bize Ulaşın (mailto) → Bizi Puanlayın (5 yıldızlı alt
+   sayfa, herhangi bir yıldıza dokunmak doğrudan Play Store'a yönlendirir,
+   uygulama içinde puan kaydedilmez).
+3. **"Uygulama Hakkında"**: Sürüm (tıklanamaz, sadece bilgi) → Web Sitesi →
+   Gizlilik Politikası → Kullanım Koşulları (ikisi de harici link DEĞİL,
+   gerçek yerelleştirilmiş metni uygulama içinde gösteriyor).
+
+**Şu an render EDİLMEYEN, mockup'a da eklenmeyen kısımlar**:
+`notificationsFeatureEnabled = false` olduğu için bildirim ayarları kartı ve
+"geçici" bildirim test paneli tamamen yok — bayrak ileride açılırsa ayrı bir
+onay turu gerekir. Veri yönetimi / hesap silme / uygulamayı paylaş satırı da
+gerçek kodda hiç yok.
+
+**Onaylandı** — [mockup](https://claude.ai/code/artifact/c830d59e-174b-43d8-916d-7998295061c7).
+
 ## Kapsam dışı — kesinlikle DEĞİŞMEYECEK
 
 Kullanıcı açıkça belirtti, bu redesign'a DAHİL DEĞİL:
@@ -357,5 +391,5 @@ genişletilmek istenirse önce burada AÇIKÇA onaylanmalı.
 | Alt bar + Z butonu (uygulama geneli bileşen) | ⏳ Ana Sayfa mockup'ında görsel dili belli ama ayrı bir Flutter implementasyon onayı gerekiyor |
 | Modül menüsü (Z butonu sheet'i) | ✅ Onaylandı — koda dökülmeyi bekliyor |
 | Modül ekranları (Su/Hedef/Şükran/Rüya/Ruh Hali/Manifest/Para/Odak) | ⏳ Henüz mockup yapılmadı |
-| Ayarlar ekranı | ⏳ Henüz mockup yapılmadı |
+| Ayarlar ekranı | ✅ Onaylandı — koda dökülmeyi bekliyor |
 | Şans Çarkı / Günlük Ödül / Rozet pop-up'ları | 🚫 Kapsam dışı — değişmeyecek |
