@@ -457,6 +457,35 @@ ek ikon yok.
 
 **Onaylandı** — [mockup](https://claude.ai/code/artifact/1de5853f-c643-41b6-b0fd-3fde68adc084).
 
+## Onaylanan: Ruh Hali Takibi modülü
+
+Gerçek `mood_tracking_screen.dart` yapısı korunuyor — **TEK ekran**, sade
+push AppBar'ı, ek ikon yok, **kaydet butonu da YOK**: bir emojiye dokunmak
+o günün ruh hali olarak ANINDA kaydedilir (onay penceresi yok, aynı gün
+sınırsız değiştirilebilir, üzerine yazılır).
+
+- **Kasıtlı renk istisnası (kullanıcı onaylı)**: 5 ruh hali seviyesinin
+  sabit kırmızı→turuncu→sarı→açık yeşil→yeşil ("trafik ışığı") skalası
+  AYNEN korunuyor — bu, Mağaza/Temalar'daki çok renkli önizlemeler gibi,
+  gerçek anlam taşıyan bir veri gösterimi sayıldığı için tek-vurgu
+  kuralının DIŞINDA bırakıldı. Skala: Çok kötü `#E53935` / Kötü `#FB8C00` /
+  Nötr `#FDD835` / İyi `#9CCC65` / Çok iyi `#43A047`. Bu renkler seçili
+  emojinin halka/parlama rengi, 7 günlük şeritteki noktalar VE geçmiş
+  listesindeki ikon arka planında tutarlı şekilde kullanılır.
+- **Not alanı** yalnızca bir mood seçildikten SONRA görünür (önce hiç yok),
+  opsiyonel, odaktan çıkınca kaydedilir (her tuşta değil).
+- **"Son 7 Gün"** kartı: emojisiz, sadece 7 renkli nokta (gün kısaltması +
+  o günün rengi, kayıt yoksa boş/soluk kontur) — hızlı trend görünümü.
+  **"Geçmiş"** ayrı bir kart: TÜM zamanların tam kronolojik listesi (renkli
+  tonlu ikon + emoji + tarih + varsa not, en fazla 3 satır). Takvim/ay
+  görünümü YOK, grafik/chart YOK.
+- **Ödül coin DEĞİL, sessiz +5 XP** — yalnızca günün İLK seçiminde, hiçbir
+  tebrik penceresi/Zibo Coin yok. Zibo'nun kendisi (poz/söz balonu) seçilen
+  ruh haline tepki VERMİYOR — jenerik, mood-bağımsız bir söz havuzundan.
+- Streak göstergesi, fotoğraf, paylaşım — HİÇBİRİ YOK.
+
+**Onaylandı** — [mockup](https://claude.ai/code/artifact/cee67483-571c-4aa1-8fe9-93977de3482f).
+
 ## Kapsam dışı — kesinlikle DEĞİŞMEYECEK
 
 Kullanıcı açıkça belirtti, bu redesign'a DAHİL DEĞİL:
@@ -491,6 +520,7 @@ genişletilmek istenirse önce burada AÇIKÇA onaylanmalı.
 | Modül ekranı — Su Takibi | ✅ Onaylandı — koda dökülmeyi bekliyor |
 | Modül ekranı — Rüya Günlüğü | ✅ Onaylandı — koda dökülmeyi bekliyor |
 | Modül ekranı — Şükran Günlüğü | ✅ Onaylandı — koda dökülmeyi bekliyor |
-| Modül ekranları — Ruh Hali/Manifest/Para/Odak (4 kaldı) | ⏳ Henüz mockup yapılmadı |
+| Modül ekranı — Ruh Hali Takibi | ✅ Onaylandı — koda dökülmeyi bekliyor |
+| Modül ekranları — Manifest/Para/Odak (3 kaldı) | ⏳ Henüz mockup yapılmadı |
 | Ayarlar ekranı | ✅ Onaylandı — koda dökülmeyi bekliyor |
 | Şans Çarkı / Günlük Ödül / Rozet pop-up'ları | 🚫 Kapsam dışı — değişmeyecek |
