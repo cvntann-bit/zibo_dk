@@ -393,6 +393,41 @@ bilinçli bir istisna, koda geçerken de korunmalı.
 
 **Onaylandı** — [mockup](https://claude.ai/code/artifact/dd155c01-ed84-4667-9fd0-b6a5096815c3).
 
+## Onaylanan: Rüya Günlüğü modülü
+
+Gerçek kod bu modülü **İKİ AYRI ekran** olarak kuruyor — bir liste ekranı
+(`DreamJournalScreen`) ve tıklayınca açılan **tam sayfa** bir form
+(`DreamEntryFormScreen`, bottom sheet DEĞİL). İkisi de sade push AppBar'ı
+kullanıyor (geri oku + başlık); Su Takibi'nin aksine liste ekranında EK bir
+ikon YOK.
+
+- **Liste ekranı**: Zibo maskotu (`ziboDreamJournalImage`, 🌙 temalı) + 5
+  sn'de bir dönen söz balonu → kesikli-kenarlı "Yeni Rüya Ekle" butonu →
+  rüya kartları listesi (başlık + tarih, sağda ok). Boşsa "Henüz bir rüya
+  yazmadın. Bugün gördüğün bir rüya var mı?" Karta dokunmak, o rüyayı
+  DÜZENLEME modunda forma açar (ayrı bir salt-okunur detay görünümü YOK).
+- **Ruh hali korelasyonu — otomatik ikinci satır (2026 özelliği)**: o günün
+  Ruh Hali kaydı "düşük" İSE VE rüya metninde olumsuz anahtar kelime
+  (kabus/kork/kaçtım/düştüm vb.) geçiyorsa, tarihin altına italik "O gün
+  ruh halin de düşüktü 😔" satırı otomatik eklenir. Basit kelime taraması,
+  yapay zeka değil — ama görsel olarak bu ikinci satır durumu mockup'ta
+  gösterildi, koda geçerken korunmalı.
+- **Form ekranı**: yalnızca 2 alan — "Başlık" (tek satır) ve "Rüyanı
+  anlat..." (çok satırlı, 6-12 satır). Tarih seçici YOK, her zaman "şu an"
+  damgalanır, düzenlemede de tarih DEĞİŞMEZ. Kaydet butonu ikisi de doluyken
+  aktif olur (validasyon hata mesajı yok, sadece disabled/enabled). Silme
+  ikonu (🗑️) **SADECE düzenleme modunda** AppBar'da görünür (yeni eklerken
+  yok) — basınca "Rüyayı sil?" / "Bu rüya kalıcı olarak silinecek." onay
+  penceresi açılır.
+- **Kaydetmede coin ödülü/tebrik penceresi YOK** — Su Takibi'nden farklı
+  olarak sessizce kaydedip geri döner. (Dolaylı olarak toplam 15 kayda
+  ulaşınca "Rüya Yorumcusu" rozeti +40 ZC veriyor ama bu ekranın kendi
+  UI'ında hiç görünmüyor.)
+- **Günde sınırsız kayıt** eklenebilir (Su Takibi/Şükran'ın aksine günlük
+  limit YOK). Fotoğraf ekleme ve paylaşım özelliği de YOK.
+
+**Onaylandı** — [mockup](https://claude.ai/code/artifact/59125ae4-e139-4f16-b077-df688a18c511).
+
 ## Kapsam dışı — kesinlikle DEĞİŞMEYECEK
 
 Kullanıcı açıkça belirtti, bu redesign'a DAHİL DEĞİL:
@@ -425,6 +460,7 @@ genişletilmek istenirse önce burada AÇIKÇA onaylanmalı.
 | Alt bar + Z butonu (uygulama geneli bileşen) | ⏳ Ana Sayfa mockup'ında görsel dili belli ama ayrı bir Flutter implementasyon onayı gerekiyor |
 | Modül menüsü (Z butonu sheet'i) | ✅ Onaylandı — koda dökülmeyi bekliyor |
 | Modül ekranı — Su Takibi | ✅ Onaylandı — koda dökülmeyi bekliyor |
-| Modül ekranları — Rüya/Şükran/Ruh Hali/Manifest/Para/Odak (6 kaldı) | ⏳ Henüz mockup yapılmadı |
+| Modül ekranı — Rüya Günlüğü | ✅ Onaylandı — koda dökülmeyi bekliyor |
+| Modül ekranları — Şükran/Ruh Hali/Manifest/Para/Odak (5 kaldı) | ⏳ Henüz mockup yapılmadı |
 | Ayarlar ekranı | ✅ Onaylandı — koda dökülmeyi bekliyor |
 | Şans Çarkı / Günlük Ödül / Rozet pop-up'ları | 🚫 Kapsam dışı — değişmeyecek |
