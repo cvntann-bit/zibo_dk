@@ -359,6 +359,40 @@ gerçek kodda hiç yok.
 
 **Onaylandı** — [mockup](https://claude.ai/code/artifact/c830d59e-174b-43d8-916d-7998295061c7).
 
+## Onaylanan: Su Takibi modülü
+
+Gerçek `water_tracking_screen.dart` yapısı korunuyor. Sade push AppBar'ı
+(geri oku + "Su Takibi" başlığı), **AMA diğer modüllerde OLMAYAN ek bir
+ayar ikonu** taşıyor (🎛️, tooltip "Günlük Su Hedefi") — bu ekrana özgü
+bilinçli bir istisna, koda geçerken de korunmalı.
+
+- **Gövde**: Zibo maskotu (200px, `ziboWaterImage` key'i, diğer modüllerle
+  aynı kostüm/poz mantığı) + altında dönen bir söz balonu (30 sabit sözden
+  biri, 5 sn'de bir değişir, İLERLEMEYE tepki VERMEZ) → ilerleme kartı →
+  "Geçmiş" bölümü.
+- **İlerleme kartı — KRİTİK görsel detay**: çubuk/halka DEĞİL. Hedef sayısı
+  kadar (kullanıcı ayarlayabilir, varsayılan 8 bardak = 2000 ml) ayrı ayrı
+  dokunulabilir daire ızgarası. Boş daireye dokunmak doldurur, **DOLU
+  daireye dokunmak geri alır** — bu, undo mekanizmasının ta kendisi, ayrı
+  bir "geri al" butonu YOK. Üstte "5/8 bardak" (sol) + "1250 ml / 2000 ml"
+  (sağ, soluk) metin satırı. Hedef tamamlanınca altına ✅ + "Bugün su
+  hedefini tamamladın, harikasın kanka!" satırı eklenir VE aynı anda
+  paylaşılan `showInfoDialog` ile "+5 Zibo Coin kazandın!" mesajı açılır —
+  bu ödül günde bir kez, sonradan bir daire kapatılsa bile geri alınmaz.
+- **"Günlük Su Hedefi" ayar penceresi** (AppBar'daki 🎛️ ikonuyla açılır):
+  birim seçici (Bardak/Şişe, segmentli buton), "1 birim = kaç ml?" +/-
+  steppera (25 ml adım), ayraç, hedef sayısı +/- steppera (1 adım), Vazgeç/
+  Kaydet. Ayarlar ekranındaki seçim sayfalarından FARKLI, kendine özgü bir
+  bileşen.
+- **"Geçmiş" bölümü**: yalnızca GEÇMİŞ günleri listeler (bugün İÇERMEZ, o
+  yukarıdaki kartta), satırlar tıklanamaz/silinemez — her satır o günün TEK
+  bir özet metni ("{tarih} tarihinde hedef tamamlandı" veya "{tarih}:
+  {sayı}/{hedef}"), saat saat kayıt YOK. Boşsa "Henüz geçmiş kayıt yok."
+- Sıvı seviyesi yükselen bir illüstrasyon YOK — yalnızca iki ikon durumu
+  (boş/dolu) arasında geçiş var, mockup'ta da eklenmedi.
+
+**Onaylandı** — [mockup](https://claude.ai/code/artifact/dd155c01-ed84-4667-9fd0-b6a5096815c3).
+
 ## Kapsam dışı — kesinlikle DEĞİŞMEYECEK
 
 Kullanıcı açıkça belirtti, bu redesign'a DAHİL DEĞİL:
@@ -390,6 +424,7 @@ genişletilmek istenirse önce burada AÇIKÇA onaylanmalı.
 | Mağaza — Temalar segmenti | ✅ Onaylandı — koda dökülmeyi bekliyor |
 | Alt bar + Z butonu (uygulama geneli bileşen) | ⏳ Ana Sayfa mockup'ında görsel dili belli ama ayrı bir Flutter implementasyon onayı gerekiyor |
 | Modül menüsü (Z butonu sheet'i) | ✅ Onaylandı — koda dökülmeyi bekliyor |
-| Modül ekranları (Su/Hedef/Şükran/Rüya/Ruh Hali/Manifest/Para/Odak) | ⏳ Henüz mockup yapılmadı |
+| Modül ekranı — Su Takibi | ✅ Onaylandı — koda dökülmeyi bekliyor |
+| Modül ekranları — Rüya/Şükran/Ruh Hali/Manifest/Para/Odak (6 kaldı) | ⏳ Henüz mockup yapılmadı |
 | Ayarlar ekranı | ✅ Onaylandı — koda dökülmeyi bekliyor |
 | Şans Çarkı / Günlük Ödül / Rozet pop-up'ları | 🚫 Kapsam dışı — değişmeyecek |
