@@ -121,6 +121,28 @@ kostüme göre değişen asset (`bottom_bar_z_coin.webp` / `_altintema` /
 `_elmastema`). Bu davranış AYNEN korunur, yalnızca çerçevesi (kontur/gölge)
 yeni dile uyarlanır.
 
+## Onaylanan: Modül menüsü (Z butonu sheet'i)
+
+Gerçek `modules_menu_sheet.dart` içeriği (7 modül, aynı sıra, aynı l10n
+başlık/açıklama metinleri) korunuyor, yalnızca görsel dili değişiyor:
+
+- Sheet, Ana Sayfa'nın üstüne açılır (arka plan hafif kararmış/soluklaşmış —
+  gerçek `showModalBottomSheet` barrier'ının karşılığı).
+- Z butonu (kostüme göre değişen gerçek asset), sheet açıkken ÜSTTE yarı
+  görünür kalır — gerçek `FloatingActionButtonLocation.centerDocked`
+  davranışının görsel karşılığı.
+- Kalın kontur çubuk (drag handle) + 7 modül kartı, HER BİRİ: dolgu renkli
+  (gold) + siyah konturlu ikon dairesi, başlık + tek satır açıklama, sağda
+  köşeli ">" oku. Kart dili Ana Sayfa'daki mini widget'larla BİREBİR aynı
+  token'ları kullanır.
+- Liste kaydırılabilir (gerçek koddaki `SingleChildScrollView` — 7 kart tek
+  ekrana sığmıyor), alt kenarda hafif bir soluklaşma bunu ima eder.
+- Modül sırası (değişmez): Rüya Günlüğü → Şükran Günlüğü → Günlük Ruh Hali
+  Takibi → Su Takibi → Manifest Günlüğü → Harcamalar ve Birikimler → Odak
+  Sayacı.
+
+**Onaylandı** — [mockup](https://claude.ai/code/artifact/ede33013-a84f-429c-9f2d-9bbc7c893704).
+
 ## Kapsam dışı — kesinlikle DEĞİŞMEYECEK
 
 Kullanıcı açıkça belirtti, bu redesign'a DAHİL DEĞİL:
@@ -149,7 +171,7 @@ genişletilmek istenirse önce burada AÇIKÇA onaylanmalı.
 | Profil sekmesi | ⏳ Henüz mockup yapılmadı |
 | Mağaza sekmesi | ⏳ Henüz mockup yapılmadı |
 | Alt bar + Z butonu (uygulama geneli bileşen) | ⏳ Ana Sayfa mockup'ında görsel dili belli ama ayrı bir Flutter implementasyon onayı gerekiyor |
-| Modül menüsü (Z butonu sheet'i) | ⏳ Henüz mockup yapılmadı |
+| Modül menüsü (Z butonu sheet'i) | ✅ Onaylandı — koda dökülmeyi bekliyor |
 | Modül ekranları (Su/Hedef/Şükran/Rüya/Ruh Hali/Manifest/Para/Odak) | ⏳ Henüz mockup yapılmadı |
 | Ayarlar ekranı | ⏳ Henüz mockup yapılmadı |
 | Şans Çarkı / Günlük Ödül / Rozet pop-up'ları | 🚫 Kapsam dışı — değişmeyecek |
