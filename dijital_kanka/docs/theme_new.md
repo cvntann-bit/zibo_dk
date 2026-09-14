@@ -516,6 +516,38 @@ kayıt** eklenebilir.
 
 **Onaylandı** — [mockup](https://claude.ai/code/artifact/edcd4d28-1151-45c1-9a42-954719574847).
 
+## Onaylanan: Para ve Birikim modülü
+
+Gerçek `money_screen.dart` yapısı korunuyor — **TEK ekran, sekme YOK**.
+AppBar'da tek ikon: para birimi seçici (💱), Ayarlar'daki Dil/Görünüm
+seçim sayfasıyla AYNI görsel deseni açar (47 para birimi listesi).
+
+- **3 sabit kategori kartı** art arda (kategori/alt-kategori YOK, sadece bu
+  3 sabit tür): 💸 Harcamalar / 📈 Birikimler / 💰 Gelen Para. Her kartın
+  kendi başlığında "Toplam: {tutar}" (kendi rengiyle) — **tek bir birleşik
+  "Bakiye" rakamı YOK**. Çoklu para birimi kullanılırsa toplamlar
+  BİRBİRİNE ÇEVRİLMEDEN "₺500 + $50" şeklinde yan yana yazılır.
+- **Kasıtlı renk istisnası** (Ruh Hali ile aynı mantık, tekrar
+  sorulmadan uygulandı): kırmızı `#E53935` (harcama) / yeşil `#43A047`
+  (birikim) / mavi `#1E88E5` (gelen para) — gerçek finansal anlam taşıyan
+  sabit renkler, tema/vurgudan bağımsız, aynen korunuyor.
+- Her kart içinde: satır listesi (ad + işaretli renkli tutar, ör.
+  "-₺500,00") + her satırın sonunda ✕ ikonu (**anında siler, onay
+  penceresi YOK**) + alttan kesikli "+ Ekle" butonu. Satıra dokunmak
+  DÜZENLEME penceresini açar (Ad/Tutar/Para Birimi alanları, Vazgeç/Tamam
+  — 3 kart da AYNI pencereyi kullanır). Tarih otomatik "şu an", kullanıcı
+  seçemez ve satırlarda GÖSTERİLMEZ (yalnızca grafikte kullanılır).
+- **"Mevcut Durum" grafik kartı** (en altta): kategori dağılımı/pasta
+  grafik DEĞİL — 3 kategorinin zaman içinde BİRİKEN toplamını gösteren 3
+  renkli çizgi. Üstünde Günlük/Haftalık geçiş + (birden fazla para birimi
+  varsa) para birimi seçici; altında 3 renkli nokta + etiket lejantı.
+- Bu modülde **coin ödülü YOK** — yalnızca rozet sistemi (toplam 20 kayda
+  ulaşınca "Birikim Ustası", +45 ZC). Birikim hedefi/streak göstergesi de
+  YOK. Zibo bu ekranda paylaşım butonuyla (📤) birlikte görünüyor, diğer
+  modüllerdeki gibi jenerik söz döngüsü var, veriye tepki vermiyor.
+
+**Onaylandı** — [mockup](https://claude.ai/code/artifact/92193076-296c-43e1-8eaf-be0e403ec477).
+
 ## Kapsam dışı — kesinlikle DEĞİŞMEYECEK
 
 Kullanıcı açıkça belirtti, bu redesign'a DAHİL DEĞİL:
@@ -552,6 +584,7 @@ genişletilmek istenirse önce burada AÇIKÇA onaylanmalı.
 | Modül ekranı — Şükran Günlüğü | ✅ Onaylandı — koda dökülmeyi bekliyor |
 | Modül ekranı — Ruh Hali Takibi | ✅ Onaylandı — koda dökülmeyi bekliyor |
 | Modül ekranı — Manifest Günlüğü | ✅ Onaylandı — koda dökülmeyi bekliyor |
-| Modül ekranları — Para/Odak (2 kaldı) | ⏳ Henüz mockup yapılmadı |
+| Modül ekranı — Para ve Birikim | ✅ Onaylandı — koda dökülmeyi bekliyor |
+| Modül ekranı — Odak Sayacı (1 kaldı) | ⏳ Henüz mockup yapılmadı |
 | Ayarlar ekranı | ✅ Onaylandı — koda dökülmeyi bekliyor |
 | Şans Çarkı / Günlük Ödül / Rozet pop-up'ları | 🚫 Kapsam dışı — değişmeyecek |
