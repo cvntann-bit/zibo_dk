@@ -15,6 +15,17 @@ maddeler netleşmeden ilgili parçaya dokunulmaz.
 
 Sayfa onay takibi → bkz. en alttaki **"Sayfa onay durumu"** tablosu.
 
+**Kullanıcı bir ekranı onayladığı ANDA bu dosya SORULMADAN güncellenir** —
+ilgili "Onaylanan: ..." bölümü eklenir/genişletilir ve alttaki tablo satırı
+işaretlenir. Ayrıca commit + push edilir (bkz. `feedback_auto_commit_push`
+memory'si — bu da aynı kapsamda).
+
+Mockup'larda gerçek asset yerine emoji/placeholder kullanılması (ör. 🪙
+yerine gerçek coin görseli, düz bir çubuk yerine gerçek logo) ÖNEMLİ
+DEĞİL — bunlar koda geçerken zaten var olan gerçek Flutter assetleriyle
+otomatik yer değiştirir. Onaylanan şey yerleşim/boşluk/renk/tipografi/kart
+yapısıdır, placeholder görsel DEĞİL.
+
 ## Seçilen yön: "Çizgi Roman Çıkartması" (Option C)
 
 Üç aday stil arasından seçildi (diğer ikisi kesin REDDEDİLDİ, tekrar
@@ -168,6 +179,24 @@ yalnızca görsel dili değişiyor:
 
 **Onaylandı** — [mockup](https://claude.ai/code/artifact/5aec360e-6b62-4597-8399-7ca121697af2).
 
+## Onaylanan: Mağaza — "Coin Al" sekmesi
+
+Gerçek `store_screen.dart` yapısı korunuyor (yalnızca "Coin Al" segmenti bu
+turda mockup'landı — Kostümler/Temalar segmentleri henüz AYRI onay bekliyor,
+aşağıdaki tabloya bak):
+
+- Başlık ("Mağaza") + 3 segmentli kontrol (`SegmentedButton` karşılığı) —
+  aktif segment altın dolgu + "basılmış" gölge, pasifler düz beyaz.
+- **Reklamsız Zibo** bölümü → tek kart (taç ikonu, başlık, alt metin, sağda
+  fiyat pili — gerçek fiyat 189,90 TL).
+- **Ücretsiz** bölümü → Reklam İzle kartı (gerçek ödül: 20 ZC).
+- **Coin Paketleri** ızgarası → 2 sütun, her kartta gerçek miktar/bonus/fiyat
+  (`coin_packages.dart`'tan birebir: 100/250/500/1000/5000/10000 ZC paketleri,
+  her biri kendi bonus + TL fiyatıyla). 6 paketten fazlası sığmadığı için
+  liste kaydırılabilir (alt kenarda soluklaşma ipucu).
+
+**Onaylandı** — [mockup](https://claude.ai/code/artifact/9080e9f0-d2f6-4ae1-b0bc-f0fecf12d09b).
+
 ## Kapsam dışı — kesinlikle DEĞİŞMEYECEK
 
 Kullanıcı açıkça belirtti, bu redesign'a DAHİL DEĞİL:
@@ -194,7 +223,9 @@ genişletilmek istenirse önce burada AÇIKÇA onaylanmalı.
 | Ana Sayfa | ✅ Onaylandı (bu dosyadaki yerleşimle) — koda dökülmeyi bekliyor |
 | Hedefler sekmesi | ✅ Onaylandı — koda dökülmeyi bekliyor |
 | Profil sekmesi | ⏳ Henüz mockup yapılmadı |
-| Mağaza sekmesi | ⏳ Henüz mockup yapılmadı |
+| Mağaza — Coin Al segmenti | ✅ Onaylandı — koda dökülmeyi bekliyor |
+| Mağaza — Kostümler segmenti | ⏳ Henüz mockup yapılmadı |
+| Mağaza — Temalar segmenti | ⏳ Henüz mockup yapılmadı |
 | Alt bar + Z butonu (uygulama geneli bileşen) | ⏳ Ana Sayfa mockup'ında görsel dili belli ama ayrı bir Flutter implementasyon onayı gerekiyor |
 | Modül menüsü (Z butonu sheet'i) | ✅ Onaylandı — koda dökülmeyi bekliyor |
 | Modül ekranları (Su/Hedef/Şükran/Rüya/Ruh Hali/Manifest/Para/Odak) | ⏳ Henüz mockup yapılmadı |
