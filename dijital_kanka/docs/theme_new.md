@@ -428,6 +428,35 @@ ikon YOK.
 
 **Onaylandı** — [mockup](https://claude.ai/code/artifact/59125ae4-e139-4f16-b077-df688a18c511).
 
+## Onaylanan: Şükran Günlüğü modülü
+
+Gerçek `gratitude_journal_screen.dart` yapısı korunuyor — **TEK ekran**
+(Rüya Günlüğü'nün aksine ayrı bir form sayfası YOK), sade push AppBar'ı,
+ek ikon yok.
+
+- **Günde SADECE 1 kayıt.** Bugün zaten tamamlandıysa 3 alanlı form
+  kartının YERİNE bir "tamamlandı" özeti geçer: büyük check ikonu + "Bugün
+  tamamlandı!" başlığı + "3 şükran cümleni yazdın ve 5 Zibo Coin kazandın.
+  Yarın tekrar gel!" metni + sağ üstte düzenle (✏️) ikonu; altında ayraç,
+  ardından 3 cevabın TAMAMI etiketleriyle birlikte tekrar gösterilir (genel
+  "tamamlandı" mesajı değil, gerçek girilen metinler).
+- **Renk istisnası**: gerçek kodda check ikonu SABİT bir yeşil (#4CAF50) —
+  temaya bağlı değil. Tek-vurgu kuralımız gereği bu YEŞİL yerine `--accent`
+  (altın) kullanılacak; bu bilinçli bir sapma, gerçek koddaki rengi
+  KOPYALAMAYIN.
+- **Tamamlanmadığında** görünen form: 3 ayrı `TextField` ("1./2./3. Şükran
+  cümlen" etiketleri), her birinin ipucu metni HER GÜN otomatik değişen
+  sabit bir söz havuzundan gelir (rastgele değil, tarihe göre sabit, 3 alan
+  farklı söz gösterir). Kaydet butonu üçü de doluyken aktif olur.
+- **"Geçmiş Kayıtlar" listesi BUGÜNÜ DE İÇERİR** — özet karttan AYRI olarak
+  bugünün kaydı listenin en üstünde de tekrar görünür, oradan da
+  düzenlenebilir. Her satır check ikonu + tarih + ok; dokununca bir
+  düzenleme penceresi (AlertDialog, 3 alan önceden dolu + Kapat/Kaydet)
+  açılır — bu düzenleme akışının onay penceresi YOK, direkt kaydeder.
+- Seri/streak göstergesi, fotoğraf ekleme, paylaşım özelliği — HİÇBİRİ YOK.
+
+**Onaylandı** — [mockup](https://claude.ai/code/artifact/1de5853f-c643-41b6-b0fd-3fde68adc084).
+
 ## Kapsam dışı — kesinlikle DEĞİŞMEYECEK
 
 Kullanıcı açıkça belirtti, bu redesign'a DAHİL DEĞİL:
@@ -461,6 +490,7 @@ genişletilmek istenirse önce burada AÇIKÇA onaylanmalı.
 | Modül menüsü (Z butonu sheet'i) | ✅ Onaylandı — koda dökülmeyi bekliyor |
 | Modül ekranı — Su Takibi | ✅ Onaylandı — koda dökülmeyi bekliyor |
 | Modül ekranı — Rüya Günlüğü | ✅ Onaylandı — koda dökülmeyi bekliyor |
-| Modül ekranları — Şükran/Ruh Hali/Manifest/Para/Odak (5 kaldı) | ⏳ Henüz mockup yapılmadı |
+| Modül ekranı — Şükran Günlüğü | ✅ Onaylandı — koda dökülmeyi bekliyor |
+| Modül ekranları — Ruh Hali/Manifest/Para/Odak (4 kaldı) | ⏳ Henüz mockup yapılmadı |
 | Ayarlar ekranı | ✅ Onaylandı — koda dökülmeyi bekliyor |
 | Şans Çarkı / Günlük Ödül / Rozet pop-up'ları | 🚫 Kapsam dışı — değişmeyecek |
