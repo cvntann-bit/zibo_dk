@@ -40,25 +40,41 @@ gündeme getirilmeyecek):
 
 ## Renk paleti
 
-Mevcut uygulamanın bal/hardal/krem tabanı korunuyor, üstüne canlı bir mavi ve
-enerjik bir mercan eklendi:
+**Tek marka rengi kuralı (2026-09-15'te netleşti):** Zibo'yu Zibo yapan renk
+bal/hardal sarısıdır. Önceki taslaklarda eklenen ek vurgu renkleri (mavi,
+mercan, yeşil) paletten tamamen ÇIKARILDI. **Her yerde — genel vurgu/CTA'lar
+VE anlam taşıyan durum göstergeleri (ör. bir günün durumu, bir kategori)
+DAHİL — tek bir renk ailesi kullanılır.** Farklı durumlar birbirinden renk
+TONU/DOYGUNLUĞU değişimiyle, kontur-only/dolgu ayrımıyla ve ikon farkıyla
+ayrılır; asla farklı bir HUE (mavi, kırmızı, yeşil vb.) eklenerek değil.
 
 | Token | Hex | Kullanım |
 |---|---|---|
-| `--outline` | `#14110C` | Tüm kalın konturlar, gölgeler, kenarlıklar |
-| `--gold` | `#F3B23C` | Ana vurgu (mevcut hardal/bal tonunun canlısı) |
-| `--sky` | `#2F6FED` | İkincil vurgu, CTA butonları |
-| `--coral` | `#FF6F59` | Enerjik vurgu (ödül rozetleri, uyarılar) |
-| `--mint` | `#3FB88A` | Başarı/tamamlanma rengi |
+| `--outline` | `#14110C` | Tüm kalın konturlar, gölgeler, kenarlıklar — SABİT, temadan bağımsız |
+| `--accent` (= `--gold` varsayılan temada) | `#F3B23C` | Tek vurgu rengi — doygun/dolu durum: "tamamlandı/aktif/seçili" |
+| `--accent-soft` | `#F6D488` | Vurgunun açık tonu — ikincil dolgu, hafif vurgu |
+| `--accent-muted` | `#C9A46B` | Vurgunun donuk/koyu tonu — "kaçırıldı/pasif/olumsuz" durumlar (ayrı bir hue DEĞİL, aynı ailenin donuk ucu) |
+| `--accent-pale` | `#F3E4C0` (çoğu yerde düşük opaklıkla) | En soluk ton — "henüz gelmedi/etkin değil" |
 | `--page-bg` / krem | `#FFF4DE`–`#FBF4E4` | Zemin |
 
 **Kritik kural — tema uyumluluğu:** Mağazadaki satın alınabilir temalar
 (`AppThemeOption`, `ColorScheme.fromSeed`) yalnızca **dolgu renklerini**
 değiştirir. Yeni görsel dilde **kontur/gölge rengi (`--outline`) SABİT
 kalmalı** — hangi tema seçili olursa olsun aynı siyah/koyu kontur kullanılır.
-Yalnızca buton/chip/vurgu **dolgu** renkleri o an aktif `ColorScheme.primary`
-vb. değerlerinden gelir. Bu ayrım netleşmeden hiçbir widget'a tema entegrasyonu
-yapılmaz.
+`--accent` ve türevleri (`-soft`/`-muted`/`-pale`) o an aktif
+`ColorScheme.primary`'den türetilir (varsayılan temada bal sarısı) — yani
+kullanıcı örneğin mavi bir tema satın alırsa TÜM vurgu tonları (dolu/soluk/
+donuk) o mavinin türevleri olur, ama uygulamanın HİÇBİR yerinde vurgu rengiyle
+alakasız SABİT ikinci bir hue (elle yazılmış mavi/mercan/yeşil) YER ALMAZ. Bu
+ayrım netleşmeden hiçbir widget'a tema entegrasyonu yapılmaz.
+
+**Not:** Skor/istatistik göstergelerinde (ör. Profil'deki 0–10 skor halkası)
+uygulamanın GERÇEK kodu şu an kırmızı→amber→yeşil sabit bir renk skalası
+kullanıyor (`lib/widgets/circular_score_gauge.dart` — tema'dan bağımsız,
+skora göre sabit gradyan). Bu, görsel yenilemenin kapsamı DIŞINDA bir veri-
+görselleştirme kararı olduğu için mockup'larda da aynı tek-vurgu kuralına
+uydurulup dolgu YÜZDESİYLE (halkanın ne kadarının dolu olduğu) gösteriliyor;
+gerçek koda geçişte bu noktanın ayrıca konuşulması gerekir.
 
 **Kritik bug (mockup'ta bulundu, koda geçerken tekrarlanmamalı):** Bir
 ekranın/kartın kendi İÇ metni (ör. bir "her zaman açık zeminli" kart) sayfa
@@ -168,12 +184,16 @@ yalnızca görsel dili değişiyor:
   hedefe özel söz balonu (Ana Sayfa'dan FARKLI olarak yalnızca SAĞ ÜST
   köşede paylaş butonu var, favori/özel-mesaj butonları YOK) → her hedef
   için bir kart → en altta kesikli konturlu "+ Hedef Ekle" butonu.
-- **Gün durumu renkleri** (gerçek `GoalDayStatus` enum'ıyla birebir, 4
-  durum): `done` = altın dolu + ✓ ikonu, `today` = beyaz zemin + mavi
-  kontur + gün numarası (tıklanabilir TEK durum), `missed` = mercan dolu +
-  ✕ ikonu, `upcoming` = soluk/şeffaf + soluk numara. Bu renk eşlemesi
-  ileride başka bir "durum göstergesi" gerektiren ekranda (varsa) da aynı
-  şekilde kullanılmalı — tutarlılık için.
+- **Gün durumu renkleri** (gerçek `GoalDayStatus` enum'ıyla birebir, 4 durum
+  — 2026-09-15'te tek-vurgu kuralına göre GÜNCELLENDİ, mavi/mercan artık
+  YOK): `done` = doygun `--accent` dolgu + ✓ ikonu, `today` = beyaz/krem
+  zemin + kalın `--accent` kontur (dolgu YOK) + gün numarası (tıklanabilir
+  TEK durum — dolgusuz olması onu diğerlerinden ayırır), `missed` =
+  `--accent-muted` (donuk/kahverengimsi sarı) dolgu + ✕ ikonu, `upcoming` =
+  `--accent-pale` (çok soluk, düşük opaklık) + soluk numara. Dört durum artık
+  HUE değil dolgu-yoğunluğu + kontur-only ayrımıyla birbirinden ayrılıyor. Bu
+  eşleme ileride başka bir "durum göstergesi" gerektiren ekranda (varsa) da
+  aynı şekilde kullanılmalı — tutarlılık için.
 - Alt bar sırası ve Z butonu Ana Sayfa'dakiyle birebir aynı, yalnızca aktif
   sekme göstergesi Hedefler'e kaymış durumda.
 
