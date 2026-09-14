@@ -257,6 +257,38 @@ sekme göstergesi Profil'e kaymış durumda.
 
 **Onaylandı** — [mockup](https://claude.ai/code/artifact/a07659db-0329-4083-9b0c-5600f4ecc2b1).
 
+## Onaylanan: Mağaza — "Kostümler" sekmesi
+
+Gerçek `_CostumesSection` yapısı korunuyor — AppBar ve segmentli kontrol
+"Coin Al" ile BİREBİR aynı (yalnızca "Kostümler" segmenti aktif). Gövde: tek
+düz `GridView`, 2 sütun, gruplama/kategori/nadir seviyesi YOK — 16 kostüm,
+`costumes.dart`'taki sırayla (ucuzdan pahalıya, 440 ZC → 33.000 ZC).
+
+- **3 kart durumu** (gerçek `CostumeCard` ile birebir):
+  - **Kilitli**: görsel %45 opaklık + sağ üstte kilit rozeti, altında fiyat
+    (🪙 + ZC) ve tam genişlik "Satın Al" butonu (altın dolgu). Kartın
+    yalnızca butonu tıklanabilir, kartın geneli DEĞİL.
+  - **Sahip olunan (giyili değil)**: tam opaklık görsel, kilit rozeti yok,
+    altında nötr (beyaz zemin, siyah kontur) "Sahip olunan" rozeti. Kartın
+    HERHANGİ bir yerine dokunmak anında giydirir.
+  - **Giyili**: aynı, ama kart konturu SİYAH yerine `--accent` (altın) ve
+    daha kalın; rozet de altın dolgulu "Giyili" olarak değişir. Karta tekrar
+    dokunmak anında ÇIKARIR (varsayılan Zibo görünümüne döner) — ayrı bir
+    "sıfırla" butonu yok, onay penceresi de yok.
+- **Satın alma akışı**: onay penceresi YOK, "Satın Al"a basınca anında
+  düşer. Yetersiz coin → mevcut paylaşılan `showInfoDialog` ile "Yetersiz
+  Zibo Coin"; başarılı → yine `showInfoDialog` ile "{isim} satın alındı!".
+  İkisi de zaten var olan dialog bileşeni — bu turda yalnızca görsel dili
+  yeniliyoruz, akışa dokunmuyoruz.
+- "Kurucu Üye" (`founder_badge`) rozeti bu ızgarada HİÇ görünmez — satın
+  alınamaz, ayrı bir mekanizmayla (Google hesabı bağlama promosyonu)
+  kazanılıyor.
+- AppBar'da "+" mağaza kısayolu ikonunun HER sekmede (Mağaza'nın kendisi
+  dahil) göründüğü bu turda fark edildi — daha önce onaylanan "Coin Al"
+  mockup'ında eksikti, geriye dönük düzeltildi.
+
+**Onaylandı** — [mockup](https://claude.ai/code/artifact/055bf163-abca-4428-94d0-56fdc57ad4d4).
+
 ## Kapsam dışı — kesinlikle DEĞİŞMEYECEK
 
 Kullanıcı açıkça belirtti, bu redesign'a DAHİL DEĞİL:
@@ -284,7 +316,7 @@ genişletilmek istenirse önce burada AÇIKÇA onaylanmalı.
 | Hedefler sekmesi | ✅ Onaylandı — koda dökülmeyi bekliyor |
 | Profil sekmesi | ✅ Onaylandı — koda dökülmeyi bekliyor |
 | Mağaza — Coin Al segmenti | ✅ Onaylandı — koda dökülmeyi bekliyor |
-| Mağaza — Kostümler segmenti | ⏳ Henüz mockup yapılmadı |
+| Mağaza — Kostümler segmenti | ✅ Onaylandı — koda dökülmeyi bekliyor |
 | Mağaza — Temalar segmenti | ⏳ Henüz mockup yapılmadı |
 | Alt bar + Z butonu (uygulama geneli bileşen) | ⏳ Ana Sayfa mockup'ında görsel dili belli ama ayrı bir Flutter implementasyon onayı gerekiyor |
 | Modül menüsü (Z butonu sheet'i) | ✅ Onaylandı — koda dökülmeyi bekliyor |
