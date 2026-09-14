@@ -217,6 +217,46 @@ aşağıdaki tabloya bak):
 
 **Onaylandı** — [mockup](https://claude.ai/code/artifact/9080e9f0-d2f6-4ae1-b0bc-f0fecf12d09b).
 
+## Onaylanan: Profil sekmesi
+
+Gerçek `profile_screen.dart` yapısı korunuyor — AppBar diğer 3 sekmeyle
+BİREBİR aynı (bu sekmeye özgü ek ikon yok), gövde tek kaydırılabilir liste,
+gerçek sırasıyla (19 bölüm):
+
+1. **Profil fotoğrafı** — kullanıcının kendi galeri fotoğrafı, Zibo maskotu
+   DEĞİL (`CircleAvatar` + kamera rozeti). **Koşullu** "Kurucu Üye" rozeti
+   sol üstte, yalnızca `founder_badge` kostümü sahiplenilmişse görünür
+   (satın alınamaz, sadece sunucu tarafından verilir).
+2. İsim alanı (borderless text field, ortalanmış).
+3. **Seviye kartı** — "Lv. N" + XP progress bar.
+4. **Instagram takip kartı** — koşullu, ödül talep edilince kalıcı olarak
+   kayboluyor, bir daha hiç görünmez.
+5. **"İstatistiklerim"** — 4 SABİT kategori kartı (Para Yönetimi / Şükür ve
+   Manifest / İstikrar / Öz Saygı ve Sağlık), sıra ve başlıklar gerçek
+   kodla birebir. Her kart ya sparkline + skor halkası (0–10) gösterir ya da
+   — veri yoksa — aynı yükseklikte tek satır boş-durum metni. Kategoriler
+   artık renkle DEĞİL yalnızca ikonla (💰✨🚩❤️) ayrılıyor (bkz. "Renk
+   paleti" — tek vurgu kuralı); skor halkası da kırmızı→amber→yeşil yerine
+   tek renk + dolgu yüzdesiyle gösteriliyor.
+6. Geçmiş Ay İstatistikleri satırı.
+7. **"Zibo ile Bağın"** bölüm başlığı → Bağ Seviyesi, En Uzun Seri Rekoru
+   satırları.
+8. **Odak Süresi satırı** — diğerlerinden farklı olarak dokunulamaz (sağ ok
+   yok), yalnızca bilgi amaçlı.
+9. **Kostüm Dolabı** kartı — sahip olunan TÜM kostümlerin küçük önizleme
+   şeridi (giyili olan değil, koleksiyonun tamamı).
+10. Zibo Coin Özeti, Hitap Tercihi, Favori Sözler, Profil Kartını Paylaş,
+    Arkadaşını Davet Et satırları (davet durumu koşullu: kod kullanıldıysa
+    alt metin değişir).
+11. **Kurucu Üye promosyon kartı** — koşullu, yalnızca rozet hakkı hâlâ
+    mevcutsa VE Google hesabı bağlı değilse görünür.
+12. Google hesabı bağlama satırı (liste sonu).
+
+Alt bar sırası ve Z butonu diğer sekmelerle birebir aynı, yalnızca aktif
+sekme göstergesi Profil'e kaymış durumda.
+
+**Onaylandı** — [mockup](https://claude.ai/code/artifact/a07659db-0329-4083-9b0c-5600f4ecc2b1).
+
 ## Kapsam dışı — kesinlikle DEĞİŞMEYECEK
 
 Kullanıcı açıkça belirtti, bu redesign'a DAHİL DEĞİL:
@@ -242,7 +282,7 @@ genişletilmek istenirse önce burada AÇIKÇA onaylanmalı.
 |---|---|
 | Ana Sayfa | ✅ Onaylandı (bu dosyadaki yerleşimle) — koda dökülmeyi bekliyor |
 | Hedefler sekmesi | ✅ Onaylandı — koda dökülmeyi bekliyor |
-| Profil sekmesi | ⏳ Henüz mockup yapılmadı |
+| Profil sekmesi | ✅ Onaylandı — koda dökülmeyi bekliyor |
 | Mağaza — Coin Al segmenti | ✅ Onaylandı — koda dökülmeyi bekliyor |
 | Mağaza — Kostümler segmenti | ⏳ Henüz mockup yapılmadı |
 | Mağaza — Temalar segmenti | ⏳ Henüz mockup yapılmadı |
