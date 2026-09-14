@@ -143,6 +143,31 @@ başlık/açıklama metinleri) korunuyor, yalnızca görsel dili değişiyor:
 
 **Onaylandı** — [mockup](https://claude.ai/code/artifact/ede33013-a84f-429c-9f2d-9bbc7c893704).
 
+## Onaylanan: Hedefler sekmesi
+
+Gerçek `goal_tracking_screen.dart` + `goal_card.dart` yapısı korunuyor,
+yalnızca görsel dili değişiyor:
+
+- **AppBar**: bu sekmeye ÖZGÜ ek bir ikon var — "Tamamlanan Hedefler" (kupa),
+  yalnızca Hedefler sekmesindeyken görünür (gerçek koddaki koşullu
+  görünürlükle birebir). Sıra: Coin bakiyesi → Tamamlanan Hedefler → "+"
+  Mağaza kısayolu → Ayarlar.
+- **İçerik** (tek kaydırılabilir liste, üstten alta): Zibo karakteri (200px,
+  `ziboGoalTrackingImage` key'i, Ana Sayfa'dakiyle AYNI kostüm/poz mantığı) →
+  hedefe özel söz balonu (Ana Sayfa'dan FARKLI olarak yalnızca SAĞ ÜST
+  köşede paylaş butonu var, favori/özel-mesaj butonları YOK) → her hedef
+  için bir kart → en altta kesikli konturlu "+ Hedef Ekle" butonu.
+- **Gün durumu renkleri** (gerçek `GoalDayStatus` enum'ıyla birebir, 4
+  durum): `done` = altın dolu + ✓ ikonu, `today` = beyaz zemin + mavi
+  kontur + gün numarası (tıklanabilir TEK durum), `missed` = mercan dolu +
+  ✕ ikonu, `upcoming` = soluk/şeffaf + soluk numara. Bu renk eşlemesi
+  ileride başka bir "durum göstergesi" gerektiren ekranda (varsa) da aynı
+  şekilde kullanılmalı — tutarlılık için.
+- Alt bar sırası ve Z butonu Ana Sayfa'dakiyle birebir aynı, yalnızca aktif
+  sekme göstergesi Hedefler'e kaymış durumda.
+
+**Onaylandı** — [mockup](https://claude.ai/code/artifact/5aec360e-6b62-4597-8399-7ca121697af2).
+
 ## Kapsam dışı — kesinlikle DEĞİŞMEYECEK
 
 Kullanıcı açıkça belirtti, bu redesign'a DAHİL DEĞİL:
@@ -167,7 +192,7 @@ genişletilmek istenirse önce burada AÇIKÇA onaylanmalı.
 | Ekran | Durum |
 |---|---|
 | Ana Sayfa | ✅ Onaylandı (bu dosyadaki yerleşimle) — koda dökülmeyi bekliyor |
-| Hedefler sekmesi | ⏳ Henüz mockup yapılmadı |
+| Hedefler sekmesi | ✅ Onaylandı — koda dökülmeyi bekliyor |
 | Profil sekmesi | ⏳ Henüz mockup yapılmadı |
 | Mağaza sekmesi | ⏳ Henüz mockup yapılmadı |
 | Alt bar + Z butonu (uygulama geneli bileşen) | ⏳ Ana Sayfa mockup'ında görsel dili belli ama ayrı bir Flutter implementasyon onayı gerekiyor |
