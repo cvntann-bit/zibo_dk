@@ -486,6 +486,36 @@ sınırsız değiştirilebilir, üzerine yazılır).
 
 **Onaylandı** — [mockup](https://claude.ai/code/artifact/cee67483-571c-4aa1-8fe9-93977de3482f).
 
+## Onaylanan: Manifest Günlüğü modülü
+
+Gerçek `manifest_journal_screen.dart` yapısı korunuyor — **TEK ekran**,
+sade push AppBar'ı, ek ikon yok. Form her zaman BOŞ açılır ve her
+kayıttan SONRA da boşalıp aynı ekranda kalır — Rüya gibi ayrı bir form
+sayfası YOK, Şükran gibi "tamamlandı" kilidi de YOK: **günde sınırsız
+kayıt** eklenebilir.
+
+- **Fotoğraf + metin İKİSİ de zorunlu** — ikisi de doluyken Kaydet aktif
+  olur. Fotoğraf kutusu büyük bir kare (diğer kartlardan daha yuvarlak
+  köşeli), boşken ortalanmış ikon+ipucu metni ("Bir fotoğraf seç"), doluyken
+  sağ altta küçük bir "düzenle" rozeti — üzerine TEKRAR dokunmak YENİ bir
+  fotoğrafla DEĞİŞTİRİR, ayrı bir "kaldır/sil" kontrolü YOK.
+- **Kaydet butonu bilerek TAM GENİŞLİK DEĞİL** — içeriği kadar dar, sola
+  yaslı. Diğer modüllerin çoğundan farklı, gerçek koddaki davranış.
+- **Ödül günde 1 kez**: günün İLK kaydında `showInfoDialog` ile "+5 Zibo
+  Coin kazandın!", aynı gün sonraki kayıtlarda ise sadece "Bugünün girişi
+  kaydedildi." (coin yok). Kayıtların kendisi ise sınırsız.
+- **"Geçmiş Kayıtlar"** — 2 sütunlu bir "vizyon panosu" ızgarası (kare
+  fotoğraf üstte + altında en fazla 2 satır metin + tarih, kartlar
+  belirgin şekilde dar-uzun). Karta dokunmak yalnızca büyütülmüş
+  SALT-OKUNUR bir pencere açar (fotoğraf + tam metin + Kapat) — düzenleme
+  veya silme YOK, kayıtlar kalıcı. Boşsa "Henüz bir kayıt yok. Bugün ilk
+  vizyonunu ekle!"
+- Fotoğraf yalnızca CİHAZDA saklanır (buluta yüklenmez, sadece dosya yolu
+  senkronlanır) — bu bir uygulama detayı, tasarıma yansıması gerekmiyor.
+  Streak göstergesi ve paylaşım özelliği YOK.
+
+**Onaylandı** — [mockup](https://claude.ai/code/artifact/edcd4d28-1151-45c1-9a42-954719574847).
+
 ## Kapsam dışı — kesinlikle DEĞİŞMEYECEK
 
 Kullanıcı açıkça belirtti, bu redesign'a DAHİL DEĞİL:
@@ -521,6 +551,7 @@ genişletilmek istenirse önce burada AÇIKÇA onaylanmalı.
 | Modül ekranı — Rüya Günlüğü | ✅ Onaylandı — koda dökülmeyi bekliyor |
 | Modül ekranı — Şükran Günlüğü | ✅ Onaylandı — koda dökülmeyi bekliyor |
 | Modül ekranı — Ruh Hali Takibi | ✅ Onaylandı — koda dökülmeyi bekliyor |
-| Modül ekranları — Manifest/Para/Odak (3 kaldı) | ⏳ Henüz mockup yapılmadı |
+| Modül ekranı — Manifest Günlüğü | ✅ Onaylandı — koda dökülmeyi bekliyor |
+| Modül ekranları — Para/Odak (2 kaldı) | ⏳ Henüz mockup yapılmadı |
 | Ayarlar ekranı | ✅ Onaylandı — koda dökülmeyi bekliyor |
 | Şans Çarkı / Günlük Ödül / Rozet pop-up'ları | 🚫 Kapsam dışı — değişmeyecek |
