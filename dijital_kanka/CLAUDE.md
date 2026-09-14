@@ -62,6 +62,7 @@ Flutter mobil uygulaması: "Zibo" adlı maskot karakterin eşlik ettiği bir ki�
 | Bir feature'ın implementasyon geçmişi, eski bug'ların kökü, "bu neden böyle" | `docs/history/` — `docs/history/README.md` indeksinden ilgili dosyayı seç |
 | Bir alt-dizinde çalışırken o alana özgü kurallar/tuzaklar | O dizindeki nested `CLAUDE.md` (`lib/providers/`, `lib/l10n/`, `lib/services/`, `test/`, `android/`, `tool/`, `notification-scripts/`) — Claude Code bunları o dosyalara dokununca otomatik yükler |
 | Tekrarlanan prosedür (release AAB, yeni rozet, yeni dil, görsel işleme) | `.claude/skills/` |
+| **Devam eden görsel kimlik değişikliği** (Zibo'nun "Çizgi Roman Çıkartması" temasına geçişi — onaylanan/reddedilen yönler, renk/tipografi kararları, sayfa onay durumu) | `docs/theme_new.md` |
 
 **`docs/history/` dosyalarını görevin AÇIKÇA geçmiş bağlam gerektirmediği sürece OKUMA** —
 regression araştırması, "bu neden değişti", "eski implementasyon neydi", ya da kullanıcı doğrudan
