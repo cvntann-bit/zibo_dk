@@ -26,6 +26,7 @@ import '../providers/water_provider.dart';
 import '../providers/zibo_pose_provider.dart';
 import '../services/sound_effects_service.dart';
 import '../utils/address_term.dart';
+import '../utils/tab_navigation.dart';
 import '../utils/motivation_quote_selector.dart';
 import '../utils/zibo_event_signal.dart';
 import '../widgets/ad_free_promo_sheet.dart';
@@ -438,21 +439,21 @@ class _HomeScreenState extends State<HomeScreen>
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               HomeModuleWidget(
-                icon: Icons.water_drop,
+                emoji: '💧',
                 title: l10n.homeWaterWidgetTitle,
                 valueLabel: '${water.todayCount}/${water.goalUnitCount}',
                 progress: waterProgress,
                 subtitle: waterSubtitle,
-                newBadgeLabel: l10n.homeWidgetNewBadge,
+                onTap: () => waterModuleRequest.value++,
               ),
               const SizedBox(width: 12),
               HomeModuleWidget(
-                icon: Icons.flag,
+                emoji: '🚩',
                 title: l10n.homeGoalWidgetTitle,
                 valueLabel: '$doneGoalsToday/${goals.length}',
                 progress: goalProgress,
                 subtitle: goalSubtitle,
-                newBadgeLabel: l10n.homeWidgetNewBadge,
+                onTap: () => goalsTabRequest.value++,
               ),
             ],
           ),

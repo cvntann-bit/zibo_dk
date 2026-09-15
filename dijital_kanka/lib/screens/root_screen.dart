@@ -38,6 +38,7 @@ import '../utils/widget_module.dart';
 import '../widgets/badges_trigger_button.dart';
 import '../widgets/coin_balance_widget.dart';
 import '../widgets/daily_rewards_trigger_button.dart';
+import '../widgets/dot_grid_background.dart';
 import '../widgets/main_bottom_bar.dart';
 import '../widgets/modules_menu_sheet.dart';
 import '../widgets/sticker_style.dart';
@@ -529,7 +530,7 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
             const SizedBox(width: 8),
           ],
           StickerIconButton(
-            icon: Icons.add_circle_outline,
+            emoji: '➕',
             tooltip: l10n.storeButtonTooltip,
             backgroundColor: Theme.of(context).colorScheme.surfaceContainerLowest,
             iconColor: Theme.of(context).colorScheme.onSurface,
@@ -541,7 +542,7 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
           ),
           const SizedBox(width: 8),
           StickerIconButton(
-            icon: Icons.settings_outlined,
+            emoji: '⚙️',
             tooltip: l10n.tabSettings,
             backgroundColor: Theme.of(context).colorScheme.surfaceContainerLowest,
             iconColor: Theme.of(context).colorScheme.onSurface,
@@ -558,6 +559,11 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
       body: SafeArea(
         child: Stack(
           children: [
+            // Mockup'ın `.screen::before` nokta deseni — bkz.
+            // `DotGridBackground` dokümantasyonu. Sekmelerin ARKASINDA tek
+            // bir yerden ekleniyor, her sekmenin kendi opak yüzeyi
+            // (kartlar, alt bar vb.) olduğu yerde zaten görünmez.
+            const Positioned.fill(child: DotGridBackground()),
             IndexedStack(index: _selectedIndex, children: tabs),
             // Şans Çarkı tetikleyicisi: yalnızca Ana Sayfa sekmesindeyken
             // görünür (IndexedStack'in dışında olduğu için sekme geçişlerinde

@@ -40,7 +40,7 @@ class ShareZiboButton extends StatelessWidget {
     return StickerIconButton(
       onPressed: () => _openShareSheet(context),
       tooltip: l10n.shareButtonTooltip,
-      icon: Icons.ios_share,
+      emoji: '📤',
       size: 26,
       iconSize: 13,
       borderRadius: 8,

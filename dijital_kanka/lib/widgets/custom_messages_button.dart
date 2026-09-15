@@ -20,7 +20,7 @@ class CustomMessagesButton extends StatelessWidget {
         MaterialPageRoute<void>(builder: (_) => const CustomMessagesScreen()),
       ),
       tooltip: l10n.customMessagesButtonTooltip,
-      icon: Icons.edit_note_rounded,
+      emoji: '✏️',
       size: 26,
       iconSize: 14,
       borderRadius: 8,

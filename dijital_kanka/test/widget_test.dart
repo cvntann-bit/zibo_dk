@@ -2303,9 +2303,9 @@ void main() {
       // Ana Sayfa'daki kalp ikonuna dokunup o an gösterilen sözü favorile
       // (başlangıç sözü artık rastgele — bkz. `_currentHomeMessage`).
       final firstQuote = _currentHomeMessage(tester);
-      await tester.tap(find.byIcon(Icons.favorite_border));
+      await tester.tap(find.text('☆'));
       await tester.pumpAndSettle();
-      expect(find.byIcon(Icons.favorite), findsWidgets);
+      expect(find.text('⭐'), findsWidgets);
 
       Finder profileScrollable() => find
           .descendant(of: find.byType(ProfileScreen), matching: find.byType(Scrollable))

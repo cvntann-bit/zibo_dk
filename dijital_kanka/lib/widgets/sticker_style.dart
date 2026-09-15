@@ -62,7 +62,8 @@ BoxDecoration stickerCircleDecoration({
 class StickerIconButton extends StatelessWidget {
   const StickerIconButton({
     super.key,
-    required this.icon,
+    this.icon,
+    this.emoji,
     required this.onPressed,
     this.tooltip,
     this.backgroundColor,
@@ -71,9 +72,16 @@ class StickerIconButton extends StatelessWidget {
     this.iconSize = 18,
     this.borderWidth = 2.5,
     this.borderRadius = 10,
-  });
+  }) : assert(
+         (icon == null) != (emoji == null),
+         'icon veya emoji tam olarak birinden biri sağlanmalı',
+       );
 
-  final IconData icon;
+  /// Mockup'ta bazı butonlar (`.icon-btn`) Material ikon, bazıları
+  /// (`.mini-btn`/`.nav-badge`/`.corner-btn`) emoji kullanıyor — bu yüzden
+  /// [icon]/[emoji] karşılıklı dışlayıcı: TAM OLARAK biri sağlanmalı.
+  final IconData? icon;
+  final String? emoji;
   final VoidCallback? onPressed;
   final String? tooltip;
   final Color? backgroundColor;
@@ -117,7 +125,11 @@ class StickerIconButton extends StatelessWidget {
           child: SizedBox(
             width: size,
             height: size,
-            child: Icon(icon, size: iconSize, color: fg),
+            child: Center(
+              child: icon != null
+                  ? Icon(icon, size: iconSize, color: fg)
+                  : Text(emoji!, style: TextStyle(fontSize: iconSize, height: 1)),
+            ),
           ),
         ),
       ),

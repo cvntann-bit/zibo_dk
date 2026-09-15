@@ -4,26 +4,27 @@ import 'sticker_style.dart';
 
 /// Ana Sayfa'nın konuşma balonu ile alt bar arasına, "Çizgi Roman
 /// Çıkartması" mockup'ında onaylanan iki mini kart (Su/Hedef) için ortak
-/// görsel — bkz. `docs/theme_new.md` "Onaylanan: Ana Sayfa yerleşimi",
-/// madde 7 ("YENİ" olarak işaretli özellik).
+/// görsel — bkz. `docs/theme_new.md` "Onaylanan: Ana Sayfa yerleşimi".
 ///
 /// Kontur/gölge SABİT (bkz. `sticker_style.dart`); ilerleme çubuğunun
-/// dolgusu ve "YENİ" rozeti aktif temanın `colorScheme.primary`'sinden
-/// gelir — böylece kullanıcı Mağaza'dan farklı bir tema satın alırsa bu
-/// kartlar da otomatik uyum sağlar.
+/// dolgusu aktif temanın `colorScheme.primary`'sinden gelir — böylece
+/// kullanıcı Mağaza'dan farklı bir tema satın alırsa bu kartlar da otomatik
+/// uyum sağlar. Kart tıklanabilir — [onTap] ilgili modülü (Su Takibi/Hedef
+/// Takibi) açar.
 class HomeModuleWidget extends StatelessWidget {
   const HomeModuleWidget({
     super.key,
-    required this.icon,
+    required this.emoji,
     required this.title,
     required this.valueLabel,
     required this.progress,
     required this.subtitle,
-    required this.newBadgeLabel,
-    this.isNew = true,
+    required this.onTap,
   });
 
-  final IconData icon;
+  /// Mockup'ta bu kartların ikonu emoji (💧/🚩) — bkz. `sticker_style.dart`
+  /// `StickerIconButton`'daki AYNI emoji tercihi.
+  final String emoji;
   final String title;
 
   /// Ör. "5/8" — başlığın sağında, sayısal ilerleme.
@@ -35,27 +36,22 @@ class HomeModuleWidget extends StatelessWidget {
   /// Çubuğun altındaki tek satırlık açıklama (ör. "3 bardak kaldı").
   final String subtitle;
 
-  /// "YENİ" rozetinin metni — çağıran taraf `AppLocalizations`'tan geçirir
-  /// (bu widget kendi başına l10n'e bağımlı olmasın diye).
-  final String newBadgeLabel;
-
-  /// Ana Sayfa'ya YENİ eklenen bu kartların üstüne, kullanıcı tanıdık
-  /// gelene kadar bir "YENİ" rozeti eklenir.
-  final bool isNew;
+  /// Karta dokununca ilgili modülü açar (bkz. `home_screen.dart`).
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final borderRadius = BorderRadius.circular(16);
 
     return Expanded(
       child: Stack(
-        clipBehavior: Clip.none,
         children: [
           Container(
             padding: const EdgeInsets.fromLTRB(14, 16, 14, 12),
             decoration: stickerDecoration(
               fill: colorScheme.surfaceContainerLowest,
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: borderRadius,
               borderWidth: 3,
               shadowOffset: const Offset(3, 3),
             ),
@@ -70,7 +66,7 @@ class HomeModuleWidget extends StatelessWidget {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(icon, size: 15, color: colorScheme.onSurface),
+                          Text(emoji, style: const TextStyle(fontSize: 15, height: 1)),
                           const SizedBox(width: 4),
                           Flexible(
                             child: Text(
@@ -127,28 +123,18 @@ class HomeModuleWidget extends StatelessWidget {
               ],
             ),
           ),
-          if (isNew)
-            Positioned(
-              top: -10,
-              left: 10,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-                decoration: stickerDecoration(
-                  fill: colorScheme.primary,
-                  borderRadius: BorderRadius.circular(6),
-                  borderWidth: 2,
-                  shadowOffset: Offset.zero,
-                ),
-                child: Text(
-                  newBadgeLabel,
-                  style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w800,
-                    color: colorScheme.onPrimary,
-                  ),
-                ),
-              ),
+          // Sticker Container'ın KENDİ dolgusu OPAK olduğu için InkWell'in
+          // dalga efekti altında görünmez kalır — bu yüzden dokunma alanı
+          // ayrı, şeffaf bir Material katmanı olarak ÜSTÜNE ekleniyor
+          // (dalga efekti böylece kartın üstünde görünür kalıyor).
+          Positioned.fill(
+            child: Material(
+              color: Colors.transparent,
+              borderRadius: borderRadius,
+              clipBehavior: Clip.antiAlias,
+              child: InkWell(borderRadius: borderRadius, onTap: onTap),
             ),
+          ),
         ],
       ),
     );

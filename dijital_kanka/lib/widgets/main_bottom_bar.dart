@@ -4,11 +4,11 @@ import '../l10n/app_localizations.dart';
 import 'sticker_style.dart';
 
 /// Uygulamanın alt gezinme çubuğu — tamamen standart Flutter widget'larıyla
-/// (`BottomAppBar` + `CircularNotchedRectangle`) çizilir, hiçbir özel görsel
-/// varlığa bağımlı DEĞİLDİR. Ortadaki [ZFloatingButton] (ayrı dosya,
-/// RootScreen'in `Scaffold.floatingActionButton`'ına
+/// (`BottomAppBar`, DÜZ — çentik YOK, bkz. aşağıdaki not) çizilir, hiçbir
+/// özel görsel varlığa bağımlı DEĞİLDİR. Ortadaki [ZFloatingButton] (ayrı
+/// dosya, RootScreen'in `Scaffold.floatingActionButton`'ına
 /// `FloatingActionButtonLocation.centerDocked` ile bağlanıyor) bu bar'ın
-/// "çentiğine" Flutter'ın kendi Scaffold geometrisiyle otomatik oturur.
+/// üstüne, mockup'taki gibi bir "çentik" OLMADAN, doğrudan z-index ile biner.
 ///
 /// **Tarihçe:** İlk sürüm, kullanıcının verdiği `alt_bar.png` tasarımından
 /// piksel-piksel kırpılıp işlenen özel PNG katmanlarına (açık/koyu tema için
@@ -17,8 +17,8 @@ import 'sticker_style.dart';
 /// görsel-işleme/piksel-eşleştirme karmaşasıyla tekrar uğraşmak
 /// istemediğini belirtip TAMAMEN kod-tabanlı bir alternatif istedi — bu
 /// widget bunun yerine geçti. Artık renkler tema (`ColorScheme`) üzerinden
-/// geliyor, ikonlar Material `Icon`'ları, aktif sekme vurgusu basit bir
-/// `AnimatedContainer` — hiçbiri yeni bir görsel gerektirmeden
+/// geliyor, ikonlar mockup'la BİREBİR aynı emoji, aktif sekme vurgusu basit
+/// bir `AnimatedContainer` — hiçbiri yeni bir görsel gerektirmeden
 /// değiştirilebilir (bkz. CLAUDE.md "Alt Gezinme Çubuğu" bölümü).
 class MainBottomBar extends StatelessWidget {
   const MainBottomBar({
@@ -49,41 +49,48 @@ class MainBottomBar extends StatelessWidget {
       decoration: const BoxDecoration(
         border: Border(top: BorderSide(color: kStickerOutline, width: 3)),
       ),
+      // Mockup'ın `.navbar`'ı DÜZ bir bar — hiçbir "çentik" (notch) YOK, Z
+      // butonu üstüne yalnızca z-index ile biniyor. Önceki `BottomAppBar(
+      // shape: CircularNotchedRectangle())` sürümü FAB'ın (kalın kontur +
+      // düz gölge eklenmiş özel dekorasyonu) gerçek görsel boyutuyla notch
+      // hesaplamasının varsaydığı çıplak daireyi TAM örtüşTÜRMÜYORDU — üstteki
+      // 3px kontur çizgisinin ucu, çentiğin eğrisiyle FAB'ın arasında kısa,
+      // "alakasız" duran bir çizgi parçası olarak kalıyordu (kullanıcı
+      // raporu). Düz bar + Z butonu üstte serbestçe binen bir öğe olunca bu
+      // artefakt tamamen ortadan kalkıyor — `centerDocked` konumlandırması
+      // (RootScreen) çentik OLMADAN da aynı şekilde çalışmaya devam ediyor.
       child: BottomAppBar(
-        shape: const CircularNotchedRectangle(),
-        notchMargin: 8,
         color: colorScheme.surfaceContainerLowest,
         padding: EdgeInsets.zero,
         elevation: 0,
         child: Row(
           children: [
             _NavItem(
-              icon: Icons.home_rounded,
+              emoji: '🏠',
               visibleLabel: l10n.tabHome,
               semanticLabel: l10n.tabHome,
               selected: selectedIndex == 0,
               onTap: onHomeTap,
             ),
             _NavItem(
-              icon: Icons.flag_rounded,
+              emoji: '🚩',
               visibleLabel: l10n.bottomBarGoalsLabel,
               semanticLabel: l10n.tabGoalTracking,
               selected: selectedIndex == 1,
               onTap: onGoalsTap,
             ),
-            // Z butonu için boşluk — CircularNotchedRectangle'ın çentiği bu
-            // alanı görsel olarak zaten oyuyor, bu Expanded yalnızca 5 eşit
-            // sütunluk (diğer 4 öğeyle simetrik) yatay boşluğu ayırıyor.
-            const Expanded(child: SizedBox.shrink()),
+            // Z butonu için boşluk — mockup'ta `.nav-gap{width:64px;flex:
+            // none;}` SABİT genişlikte (diğer 4 öğe gibi esnek DEĞİL).
+            const SizedBox(width: 64),
             _NavItem(
-              icon: Icons.account_circle_rounded,
+              emoji: '👤',
               visibleLabel: l10n.profileScreenTitle,
               semanticLabel: l10n.profileScreenTitle,
               selected: selectedIndex == 2,
               onTap: onProfileTap,
             ),
             _NavItem(
-              icon: Icons.storefront_rounded,
+              emoji: '🛍️',
               visibleLabel: l10n.storeTitle,
               semanticLabel: l10n.storeTitle,
               selected: selectedIndex == 3,
@@ -103,14 +110,14 @@ class MainBottomBar extends StatelessWidget {
 /// sorunsuzca taşınabiliyor.
 class _NavItem extends StatelessWidget {
   const _NavItem({
-    required this.icon,
+    required this.emoji,
     required this.visibleLabel,
     required this.semanticLabel,
     required this.selected,
     required this.onTap,
   });
 
-  final IconData icon;
+  final String emoji;
   final String visibleLabel;
   final String semanticLabel;
   final bool selected;
@@ -119,7 +126,6 @@ class _NavItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final iconColor = selected ? colorScheme.onPrimary : colorScheme.onSurfaceVariant;
     final textColor = selected ? colorScheme.primary : colorScheme.onSurfaceVariant;
 
     return Expanded(
@@ -159,7 +165,7 @@ class _NavItem extends StatelessWidget {
                           borderRadius: BorderRadius.circular(10),
                           border: Border.all(color: Colors.transparent, width: 2.5),
                         ),
-                  child: Icon(icon, color: iconColor, size: 20),
+                  child: Text(emoji, style: const TextStyle(fontSize: 16, height: 1)),
                 ),
                 const SizedBox(height: 2),
                 Text(

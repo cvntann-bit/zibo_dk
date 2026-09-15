@@ -68,13 +68,20 @@ import 'widgets/animated_theme_overlay.dart';
 import 'widgets/app_loading_screen.dart';
 import 'widgets/badge_celebration_overlay.dart';
 import 'widgets/level_celebration_overlay.dart';
+import 'widgets/sticker_style.dart' show kStickerOutline;
 import 'widgets/theme_fade_overlay.dart';
 
 // Zibo'nun tombul, sıcak, samimi karakterine uygun bal/hardal/krem paleti
 // (açık tema) ve aynı ruhu koyu zeminde taşıyan bir koyu tema karşılığı.
 // Anahtar tonlar elle sabitleniyor ki ColorScheme.fromSeed'in otomatik
 // türetmesi soluk/pembemsi ya da tam parlak sarıya kaymasın.
-const _mustard = Color(0xFFA9711F); // koyu hardal/kahverengi — ana vurgu
+const _mustard = Color(0xFFA9711F); // koyu hardal/kahverengi — auto-türetilen tonlar için seed
+// "Çizgi Roman Çıkartması" mockup'ının `--gold` değişkeniyle BİREBİR aynı,
+// canlı/karikatürsü altın-sarı — kullanıcı "html'deki sarı daha canlı ve
+// cartoon, onu kullan" dedi. `_mustard` (koyu, donuk kahverengi-sarı) SADECE
+// `ColorScheme.fromSeed`'in otomatik türettiği (elle override edilmeyen)
+// tonlar için seed olarak kalıyor — asıl görünür `primary` artık bu.
+const _vividGold = Color(0xFFF3B23C);
 const _honey = Color(0xFFEFCB7A); // açık bal tonu — ikincil/tonal vurgu
 const _cream = Color(0xFFFFF8E8); // sıcak krem — açık tema arka planı
 const _honeyCream = Color(0xFFF7EAC9); // açık tema kart/yüzey rengi
@@ -104,8 +111,11 @@ final _lightColorScheme = ColorScheme.fromSeed(
   seedColor: _mustard,
   brightness: Brightness.light,
 ).copyWith(
-  primary: _mustard,
-  onPrimary: Colors.white,
+  primary: _vividGold,
+  // Canlı altın-sarı üzerinde beyaz metin/ikonun kontrastı ZAYIF (bkz.
+  // yukarıdaki `_vividGold` notu) — mockup da AYNI sebeple altın dolgular
+  // üzerinde hep sabit koyu `--outline` kullanıyor, beyaz DEĞİL.
+  onPrimary: kStickerOutline,
   primaryContainer: _honey,
   onPrimaryContainer: _espresso,
   secondaryContainer: _honey,

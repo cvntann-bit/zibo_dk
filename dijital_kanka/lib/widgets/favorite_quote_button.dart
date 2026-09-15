@@ -25,7 +25,7 @@ class FavoriteQuoteButton extends StatelessWidget {
       tooltip: isFavorite
           ? l10n.favoriteQuoteRemoveTooltip
           : l10n.favoriteQuoteAddTooltip,
-      icon: isFavorite ? Icons.favorite : Icons.favorite_border,
+      emoji: isFavorite ? '⭐' : '☆',
       size: 26,
       iconSize: 13,
       borderRadius: 8,
