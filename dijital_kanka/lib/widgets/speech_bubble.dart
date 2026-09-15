@@ -88,7 +88,7 @@ class _SpeechBubblePainter extends CustomPainter {
       bubbleRect,
       const Radius.circular(_radius),
     );
-    final path = Path()..addRRect(rrect);
+    final bubblePath = Path()..addRRect(rrect);
 
     final tailCenterX = size.width / 2;
     final tailPath = Path()
@@ -97,8 +97,17 @@ class _SpeechBubblePainter extends CustomPainter {
       ..lineTo(tailCenterX + _tailWidth / 2, _tailHeight + 1)
       ..close();
 
-    path.addPath(tailPath, Offset.zero);
-    return path;
+    // **Bug düzeltmesi — kullanıcı raporu: kuyruğun gövdeye bitiştiği yerde
+    // ince yatay siyah bir çizgi görünüyordu.** Eskiden `path.addPath(...)`
+    // ile iki AYRI alt-yol (rrect + üçgen) TEK bir `Path`'e ekleniyordu —
+    // dolgu için sorun değil (örtüşen bölgelerin birleşimini dolduruyor),
+    // ama `drawPath(..., stroke)` HER alt-yolu KENDİ kapalı döngüsü olarak
+    // ayrı ayrı çiziyor; üçgenin TABANI (kuyruğun gövdeye giriş çizgisi)
+    // gövdenin İÇİNDE kalsa da kendi kapalı konturu olduğu için yine de
+    // çiziliyordu — görünen "dikişteki çizgi" tam olarak buydu.
+    // `Path.combine(union, ...)` gerçek bir GEOMETRİK birleşim yapıp
+    // örtüşen iç kenarları eritiyor, tek ve sürekli bir dış hat kalıyor.
+    return Path.combine(PathOperation.union, bubblePath, tailPath);
   }
 
   @override

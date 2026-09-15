@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/app_localizations.dart';
 import 'sticker_style.dart';
 
 /// Ana Sayfa'nın konuşma balonu ile alt bar arasına, "Çizgi Roman
@@ -20,6 +21,7 @@ class HomeModuleWidget extends StatelessWidget {
     required this.progress,
     required this.subtitle,
     required this.onTap,
+    this.onEditTap,
   });
 
   /// Mockup'ta bu kartların ikonu emoji (💧/🚩) — bkz. `sticker_style.dart`
@@ -39,6 +41,13 @@ class HomeModuleWidget extends StatelessWidget {
   /// Karta dokununca ilgili modülü açar (bkz. `home_screen.dart`).
   final VoidCallback onTap;
 
+  /// Verilirse kartın sağ üst köşesine küçük bir kalem rozeti eklenir —
+  /// kullanıcının bu slotta hangi modülün gösterileceğini değiştirmesini
+  /// sağlayan seçim sheet'ini açar (bkz. `home_quick_module_picker_sheet.
+  /// dart`'taki `showHomeQuickModulePicker`). `null` ise rozet hiç
+  /// gösterilmez.
+  final VoidCallback? onEditTap;
+
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
@@ -46,6 +55,7 @@ class HomeModuleWidget extends StatelessWidget {
 
     return Expanded(
       child: Stack(
+        clipBehavior: Clip.none,
         children: [
           Container(
             padding: const EdgeInsets.fromLTRB(14, 16, 14, 12),
@@ -135,6 +145,18 @@ class HomeModuleWidget extends StatelessWidget {
               child: InkWell(borderRadius: borderRadius, onTap: onTap),
             ),
           ),
+          if (onEditTap != null)
+            Positioned(
+              top: -6,
+              right: -6,
+              child: StickerIconButton(
+                icon: Icons.edit_rounded,
+                onPressed: onEditTap,
+                size: 26,
+                iconSize: 14,
+                tooltip: AppLocalizations.of(context)!.homeQuickWidgetEditTooltip,
+              ),
+            ),
         ],
       ),
     );

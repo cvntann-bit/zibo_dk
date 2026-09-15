@@ -940,6 +940,29 @@ class AppLocalizationsTr extends AppLocalizations {
   String get homeGoalEmptyLabel => 'Henüz hedef yok';
 
   @override
+  String get homeQuickWidgetEditTooltip => 'Widget\'ı değiştir';
+
+  @override
+  String get homeQuickWidgetPickerTitle => 'Widget\'ı Değiştir';
+
+  @override
+  String get homeQuickWidgetDoneTodayLabel => 'Bugün eklendi';
+
+  @override
+  String get homeQuickWidgetNotDoneTodayLabel => 'Bugün henüz eklenmedi';
+
+  @override
+  String get homeMoodWidgetNotSetLabel => 'Henüz seçilmedi';
+
+  @override
+  String homeFocusWidgetTodayLabel(String duration) {
+    return 'Bugün $duration odaklandın';
+  }
+
+  @override
+  String get homeFocusWidgetNotDoneTodayLabel => 'Bugün henüz odaklanmadın';
+
+  @override
   String waterHistoryCompletedEntry(String date) {
     return '$date tarihinde hedef tamamlandı';
   }

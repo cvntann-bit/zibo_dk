@@ -1319,6 +1319,37 @@
   "@homeGoalEmptyLabel": {
     "description": "Ana Sayfa'daki Hedef mini kartında hiç hedef eklenmediyse gösterilen metin"
   },
+  "homeQuickWidgetEditTooltip": "Widget'ı değiştir",
+  "@homeQuickWidgetEditTooltip": {
+    "description": "Ana Sayfa mini kartlarının köşesindeki, hangi modülün gösterileceğini değiştirmeye yarayan küçük kalem ikonunun tooltip'i"
+  },
+  "homeQuickWidgetPickerTitle": "Widget'ı Değiştir",
+  "@homeQuickWidgetPickerTitle": {
+    "description": "Ana Sayfa mini kart modül seçici sayfasının başlığı"
+  },
+  "homeQuickWidgetDoneTodayLabel": "Bugün eklendi",
+  "@homeQuickWidgetDoneTodayLabel": {
+    "description": "Ana Sayfa mini kartında (Rüya/Manifest/Para modülleri) bugün bir kayıt eklendiyse gösterilen alt metin"
+  },
+  "homeQuickWidgetNotDoneTodayLabel": "Bugün henüz eklenmedi",
+  "@homeQuickWidgetNotDoneTodayLabel": {
+    "description": "Ana Sayfa mini kartında (Rüya/Manifest/Para modülleri) bugün hiç kayıt eklenmediyse gösterilen alt metin"
+  },
+  "homeMoodWidgetNotSetLabel": "Henüz seçilmedi",
+  "@homeMoodWidgetNotSetLabel": {
+    "description": "Ana Sayfa mini kartında bugün için henüz bir ruh hali seçilmediyse gösterilen alt metin"
+  },
+  "homeFocusWidgetTodayLabel": "Bugün {duration} odaklandın",
+  "@homeFocusWidgetTodayLabel": {
+    "description": "Ana Sayfa mini kartında bugün odaklanılan toplam süre",
+    "placeholders": {
+      "duration": {"type": "String"}
+    }
+  },
+  "homeFocusWidgetNotDoneTodayLabel": "Bugün henüz odaklanmadın",
+  "@homeFocusWidgetNotDoneTodayLabel": {
+    "description": "Ana Sayfa mini kartında bugün hiç odaklanma seansı olmadıysa gösterilen alt metin"
+  },
   "waterHistoryCompletedEntry": "{date} tarihinde hedef tamamlandı",
   "@waterHistoryCompletedEntry": {
     "description": "Hedefin tamamlandığı bir geçmiş günü için satır metni",

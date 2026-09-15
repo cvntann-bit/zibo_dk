@@ -22,6 +22,7 @@ import 'package:dijital_kanka/providers/costume_provider.dart';
 import 'package:dijital_kanka/providers/custom_messages_provider.dart';
 import 'package:dijital_kanka/providers/favorite_quotes_provider.dart';
 import 'package:dijital_kanka/providers/goals_provider.dart';
+import 'package:dijital_kanka/providers/home_quick_widgets_provider.dart';
 import 'package:dijital_kanka/providers/mood_provider.dart';
 import 'package:dijital_kanka/providers/profile_provider.dart';
 import 'package:dijital_kanka/providers/sound_effects_provider.dart';
@@ -42,6 +43,7 @@ Widget _buildTestApp() {
       ChangeNotifierProvider(create: (_) => CustomMessagesProvider()),
       ChangeNotifierProvider(create: (_) => FavoriteQuotesProvider()),
       ChangeNotifierProvider(create: (_) => GoalsProvider()),
+      ChangeNotifierProvider(create: (_) => HomeQuickWidgetsProvider()),
       ChangeNotifierProvider(create: (_) => MoodProvider()),
       ChangeNotifierProvider(create: (_) => ProfileProvider()),
       ChangeNotifierProvider(create: (_) => SoundEffectsProvider()),

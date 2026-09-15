@@ -1744,6 +1744,48 @@ abstract class AppLocalizations {
   /// **'Henüz hedef yok'**
   String get homeGoalEmptyLabel;
 
+  /// Ana Sayfa mini kartlarının köşesindeki, hangi modülün gösterileceğini değiştirmeye yarayan küçük kalem ikonunun tooltip'i
+  ///
+  /// In tr, this message translates to:
+  /// **'Widget\'ı değiştir'**
+  String get homeQuickWidgetEditTooltip;
+
+  /// Ana Sayfa mini kart modül seçici sayfasının başlığı
+  ///
+  /// In tr, this message translates to:
+  /// **'Widget\'ı Değiştir'**
+  String get homeQuickWidgetPickerTitle;
+
+  /// Ana Sayfa mini kartında (Rüya/Manifest/Para modülleri) bugün bir kayıt eklendiyse gösterilen alt metin
+  ///
+  /// In tr, this message translates to:
+  /// **'Bugün eklendi'**
+  String get homeQuickWidgetDoneTodayLabel;
+
+  /// Ana Sayfa mini kartında (Rüya/Manifest/Para modülleri) bugün hiç kayıt eklenmediyse gösterilen alt metin
+  ///
+  /// In tr, this message translates to:
+  /// **'Bugün henüz eklenmedi'**
+  String get homeQuickWidgetNotDoneTodayLabel;
+
+  /// Ana Sayfa mini kartında bugün için henüz bir ruh hali seçilmediyse gösterilen alt metin
+  ///
+  /// In tr, this message translates to:
+  /// **'Henüz seçilmedi'**
+  String get homeMoodWidgetNotSetLabel;
+
+  /// Ana Sayfa mini kartında bugün odaklanılan toplam süre
+  ///
+  /// In tr, this message translates to:
+  /// **'Bugün {duration} odaklandın'**
+  String homeFocusWidgetTodayLabel(String duration);
+
+  /// Ana Sayfa mini kartında bugün hiç odaklanma seansı olmadıysa gösterilen alt metin
+  ///
+  /// In tr, this message translates to:
+  /// **'Bugün henüz odaklanmadın'**
+  String get homeFocusWidgetNotDoneTodayLabel;
+
   /// Hedefin tamamlandığı bir geçmiş günü için satır metni
   ///
   /// In tr, this message translates to:

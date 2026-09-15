@@ -11,21 +11,36 @@ import '../data/zibo_event_messages.dart';
 import '../data/zibo_messages.dart';
 import '../l10n/app_localizations.dart';
 import '../models/goal.dart';
+import '../models/home_quick_module.dart';
+import '../models/mood.dart';
 import '../models/water_entry.dart';
 import '../providers/ad_free_provider.dart';
 import '../providers/app_theme_provider.dart';
 import '../providers/coin_provider.dart';
 import '../providers/costume_provider.dart';
 import '../providers/custom_messages_provider.dart';
+import '../providers/dream_journal_provider.dart';
+import '../providers/focus_provider.dart';
 import '../providers/goals_provider.dart';
+import '../providers/gratitude_provider.dart';
+import '../providers/home_quick_widgets_provider.dart';
+import '../providers/manifest_provider.dart';
+import '../providers/money_provider.dart';
 import '../providers/mood_provider.dart';
 import '../providers/profile_provider.dart';
 import '../providers/sound_effects_provider.dart';
 import '../providers/theme_provider.dart';
 import '../providers/water_provider.dart';
 import '../providers/zibo_pose_provider.dart';
+import '../screens/dream_journal_screen.dart';
+import '../screens/focus_timer_screen.dart';
+import '../screens/gratitude_journal_screen.dart';
+import '../screens/manifest_journal_screen.dart';
+import '../screens/money_screen.dart';
+import '../screens/mood_tracking_screen.dart';
 import '../services/sound_effects_service.dart';
 import '../utils/address_term.dart';
+import '../utils/home_quick_module_info.dart';
 import '../utils/tab_navigation.dart';
 import '../utils/motivation_quote_selector.dart';
 import '../utils/zibo_event_signal.dart';
@@ -33,6 +48,7 @@ import '../widgets/ad_free_promo_sheet.dart';
 import '../widgets/custom_messages_button.dart';
 import '../widgets/favorite_quote_button.dart';
 import '../widgets/home_module_widget.dart';
+import '../widgets/home_quick_module_picker_sheet.dart';
 import '../widgets/share_zibo_button.dart';
 import '../widgets/speech_bubble.dart';
 import '../widgets/starry_gradient_background.dart';
@@ -333,34 +349,13 @@ class _HomeScreenState extends State<HomeScreen>
     // Su/Hedef mini kartları — "Çizgi Roman Çıkartması" mockup'ında Ana
     // Sayfa'ya YENİ eklenen, konuşma balonu ile alt bar arasındaki widget
     // sırası (bkz. `docs/theme_new.md` "Onaylanan: Ana Sayfa yerleşimi").
-    final water = context.watch<WaterProvider>();
-    final waterUnitLabel = water.unit == WaterUnit.glass
-        ? l10n.waterUnitGlass
-        : l10n.waterUnitBottle;
-    final waterProgress = water.todayCount / water.goalUnitCount;
-    final waterSubtitle = water.isTodayComplete
-        ? l10n.homeWaterCompleteLabel
-        : l10n.homeWaterRemainingLabel(
-            water.goalUnitCount - water.todayCount,
-            waterUnitLabel,
-          );
-
-    final goals = context.watch<GoalsProvider>().goals;
-    final today = Goal.dateOnly(DateTime.now());
-    final doneGoalsToday = goals
-        .where((goal) => goal.completedDates.contains(today))
-        .length;
-    final goalProgress = goals.isEmpty ? 0.0 : doneGoalsToday / goals.length;
-    final String goalSubtitle;
-    if (goals.isEmpty) {
-      goalSubtitle = l10n.homeGoalEmptyLabel;
-    } else if (doneGoalsToday >= goals.length) {
-      goalSubtitle = l10n.homeGoalCompleteLabel;
-    } else {
-      goalSubtitle = goals
-          .firstWhere((goal) => !goal.completedDates.contains(today))
-          .name;
-    }
+    // **2026 yeni özellik — değiştirilebilir Ana Sayfa widget'ları**
+    // (kullanıcı isteği): eskiden bu iki kart Su/Hedef'e SABİTTİ, artık
+    // `HomeQuickWidgetsProvider`'ın `slot1`/`slot2`'si hangi 8 modülden
+    // hangisinin gösterileceğini belirliyor — bkz. `_resolveQuickWidgetData`.
+    final quickWidgets = context.watch<HomeQuickWidgetsProvider>();
+    final slot1Data = _resolveQuickWidgetData(context, l10n, quickWidgets.slot1);
+    final slot2Data = _resolveQuickWidgetData(context, l10n, quickWidgets.slot2);
 
     // Mockup'ın `.mid-space{flex:1 1 auto}` alanı — maskot+balon+ipucu
     // KENDİ `SingleChildScrollView`'ında üstte, mini kartlar SABİT olarak
@@ -439,21 +434,31 @@ class _HomeScreenState extends State<HomeScreen>
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               HomeModuleWidget(
-                emoji: '💧',
-                title: l10n.homeWaterWidgetTitle,
-                valueLabel: '${water.todayCount}/${water.goalUnitCount}',
-                progress: waterProgress,
-                subtitle: waterSubtitle,
-                onTap: () => waterModuleRequest.value++,
+                emoji: slot1Data.emoji,
+                title: slot1Data.title,
+                valueLabel: slot1Data.valueLabel,
+                progress: slot1Data.progress,
+                subtitle: slot1Data.subtitle,
+                onTap: slot1Data.onTap,
+                onEditTap: () => showHomeQuickModulePicker(
+                  context,
+                  current: quickWidgets.slot1,
+                  onSelect: quickWidgets.setSlot1,
+                ),
               ),
               const SizedBox(width: 12),
               HomeModuleWidget(
-                emoji: '🚩',
-                title: l10n.homeGoalWidgetTitle,
-                valueLabel: '$doneGoalsToday/${goals.length}',
-                progress: goalProgress,
-                subtitle: goalSubtitle,
-                onTap: () => goalsTabRequest.value++,
+                emoji: slot2Data.emoji,
+                title: slot2Data.title,
+                valueLabel: slot2Data.valueLabel,
+                progress: slot2Data.progress,
+                subtitle: slot2Data.subtitle,
+                onTap: slot2Data.onTap,
+                onEditTap: () => showHomeQuickModulePicker(
+                  context,
+                  current: quickWidgets.slot2,
+                  onSelect: quickWidgets.setSlot2,
+                ),
               ),
             ],
           ),
@@ -480,3 +485,182 @@ class _HomeScreenState extends State<HomeScreen>
         : gradientBackground;
   }
 }
+
+/// [_resolveQuickWidgetData]'nın döndürdüğü, `HomeModuleWidget`'ın
+/// ihtiyaç duyduğu tüm alanları taşıyan salt veri demeti.
+typedef _QuickWidgetData = ({
+  String emoji,
+  String title,
+  String valueLabel,
+  double progress,
+  String subtitle,
+  VoidCallback onTap,
+});
+
+/// Değiştirilebilir bir Ana Sayfa slotuna (bkz. `HomeQuickWidgetsProvider`)
+/// atanmış [module] için, o anki provider verisinden kartın tüm alanlarını
+/// hesaplar. Yalnızca gösterilecek `switch` dalı ilgili provider'ı
+/// `context.watch` ettiği için (diğer 7 modülün provider'ları İZLENMİYOR)
+/// bu iki çağrı (slot1/slot2) gereksiz rebuild üretmez.
+///
+/// Su/Hedef aynen ESKİ (bu özellik eklenmeden önceki) mantığı birebir
+/// korur. Diğer 6 modülün hiçbiri Su/Hedef gibi doğal bir "x/y" ilerlemesine
+/// sahip DEĞİL — bu yüzden hepsi ORTAK bir "bugün yapıldı mı" (0/1 ↔ 1/1)
+/// deseni kullanıyor, tek istisna Ruh Hali (alt metinde seçilen ruh halini
+/// gösteriyor) ve Odak Sayacı (alt metinde bugünkü toplam süreyi gösteriyor).
+_QuickWidgetData _resolveQuickWidgetData(
+  BuildContext context,
+  AppLocalizations l10n,
+  HomeQuickModule module,
+) {
+  final emoji = homeQuickModuleEmoji(module);
+  final title = homeQuickModuleCardTitle(module, l10n);
+
+  switch (module) {
+    case HomeQuickModule.water:
+      final water = context.watch<WaterProvider>();
+      final waterUnitLabel = water.unit == WaterUnit.glass
+          ? l10n.waterUnitGlass
+          : l10n.waterUnitBottle;
+      final subtitle = water.isTodayComplete
+          ? l10n.homeWaterCompleteLabel
+          : l10n.homeWaterRemainingLabel(
+              water.goalUnitCount - water.todayCount,
+              waterUnitLabel,
+            );
+      return (
+        emoji: emoji,
+        title: title,
+        valueLabel: '${water.todayCount}/${water.goalUnitCount}',
+        progress: water.todayCount / water.goalUnitCount,
+        subtitle: subtitle,
+        onTap: () => waterModuleRequest.value++,
+      );
+
+    case HomeQuickModule.goal:
+      final goals = context.watch<GoalsProvider>().goals;
+      final today = Goal.dateOnly(DateTime.now());
+      final doneGoalsToday = goals
+          .where((goal) => goal.completedDates.contains(today))
+          .length;
+      final String subtitle;
+      if (goals.isEmpty) {
+        subtitle = l10n.homeGoalEmptyLabel;
+      } else if (doneGoalsToday >= goals.length) {
+        subtitle = l10n.homeGoalCompleteLabel;
+      } else {
+        subtitle = goals
+            .firstWhere((goal) => !goal.completedDates.contains(today))
+            .name;
+      }
+      return (
+        emoji: emoji,
+        title: title,
+        valueLabel: '$doneGoalsToday/${goals.length}',
+        progress: goals.isEmpty ? 0.0 : doneGoalsToday / goals.length,
+        subtitle: subtitle,
+        onTap: () => goalsTabRequest.value++,
+      );
+
+    case HomeQuickModule.dream:
+      final doneToday = context.watch<DreamJournalProvider>().hasEntryToday;
+      return (
+        emoji: emoji,
+        title: title,
+        valueLabel: doneToday ? '1/1' : '0/1',
+        progress: doneToday ? 1.0 : 0.0,
+        subtitle: doneToday
+            ? l10n.homeQuickWidgetDoneTodayLabel
+            : l10n.homeQuickWidgetNotDoneTodayLabel,
+        onTap: () => Navigator.of(
+          context,
+        ).push(MaterialPageRoute(builder: (_) => const DreamJournalScreen())),
+      );
+
+    case HomeQuickModule.gratitude:
+      final doneToday = context.watch<GratitudeProvider>().isTodayComplete;
+      return (
+        emoji: emoji,
+        title: title,
+        valueLabel: doneToday ? '1/1' : '0/1',
+        progress: doneToday ? 1.0 : 0.0,
+        subtitle: doneToday
+            ? l10n.homeQuickWidgetDoneTodayLabel
+            : l10n.homeQuickWidgetNotDoneTodayLabel,
+        onTap: () => Navigator.of(context).push(
+          MaterialPageRoute(builder: (_) => const GratitudeJournalScreen()),
+        ),
+      );
+
+    case HomeQuickModule.mood:
+      final todayMood = context.watch<MoodProvider>().todayMood;
+      return (
+        emoji: emoji,
+        title: title,
+        valueLabel: todayMood == null ? '0/1' : '1/1',
+        progress: todayMood == null ? 0.0 : 1.0,
+        subtitle: todayMood == null
+            ? l10n.homeMoodWidgetNotSetLabel
+            : '${todayMood.emoji} ${_moodLabelText(l10n, todayMood)}',
+        onTap: () => Navigator.of(
+          context,
+        ).push(MaterialPageRoute(builder: (_) => const MoodTrackingScreen())),
+      );
+
+    case HomeQuickModule.manifest:
+      final doneToday = context.watch<ManifestProvider>().hasEntryToday;
+      return (
+        emoji: emoji,
+        title: title,
+        valueLabel: doneToday ? '1/1' : '0/1',
+        progress: doneToday ? 1.0 : 0.0,
+        subtitle: doneToday
+            ? l10n.homeQuickWidgetDoneTodayLabel
+            : l10n.homeQuickWidgetNotDoneTodayLabel,
+        onTap: () => Navigator.of(context).push(
+          MaterialPageRoute(builder: (_) => const ManifestJournalScreen()),
+        ),
+      );
+
+    case HomeQuickModule.money:
+      final doneToday = context.watch<MoneyProvider>().hasEntryToday;
+      return (
+        emoji: emoji,
+        title: title,
+        valueLabel: doneToday ? '1/1' : '0/1',
+        progress: doneToday ? 1.0 : 0.0,
+        subtitle: doneToday
+            ? l10n.homeQuickWidgetDoneTodayLabel
+            : l10n.homeQuickWidgetNotDoneTodayLabel,
+        onTap: () => moneyModuleRequest.value++,
+      );
+
+    case HomeQuickModule.focus:
+      final sessions = context.watch<FocusProvider>().sessions;
+      final today = Goal.dateOnly(DateTime.now());
+      final todaySeconds = sessions
+          .where((s) => Goal.dateOnly(s.date) == today)
+          .fold(0, (sum, s) => sum + s.durationSeconds);
+      final doneToday = todaySeconds > 0;
+      return (
+        emoji: emoji,
+        title: title,
+        valueLabel: doneToday ? '1/1' : '0/1',
+        progress: doneToday ? 1.0 : 0.0,
+        subtitle: doneToday
+            ? l10n.homeFocusWidgetTodayLabel(l10n.focusModeMinutesLabel(todaySeconds ~/ 60))
+            : l10n.homeFocusWidgetNotDoneTodayLabel,
+        onTap: () => Navigator.of(
+          context,
+        ).push(MaterialPageRoute(builder: (_) => const FocusTimerScreen())),
+      );
+  }
+}
+
+String _moodLabelText(AppLocalizations l10n, Mood mood) => switch (mood) {
+  Mood.veryUnhappy => l10n.moodLabelVeryUnhappy,
+  Mood.unhappy => l10n.moodLabelUnhappy,
+  Mood.neutral => l10n.moodLabelNeutral,
+  Mood.happy => l10n.moodLabelHappy,
+  Mood.veryHappy => l10n.moodLabelVeryHappy,
+};

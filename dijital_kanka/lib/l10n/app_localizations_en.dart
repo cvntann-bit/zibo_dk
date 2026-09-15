@@ -941,6 +941,29 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeGoalEmptyLabel => 'No goals yet';
 
   @override
+  String get homeQuickWidgetEditTooltip => 'Change widget';
+
+  @override
+  String get homeQuickWidgetPickerTitle => 'Change Widget';
+
+  @override
+  String get homeQuickWidgetDoneTodayLabel => 'Added today';
+
+  @override
+  String get homeQuickWidgetNotDoneTodayLabel => 'Not added yet today';
+
+  @override
+  String get homeMoodWidgetNotSetLabel => 'Not set yet';
+
+  @override
+  String homeFocusWidgetTodayLabel(String duration) {
+    return 'You focused for $duration today';
+  }
+
+  @override
+  String get homeFocusWidgetNotDoneTodayLabel => 'No focus session today yet';
+
+  @override
   String waterHistoryCompletedEntry(String date) {
     return 'Goal completed on $date';
   }

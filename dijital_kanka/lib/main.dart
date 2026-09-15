@@ -32,6 +32,7 @@ import 'providers/founder_badge_provider.dart';
 import 'providers/goals_provider.dart';
 import 'providers/gratitude_provider.dart';
 import 'providers/hidden_badge_provider.dart';
+import 'providers/home_quick_widgets_provider.dart';
 import 'providers/instagram_follow_provider.dart';
 import 'providers/locale_provider.dart';
 import 'providers/manifest_provider.dart';
@@ -767,6 +768,7 @@ class DijitalKankaApp extends StatelessWidget {
             uid: uid,
           ),
         ),
+        ChangeNotifierProvider(create: (_) => HomeQuickWidgetsProvider(uid: uid)),
         ChangeNotifierProvider(create: (_) => LocaleProvider(uid: uid)),
         ChangeNotifierProvider(
           create: (context) => ManifestProvider(
