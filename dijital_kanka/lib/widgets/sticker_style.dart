@@ -146,6 +146,140 @@ class StickerIconButton extends StatelessWidget {
   }
 }
 
+/// Bir satırı; sol tarafta altın (veya özel) dolgulu emoji dairesi, ortada
+/// başlık+alt metin, sağda köşeli ">" (›) butonuyla gösteren paylaşılan
+/// kart — Profil'in "Zibo ile Bağın"/"İstatistiklerim" satırları, Kostüm
+/// Dolabı üst satırı gibi TEKRARLANAN satır deseninin tek kaynağı (bkz.
+/// `docs/theme_new.md` "Onaylanan: Profil sekmesi"). [onTap] `null` ise
+/// (ör. Odak Süresi satırı) sağdaki köşeli ok da otomatik gizlenir — mockup
+/// bu durumda oku TAMAMEN kaldırıyor, dokunulamaz olduğunu ima ediyor.
+class StickerRowCard extends StatelessWidget {
+  const StickerRowCard({
+    super.key,
+    required this.emoji,
+    required this.title,
+    this.subtitle,
+    this.onTap,
+    this.iconBackground,
+    this.trailingChild,
+  });
+
+  final String emoji;
+  final String title;
+  final String? subtitle;
+  final VoidCallback? onTap;
+
+  /// Varsayılan altın (`colorScheme.primary`) — Google bağlama satırı gibi
+  /// istisnalar için override edilebilir (mockup'ta beyaz zeminli).
+  final Color? iconBackground;
+
+  /// Sağ kenara, ok yerine/yanına EK bir widget (ör. Kostüm Dolabı'nın alt
+  /// satırındaki yatay önizleme şeridi kartın GÖVDESİNE ait, bu alana değil
+  /// — bu alan yalnızca tek-satırlık satırlar için).
+  final Widget? trailingChild;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final radius = BorderRadius.circular(16);
+
+    final content = Container(
+      padding: const EdgeInsets.all(14),
+      decoration: stickerDecoration(
+        fill: colorScheme.surfaceContainerLowest,
+        borderRadius: radius,
+      ),
+      child: Row(
+        children: [
+          DecoratedBox(
+            decoration: stickerCircleDecoration(
+              fill: iconBackground ?? colorScheme.primary,
+              borderWidth: 2.5,
+            ),
+            child: SizedBox(
+              width: 38,
+              height: 38,
+              child: Center(
+                child: Text(emoji, style: const TextStyle(fontSize: 16, height: 1)),
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontWeight: FontWeight.w800,
+                    fontSize: 13.5,
+                    color: colorScheme.onSurface,
+                  ),
+                ),
+                if (subtitle != null) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle!,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 11.5,
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          if (trailingChild != null) trailingChild!,
+          if (onTap != null) ...[
+            const SizedBox(width: 8),
+            Container(
+              width: 22,
+              height: 22,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                border: Border.all(color: kStickerOutline, width: 2),
+                borderRadius: BorderRadius.circular(7),
+              ),
+              child: Text(
+                '›',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w800,
+                  color: colorScheme.onSurface,
+                  height: 1,
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+
+    if (onTap == null) return content;
+
+    return Stack(
+      children: [
+        content,
+        Positioned.fill(
+          child: Material(
+            color: Colors.transparent,
+            borderRadius: radius,
+            clipBehavior: Clip.antiAlias,
+            child: InkWell(borderRadius: radius, onTap: onTap),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
 /// Bir listeye yeni öğe eklemek için kesikli (dashed) konturlu, "buraya yeni
 /// bir şey eklenir" hissi veren buton — mockup'ta Hedefler sekmesinin
 /// `.add-goal` butonu (bkz. `docs/theme_new.md`). Düz `stickerDecoration`'dan
@@ -253,4 +387,57 @@ class _DashedBorderPainter extends CustomPainter {
       oldDelegate.borderRadius != borderRadius ||
       oldDelegate.color != color ||
       oldDelegate.strokeWidth != strokeWidth;
+}
+
+/// Bir çocuğun ALT kenarına kesikli (dashed) tek bir çizgi çizer — Profil'in
+/// isim alanı mockup'ta `border-bottom:2.5px dashed` kullanıyor (tam bir
+/// dashed dikdörtgen DEĞİL, yalnızca alt çizgi) — bu yüzden
+/// [DashedStickerButton]'ın köşeli-dikdörtgen [_DashedBorderPainter]'ından
+/// AYRI, daha basit düz-çizgi bir painter.
+class DashedUnderline extends StatelessWidget {
+  const DashedUnderline({
+    super.key,
+    required this.child,
+    this.color = kStickerOutline,
+    this.strokeWidth = 2.5,
+  });
+
+  final Widget child;
+  final Color color;
+  final double strokeWidth;
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomPaint(
+      foregroundPainter: _DashedLinePainter(color: color, strokeWidth: strokeWidth),
+      child: child,
+    );
+  }
+}
+
+class _DashedLinePainter extends CustomPainter {
+  const _DashedLinePainter({required this.color, required this.strokeWidth});
+
+  final Color color;
+  final double strokeWidth;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..strokeWidth = strokeWidth
+      ..strokeCap = StrokeCap.round;
+    const dashWidth = 6.0;
+    const dashGap = 5.0;
+    final y = size.height - strokeWidth / 2;
+    var x = 0.0;
+    while (x < size.width) {
+      canvas.drawLine(Offset(x, y), Offset((x + dashWidth).clamp(0, size.width), y), paint);
+      x += dashWidth + dashGap;
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _DashedLinePainter oldDelegate) =>
+      oldDelegate.color != color || oldDelegate.strokeWidth != strokeWidth;
 }

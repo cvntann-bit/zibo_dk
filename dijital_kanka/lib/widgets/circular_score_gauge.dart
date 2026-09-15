@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 
+import 'sticker_style.dart';
+
 /// 0-10 arası bir ortalama puanı dairesel bir ilerleme halkası olarak
-/// gösterir — halkanın rengi puana göre kırmızıdan (düşük) yeşile (yüksek)
-/// sürekli bir skalada değişir (0-3 kırmızı tonları, 4-6 sarı/turuncu
-/// tonları, 7-10 yeşil tonları civarı — kesin sınırlar değil, sürekli bir
-/// geçiş). Bu renk skalası, kategori grafiğinin kendi (bkz. `StatTrendChart`)
-/// sabit rengiyle BİLEREK bağımsız — biri "ne kadar iyi", diğeri "hangi
-/// kategori" bilgisini taşıyor, ikisi birbirine karışmasın diye.
+/// gösterir. **2026-09-15 tek-vurgu güncellemesi** (bkz. `docs/theme_new.md`
+/// "Onaylanan: Profil sekmesi") — halka eskiden puana göre kırmızıdan
+/// yeşile değişen bir skalaydı, artık HER puanda aynı altın
+/// (`colorScheme.primary`); "ne kadar iyi" bilgisi artık dolgu YÜZDESİYLE
+/// taşınıyor, renkle değil.
 ///
 /// **2026 güncellemesi — dolma + sayaç animasyonu.** Kullanıcı isteği: halka
 /// sıfırdan gerçek puana doğru dolsun, içindeki sayı da AYNI ANDA 0'dan
@@ -30,10 +31,6 @@ class CircularScoreGauge extends StatefulWidget {
 
 class _CircularScoreGaugeState extends State<CircularScoreGauge>
     with SingleTickerProviderStateMixin {
-  static const _red = Color(0xFFE53935);
-  static const _amber = Color(0xFFFFA726);
-  static const _green = Color(0xFF43A047);
-
   late final _controller = AnimationController(
     vsync: this,
     duration: const Duration(milliseconds: 1200),
@@ -55,17 +52,11 @@ class _CircularScoreGaugeState extends State<CircularScoreGauge>
     super.dispose();
   }
 
-  static Color _ringColorFor(double score) {
-    if (score <= 5) {
-      return Color.lerp(_red, _amber, score / 5)!;
-    }
-    return Color.lerp(_amber, _green, (score - 5) / 5)!;
-  }
-
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final size = widget.size;
+    final strokeWidth = size * 0.11;
     return AnimatedBuilder(
       animation: _animation,
       builder: (context, _) {
@@ -81,10 +72,21 @@ class _CircularScoreGaugeState extends State<CircularScoreGauge>
                 height: size,
                 child: CircularProgressIndicator(
                   value: value / 10,
-                  strokeWidth: size * 0.11,
+                  strokeWidth: strokeWidth,
                   backgroundColor: colorScheme.outlineVariant.withValues(alpha: 0.35),
-                  valueColor: AlwaysStoppedAnimation<Color>(_ringColorFor(value)),
+                  valueColor: AlwaysStoppedAnimation<Color>(colorScheme.primary),
                   strokeCap: StrokeCap.round,
+                ),
+              ),
+              // Mockup'ın `.gauge::after` katmanı — halkanın deliğine, gerisi
+              // gibi 2px sabit kontur çizen küçük bir "sticker rozet" hissi.
+              Container(
+                width: size - strokeWidth * 2,
+                height: size - strokeWidth * 2,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: colorScheme.surfaceContainerLowest,
+                  border: Border.all(color: kStickerOutline, width: 2),
                 ),
               ),
               Text(

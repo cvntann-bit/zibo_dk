@@ -6,6 +6,7 @@ import '../l10n/app_localizations.dart';
 import '../models/costume.dart';
 import '../providers/costume_provider.dart';
 import '../screens/store_screen.dart';
+import 'sticker_style.dart';
 
 /// Profil > "Zibo ile Bağın" bölümündeki Kostüm Dolabı satırı — diğer
 /// satırların aksine yeni bir sayfa AÇMAZ, doğrudan sahip olunan kostümlerin
@@ -37,60 +38,96 @@ class CostumeClosetPreview extends StatelessWidget {
         .whereType<Costume>()
         .toList(growable: false);
 
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: () => _openStore(context),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
+    final radius = BorderRadius.circular(20);
+    return Stack(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(14),
+          decoration: stickerDecoration(
+            fill: colorScheme.surfaceContainerLowest,
+            borderRadius: radius,
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
                 children: [
-                  CircleAvatar(
-                    backgroundColor: colorScheme.primaryContainer,
-                    foregroundColor: colorScheme.onPrimaryContainer,
-                    child: const Icon(Icons.checkroom_outlined),
+                  DecoratedBox(
+                    decoration: stickerCircleDecoration(
+                      fill: colorScheme.primary,
+                      borderWidth: 2.5,
+                      shadowOffset: Offset.zero,
+                    ),
+                    child: const SizedBox(
+                      width: 38,
+                      height: 38,
+                      child: Center(
+                        child: Text('👕', style: TextStyle(fontSize: 16, height: 1)),
+                      ),
+                    ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
                       l10n.profileCostumeClosetRowTitle,
-                      style: Theme.of(
-                        context,
-                      ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+                      style: TextStyle(
+                        fontWeight: FontWeight.w800,
+                        fontSize: 13.5,
+                        color: colorScheme.onSurface,
+                      ),
                     ),
                   ),
-                  const Icon(Icons.chevron_right),
+                  Container(
+                    width: 22,
+                    height: 22,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      border: Border.all(color: kStickerOutline, width: 2),
+                      borderRadius: BorderRadius.circular(7),
+                    ),
+                    child: Text(
+                      '›',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w800,
+                        color: colorScheme.onSurface,
+                        height: 1,
+                      ),
+                    ),
+                  ),
                 ],
               ),
               const SizedBox(height: 12),
               if (owned.isEmpty)
                 Text(
                   l10n.profileCostumeClosetEmpty,
-                  style: TextStyle(color: colorScheme.onSurfaceVariant),
+                  style: TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 11.5,
+                    color: colorScheme.onSurfaceVariant,
+                  ),
                 )
               else
                 SizedBox(
-                  height: 64,
+                  height: 56,
                   child: ListView.separated(
                     scrollDirection: Axis.horizontal,
                     itemCount: owned.length,
-                    separatorBuilder: (_, _) => const SizedBox(width: 10),
+                    separatorBuilder: (_, _) => const SizedBox(width: 8),
                     itemBuilder: (context, index) {
                       final costume = owned[index];
-                      return ClipRRect(
-                        borderRadius: BorderRadius.circular(12),
-                        child: Container(
-                          width: 64,
-                          height: 64,
+                      return Container(
+                        width: 52,
+                        height: 52,
+                        padding: const EdgeInsets.all(5),
+                        decoration: BoxDecoration(
                           color: colorScheme.surfaceContainerHigh,
-                          padding: const EdgeInsets.all(6),
-                          child: Image.asset(
-                            costume.imageAsset,
-                            semanticLabel: costume.localizedName(l10n),
-                          ),
+                          border: Border.all(color: kStickerOutline, width: 2.5),
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        child: Image.asset(
+                          costume.imageAsset,
+                          semanticLabel: costume.localizedName(l10n),
                         ),
                       );
                     },
@@ -99,7 +136,15 @@ class CostumeClosetPreview extends StatelessWidget {
             ],
           ),
         ),
-      ),
+        Positioned.fill(
+          child: Material(
+            color: Colors.transparent,
+            borderRadius: radius,
+            clipBehavior: Clip.antiAlias,
+            child: InkWell(borderRadius: radius, onTap: () => _openStore(context)),
+          ),
+        ),
+      ],
     );
   }
 }

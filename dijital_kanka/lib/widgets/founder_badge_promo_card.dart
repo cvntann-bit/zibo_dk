@@ -5,6 +5,7 @@ import '../l10n/app_localizations.dart';
 import '../providers/auth_link_provider.dart';
 import '../providers/founder_badge_provider.dart';
 import '../utils/google_link_action.dart';
+import 'sticker_style.dart';
 
 /// Google hesap bağlama satırının HEMEN ÜSTÜNE konan, küçük bir teşvik
 /// kartı — Profil'deki "Zibo ile Bağın" bölümünde VE Ayarlar'ın "Genel"
@@ -39,35 +40,29 @@ class FounderBadgePromoCard extends StatelessWidget {
     }
 
     final colorScheme = Theme.of(context).colorScheme;
+    final radius = BorderRadius.circular(20);
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
-      child: Card(
-        color: colorScheme.primaryContainer,
-        clipBehavior: Clip.antiAlias,
-        margin: EdgeInsets.zero,
-        child: InkWell(
-          onTap: () => handleGoogleLinkTap(context),
-          child: Padding(
+      child: Stack(
+        children: [
+          Container(
             padding: const EdgeInsets.all(14),
+            decoration: stickerDecoration(fill: colorScheme.primary, borderRadius: radius),
             child: Row(
               children: [
-                Icon(
-                  Icons.emoji_events_rounded,
-                  color: colorScheme.onPrimaryContainer,
-                  size: 28,
-                ),
-                const SizedBox(width: 12),
+                Text('🏆', style: TextStyle(fontSize: 22, height: 1)),
+                const SizedBox(width: 10),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         l10n.founderBadgePromoTitle,
-                        style: Theme.of(
-                          context,
-                        ).textTheme.titleSmall?.copyWith(
-                          color: colorScheme.onPrimaryContainer,
-                          fontWeight: FontWeight.bold,
+                        style: TextStyle(
+                          fontFamily: 'Baloo2',
+                          fontVariations: const [FontVariation('wght', 700)],
+                          fontSize: 14,
+                          color: colorScheme.onPrimary,
                         ),
                       ),
                       const SizedBox(height: 2),
@@ -75,20 +70,30 @@ class FounderBadgePromoCard extends StatelessWidget {
                         l10n.founderBadgePromoBody(
                           founderBadge.remainingSlots,
                         ),
-                        style: Theme.of(
-                          context,
-                        ).textTheme.bodySmall?.copyWith(
-                          color: colorScheme.onPrimaryContainer,
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 12,
+                          color: colorScheme.onPrimary.withValues(alpha: 0.75),
                         ),
                       ),
                     ],
                   ),
                 ),
-                Icon(Icons.chevron_right, color: colorScheme.onPrimaryContainer),
               ],
             ),
           ),
-        ),
+          Positioned.fill(
+            child: Material(
+              color: Colors.transparent,
+              borderRadius: radius,
+              clipBehavior: Clip.antiAlias,
+              child: InkWell(
+                borderRadius: radius,
+                onTap: () => handleGoogleLinkTap(context),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

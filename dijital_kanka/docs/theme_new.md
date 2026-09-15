@@ -573,7 +573,7 @@ genişletilmek istenirse önce burada AÇIKÇA onaylanmalı.
 |---|---|
 | Ana Sayfa | ✅ Koda döküldü (`home_screen.dart` + paylaşılan chrome) |
 | Hedefler sekmesi | ✅ Koda döküldü (`goal_tracking_screen.dart`/`goal_card.dart`) |
-| Profil sekmesi | ✅ Onaylandı — koda dökülmeyi bekliyor |
+| Profil sekmesi | ✅ Koda döküldü (`profile_screen.dart` + `StickerRowCard` ailesi) |
 | Mağaza — Coin Al segmenti | ✅ Onaylandı — koda dökülmeyi bekliyor |
 | Mağaza — Kostümler segmenti | ✅ Onaylandı — koda dökülmeyi bekliyor |
 | Mağaza — Temalar segmenti | ✅ Onaylandı — koda dökülmeyi bekliyor |

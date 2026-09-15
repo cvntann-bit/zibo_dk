@@ -62,7 +62,9 @@ import 'package:dijital_kanka/utils/ad_free_promo_trigger.dart';
 import 'package:dijital_kanka/utils/level_up_signal.dart';
 import 'package:dijital_kanka/utils/tab_navigation.dart';
 import 'package:dijital_kanka/utils/widget_module.dart';
+import 'package:dijital_kanka/widgets/costume_closet_preview.dart';
 import 'package:dijital_kanka/widgets/speech_bubble.dart';
+import 'package:dijital_kanka/widgets/sticker_style.dart';
 
 /// Ana ekran widget'larına gerçekten hangi metnin gönderildiğini kaydeden
 /// sahte servis — `HomeWidgetSyncCoordinator`'ın kendi doğrudan testindeki
@@ -2314,11 +2316,13 @@ void main() {
       // IndexedStack içindeki iç içe kaydırılabilir listelerde koordinat
       // tabanlı tap() hit-test uyuşmazlığı yaşayabiliyor (bkz. CLAUDE.md
       // "Test kalıpları" — GridView/InkWell notu) — bu yüzden satırlara
-      // ListTile/InkWell'in `onTap`'ini doğrudan çağırarak dokunuyoruz.
+      // StickerRowCard'ın `onTap`'ini doğrudan çağırarak dokunuyoruz (bkz.
+      // "Çizgi Roman Çıkartması" temasına geçişte `ListTile`'ın yerini alan
+      // paylaşılan satır widget'ı).
       void tapRow(String rowTitle) {
         tester
-            .widget<ListTile>(
-              find.ancestor(of: find.text(rowTitle), matching: find.byType(ListTile)),
+            .widget<StickerRowCard>(
+              find.ancestor(of: find.text(rowTitle), matching: find.byType(StickerRowCard)),
             )
             .onTap!();
       }
@@ -2393,8 +2397,8 @@ void main() {
       );
       tester
           .widget<InkWell>(
-            find.ancestor(
-              of: find.text('Kostüm Dolabı'),
+            find.descendant(
+              of: find.byType(CostumeClosetPreview),
               matching: find.byType(InkWell),
             ),
           )

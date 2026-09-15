@@ -4,6 +4,7 @@ import '../l10n/app_localizations.dart';
 import '../utils/profile_stats.dart';
 import 'circular_score_gauge.dart';
 import 'stat_trend_chart.dart';
+import 'sticker_style.dart';
 
 /// "İstatistiklerim" bölümündeki tek bir kategori kartı — başlık + (veri
 /// varsa) küçük bir trend grafiği + 0-10 dairesel puan göstergesi, (veri
@@ -13,21 +14,15 @@ class ProfileStatCard extends StatelessWidget {
 
   final CategoryStat stat;
 
-  /// Her kategorinin grafik çizgi rengi — dairesel gösterge rengiyle
-  /// (bkz. `CircularScoreGauge`, kırmızı-yeşil skala) BİLEREK bağımsız,
-  /// yalnızca kategoriyi görsel olarak ayırt etmek için.
-  static const _colors = {
-    ProfileStatCategory.money: Color(0xFF1E88E5),
-    ProfileStatCategory.gratitudeManifest: Color(0xFF8E24AA),
-    ProfileStatCategory.consistency: Color(0xFFFB8C00),
-    ProfileStatCategory.selfCareHealth: Color(0xFF43A047),
-  };
-
-  static const _icons = {
-    ProfileStatCategory.money: Icons.savings_outlined,
-    ProfileStatCategory.gratitudeManifest: Icons.auto_awesome_outlined,
-    ProfileStatCategory.consistency: Icons.flag_outlined,
-    ProfileStatCategory.selfCareHealth: Icons.favorite_outline,
+  /// 2026-09-15 tek-vurgu güncellemesi — kategoriler artık renkle DEĞİL
+  /// yalnızca emoji ile ayırt ediliyor (bkz. `docs/theme_new.md` "Onaylanan:
+  /// Profil sekmesi"); grafik/gösterge rengi de HER kategoride aynı altın
+  /// (`colorScheme.primary`).
+  static const _emoji = {
+    ProfileStatCategory.money: '💰',
+    ProfileStatCategory.gratitudeManifest: '✨',
+    ProfileStatCategory.consistency: '🚩',
+    ProfileStatCategory.selfCareHealth: '❤️',
   };
 
   String _title(AppLocalizations l10n) {
@@ -60,53 +55,79 @@ class ProfileStatCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final colorScheme = Theme.of(context).colorScheme;
-    final color = _colors[stat.category]!;
 
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(_icons[stat.category], color: color, size: 20),
-                const SizedBox(width: 8),
-                Text(
-                  _title(l10n),
-                  style: Theme.of(
-                    context,
-                  ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: stickerDecoration(
+        fill: colorScheme.surfaceContainerLowest,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              DecoratedBox(
+                decoration: stickerCircleDecoration(
+                  fill: colorScheme.primary,
+                  borderWidth: 2.5,
+                  shadowOffset: Offset.zero,
                 ),
-              ],
-            ),
-            const SizedBox(height: 14),
-            if (!stat.hasData)
-              SizedBox(
-                height: 72,
-                child: Center(
-                  child: Text(
-                    _emptyMessage(l10n),
-                    textAlign: TextAlign.center,
-                    style: TextStyle(color: colorScheme.onSurfaceVariant),
+                child: SizedBox(
+                  width: 30,
+                  height: 30,
+                  child: Center(
+                    child: Text(
+                      _emoji[stat.category]!,
+                      style: const TextStyle(fontSize: 13, height: 1),
+                    ),
                   ),
                 ),
-              )
-            else
-              SizedBox(
-                height: 72,
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: StatTrendChart(values: stat.trendPoints, color: color),
-                    ),
-                    const SizedBox(width: 18),
-                    CircularScoreGauge(score: stat.score, size: 64),
-                  ],
+              ),
+              const SizedBox(width: 9),
+              Text(
+                _title(l10n),
+                style: TextStyle(
+                  fontWeight: FontWeight.w800,
+                  fontSize: 13.5,
+                  color: colorScheme.onSurface,
                 ),
               ),
-          ],
-        ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          if (!stat.hasData)
+            SizedBox(
+              height: 56,
+              child: Center(
+                child: Text(
+                  _emptyMessage(l10n),
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 11.5,
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ),
+            )
+          else
+            SizedBox(
+              height: 56,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: StatTrendChart(
+                      values: stat.trendPoints,
+                      color: colorScheme.primary,
+                    ),
+                  ),
+                  const SizedBox(width: 18),
+                  CircularScoreGauge(score: stat.score, size: 52),
+                ],
+              ),
+            ),
+        ],
       ),
     );
   }

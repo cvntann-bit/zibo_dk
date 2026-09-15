@@ -38,6 +38,7 @@ import '../widgets/costume_closet_preview.dart';
 import '../widgets/founder_badge_promo_card.dart';
 import '../widgets/instagram_follow_card.dart';
 import '../widgets/profile_stat_card.dart';
+import '../widgets/sticker_style.dart';
 import '../widgets/zibo_share_sheet.dart';
 
 /// **2026 bug düzeltmesi — Crashlytics'teki EN BÜYÜK tekrarlayan hata**
@@ -255,49 +256,66 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     height: 112,
                     child: Stack(
                       children: [
-                        CircleAvatar(
-                          radius: 56,
-                          backgroundColor: colorScheme.surfaceContainerHigh,
-                          // **2026 bug düzeltmesi — Crashlytics'teki EN BÜYÜK
-                          // tekrarlayan hata (bkz. `manifest_journal_screen.
-                          // dart`'taki `_SafeFileImage` dokümantasyonu — AYNI
-                          // kök neden, AYNI çözüm). Burada `errorBuilder` BİLE
-                          // YOKTU (`backgroundImage` bir `ImageProvider`,
-                          // `Image.file` widget'ı DEĞİL) — dosya var mı diye
-                          // ÖNCEDEN `existsSync()` ile kontrol edip yoksa
-                          // `person_rounded` ikonuna düşüyoruz, hiç `FileImage`
-                          // OLUŞTURMUYORUZ.
-                          backgroundImage: _hasReadablePhoto(profile.photoPath)
-                              ? FileImage(File(profile.photoPath!))
-                              : null,
-                          child: _hasReadablePhoto(profile.photoPath)
-                              ? null
-                              : Icon(
-                                  Icons.person_rounded,
-                                  size: 56,
-                                  color: colorScheme.onSurfaceVariant,
-                                ),
+                        DecoratedBox(
+                          decoration: stickerCircleDecoration(
+                            fill: colorScheme.surfaceContainerLowest,
+                            borderWidth: 3,
+                            shadowOffset: const Offset(4, 4),
+                          ),
+                          child: CircleAvatar(
+                            radius: 56,
+                            backgroundColor: Colors.transparent,
+                            // **2026 bug düzeltmesi — Crashlytics'teki EN
+                            // BÜYÜK tekrarlayan hata (bkz.
+                            // `manifest_journal_screen.dart`'taki
+                            // `_SafeFileImage` dokümantasyonu — AYNI kök
+                            // neden, AYNI çözüm). Burada `errorBuilder` BİLE
+                            // YOKTU (`backgroundImage` bir `ImageProvider`,
+                            // `Image.file` widget'ı DEĞİL) — dosya var mı
+                            // diye ÖNCEDEN `existsSync()` ile kontrol edip
+                            // yoksa `person_rounded` ikonuna düşüyoruz, hiç
+                            // `FileImage` OLUŞTURMUYORUZ.
+                            backgroundImage: _hasReadablePhoto(profile.photoPath)
+                                ? FileImage(File(profile.photoPath!))
+                                : null,
+                            child: _hasReadablePhoto(profile.photoPath)
+                                ? null
+                                : Icon(
+                                    Icons.person_rounded,
+                                    size: 56,
+                                    color: colorScheme.onSurfaceVariant,
+                                  ),
+                          ),
                         ),
                         Positioned(
                           right: 0,
                           bottom: 0,
-                          child: CircleAvatar(
-                            radius: 18,
-                            backgroundColor: colorScheme.primary,
-                            child: _isPicking
-                                ? SizedBox(
-                                    width: 16,
-                                    height: 16,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      color: colorScheme.onPrimary,
-                                    ),
-                                  )
-                                : Icon(
-                                    Icons.camera_alt_rounded,
-                                    size: 18,
-                                    color: colorScheme.onPrimary,
-                                  ),
+                          child: DecoratedBox(
+                            decoration: stickerCircleDecoration(
+                              fill: colorScheme.primary,
+                              borderWidth: 2.5,
+                              shadowOffset: Offset.zero,
+                            ),
+                            child: SizedBox(
+                              width: 32,
+                              height: 32,
+                              child: Center(
+                                child: _isPicking
+                                    ? SizedBox(
+                                        width: 16,
+                                        height: 16,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          color: colorScheme.onPrimary,
+                                        ),
+                                      )
+                                    : Icon(
+                                        Icons.camera_alt_rounded,
+                                        size: 16,
+                                        color: colorScheme.onPrimary,
+                                      ),
+                              ),
+                            ),
                           ),
                         ),
                         // 2026 yeni özellik — "Kurucu Üye" rozeti (bkz.
@@ -332,20 +350,29 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ),
             const SizedBox(height: 16),
-            TextField(
-              controller: _nameController,
-              focusNode: _nameFocusNode,
-              textAlign: TextAlign.center,
-              style: Theme.of(
-                context,
-              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
-              decoration: InputDecoration(
-                hintText: l10n.profileNameHint,
-                border: InputBorder.none,
-                isCollapsed: true,
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: DashedUnderline(
+                child: TextField(
+                  controller: _nameController,
+                  focusNode: _nameFocusNode,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontFamily: 'Baloo2',
+                    fontVariations: const [FontVariation('wght', 700)],
+                    fontSize: 19,
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                  decoration: InputDecoration(
+                    hintText: l10n.profileNameHint,
+                    border: InputBorder.none,
+                    isCollapsed: true,
+                    contentPadding: const EdgeInsets.only(bottom: 8),
+                  ),
+                  textInputAction: TextInputAction.done,
+                  onSubmitted: (value) => context.read<ProfileProvider>().setName(value),
+                ),
               ),
-              textInputAction: TextInputAction.done,
-              onSubmitted: (value) => context.read<ProfileProvider>().setName(value),
             ),
             const SizedBox(height: 20),
             // 2026 yeni özellik — Level/XP Sistemi. Mevcut seviye + bir
@@ -376,8 +403,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ],
               ),
             ),
-            _ProfileLinkRow(
-              icon: Icons.calendar_month_rounded,
+            StickerRowCard(
+              emoji: '📅',
               title: l10n.monthlyStatsRowTitle,
               subtitle: l10n.monthlyStatsRowSubtitle(statsArchive.snapshots.length),
               onTap: () => Navigator.of(context).push(
@@ -392,8 +419,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: 14),
-            _ProfileLinkRow(
-              icon: Icons.favorite_rounded,
+            StickerRowCard(
+              emoji: '💗',
               title: l10n.bondLevelScreenTitle,
               // Hitap tercihi BİLEREK uygulanmıyor (bkz. bond_level_screen.dart).
               subtitle: l10n.profileBondLevelRowSubtitle(
@@ -404,8 +431,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ),
             const SizedBox(height: 12),
-            _ProfileLinkRow(
-              icon: Icons.local_fire_department_rounded,
+            StickerRowCard(
+              emoji: '🔥',
               title: l10n.longestStreakScreenTitle,
               subtitle: l10n.profileStreakRowSubtitle(goals.longestStreak),
               onTap: () => Navigator.of(context).push(
@@ -419,10 +446,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
             // diğer basit istatistik satırlarıyla (Bağ Seviyesi/En Uzun
             // Seri) AYNI görsel dilde, ayrı bir bilgi satırı. Bir sayfaya
             // NAVİGE ETMİYOR (Odak Sayacı zaten Z-menüsünden erişiliyor),
-            // bu yüzden `_ProfileLinkRow` DEĞİL, ok/onTap'i olmayan
-            // `_ProfileStatRow` kullanılıyor.
-            _ProfileStatRow(
-              icon: Icons.timer_outlined,
+            // bu yüzden [StickerRowCard.onTap] BİLEREK `null` bırakılıyor —
+            // `onTap == null` iken sağdaki köşeli ok da otomatik gizleniyor.
+            StickerRowCard(
+              emoji: '⏱️',
               title: l10n.profileFocusRowTitle,
               subtitle: l10n.profileFocusRowSubtitle(
                 _formatFocusDuration(focus.totalFocusSeconds),
@@ -431,8 +458,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
             const SizedBox(height: 12),
             const CostumeClosetPreview(),
             const SizedBox(height: 12),
-            _ProfileLinkRow(
-              icon: Icons.savings_outlined,
+            StickerRowCard(
+              emoji: '🐖',
               title: l10n.coinSummaryScreenTitle,
               subtitle: l10n.profileCoinSummaryRowSubtitle(
                 coin.totalEarned,
@@ -443,8 +470,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ),
             const SizedBox(height: 12),
-            _ProfileLinkRow(
-              icon: Icons.chat_bubble_outline_rounded,
+            StickerRowCard(
+              emoji: '💬',
               title: l10n.addressTermScreenTitle,
               subtitle: l10n.profileAddressTermRowSubtitle(profile.addressTerm),
               onTap: () => Navigator.of(context).push(
@@ -452,8 +479,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ),
             const SizedBox(height: 12),
-            _ProfileLinkRow(
-              icon: Icons.favorite_border_rounded,
+            StickerRowCard(
+              emoji: '🤍',
               title: l10n.favoriteQuotesScreenTitle,
               subtitle: l10n.profileFavoriteQuotesRowSubtitle(
                 favoriteQuotes.quotes.length,
@@ -463,15 +490,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ),
             const SizedBox(height: 12),
-            _ProfileLinkRow(
-              icon: Icons.ios_share_rounded,
+            StickerRowCard(
+              emoji: '📤',
               title: l10n.profileShareCardRowTitle,
               subtitle: l10n.profileShareCardRowSubtitle,
               onTap: () => _openShareCard(context, l10n, profile, stats),
             ),
             const SizedBox(height: 12),
-            _ProfileLinkRow(
-              icon: Icons.person_add_alt_1_rounded,
+            StickerRowCard(
+              emoji: '➕',
               title: l10n.referralRowTitle,
               subtitle: referral.hasRedeemed
                   ? l10n.referralAlreadyRedeemedStatus
@@ -482,10 +509,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
             const SizedBox(height: 12),
             const FounderBadgePromoCard(),
-            _ProfileLinkRow(
-              icon: authLink.isLinked
-                  ? Icons.verified_user_rounded
-                  : Icons.link_rounded,
+            StickerRowCard(
+              emoji: authLink.isLinked ? '✅' : '🔗',
+              // Mockup'ta bu satırın ikon dairesi TEK istisna — diğer tüm
+              // satırlar altın dolgu, bu beyaz zemin (`.row-icon{background:
+              // #fff}`).
+              iconBackground: colorScheme.surfaceContainerLowest,
               title: authLink.isLinked
                   ? l10n.googleLinkRowTitleLinked
                   : l10n.googleLinkRowTitleUnlinked,
@@ -499,16 +528,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 }
 
-/// "Zibo ile Bağın" bölümündeki standart satır — ikon + başlık + canlı alt
-/// metin + sağ ok, dokununca `onTap` çağrılır (çoğunlukla yeni bir sayfa
-/// push eder). `modules_menu_sheet.dart`'taki `_ModuleCard`'la aynı görsel
-/// dil (Card + ListTile), burada ayrı bir private widget olarak tutuldu
-/// çünkü bu dosyaya özel (dışa aktarılmaya gerek yok).
 /// 2026 yeni özellik — Level/XP Sistemi. Mevcut seviye + bir sonraki
 /// seviyeye ne kadar kaldığını gösteren küçük bir kart (bkz. CLAUDE.md
-/// "Level/XP Sistemi" bölümü) — `Card` + başlık + `LinearProgressIndicator`
-/// + XP metni, projedeki diğer basit özet kartlarıyla (`_TodayDoneCard`
-/// vb.) aynı görsel yoğunlukta.
+/// "Level/XP Sistemi" bölümü) — sticker kart + "Lv. N" altın hap rozeti +
+/// ilerleme çubuğu + XP metni (bkz. `docs/theme_new.md` "Onaylanan: Profil
+/// sekmesi").
 class _LevelProgressCard extends StatelessWidget {
   const _LevelProgressCard({required this.progress});
 
@@ -518,47 +542,77 @@ class _LevelProgressCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(l10n.profileLevelRowTitle, style: textTheme.titleMedium),
-                Text(
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: stickerDecoration(
+        fill: colorScheme.surfaceContainerLowest,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                l10n.profileLevelRowTitle,
+                style: TextStyle(
+                  fontWeight: FontWeight.w800,
+                  fontSize: 14,
+                  color: colorScheme.onSurface,
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+                decoration: BoxDecoration(
+                  color: colorScheme.primary,
+                  border: Border.all(color: kStickerOutline, width: 2),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: Text(
                   'Lv. ${progress.level}',
-                  style: textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: colorScheme.primary,
+                  style: TextStyle(
+                    fontFamily: 'Baloo2',
+                    fontVariations: const [FontVariation('wght', 700)],
+                    fontSize: 13,
+                    color: colorScheme.onPrimary,
                   ),
                 ),
-              ],
-            ),
-            const SizedBox(height: 10),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(999),
-              child: LinearProgressIndicator(
-                value: progress.fraction,
-                minHeight: 10,
-                backgroundColor: colorScheme.surfaceContainerHigh,
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(999),
+            child: Container(
+              height: 12,
+              decoration: BoxDecoration(
+                color: colorScheme.surfaceContainerHigh,
+                border: Border.all(color: kStickerOutline, width: 2),
+                borderRadius: BorderRadius.circular(999),
+              ),
+              child: FractionallySizedBox(
+                alignment: Alignment.centerLeft,
+                widthFactor: progress.fraction.clamp(0.0, 1.0),
+                child: ColoredBox(color: colorScheme.primary),
               ),
             ),
-            const SizedBox(height: 6),
-            Text(
+          ),
+          const SizedBox(height: 6),
+          Center(
+            child: Text(
               l10n.profileLevelProgressLabel(
                 progress.xpIntoLevel,
                 progress.xpForNextLevel,
               ),
-              style: textTheme.bodySmall?.copyWith(
+              style: TextStyle(
+                fontWeight: FontWeight.w700,
+                fontSize: 11.5,
                 color: colorScheme.onSurfaceVariant,
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -575,68 +629,3 @@ String _formatFocusDuration(int totalSeconds) {
   return '$minutes dk';
 }
 
-/// "Zibo ile Bağın" bölümündeki, `_ProfileLinkRow`'un AKSİNE bir sayfaya
-/// NAVİGE ETMEYEN salt bilgi satırı (ok/onTap yok) — Odak Sayacı toplam
-/// süresi gibi, kendi ekranı zaten başka bir yoldan (Z-menüsü) erişilebilen
-/// istatistikler için.
-class _ProfileStatRow extends StatelessWidget {
-  const _ProfileStatRow({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-  });
-
-  final IconData icon;
-  final String title;
-  final String subtitle;
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: colorScheme.primaryContainer,
-          foregroundColor: colorScheme.onPrimaryContainer,
-          child: Icon(icon),
-        ),
-        title: Text(title),
-        subtitle: Text(subtitle),
-      ),
-    );
-  }
-}
-
-class _ProfileLinkRow extends StatelessWidget {
-  const _ProfileLinkRow({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-    required this.onTap,
-  });
-
-  final IconData icon;
-  final String title;
-  final String subtitle;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: colorScheme.primaryContainer,
-          foregroundColor: colorScheme.onPrimaryContainer,
-          child: Icon(icon),
-        ),
-        title: Text(title),
-        subtitle: Text(subtitle),
-        trailing: const Icon(Icons.chevron_right),
-        onTap: onTap,
-      ),
-    );
-  }
-}
