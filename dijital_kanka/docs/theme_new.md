@@ -572,7 +572,7 @@ genişletilmek istenirse önce burada AÇIKÇA onaylanmalı.
 | Ekran | Durum |
 |---|---|
 | Ana Sayfa | ✅ Koda döküldü (`home_screen.dart` + paylaşılan chrome) |
-| Hedefler sekmesi | ✅ Onaylandı — koda dökülmeyi bekliyor |
+| Hedefler sekmesi | ✅ Koda döküldü (`goal_tracking_screen.dart`/`goal_card.dart`) |
 | Profil sekmesi | ✅ Onaylandı — koda dökülmeyi bekliyor |
 | Mağaza — Coin Al segmenti | ✅ Onaylandı — koda dökülmeyi bekliyor |
 | Mağaza — Kostümler segmenti | ✅ Onaylandı — koda dökülmeyi bekliyor |

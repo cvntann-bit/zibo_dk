@@ -23,6 +23,7 @@ import '../widgets/goal_card.dart';
 import '../widgets/goal_confetti_burst.dart';
 import '../widgets/share_zibo_button.dart';
 import '../widgets/speech_bubble.dart';
+import '../widgets/sticker_style.dart';
 import '../widgets/zibo_animated_image.dart';
 
 /// Hedef Takibi sayfası. [isActive], bu sekmenin şu anda görünen sekme olup
@@ -305,14 +306,14 @@ class _GoalTrackingScreenState extends State<GoalTrackingScreen>
               height: 200,
               semanticLabel: l10n.ziboImagePlaceholder,
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 2),
             Stack(
               clipBehavior: Clip.none,
               children: [
                 SpeechBubble(message: quote),
                 Positioned(
-                  top: -6,
-                  right: -6,
+                  top: -13,
+                  right: -13,
                   child: ShareZiboButton(message: quote),
                 ),
               ],
@@ -329,10 +330,9 @@ class _GoalTrackingScreenState extends State<GoalTrackingScreen>
           ),
           const SizedBox(height: 12),
         ],
-        OutlinedButton.icon(
+        DashedStickerButton(
           onPressed: () => _showAddGoalDialog(context),
-          icon: const Icon(Icons.add),
-          label: Text(l10n.addGoalButton),
+          label: l10n.addGoalButton,
         ),
       ],
     );

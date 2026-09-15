@@ -14,6 +14,13 @@ import 'package:flutter/material.dart';
 /// kullanılmalı, aksi halde tonlar zamanla birbirinden sapar.
 const kStickerOutline = Color(0xFF14110C);
 
+/// "Kaçırıldı" gibi tek bir durum göstergesi için donuk/kahverengimsi sarı —
+/// mockup'ın `--accent-muted` değişkeniyle birebir (bkz. `docs/theme_new.md`
+/// "Onaylanan: Hedefler sekmesi" — 2026-09-15'te mavi/mercan yerine tek-vurgu
+/// ailesinden bu ton kullanılmaya başlandı). Tema-bağımsız SABİT bir ton
+/// (kostüm/tema rengine göre değişmez) — [kStickerOutline] ile AYNI gerekçe.
+const kAccentMuted = Color(0xFFC9A46B);
+
 /// Köşeli/yuvarlak bir dikdörtgen (kart, hap/pill, buton) için kalın kontur +
 /// düz ofsetli gölge üreten paylaşılan dekorasyon. [fill] dışındaki her şey
 /// SABİTTİR — [fill] çağıran taraftan (genelde `colorScheme`'den) gelmeli.
@@ -137,4 +144,113 @@ class StickerIconButton extends StatelessWidget {
 
     return tooltip == null ? button : Tooltip(message: tooltip!, child: button);
   }
+}
+
+/// Bir listeye yeni öğe eklemek için kesikli (dashed) konturlu, "buraya yeni
+/// bir şey eklenir" hissi veren buton — mockup'ta Hedefler sekmesinin
+/// `.add-goal` butonu (bkz. `docs/theme_new.md`). Düz `stickerDecoration`'dan
+/// FARKLI olarak SABİT kontur `BoxDecoration.border` ile çizilemediği için
+/// (Flutter'da dashed border yerleşik değil) bir [CustomPainter] kullanır.
+class DashedStickerButton extends StatelessWidget {
+  const DashedStickerButton({
+    super.key,
+    required this.label,
+    required this.onPressed,
+    this.emoji = '➕',
+    this.borderRadius = 14,
+  });
+
+  final String label;
+  final VoidCallback onPressed;
+  final String emoji;
+  final double borderRadius;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final radius = BorderRadius.circular(borderRadius);
+
+    return Material(
+      color: colorScheme.surfaceContainerLowest,
+      borderRadius: radius,
+      child: InkWell(
+        borderRadius: radius,
+        onTap: onPressed,
+        child: CustomPaint(
+          painter: _DashedBorderPainter(borderRadius: borderRadius),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(emoji, style: const TextStyle(fontSize: 15, height: 1)),
+                const SizedBox(width: 6),
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontFamily: 'Baloo2',
+                    fontVariations: const [FontVariation('wght', 700)],
+                    fontSize: 14,
+                    color: colorScheme.onSurface,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _DashedBorderPainter extends CustomPainter {
+  const _DashedBorderPainter({
+    required this.borderRadius,
+    this.color = kStickerOutline,
+    this.strokeWidth = 3,
+    this.dashWidth = 6,
+    this.dashGap = 5,
+  });
+
+  final double borderRadius;
+  final Color color;
+  final double strokeWidth;
+  final double dashWidth;
+  final double dashGap;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final rrect = RRect.fromRectAndRadius(
+      Offset.zero & size,
+      Radius.circular(borderRadius),
+    ).deflate(strokeWidth / 2);
+    final outline = Path()..addRRect(rrect);
+    final dashed = Path();
+    for (final metric in outline.computeMetrics()) {
+      var distance = 0.0;
+      while (distance < metric.length) {
+        final next = distance + dashWidth;
+        dashed.addPath(
+          metric.extractPath(distance, next.clamp(0, metric.length)),
+          Offset.zero,
+        );
+        distance = next + dashGap;
+      }
+    }
+    canvas.drawPath(
+      dashed,
+      Paint()
+        ..color = color
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = strokeWidth
+        ..strokeCap = StrokeCap.round,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _DashedBorderPainter oldDelegate) =>
+      oldDelegate.borderRadius != borderRadius ||
+      oldDelegate.color != color ||
+      oldDelegate.strokeWidth != strokeWidth;
 }

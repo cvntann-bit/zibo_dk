@@ -7,6 +7,7 @@ import '../providers/coin_provider.dart';
 import '../providers/goals_provider.dart';
 import '../utils/info_dialog.dart';
 import '../utils/zibo_event_signal.dart';
+import 'sticker_style.dart';
 
 /// Tek bir hedefi; adını, ilerleme durumunu ve 7 günlük işaretleme
 /// kutucuklarını gösteren kart. Kutucuklardan yalnızca bugüne karşılık
@@ -79,47 +80,98 @@ class GoalCard extends StatelessWidget {
       goal.id,
     );
 
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    goal.name,
-                    style: Theme.of(context).textTheme.titleMedium,
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: stickerDecoration(
+        fill: colorScheme.surfaceContainerLowest,
+        borderRadius: BorderRadius.circular(16),
+        borderWidth: 3,
+        shadowOffset: Offset.zero,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  goal.name,
+                  style: TextStyle(
+                    fontFamily: 'Baloo2',
+                    fontVariations: const [FontVariation('wght', 700)],
+                    fontSize: 14,
+                    color: colorScheme.onSurface,
                   ),
                 ),
-                IconButton(
-                  icon: const Icon(Icons.delete_outline),
-                  tooltip: l10n.deleteGoalTooltip,
-                  onPressed: () =>
-                      context.read<GoalsProvider>().removeGoal(goal.id),
-                ),
-              ],
-            ),
-            Text(
+              ),
+              _DeleteButton(
+                tooltip: l10n.deleteGoalTooltip,
+                onPressed: () =>
+                    context.read<GoalsProvider>().removeGoal(goal.id),
+              ),
+            ],
+          ),
+          Padding(
+            padding: const EdgeInsets.only(top: 2),
+            child: Text(
               l10n.goalProgressLabel(goal.completedCount),
-              style: Theme.of(
-                context,
-              ).textTheme.bodyMedium?.copyWith(color: colorScheme.onSurfaceVariant),
+              style: TextStyle(
+                fontWeight: FontWeight.w700,
+                fontSize: 11,
+                color: colorScheme.onSurfaceVariant,
+              ),
             ),
-            const SizedBox(height: 12),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                for (var day = 0; day < Goal.daysPerCycle; day++)
-                  _DayBox(
-                    dayNumber: completedCycles * Goal.daysPerCycle + day + 1,
-                    status: goal.statusForDay(day, today),
-                    onTap: () => _onTodayTap(context),
-                  ),
-              ],
+          ),
+          const SizedBox(height: 10),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              for (var day = 0; day < Goal.daysPerCycle; day++)
+                _DayBox(
+                  dayNumber: completedCycles * Goal.daysPerCycle + day + 1,
+                  status: goal.statusForDay(day, today),
+                  onTap: () => _onTodayTap(context),
+                ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Mockup'ın `.del` butonu — dolgusuz, ince konturlu köşeli kare (Material
+/// `IconButton.filled`in AKSİNE, `.icon-btn`/`.mini-btn` ailesinden FARKLI
+/// bir "pasif/ikincil" varyant: dolgu YOK, yalnızca kontur).
+class _DeleteButton extends StatelessWidget {
+  const _DeleteButton({required this.tooltip, required this.onPressed});
+
+  final String tooltip;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    const radius = BorderRadius.all(Radius.circular(7));
+
+    return Tooltip(
+      message: tooltip,
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: radius,
+        child: InkWell(
+          borderRadius: radius,
+          onTap: onPressed,
+          child: Container(
+            width: 24,
+            height: 24,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              border: Border.all(color: kStickerOutline, width: 2),
+              borderRadius: radius,
             ),
-          ],
+            child: Icon(Icons.close, size: 13, color: colorScheme.onSurfaceVariant),
+          ),
         ),
       ),
     );
@@ -153,41 +205,38 @@ class _DayBox extends StatelessWidget {
         semanticLabel = l10n.goalDayDone(dayNumber);
         background = colorScheme.primary;
         foreground = colorScheme.onPrimary;
-        borderColor = colorScheme.primary;
-        content = Icon(Icons.check, size: 18, color: foreground);
+        borderColor = kStickerOutline;
+        content = Icon(Icons.check, size: 16, color: foreground);
       case GoalDayStatus.today:
         semanticLabel = l10n.goalDayToday(dayNumber);
-        background = colorScheme.surface;
+        background = colorScheme.surfaceContainerLowest;
         foreground = colorScheme.primary;
         borderColor = colorScheme.primary;
         content = Text(
           '$dayNumber',
-          style: Theme.of(
-            context,
-          ).textTheme.labelMedium?.copyWith(color: foreground, fontWeight: FontWeight.bold),
+          style: TextStyle(color: foreground, fontWeight: FontWeight.w800, fontSize: 12),
         );
       case GoalDayStatus.missed:
         semanticLabel = l10n.goalDayMissed(dayNumber);
-        background = colorScheme.errorContainer;
-        foreground = colorScheme.onErrorContainer;
-        borderColor = colorScheme.errorContainer;
-        content = Icon(Icons.close, size: 16, color: foreground);
+        background = kAccentMuted;
+        foreground = kStickerOutline;
+        borderColor = kStickerOutline;
+        content = Icon(Icons.close, size: 14, color: foreground);
       case GoalDayStatus.upcoming:
         semanticLabel = l10n.goalDayUpcoming(dayNumber);
         background = Colors.transparent;
-        foreground = colorScheme.onSurfaceVariant.withValues(alpha: 0.5);
+        foreground = colorScheme.onSurfaceVariant.withValues(alpha: 0.55);
         borderColor = colorScheme.outlineVariant;
         content = Text(
           '$dayNumber',
-          style: Theme.of(context).textTheme.labelMedium?.copyWith(color: foreground),
+          style: TextStyle(color: foreground, fontWeight: FontWeight.w800, fontSize: 12),
         );
     }
 
     final isTappable = status == GoalDayStatus.today;
-    // Etkin durumlar (tamamlandı/bugün), uygulamanın genelindeki butonlarla
-    // aynı "hafif gölge" dilini paylaşsın; pasif durumlar düz kalsın.
-    final isEmphasized =
-        status == GoalDayStatus.done || status == GoalDayStatus.today;
+    // Mockup'ta yalnızca "bugün" pip'i (`.pip.today`) düz ofsetli bir sticker
+    // gölgesi taşıyor — "tamamlandı" DAHİL diğer üç durumda gölge YOK.
+    final isEmphasized = status == GoalDayStatus.today;
 
     return Semantics(
       label: semanticLabel,
@@ -197,19 +246,15 @@ class _DayBox extends StatelessWidget {
         customBorder: const CircleBorder(),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
-          width: 38,
-          height: 38,
+          width: 28,
+          height: 28,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: background,
-            border: Border.all(color: borderColor, width: 1.5),
+            border: Border.all(color: borderColor, width: 2),
             boxShadow: isEmphasized
-                ? [
-                    BoxShadow(
-                      color: colorScheme.primary.withValues(alpha: 0.25),
-                      blurRadius: 6,
-                      offset: const Offset(0, 2),
-                    ),
+                ? const [
+                    BoxShadow(color: kStickerOutline, offset: Offset(1.5, 1.5)),
                   ]
                 : null,
           ),

@@ -516,7 +516,7 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
           // Sayfa'da görünmesiyle aynı koşullu-görünürlük deseni).
           if (_selectedIndex == _goalTrackingTabIndex) ...[
             StickerIconButton(
-              icon: Icons.emoji_events_outlined,
+              emoji: '🏆',
               tooltip: l10n.completedGoalsButtonTooltip,
               backgroundColor: Theme.of(context).colorScheme.surfaceContainerLowest,
               iconColor: Theme.of(context).colorScheme.onSurface,
