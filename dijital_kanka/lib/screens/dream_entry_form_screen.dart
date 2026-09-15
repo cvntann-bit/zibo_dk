@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 import '../l10n/app_localizations.dart';
 import '../models/dream_entry.dart';
 import '../providers/dream_journal_provider.dart';
+import '../widgets/dot_grid_background.dart';
+import '../widgets/sticker_style.dart';
 
 /// Yeni rüya ekleme VE var olan bir rüyayı düzenleme için ortak form ekranı.
 /// [existing] verilmezse "ekle" modunda açılır; verilirse alanlar önceden
@@ -101,49 +103,131 @@ class _DreamEntryFormScreenState extends State<DreamEntryFormScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          _isEditing ? l10n.dreamEditEntryTitle : l10n.dreamNewEntryTitle,
-        ),
+      appBar: plainStickerAppBar(
+        context,
+        title: _isEditing ? l10n.dreamEditEntryTitle : l10n.dreamNewEntryTitle,
         actions: [
           if (_isEditing)
-            IconButton(
-              icon: const Icon(Icons.delete_outline),
-              tooltip: l10n.dreamDeleteEntryTooltip,
-              onPressed: _confirmDelete,
+            Padding(
+              padding: const EdgeInsets.only(right: 16),
+              child: StickerIconButton(
+                icon: Icons.delete_outline,
+                onPressed: _confirmDelete,
+                tooltip: l10n.dreamDeleteEntryTooltip,
+                backgroundColor: colorScheme.surfaceContainerLowest,
+                iconColor: kStickerOutline,
+                size: 34,
+                iconSize: 16,
+                borderRadius: null,
+              ),
             ),
         ],
       ),
-      body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
-          children: [
-            TextField(
-              controller: _titleController,
-              autofocus: !_isEditing,
-              textCapitalization: TextCapitalization.sentences,
-              decoration: InputDecoration(labelText: l10n.dreamTitleHint),
+      body: Stack(
+        children: [
+          const Positioned.fill(child: DotGridBackground()),
+          SafeArea(
+            child: ListView(
+              padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
+              children: [
+                _DreamFieldCard(
+                  label: l10n.dreamTitleHint,
+                  child: TextField(
+                    controller: _titleController,
+                    autofocus: !_isEditing,
+                    textCapitalization: TextCapitalization.sentences,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 13.5,
+                      color: colorScheme.onSurface,
+                    ),
+                    decoration: const InputDecoration(
+                      border: InputBorder.none,
+                      isDense: true,
+                      contentPadding: EdgeInsets.zero,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                _DreamFieldCard(
+                  label: l10n.dreamTextHint,
+                  child: TextField(
+                    controller: _textController,
+                    minLines: 6,
+                    maxLines: 12,
+                    textCapitalization: TextCapitalization.sentences,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 13.5,
+                      height: 1.5,
+                      color: colorScheme.onSurface,
+                    ),
+                    decoration: const InputDecoration(
+                      border: InputBorder.none,
+                      isDense: true,
+                      contentPadding: EdgeInsets.zero,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 24),
+                stickerButtonShadow(
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: FilledButton(
+                      style: stickerFilledButtonStyle(context, fontSize: 14),
+                      onPressed: _canSave ? _save : null,
+                      child: Text(l10n.dreamSaveButton),
+                    ),
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: _textController,
-              minLines: 6,
-              maxLines: 12,
-              textCapitalization: TextCapitalization.sentences,
-              decoration: InputDecoration(
-                labelText: l10n.dreamTextHint,
-                alignLabelWithHint: true,
-              ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Rüya formunun "Başlık"/"Rüyanı anlat..." alanlarını saran sticker kartı
+/// — mockup'ın `.field-card` (küçük büyük-harf etiket + kalın değer metni).
+/// İçindeki [child] gerçek bir [TextField] KALIYOR (yalnızca görünümü
+/// `InputBorder.none` ile sıfırlanıp bu kartın kendi konturu/gölgesi
+/// devralıyor) — `widget_test.dart`'ın `find.byType(TextField).at(0/1)` ile
+/// bu iki alana yazdığı testler BOZULMASIN diye.
+class _DreamFieldCard extends StatelessWidget {
+  const _DreamFieldCard({required this.label, required this.child});
+
+  final String label;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+      decoration: stickerDecoration(
+        fill: colorScheme.surfaceContainerLowest,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              fontWeight: FontWeight.w800,
+              fontSize: 10.5,
+              letterSpacing: 0.5,
+              color: colorScheme.onSurfaceVariant,
             ),
-            const SizedBox(height: 24),
-            FilledButton(
-              onPressed: _canSave ? _save : null,
-              child: Text(l10n.dreamSaveButton),
-            ),
-          ],
-        ),
+          ),
+          const SizedBox(height: 5),
+          child,
+        ],
       ),
     );
   }

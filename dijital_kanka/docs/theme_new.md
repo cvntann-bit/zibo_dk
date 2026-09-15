@@ -580,7 +580,7 @@ genişletilmek istenirse önce burada AÇIKÇA onaylanmalı.
 | Alt bar + Z butonu (uygulama geneli bileşen) | ✅ Koda döküldü (`main_bottom_bar.dart`/`z_floating_button.dart` — çentiksiz düz bar, mockup'taki gibi) |
 | Modül menüsü (Z butonu sheet'i) | ✅ Koda döküldü (`modules_menu_sheet.dart`) |
 | Modül ekranı — Su Takibi | ✅ Onaylandı — koda dökülmeyi bekliyor |
-| Modül ekranı — Rüya Günlüğü | ✅ Onaylandı — koda dökülmeyi bekliyor |
+| Modül ekranı — Rüya Günlüğü | ✅ Koda döküldü (`dream_journal_screen.dart`/`dream_entry_form_screen.dart`) |
 | Modül ekranı — Şükran Günlüğü | ✅ Onaylandı — koda dökülmeyi bekliyor |
 | Modül ekranı — Ruh Hali Takibi | ✅ Onaylandı — koda dökülmeyi bekliyor |
 | Modül ekranı — Manifest Günlüğü | ✅ Onaylandı — koda dökülmeyi bekliyor |

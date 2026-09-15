@@ -128,39 +128,7 @@ class SettingsScreen extends StatelessWidget {
     final authLink = context.watch<AuthLinkProvider>();
 
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: colorScheme.surfaceContainerLowest,
-        leadingWidth: 62,
-        titleSpacing: 0,
-        leading: Padding(
-          padding: const EdgeInsets.only(left: 16),
-          child: Align(
-            alignment: Alignment.centerLeft,
-            child: StickerIconButton(
-              icon: Icons.arrow_back_rounded,
-              onPressed: () => Navigator.of(context).maybePop(),
-              tooltip: MaterialLocalizations.of(context).backButtonTooltip,
-              backgroundColor: colorScheme.surfaceContainerLowest,
-              iconColor: kStickerOutline,
-              size: 34,
-              iconSize: 16,
-              borderRadius: null,
-            ),
-          ),
-        ),
-        title: Text(
-          l10n.tabSettings,
-          style: const TextStyle(
-            fontFamily: 'Baloo2',
-            fontVariations: [FontVariation('wght', 800)],
-            fontSize: 18,
-          ),
-        ),
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(3),
-          child: Container(height: 3, color: kStickerOutline),
-        ),
-      ),
+      appBar: plainStickerAppBar(context, title: l10n.tabSettings),
       body: Stack(
         children: [
           const Positioned.fill(child: DotGridBackground()),

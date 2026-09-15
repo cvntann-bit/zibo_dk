@@ -151,6 +151,57 @@ class StickerIconButton extends StatelessWidget {
   }
 }
 
+/// Ayarlar'dan başlayıp Rüya/Şükran/Ruh Hali/Su/Manifest/Para/Odak
+/// modüllerinin HEPSİNİN paylaştığı "push ekranı" AppBar'ı — geri oku
+/// ([StickerIconButton], gerçek `MaterialLocalizations` tooltip'iyle) +
+/// Baloo2 başlık + 3px kalın alt çizgi. `RootScreen`'in sekmelerin
+/// paylaştığı logo/coin/mağaza/ayarlar AppBar'ından BİLEREK FARKLI (bkz.
+/// her modülün `docs/theme_new.md`'deki "sade push AppBar'ı" notu) —
+/// `AppBar` gerçek türünü DEĞİŞTİRMEDEN (Scaffold.appBar için gereken
+/// `PreferredSizeWidget` zaten `AppBar`'ın kendisi) sadece stilini/
+/// leading'ini/alt çizgisini özelleştiren bir fabrika fonksiyonu.
+PreferredSizeWidget plainStickerAppBar(
+  BuildContext context, {
+  required String title,
+  List<Widget>? actions,
+}) {
+  final colorScheme = Theme.of(context).colorScheme;
+  return AppBar(
+    backgroundColor: colorScheme.surfaceContainerLowest,
+    leadingWidth: 62,
+    titleSpacing: 0,
+    leading: Padding(
+      padding: const EdgeInsets.only(left: 16),
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: StickerIconButton(
+          icon: Icons.arrow_back_rounded,
+          onPressed: () => Navigator.of(context).maybePop(),
+          tooltip: MaterialLocalizations.of(context).backButtonTooltip,
+          backgroundColor: colorScheme.surfaceContainerLowest,
+          iconColor: kStickerOutline,
+          size: 34,
+          iconSize: 16,
+          borderRadius: null,
+        ),
+      ),
+    ),
+    title: Text(
+      title,
+      style: const TextStyle(
+        fontFamily: 'Baloo2',
+        fontVariations: [FontVariation('wght', 800)],
+        fontSize: 18,
+      ),
+    ),
+    actions: actions,
+    bottom: PreferredSize(
+      preferredSize: const Size.fromHeight(3),
+      child: Container(height: 3, color: kStickerOutline),
+    ),
+  );
+}
+
 /// Bir satırı; sol tarafta altın (veya özel) dolgulu emoji dairesi, ortada
 /// başlık+alt metin, sağda köşeli ">" (›) butonuyla gösteren paylaşılan
 /// kart — Profil'in "Zibo ile Bağın"/"İstatistiklerim" satırları, Kostüm
@@ -164,6 +215,7 @@ class StickerRowCard extends StatelessWidget {
     required this.emoji,
     required this.title,
     this.subtitle,
+    this.subtitleWidget,
     this.onTap,
     this.iconBackground,
     this.trailingChild,
@@ -172,6 +224,11 @@ class StickerRowCard extends StatelessWidget {
   final String emoji;
   final String title;
   final String? subtitle;
+
+  /// [subtitle]'ın tek-satır `Text`'i YETMEDİĞİNDE (ör. Rüya Günlüğü'nün
+  /// tarih + koşullu italik ruh-hali notu iki satırı) tam kontrol veren
+  /// alternatif — verilirse [subtitle] YOK SAYILIR.
+  final Widget? subtitleWidget;
   final VoidCallback? onTap;
 
   /// Varsayılan altın (`colorScheme.primary`) — Google bağlama satırı gibi
@@ -225,7 +282,10 @@ class StickerRowCard extends StatelessWidget {
                     color: colorScheme.onSurface,
                   ),
                 ),
-                if (subtitle != null) ...[
+                if (subtitleWidget != null) ...[
+                  const SizedBox(height: 2),
+                  subtitleWidget!,
+                ] else if (subtitle != null) ...[
                   const SizedBox(height: 2),
                   Text(
                     subtitle!,

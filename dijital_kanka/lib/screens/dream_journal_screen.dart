@@ -18,7 +18,9 @@ import '../providers/profile_provider.dart';
 import '../providers/zibo_pose_provider.dart';
 import '../utils/address_term.dart';
 import '../utils/dream_sentiment.dart';
+import '../widgets/dot_grid_background.dart';
 import '../widgets/speech_bubble.dart';
+import '../widgets/sticker_style.dart';
 import '../widgets/zibo_animated_image.dart';
 import 'dream_entry_form_screen.dart';
 
@@ -106,68 +108,65 @@ class _DreamJournalScreenState extends State<DreamJournalScreen> {
     final poseStep = context.watch<ZiboPoseProvider>().poseStep;
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.dreamJournalTitle)),
-      body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
-          children: [
-            Column(
+      appBar: plainStickerAppBar(context, title: l10n.dreamJournalTitle),
+      body: Stack(
+        children: [
+          const Positioned.fill(child: DotGridBackground()),
+          SafeArea(
+            child: ListView(
+              padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
               children: [
-                ZiboAnimatedImage(
-                  imageKey: const Key('ziboDreamJournalImage'),
-                  costumeId: equippedId,
-                  poseStep: poseStep,
-                  fallbackImage: equippedImageAsset,
-                  height: 200,
-                  semanticLabel: l10n.ziboImagePlaceholder,
+                Column(
+                  children: [
+                    ZiboAnimatedImage(
+                      imageKey: const Key('ziboDreamJournalImage'),
+                      costumeId: equippedId,
+                      poseStep: poseStep,
+                      fallbackImage: equippedImageAsset,
+                      height: 200,
+                      semanticLabel: l10n.ziboImagePlaceholder,
+                    ),
+                    const SizedBox(height: 14),
+                    SpeechBubble(message: quote),
+                  ],
                 ),
-                const SizedBox(height: 8),
-                SpeechBubble(message: quote),
+                const SizedBox(height: 20),
+                DashedStickerButton(
+                  onPressed: () => _openForm(context),
+                  label: l10n.dreamAddButton,
+                ),
+                const SizedBox(height: 16),
+                if (dreams.isEmpty)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 24),
+                    child: Text(
+                      l10n.dreamEmptyState,
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  )
+                else
+                  for (final dream in dreams)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: StickerRowCard(
+                        emoji: '🌙',
+                        title: dream.title,
+                        subtitleWidget: _buildDreamSubtitle(
+                          context,
+                          locale,
+                          dream,
+                          moodProvider,
+                        ),
+                        onTap: () => _openForm(context, existing: dream),
+                      ),
+                    ),
               ],
             ),
-            const SizedBox(height: 24),
-            OutlinedButton.icon(
-              onPressed: () => _openForm(context),
-              icon: const Icon(Icons.add),
-              label: Text(l10n.dreamAddButton),
-            ),
-            const SizedBox(height: 16),
-            if (dreams.isEmpty)
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 24),
-                child: Text(
-                  l10n.dreamEmptyState,
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
-                  ),
-                ),
-              )
-            else
-              for (final dream in dreams)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: Card(
-                    clipBehavior: Clip.antiAlias,
-                    child: ListTile(
-                      title: Text(
-                        dream.title,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      subtitle: _buildDreamSubtitle(
-                        context,
-                        locale,
-                        dream,
-                        moodProvider,
-                      ),
-                      trailing: const Icon(Icons.chevron_right),
-                      onTap: () => _openForm(context, existing: dream),
-                    ),
-                  ),
-                ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -185,7 +184,20 @@ Widget _buildDreamSubtitle(
   DreamEntry dream,
   MoodProvider moodProvider,
 ) {
-  final dateText = Text(formatLongDate(dream.date, locale));
+  final colorScheme = Theme.of(context).colorScheme;
+  // `StickerRowCard`'ın kendi tek-satırlık `subtitle` stiliyle AYNI (bkz.
+  // sticker_style.dart) — burada elle tekrarlanıyor çünkü ikinci (koşullu)
+  // satır için [subtitleWidget] kullanılıyor, düz `subtitle` DEĞİL.
+  final dateText = Text(
+    formatLongDate(dream.date, locale),
+    maxLines: 1,
+    overflow: TextOverflow.ellipsis,
+    style: TextStyle(
+      fontWeight: FontWeight.w700,
+      fontSize: 11.5,
+      color: colorScheme.onSurfaceVariant,
+    ),
+  );
   final moodEntry = moodProvider.entryForDate(dream.date);
   final correlated =
       moodEntry != null && moodEntry.mood.isLow && isNegativeDream(dream);
@@ -197,11 +209,14 @@ Widget _buildDreamSubtitle(
     mainAxisSize: MainAxisSize.min,
     children: [
       dateText,
+      const SizedBox(height: 2),
       Text(
         l10n.dreamMoodCorrelationNote,
-        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-          color: Theme.of(context).colorScheme.onSurfaceVariant,
+        style: TextStyle(
+          fontWeight: FontWeight.w700,
+          fontSize: 10.5,
           fontStyle: FontStyle.italic,
+          color: colorScheme.onSurfaceVariant,
         ),
       ),
     ],
