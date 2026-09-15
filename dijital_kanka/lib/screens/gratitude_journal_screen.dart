@@ -18,10 +18,10 @@ import '../providers/profile_provider.dart';
 import '../providers/zibo_pose_provider.dart';
 import '../utils/address_term.dart';
 import '../utils/info_dialog.dart';
+import '../widgets/dot_grid_background.dart';
 import '../widgets/speech_bubble.dart';
+import '../widgets/sticker_style.dart';
 import '../widgets/zibo_animated_image.dart';
-
-const _gratitudeGreen = Color(0xFF4CAF50);
 
 /// Şükran Günlüğü sayfası: bugünün 3 şükran cümlesi formu (henüz
 /// tamamlanmadıysa) veya "tamamlandı" özeti (tamamlandıysa) + geçmiş
@@ -151,108 +151,209 @@ class _GratitudeJournalScreenState extends State<GratitudeJournalScreen> {
     final poseStep = context.watch<ZiboPoseProvider>().poseStep;
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.gratitudeScreenTitle)),
-      body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
-          children: [
-            Column(
+      appBar: plainStickerAppBar(context, title: l10n.gratitudeScreenTitle),
+      body: Stack(
+        children: [
+          const Positioned.fill(child: DotGridBackground()),
+          SafeArea(
+            child: ListView(
+              padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
               children: [
-                ZiboAnimatedImage(
-                  imageKey: const Key('ziboGratitudeImage'),
-                  costumeId: equippedId,
-                  poseStep: poseStep,
-                  fallbackImage: equippedImageAsset,
-                  height: 200,
-                  semanticLabel: l10n.ziboImagePlaceholder,
+                Column(
+                  children: [
+                    ZiboAnimatedImage(
+                      imageKey: const Key('ziboGratitudeImage'),
+                      costumeId: equippedId,
+                      poseStep: poseStep,
+                      fallbackImage: equippedImageAsset,
+                      height: 200,
+                      semanticLabel: l10n.ziboImagePlaceholder,
+                    ),
+                    const SizedBox(height: 14),
+                    SpeechBubble(message: quote),
+                  ],
                 ),
-                const SizedBox(height: 8),
-                SpeechBubble(message: quote),
-              ],
-            ),
-            const SizedBox(height: 24),
-            if (isTodayComplete)
-              _TodayDoneCard(
-                entry: provider.todayEntry!,
-                onEdit: () => _showEntryDetail(provider.todayEntry!),
-              )
-            else
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      for (var i = 0; i < 3; i++) ...[
-                        TextField(
-                          controller: _controllers[i],
-                          minLines: 1,
-                          maxLines: 2,
-                          textCapitalization: TextCapitalization.sentences,
-                          decoration: InputDecoration(
-                            labelText: l10n.gratitudeFieldLabel(i + 1),
+                const SizedBox(height: 20),
+                if (isTodayComplete)
+                  _TodayDoneCard(
+                    entry: provider.todayEntry!,
+                    onEdit: () => _showEntryDetail(provider.todayEntry!),
+                  )
+                else
+                  _GratitudeCard(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        for (var i = 0; i < 3; i++) ...[
+                          _GratitudeFieldBox(
+                            label: l10n.gratitudeFieldLabel(i + 1),
+                            controller: _controllers[i],
                             // 2026 yeni özellik — kullanıcı yazmaya
                             // başlamadan önce gösterilen, her gün değişen
-                            // ilham verici öneri (bkz. gratitude_prompts.dart).
-                            // Kullanıcı yazmaya başlayınca normal placeholder
-                            // davranışıyla kaybolur, ekstra bir kod GEREKMEZ.
-                            hintText: gratitudePromptForField(
+                            // ilham verici öneri (bkz.
+                            // gratitude_prompts.dart). Kullanıcı yazmaya
+                            // başlayınca normal placeholder davranışıyla
+                            // kaybolur, ekstra bir kod GEREKMEZ.
+                            hint: gratitudePromptForField(
                               DateTime.now(),
                               i,
                               locale,
                             ),
                           ),
+                          if (i < 2) const SizedBox(height: 12),
+                        ],
+                        const SizedBox(height: 16),
+                        stickerButtonShadow(
+                          child: SizedBox(
+                            width: double.infinity,
+                            child: FilledButton(
+                              style: stickerFilledButtonStyle(context),
+                              onPressed: _canSave ? _save : null,
+                              child: Text(l10n.gratitudeSaveButton),
+                            ),
+                          ),
                         ),
-                        if (i < 2) const SizedBox(height: 12),
                       ],
-                      const SizedBox(height: 16),
-                      FilledButton(
-                        onPressed: _canSave ? _save : null,
-                        child: Text(l10n.gratitudeSaveButton),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            const SizedBox(height: 24),
-            Text(l10n.gratitudeHistoryTitle, style: Theme.of(context).textTheme.titleMedium),
-            const SizedBox(height: 12),
-            if (allEntries.isEmpty)
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                child: Text(
-                  l10n.gratitudeHistoryEmpty,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
-                  ),
-                ),
-              )
-            else
-              for (final entry in allEntries)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: Card(
-                    clipBehavior: Clip.antiAlias,
-                    child: ListTile(
-                      leading: const Icon(Icons.check_circle, color: _gratitudeGreen),
-                      title: Text(formatLongDate(entry.date, locale)),
-                      trailing: const Icon(Icons.chevron_right),
-                      onTap: () => _showEntryDetail(entry),
                     ),
                   ),
+                const SizedBox(height: 20),
+                Text(
+                  l10n.gratitudeHistoryTitle,
+                  style: const TextStyle(
+                    fontFamily: 'Baloo2',
+                    fontVariations: [FontVariation('wght', 800)],
+                    fontSize: 16,
+                  ),
                 ),
-          ],
-        ),
+                const SizedBox(height: 12),
+                if (allEntries.isEmpty)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    child: Text(
+                      l10n.gratitudeHistoryEmpty,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  )
+                else
+                  for (final entry in allEntries)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: StickerRowCard(
+                        emoji: '✓',
+                        title: formatLongDate(entry.date, locale),
+                        onTap: () => _showEntryDetail(entry),
+                      ),
+                    ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
 }
 
-/// Bugünün kaydı tamamlandığında formun yerine gösterilen kart — yeşil tik +
+/// Şükran Günlüğü'nün "genel" sticker kartı — mockup'ın `.card` (bkz.
+/// `docs/theme_new.md`). Form VE "bugün tamamlandı" özeti AYNI bu dış
+/// sarmalayıcıyı paylaşır, yalnızca içi değişir (mockup notu: "Bu kart,
+/// form YERİNE geçiyor").
+class _GratitudeCard extends StatelessWidget {
+  const _GratitudeCard({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: stickerDecoration(
+        fill: Theme.of(context).colorScheme.surfaceContainerLowest,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: child,
+    );
+  }
+}
+
+/// Formun (henüz tamamlanmadıysa görünen) tek bir "N. Şükran cümlen" alanı —
+/// mockup'ın `.dd-field` (küçük büyük-harf etiket + ince konturlu giriş
+/// kutusu). [controller] gerçek bir [TextField]'a bağlı KALIYOR — yalnızca
+/// görünümü sıfırlanıp bu kutunun kendi ince konturu devralıyor (bkz.
+/// `docs/theme_new.md`'deki alan ipucu notu — hint günlük söz havuzundan
+/// gelir, normal placeholder davranışı korunuyor).
+class _GratitudeFieldBox extends StatelessWidget {
+  const _GratitudeFieldBox({
+    required this.label,
+    required this.controller,
+    required this.hint,
+  });
+
+  final String label;
+  final TextEditingController controller;
+  final String hint;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontWeight: FontWeight.w800,
+            fontSize: 10.5,
+            letterSpacing: 0.4,
+            color: colorScheme.onSurfaceVariant,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          decoration: BoxDecoration(
+            border: Border.all(color: kStickerOutline, width: 2),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: TextField(
+            controller: controller,
+            minLines: 1,
+            maxLines: 2,
+            textCapitalization: TextCapitalization.sentences,
+            style: TextStyle(
+              fontWeight: FontWeight.w700,
+              fontSize: 12.5,
+              color: colorScheme.onSurface,
+            ),
+            decoration: InputDecoration(
+              border: InputBorder.none,
+              isDense: true,
+              contentPadding: const EdgeInsets.symmetric(vertical: 9),
+              hintText: hint,
+              hintStyle: TextStyle(
+                fontWeight: FontWeight.w700,
+                fontSize: 12.5,
+                color: colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Bugünün kaydı tamamlandığında formun yerine gösterilen kart — büyük tik +
 /// kısa bir kutlama metni + kullanıcının bugün yazdığı üç şükranın kendisi
 /// (eskiden yalnızca kutlama metni gösterilip yazılan metinler bir daha
 /// hiç görünmüyordu — bkz. CLAUDE.md "Şükran Günlüğü" 2026 güncellemesi) +
 /// bir düzenleme ikonu (`onEdit`, `_showEntryDetail`'i açar).
+///
+/// **Renk istisnası** (bkz. `docs/theme_new.md` "Onaylanan: Şükran
+/// Günlüğü"): gerçek kodda bu tik eskiden SABİT bir yeşildi (`#4CAF50`,
+/// temaya bağlı değil) — tek-vurgu kuralımız gereği bilinçli olarak altına
+/// (`colorScheme.primary`) çevrildi, mockup'taki gerçek kod rengi KOPYALANMADI.
 class _TodayDoneCard extends StatelessWidget {
   const _TodayDoneCard({required this.entry, required this.onEdit});
 
@@ -262,51 +363,108 @@ class _TodayDoneCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final colorScheme = Theme.of(context).colorScheme;
     final texts = [entry.text1, entry.text2, entry.text3];
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                const Icon(Icons.check_circle, color: _gratitudeGreen, size: 32),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        l10n.gratitudeTodayDoneTitle,
-                        style: Theme.of(context).textTheme.titleMedium,
+    return _GratitudeCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              DecoratedBox(
+                decoration: stickerCircleDecoration(
+                  fill: colorScheme.primary,
+                  borderWidth: 2.5,
+                ),
+                child: SizedBox(
+                  width: 38,
+                  height: 38,
+                  child: Center(
+                    child: Text(
+                      '✓',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w800,
+                        color: colorScheme.onPrimary,
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        l10n.gratitudeTodayDoneBody,
-                        style: Theme.of(context).textTheme.bodySmall,
-                      ),
-                    ],
+                    ),
                   ),
                 ),
-                IconButton(
-                  icon: const Icon(Icons.edit_outlined),
-                  tooltip: l10n.gratitudeEditTooltip,
-                  onPressed: onEdit,
-                ),
-              ],
-            ),
-            const Divider(height: 24),
-            for (var i = 0; i < 3; i++) ...[
-              Text(
-                l10n.gratitudeFieldLabel(i + 1),
-                style: const TextStyle(fontWeight: FontWeight.bold),
               ),
-              Text(texts[i]),
-              if (i < 2) const SizedBox(height: 8),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      l10n.gratitudeTodayDoneTitle,
+                      style: const TextStyle(
+                        fontFamily: 'Baloo2',
+                        fontVariations: [FontVariation('wght', 800)],
+                        fontSize: 15,
+                      ),
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      l10n.gratitudeTodayDoneBody,
+                      style: TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 11.5,
+                        height: 1.5,
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              StickerIconButton(
+                icon: Icons.edit_outlined,
+                onPressed: onEdit,
+                tooltip: l10n.gratitudeEditTooltip,
+                backgroundColor: colorScheme.surfaceContainerLowest,
+                iconColor: kStickerOutline,
+                size: 30,
+                iconSize: 14,
+                borderRadius: null,
+              ),
             ],
-          ],
-        ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 7),
+            child: DashedUnderline(
+              color: colorScheme.outlineVariant,
+              child: const SizedBox(width: double.infinity, height: 1),
+            ),
+          ),
+          for (var i = 0; i < 3; i++)
+            Padding(
+              padding: EdgeInsets.only(bottom: i < 2 ? 10 : 0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    l10n.gratitudeFieldLabel(i + 1),
+                    style: TextStyle(
+                      fontWeight: FontWeight.w800,
+                      fontSize: 10.5,
+                      letterSpacing: 0.4,
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    texts[i],
+                    style: TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 12.5,
+                      color: colorScheme.onSurface,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+        ],
       ),
     );
   }
