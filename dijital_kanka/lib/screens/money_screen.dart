@@ -16,10 +16,12 @@ import '../providers/money_provider.dart';
 import '../providers/profile_provider.dart';
 import '../providers/zibo_pose_provider.dart';
 import '../utils/address_term.dart';
+import '../widgets/dot_grid_background.dart';
 import '../widgets/money_category_card.dart';
 import '../widgets/money_trend_chart.dart';
 import '../widgets/share_zibo_button.dart';
 import '../widgets/speech_bubble.dart';
+import '../widgets/sticker_style.dart';
 import '../widgets/zibo_animated_image.dart';
 
 const _expenseRed = Color(0xFFE53935);
@@ -185,27 +187,40 @@ class _MoneyScreenState extends State<MoneyScreen> {
     final defaultCurrencyCode = context.watch<CurrencyProvider>().currencyCode;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.moneyScreenTitle),
+      appBar: plainStickerAppBar(
+        context,
+        title: l10n.moneyScreenTitle,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.currency_exchange),
-            tooltip: l10n.moneyCurrencyTooltip,
-            onPressed: () => _showCurrencyPicker(context),
+          Padding(
+            padding: const EdgeInsets.only(right: 16),
+            child: StickerIconButton(
+              emoji: '💱',
+              onPressed: () => _showCurrencyPicker(context),
+              tooltip: l10n.moneyCurrencyTooltip,
+              backgroundColor: Theme.of(context).colorScheme.surfaceContainerLowest,
+              size: 34,
+              iconSize: 16,
+              borderRadius: null,
+            ),
           ),
         ],
       ),
-      body: SafeArea(
-        child: _buildBody(
-          context,
-          l10n,
-          quote,
-          equippedId,
-          poseStep,
-          equippedImageAsset,
-          moneyProvider,
-          defaultCurrencyCode,
-        ),
+      body: Stack(
+        children: [
+          const Positioned.fill(child: DotGridBackground()),
+          SafeArea(
+            child: _buildBody(
+              context,
+              l10n,
+              quote,
+              equippedId,
+              poseStep,
+              equippedImageAsset,
+              moneyProvider,
+              defaultCurrencyCode,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -221,7 +236,7 @@ class _MoneyScreenState extends State<MoneyScreen> {
     String defaultCurrencyCode,
   ) {
     return ListView(
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
+      padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
       children: [
         Column(
           children: [
@@ -233,7 +248,7 @@ class _MoneyScreenState extends State<MoneyScreen> {
               height: 200,
               semanticLabel: l10n.ziboImagePlaceholder,
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 14),
             Stack(
               clipBehavior: Clip.none,
               children: [
@@ -247,7 +262,7 @@ class _MoneyScreenState extends State<MoneyScreen> {
             ),
           ],
         ),
-        const SizedBox(height: 24),
+        const SizedBox(height: 20),
         MoneyCategoryCard(
           category: MoneyCategory.expense,
           emoji: '💸',
@@ -274,18 +289,18 @@ class _MoneyScreenState extends State<MoneyScreen> {
           amountSign: '+',
           defaultCurrencyCode: defaultCurrencyCode,
         ),
-        const SizedBox(height: 24),
-        Text(l10n.moneyTrendSectionTitle, style: Theme.of(context).textTheme.titleMedium),
         const SizedBox(height: 12),
-        Card(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: MoneyTrendChart(
-              expenses: moneyProvider.entriesFor(MoneyCategory.expense),
-              savings: moneyProvider.entriesFor(MoneyCategory.saving),
-              incomes: moneyProvider.entriesFor(MoneyCategory.income),
-              defaultCurrencyCode: defaultCurrencyCode,
-            ),
+        // Mockup notu: "Mevcut Durum" başlığı diğer bölümlerin aksine
+        // KARTIN DIŞINDA değil, kartın kendi üst araç çubuğunda (Günlük/
+        // Haftalık geçişiyle AYNI satırda) — bkz. `MoneyTrendChart`'ın
+        // `sectionTitle` parametresi.
+        StickerCard(
+          child: MoneyTrendChart(
+            sectionTitle: l10n.moneyTrendSectionTitle,
+            expenses: moneyProvider.entriesFor(MoneyCategory.expense),
+            savings: moneyProvider.entriesFor(MoneyCategory.saving),
+            incomes: moneyProvider.entriesFor(MoneyCategory.income),
+            defaultCurrencyCode: defaultCurrencyCode,
           ),
         ),
       ],

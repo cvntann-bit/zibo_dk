@@ -584,7 +584,7 @@ genişletilmek istenirse önce burada AÇIKÇA onaylanmalı.
 | Modül ekranı — Şükran Günlüğü | ✅ Koda döküldü (`gratitude_journal_screen.dart`) |
 | Modül ekranı — Ruh Hali Takibi | ✅ Koda döküldü (`mood_tracking_screen.dart`) |
 | Modül ekranı — Manifest Günlüğü | ✅ Koda döküldü (`manifest_journal_screen.dart`) |
-| Modül ekranı — Para ve Birikim | ✅ Onaylandı — koda dökülmeyi bekliyor |
+| Modül ekranı — Para ve Birikim | ✅ Koda döküldü (`money_screen.dart`/`money_category_card.dart`/`money_trend_chart.dart`) |
 | Modül ekranı — Odak Sayacı (1 kaldı) | ⏳ Henüz mockup yapılmadı |
 | Ayarlar ekranı | ✅ Koda döküldü (`settings_screen.dart`) |
 | Şans Çarkı / Günlük Ödül / Rozet pop-up'ları | 🚫 Kapsam dışı — değişmeyecek |

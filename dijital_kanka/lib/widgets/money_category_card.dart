@@ -5,6 +5,7 @@ import '../data/currencies.dart';
 import '../l10n/app_localizations.dart';
 import '../models/money_entry.dart';
 import '../providers/money_provider.dart';
+import 'sticker_style.dart';
 
 /// Para ve Birikim sayfasındaki tek bir kategoriyi (ör. Harcamalar); adını,
 /// kayıt listesini, toplamını ve yeni kayıt ekleme butonunu gösteren kart.
@@ -184,9 +185,22 @@ class MoneyCategoryCard extends StatelessWidget {
               )
               .join(' + ');
 
+    // Dıştaki `Card` GÖRSEL OLARAK şeffaf — SADECE `widget_test.dart`'ın
+    // `find.ancestor(of: find.text('💸 Harcamalar'), matching:
+    // find.byType(Card))` deseni bozulmasın diye korunuyor, gerçek dolgu/
+    // kontur/gölge içteki `Container`'dan geliyor (bkz. `CostumeCard`'daki
+    // AYNI desen).
     return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
+      margin: EdgeInsets.zero,
+      color: Colors.transparent,
+      elevation: 0,
+      shape: const RoundedRectangleBorder(),
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: stickerDecoration(
+          fill: colorScheme.surfaceContainerLowest,
+          borderRadius: BorderRadius.circular(18),
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -195,19 +209,24 @@ class MoneyCategoryCard extends StatelessWidget {
                 Expanded(
                   child: Text(
                     '$emoji $title',
-                    style: Theme.of(context).textTheme.titleMedium,
+                    style: const TextStyle(
+                      fontFamily: 'Baloo2',
+                      fontVariations: [FontVariation('wght', 800)],
+                      fontSize: 13.5,
+                    ),
                   ),
                 ),
                 Text(
                   l10n.moneyCategoryTotal(totalText),
-                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                  style: TextStyle(
+                    fontWeight: FontWeight.w800,
+                    fontSize: 12,
                     color: accentColor,
-                    fontWeight: FontWeight.bold,
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 10),
             if (entries.isEmpty)
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8),
@@ -219,46 +238,101 @@ class MoneyCategoryCard extends StatelessWidget {
                 ),
               )
             else
-              for (final entry in entries)
+              for (var i = 0; i < entries.length; i++) ...[
+                if (i > 0) Container(height: 1, color: colorScheme.outlineVariant),
                 Material(
                   color: Colors.transparent,
                   child: InkWell(
-                    borderRadius: BorderRadius.circular(8),
-                    onTap: () => _showEntryDialog(context, existing: entry),
+                    onTap: () => _showEntryDialog(context, existing: entries[i]),
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 2),
+                      padding: const EdgeInsets.symmetric(vertical: 7),
                       child: Row(
                         children: [
                           Expanded(
                             child: Text(
-                              entry.name,
+                              entries[i].name,
                               overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontWeight: FontWeight.w700,
+                                fontSize: 12.5,
+                                color: colorScheme.onSurface,
+                              ),
                             ),
                           ),
+                          const SizedBox(width: 8),
                           Text(
-                            '$amountSign${currencyByCode(entry.currencyCode).symbol}'
-                            '${entry.amount.toStringAsFixed(2)}',
-                            style: TextStyle(color: accentColor, fontWeight: FontWeight.w600),
+                            '$amountSign${currencyByCode(entries[i].currencyCode).symbol}'
+                            '${entries[i].amount.toStringAsFixed(2)}',
+                            style: TextStyle(
+                              fontWeight: FontWeight.w800,
+                              fontSize: 12.5,
+                              color: accentColor,
+                            ),
                           ),
-                          IconButton(
-                            icon: const Icon(Icons.close, size: 18),
+                          const SizedBox(width: 8),
+                          _DeleteDot(
                             tooltip: l10n.moneyDeleteEntryTooltip,
-                            onPressed: () => context
+                            onTap: () => context
                                 .read<MoneyProvider>()
-                                .removeEntry(category, entry.id),
+                                .removeEntry(category, entries[i].id),
                           ),
                         ],
                       ),
                     ),
                   ),
                 ),
-            const SizedBox(height: 4),
-            OutlinedButton.icon(
+              ],
+            const SizedBox(height: 6),
+            DashedStickerButton(
+              label: l10n.moneyAddEntryButton,
               onPressed: () => _showEntryDialog(context),
-              icon: const Icon(Icons.add),
-              label: Text(l10n.moneyAddEntryButton),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Bir kaydı ANINDA silen küçük "✕" düğmesi — mockup'ın `.del` (bkz.
+/// `docs/theme_new.md`): soluk konturlu, küçük, dikkat çekmeyen bir daire —
+/// silme onay penceresi YOK (Rüya/Şükran'ın aksine, gerçek koddaki davranış
+/// bu).
+class _DeleteDot extends StatelessWidget {
+  const _DeleteDot({required this.tooltip, required this.onTap});
+
+  final String tooltip;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Tooltip(
+      message: tooltip,
+      child: Material(
+        color: Colors.transparent,
+        shape: const CircleBorder(),
+        child: InkWell(
+          onTap: onTap,
+          customBorder: const CircleBorder(),
+          child: Container(
+            width: 20,
+            height: 20,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(color: colorScheme.outlineVariant, width: 1.5),
+            ),
+            child: Text(
+              '✕',
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.w800,
+                color: colorScheme.onSurfaceVariant,
+                height: 1,
+              ),
+            ),
+          ),
         ),
       ),
     );

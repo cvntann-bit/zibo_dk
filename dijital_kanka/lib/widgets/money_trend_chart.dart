@@ -5,6 +5,7 @@ import '../data/currencies.dart';
 import '../data/localized_calendar_names.dart';
 import '../l10n/app_localizations.dart';
 import '../models/money_entry.dart';
+import 'sticker_style.dart';
 
 const _expenseRed = Color(0xFFE53935);
 const _savingGreen = Color(0xFF43A047);
@@ -35,12 +36,17 @@ enum _Granularity { daily, weekly }
 class MoneyTrendChart extends StatefulWidget {
   const MoneyTrendChart({
     super.key,
+    required this.sectionTitle,
     required this.expenses,
     required this.savings,
     required this.incomes,
     required this.defaultCurrencyCode,
   });
 
+  /// Mockup notu: "Mevcut Durum" başlığı diğer bölümlerin aksine kartın
+  /// DIŞINA değil, kartın kendi üst araç çubuğuna (Günlük/Haftalık
+  /// geçişiyle AYNI satıra) yerleştiriliyor — bkz. `docs/theme_new.md`.
+  final String sectionTitle;
   final List<MoneyEntry> expenses;
   final List<MoneyEntry> savings;
   final List<MoneyEntry> incomes;
@@ -92,16 +98,31 @@ class _MoneyTrendChartState extends State<MoneyTrendChart> {
     final savings = widget.savings.where((e) => e.currencyCode == effectiveCurrency).toList();
     final incomes = widget.incomes.where((e) => e.currencyCode == effectiveCurrency).toList();
 
+    final titleText = Text(
+      widget.sectionTitle,
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+      style: const TextStyle(
+        fontFamily: 'Baloo2',
+        fontVariations: [FontVariation('wght', 800)],
+        fontSize: 13.5,
+      ),
+    );
+
     if (expenses.isEmpty && savings.isEmpty && incomes.isEmpty) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (availableCurrencies.length > 1)
+          titleText,
+          const SizedBox(height: 10),
+          if (availableCurrencies.length > 1) ...[
             _CurrencySelector(
               availableCurrencies: availableCurrencies,
               selected: effectiveCurrency,
               onChanged: (code) => setState(() => _selectedCurrency = code),
             ),
+            const SizedBox(height: 4),
+          ],
           Text(
             l10n.moneyTrendEmpty,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -132,18 +153,21 @@ class _MoneyTrendChartState extends State<MoneyTrendChart> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            if (availableCurrencies.length > 1)
-              _CurrencySelector(
-                availableCurrencies: availableCurrencies,
-                selected: effectiveCurrency,
-                onChanged: (code) => setState(() => _selectedCurrency = code),
-              )
-            else
-              const SizedBox.shrink(),
+            Flexible(child: titleText),
+            const SizedBox(width: 8),
             SegmentedButton<_Granularity>(
-              style: const ButtonStyle(
+              style: SegmentedButton.styleFrom(
                 visualDensity: VisualDensity.compact,
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                minimumSize: Size.zero,
+                backgroundColor: colorScheme.surfaceContainerLowest,
+                foregroundColor: colorScheme.onSurface,
+                selectedBackgroundColor: colorScheme.primary,
+                selectedForegroundColor: colorScheme.onPrimary,
+                side: const BorderSide(color: kStickerOutline, width: 1.5),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(9)),
+                textStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 9.5),
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
               ),
               segments: [
                 ButtonSegment(
@@ -161,6 +185,14 @@ class _MoneyTrendChartState extends State<MoneyTrendChart> {
             ),
           ],
         ),
+        if (availableCurrencies.length > 1) ...[
+          const SizedBox(height: 6),
+          _CurrencySelector(
+            availableCurrencies: availableCurrencies,
+            selected: effectiveCurrency,
+            onChanged: (code) => setState(() => _selectedCurrency = code),
+          ),
+        ],
         const SizedBox(height: 12),
         SizedBox(
           height: 180,
@@ -245,14 +277,18 @@ class _MoneyTrendChartState extends State<MoneyTrendChart> {
           ),
         ),
         const SizedBox(height: 8),
-        Wrap(
-          spacing: 16,
-          runSpacing: 8,
-          children: [
-            _LegendDot(color: _expenseRed, label: l10n.moneyTrendExpenseLegend),
-            _LegendDot(color: _savingGreen, label: l10n.moneyTrendSavingLegend),
-            _LegendDot(color: _incomeBlue, label: l10n.moneyIncome),
-          ],
+        SizedBox(
+          width: double.infinity,
+          child: Wrap(
+            alignment: WrapAlignment.center,
+            spacing: 14,
+            runSpacing: 6,
+            children: [
+              _LegendDot(color: _expenseRed, label: l10n.moneyTrendExpenseLegend),
+              _LegendDot(color: _savingGreen, label: l10n.moneyTrendSavingLegend),
+              _LegendDot(color: _incomeBlue, label: l10n.moneyIncome),
+            ],
+          ),
         ),
       ],
     );
@@ -364,12 +400,19 @@ class _LegendDot extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         Container(
-          width: 10,
-          height: 10,
+          width: 9,
+          height: 9,
           decoration: BoxDecoration(color: color, shape: BoxShape.circle),
         ),
-        const SizedBox(width: 6),
-        Text(label, style: Theme.of(context).textTheme.labelMedium),
+        const SizedBox(width: 5),
+        Text(
+          label,
+          style: TextStyle(
+            fontWeight: FontWeight.w700,
+            fontSize: 10.5,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
+        ),
       ],
     );
   }
