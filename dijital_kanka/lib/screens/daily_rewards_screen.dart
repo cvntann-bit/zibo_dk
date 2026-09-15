@@ -174,7 +174,7 @@ class _DayRewardBox extends StatelessWidget {
         background = colorScheme.primaryContainer;
         foreground = colorScheme.onPrimaryContainer;
         borderColor = colorScheme.primary;
-        statusIcon = Icon(Icons.card_giftcard_rounded, size: 20, color: foreground);
+        statusIcon = const Text('🎁', style: TextStyle(fontSize: 20, height: 1));
       case DailyRewardDayStatus.upcoming:
         semanticLabel = l10n.dailyRewardsLockedSemanticLabel(dayNumber, amount);
         background = Colors.transparent;

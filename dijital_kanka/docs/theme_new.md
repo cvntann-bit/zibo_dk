@@ -571,14 +571,14 @@ genişletilmek istenirse önce burada AÇIKÇA onaylanmalı.
 
 | Ekran | Durum |
 |---|---|
-| Ana Sayfa | ✅ Onaylandı (bu dosyadaki yerleşimle) — koda dökülmeyi bekliyor |
+| Ana Sayfa | ✅ Koda döküldü (`home_screen.dart` + paylaşılan chrome) |
 | Hedefler sekmesi | ✅ Onaylandı — koda dökülmeyi bekliyor |
 | Profil sekmesi | ✅ Onaylandı — koda dökülmeyi bekliyor |
 | Mağaza — Coin Al segmenti | ✅ Onaylandı — koda dökülmeyi bekliyor |
 | Mağaza — Kostümler segmenti | ✅ Onaylandı — koda dökülmeyi bekliyor |
 | Mağaza — Temalar segmenti | ✅ Onaylandı — koda dökülmeyi bekliyor |
-| Alt bar + Z butonu (uygulama geneli bileşen) | ⏳ Ana Sayfa mockup'ında görsel dili belli ama ayrı bir Flutter implementasyon onayı gerekiyor |
-| Modül menüsü (Z butonu sheet'i) | ✅ Onaylandı — koda dökülmeyi bekliyor |
+| Alt bar + Z butonu (uygulama geneli bileşen) | ✅ Koda döküldü (`main_bottom_bar.dart`/`z_floating_button.dart` — çentiksiz düz bar, mockup'taki gibi) |
+| Modül menüsü (Z butonu sheet'i) | ✅ Koda döküldü (`modules_menu_sheet.dart`) |
 | Modül ekranı — Su Takibi | ✅ Onaylandı — koda dökülmeyi bekliyor |
 | Modül ekranı — Rüya Günlüğü | ✅ Onaylandı — koda dökülmeyi bekliyor |
 | Modül ekranı — Şükran Günlüğü | ✅ Onaylandı — koda dökülmeyi bekliyor |
