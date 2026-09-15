@@ -16,7 +16,9 @@ import '../providers/profile_provider.dart';
 import '../providers/xp_provider.dart';
 import '../providers/zibo_pose_provider.dart';
 import '../utils/address_term.dart';
+import '../widgets/dot_grid_background.dart';
 import '../widgets/speech_bubble.dart';
+import '../widgets/sticker_style.dart';
 import '../widgets/zibo_animated_image.dart';
 
 String _moodLabel(AppLocalizations l10n, Mood mood) => switch (mood) {
@@ -145,142 +147,200 @@ class _MoodTrackingScreenState extends State<MoodTrackingScreen> {
     final poseStep = context.watch<ZiboPoseProvider>().poseStep;
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.moodScreenTitle)),
-      body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
-          children: [
-            Column(
+      appBar: plainStickerAppBar(context, title: l10n.moodScreenTitle),
+      body: Stack(
+        children: [
+          const Positioned.fill(child: DotGridBackground()),
+          SafeArea(
+            child: ListView(
+              padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
               children: [
-                ZiboAnimatedImage(
-                  imageKey: const Key('ziboMoodImage'),
-                  costumeId: equippedId,
-                  poseStep: poseStep,
-                  fallbackImage: equippedImageAsset,
-                  height: 200,
-                  semanticLabel: l10n.ziboImagePlaceholder,
+                Column(
+                  children: [
+                    ZiboAnimatedImage(
+                      imageKey: const Key('ziboMoodImage'),
+                      costumeId: equippedId,
+                      poseStep: poseStep,
+                      fallbackImage: equippedImageAsset,
+                      height: 200,
+                      semanticLabel: l10n.ziboImagePlaceholder,
+                    ),
+                    const SizedBox(height: 14),
+                    SpeechBubble(message: quote),
+                  ],
                 ),
-                const SizedBox(height: 8),
-                SpeechBubble(message: quote),
+                const SizedBox(height: 20),
+                StickerCard(
+                  padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 10),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      for (final mood in Mood.values)
+                        _MoodEmojiButton(
+                          mood: mood,
+                          isSelected: provider.todayMood == mood,
+                          label: _moodLabel(l10n, mood),
+                          onTap: () => _selectMood(mood),
+                        ),
+                    ],
+                  ),
+                ),
+                // 2026 yeni özellik — bugünün ruh haline eşlik eden serbest
+                // not. Bir ruh hali seçilmeden önce anlamsız (hangi güne ait
+                // olacağı belirsiz) olduğu için `todayMood == null`'ken
+                // GÖSTERİLMİYOR.
+                if (provider.todayMood != null) ...[
+                  const SizedBox(height: 12),
+                  StickerCard(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          l10n.moodNoteHint,
+                          style: TextStyle(
+                            fontWeight: FontWeight.w700,
+                            fontSize: 10.5,
+                            letterSpacing: 0.4,
+                            color: colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        TextField(
+                          controller: _noteController,
+                          focusNode: _noteFocusNode,
+                          minLines: 2,
+                          maxLines: 4,
+                          textInputAction: TextInputAction.done,
+                          style: TextStyle(
+                            fontWeight: FontWeight.w700,
+                            fontSize: 12.5,
+                            height: 1.5,
+                            color: colorScheme.onSurface,
+                          ),
+                          decoration: const InputDecoration(
+                            border: InputBorder.none,
+                            isDense: true,
+                            contentPadding: EdgeInsets.zero,
+                          ),
+                          onSubmitted: (_) => _saveNote(),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+                const SizedBox(height: 20),
+                Text(
+                  l10n.moodWeekSummaryTitle,
+                  style: const TextStyle(
+                    fontFamily: 'Baloo2',
+                    fontVariations: [FontVariation('wght', 800)],
+                    fontSize: 16,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                StickerCard(
+                  padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 10),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      for (var i = 6; i >= 0; i--)
+                        _WeekDayDot(
+                          date: todayDateOnly.subtract(Duration(days: i)),
+                          entry: provider.entryForDate(
+                            todayDateOnly.subtract(Duration(days: i)),
+                          ),
+                          locale: locale,
+                        ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  l10n.moodHistoryTitle,
+                  style: const TextStyle(
+                    fontFamily: 'Baloo2',
+                    fontVariations: [FontVariation('wght', 800)],
+                    fontSize: 16,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                if (provider.entries.isEmpty)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    child: Text(
+                      l10n.moodHistoryEmpty,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  )
+                else
+                  for (final entry in provider.entries)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: StickerRowCard(
+                        emoji: entry.mood.emoji,
+                        iconBackground: entry.mood.color.withValues(alpha: 0.25),
+                        title: formatLongDate(entry.date, locale),
+                        // 2026 yeni özellik — o güne yazılmış not varsa ruh
+                        // hali etiketinin ALTINA ikinci bir satır olarak
+                        // ekleniyor; yoksa (eski kayıtlar dahil, `note` zaten
+                        // nullable) yalnızca ruh hali etiketi görünür.
+                        subtitleWidget: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              _moodLabel(l10n, entry.mood),
+                              style: TextStyle(
+                                fontWeight: FontWeight.w700,
+                                fontSize: 11,
+                                color: colorScheme.onSurfaceVariant,
+                              ),
+                            ),
+                            if (entry.note != null) ...[
+                              const SizedBox(height: 2),
+                              Text(
+                                '"${entry.note}"',
+                                maxLines: 3,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 11,
+                                  fontStyle: FontStyle.italic,
+                                  color: colorScheme.onSurfaceVariant,
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                    ),
               ],
             ),
-            const SizedBox(height: 24),
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 8),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    for (final mood in Mood.values)
-                      _MoodEmojiButton(
-                        mood: mood,
-                        isSelected: provider.todayMood == mood,
-                        label: _moodLabel(l10n, mood),
-                        onTap: () => _selectMood(mood),
-                      ),
-                  ],
-                ),
-              ),
-            ),
-            // 2026 yeni özellik — bugünün ruh haline eşlik eden serbest not.
-            // Bir ruh hali seçilmeden önce anlamsız (hangi güne ait olacağı
-            // belirsiz) olduğu için `todayMood == null`'ken GÖSTERİLMİYOR.
-            if (provider.todayMood != null) ...[
-              const SizedBox(height: 12),
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: TextField(
-                    controller: _noteController,
-                    focusNode: _noteFocusNode,
-                    minLines: 2,
-                    maxLines: 4,
-                    textInputAction: TextInputAction.done,
-                    decoration: InputDecoration(
-                      hintText: l10n.moodNoteHint,
-                      border: InputBorder.none,
-                    ),
-                    onSubmitted: (_) => _saveNote(),
-                  ),
-                ),
-              ),
-            ],
-            const SizedBox(height: 24),
-            Text(l10n.moodWeekSummaryTitle, style: Theme.of(context).textTheme.titleMedium),
-            const SizedBox(height: 12),
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    for (var i = 6; i >= 0; i--)
-                      _WeekDayDot(
-                        date: todayDateOnly.subtract(Duration(days: i)),
-                        entry: provider.entryForDate(
-                          todayDateOnly.subtract(Duration(days: i)),
-                        ),
-                        locale: locale,
-                      ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 24),
-            Text(l10n.moodHistoryTitle, style: Theme.of(context).textTheme.titleMedium),
-            const SizedBox(height: 12),
-            if (provider.entries.isEmpty)
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                child: Text(
-                  l10n.moodHistoryEmpty,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
-                  ),
-                ),
-              )
-            else
-              for (final entry in provider.entries)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: Card(
-                    clipBehavior: Clip.antiAlias,
-                    child: ListTile(
-                      leading: CircleAvatar(
-                        backgroundColor: entry.mood.color.withValues(alpha: 0.25),
-                        child: Text(entry.mood.emoji, style: const TextStyle(fontSize: 20)),
-                      ),
-                      title: Text(formatLongDate(entry.date, locale)),
-                      // 2026 yeni özellik — o güne yazılmış not varsa ruh
-                      // hali etiketinin ALTINA ikinci bir satır olarak
-                      // ekleniyor; yoksa (eski kayıtlar dahil, `note` zaten
-                      // nullable) yalnızca ruh hali etiketi görünür.
-                      subtitle: entry.note == null
-                          ? Text(_moodLabel(l10n, entry.mood))
-                          : Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(_moodLabel(l10n, entry.mood)),
-                                Text(
-                                  entry.note!,
-                                  maxLines: 3,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ],
-                            ),
-                      isThreeLine: entry.note != null,
-                    ),
-                  ),
-                ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 }
 
-/// Emoji seçim butonlarından biri — seçiliyken büyür ve rengiyle vurgulanır.
+/// Emoji seçim butonlarından biri — mockup'ın `.mood-btn`/`.selected`:
+/// seçiliyken büyür + o ruh halinin renginde kalın bir "halka" (CSS'in
+/// `box-shadow:0 0 0 4px renk` numarası — Flutter'da AYNI numara,
+/// `blurRadius:0` + `spreadRadius:4` ile üretiliyor) + sabit sticker gölgesi
+/// alır. Seçili OLMAYAN düğmelerde HİÇ gölge YOK (mockup'ta bilerek düz) —
+/// tek-vurgu kuralının İSTİSNASI olan mood renkleri burada da (bkz.
+/// `docs/theme_new.md` "Ruh Hali Takibi" notu) `Mood.color` sabitlerinden
+/// geliyor, temadan bağımsız.
+///
+/// Etiket ([label]) bilerek YALNIZCA [Semantics] üzerinden veriliyor, görünür
+/// bir `Text` DEĞİL — mockup'ta her düğmenin altında görünür bir etiket olsa
+/// da, `widget_test.dart`'ın "Günlük Ruh Hali Takibi" testi seçim SONRASI
+/// `find.text('İyi')` gibi etiketleri `findsOneWidget` ile (yalnızca geçmiş
+/// listesindeki tek kopya) arıyor — düğmenin altına da aynı metni SABİT
+/// olarak eklemek bu testi ikinci bir eşleşmeyle kırardı.
 class _MoodEmojiButton extends StatelessWidget {
   const _MoodEmojiButton({
     required this.mood,
@@ -296,40 +356,39 @@ class _MoodEmojiButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final size = isSelected ? 56.0 : 44.0;
     return Semantics(
       label: label,
       button: true,
       selected: isSelected,
-      child: InkWell(
-        onTap: onTap,
-        customBorder: const CircleBorder(),
-        child: AnimatedScale(
-          duration: const Duration(milliseconds: 200),
-          scale: isSelected ? 1.25 : 1.0,
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: isSelected ? mood.color.withValues(alpha: 0.25) : Colors.transparent,
-              border: Border.all(
-                color: isSelected ? mood.color : Colors.transparent,
-                width: 2,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        width: size,
+        height: size,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: colorScheme.surfaceContainerLowest,
+          border: Border.all(color: kStickerOutline, width: 2.5),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(color: mood.color, spreadRadius: 4),
+                  const BoxShadow(color: kStickerOutline, offset: Offset(3, 3)),
+                ]
+              : null,
+        ),
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            Text(mood.emoji, style: const TextStyle(fontSize: 26)),
+            Positioned.fill(
+              child: Material(
+                color: Colors.transparent,
+                shape: const CircleBorder(),
+                child: InkWell(onTap: onTap, customBorder: const CircleBorder()),
               ),
-              boxShadow: isSelected
-                  ? [
-                      BoxShadow(
-                        color: mood.color.withValues(alpha: 0.35),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                      ),
-                    ]
-                  : null,
             ),
-            alignment: Alignment.center,
-            child: Text(mood.emoji, style: const TextStyle(fontSize: 26)),
-          ),
+          ],
         ),
       ),
     );
@@ -356,20 +415,28 @@ class _WeekDayDot extends StatelessWidget {
       children: [
         Text(
           weekdayShortName(date, locale),
-          style: Theme.of(context).textTheme.labelSmall?.copyWith(
+          style: TextStyle(
+            fontWeight: FontWeight.w800,
+            fontSize: 10,
             color: colorScheme.onSurfaceVariant,
           ),
         ),
         const SizedBox(height: 6),
-        Container(
-          width: 22,
-          height: 22,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: mood?.color ?? Colors.transparent,
-            border: Border.all(
-              color: mood?.color ?? colorScheme.outlineVariant,
-              width: 1.5,
+        // Mockup notu: dolu bir gün SABİT koyu kontur taşır (`.dot`), rengi
+        // yalnızca DOLGUDAN gelir — boş bir gün ise soluk/muted konturlu
+        // (`.dot.empty`). Kontur ASLA mood rengini almıyor.
+        Opacity(
+          opacity: mood == null ? 0.5 : 1,
+          child: Container(
+            width: 20,
+            height: 20,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: mood?.color ?? Colors.transparent,
+              border: Border.all(
+                color: mood == null ? colorScheme.outlineVariant : kStickerOutline,
+                width: 2,
+              ),
             ),
           ),
         ),

@@ -180,7 +180,7 @@ class _GratitudeJournalScreenState extends State<GratitudeJournalScreen> {
                     onEdit: () => _showEntryDetail(provider.todayEntry!),
                   )
                 else
-                  _GratitudeCard(
+                  StickerCard(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -251,28 +251,6 @@ class _GratitudeJournalScreenState extends State<GratitudeJournalScreen> {
           ),
         ],
       ),
-    );
-  }
-}
-
-/// Şükran Günlüğü'nün "genel" sticker kartı — mockup'ın `.card` (bkz.
-/// `docs/theme_new.md`). Form VE "bugün tamamlandı" özeti AYNI bu dış
-/// sarmalayıcıyı paylaşır, yalnızca içi değişir (mockup notu: "Bu kart,
-/// form YERİNE geçiyor").
-class _GratitudeCard extends StatelessWidget {
-  const _GratitudeCard({required this.child});
-
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: stickerDecoration(
-        fill: Theme.of(context).colorScheme.surfaceContainerLowest,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: child,
     );
   }
 }
@@ -365,7 +343,7 @@ class _TodayDoneCard extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final colorScheme = Theme.of(context).colorScheme;
     final texts = [entry.text1, entry.text2, entry.text3];
-    return _GratitudeCard(
+    return StickerCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

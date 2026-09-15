@@ -188,6 +188,8 @@ PreferredSizeWidget plainStickerAppBar(
     ),
     title: Text(
       title,
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
       style: const TextStyle(
         fontFamily: 'Baloo2',
         fontVariations: [FontVariation('wght', 800)],
@@ -200,6 +202,30 @@ PreferredSizeWidget plainStickerAppBar(
       child: Container(height: 3, color: kStickerOutline),
     ),
   );
+}
+
+/// Rüya/Şükran/Ruh Hali/Su/Manifest/Para/Odak modüllerinin paylaştığı genel
+/// amaçlı sticker kartı — mockup'ların `.card` (kalın kontur + düz ofsetli
+/// gölge). Şükran Günlüğü'nün form/"tamamlandı" özeti gibi bölümlerin
+/// TEK ortak sarmalayıcısı; tek başına anlamlı bir davranışı olmadığı için
+/// (yalnızca dekorasyon) her ekran kendi iç içeriğini serbestçe kurar.
+class StickerCard extends StatelessWidget {
+  const StickerCard({super.key, required this.child, this.padding});
+
+  final Widget child;
+  final EdgeInsetsGeometry? padding;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: padding ?? const EdgeInsets.all(16),
+      decoration: stickerDecoration(
+        fill: Theme.of(context).colorScheme.surfaceContainerLowest,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: child,
+    );
+  }
 }
 
 /// Bir satırı; sol tarafta altın (veya özel) dolgulu emoji dairesi, ortada
