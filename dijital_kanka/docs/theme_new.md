@@ -579,7 +579,7 @@ genişletilmek istenirse önce burada AÇIKÇA onaylanmalı.
 | Mağaza — Temalar segmenti | ✅ Koda döküldü (`theme_option_card.dart`) |
 | Alt bar + Z butonu (uygulama geneli bileşen) | ✅ Koda döküldü (`main_bottom_bar.dart`/`z_floating_button.dart` — çentiksiz düz bar, mockup'taki gibi) |
 | Modül menüsü (Z butonu sheet'i) | ✅ Koda döküldü (`modules_menu_sheet.dart`) |
-| Modül ekranı — Su Takibi | ✅ Onaylandı — koda dökülmeyi bekliyor |
+| Modül ekranı — Su Takibi | ✅ Koda döküldü (`water_tracking_screen.dart`) |
 | Modül ekranı — Rüya Günlüğü | ✅ Koda döküldü (`dream_journal_screen.dart`/`dream_entry_form_screen.dart`) |
 | Modül ekranı — Şükran Günlüğü | ✅ Koda döküldü (`gratitude_journal_screen.dart`) |
 | Modül ekranı — Ruh Hali Takibi | ✅ Koda döküldü (`mood_tracking_screen.dart`) |

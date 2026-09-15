@@ -19,7 +19,9 @@ import '../providers/zibo_pose_provider.dart';
 import '../services/sound_effects_service.dart';
 import '../utils/address_term.dart';
 import '../utils/info_dialog.dart';
+import '../widgets/dot_grid_background.dart';
 import '../widgets/speech_bubble.dart';
+import '../widgets/sticker_style.dart';
 import '../widgets/zibo_animated_image.dart';
 
 String _unitLabel(AppLocalizations l10n, WaterUnit unit) =>
@@ -253,146 +255,241 @@ class _WaterTrackingScreenState extends State<WaterTrackingScreen> {
         : (findCostumeById(equippedId)?.imageAsset ?? defaultZiboImage);
     final poseStep = context.watch<ZiboPoseProvider>().poseStep;
 
+    final chipGrid = Wrap(
+      spacing: 10,
+      runSpacing: 10,
+      alignment: WrapAlignment.center,
+      children: [
+        for (var i = 0; i < goal; i++)
+          _WaterGlass(
+            filled: i < count,
+            unit: unit,
+            label: i < count
+                ? l10n.waterGlassFilledLabel(i + 1, unitLabel)
+                : l10n.waterGlassEmptyLabel(i + 1, unitLabel),
+            onTap: () => _tapGlass(i, provider),
+          ),
+      ],
+    );
+
     return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.waterScreenTitle),
+      appBar: plainStickerAppBar(
+        context,
+        title: l10n.waterScreenTitle,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.tune_rounded),
-            tooltip: l10n.waterGoalSettingsTitle,
-            onPressed: () => _showGoalDialog(provider),
+          Padding(
+            padding: const EdgeInsets.only(right: 16),
+            child: StickerIconButton(
+              // Mockup'ta 🎛️ emoji öneriliyor, ama bu glif test cihazında
+              // (ve muhtemelen birçok Android cihazda/OEM emoji fontunda)
+              // tofu/boş kutucuk olarak render oluyor — bu yüzden gerçek
+              // cihaz uyumluluğu için güvenilir bir Material ikonuna
+              // düşülüyor (mockup'ın literal glifinden BİLİNÇLİ sapma).
+              icon: Icons.tune_rounded,
+              onPressed: () => _showGoalDialog(provider),
+              tooltip: l10n.waterGoalSettingsTitle,
+              backgroundColor: colorScheme.surfaceContainerLowest,
+              iconColor: kStickerOutline,
+              size: 34,
+              iconSize: 16,
+              borderRadius: null,
+            ),
           ),
         ],
       ),
-      body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
-          children: [
-            Column(
+      body: Stack(
+        children: [
+          const Positioned.fill(child: DotGridBackground()),
+          SafeArea(
+            child: ListView(
+              padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
               children: [
-                ZiboAnimatedImage(
-                  imageKey: const Key('ziboWaterImage'),
-                  costumeId: equippedId,
-                  poseStep: poseStep,
-                  fallbackImage: equippedImageAsset,
-                  height: 200,
-                  semanticLabel: l10n.ziboImagePlaceholder,
-                ),
-                const SizedBox(height: 8),
-                SpeechBubble(message: quote),
-              ],
-            ),
-            const SizedBox(height: 24),
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
+                Column(
                   children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          l10n.waterProgressLabel(count, goal, unitLabel),
-                          style: Theme.of(context).textTheme.titleMedium,
-                        ),
-                        Flexible(
-                          child: Text(
-                            l10n.waterProgressMl(
-                              count * provider.mlPerUnit,
-                              goal * provider.mlPerUnit,
-                            ),
-                            textAlign: TextAlign.right,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: colorScheme.onSurfaceVariant,
-                            ),
-                          ),
-                        ),
-                      ],
+                    ZiboAnimatedImage(
+                      imageKey: const Key('ziboWaterImage'),
+                      costumeId: equippedId,
+                      poseStep: poseStep,
+                      fallbackImage: equippedImageAsset,
+                      height: 200,
+                      semanticLabel: l10n.ziboImagePlaceholder,
                     ),
-                    const SizedBox(height: 16),
-                    Wrap(
-                      spacing: 12,
-                      runSpacing: 12,
-                      alignment: WrapAlignment.center,
-                      children: [
-                        for (var i = 0; i < goal; i++)
-                          _WaterGlass(
-                            filled: i < count,
-                            unit: unit,
-                            label: i < count
-                                ? l10n.waterGlassFilledLabel(i + 1, unitLabel)
-                                : l10n.waterGlassEmptyLabel(i + 1, unitLabel),
-                            onTap: () => _tapGlass(i, provider),
-                          ),
-                      ],
-                    ),
-                    if (provider.isTodayComplete) ...[
-                      const SizedBox(height: 16),
+                    const SizedBox(height: 14),
+                    SpeechBubble(message: quote),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                StickerCard(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
                       Row(
+                        crossAxisAlignment: CrossAxisAlignment.baseline,
+                        textBaseline: TextBaseline.alphabetic,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Icon(Icons.check_circle, color: colorScheme.primary),
-                          const SizedBox(width: 8),
-                          Expanded(
+                          Text(
+                            l10n.waterProgressLabel(count, goal, unitLabel),
+                            style: const TextStyle(
+                              fontFamily: 'Baloo2',
+                              fontVariations: [FontVariation('wght', 800)],
+                              fontSize: 16,
+                            ),
+                          ),
+                          Flexible(
                             child: Text(
-                              l10n.waterTodayCompleteBody,
-                              style: Theme.of(context).textTheme.bodySmall,
+                              l10n.waterProgressMl(
+                                count * provider.mlPerUnit,
+                                goal * provider.mlPerUnit,
+                              ),
+                              textAlign: TextAlign.right,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontWeight: FontWeight.w700,
+                                fontSize: 11.5,
+                                color: colorScheme.onSurfaceVariant,
+                              ),
                             ),
                           ),
                         ],
                       ),
+                      const SizedBox(height: 14),
+                      chipGrid,
+                      if (provider.isTodayComplete) ...[
+                        const SizedBox(height: 14),
+                        Row(
+                          children: [
+                            const Text('✅', style: TextStyle(fontSize: 18, height: 1)),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                l10n.waterTodayCompleteBody,
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 12.5,
+                                  color: colorScheme.onSurface,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ],
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 24),
-            Text(l10n.waterHistoryTitle, style: Theme.of(context).textTheme.titleMedium),
-            const SizedBox(height: 12),
-            if (history.isEmpty)
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                child: Text(
-                  l10n.waterHistoryEmpty,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
                   ),
                 ),
-              )
-            else
-              for (final entry in history)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: Card(
-                    clipBehavior: Clip.antiAlias,
-                    child: ListTile(
-                      leading: Icon(
-                        entry.isCompleted ? Icons.check_circle : Icons.water_drop_outlined,
-                        color: entry.isCompleted ? colorScheme.primary : colorScheme.onSurfaceVariant,
-                      ),
-                      title: Text(
-                        entry.isCompleted
-                            ? l10n.waterHistoryCompletedEntry(formatLongDate(entry.date, locale))
-                            : l10n.waterHistoryPartialEntry(
-                                formatLongDate(entry.date, locale),
-                                entry.unitCount,
-                                entry.goalUnitCount,
-                              ),
+                const SizedBox(height: 20),
+                Text(
+                  l10n.waterHistoryTitle,
+                  style: const TextStyle(
+                    fontFamily: 'Baloo2',
+                    fontVariations: [FontVariation('wght', 800)],
+                    fontSize: 16,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                if (history.isEmpty)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    child: Text(
+                      l10n.waterHistoryEmpty,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
                       ),
                     ),
+                  )
+                else
+                  StickerCard(
+                    child: Column(
+                      children: [
+                        for (var i = 0; i < history.length; i++) ...[
+                          if (i > 0) const SizedBox(height: 10),
+                          _WaterHistoryRow(
+                            isCompleted: history[i].isCompleted,
+                            text: history[i].isCompleted
+                                ? l10n.waterHistoryCompletedEntry(
+                                    formatLongDate(history[i].date, locale),
+                                  )
+                                : l10n.waterHistoryPartialEntry(
+                                    formatLongDate(history[i].date, locale),
+                                    history[i].unitCount,
+                                    history[i].goalUnitCount,
+                                  ),
+                          ),
+                        ],
+                      ],
+                    ),
                   ),
-                ),
-          ],
-        ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
 }
 
-/// Tek bir su birimi ikonu — boşken çizgisel (outline), dolunca tema vurgu
-/// rengiyle dolu görünür. Bardak/şişe birimine göre farklı ikon kullanır.
-/// Dokunma davranışı (doldur/geri al) `_WaterTrackingScreenState._tapGlass`'ta.
+/// "Geçmiş" listesindeki tek bir satır — mockup'ın `.hist-row` (bkz.
+/// `docs/theme_new.md`). Satırlar bilerek tıklanamaz/silinemez (docs notu),
+/// bu yüzden `StickerRowCard`'ın onTap/chevron mantığı YERİNE burada daha
+/// basit, salt-okunur bir satır kullanılıyor.
+class _WaterHistoryRow extends StatelessWidget {
+  const _WaterHistoryRow({required this.isCompleted, required this.text});
+
+  final bool isCompleted;
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Row(
+      children: [
+        DecoratedBox(
+          decoration: stickerCircleDecoration(
+            fill: isCompleted ? colorScheme.primary : colorScheme.surfaceContainerLowest,
+            borderWidth: 2,
+          ),
+          child: SizedBox(
+            width: 30,
+            height: 30,
+            child: Center(
+              child: isCompleted
+                  ? Text(
+                      '✓',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w800,
+                        fontSize: 14,
+                        color: colorScheme.onPrimary,
+                      ),
+                    )
+                  : const Text('💧', style: TextStyle(fontSize: 13, height: 1)),
+            ),
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Text(
+            text,
+            style: TextStyle(
+              fontWeight: FontWeight.w700,
+              fontSize: 12.5,
+              color: colorScheme.onSurface,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Tek bir su birimi ikonu — mockup'ın `.chip`/`.chip.filled`/`.chip.empty`
+/// (bkz. `docs/theme_new.md`): boşken soluk beyaz zemin, dolunca altın
+/// zemin — SÜREKLİ bir çubuk/halka DEĞİL, dokunulabilir ayrı daireler.
+/// Bardak/şişe birimine göre farklı ikon kullanır. Gerçek [Icon] türü
+/// BİLEREK korunuyor (emoji'ye ÇEVRİLMEDİ) — `water_tracking_sound_test.dart`
+/// bu daireleri `find.byIcon(Icons.water_drop_outlined/water_drop)` ile
+/// tür üzerinden buluyor. Dokunma davranışı (doldur/geri al)
+/// `_WaterTrackingScreenState._tapGlass`'ta.
 class _WaterGlass extends StatelessWidget {
   const _WaterGlass({
     required this.filled,
@@ -416,24 +513,25 @@ class _WaterGlass extends StatelessWidget {
     return Semantics(
       label: label,
       button: true,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(28),
-        onTap: onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          width: 48,
-          height: 48,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: filled ? colorScheme.primary : colorScheme.surfaceContainerHigh,
-            border: Border.all(
-              color: filled ? colorScheme.primary : colorScheme.outlineVariant,
-              width: 2,
+      child: Opacity(
+        opacity: filled ? 1 : 0.55,
+        child: InkWell(
+          customBorder: const CircleBorder(),
+          onTap: onTap,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: filled ? colorScheme.primary : colorScheme.surfaceContainerLowest,
+              border: Border.all(color: kStickerOutline, width: 2.5),
             ),
-          ),
-          child: Icon(
-            filled ? filledIcon : emptyIcon,
-            color: filled ? colorScheme.onPrimary : colorScheme.onSurfaceVariant,
+            child: Icon(
+              filled ? filledIcon : emptyIcon,
+              size: 20,
+              color: filled ? colorScheme.onPrimary : colorScheme.onSurfaceVariant,
+            ),
           ),
         ),
       ),
