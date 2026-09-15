@@ -9,6 +9,7 @@ import 'package:flutter/foundation.dart' show debugPrint, kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show MethodChannel, MissingPluginException;
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:stack_appodeal_flutter/stack_appodeal_flutter.dart';
 
@@ -148,6 +149,32 @@ final _buttonShape = RoundedRectangleBorder(
   borderRadius: BorderRadius.circular(14),
 );
 
+/// "Çizgi Roman Çıkartması" görsel kimliğinin tipografi çifti (bkz.
+/// `docs/theme_new.md` "Tipografi" bölümü): başlıklarda SEYREK kullanılan
+/// yuvarlak/oyuncu **Baloo 2**, gövde/UI metninde **Nunito**. `colorScheme`
+/// verilen temanın (varsayılan AYDINLIK/KOYU ya da satın alınmış herhangi
+/// bir `AppThemeOption`) rol renklerini zaten doğru şekilde taşıyan bir
+/// temel `TextTheme` üstüne yalnızca font ailesini bindiriyoruz — böylece
+/// `onSurface`/boyut/kalınlık gibi roller `ColorScheme`'den gelmeye devam
+/// ediyor, yalnızca yazı tipi değişiyor.
+TextTheme _buildTextTheme(ColorScheme colorScheme) {
+  final base = ThemeData(
+    colorScheme: colorScheme,
+    useMaterial3: true,
+  ).textTheme;
+  final bodyTheme = GoogleFonts.nunitoTextTheme(base);
+  final displayTheme = GoogleFonts.baloo2TextTheme(base);
+  return bodyTheme.copyWith(
+    displayLarge: displayTheme.displayLarge,
+    displayMedium: displayTheme.displayMedium,
+    displaySmall: displayTheme.displaySmall,
+    headlineLarge: displayTheme.headlineLarge,
+    headlineMedium: displayTheme.headlineMedium,
+    headlineSmall: displayTheme.headlineSmall,
+    titleLarge: displayTheme.titleLarge,
+  );
+}
+
 /// Açık ve koyu temanın ikisi de aynı yapı taşlarını (kart, buton, giriş
 /// alanı stilleri) paylaşır; yalnızca renkleri farklıdır. Bu ortak fonksiyon
 /// sayesinde iki tema birbirinden kopyala-yapıştır olmuyor.
@@ -156,6 +183,7 @@ ThemeData _buildTheme(ColorScheme colorScheme) {
     colorScheme: colorScheme,
     scaffoldBackgroundColor: colorScheme.surface,
     useMaterial3: true,
+    textTheme: _buildTextTheme(colorScheme),
     appBarTheme: AppBarTheme(
       backgroundColor: Colors.transparent,
       elevation: 0,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../l10n/app_localizations.dart';
+import 'sticker_style.dart';
 
 /// Uygulamanın alt gezinme çubuğu — tamamen standart Flutter widget'larıyla
 /// (`BottomAppBar` + `CircularNotchedRectangle`) çizilir, hiçbir özel görsel
@@ -44,46 +45,52 @@ class MainBottomBar extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final colorScheme = Theme.of(context).colorScheme;
 
-    return BottomAppBar(
-      shape: const CircularNotchedRectangle(),
-      notchMargin: 8,
-      color: colorScheme.surfaceContainer,
-      padding: EdgeInsets.zero,
-      child: Row(
-        children: [
-          _NavItem(
-            icon: Icons.home_rounded,
-            visibleLabel: l10n.tabHome,
-            semanticLabel: l10n.tabHome,
-            selected: selectedIndex == 0,
-            onTap: onHomeTap,
-          ),
-          _NavItem(
-            icon: Icons.flag_rounded,
-            visibleLabel: l10n.bottomBarGoalsLabel,
-            semanticLabel: l10n.tabGoalTracking,
-            selected: selectedIndex == 1,
-            onTap: onGoalsTap,
-          ),
-          // Z butonu için boşluk — CircularNotchedRectangle'ın çentiği bu
-          // alanı görsel olarak zaten oyuyor, bu Expanded yalnızca 5 eşit
-          // sütunluk (diğer 4 öğeyle simetrik) yatay boşluğu ayırıyor.
-          const Expanded(child: SizedBox.shrink()),
-          _NavItem(
-            icon: Icons.account_circle_rounded,
-            visibleLabel: l10n.profileScreenTitle,
-            semanticLabel: l10n.profileScreenTitle,
-            selected: selectedIndex == 2,
-            onTap: onProfileTap,
-          ),
-          _NavItem(
-            icon: Icons.storefront_rounded,
-            visibleLabel: l10n.storeTitle,
-            semanticLabel: l10n.storeTitle,
-            selected: selectedIndex == 3,
-            onTap: onStoreTap,
-          ),
-        ],
+    return DecoratedBox(
+      decoration: const BoxDecoration(
+        border: Border(top: BorderSide(color: kStickerOutline, width: 3)),
+      ),
+      child: BottomAppBar(
+        shape: const CircularNotchedRectangle(),
+        notchMargin: 8,
+        color: colorScheme.surfaceContainer,
+        padding: EdgeInsets.zero,
+        elevation: 0,
+        child: Row(
+          children: [
+            _NavItem(
+              icon: Icons.home_rounded,
+              visibleLabel: l10n.tabHome,
+              semanticLabel: l10n.tabHome,
+              selected: selectedIndex == 0,
+              onTap: onHomeTap,
+            ),
+            _NavItem(
+              icon: Icons.flag_rounded,
+              visibleLabel: l10n.bottomBarGoalsLabel,
+              semanticLabel: l10n.tabGoalTracking,
+              selected: selectedIndex == 1,
+              onTap: onGoalsTap,
+            ),
+            // Z butonu için boşluk — CircularNotchedRectangle'ın çentiği bu
+            // alanı görsel olarak zaten oyuyor, bu Expanded yalnızca 5 eşit
+            // sütunluk (diğer 4 öğeyle simetrik) yatay boşluğu ayırıyor.
+            const Expanded(child: SizedBox.shrink()),
+            _NavItem(
+              icon: Icons.account_circle_rounded,
+              visibleLabel: l10n.profileScreenTitle,
+              semanticLabel: l10n.profileScreenTitle,
+              selected: selectedIndex == 2,
+              onTap: onProfileTap,
+            ),
+            _NavItem(
+              icon: Icons.storefront_rounded,
+              visibleLabel: l10n.storeTitle,
+              semanticLabel: l10n.storeTitle,
+              selected: selectedIndex == 3,
+              onTap: onStoreTap,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -138,10 +145,17 @@ class _NavItem extends StatelessWidget {
                   duration: const Duration(milliseconds: 220),
                   curve: Curves.easeOut,
                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: selected ? colorScheme.primary : Colors.transparent,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
+                  decoration: selected
+                      ? stickerDecoration(
+                          fill: colorScheme.primary,
+                          borderRadius: BorderRadius.circular(20),
+                          borderWidth: 2,
+                          shadowOffset: const Offset(2, 2),
+                        )
+                      : const BoxDecoration(
+                          color: Colors.transparent,
+                          borderRadius: BorderRadius.all(Radius.circular(20)),
+                        ),
                   child: Icon(icon, color: iconColor, size: 22),
                 ),
                 const SizedBox(height: 2),

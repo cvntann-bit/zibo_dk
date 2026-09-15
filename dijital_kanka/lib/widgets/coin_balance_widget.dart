@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../l10n/app_localizations.dart';
 import '../providers/coin_provider.dart';
+import 'sticker_style.dart';
 
 /// Başlık çubuğunda her zaman görünen coin bakiyesi rozeti: ikon + sayı.
 /// Bakiye değiştiğinde sayı eski değerden yeni değere doğru kısa bir
@@ -94,9 +95,11 @@ class _CoinBalanceWidgetState extends State<CoinBalanceWidget>
         children: [
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: colorScheme.surfaceContainerHigh,
+            decoration: stickerDecoration(
+              fill: colorScheme.surfaceContainerHigh,
               borderRadius: BorderRadius.circular(20),
+              borderWidth: 2.5,
+              shadowOffset: const Offset(2, 2),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,

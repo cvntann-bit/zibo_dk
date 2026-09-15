@@ -40,6 +40,7 @@ import '../widgets/coin_balance_widget.dart';
 import '../widgets/daily_rewards_trigger_button.dart';
 import '../widgets/main_bottom_bar.dart';
 import '../widgets/modules_menu_sheet.dart';
+import '../widgets/sticker_style.dart';
 import '../widgets/wheel_trigger_button.dart';
 import '../widgets/z_floating_button.dart';
 import '../widgets/zibo_share_sheet.dart';
@@ -512,28 +513,37 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
           // Yalnızca Hedefler sekmesindeyken görünür — diğer üç sekmenin
           // AppBar'ı değişmez (bkz. WheelTriggerButton'ın yalnızca Ana
           // Sayfa'da görünmesiyle aynı koşullu-görünürlük deseni).
-          if (_selectedIndex == _goalTrackingTabIndex)
-            IconButton(
-              icon: const Icon(Icons.emoji_events_outlined),
+          if (_selectedIndex == _goalTrackingTabIndex) ...[
+            StickerCircleButton(
+              icon: Icons.emoji_events_outlined,
               tooltip: l10n.completedGoalsButtonTooltip,
+              backgroundColor: Theme.of(context).colorScheme.surfaceContainerHigh,
+              iconColor: Theme.of(context).colorScheme.onSurface,
               onPressed: () => Navigator.of(context).push(
                 MaterialPageRoute(builder: (_) => const CompletedGoalsScreen()),
               ),
             ),
-          IconButton(
-            icon: const Icon(Icons.add_circle_outline),
+            const SizedBox(width: 8),
+          ],
+          StickerCircleButton(
+            icon: Icons.add_circle_outline,
             tooltip: l10n.storeButtonTooltip,
+            backgroundColor: Theme.of(context).colorScheme.surfaceContainerHigh,
+            iconColor: Theme.of(context).colorScheme.onSurface,
             // Mağaza artık bir sekme; "+" bu sekmeye geçiş yapar.
             onPressed: () => _setSelectedIndex(_storeTabIndex),
           ),
-          const SizedBox(width: 4),
-          IconButton(
-            icon: const Icon(Icons.settings_outlined),
+          const SizedBox(width: 8),
+          StickerCircleButton(
+            icon: Icons.settings_outlined,
             tooltip: l10n.tabSettings,
+            backgroundColor: Theme.of(context).colorScheme.surfaceContainerHigh,
+            iconColor: Theme.of(context).colorScheme.onSurface,
             onPressed: () => Navigator.of(
               context,
             ).push(MaterialPageRoute(builder: (_) => const SettingsScreen())),
           ),
+          const SizedBox(width: 12),
         ],
       ),
       body: SafeArea(

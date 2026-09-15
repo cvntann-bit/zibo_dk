@@ -4,8 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/costume_provider.dart';
+import 'sticker_style.dart';
 
 const _coinSize = 64.0;
+const _framePadding = 6.0;
 
 /// Giyili kostüme göre gösterilecek Z Coin buton görseli. Yalnızca Altın ve
 /// Elmas Kaplama Zibo kostümlerinin kendi teması var — diğer TÜM kostümlerde
@@ -81,24 +83,40 @@ class _ZFloatingButtonState extends State<ZFloatingButton>
   @override
   Widget build(BuildContext context) {
     final equippedId = context.watch<CostumeProvider>().equippedId;
+    final colorScheme = Theme.of(context).colorScheme;
     return Semantics(
       label: widget.label,
       button: true,
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
         onTap: widget.onTap,
-        child: SizedBox(
-          width: _coinSize,
-          height: _coinSize,
-          child: AnimatedBuilder(
-            animation: _shakeController,
-            builder: (context, child) {
-              // Tam bir sinüs turu (0 -> 2π) sorunsuz döngü sağlıyor (başı ve
-              // sonu aynı açıda, sıçrama yok). Genlik ~3.4 derece — "hafif".
-              final angle = sin(_shakeController.value * 2 * pi) * 0.06;
-              return Transform.rotate(angle: angle, child: child);
-            },
-            child: Image.asset(_coinAssetFor(equippedId)),
+        // "Çizgi Roman Çıkartması" çerçevesi — YALNIZCA kontur/gölge/dolgu
+        // ekliyor, kostüm görselinin kendisine (aşağıdaki tek `Image`)
+        // DOKUNMUYOR (bkz. `z_floating_button_test.dart`'ın `find.byType(
+        // Image)` varsayımı, `theme_new.md` "Z butonu" notu).
+        child: DecoratedBox(
+          decoration: stickerCircleDecoration(
+            fill: colorScheme.primary,
+            borderWidth: 3,
+            shadowOffset: const Offset(3, 3),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(_framePadding),
+            child: SizedBox(
+              width: _coinSize,
+              height: _coinSize,
+              child: AnimatedBuilder(
+                animation: _shakeController,
+                builder: (context, child) {
+                  // Tam bir sinüs turu (0 -> 2π) sorunsuz döngü sağlıyor
+                  // (başı ve sonu aynı açıda, sıçrama yok). Genlik ~3.4
+                  // derece — "hafif".
+                  final angle = sin(_shakeController.value * 2 * pi) * 0.06;
+                  return Transform.rotate(angle: angle, child: child);
+                },
+                child: Image.asset(_coinAssetFor(equippedId)),
+              ),
+            ),
           ),
         ),
       ),

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'sticker_style.dart';
+
 /// Üstte küçük bir kuyruğu (ok ucu) olan klasik konuşma balonu şekli.
 /// Zibo'nun günün mesajını göstermek için kullanılır.
 ///
@@ -27,7 +29,10 @@ class SpeechBubble extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
 
     return CustomPaint(
-      painter: _SpeechBubblePainter(color: colorScheme.surfaceContainerHigh),
+      painter: _SpeechBubblePainter(
+        color: colorScheme.surfaceContainerHigh,
+        outlineColor: kStickerOutline,
+      ),
       child: ConstrainedBox(
         constraints: const BoxConstraints(
           minWidth: _minWidth,
@@ -59,17 +64,20 @@ class SpeechBubble extends StatelessWidget {
 }
 
 class _SpeechBubblePainter extends CustomPainter {
-  _SpeechBubblePainter({required this.color});
+  _SpeechBubblePainter({required this.color, required this.outlineColor});
 
   final Color color;
+  final Color outlineColor;
   static const double _radius = 20;
   static const double _tailHeight = 14;
   static const double _tailWidth = 22;
+  static const double _outlineWidth = 3;
+  // "Çizgi Roman Çıkartması" gölgesi: bulanıksız, sabit yönde ofsetli bir
+  // kontur-renkli kopya — Material'in blur'lu `canvas.drawShadow`'unun
+  // yerini aldı (bkz. `sticker_style.dart` dokümantasyonu).
+  static const Offset _shadowOffset = Offset(4, 4);
 
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()..color = color;
-
+  Path _bubblePath(Size size) {
     final bubbleRect = Rect.fromLTWH(
       0,
       _tailHeight,
@@ -80,7 +88,6 @@ class _SpeechBubblePainter extends CustomPainter {
       bubbleRect,
       const Radius.circular(_radius),
     );
-
     final path = Path()..addRRect(rrect);
 
     final tailCenterX = size.width / 2;
@@ -91,12 +98,30 @@ class _SpeechBubblePainter extends CustomPainter {
       ..close();
 
     path.addPath(tailPath, Offset.zero);
+    return path;
+  }
 
-    canvas.drawShadow(path, Colors.black.withValues(alpha: 0.15), 6, false);
-    canvas.drawPath(path, paint);
+  @override
+  void paint(Canvas canvas, Size size) {
+    final path = _bubblePath(size);
+
+    canvas.save();
+    canvas.translate(_shadowOffset.dx, _shadowOffset.dy);
+    canvas.drawPath(path, Paint()..color = outlineColor);
+    canvas.restore();
+
+    canvas.drawPath(path, Paint()..color = color);
+    canvas.drawPath(
+      path,
+      Paint()
+        ..color = outlineColor
+        ..style = PaintingStyle.stroke
+        ..strokeJoin = StrokeJoin.round
+        ..strokeWidth = _outlineWidth,
+    );
   }
 
   @override
   bool shouldRepaint(covariant _SpeechBubblePainter oldDelegate) =>
-      oldDelegate.color != color;
+      oldDelegate.color != color || oldDelegate.outlineColor != outlineColor;
 }
