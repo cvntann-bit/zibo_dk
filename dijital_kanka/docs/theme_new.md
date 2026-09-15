@@ -583,7 +583,7 @@ genişletilmek istenirse önce burada AÇIKÇA onaylanmalı.
 | Modül ekranı — Rüya Günlüğü | ✅ Koda döküldü (`dream_journal_screen.dart`/`dream_entry_form_screen.dart`) |
 | Modül ekranı — Şükran Günlüğü | ✅ Koda döküldü (`gratitude_journal_screen.dart`) |
 | Modül ekranı — Ruh Hali Takibi | ✅ Koda döküldü (`mood_tracking_screen.dart`) |
-| Modül ekranı — Manifest Günlüğü | ✅ Onaylandı — koda dökülmeyi bekliyor |
+| Modül ekranı — Manifest Günlüğü | ✅ Koda döküldü (`manifest_journal_screen.dart`) |
 | Modül ekranı — Para ve Birikim | ✅ Onaylandı — koda dökülmeyi bekliyor |
 | Modül ekranı — Odak Sayacı (1 kaldı) | ⏳ Henüz mockup yapılmadı |
 | Ayarlar ekranı | ✅ Koda döküldü (`settings_screen.dart`) |

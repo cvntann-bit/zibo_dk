@@ -19,7 +19,9 @@ import '../providers/zibo_pose_provider.dart';
 import '../services/photo_picker_service.dart';
 import '../utils/address_term.dart';
 import '../utils/info_dialog.dart';
+import '../widgets/dot_grid_background.dart';
 import '../widgets/speech_bubble.dart';
+import '../widgets/sticker_style.dart';
 import '../widgets/zibo_animated_image.dart';
 
 const _intentionMaxLength = 280;
@@ -203,101 +205,157 @@ class _ManifestJournalScreenState extends State<ManifestJournalScreen> {
     final poseStep = context.watch<ZiboPoseProvider>().poseStep;
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.manifestScreenTitle)),
-      body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
-          children: [
-            Column(
+      appBar: plainStickerAppBar(context, title: l10n.manifestScreenTitle),
+      body: Stack(
+        children: [
+          const Positioned.fill(child: DotGridBackground()),
+          SafeArea(
+            child: ListView(
+              padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
               children: [
-                ZiboAnimatedImage(
-                  imageKey: const Key('ziboManifestImage'),
-                  costumeId: equippedId,
-                  poseStep: poseStep,
-                  fallbackImage: equippedImageAsset,
-                  height: 200,
-                  semanticLabel: l10n.ziboImagePlaceholder,
+                Column(
+                  children: [
+                    ZiboAnimatedImage(
+                      imageKey: const Key('ziboManifestImage'),
+                      costumeId: equippedId,
+                      poseStep: poseStep,
+                      fallbackImage: equippedImageAsset,
+                      height: 200,
+                      semanticLabel: l10n.ziboImagePlaceholder,
+                    ),
+                    const SizedBox(height: 14),
+                    SpeechBubble(message: quote),
+                  ],
                 ),
-                const SizedBox(height: 8),
-                SpeechBubble(message: quote),
-              ],
-            ),
-            const SizedBox(height: 24),
-            _PhotoPickerArea(
-              photoPath: _photoPath,
-              isLoading: _isPicking,
-              hint: l10n.manifestPhotoPickerHint,
-              semanticLabel: l10n.manifestPhotoSemanticLabel,
-              onTap: _pickPhoto,
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: _textController,
-              minLines: 3,
-              maxLines: 6,
-              maxLength: _intentionMaxLength,
-              textCapitalization: TextCapitalization.sentences,
-              decoration: InputDecoration(
-                labelText: l10n.manifestIntentionHint,
-                alignLabelWithHint: true,
-              ),
-            ),
-            FilledButton(
-              onPressed: _canSave ? _save : null,
-              child: _isSaving
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : Text(l10n.manifestSaveButton),
-            ),
-            const SizedBox(height: 32),
-            Text(
-              l10n.manifestHistoryTitle,
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            const SizedBox(height: 12),
-            if (history.isEmpty)
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                child: Text(
-                  l10n.manifestHistoryEmpty,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
+                const SizedBox(height: 20),
+                _PhotoPickerArea(
+                  photoPath: _photoPath,
+                  isLoading: _isPicking,
+                  hint: l10n.manifestPhotoPickerHint,
+                  semanticLabel: l10n.manifestPhotoSemanticLabel,
+                  onTap: _pickPhoto,
+                ),
+                const SizedBox(height: 16),
+                StickerCard(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        l10n.manifestIntentionHint,
+                        style: TextStyle(
+                          fontWeight: FontWeight.w800,
+                          fontSize: 10,
+                          letterSpacing: 0.4,
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      TextField(
+                        controller: _textController,
+                        minLines: 3,
+                        maxLines: 6,
+                        maxLength: _intentionMaxLength,
+                        textCapitalization: TextCapitalization.sentences,
+                        style: TextStyle(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 13,
+                          height: 1.5,
+                          color: colorScheme.onSurface,
+                        ),
+                        decoration: InputDecoration(
+                          border: InputBorder.none,
+                          filled: false,
+                          isDense: true,
+                          contentPadding: EdgeInsets.zero,
+                          counterStyle: TextStyle(
+                            fontWeight: FontWeight.w700,
+                            fontSize: 10,
+                            color: colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              )
-            else
-              GridView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: history.length,
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  crossAxisSpacing: 12,
-                  mainAxisSpacing: 12,
-                  childAspectRatio: 0.6,
+                const SizedBox(height: 16),
+                // Mockup notu: Kaydet butonu bilerek TAM GENİŞLİK DEĞİL —
+                // içeriği kadar dar, sola yaslı (diğer modüllerin çoğundan
+                // FARKLI). `Align` burada `ListView`'ın sıkı genişlik
+                // kısıtını (sliver child'ları varsayılan olarak tam genişliğe
+                // zorlar) ETKİSİZ hale getirip butonu doğal boyutuna
+                // küçültüyor.
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: stickerButtonShadow(
+                    radius: 12,
+                    child: FilledButton(
+                      style: stickerFilledButtonStyle(context, radius: 12),
+                      onPressed: _canSave ? _save : null,
+                      child: _isSaving
+                          ? const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : Text(l10n.manifestSaveButton),
+                    ),
+                  ),
                 ),
-                itemBuilder: (context, index) {
-                  final entry = history[index];
-                  return _HistoryCard(
-                    key: ValueKey(entry.id),
-                    entry: entry,
-                    onTap: () => _showEntryDetail(entry),
-                  );
-                },
-              ),
-          ],
-        ),
+                const SizedBox(height: 20),
+                Text(
+                  l10n.manifestHistoryTitle,
+                  style: const TextStyle(
+                    fontFamily: 'Baloo2',
+                    fontVariations: [FontVariation('wght', 800)],
+                    fontSize: 16,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                if (history.isEmpty)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    child: Text(
+                      l10n.manifestHistoryEmpty,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  )
+                else
+                  GridView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: history.length,
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      crossAxisSpacing: 12,
+                      mainAxisSpacing: 12,
+                      childAspectRatio: 0.6,
+                    ),
+                    itemBuilder: (context, index) {
+                      final entry = history[index];
+                      return _HistoryCard(
+                        key: ValueKey(entry.id),
+                        entry: entry,
+                        onTap: () => _showEntryDetail(entry),
+                      );
+                    },
+                  ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
 }
 
-/// Fotoğraf seçim/önizleme alanı — büyük, kart şeklinde, yuvarlatılmış
-/// köşeli bir çerçeve içinde. Boşken ipucu ikonu+metni gösterir, doluyken
-/// fotoğrafı kaplar ve köşede küçük bir "düzenle" rozeti belirir.
+/// Fotoğraf seçim/önizleme alanı — mockup'ın `.photo-box` (bkz.
+/// `docs/theme_new.md`): büyük, diğer kartlardan BİLİNÇLİ olarak daha
+/// yuvarlak köşeli (26px) sticker kutusu. Boşken ipucu ikonu+metni gösterir,
+/// doluyken fotoğrafı kaplar ve köşede taşan küçük bir "düzenle" rozeti
+/// belirir (tekrar dokununca YENİ bir fotoğrafla değiştirir — ayrı bir
+/// kaldır/sil kontrolü yok).
 class _PhotoPickerArea extends StatelessWidget {
   const _PhotoPickerArea({
     required this.photoPath,
@@ -316,6 +374,7 @@ class _PhotoPickerArea extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final radius = BorderRadius.circular(26);
     return Semantics(
       label: photoPath == null ? hint : semanticLabel,
       button: true,
@@ -323,57 +382,81 @@ class _PhotoPickerArea extends StatelessWidget {
       // birleşmesin diye — bkz. CLAUDE.md "Alt Gezinme Çubuğu" bölümündeki
       // aynı Semantics birleşme gotcha'sı.
       excludeSemantics: true,
-      child: AspectRatio(
-        aspectRatio: 1,
-        child: Material(
-          color: colorScheme.surfaceContainerHigh,
-          clipBehavior: Clip.antiAlias,
-          borderRadius: BorderRadius.circular(28),
-          child: InkWell(
-            key: const Key('manifestPhotoPickerArea'),
-            onTap: isLoading ? null : onTap,
-            child: Stack(
-              fit: StackFit.expand,
-              children: [
-                if (photoPath != null)
-                  _SafeFileImage(path: photoPath!, fit: BoxFit.cover)
-                else
-                  Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
+      child: Padding(
+        // Köşede TAŞAN düzenle rozetinin kırpılmaması için — bkz.
+        // `CostumeCard`'daki AYNI "dıştaki Stack clipBehavior:none" deseni.
+        padding: const EdgeInsets.only(right: 8, bottom: 8),
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            AspectRatio(
+              aspectRatio: 1,
+              child: Container(
+                clipBehavior: Clip.antiAlias,
+                decoration: stickerDecoration(
+                  fill: colorScheme.surfaceContainerLowest,
+                  borderRadius: radius,
+                  shadowOffset: const Offset(4, 4),
+                ),
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    key: const Key('manifestPhotoPickerArea'),
+                    onTap: isLoading ? null : onTap,
+                    child: Stack(
+                      fit: StackFit.expand,
                       children: [
-                        Icon(
-                          Icons.add_photo_alternate_outlined,
-                          size: 48,
-                          color: colorScheme.onSurfaceVariant,
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          hint,
-                          style: TextStyle(color: colorScheme.onSurfaceVariant),
-                        ),
+                        if (photoPath != null)
+                          _SafeFileImage(path: photoPath!, fit: BoxFit.cover)
+                        else
+                          Center(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.add_photo_alternate_outlined,
+                                  size: 44,
+                                  color: colorScheme.onSurfaceVariant,
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  hint,
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w700,
+                                    color: colorScheme.onSurfaceVariant,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        if (isLoading)
+                          Container(
+                            color: Colors.black.withValues(alpha: 0.4),
+                            child: const Center(child: CircularProgressIndicator()),
+                          ),
                       ],
                     ),
                   ),
-                if (isLoading)
-                  Container(
-                    color: Colors.black.withValues(alpha: 0.4),
-                    child: const Center(child: CircularProgressIndicator()),
-                  ),
-                if (photoPath != null && !isLoading)
-                  Positioned(
-                    right: 10,
-                    bottom: 10,
-                    child: CircleAvatar(
-                      backgroundColor: colorScheme.primary,
-                      foregroundColor: colorScheme.onPrimary,
-                      radius: 18,
-                      child: const Icon(Icons.edit, size: 18),
-                    ),
-                  ),
-              ],
+                ),
+              ),
             ),
-          ),
+            if (photoPath != null && !isLoading)
+              Positioned(
+                right: -8,
+                bottom: -8,
+                child: DecoratedBox(
+                  decoration: stickerCircleDecoration(
+                    fill: colorScheme.primary,
+                    borderWidth: 2.5,
+                  ),
+                  child: const SizedBox(
+                    width: 34,
+                    height: 34,
+                    child: Center(child: Text('✏️', style: TextStyle(fontSize: 14, height: 1))),
+                  ),
+                ),
+              ),
+          ],
         ),
       ),
     );
@@ -391,40 +474,68 @@ class _HistoryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onTap,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            AspectRatio(
-              aspectRatio: 1,
-              child: _SafeFileImage(path: entry.photoPath, fit: BoxFit.cover),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(10, 8, 10, 10),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    entry.intentionText,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    formatLongDate(entry.date, Localizations.localeOf(context)),
-                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      color: colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
+    final radius = BorderRadius.circular(16);
+    final content = Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        DecoratedBox(
+          decoration: const BoxDecoration(
+            border: Border(bottom: BorderSide(color: kStickerOutline, width: 2)),
+          ),
+          child: AspectRatio(
+            aspectRatio: 1,
+            child: _SafeFileImage(path: entry.photoPath, fit: BoxFit.cover),
+          ),
         ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(10, 9, 10, 10),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                entry.intentionText,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 11,
+                  height: 1.35,
+                  color: colorScheme.onSurface,
+                ),
+              ),
+              const SizedBox(height: 5),
+              Text(
+                formatLongDate(entry.date, Localizations.localeOf(context)),
+                style: TextStyle(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 9.5,
+                  color: colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+
+    return Container(
+      clipBehavior: Clip.antiAlias,
+      decoration: stickerDecoration(
+        fill: colorScheme.surfaceContainerLowest,
+        borderRadius: radius,
+        shadowOffset: const Offset(3, 3),
+      ),
+      child: Stack(
+        children: [
+          content,
+          Positioned.fill(
+            child: Material(
+              color: Colors.transparent,
+              borderRadius: radius,
+              child: InkWell(borderRadius: radius, onTap: onTap),
+            ),
+          ),
+        ],
       ),
     );
   }
