@@ -1,15 +1,27 @@
 import 'dart:async';
+import 'dart:math';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
+import '../data/costume_poses.dart';
+import '../data/costumes.dart';
+import '../data/focus_quotes.dart';
 import '../l10n/app_localizations.dart';
+import '../providers/costume_provider.dart';
 import '../providers/focus_provider.dart';
+import '../providers/profile_provider.dart';
 import '../providers/xp_provider.dart';
+import '../providers/zibo_pose_provider.dart';
+import '../utils/address_term.dart';
 import '../utils/info_dialog.dart';
 import '../utils/tab_navigation.dart';
+import '../widgets/dot_grid_background.dart';
+import '../widgets/speech_bubble.dart';
+import '../widgets/sticker_style.dart';
+import '../widgets/zibo_animated_image.dart';
 
 enum _FocusMode { free, min15, min25, min45 }
 
@@ -40,6 +52,15 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> {
   int _elapsedSeconds = 0;
   bool _isRunning = false;
 
+  // Kurulum ekranındaki Zibo konuşma balonu — diğer 7 modülle AYNI "5
+  // saniyede bir rastgele söz" deseni (bkz. `focus_quotes.dart`). Karanlık
+  // moda geçince görünmüyor ama zamanlayıcı basitlik için kesintisiz
+  // çalışmaya devam ediyor — `setState` o build dalında hiçbir görsel
+  // etkisi olmadığı için zararsız.
+  final _random = Random();
+  int _quoteIndex = 0;
+  Timer? _quoteTimer;
+
   /// Karanlık/immersive mod tam olarak "dikkat dağıtıcı hiçbir şey olmasın"
   /// isteğini karşılasın diye, bu ekranın ömrü boyunca `isHomeTabActive`
   /// (bkz. tab_navigation.dart) BİLEREK `false`'a sabitleniyor. **Neden
@@ -66,6 +87,23 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> {
     super.initState();
     _previousHomeTabActive = isHomeTabActive.value;
     isHomeTabActive.value = false;
+    _quoteTimer = Timer.periodic(const Duration(seconds: 5), (_) => _showNewQuote());
+  }
+
+  void _showNewQuote() {
+    if (!mounted) return;
+    setState(() {
+      final quotes = focusQuotesForLocale(Localizations.localeOf(context));
+      if (quotes.length <= 1) {
+        _quoteIndex = 0;
+        return;
+      }
+      int next;
+      do {
+        next = _random.nextInt(quotes.length);
+      } while (next == _quoteIndex);
+      _quoteIndex = next;
+    });
   }
 
   void _start() {
@@ -114,6 +152,7 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> {
   @override
   void dispose() {
     _ticker?.cancel();
+    _quoteTimer?.cancel();
     isHomeTabActive.value = _previousHomeTabActive ?? true;
     super.dispose();
   }
@@ -127,98 +166,156 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> {
     final l10n = AppLocalizations.of(context)!;
     final colorScheme = Theme.of(context).colorScheme;
     final totalSeconds = context.watch<FocusProvider>().totalFocusSeconds;
+    final locale = Localizations.localeOf(context);
+    final quotes = focusQuotesForLocale(locale);
+    final addressTerm = context.watch<ProfileProvider>().addressTerm;
+    final quote = applyAddressTerm(
+      quotes[_quoteIndex % quotes.length],
+      addressTerm,
+      locale,
+    );
+
+    // Mağaza > Kostümler'den giyilen bir kostüm varsa Zibo'nun görseli onunla
+    // değişir; yoksa (veya kostüm listeden kaldırılmışsa) varsayılan görsele
+    // düşülür (bkz. HomeScreen'deki aynı desen).
+    final equippedId = context.watch<CostumeProvider>().equippedId;
+    final equippedImageAsset = equippedId == null
+        ? defaultZiboImage
+        : (findCostumeById(equippedId)?.imageAsset ?? defaultZiboImage);
+    final poseStep = context.watch<ZiboPoseProvider>().poseStep;
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.focusTimerScreenTitle)),
-      body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 24, 20, 32),
-          children: [
-            Wrap(
-              alignment: WrapAlignment.center,
-              spacing: 8,
-              runSpacing: 8,
+      appBar: plainStickerAppBar(context, title: l10n.focusTimerScreenTitle),
+      body: Stack(
+        children: [
+          const Positioned.fill(child: DotGridBackground()),
+          SafeArea(
+            child: ListView(
+              padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
               children: [
-                _ModeChip(
-                  label: l10n.focusModeFreeLabel,
-                  selected: _mode == _FocusMode.free,
-                  onSelected: () => setState(() => _mode = _FocusMode.free),
+                Column(
+                  children: [
+                    ZiboAnimatedImage(
+                      imageKey: const Key('ziboFocusImage'),
+                      costumeId: equippedId,
+                      poseStep: poseStep,
+                      fallbackImage: equippedImageAsset,
+                      height: 200,
+                      semanticLabel: l10n.ziboImagePlaceholder,
+                    ),
+                    const SizedBox(height: 14),
+                    SpeechBubble(message: quote),
+                  ],
                 ),
-                _ModeChip(
-                  label: l10n.focusModeMinutesLabel(15),
-                  selected: _mode == _FocusMode.min15,
-                  onSelected: () => setState(() => _mode = _FocusMode.min15),
+                const SizedBox(height: 20),
+                Wrap(
+                  alignment: WrapAlignment.center,
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    _ModeChip(
+                      label: l10n.focusModeFreeLabel,
+                      selected: _mode == _FocusMode.free,
+                      onSelected: () => setState(() => _mode = _FocusMode.free),
+                    ),
+                    _ModeChip(
+                      label: l10n.focusModeMinutesLabel(15),
+                      selected: _mode == _FocusMode.min15,
+                      onSelected: () => setState(() => _mode = _FocusMode.min15),
+                    ),
+                    _ModeChip(
+                      label: l10n.focusModeMinutesLabel(25),
+                      selected: _mode == _FocusMode.min25,
+                      onSelected: () => setState(() => _mode = _FocusMode.min25),
+                    ),
+                    _ModeChip(
+                      label: l10n.focusModeMinutesLabel(45),
+                      selected: _mode == _FocusMode.min45,
+                      onSelected: () => setState(() => _mode = _FocusMode.min45),
+                    ),
+                  ],
                 ),
-                _ModeChip(
-                  label: l10n.focusModeMinutesLabel(25),
-                  selected: _mode == _FocusMode.min25,
-                  onSelected: () => setState(() => _mode = _FocusMode.min25),
+                const SizedBox(height: 24),
+                // Mockup'ın "gauge" — Profil'in `CircularScoreGauge`'ıyla AYNI
+                // görsel dil (kalın sabit kontur + iç "zımba" dairesi). Gerçek
+                // bir `CircularProgressIndicator` DEĞİL — kurulum ekranında
+                // ilerleme HER ZAMAN sıfır olduğu için (henüz başlamadı),
+                // dolan bir halkanın burada gösterilecek bir anlamı yok;
+                // gerçek dolum yalnızca (değişmeyen) karanlık moddaki
+                // `_GlowRing`'de oluyor.
+                Center(
+                  child: Container(
+                    width: 216,
+                    height: 216,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: colorScheme.surfaceContainerLowest,
+                      border: Border.all(color: kStickerOutline, width: 10),
+                    ),
+                    child: Container(
+                      width: 176,
+                      height: 176,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: colorScheme.surfaceContainerLowest,
+                        border: Border.all(color: kStickerOutline, width: 3),
+                      ),
+                      child: Text(
+                        _formatTimer(0),
+                        style: TextStyle(
+                          fontWeight: FontWeight.w800,
+                          fontSize: 36,
+                          fontFeatures: const [FontFeature.tabularFigures()],
+                          color: colorScheme.onSurface,
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
-                _ModeChip(
-                  label: l10n.focusModeMinutesLabel(45),
-                  selected: _mode == _FocusMode.min45,
-                  onSelected: () => setState(() => _mode = _FocusMode.min45),
+                const SizedBox(height: 24),
+                stickerButtonShadow(
+                  radius: 14,
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: FilledButton.icon(
+                      style: stickerFilledButtonStyle(context, radius: 14, fontSize: 15),
+                      onPressed: _start,
+                      icon: const Icon(Icons.play_arrow_rounded),
+                      label: Text(l10n.focusStartButton),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                StickerCard(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        l10n.focusTotalTimeLabel,
+                        style: TextStyle(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 12.5,
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                      Text(
+                        _formatTimer(totalSeconds),
+                        style: TextStyle(
+                          fontWeight: FontWeight.w800,
+                          fontSize: 16,
+                          fontFeatures: const [FontFeature.tabularFigures()],
+                          color: colorScheme.onSurface,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
-            const SizedBox(height: 40),
-            Center(
-              child: SizedBox(
-                width: 220,
-                height: 220,
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    SizedBox(
-                      width: 220,
-                      height: 220,
-                      child: CircularProgressIndicator(
-                        value: 0,
-                        strokeWidth: 10,
-                        backgroundColor: colorScheme.surfaceContainerHigh,
-                      ),
-                    ),
-                    Text(
-                      _formatTimer(0),
-                      style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        fontFeatures: const [FontFeature.tabularFigures()],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 40),
-            SizedBox(
-              width: double.infinity,
-              child: FilledButton.icon(
-                onPressed: _start,
-                icon: const Icon(Icons.play_arrow_rounded),
-                label: Text(l10n.focusStartButton),
-              ),
-            ),
-            const SizedBox(height: 32),
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(l10n.focusTotalTimeLabel),
-                    Text(
-                      _formatTimer(totalSeconds),
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        fontFeatures: const [FontFeature.tabularFigures()],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -382,6 +479,9 @@ class _GlowRing extends StatelessWidget {
   }
 }
 
+/// Mod seçici pilli — mockup'ın `.mode-chip`/`.mode-chip.on` (bkz.
+/// `docs/theme_new.md`): seçili olan altın dolgu + hafif sticker gölgesi
+/// alır, diğerleri düz kalır.
 class _ModeChip extends StatelessWidget {
   const _ModeChip({
     required this.label,
@@ -395,10 +495,34 @@ class _ModeChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChoiceChip(
-      label: Text(label),
-      selected: selected,
-      onSelected: (_) => onSelected(),
+    final colorScheme = Theme.of(context).colorScheme;
+    final radius = BorderRadius.circular(12);
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: radius,
+        onTap: onSelected,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
+          decoration: BoxDecoration(
+            color: selected ? colorScheme.primary : colorScheme.surfaceContainerLowest,
+            border: Border.all(color: kStickerOutline, width: 2.5),
+            borderRadius: radius,
+            boxShadow: selected
+                ? const [BoxShadow(color: kStickerOutline, offset: Offset(2, 2))]
+                : null,
+          ),
+          child: Text(
+            label,
+            style: TextStyle(
+              fontFamily: 'Baloo2',
+              fontVariations: const [FontVariation('wght', 700)],
+              fontSize: 13,
+              color: selected ? colorScheme.onPrimary : colorScheme.onSurface,
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

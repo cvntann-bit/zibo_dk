@@ -9,18 +9,25 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:dijital_kanka/l10n/app_localizations.dart';
+import 'package:dijital_kanka/providers/costume_provider.dart';
 import 'package:dijital_kanka/providers/focus_provider.dart';
+import 'package:dijital_kanka/providers/profile_provider.dart';
 import 'package:dijital_kanka/providers/xp_provider.dart';
+import 'package:dijital_kanka/providers/zibo_pose_provider.dart';
 import 'package:dijital_kanka/screens/focus_timer_screen.dart';
 import 'package:dijital_kanka/utils/tab_navigation.dart';
 
 Widget _buildTestApp() {
   return MultiProvider(
     providers: [
+      ChangeNotifierProvider(create: (_) => CostumeProvider()),
       ChangeNotifierProvider(create: (_) => FocusProvider()),
+      ChangeNotifierProvider(create: (_) => ProfileProvider()),
       ChangeNotifierProvider(create: (_) => XpProvider()),
+      ChangeNotifierProvider(create: (_) => ZiboPoseProvider()),
     ],
     child: const MaterialApp(
       debugShowCheckedModeBanner: false,
@@ -39,7 +46,25 @@ Widget _buildTestApp() {
 
 void main() {
   setUp(() {
+    SharedPreferences.setMockInitialValues({});
     isHomeTabActive.value = true;
+    // Gerçekçi telefon viewport'u (widget_test.dart'ın `setUp()`'ıyla AYNI
+    // desen, bkz. CLAUDE.md "Test kalıpları") — varsayılan 800x600
+    // masaüstü-oranlı test yüzeyi, Zibo görseli + söz balonu eklendikten
+    // sonra "Başlat" butonunun `ListView`'ın lazy-realize penceresinin
+    // dışında kalmasına yol açıyordu.
+    final dispatcher =
+        TestWidgetsFlutterBinding.instance.platformDispatcher as TestPlatformDispatcher;
+    for (final view in dispatcher.views) {
+      view.physicalSize = const Size(412, 915);
+      view.devicePixelRatio = 1.0;
+    }
+    addTearDown(() {
+      for (final view in dispatcher.views) {
+        view.resetPhysicalSize();
+        view.resetDevicePixelRatio();
+      }
+    });
   });
 
   testWidgets('Başlangıçta kurulum ekranı (mod seçici + Başlat) görünür', (

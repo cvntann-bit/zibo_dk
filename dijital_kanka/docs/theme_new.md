@@ -548,6 +548,37 @@ seçim sayfasıyla AYNI görsel deseni açar (47 para birimi listesi).
 
 **Onaylandı** — [mockup](https://claude.ai/code/artifact/92193076-296c-43e1-8eaf-be0e403ec477).
 
+## Onaylanan: Odak Sayacı modülü
+
+Gerçek `focus_timer_screen.dart` yapısı korunuyor — **TEK ekran, ama İKİ
+TAMAMEN AYRI görünüm**: kurulum ekranı (mod seçici + Başlat) ve Başlat'a
+basınca açılan tam ekran SİYAH "karanlık mod". Bu mockup yalnızca KURULUM
+ekranını sticker temasına taşıyor.
+
+- **Karanlık mod BİLEREK DEĞİŞMEDİ** — kullanıcının bu redesign'dan ÖNCEKİ,
+  bağımsız isteği ("başladığında ekran kapkaranlık olsun, sadece sayaç
+  gözüksün, dikkat dağıtıcı hiçbir şey olmasın"). `Scaffold.backgroundColor`
+  sabit siyah kalıyor (bir testte doğrulanıyor) — yalnızca altın parlayan
+  halka + sayaç + soluk "Bitir ve Kaydet" metni, mod seçici/toplam süre
+  kartı gibi HİÇBİR ŞEY görünmüyor. Dokunulmayacak.
+- **Zibo maskotu + söz balonu YENİ eklendi** — gerçek koddaki ŞU ANKİ
+  kurulum ekranında bu hiç yoktu, diğer 7 modülle tutarlılık için eklendi
+  (jenerik, odaklanma temalı, ilerlemeye tepki vermeyen bir söz havuzu).
+- **Mod seçici**: 4 sabit seçenek (Serbest/15/25/45 dk) sticker pill'lere
+  dönüştü — tek seçim, seçili olan altın dolgu alıyor.
+- **Büyük sayaç halkası**: Profil'in "İstatistiklerim" puan halkasıyla
+  (`CircularScoreGauge`) AYNI görsel dil — kalın sabit kontur + iç "zımba"
+  dairesi + ortada kalın rakam. Kurulum ekranında HER ZAMAN "00:00"
+  gösteriyor (mod ne olursa olsun, henüz başlamadığı için) — gerçek
+  ilerleme/dolum yalnızca (değişmeyen) karanlık moddaki halkada oluyor.
+- **Başlat butonu TAM GENİŞLİK** — Manifest Günlüğü'nün bilerek dar
+  butonunun AKSİNE, gerçek kod burada zaten tam genişlik kullanıyor,
+  mockup bunu koruyor.
+- **"Toplam Odak Süren" kartı**: tek satır, etiket solda + biriken toplam
+  süre (sa:dk:sn) sağda kalın/tabular rakamlarla.
+
+**Onaylandı** — [mockup](https://claude.ai/artifact/QiNofQrxMaXBJUssm1sTp6).
+
 ## Kapsam dışı — kesinlikle DEĞİŞMEYECEK
 
 Kullanıcı açıkça belirtti, bu redesign'a DAHİL DEĞİL:
@@ -585,6 +616,6 @@ genişletilmek istenirse önce burada AÇIKÇA onaylanmalı.
 | Modül ekranı — Ruh Hali Takibi | ✅ Koda döküldü (`mood_tracking_screen.dart`) |
 | Modül ekranı — Manifest Günlüğü | ✅ Koda döküldü (`manifest_journal_screen.dart`) |
 | Modül ekranı — Para ve Birikim | ✅ Koda döküldü (`money_screen.dart`/`money_category_card.dart`/`money_trend_chart.dart`) |
-| Modül ekranı — Odak Sayacı (1 kaldı) | ⏳ Henüz mockup yapılmadı |
+| Modül ekranı — Odak Sayacı | ✅ Koda döküldü (`focus_timer_screen.dart`, karanlık mod hariç) |
 | Ayarlar ekranı | ✅ Koda döküldü (`settings_screen.dart`) |
 | Şans Çarkı / Günlük Ödül / Rozet pop-up'ları | 🚫 Kapsam dışı — değişmeyecek |
