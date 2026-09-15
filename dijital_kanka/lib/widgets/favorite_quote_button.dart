@@ -20,12 +20,15 @@ class FavoriteQuoteButton extends StatelessWidget {
     final favorites = context.watch<FavoriteQuotesProvider>();
     final isFavorite = favorites.isFavorite(message);
 
-    return StickerCircleButton(
+    return StickerIconButton(
       onPressed: () => favorites.toggleFavorite(message),
       tooltip: isFavorite
           ? l10n.favoriteQuoteRemoveTooltip
           : l10n.favoriteQuoteAddTooltip,
       icon: isFavorite ? Icons.favorite : Icons.favorite_border,
+      size: 26,
+      iconSize: 13,
+      borderRadius: 8,
     );
   }
 }

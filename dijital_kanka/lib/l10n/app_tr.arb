@@ -1286,6 +1286,39 @@
   "@waterHistoryEmpty": {
     "description": "Geçmiş kaydı hiç olmadığında gösterilen metin"
   },
+
+  "homeWidgetNewBadge": "YENİ",
+  "@homeWidgetNewBadge": {
+    "description": "Ana Sayfa'daki Su/Hedef mini kartlarının köşesindeki rozet metni"
+  },
+  "homeWaterWidgetTitle": "Su",
+  "@homeWaterWidgetTitle": {
+    "description": "Ana Sayfa'daki Su mini kartının başlığı"
+  },
+  "homeWaterRemainingLabel": "{count} {unit} kaldı",
+  "@homeWaterRemainingLabel": {
+    "description": "Ana Sayfa'daki Su mini kartında hedefe kalan birim sayısı",
+    "placeholders": {
+      "count": {"type": "int"},
+      "unit": {"type": "String"}
+    }
+  },
+  "homeWaterCompleteLabel": "Bugünkü hedef tamamlandı!",
+  "@homeWaterCompleteLabel": {
+    "description": "Ana Sayfa'daki Su mini kartında günlük hedef zaten tamamlandıysa gösterilen metin"
+  },
+  "homeGoalWidgetTitle": "Hedef",
+  "@homeGoalWidgetTitle": {
+    "description": "Ana Sayfa'daki Hedef mini kartının başlığı"
+  },
+  "homeGoalCompleteLabel": "Bugün hepsi tamam!",
+  "@homeGoalCompleteLabel": {
+    "description": "Ana Sayfa'daki Hedef mini kartında bugünün tüm hedefleri işaretlendiyse gösterilen metin"
+  },
+  "homeGoalEmptyLabel": "Henüz hedef yok",
+  "@homeGoalEmptyLabel": {
+    "description": "Ana Sayfa'daki Hedef mini kartında hiç hedef eklenmediyse gösterilen metin"
+  },
   "waterHistoryCompletedEntry": "{date} tarihinde hedef tamamlandı",
   "@waterHistoryCompletedEntry": {
     "description": "Hedefin tamamlandığı bir geçmiş günü için satır metni",

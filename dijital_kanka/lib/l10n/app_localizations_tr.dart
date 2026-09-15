@@ -917,6 +917,29 @@ class AppLocalizationsTr extends AppLocalizations {
   String get waterHistoryEmpty => 'Henüz geçmiş kayıt yok.';
 
   @override
+  String get homeWidgetNewBadge => 'YENİ';
+
+  @override
+  String get homeWaterWidgetTitle => 'Su';
+
+  @override
+  String homeWaterRemainingLabel(int count, String unit) {
+    return '$count $unit kaldı';
+  }
+
+  @override
+  String get homeWaterCompleteLabel => 'Bugünkü hedef tamamlandı!';
+
+  @override
+  String get homeGoalWidgetTitle => 'Hedef';
+
+  @override
+  String get homeGoalCompleteLabel => 'Bugün hepsi tamam!';
+
+  @override
+  String get homeGoalEmptyLabel => 'Henüz hedef yok';
+
+  @override
   String waterHistoryCompletedEntry(String date) {
     return '$date tarihinde hedef tamamlandı';
   }

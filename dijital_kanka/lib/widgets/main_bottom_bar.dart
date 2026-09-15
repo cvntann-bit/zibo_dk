@@ -52,7 +52,7 @@ class MainBottomBar extends StatelessWidget {
       child: BottomAppBar(
         shape: const CircularNotchedRectangle(),
         notchMargin: 8,
-        color: colorScheme.surfaceContainer,
+        color: colorScheme.surfaceContainerLowest,
         padding: EdgeInsets.zero,
         elevation: 0,
         child: Row(
@@ -144,19 +144,22 @@ class _NavItem extends StatelessWidget {
                 AnimatedContainer(
                   duration: const Duration(milliseconds: 220),
                   curve: Curves.easeOut,
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                  width: 36,
+                  height: 36,
+                  alignment: Alignment.center,
                   decoration: selected
                       ? stickerDecoration(
                           fill: colorScheme.primary,
-                          borderRadius: BorderRadius.circular(20),
-                          borderWidth: 2,
+                          borderRadius: BorderRadius.circular(10),
+                          borderWidth: 2.5,
                           shadowOffset: const Offset(2, 2),
                         )
-                      : const BoxDecoration(
+                      : BoxDecoration(
                           color: Colors.transparent,
-                          borderRadius: BorderRadius.all(Radius.circular(20)),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: Colors.transparent, width: 2.5),
                         ),
-                  child: Icon(icon, color: iconColor, size: 22),
+                  child: Icon(icon, color: iconColor, size: 20),
                 ),
                 const SizedBox(height: 2),
                 Text(

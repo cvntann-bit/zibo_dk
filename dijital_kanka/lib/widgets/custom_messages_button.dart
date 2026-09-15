@@ -15,13 +15,15 @@ class CustomMessagesButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
-    return StickerCircleButton(
+    return StickerIconButton(
       onPressed: () => Navigator.of(context).push(
         MaterialPageRoute<void>(builder: (_) => const CustomMessagesScreen()),
       ),
       tooltip: l10n.customMessagesButtonTooltip,
       icon: Icons.edit_note_rounded,
-      iconSize: 20,
+      size: 26,
+      iconSize: 14,
+      borderRadius: 8,
     );
   }
 }

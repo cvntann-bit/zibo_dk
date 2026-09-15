@@ -98,7 +98,7 @@ class _ZFloatingButtonState extends State<ZFloatingButton>
           decoration: stickerCircleDecoration(
             fill: colorScheme.primary,
             borderWidth: 3,
-            shadowOffset: const Offset(3, 3),
+            shadowOffset: const Offset(0, 4),
           ),
           child: Padding(
             padding: const EdgeInsets.all(_framePadding),

@@ -96,8 +96,8 @@ class _CoinBalanceWidgetState extends State<CoinBalanceWidget>
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: stickerDecoration(
-              fill: colorScheme.surfaceContainerHigh,
-              borderRadius: BorderRadius.circular(20),
+              fill: colorScheme.surfaceContainerLowest,
+              borderRadius: BorderRadius.circular(14),
               borderWidth: 2.5,
               shadowOffset: const Offset(2, 2),
             ),

@@ -1702,6 +1702,48 @@ abstract class AppLocalizations {
   /// **'Henüz geçmiş kayıt yok.'**
   String get waterHistoryEmpty;
 
+  /// Ana Sayfa'daki Su/Hedef mini kartlarının köşesindeki rozet metni
+  ///
+  /// In tr, this message translates to:
+  /// **'YENİ'**
+  String get homeWidgetNewBadge;
+
+  /// Ana Sayfa'daki Su mini kartının başlığı
+  ///
+  /// In tr, this message translates to:
+  /// **'Su'**
+  String get homeWaterWidgetTitle;
+
+  /// Ana Sayfa'daki Su mini kartında hedefe kalan birim sayısı
+  ///
+  /// In tr, this message translates to:
+  /// **'{count} {unit} kaldı'**
+  String homeWaterRemainingLabel(int count, String unit);
+
+  /// Ana Sayfa'daki Su mini kartında günlük hedef zaten tamamlandıysa gösterilen metin
+  ///
+  /// In tr, this message translates to:
+  /// **'Bugünkü hedef tamamlandı!'**
+  String get homeWaterCompleteLabel;
+
+  /// Ana Sayfa'daki Hedef mini kartının başlığı
+  ///
+  /// In tr, this message translates to:
+  /// **'Hedef'**
+  String get homeGoalWidgetTitle;
+
+  /// Ana Sayfa'daki Hedef mini kartında bugünün tüm hedefleri işaretlendiyse gösterilen metin
+  ///
+  /// In tr, this message translates to:
+  /// **'Bugün hepsi tamam!'**
+  String get homeGoalCompleteLabel;
+
+  /// Ana Sayfa'daki Hedef mini kartında hiç hedef eklenmediyse gösterilen metin
+  ///
+  /// In tr, this message translates to:
+  /// **'Henüz hedef yok'**
+  String get homeGoalEmptyLabel;
+
   /// Hedefin tamamlandığı bir geçmiş günü için satır metni
   ///
   /// In tr, this message translates to:

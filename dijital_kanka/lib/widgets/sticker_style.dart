@@ -52,11 +52,15 @@ BoxDecoration stickerCircleDecoration({
 
 /// `IconButton.filled` ile AYNI kullanım biçimini (ikon + `onPressed` +
 /// `tooltip`) korurken, çıktıyı kalın kontur + düz ofsetli sticker gölgesiyle
-/// çizen dairesel buton. Ana Sayfa'nın konuşma balonu köşesindeki paylaş/
-/// favori/özel-mesaj butonları ile RootScreen AppBar'ındaki mağaza/ayarlar/
-/// kupa ikonları bunu paylaşır.
-class StickerCircleButton extends StatelessWidget {
-  const StickerCircleButton({
+/// çizen buton. Onaylanan Ana Sayfa mockup'ında ([docs/theme_new.md]) bu
+/// butonların HİÇBİRİ tam daire DEĞİL — hafif yuvarlatılmış kare
+/// ("squircle", `.icon-btn` 30x30/radius 9, `.mini-btn` 26x26/radius 8,
+/// `.nav-badge` 36x36/radius 10) — [borderRadius] bu yüzden `null`
+/// (tam daire) yerine VARSAYILAN olarak sağlanmalı; yalnızca gerçekten
+/// dairesel bir öğe (ör. Z butonu, ayrı olarak [stickerCircleDecoration]
+/// kullanıyor) için `null` bırakılır.
+class StickerIconButton extends StatelessWidget {
+  const StickerIconButton({
     super.key,
     required this.icon,
     required this.onPressed,
@@ -66,6 +70,7 @@ class StickerCircleButton extends StatelessWidget {
     this.size = 36,
     this.iconSize = 18,
     this.borderWidth = 2.5,
+    this.borderRadius = 10,
   });
 
   final IconData icon;
@@ -77,24 +82,37 @@ class StickerCircleButton extends StatelessWidget {
   final double iconSize;
   final double borderWidth;
 
+  /// `null` verilirse tam daire (`CircleBorder`), aksi halde bu değerde
+  /// yuvarlatılmış köşeli bir kare (`RoundedRectangleBorder`).
+  final double? borderRadius;
+
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final fill = backgroundColor ?? colorScheme.primary;
     final fg = iconColor ?? colorScheme.onPrimary;
+    final radius = borderRadius;
+
+    final shape = radius == null
+        ? CircleBorder(side: BorderSide(color: kStickerOutline, width: borderWidth))
+        : RoundedRectangleBorder(
+            side: BorderSide(color: kStickerOutline, width: borderWidth),
+            borderRadius: BorderRadius.circular(radius),
+          );
+    final decorationShape = radius == null ? BoxShape.circle : BoxShape.rectangle;
+    final decorationRadius = radius == null ? null : BorderRadius.circular(radius);
 
     final button = DecoratedBox(
       decoration: BoxDecoration(
-        shape: BoxShape.circle,
+        shape: decorationShape,
+        borderRadius: decorationRadius,
         boxShadow: const [BoxShadow(color: kStickerOutline, offset: Offset(2, 2))],
       ),
       child: Material(
         color: fill,
-        shape: CircleBorder(
-          side: BorderSide(color: kStickerOutline, width: borderWidth),
-        ),
+        shape: shape,
         child: InkWell(
-          customBorder: const CircleBorder(),
+          customBorder: shape,
           onTap: onPressed,
           child: SizedBox(
             width: size,

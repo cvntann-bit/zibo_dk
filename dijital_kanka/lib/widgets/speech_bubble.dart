@@ -30,7 +30,7 @@ class SpeechBubble extends StatelessWidget {
 
     return CustomPaint(
       painter: _SpeechBubblePainter(
-        color: colorScheme.surfaceContainerHigh,
+        color: colorScheme.surfaceContainerLowest,
         outlineColor: kStickerOutline,
       ),
       child: ConstrainedBox(
@@ -68,7 +68,7 @@ class _SpeechBubblePainter extends CustomPainter {
 
   final Color color;
   final Color outlineColor;
-  static const double _radius = 20;
+  static const double _radius = 18;
   static const double _tailHeight = 14;
   static const double _tailWidth = 22;
   static const double _outlineWidth = 3;

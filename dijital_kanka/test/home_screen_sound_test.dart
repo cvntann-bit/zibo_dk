@@ -16,10 +16,12 @@ import 'package:dijital_kanka/providers/app_theme_provider.dart';
 import 'package:dijital_kanka/providers/costume_provider.dart';
 import 'package:dijital_kanka/providers/custom_messages_provider.dart';
 import 'package:dijital_kanka/providers/favorite_quotes_provider.dart';
+import 'package:dijital_kanka/providers/goals_provider.dart';
 import 'package:dijital_kanka/providers/mood_provider.dart';
 import 'package:dijital_kanka/providers/profile_provider.dart';
 import 'package:dijital_kanka/providers/sound_effects_provider.dart';
 import 'package:dijital_kanka/providers/theme_provider.dart';
+import 'package:dijital_kanka/providers/water_provider.dart';
 import 'package:dijital_kanka/providers/zibo_pose_provider.dart';
 import 'package:dijital_kanka/screens/home_screen.dart';
 import 'package:dijital_kanka/services/sound_effects_service.dart';
@@ -64,10 +66,12 @@ Widget _buildTestApp(SoundEffectsService soundEffectsService) {
       ChangeNotifierProvider(create: (_) => CostumeProvider()),
       ChangeNotifierProvider(create: (_) => CustomMessagesProvider()),
       ChangeNotifierProvider(create: (_) => FavoriteQuotesProvider()),
+      ChangeNotifierProvider(create: (_) => GoalsProvider()),
       ChangeNotifierProvider(create: (_) => MoodProvider()),
       ChangeNotifierProvider(create: (_) => ProfileProvider()),
       ChangeNotifierProvider(create: (_) => SoundEffectsProvider()),
       ChangeNotifierProvider(create: (_) => ThemeProvider()),
+      ChangeNotifierProvider(create: (_) => WaterProvider()),
       ChangeNotifierProvider(create: (_) => ZiboPoseProvider()),
     ],
     child: MaterialApp(

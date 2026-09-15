@@ -918,6 +918,29 @@ class AppLocalizationsEn extends AppLocalizations {
   String get waterHistoryEmpty => 'No history yet.';
 
   @override
+  String get homeWidgetNewBadge => 'NEW';
+
+  @override
+  String get homeWaterWidgetTitle => 'Water';
+
+  @override
+  String homeWaterRemainingLabel(int count, String unit) {
+    return '$count $unit left';
+  }
+
+  @override
+  String get homeWaterCompleteLabel => 'Today\'s goal is done!';
+
+  @override
+  String get homeGoalWidgetTitle => 'Goal';
+
+  @override
+  String get homeGoalCompleteLabel => 'All done today!';
+
+  @override
+  String get homeGoalEmptyLabel => 'No goals yet';
+
+  @override
   String waterHistoryCompletedEntry(String date) {
     return 'Goal completed on $date';
   }

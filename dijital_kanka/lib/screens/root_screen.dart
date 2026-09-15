@@ -514,31 +514,40 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
           // AppBar'ı değişmez (bkz. WheelTriggerButton'ın yalnızca Ana
           // Sayfa'da görünmesiyle aynı koşullu-görünürlük deseni).
           if (_selectedIndex == _goalTrackingTabIndex) ...[
-            StickerCircleButton(
+            StickerIconButton(
               icon: Icons.emoji_events_outlined,
               tooltip: l10n.completedGoalsButtonTooltip,
-              backgroundColor: Theme.of(context).colorScheme.surfaceContainerHigh,
+              backgroundColor: Theme.of(context).colorScheme.surfaceContainerLowest,
               iconColor: Theme.of(context).colorScheme.onSurface,
+              size: 30,
+              iconSize: 16,
+              borderRadius: 9,
               onPressed: () => Navigator.of(context).push(
                 MaterialPageRoute(builder: (_) => const CompletedGoalsScreen()),
               ),
             ),
             const SizedBox(width: 8),
           ],
-          StickerCircleButton(
+          StickerIconButton(
             icon: Icons.add_circle_outline,
             tooltip: l10n.storeButtonTooltip,
-            backgroundColor: Theme.of(context).colorScheme.surfaceContainerHigh,
+            backgroundColor: Theme.of(context).colorScheme.surfaceContainerLowest,
             iconColor: Theme.of(context).colorScheme.onSurface,
+            size: 30,
+            iconSize: 16,
+            borderRadius: 9,
             // Mağaza artık bir sekme; "+" bu sekmeye geçiş yapar.
             onPressed: () => _setSelectedIndex(_storeTabIndex),
           ),
           const SizedBox(width: 8),
-          StickerCircleButton(
+          StickerIconButton(
             icon: Icons.settings_outlined,
             tooltip: l10n.tabSettings,
-            backgroundColor: Theme.of(context).colorScheme.surfaceContainerHigh,
+            backgroundColor: Theme.of(context).colorScheme.surfaceContainerLowest,
             iconColor: Theme.of(context).colorScheme.onSurface,
+            size: 30,
+            iconSize: 16,
+            borderRadius: 9,
             onPressed: () => Navigator.of(
               context,
             ).push(MaterialPageRoute(builder: (_) => const SettingsScreen())),

@@ -10,15 +10,19 @@ import '../data/costumes.dart';
 import '../data/zibo_event_messages.dart';
 import '../data/zibo_messages.dart';
 import '../l10n/app_localizations.dart';
+import '../models/goal.dart';
+import '../models/water_entry.dart';
 import '../providers/ad_free_provider.dart';
 import '../providers/app_theme_provider.dart';
 import '../providers/coin_provider.dart';
 import '../providers/costume_provider.dart';
 import '../providers/custom_messages_provider.dart';
+import '../providers/goals_provider.dart';
 import '../providers/mood_provider.dart';
 import '../providers/profile_provider.dart';
 import '../providers/sound_effects_provider.dart';
 import '../providers/theme_provider.dart';
+import '../providers/water_provider.dart';
 import '../providers/zibo_pose_provider.dart';
 import '../services/sound_effects_service.dart';
 import '../utils/address_term.dart';
@@ -27,6 +31,7 @@ import '../utils/zibo_event_signal.dart';
 import '../widgets/ad_free_promo_sheet.dart';
 import '../widgets/custom_messages_button.dart';
 import '../widgets/favorite_quote_button.dart';
+import '../widgets/home_module_widget.dart';
 import '../widgets/share_zibo_button.dart';
 import '../widgets/speech_bubble.dart';
 import '../widgets/starry_gradient_background.dart';
@@ -324,66 +329,135 @@ class _HomeScreenState extends State<HomeScreen>
         ? null
         : findAppThemeById(equippedThemeId);
 
-    final content = Center(
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onTap: _onZiboTap,
-              child: AnimatedBuilder(
-                animation: _bounceController,
-                builder: (context, child) => Transform.translate(
-                  offset: Offset(0, _jumpAnimation.value),
-                  child: Transform.rotate(
-                    angle: _wobbleAnimation.value,
-                    child: child,
+    // Su/Hedef mini kartları — "Çizgi Roman Çıkartması" mockup'ında Ana
+    // Sayfa'ya YENİ eklenen, konuşma balonu ile alt bar arasındaki widget
+    // sırası (bkz. `docs/theme_new.md` "Onaylanan: Ana Sayfa yerleşimi").
+    final water = context.watch<WaterProvider>();
+    final waterUnitLabel = water.unit == WaterUnit.glass
+        ? l10n.waterUnitGlass
+        : l10n.waterUnitBottle;
+    final waterProgress = water.todayCount / water.goalUnitCount;
+    final waterSubtitle = water.isTodayComplete
+        ? l10n.homeWaterCompleteLabel
+        : l10n.homeWaterRemainingLabel(
+            water.goalUnitCount - water.todayCount,
+            waterUnitLabel,
+          );
+
+    final goals = context.watch<GoalsProvider>().goals;
+    final today = Goal.dateOnly(DateTime.now());
+    final doneGoalsToday = goals
+        .where((goal) => goal.completedDates.contains(today))
+        .length;
+    final goalProgress = goals.isEmpty ? 0.0 : doneGoalsToday / goals.length;
+    final String goalSubtitle;
+    if (goals.isEmpty) {
+      goalSubtitle = l10n.homeGoalEmptyLabel;
+    } else if (doneGoalsToday >= goals.length) {
+      goalSubtitle = l10n.homeGoalCompleteLabel;
+    } else {
+      goalSubtitle = goals
+          .firstWhere((goal) => !goal.completedDates.contains(today))
+          .name;
+    }
+
+    // Mockup'ın `.mid-space{flex:1 1 auto}` alanı — maskot+balon+ipucu
+    // KENDİ `SingleChildScrollView`'ında üstte, mini kartlar SABİT olarak
+    // altta kalır; aradaki tüm boş alan burada birikir (küçük ekranda
+    // yeterse maskot bölümü kendi içinde kayar, dış Column asla taşmaz).
+    // Not: `Spacer`/`Expanded` DOĞRUDAN bir `SingleChildScrollView`'ın
+    // İÇİNDE kullanılamaz (o eksende sınırsız yükseklik verir) — bu yüzden
+    // esnek boşluk dış `Column`'da, kaydırma İÇ `Column`'da.
+    final content = Column(
+      children: [
+        const SizedBox(height: 32),
+        Expanded(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: _onZiboTap,
+                  child: AnimatedBuilder(
+                    animation: _bounceController,
+                    builder: (context, child) => Transform.translate(
+                      offset: Offset(0, _jumpAnimation.value),
+                      child: Transform.rotate(
+                        angle: _wobbleAnimation.value,
+                        child: child,
+                      ),
+                    ),
+                    child: ZiboAnimatedImage(
+                      imageKey: const Key('ziboCharacterImage'),
+                      costumeId: equippedId,
+                      poseStep: poseStep,
+                      fallbackImage: equippedImageAsset,
+                      height: ziboHeight,
+                      semanticLabel: l10n.ziboImagePlaceholder,
+                    ),
                   ),
                 ),
-                child: ZiboAnimatedImage(
-                  imageKey: const Key('ziboCharacterImage'),
-                  costumeId: equippedId,
-                  poseStep: poseStep,
-                  fallbackImage: equippedImageAsset,
-                  height: ziboHeight,
-                  semanticLabel: l10n.ziboImagePlaceholder,
+                const SizedBox(height: 8),
+                Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    SpeechBubble(message: message),
+                    Positioned(
+                      top: -13,
+                      right: -13,
+                      child: ShareZiboButton(message: message),
+                    ),
+                    Positioned(
+                      top: -13,
+                      left: -13,
+                      child: FavoriteQuoteButton(message: message),
+                    ),
+                    const Positioned(
+                      bottom: -13,
+                      right: -13,
+                      child: CustomMessagesButton(),
+                    ),
+                  ],
                 ),
-              ),
-            ),
-            const SizedBox(height: 36),
-            Stack(
-              clipBehavior: Clip.none,
-              children: [
-                SpeechBubble(message: message),
-                Positioned(
-                  top: -6,
-                  right: -6,
-                  child: ShareZiboButton(message: message),
-                ),
-                Positioned(
-                  top: -6,
-                  left: -6,
-                  child: FavoriteQuoteButton(message: message),
-                ),
-                const Positioned(
-                  bottom: -6,
-                  right: -6,
-                  child: CustomMessagesButton(),
+                const SizedBox(height: 16),
+                Text(
+                  l10n.tapZiboHint,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
                 ),
               ],
             ),
-            const SizedBox(height: 16),
-            Text(
-              l10n.tapZiboHint,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
-            ),
-          ],
+          ),
         ),
-      ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(24, 16, 24, 44),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              HomeModuleWidget(
+                icon: Icons.water_drop,
+                title: l10n.homeWaterWidgetTitle,
+                valueLabel: '${water.todayCount}/${water.goalUnitCount}',
+                progress: waterProgress,
+                subtitle: waterSubtitle,
+                newBadgeLabel: l10n.homeWidgetNewBadge,
+              ),
+              const SizedBox(width: 12),
+              HomeModuleWidget(
+                icon: Icons.flag,
+                title: l10n.homeGoalWidgetTitle,
+                valueLabel: '$doneGoalsToday/${goals.length}',
+                progress: goalProgress,
+                subtitle: goalSubtitle,
+                newBadgeLabel: l10n.homeWidgetNewBadge,
+              ),
+            ],
+          ),
+        ),
+      ],
     );
 
     if (equippedTheme == null) return content;

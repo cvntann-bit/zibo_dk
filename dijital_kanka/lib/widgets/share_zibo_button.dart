@@ -37,10 +37,13 @@ class ShareZiboButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
-    return StickerCircleButton(
+    return StickerIconButton(
       onPressed: () => _openShareSheet(context),
       tooltip: l10n.shareButtonTooltip,
       icon: Icons.ios_share,
+      size: 26,
+      iconSize: 13,
+      borderRadius: 8,
     );
   }
 }
