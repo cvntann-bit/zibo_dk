@@ -146,6 +146,12 @@ class _DreamEntryFormScreenState extends State<DreamEntryFormScreen> {
                     ),
                     decoration: const InputDecoration(
                       border: InputBorder.none,
+                      // Global `InputDecorationTheme` (bkz. main.dart)
+                      // `filled:true, fillColor: colorScheme.surfaceContainer`
+                      // veriyor — bu sarımsı dolgu, kartın kendi konturu
+                      // İÇİNDE ikinci bir dolgu gibi göründüğü için burada
+                      // AÇIKÇA kapatılıyor (kartın kendi arka planı yeterli).
+                      filled: false,
                       isDense: true,
                       contentPadding: EdgeInsets.zero,
                     ),
@@ -167,6 +173,12 @@ class _DreamEntryFormScreenState extends State<DreamEntryFormScreen> {
                     ),
                     decoration: const InputDecoration(
                       border: InputBorder.none,
+                      // Global `InputDecorationTheme` (bkz. main.dart)
+                      // `filled:true, fillColor: colorScheme.surfaceContainer`
+                      // veriyor — bu sarımsı dolgu, kartın kendi konturu
+                      // İÇİNDE ikinci bir dolgu gibi göründüğü için burada
+                      // AÇIKÇA kapatılıyor (kartın kendi arka planı yeterli).
+                      filled: false,
                       isDense: true,
                       contentPadding: EdgeInsets.zero,
                     ),

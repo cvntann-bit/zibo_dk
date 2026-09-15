@@ -306,6 +306,11 @@ class _GratitudeFieldBox extends StatelessWidget {
             ),
             decoration: InputDecoration(
               border: InputBorder.none,
+              // Global `InputDecorationTheme` (bkz. main.dart) `filled:true,
+              // fillColor: colorScheme.surfaceContainer` veriyor — bu
+              // sarımsı dolgu, alanın kendi ince konturu İÇİNDE ikinci bir
+              // dolgu gibi göründüğü için burada AÇIKÇA kapatılıyor.
+              filled: false,
               isDense: true,
               contentPadding: const EdgeInsets.symmetric(vertical: 9),
               hintText: hint,

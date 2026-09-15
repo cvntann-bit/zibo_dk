@@ -366,6 +366,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   decoration: InputDecoration(
                     hintText: l10n.profileNameHint,
                     border: InputBorder.none,
+                    // Global `InputDecorationTheme` (bkz. main.dart)
+                    // `filled:true, fillColor: colorScheme.surfaceContainer`
+                    // veriyor — dashed alt çizginin İÇİNDE sarımsı bir dolgu
+                    // olarak göründüğü için burada AÇIKÇA kapatılıyor.
+                    filled: false,
                     isCollapsed: true,
                     contentPadding: const EdgeInsets.only(bottom: 8),
                   ),

@@ -220,6 +220,13 @@ class _MoodTrackingScreenState extends State<MoodTrackingScreen> {
                           ),
                           decoration: const InputDecoration(
                             border: InputBorder.none,
+                            // Global `InputDecorationTheme` (bkz. main.dart)
+                            // `filled:true, fillColor:
+                            // colorScheme.surfaceContainer` veriyor — bu
+                            // sarımsı dolgu, kartın kendi konturu İÇİNDE
+                            // ikinci bir dolgu gibi göründüğü için burada
+                            // AÇIKÇA kapatılıyor.
+                            filled: false,
                             isDense: true,
                             contentPadding: EdgeInsets.zero,
                           ),
