@@ -586,5 +586,5 @@ genişletilmek istenirse önce burada AÇIKÇA onaylanmalı.
 | Modül ekranı — Manifest Günlüğü | ✅ Onaylandı — koda dökülmeyi bekliyor |
 | Modül ekranı — Para ve Birikim | ✅ Onaylandı — koda dökülmeyi bekliyor |
 | Modül ekranı — Odak Sayacı (1 kaldı) | ⏳ Henüz mockup yapılmadı |
-| Ayarlar ekranı | ✅ Onaylandı — koda dökülmeyi bekliyor |
+| Ayarlar ekranı | ✅ Koda döküldü (`settings_screen.dart`) |
 | Şans Çarkı / Günlük Ödül / Rozet pop-up'ları | 🚫 Kapsam dışı — değişmeyecek |

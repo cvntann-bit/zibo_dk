@@ -13,9 +13,11 @@ import '../providers/sound_effects_provider.dart';
 import '../providers/theme_provider.dart';
 import '../utils/google_link_action.dart';
 import '../utils/info_dialog.dart';
+import '../widgets/dot_grid_background.dart';
 import '../widgets/founder_badge_promo_card.dart';
 import '../widgets/language_flag_circle.dart';
 import '../widgets/rate_us_sheet.dart';
+import '../widgets/sticker_style.dart';
 import 'legal_placeholder_screen.dart';
 import 'widgets_screen.dart';
 
@@ -40,54 +42,47 @@ Future<void> _launchOrShowError(BuildContext context, Uri uri) async {
 
 /// Ayarlar sayfası. Başlık çubuğundaki dişli ikonundan push edilir; alt
 /// gezinme çubuğunda bir sekme değildir, bu yüzden kendi Scaffold/AppBar'ını
-/// (geri butonu dahil) taşır.
+/// (geri butonu dahil) taşır. **2026 "Çizgi Roman Çıkartması" restyle'ı**
+/// (bkz. `docs/theme_new.md` "Onaylanan: Ayarlar ekranı") — bu ekranın
+/// AppBar'ı, diğer tüm sekmelerin paylaştığı `RootScreen` AppBar'ından
+/// BİLEREK FARKLI: kendi düz "geri oku + başlık" çubuğu var (mockup notu:
+/// "bu bir push ekranı"). Bölümler (Genel/Destek/Uygulama Hakkında) TEK bir
+/// [_SettingsGroupCard] içinde ince çizgilerle ayrılmış satırlardan oluşuyor
+/// — Profil'in satır-başına-ayrı-kart deseninden (`StickerRowCard`) BİLEREK
+/// FARKLI, gerçek kodun `Card`+`Divider` yapısıyla birebir uyumlu.
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
 
   /// **2026 güncellemesi** — eski koyu/açık `SwitchListTile`'ının yerini
   /// aldı (bkz. `ThemeProvider` dokümantasyonu). `_showLanguagePicker` ile
-  /// BİREBİR AYNI görsel desen (sheet başlığı + `ListTile` satırları + seçili
-  /// olana onay ikonu) — kullanıcı zaten bu deseni Dil satırından tanıyor.
+  /// BİREBİR AYNI görsel desen ([_SettingsPickerSheet] — başlık + seçenek
+  /// listesi + seçili olana ✓) — kullanıcı zaten bu deseni Dil satırından
+  /// tanıyor.
   Future<void> _showThemeModePicker(BuildContext context) async {
     final l10n = AppLocalizations.of(context)!;
     final themeProvider = context.read<ThemeProvider>();
+    final options = {
+      ThemeMode.light: l10n.settingsThemeModeLight,
+      ThemeMode.dark: l10n.settingsThemeModeDark,
+      ThemeMode.system: l10n.settingsThemeModeSystem,
+    };
 
     await showModalBottomSheet<void>(
       context: context,
       showDragHandle: true,
-      builder: (sheetContext) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 4, 20, 8),
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  l10n.settingsAppearance,
-                  style: Theme.of(sheetContext).textTheme.titleMedium,
-                ),
-              ),
+      builder: (sheetContext) => _SettingsPickerSheet(
+        title: l10n.settingsAppearance,
+        children: [
+          for (final entry in options.entries)
+            _SheetOptionRow(
+              label: entry.value,
+              selected: themeProvider.themeMode == entry.key,
+              onTap: () {
+                themeProvider.setThemeMode(entry.key);
+                Navigator.of(sheetContext).pop();
+              },
             ),
-            for (final entry in {
-              ThemeMode.light: (Icons.light_mode_outlined, l10n.settingsThemeModeLight),
-              ThemeMode.dark: (Icons.dark_mode_outlined, l10n.settingsThemeModeDark),
-              ThemeMode.system: (Icons.brightness_auto_outlined, l10n.settingsThemeModeSystem),
-            }.entries)
-              ListTile(
-                leading: Icon(entry.value.$1),
-                title: Text(entry.value.$2),
-                trailing: themeProvider.themeMode == entry.key
-                    ? Icon(Icons.check, color: Theme.of(sheetContext).colorScheme.primary)
-                    : null,
-                onTap: () {
-                  themeProvider.setThemeMode(entry.key);
-                  Navigator.of(sheetContext).pop();
-                },
-              ),
-            const SizedBox(height: 8),
-          ],
-        ),
+        ],
       ),
     );
   }
@@ -99,38 +94,20 @@ class SettingsScreen extends StatelessWidget {
     await showModalBottomSheet<void>(
       context: context,
       showDragHandle: true,
-      builder: (sheetContext) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 4, 20, 8),
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  l10n.settingsLanguage,
-                  style: Theme.of(sheetContext).textTheme.titleMedium,
-                ),
-              ),
+      builder: (sheetContext) => _SettingsPickerSheet(
+        title: l10n.settingsLanguage,
+        children: [
+          for (final code in supportedLanguageCodes)
+            _SheetOptionRow(
+              leading: LanguageFlagCircle(languageCode: code, size: 22),
+              label: languageAutonym(code),
+              selected: localeProvider.locale.languageCode == code,
+              onTap: () {
+                localeProvider.setLocale(Locale(code));
+                Navigator.of(sheetContext).pop();
+              },
             ),
-            for (final code in supportedLanguageCodes)
-              ListTile(
-                leading: LanguageFlagCircle(languageCode: code, size: 30),
-                title: Text(languageAutonym(code)),
-                trailing: localeProvider.locale.languageCode == code
-                    ? Icon(
-                        Icons.check,
-                        color: Theme.of(sheetContext).colorScheme.primary,
-                      )
-                    : null,
-                onTap: () {
-                  localeProvider.setLocale(Locale(code));
-                  Navigator.of(sheetContext).pop();
-                },
-              ),
-            const SizedBox(height: 8),
-          ],
-        ),
+        ],
       ),
     );
   }
@@ -144,274 +121,645 @@ class SettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final colorScheme = Theme.of(context).colorScheme;
     final themeMode = context.watch<ThemeProvider>().themeMode;
     final soundEffectsEnabled = context.watch<SoundEffectsProvider>().enabled;
     final currentLanguageCode = context.watch<LocaleProvider>().locale.languageCode;
     final authLink = context.watch<AuthLinkProvider>();
-    final sectionTitleStyle = Theme.of(context).textTheme.labelLarge?.copyWith(
-      color: Theme.of(context).colorScheme.primary,
-      fontWeight: FontWeight.bold,
-      letterSpacing: 0.2,
-    );
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.tabSettings)),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
+      appBar: AppBar(
+        backgroundColor: colorScheme.surfaceContainerLowest,
+        leadingWidth: 62,
+        titleSpacing: 0,
+        leading: Padding(
+          padding: const EdgeInsets.only(left: 16),
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: StickerIconButton(
+              icon: Icons.arrow_back_rounded,
+              onPressed: () => Navigator.of(context).maybePop(),
+              tooltip: MaterialLocalizations.of(context).backButtonTooltip,
+              backgroundColor: colorScheme.surfaceContainerLowest,
+              iconColor: kStickerOutline,
+              size: 34,
+              iconSize: 16,
+              borderRadius: null,
+            ),
+          ),
+        ),
+        title: Text(
+          l10n.tabSettings,
+          style: const TextStyle(
+            fontFamily: 'Baloo2',
+            fontVariations: [FontVariation('wght', 800)],
+            fontSize: 18,
+          ),
+        ),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(3),
+          child: Container(height: 3, color: kStickerOutline),
+        ),
+      ),
+      body: Stack(
         children: [
-          // --- Genel: koyu tema + dil + (varsa) bildirimler — kullanıcının
-          // uygulama genelinde nasıl davrandığını belirlediği tercihler.
-          Text(l10n.settingsSectionGeneral, style: sectionTitleStyle),
-          const SizedBox(height: 8),
-          Card(
-            clipBehavior: Clip.antiAlias,
-            child: Column(
-              children: [
-                ListTile(
-                  leading: const Icon(Icons.brightness_6_outlined),
-                  title: Text(l10n.settingsAppearance),
-                  subtitle: Text(_themeModeLabel(l10n, themeMode)),
-                  trailing: const Icon(Icons.chevron_right),
-                  onTap: () => _showThemeModePicker(context),
-                ),
-                const Divider(height: 1),
-                // 2026 yeni özellik — uygulama içi kısa ses efektlerini
-                // (şimdilik yalnızca Zibo dokunma sesi, bkz.
-                // SoundEffectsService) açıp kapatır.
-                SwitchListTile(
-                  secondary: const Icon(Icons.volume_up_outlined),
-                  title: Text(l10n.settingsSoundEffects),
-                  value: soundEffectsEnabled,
-                  onChanged: (value) =>
-                      context.read<SoundEffectsProvider>().setEnabled(value),
-                ),
-                const Divider(height: 1),
-                // Dil satırı: seçili dilin küçük yuvarlak bayrağı trailing'de
-                // görünür, dokununca üç dilli (TR/EN/ES) bir seçim sheet'i
-                // açılır (bkz. LocaleProvider).
-                ListTile(
-                  leading: const Icon(Icons.language_outlined),
-                  title: Text(l10n.settingsLanguage),
-                  subtitle: Text(languageAutonym(currentLanguageCode)),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      LanguageFlagCircle(languageCode: currentLanguageCode),
-                      const SizedBox(width: 6),
-                      const Icon(Icons.chevron_right),
-                    ],
+          const Positioned.fill(child: DotGridBackground()),
+          ListView(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+            children: [
+              // --- Genel: koyu tema + dil + (varsa) bildirimler — kullanıcının
+              // uygulama genelinde nasıl davrandığını belirlediği tercihler.
+              _SectionEyebrow(l10n.settingsSectionGeneral),
+              const SizedBox(height: 8),
+              _SettingsGroupCard(
+                children: [
+                  _SettingsRow(
+                    iconContent: const Text('🌗', style: TextStyle(fontSize: 15, height: 1)),
+                    title: l10n.settingsAppearance,
+                    trailingValue: _themeModeLabel(l10n, themeMode),
+                    onTap: () => _showThemeModePicker(context),
                   ),
-                  onTap: () => _showLanguagePicker(context),
-                ),
-                const Divider(height: 1),
-                // 2026 yeni özellik — sekiz modülün ana ekran widget'larını
-                // (bkz. CLAUDE.md "Ana Ekran Widget'ları" bölümü) listeleyen
-                // ayrı bir ekrana götürür.
-                ListTile(
-                  leading: const Icon(Icons.widgets_outlined),
-                  title: Text(l10n.widgetsScreenTitle),
-                  subtitle: Text(l10n.settingsWidgetsRowSubtitle),
-                  trailing: const Icon(Icons.chevron_right),
-                  onTap: () => Navigator.of(context).push(
-                    MaterialPageRoute<void>(builder: (_) => const WidgetsScreen()),
+                  _groupDivider(context),
+                  // 2026 yeni özellik — uygulama içi kısa ses efektlerini
+                  // (şimdilik yalnızca Zibo dokunma sesi, bkz.
+                  // SoundEffectsService) açıp kapatır.
+                  _SettingsRow(
+                    iconContent: const Text('🔊', style: TextStyle(fontSize: 15, height: 1)),
+                    title: l10n.settingsSoundEffects,
+                    trailingChild: _StickerSwitch(
+                      value: soundEffectsEnabled,
+                      onChanged: (value) =>
+                          context.read<SoundEffectsProvider>().setEnabled(value),
+                    ),
+                    // Mockup notu (docs/theme_new.md "Onaylanan: Ayarlar
+                    // ekranı"): "satırın HERHANGİ bir yerine dokunmak
+                    // açar/kapatır" — yalnızca anahtarın kendisi değil.
+                    onTap: () => context
+                        .read<SoundEffectsProvider>()
+                        .setEnabled(!soundEffectsEnabled),
                   ),
-                ),
-                const Divider(height: 1),
-                // 2026 yeni özellik — Kurucu Üye rozeti kontenjanı hâlâ
-                // doluysa VE hesap henüz bağlı değilse, hemen aşağıdaki
-                // Google satırının ÜSTÜNE küçük bir teşvik kartı ekler
-                // (bkz. FounderBadgePromoCard dokümantasyonu — kart kendi
-                // içinde koşulları kontrol edip gerekmiyorsa hiçbir yer
-                // kaplamıyor, bu yüzden burada ekstra bir `if` GEREKMEDİ).
-                const Padding(
-                  padding: EdgeInsets.fromLTRB(12, 12, 12, 0),
-                  child: FounderBadgePromoCard(),
-                ),
-                // 2026 yeni özellik — mevcut (anonim) hesabı Google'a
-                // bağlayıp cihaz değişikliğinde veri kaybını önler (bkz.
-                // AuthLinkProvider/utils/google_link_action.dart). Profil
-                // sayfasındaki "Zibo ile Bağın" satırıyla AYNI onTap
-                // mantığı.
-                ListTile(
-                  // Bağlıyken bağlı hesabın kendi Google logosuyla (SVG,
-                  // kullanıcının sağladığı `Google__G__logo.svg`) gösterilir
-                  // — bağlı DEĞİLKEN jenerik "link" ikonuna geri düşülür
-                  // (logo yalnızca GERÇEKTEN bağlı bir hesabı temsil etmeli).
-                  leading: authLink.isLinked
-                      ? SvgPicture.asset(
-                          'assets/images/Google__G__logo.svg',
-                          width: 24,
-                          height: 24,
-                        )
-                      : const Icon(Icons.link_rounded),
-                  title: Text(
-                    authLink.isLinked
+                  _groupDivider(context),
+                  // Dil satırı: seçili dilin küçük yuvarlak bayrağı + adı
+                  // trailing alanında görünür, dokununca üç dilli (TR/EN/ES)
+                  // bir seçim sheet'i açılır (bkz. LocaleProvider).
+                  _SettingsRow(
+                    iconContent: const Text('🌐', style: TextStyle(fontSize: 15, height: 1)),
+                    title: l10n.settingsLanguage,
+                    trailingChild: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        LanguageFlagCircle(languageCode: currentLanguageCode, size: 20),
+                        const SizedBox(width: 6),
+                        Text(
+                          languageAutonym(currentLanguageCode),
+                          style: TextStyle(
+                            fontWeight: FontWeight.w700,
+                            fontSize: 12,
+                            color: colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        const _RowChevron(),
+                      ],
+                    ),
+                    onTap: () => _showLanguagePicker(context),
+                  ),
+                  _groupDivider(context),
+                  // 2026 yeni özellik — sekiz modülün ana ekran widget'larını
+                  // (bkz. CLAUDE.md "Ana Ekran Widget'ları" bölümü) listeleyen
+                  // ayrı bir ekrana götürür.
+                  _SettingsRow(
+                    iconContent: const Text('🧩', style: TextStyle(fontSize: 15, height: 1)),
+                    title: l10n.widgetsScreenTitle,
+                    subtitle: l10n.settingsWidgetsRowSubtitle,
+                    onTap: () => Navigator.of(context).push(
+                      MaterialPageRoute<void>(builder: (_) => const WidgetsScreen()),
+                    ),
+                  ),
+                  // 2026 yeni özellik — Kurucu Üye rozeti kontenjanı hâlâ
+                  // doluysa VE hesap henüz bağlı değilse, hemen aşağıdaki
+                  // Google satırının ÜSTÜNE küçük bir teşvik kartı ekler
+                  // (bkz. FounderBadgePromoCard dokümantasyonu — kart kendi
+                  // içinde koşulları kontrol edip gerekmiyorsa hiçbir yer
+                  // kaplamıyor, bu yüzden burada ekstra bir `if` GEREKMEDİ).
+                  const Padding(
+                    padding: EdgeInsets.fromLTRB(12, 12, 12, 0),
+                    child: FounderBadgePromoCard(),
+                  ),
+                  // 2026 yeni özellik — mevcut (anonim) hesabı Google'a
+                  // bağlayıp cihaz değişikliğinde veri kaybını önler (bkz.
+                  // AuthLinkProvider/utils/google_link_action.dart). Profil
+                  // sayfasındaki "Zibo ile Bağın" satırıyla AYNI onTap
+                  // mantığı.
+                  _SettingsRow(
+                    // Bağlıyken bağlı hesabın kendi Google logosuyla (SVG,
+                    // kullanıcının sağladığı `Google__G__logo.svg`) gösterilir
+                    // — bağlı DEĞİLKEN jenerik "link" ikonuna geri düşülür
+                    // (logo yalnızca GERÇEKTEN bağlı bir hesabı temsil etmeli).
+                    // İkon dairesi mockup'taki gibi BEYAZ zeminli (`iconBackground`)
+                    // — diğer satırların altın zemininden BİLEREK farklı.
+                    iconContent: authLink.isLinked
+                        ? SvgPicture.asset(
+                            'assets/images/Google__G__logo.svg',
+                            width: 20,
+                            height: 20,
+                          )
+                        : const Icon(Icons.link_rounded, size: 18),
+                    iconBackground: colorScheme.surfaceContainerLowest,
+                    title: authLink.isLinked
                         ? l10n.googleLinkRowTitleLinked
                         : l10n.googleLinkRowTitleUnlinked,
-                  ),
-                  subtitle: Text(
-                    authLink.isLinked
+                    subtitle: authLink.isLinked
                         ? (authLink.linkedEmail ?? '')
                         : l10n.googleLinkRowSubtitle,
+                    onTap: () => handleGoogleLinkTap(context),
                   ),
-                  trailing: const Icon(Icons.chevron_right),
-                  onTap: () => handleGoogleLinkTap(context),
-                ),
-                // 2026 güncellemesi — hesap ZATEN bağlıyken "Çıkış Yap"/
-                // "Hesap Değiştir" butonları. Bilerek yalnızca `isLinked`
-                // iken gösteriliyor: SAF anonim (bağlanmamış) bir hesapta
-                // "çıkış yapmak", o hesaba bir daha ASLA geri dönülemeyeceği
-                // (anonim kimlik bilgileri taşınabilir/tekrar
-                // kullanılabilir DEĞİL) için verinin GERİ DÖNÜŞSÜZ
-                // terkedilmesi anlamına gelirdi — bkz. CLAUDE.md "Google
-                // Hesap Bağlama" bölümü.
-                if (authLink.isLinked) ...[
-                  const Divider(height: 1),
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-                    child: authLink.isLinking
-                        ? const Center(
-                            child: SizedBox(
-                              width: 22,
-                              height: 22,
-                              child: CircularProgressIndicator(strokeWidth: 2.5),
-                            ),
-                          )
-                        : Row(
-                            children: [
-                              Expanded(
-                                child: OutlinedButton.icon(
+                  // 2026 güncellemesi — hesap ZATEN bağlıyken "Çıkış Yap"/
+                  // "Hesap Değiştir" butonları. Bilerek yalnızca `isLinked`
+                  // iken gösteriliyor: SAF anonim (bağlanmamış) bir hesapta
+                  // "çıkış yapmak", o hesaba bir daha ASLA geri dönülemeyeceği
+                  // (anonim kimlik bilgileri taşınabilir/tekrar
+                  // kullanılabilir DEĞİL) için verinin GERİ DÖNÜŞSÜZ
+                  // terkedilmesi anlamına gelirdi — bkz. CLAUDE.md "Google
+                  // Hesap Bağlama" bölümü.
+                  if (authLink.isLinked) ...[
+                    _groupDivider(context),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+                      child: authLink.isLinking
+                          ? const Center(
+                              child: SizedBox(
+                                width: 22,
+                                height: 22,
+                                child: CircularProgressIndicator(strokeWidth: 2.5),
+                              ),
+                            )
+                          : Row(
+                              children: [
+                                _AccountActionButton(
+                                  icon: Icons.logout_rounded,
+                                  label: l10n.googleSignOutButton,
                                   onPressed: () => handleSignOutTap(context),
-                                  icon: const Icon(Icons.logout_rounded, size: 18),
-                                  label: Text(
-                                    l10n.googleSignOutButton,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
                                 ),
-                              ),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: OutlinedButton.icon(
-                                  onPressed: () =>
-                                      handleSwitchAccountTap(context),
-                                  icon: const Icon(
-                                    Icons.swap_horiz_rounded,
-                                    size: 18,
-                                  ),
-                                  label: Text(
-                                    l10n.googleSwitchAccountButton,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
+                                const SizedBox(width: 10),
+                                _AccountActionButton(
+                                  icon: Icons.swap_horiz_rounded,
+                                  label: l10n.googleSwitchAccountButton,
+                                  onPressed: () => handleSwitchAccountTap(context),
                                 ),
-                              ),
-                            ],
-                          ),
+                              ],
+                            ),
+                    ),
+                  ],
+                ],
+              ),
+              if (notificationsFeatureEnabled) ...[
+                const SizedBox(height: 12),
+                const _NotificationSettingsCard(),
+              ],
+
+              // --- Destek: kullanıcının bir sorun/soru için bize ulaşabileceği
+              // kanal.
+              const SizedBox(height: 24),
+              _SectionEyebrow(l10n.settingsSectionSupport),
+              const SizedBox(height: 8),
+              _SettingsGroupCard(
+                children: [
+                  _SettingsRow(
+                    iconContent: const Text('✉️', style: TextStyle(fontSize: 15, height: 1)),
+                    title: l10n.settingsContactUs,
+                    subtitle: _contactEmail,
+                    onTap: () => _launchOrShowError(
+                      context,
+                      Uri(scheme: 'mailto', path: _contactEmail),
+                    ),
+                  ),
+                  _groupDivider(context),
+                  // 2026 yeni özellik — test geri bildirim raporunun "Uygulama
+                  // İçi Puanlama İstemi" önerisine karşılık; düz bir metin
+                  // yerine Zibo görseli + 5 yıldızlık dokunmatik seçim
+                  // (bkz. `rate_us_sheet.dart`).
+                  _SettingsRow(
+                    iconContent: const Text('⭐', style: TextStyle(fontSize: 15, height: 1)),
+                    title: l10n.settingsRateUs,
+                    subtitle: l10n.settingsRateUsSubtitle,
+                    onTap: () => showRateUsSheet(context),
                   ),
                 ],
-              ],
-            ),
-          ),
-          if (notificationsFeatureEnabled) ...[
-            const SizedBox(height: 12),
-            const _NotificationSettingsCard(),
-          ],
+              ),
 
-          // --- Destek: kullanıcının bir sorun/soru için bize ulaşabileceği
-          // kanal.
-          const SizedBox(height: 24),
-          Text(l10n.settingsSectionSupport, style: sectionTitleStyle),
-          const SizedBox(height: 8),
-          Card(
-            clipBehavior: Clip.antiAlias,
-            child: Column(
-              children: [
-                ListTile(
-                  leading: const Icon(Icons.mail_outline),
-                  title: Text(l10n.settingsContactUs),
-                  subtitle: const Text(_contactEmail),
-                  trailing: const Icon(Icons.chevron_right),
-                  onTap: () => _launchOrShowError(
-                    context,
-                    Uri(scheme: 'mailto', path: _contactEmail),
+              // --- Hakkında: sürüm bilgisi + hukuki/kurumsal linkler.
+              const SizedBox(height: 24),
+              _SectionEyebrow(l10n.settingsAbout),
+              const SizedBox(height: 8),
+              _SettingsGroupCard(
+                children: [
+                  const _AppVersionRow(),
+                  _groupDivider(context),
+                  _SettingsRow(
+                    iconContent: const Text('🌍', style: TextStyle(fontSize: 15, height: 1)),
+                    title: l10n.settingsWebsite,
+                    subtitle: _websiteHost,
+                    onTap: () => _launchOrShowError(
+                      context,
+                      Uri.https(_websiteHost),
+                    ),
                   ),
-                ),
-                const Divider(height: 1),
-                // 2026 yeni özellik — test geri bildirim raporunun "Uygulama
-                // İçi Puanlama İstemi" önerisine karşılık; düz bir metin
-                // yerine Zibo görseli + 5 yıldızlık dokunmatik seçim
-                // (bkz. `rate_us_sheet.dart`).
-                ListTile(
-                  leading: const Icon(Icons.star_outline_rounded),
-                  title: Text(l10n.settingsRateUs),
-                  subtitle: Text(l10n.settingsRateUsSubtitle),
-                  trailing: const Icon(Icons.chevron_right),
-                  onTap: () => showRateUsSheet(context),
-                ),
-              ],
-            ),
-          ),
-
-          // --- Hakkında: sürüm bilgisi + hukuki/kurumsal linkler.
-          const SizedBox(height: 24),
-          Text(l10n.settingsAbout, style: sectionTitleStyle),
-          const SizedBox(height: 8),
-          Card(
-            clipBehavior: Clip.antiAlias,
-            child: Column(
-              children: [
-                const _AppVersionRow(),
-                const Divider(height: 1),
-                ListTile(
-                  leading: const Icon(Icons.public),
-                  title: Text(l10n.settingsWebsite),
-                  subtitle: const Text(_websiteHost),
-                  trailing: const Icon(Icons.chevron_right),
-                  onTap: () => _launchOrShowError(
-                    context,
-                    Uri.https(_websiteHost),
-                  ),
-                ),
-                const Divider(height: 1),
-                ListTile(
-                  leading: const Icon(Icons.privacy_tip_outlined),
-                  title: Text(l10n.settingsPrivacyPolicy),
-                  trailing: const Icon(Icons.chevron_right),
-                  onTap: () => Navigator.of(context).push(
-                    MaterialPageRoute<void>(
-                      builder: (_) => LegalPlaceholderScreen(
-                        title: l10n.settingsPrivacyPolicy,
-                        // **2026 güncellemesi** — artık uygulama dili
-                        // hangisiyse (bkz. `LocaleProvider`) o dilde
-                        // gösteriliyor, eskiden HER ZAMAN Türkçe idi (bkz.
-                        // `legal_texts.dart`'ın dosya başındaki notu).
-                        body: privacyPolicyForLocale(Localizations.localeOf(context)),
+                  _groupDivider(context),
+                  _SettingsRow(
+                    iconContent: const Text('🛡️', style: TextStyle(fontSize: 15, height: 1)),
+                    title: l10n.settingsPrivacyPolicy,
+                    onTap: () => Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) => LegalPlaceholderScreen(
+                          title: l10n.settingsPrivacyPolicy,
+                          // **2026 güncellemesi** — artık uygulama dili
+                          // hangisiyse (bkz. `LocaleProvider`) o dilde
+                          // gösteriliyor, eskiden HER ZAMAN Türkçe idi (bkz.
+                          // `legal_texts.dart`'ın dosya başındaki notu).
+                          body: privacyPolicyForLocale(Localizations.localeOf(context)),
+                        ),
                       ),
                     ),
                   ),
-                ),
-                const Divider(height: 1),
-                ListTile(
-                  leading: const Icon(Icons.description_outlined),
-                  title: Text(l10n.settingsTermsOfService),
-                  trailing: const Icon(Icons.chevron_right),
-                  onTap: () => Navigator.of(context).push(
-                    MaterialPageRoute<void>(
-                      builder: (_) => LegalPlaceholderScreen(
-                        title: l10n.settingsTermsOfService,
-                        body: termsOfServiceForLocale(Localizations.localeOf(context)),
+                  _groupDivider(context),
+                  _SettingsRow(
+                    iconContent: const Text('📄', style: TextStyle(fontSize: 15, height: 1)),
+                    title: l10n.settingsTermsOfService,
+                    onTap: () => Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) => LegalPlaceholderScreen(
+                          title: l10n.settingsTermsOfService,
+                          body: termsOfServiceForLocale(Localizations.localeOf(context)),
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ],
-            ),
-          ),
+                ],
+              ),
 
-          if (notificationsFeatureEnabled) ...[
-            const SizedBox(height: 24),
-            const _NotificationDebugPanel(),
-          ],
+              if (notificationsFeatureEnabled) ...[
+                const SizedBox(height: 24),
+                const _NotificationDebugPanel(),
+              ],
+            ],
+          ),
         ],
+      ),
+    );
+  }
+}
+
+Widget _groupDivider(BuildContext context) {
+  return Container(height: 2, color: Theme.of(context).colorScheme.outlineVariant);
+}
+
+/// Ayarlar'ın "Genel"/"Destek"/"Uygulama Hakkında" bölüm başlığı — mockup'ın
+/// `.section-eyebrow` (küçük, kalın, hafif harf aralıklı). Mockup BÜYÜK HARF
+/// gösteriyor, ama `widget_test.dart` bu başlıkları `find.text('Genel')` gibi
+/// TAM eşleşmeyle (orijinal l10n metniyle, büyütülmemiş) arıyor — bu yüzden
+/// [String.toUpperCase] KASITLI olarak uygulanmıyor, testler kırılır.
+class _SectionEyebrow extends StatelessWidget {
+  const _SectionEyebrow(this.text);
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      text,
+      style: TextStyle(
+        fontFamily: 'Baloo2',
+        fontVariations: const [FontVariation('wght', 800)],
+        fontSize: 12.5,
+        letterSpacing: 0.6,
+        color: Theme.of(context).colorScheme.onSurfaceVariant,
+      ),
+    );
+  }
+}
+
+/// Bir bölümün TÜM satırlarını TEK bir kalın-kontur/düz-gölge kartın içine
+/// alan sarmalayıcı — mockup'ın `.group-card` (bkz. `docs/theme_new.md`
+/// "Onaylanan: Ayarlar ekranı" notu: "satır-başına-ayrı-kart DEĞİL").
+/// Satırlar arasındaki ince çizgiler ([_groupDivider]) çağıran taraftan
+/// (ör. koşullu Google satırı/butonları için) ELLE eklenir — bu yüzden
+/// burada otomatik araya-ekleme YOK.
+class _SettingsGroupCard extends StatelessWidget {
+  const _SettingsGroupCard({required this.children});
+
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      clipBehavior: Clip.antiAlias,
+      decoration: stickerDecoration(
+        fill: Theme.of(context).colorScheme.surfaceContainerLowest,
+        borderRadius: BorderRadius.circular(18),
+      ),
+      // İçerideki `ListTile`lar en yakın `Material` ATASINA göre kendi
+      // arka planını/ink splash'ini çiziyor — bu Container'ın KENDİ opak
+      // dolgusu (yukarıdaki `decoration`) araya girip o efekti
+      // GİZLEMESİN diye şeffaf bir `Material` buraya EKLENİYOR (bkz.
+      // Flutter'ın "ListTile background color or ink splashes may be
+      // invisible" uyarısı — `docs/theme_new.md`'deki "ink görünürlüğü"
+      // dersiyle AYNI kök neden, farklı belirti).
+      child: Material(
+        color: Colors.transparent,
+        child: Column(mainAxisSize: MainAxisSize.min, children: children),
+      ),
+    );
+  }
+}
+
+/// [_SettingsGroupCard] içindeki tek bir satır — solda emoji/ikon dairesi,
+/// ortada başlık(+alt metin), sağda değer metni/özel widget ve/veya köşeli
+/// ok. Gerçek bir [ListTile] olarak KALIYOR — hem `trailing` alanı farklı
+/// türde içerik (switch, değer metni) taşıyabilsin hem de
+/// `widget_test.dart`'ın "Görünüm"/"Gizlilik Politikası"/"Kullanım
+/// Koşulları" satırlarını `find.byType(ListTile)` ile bulup `.onTap!()`'i
+/// DOĞRUDAN çağıran testleri BOZULMASIN diye (bkz. o dosyadaki ilgili
+/// testler).
+class _SettingsRow extends StatelessWidget {
+  const _SettingsRow({
+    required this.iconContent,
+    required this.title,
+    this.subtitle,
+    this.trailingValue,
+    this.trailingChild,
+    this.iconBackground,
+    this.onTap,
+  });
+
+  final Widget iconContent;
+  final String title;
+  final String? subtitle;
+  final String? trailingValue;
+  final Widget? trailingChild;
+  final Color? iconBackground;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    Widget? trailing;
+    if (trailingChild != null) {
+      trailing = trailingChild;
+    } else if (trailingValue != null || onTap != null) {
+      trailing = Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (trailingValue != null) ...[
+            Text(
+              trailingValue!,
+              style: TextStyle(
+                fontWeight: FontWeight.w700,
+                fontSize: 12,
+                color: colorScheme.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(width: 6),
+          ],
+          if (onTap != null) const _RowChevron(),
+        ],
+      );
+    }
+
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
+      minVerticalPadding: 12,
+      leading: DecoratedBox(
+        decoration: stickerCircleDecoration(
+          fill: iconBackground ?? colorScheme.primary,
+          borderWidth: 2.5,
+        ),
+        child: SizedBox(width: 36, height: 36, child: Center(child: iconContent)),
+      ),
+      title: Text(
+        title,
+        style: TextStyle(
+          fontWeight: FontWeight.w800,
+          fontSize: 13.5,
+          color: colorScheme.onSurface,
+        ),
+      ),
+      subtitle: subtitle == null
+          ? null
+          : Text(
+              subtitle!,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontWeight: FontWeight.w700,
+                fontSize: 11.5,
+                color: colorScheme.onSurfaceVariant,
+              ),
+            ),
+      trailing: trailing,
+      onTap: onTap,
+    );
+  }
+}
+
+/// [StickerRowCard]'ın köşeli ">" okuyla AYNI görsel — burada [_SettingsRow]
+/// gerçek `StickerRowCard` DEĞİL (tek-satır-tek-kart yerine gruplu kart
+/// kullandığı için) bu yüzden aynı görsel ayrıca burada tanımlı.
+class _RowChevron extends StatelessWidget {
+  const _RowChevron();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 22,
+      height: 22,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        border: Border.all(color: kStickerOutline, width: 2),
+        borderRadius: BorderRadius.circular(7),
+      ),
+      child: Text(
+        '›',
+        style: TextStyle(
+          fontSize: 13,
+          fontWeight: FontWeight.w800,
+          color: Theme.of(context).colorScheme.onSurface,
+          height: 1,
+        ),
+      ),
+    );
+  }
+}
+
+/// "Ses Efektleri" satırının anahtarı — mockup'ın `.switch-track` (kalın
+/// kontur + düz beyaz/altın dolgu), gerçek Material [Switch]'in pill/gölge
+/// görünümünden BİLEREK farklı, diğer sticker kontrollerle (bkz.
+/// `StickerStatusPill`) AYNI dilde.
+class _StickerSwitch extends StatelessWidget {
+  const _StickerSwitch({required this.value, required this.onChanged});
+
+  final bool value;
+  final ValueChanged<bool> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return GestureDetector(
+      onTap: () => onChanged(!value),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        width: 42,
+        height: 24,
+        padding: const EdgeInsets.all(1.5),
+        decoration: BoxDecoration(
+          color: value ? colorScheme.primary : colorScheme.surfaceContainerLowest,
+          borderRadius: BorderRadius.circular(999),
+          border: Border.all(color: kStickerOutline, width: 2.5),
+        ),
+        child: AnimatedAlign(
+          duration: const Duration(milliseconds: 150),
+          curve: Curves.easeOut,
+          alignment: value ? Alignment.centerRight : Alignment.centerLeft,
+          child: Container(
+            width: 15,
+            height: 15,
+            decoration: BoxDecoration(
+              color: colorScheme.surfaceContainerLowest,
+              shape: BoxShape.circle,
+              border: Border.all(color: kStickerOutline, width: 2),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Mockup'ın "acct-btn" — dolgulu altın CTA'lardan ([stickerFilledButtonStyle])
+/// FARKLI olarak açık zeminli/koyu konturlu bir ikincil buton. Gerçek
+/// [OutlinedButton] olarak kalıyor (davranışsal değişiklik yok, yalnızca
+/// stil).
+class _AccountActionButton extends StatelessWidget {
+  const _AccountActionButton({
+    required this.icon,
+    required this.label,
+    required this.onPressed,
+  });
+
+  final IconData icon;
+  final String label;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Expanded(
+      child: OutlinedButton.icon(
+        style: OutlinedButton.styleFrom(
+          backgroundColor: colorScheme.surfaceContainerLowest,
+          foregroundColor: colorScheme.onSurface,
+          side: const BorderSide(color: kStickerOutline, width: 2.5),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 6),
+          textStyle: const TextStyle(fontWeight: FontWeight.w800, fontSize: 12),
+        ),
+        onPressed: onPressed,
+        icon: Icon(icon, size: 17),
+        label: Text(label, overflow: TextOverflow.ellipsis),
+      ),
+    );
+  }
+}
+
+/// "Görünüm"/"Dil" satırlarının açtığı seçim sheet'i — mockup'ın mini-telefon
+/// illüstrasyonundaki `.sheet` (başlık + seçenek listesi, bkz.
+/// `docs/theme_new.md` notu "4"). İki çağıran da BİREBİR aynı bu iskeleti
+/// kullanır, yalnızca [children] farklıdır (Dil'de bayrak rozeti var,
+/// Görünüm'de yok).
+class _SettingsPickerSheet extends StatelessWidget {
+  const _SettingsPickerSheet({required this.title, required this.children});
+
+  final String title;
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(20, 4, 20, 12),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: const TextStyle(
+                fontFamily: 'Baloo2',
+                fontVariations: [FontVariation('wght', 800)],
+                fontSize: 15,
+              ),
+            ),
+            const SizedBox(height: 4),
+            for (var i = 0; i < children.length; i++) ...[
+              if (i > 0) Container(height: 2, color: colorScheme.outlineVariant),
+              children[i],
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// [_SettingsPickerSheet] içindeki tek bir seçenek satırı — düz metin +
+/// (varsa) sol rozet + seçiliyse altın ✓ (mockup'ın `.sheet-row`/
+/// `.sheet-check`).
+class _SheetOptionRow extends StatelessWidget {
+  const _SheetOptionRow({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+    this.leading,
+  });
+
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+  final Widget? leading;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 9),
+        child: Row(
+          children: [
+            if (leading != null) ...[leading!, const SizedBox(width: 10)],
+            Expanded(
+              child: Text(
+                label,
+                style: TextStyle(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 13,
+                  color: colorScheme.onSurface,
+                ),
+              ),
+            ),
+            if (selected)
+              Text(
+                '✓',
+                style: TextStyle(
+                  fontWeight: FontWeight.w800,
+                  fontSize: 15,
+                  color: colorScheme.primary,
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }
@@ -448,12 +796,16 @@ class _AppVersionRowState extends State<_AppVersionRow> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    return ListTile(
-      leading: const Icon(Icons.tag_outlined),
-      title: Text(l10n.settingsVersion),
-      trailing: Text(
+    return _SettingsRow(
+      iconContent: const Text('🏷️', style: TextStyle(fontSize: 15, height: 1)),
+      title: l10n.settingsVersion,
+      trailingChild: Text(
         _version ?? '—',
-        style: Theme.of(context).textTheme.bodyMedium,
+        style: TextStyle(
+          fontWeight: FontWeight.w700,
+          fontSize: 12,
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
+        ),
       ),
     );
   }
