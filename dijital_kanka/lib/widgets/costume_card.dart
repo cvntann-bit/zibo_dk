@@ -8,6 +8,7 @@ import '../providers/costume_provider.dart';
 import '../utils/coin_feedback.dart';
 import '../utils/info_dialog.dart';
 import '../utils/zibo_event_signal.dart';
+import 'sticker_style.dart';
 
 /// Mağaza > Kostümler ızgarasındaki tek bir kostüm kartı. Üç durumu var:
 /// kilitli (satın alınmamış — dim görsel + kilit rozeti + "Satın Al"),
@@ -50,31 +51,50 @@ class CostumeCard extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Stack(
-            alignment: Alignment.topRight,
-            children: [
-              Opacity(
-                opacity: owned ? 1 : 0.45,
-                child: Image.asset(
-                  costume.imageAsset,
-                  height: 92,
-                  semanticLabel: localizedName,
-                ),
-              ),
-              if (!owned)
+          Padding(
+            // Kilit rozeti kartın DIŞINA taşıyor (mockup'ın `top:-6px;
+            // right:-6px`) — üstte yeterli boşluk bırakılmazsa Stack'in
+            // `clipBehavior:none` taşması bir üstteki kartla çakışır.
+            padding: const EdgeInsets.only(top: 6, right: 6),
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
                 Container(
-                  padding: const EdgeInsets.all(4),
+                  height: 78,
+                  width: double.infinity,
+                  alignment: Alignment.center,
                   decoration: BoxDecoration(
-                    color: colorScheme.surfaceContainerHighest,
-                    shape: BoxShape.circle,
+                    color: const Color(0xFFF3E7CE),
+                    border: Border.all(color: kStickerOutline, width: 2),
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Icon(
-                    Icons.lock,
-                    size: 14,
-                    color: colorScheme.onSurfaceVariant,
+                  child: Opacity(
+                    opacity: owned ? 1 : 0.45,
+                    child: Image.asset(
+                      costume.imageAsset,
+                      height: 68,
+                      semanticLabel: localizedName,
+                    ),
                   ),
                 ),
-            ],
+                if (!owned)
+                  Positioned(
+                    top: -6,
+                    right: -6,
+                    child: Container(
+                      width: 24,
+                      height: 24,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: colorScheme.surfaceContainerLowest,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: kStickerOutline, width: 2),
+                      ),
+                      child: const Text('🔒', style: TextStyle(fontSize: 11, height: 1)),
+                    ),
+                  ),
+              ],
+            ),
           ),
           const SizedBox(height: 8),
           Text(
@@ -82,25 +102,17 @@ class CostumeCard extends StatelessWidget {
             textAlign: TextAlign.center,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: Theme.of(
-              context,
-            ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
+            style: TextStyle(
+              fontWeight: FontWeight.w800,
+              fontSize: 12.5,
+              color: colorScheme.onSurface,
+            ),
           ),
           const SizedBox(height: 8),
           if (equipped)
-            _Badge(
-              label: l10n.costumeEquippedBadge,
-              icon: Icons.check_circle,
-              background: colorScheme.primary,
-              foreground: colorScheme.onPrimary,
-            )
+            StickerStatusPill(label: l10n.costumeEquippedBadge, filled: true)
           else if (owned)
-            _Badge(
-              label: l10n.costumeOwnedBadge,
-              icon: Icons.check,
-              background: colorScheme.secondaryContainer,
-              foreground: colorScheme.onSecondaryContainer,
-            )
+            StickerStatusPill(label: l10n.costumeOwnedBadge)
           else ...[
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -109,19 +121,23 @@ class CostumeCard extends StatelessWidget {
                 const SizedBox(width: 4),
                 Text(
                   l10n.storeCoinAmount(costume.price),
-                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: colorScheme.primary,
+                  style: TextStyle(
+                    fontWeight: FontWeight.w800,
+                    fontSize: 12,
+                    color: colorScheme.onSurface,
                   ),
                 ),
               ],
             ),
             const SizedBox(height: 8),
-            SizedBox(
-              width: double.infinity,
-              child: FilledButton(
-                onPressed: () => _buy(context),
-                child: Text(l10n.storeBuyButton),
+            stickerButtonShadow(
+              child: SizedBox(
+                width: double.infinity,
+                child: FilledButton(
+                  style: stickerFilledButtonStyle(context),
+                  onPressed: () => _buy(context),
+                  child: Text(l10n.storeBuyButton),
+                ),
               ),
             ),
           ],
@@ -129,69 +145,59 @@ class CostumeCard extends StatelessWidget {
       ),
     );
 
-    final shape = RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(18),
-      side: equipped
-          ? BorderSide(color: colorScheme.primary, width: 2)
-          : BorderSide.none,
+    final decoration = stickerDecoration(
+      fill: colorScheme.surfaceContainerLowest,
+      borderRadius: BorderRadius.circular(16),
+      borderWidth: equipped ? 4 : 3,
+      outline: equipped ? colorScheme.primary : kStickerOutline,
+    ).copyWith(
+      // Mockup'ta giyili karttaki kalın altın kontur SIRASINDA gölge yine
+      // SABİT koyu renkte kalıyor (`stickerDecoration`'ın `outline` param'ı
+      // ikisini birden değiştirdiği için burada gölge ELLE koyu renge geri
+      // döndürülüyor).
+      boxShadow: const [BoxShadow(color: kStickerOutline, offset: Offset(4, 4))],
     );
 
+    final radius = BorderRadius.circular(16);
+    // Dıştaki `Card` GÖRSEL OLARAK şeffaf (gerçek dolgu/kontur/gölge içteki
+    // `Container`'dan geliyor) — SADECE `widget_test.dart`'ın onlarca yerde
+    // kullandığı `find.ancestor(..., matching: find.byType(Card))` deseni
+    // bozulmasın diye korunuyor (bkz. `hippiCard`/`kingCard` vb.).
     if (!owned) {
-      return Card(shape: shape, child: content);
+      return Card(
+        margin: EdgeInsets.zero,
+        color: Colors.transparent,
+        elevation: 0,
+        shape: const RoundedRectangleBorder(),
+        child: Container(decoration: decoration, child: content),
+      );
     }
 
     return Card(
+      margin: EdgeInsets.zero,
+      color: Colors.transparent,
+      elevation: 0,
+      shape: const RoundedRectangleBorder(),
       clipBehavior: Clip.antiAlias,
-      shape: shape,
-      child: Semantics(
-        button: true,
-        label: equipped
-            ? l10n.costumeUnequipSemanticLabel(localizedName)
-            : l10n.costumeEquipSemanticLabel(localizedName),
-        child: InkWell(
-          onTap: () =>
-              context.read<CostumeProvider>().toggleEquipped(costume.id),
-          child: content,
-        ),
-      ),
-    );
-  }
-}
-
-class _Badge extends StatelessWidget {
-  const _Badge({
-    required this.label,
-    required this.icon,
-    required this.background,
-    required this.foreground,
-  });
-
-  final String label;
-  final IconData icon;
-  final Color background;
-  final Color foreground;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
-        color: background,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
+      child: Stack(
         children: [
-          Icon(icon, size: 14, color: foreground),
-          const SizedBox(width: 4),
-          Flexible(
-            child: Text(
-              label,
-              overflow: TextOverflow.ellipsis,
-              maxLines: 1,
-              style: Theme.of(
-                context,
-              ).textTheme.labelSmall?.copyWith(color: foreground),
+          Container(decoration: decoration, child: content),
+          Positioned.fill(
+            child: Material(
+              color: Colors.transparent,
+              borderRadius: radius,
+              clipBehavior: Clip.antiAlias,
+              child: Semantics(
+                button: true,
+                label: equipped
+                    ? l10n.costumeUnequipSemanticLabel(localizedName)
+                    : l10n.costumeEquipSemanticLabel(localizedName),
+                child: InkWell(
+                  borderRadius: radius,
+                  onTap: () =>
+                      context.read<CostumeProvider>().toggleEquipped(costume.id),
+                ),
+              ),
             ),
           ),
         ],

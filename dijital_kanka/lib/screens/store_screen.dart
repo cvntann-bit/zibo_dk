@@ -18,6 +18,7 @@ import '../utils/info_dialog.dart';
 import '../widgets/ad_free_promo_sheet.dart';
 import '../widgets/costume_card.dart';
 import '../widgets/google_link_promo_sheet.dart';
+import '../widgets/sticker_style.dart';
 import '../widgets/theme_option_card.dart';
 
 /// Mağaza'nın üç segmenti — dışarıdan (ör. Profil > Kostüm Dolabı
@@ -101,26 +102,19 @@ class _StoreScreenState extends State<StoreScreen> {
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
       children: [
-        Text(l10n.storeTitle, style: Theme.of(context).textTheme.titleLarge),
+        Text(
+          l10n.storeTitle,
+          style: TextStyle(
+            fontFamily: 'Baloo2',
+            fontVariations: const [FontVariation('wght', 700)],
+            fontSize: 21,
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
+        ),
         const SizedBox(height: 12),
-        SegmentedButton<StoreSection>(
-          segments: [
-            ButtonSegment(
-              value: StoreSection.coins,
-              label: Text(l10n.storeCoinsTabLabel),
-            ),
-            ButtonSegment(
-              value: StoreSection.costumes,
-              label: Text(l10n.storeCostumesTabLabel),
-            ),
-            ButtonSegment(
-              value: StoreSection.themes,
-              label: Text(l10n.storeThemesTabLabel),
-            ),
-          ],
-          selected: {_section},
-          onSelectionChanged: (selection) =>
-              setState(() => _section = selection.first),
+        _StoreSegmentedControl(
+          selected: _section,
+          onChanged: (value) => setState(() => _section = value),
         ),
         const SizedBox(height: 20),
         switch (_section) {
@@ -129,6 +123,104 @@ class _StoreScreenState extends State<StoreScreen> {
           StoreSection.themes => const _ThemesSection(),
         },
       ],
+    );
+  }
+}
+
+/// Mockup'ın `.segmented`/`.seg` — gerçek `SegmentedButton`'ın sticker
+/// karşılığı. Hiçbir test bu kontrolü WIDGET TİPİYLE aramıyor (yalnızca
+/// `find.text('Kostümler')` gibi etiket metniyle dokunuyor, bkz.
+/// `widget_test.dart`), bu yüzden `FilledButton` gibi bir tür kısıtı YOK —
+/// tamamen özel bir `Material`/`InkWell` üçlüsü.
+class _StoreSegmentedControl extends StatelessWidget {
+  const _StoreSegmentedControl({required this.selected, required this.onChanged});
+
+  final StoreSection selected;
+  final ValueChanged<StoreSection> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return Row(
+      children: [
+        Expanded(
+          child: _segment(context, StoreSection.coins, l10n.storeCoinsTabLabel),
+        ),
+        const SizedBox(width: 6),
+        Expanded(
+          child: _segment(context, StoreSection.costumes, l10n.storeCostumesTabLabel),
+        ),
+        const SizedBox(width: 6),
+        Expanded(
+          child: _segment(context, StoreSection.themes, l10n.storeThemesTabLabel),
+        ),
+      ],
+    );
+  }
+
+  Widget _segment(BuildContext context, StoreSection value, String label) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final active = value == selected;
+    final radius = BorderRadius.circular(12);
+    return Stack(
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(vertical: 9),
+          alignment: Alignment.center,
+          // Dolgu + kontur + gölge AYNI `BoxDecoration`'da olmalı — ayrı bir
+          // `Material` katmanına bölünürse gölge (düz, bulanıksız kopya)
+          // kendi dolgusunun ÜSTÜNE değil ALTINDA kalması gereken yerde
+          // ÜSTÜNDE boyanıp segmenti tamamen koyu gösteriyordu (gerçekten
+          // yaşandı — bkz. git geçmişi).
+          decoration: BoxDecoration(
+            color: active ? colorScheme.primary : colorScheme.surfaceContainerLowest,
+            border: Border.all(color: kStickerOutline, width: 2.5),
+            borderRadius: radius,
+            boxShadow: active
+                ? const [BoxShadow(color: kStickerOutline, offset: Offset(2, 2))]
+                : null,
+          ),
+          child: Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontFamily: 'Baloo2',
+              fontVariations: const [FontVariation('wght', 700)],
+              fontSize: 12.5,
+              color: active ? colorScheme.onPrimary : colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ),
+        Positioned.fill(
+          child: Material(
+            color: Colors.transparent,
+            borderRadius: radius,
+            clipBehavior: Clip.antiAlias,
+            child: InkWell(borderRadius: radius, onTap: () => onChanged(value)),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Mockup'ın `.section-title` — küçük, kalın Baloo2 alt başlık.
+class _SectionTitle extends StatelessWidget {
+  const _SectionTitle(this.text);
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      text,
+      style: TextStyle(
+        fontFamily: 'Baloo2',
+        fontVariations: const [FontVariation('wght', 700)],
+        fontSize: 14.5,
+        color: Theme.of(context).colorScheme.onSurface,
+      ),
     );
   }
 }
@@ -152,24 +244,15 @@ class _BuyCoinsSection extends StatelessWidget {
         // ATLANIYOR — kullanıcı kendi isteğiyle geldiği için bekletmenin
         // anlamı yok), tam sheet içeriği (fayda listesi + fiyat + mockup
         // "Yakında!" akışı) HİÇ tekrarlanmadı.
-        Text(
-          l10n.storeAdFreeSectionTitle,
-          style: Theme.of(context).textTheme.titleMedium,
-        ),
+        _SectionTitle(l10n.storeAdFreeSectionTitle),
         const SizedBox(height: 8),
         const _AdFreeCard(),
         const SizedBox(height: 24),
-        Text(
-          l10n.storeFreeSectionTitle,
-          style: Theme.of(context).textTheme.titleMedium,
-        ),
+        _SectionTitle(l10n.storeFreeSectionTitle),
         const SizedBox(height: 8),
         const _WatchAdCard(),
         const SizedBox(height: 24),
-        Text(
-          l10n.storePackagesSectionTitle,
-          style: Theme.of(context).textTheme.titleMedium,
-        ),
+        _SectionTitle(l10n.storePackagesSectionTitle),
         const SizedBox(height: 8),
         GridView.count(
           shrinkWrap: true,
@@ -204,14 +287,13 @@ class _CostumesSection extends StatelessWidget {
       crossAxisSpacing: 12,
       // Kilitli kartlar (görsel + isim + fiyat + "Satın Al" butonu) sahip
       // olunan kartlardan (görsel + isim + rozet) daha uzun — en uzun durumu
-      // taşırmayacak kadar düşük bir oran seçildi. 2026 güncellemesi: TÜM
-      // kostümler artık bir "X yaparak ücretsiz aç" ilerleme satırı da
-      // taşıyor (bkz. CostumeCard/costumes.dart) — kilitli kart bir satır
-      // daha uzadığı için oran 0.66'dan 0.56'ya düşürüldü (widget testiyle
-      // overflow olmadığı doğrulanacak, bkz. CLAUDE.md'de bu projede
+      // taşırmayacak kadar düşük bir oran seçildi. "Çizgi Roman Çıkartması"
+      // restyle'ında kart içeriği (görsel yüksekliği, dolgu, yazı boyutları)
+      // küçüldüğü için oran 0.56'dan 0.8'e ÇIKARILDI — aksi halde kartların
+      // altında büyük boş alan kalıyordu (bkz. CLAUDE.md'de bu projede
       // tekrarlayan "yeni içerik ekleyince childAspectRatio overflow'u"
-      // dersi).
-      childAspectRatio: 0.56,
+      // dersi — bu kez TERSİ, boşluk sorunu).
+      childAspectRatio: 0.8,
       children: [
         for (final costume in costumes) CostumeCard(costume: costume),
       ],
@@ -252,9 +334,12 @@ class _ThemesGrid extends StatelessWidget {
       mainAxisSpacing: 12,
       crossAxisSpacing: 12,
       // Kilitli/sahip olunan kartların en uzun içeriği (isim + fiyat/rozet
-      // satırı + buton) taşırmayacak kadar düşük bir oran (bkz. CostumeCard/
-      // manifest geçmiş kartlarındaki aynı overflow dersi).
-      childAspectRatio: 0.62,
+      // satırı + buton) taşırmayacak kadar düşük bir oran — `CostumeCard`
+      // ile AYNI gerekçeyle YÜKSELTİLDİ, ama kostümden biraz daha DÜŞÜK
+      // tutuldu (0.72): Premium rozetli kilitli kartlar (kilit + ✨ rozeti
+      // + önizleme + isim + fiyat + buton) 0.8'de 4px taşıyordu (widget
+      // testiyle yakalandı).
+      childAspectRatio: 0.72,
       children: [for (final theme in themes) ThemeOptionCard(theme: theme)],
     );
   }
@@ -282,13 +367,6 @@ class _AdFreeCard extends StatefulWidget {
 }
 
 class _AdFreeCardState extends State<_AdFreeCard> {
-  /// "Zibo ADS" banner'ıyla AYNI sabit kırmızı (bkz. ad_free_promo_sheet.dart
-  /// — kullanıcı isteğiyle uygulamanın aktif temasından BİLEREK BAĞIMSIZ),
-  /// burada yalnızca ikonun rengi olarak kullanılıyor — kartın geri kalanı
-  /// Mağaza'nın normal kart stiliyle (varsayılan `Card` rengi) tutarlı kalsın
-  /// diye tüm kart kırmızıya boyanmadı.
-  static const _brandRed = Color(0xFFD32F2F);
-
   /// Play Store'dan sorgulanan canlı fiyat — `_PackageCardState._livePrice`
   /// ile AYNI desen (bkz. `AdFreeProvider.queryLocalizedPrice`
   /// dokümantasyonu: sabit `adFreePromoPrice` KDV/vergi yüzünden gerçek
@@ -319,43 +397,151 @@ class _AdFreeCardState extends State<_AdFreeCard> {
           Localizations.localeOf(context).languageCode,
         );
 
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Row(
-          children: [
-            const Icon(Icons.workspace_premium, size: 36, color: _brandRed),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    l10n.storeAdFreeCardTitle,
-                    style: Theme.of(
-                      context,
-                    ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    l10n.storeAdFreeCardSubtitle,
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
-                ],
+    return _StorePromoCard(
+      emoji: '👑',
+      title: l10n.storeAdFreeCardTitle,
+      subtitle: l10n.storeAdFreeCardSubtitle,
+      trailing: isAdFree
+          ? IntrinsicWidth(
+              child: StickerStatusPill(
+                label: l10n.storeAdFreeCardPurchasedLabel,
+                filled: true,
               ),
+            )
+          : _StorePromoCta(
+              label: priceLabel,
+              onTap: () => showAdFreePromoSheet(context),
             ),
-            const SizedBox(width: 12),
-            if (isAdFree)
-              Chip(
-                avatar: const Icon(Icons.check, size: 18),
-                label: Text(l10n.storeAdFreeCardPurchasedLabel),
-              )
-            else
-              FilledButton(
-                onPressed: () => showAdFreePromoSheet(context),
-                child: Text(priceLabel),
-              ),
-          ],
+    );
+  }
+}
+
+/// Mockup'ın `.promo-card` — "Reklamsız Zibo"/"Ücretsiz" bölümlerindeki iki
+/// kart (bkz. `_AdFreeCard`/`_WatchAdCard`) AYNI ikon dairesi + başlık/alt
+/// metin + sağdaki CTA yerleşimini paylaşıyor.
+class _StorePromoCard extends StatelessWidget {
+  const _StorePromoCard({
+    required this.emoji,
+    required this.title,
+    required this.subtitle,
+    required this.trailing,
+  });
+
+  final String emoji;
+  final String title;
+  final String subtitle;
+  final Widget trailing;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: stickerDecoration(
+        fill: colorScheme.surfaceContainerLowest,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Row(
+        children: [
+          DecoratedBox(
+            decoration: stickerCircleDecoration(
+              fill: colorScheme.primary,
+              borderWidth: 2.5,
+              shadowOffset: Offset.zero,
+            ),
+            child: SizedBox(
+              width: 38,
+              height: 38,
+              child: Center(child: Text(emoji, style: const TextStyle(fontSize: 17, height: 1))),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontFamily: 'Baloo2',
+                    fontVariations: const [FontVariation('wght', 700)],
+                    fontSize: 13.5,
+                    color: colorScheme.onSurface,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  subtitle,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 11,
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 10),
+          trailing,
+        ],
+      ),
+    );
+  }
+}
+
+/// Mockup'ın `.promo-card .cta` — altın dolgulu, köşeli sticker düğme.
+/// `_StorePromoCard`'ın CTA'sı `FilledButton` OLMAK ZORUNDA DEĞİL (hiçbir
+/// test bu iki kartı widget tipiyle aramıyor, yalnızca fiyat/"İzle"
+/// METNİYLE dokunuyor — bkz. `widget_test.dart`), bu yüzden düz bir
+/// `GestureDetector` yeterli.
+class _StorePromoCta extends StatelessWidget {
+  const _StorePromoCta({required this.label, required this.onTap, this.loading = false});
+
+  final String label;
+  final VoidCallback? onTap;
+  final bool loading;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final radius = BorderRadius.circular(10);
+    return stickerButtonShadow(
+      child: Material(
+        color: onTap == null ? colorScheme.primary.withValues(alpha: 0.5) : colorScheme.primary,
+        borderRadius: radius,
+        child: InkWell(
+          borderRadius: radius,
+          onTap: onTap,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+            decoration: BoxDecoration(
+              border: Border.all(color: kStickerOutline, width: 2.5),
+              borderRadius: radius,
+            ),
+            child: loading
+                ? SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: colorScheme.onPrimary,
+                    ),
+                  )
+                : Text(
+                    label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontFamily: 'Baloo2',
+                      fontVariations: const [FontVariation('wght', 700)],
+                      fontSize: 12,
+                      color: colorScheme.onPrimary,
+                    ),
+                  ),
+          ),
         ),
       ),
     );
@@ -390,7 +576,6 @@ class _WatchAdCardState extends State<_WatchAdCard> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final colorScheme = Theme.of(context).colorScheme;
     // Günlük hak tükendiyse (bkz. CoinProvider.maxDailyAdWatches) kart
     // "pasif" görünür: alt metin uyarı mesajına döner, buton devre dışı
     // kalır — kullanıcı `_WatchAdCardState` bunu her `build()`'de canlı
@@ -398,56 +583,16 @@ class _WatchAdCardState extends State<_WatchAdCard> {
     // (ayrı bir sayfa yenilemeye gerek kalmadan) kart otomatik güncellenir.
     final canWatch = context.watch<CoinProvider>().canWatchAdForCoinsToday;
 
-    return Card(
-      color: colorScheme.primaryContainer,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Row(
-          children: [
-            Icon(
-              Icons.smart_display_outlined,
-              size: 36,
-              color: colorScheme.onPrimaryContainer,
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    l10n.storeWatchAdTitle,
-                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      color: colorScheme.onPrimaryContainer,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    canWatch
-                        ? l10n.storeWatchAdSubtitle(CoinEconomy.adWatch)
-                        : l10n.dailyAdLimitReachedMessage,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: colorScheme.onPrimaryContainer,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 12),
-            FilledButton(
-              onPressed: (_loading || !canWatch)
-                  ? null
-                  : () => _watchAd(context),
-              child: _loading
-                  ? const SizedBox(
-                      width: 16,
-                      height: 16,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : Text(l10n.storeWatchAdButton),
-            ),
-          ],
-        ),
+    return _StorePromoCard(
+      emoji: '📺',
+      title: l10n.storeWatchAdTitle,
+      subtitle: canWatch
+          ? l10n.storeWatchAdSubtitle(CoinEconomy.adWatch)
+          : l10n.dailyAdLimitReachedMessage,
+      trailing: _StorePromoCta(
+        label: l10n.storeWatchAdButton,
+        loading: _loading,
+        onTap: (_loading || !canWatch) ? null : () => _watchAd(context),
       ),
     );
   }
@@ -520,59 +665,60 @@ class _PackageCardState extends State<_PackageCard> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final colorScheme = Theme.of(context).colorScheme;
 
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            SizedBox(
-              width: 76 * widget.package.imageScale,
-              height: 76 * widget.package.imageScale,
-              child: Image.asset(
-                widget.package.imageAsset,
-                fit: BoxFit.contain,
-              ),
+    final content = Padding(
+      padding: const EdgeInsets.all(10),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          SizedBox(
+            width: 60 * widget.package.imageScale,
+            height: 60 * widget.package.imageScale,
+            child: Image.asset(
+              widget.package.imageAsset,
+              fit: BoxFit.contain,
             ),
-            const SizedBox(height: 4),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            l10n.storeCoinAmount(widget.package.coinAmount),
+            style: TextStyle(
+              fontFamily: 'Baloo2',
+              fontVariations: const [FontVariation('wght', 700)],
+              fontSize: 13,
+              color: colorScheme.onSurface,
+            ),
+          ),
+          if (widget.package.bonusCoins > 0) ...[
+            const SizedBox(height: 1),
             Text(
-              l10n.storeCoinAmount(widget.package.coinAmount),
-              style: Theme.of(
-                context,
-              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-            ),
-            if (widget.package.bonusCoins > 0) ...[
-              const SizedBox(height: 2),
-              // Yeşil, hafif "parlayan" (glow) bonus etiketi — kullanıcı
-              // isteği. Renk BİLEREK sabit (aktif temadan bağımsız), tıpkı
-              // "Zibo ADS" kırmızısı gibi — açık/koyu temada da aynı canlı
-              // yeşil okunur.
-              Text(
-                l10n.storeCoinBonus(widget.package.bonusCoins),
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  color: Color(0xFF00E676),
-                  fontWeight: FontWeight.w800,
-                  fontSize: 12.5,
-                  letterSpacing: 0.2,
-                  shadows: [
-                    Shadow(color: Color(0xB300E676), blurRadius: 10),
-                    Shadow(color: Color(0x6600E676), blurRadius: 20),
-                  ],
-                ),
+              l10n.storeCoinBonus(widget.package.bonusCoins),
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: kGoldDeep,
+                fontWeight: FontWeight.w800,
+                fontSize: 10.5,
               ),
-            ],
-            const SizedBox(height: 6),
-            SizedBox(
+            ),
+          ],
+          const SizedBox(height: 7),
+          stickerButtonShadow(
+            child: SizedBox(
               width: double.infinity,
               child: FilledButton(
+                style: stickerFilledButtonStyle(context, fontSize: 11.5),
                 onPressed: _loading ? null : () => _buy(context),
                 child: _loading
-                    ? const SizedBox(
+                    ? SizedBox(
                         width: 16,
                         height: 16,
-                        child: CircularProgressIndicator(strokeWidth: 2),
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: colorScheme.onPrimary,
+                        ),
                       )
                     : Text(
                         _livePrice ??
@@ -581,8 +727,25 @@ class _PackageCardState extends State<_PackageCard> {
                       ),
               ),
             ),
-          ],
+          ),
+        ],
+      ),
+    );
+
+    // Dıştaki `Card` GÖRSEL OLARAK şeffaf — `widget_test.dart`'ın
+    // `package100Card` gibi `find.byType(Card)` ile bulduğu ANCESTOR
+    // hâlâ mevcut olsun diye korunuyor (bkz. `CostumeCard`'daki AYNI not).
+    return Card(
+      margin: EdgeInsets.zero,
+      color: Colors.transparent,
+      elevation: 0,
+      shape: const RoundedRectangleBorder(),
+      child: Container(
+        decoration: stickerDecoration(
+          fill: colorScheme.surfaceContainerLowest,
+          borderRadius: BorderRadius.circular(16),
         ),
+        child: content,
       ),
     );
   }

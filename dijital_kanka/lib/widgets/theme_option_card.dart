@@ -10,6 +10,7 @@ import '../utils/coin_feedback.dart';
 import '../utils/info_dialog.dart';
 import '../utils/zibo_event_signal.dart';
 import 'starry_gradient_background.dart';
+import 'sticker_style.dart';
 import 'theme_particle_effect.dart';
 
 /// Mağaza > Temalar ızgarasındaki tek bir tema kartı. `CostumeCard` ile
@@ -81,7 +82,7 @@ class ThemeOptionCard extends StatelessWidget {
     final previewColors = theme.colorsFor(isDark);
 
     final preview = ClipRRect(
-      borderRadius: BorderRadius.circular(14),
+      borderRadius: BorderRadius.circular(11),
       child: AspectRatio(
         aspectRatio: 1.6,
         child: Opacity(
@@ -105,44 +106,54 @@ class ThemeOptionCard extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Stack(
-            alignment: Alignment.topRight,
-            children: [
-              preview,
-              if (theme.isPremiumAnimated)
-                Positioned(
-                  top: 6,
-                  left: 6,
-                  child: Container(
-                    padding: const EdgeInsets.all(4),
-                    decoration: BoxDecoration(
-                      color: colorScheme.primary,
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      Icons.auto_awesome,
-                      size: 14,
-                      color: colorScheme.onPrimary,
+          Padding(
+            // Kilit/Premium rozetleri kartın DIŞINA taşıyor (mockup'ın
+            // `top:-6px`) — bkz. `CostumeCard`'daki AYNI desen.
+            padding: const EdgeInsets.only(top: 6, left: 6, right: 6),
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                DecoratedBox(
+                  decoration: BoxDecoration(
+                    border: Border.all(color: kStickerOutline, width: 2),
+                    borderRadius: BorderRadius.circular(11),
+                  ),
+                  child: preview,
+                ),
+                if (theme.isPremiumAnimated)
+                  Positioned(
+                    top: -6,
+                    left: -6,
+                    child: Container(
+                      width: 22,
+                      height: 22,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: colorScheme.primary,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: kStickerOutline, width: 2),
+                      ),
+                      child: const Text('✨', style: TextStyle(fontSize: 10, height: 1)),
                     ),
                   ),
-                ),
-              if (!owned)
-                Padding(
-                  padding: const EdgeInsets.all(6),
-                  child: Container(
-                    padding: const EdgeInsets.all(4),
-                    decoration: BoxDecoration(
-                      color: colorScheme.surfaceContainerHighest,
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      Icons.lock,
-                      size: 14,
-                      color: colorScheme.onSurfaceVariant,
+                if (!owned)
+                  Positioned(
+                    top: -6,
+                    right: -6,
+                    child: Container(
+                      width: 24,
+                      height: 24,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: colorScheme.surfaceContainerLowest,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: kStickerOutline, width: 2),
+                      ),
+                      child: const Text('🔒', style: TextStyle(fontSize: 11, height: 1)),
                     ),
                   ),
-                ),
-            ],
+              ],
+            ),
           ),
           const SizedBox(height: 8),
           Text(
@@ -150,25 +161,17 @@ class ThemeOptionCard extends StatelessWidget {
             textAlign: TextAlign.center,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: Theme.of(
-              context,
-            ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
+            style: TextStyle(
+              fontWeight: FontWeight.w800,
+              fontSize: 12.5,
+              color: colorScheme.onSurface,
+            ),
           ),
           const SizedBox(height: 8),
           if (active)
-            _Badge(
-              label: l10n.themeActiveBadge,
-              icon: Icons.check_circle,
-              background: colorScheme.primary,
-              foreground: colorScheme.onPrimary,
-            )
+            StickerStatusPill(label: l10n.themeActiveBadge, filled: true)
           else if (owned)
-            _Badge(
-              label: l10n.themeOwnedBadge,
-              icon: Icons.check,
-              background: colorScheme.secondaryContainer,
-              foreground: colorScheme.onSecondaryContainer,
-            )
+            StickerStatusPill(label: l10n.themeOwnedBadge)
           else ...[
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -177,19 +180,23 @@ class ThemeOptionCard extends StatelessWidget {
                 const SizedBox(width: 4),
                 Text(
                   l10n.storeCoinAmount(theme.price),
-                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: colorScheme.primary,
+                  style: TextStyle(
+                    fontWeight: FontWeight.w800,
+                    fontSize: 12,
+                    color: colorScheme.onSurface,
                   ),
                 ),
               ],
             ),
             const SizedBox(height: 8),
-            SizedBox(
-              width: double.infinity,
-              child: FilledButton(
-                onPressed: () => _buy(context),
-                child: Text(l10n.storeBuyButton),
+            stickerButtonShadow(
+              child: SizedBox(
+                width: double.infinity,
+                child: FilledButton(
+                  style: stickerFilledButtonStyle(context),
+                  onPressed: () => _buy(context),
+                  child: Text(l10n.storeBuyButton),
+                ),
               ),
             ),
           ],
@@ -197,75 +204,59 @@ class ThemeOptionCard extends StatelessWidget {
       ),
     );
 
-    final shape = RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(18),
-      side: active
-          ? BorderSide(color: colorScheme.primary, width: 2)
-          : BorderSide.none,
+    final decoration = stickerDecoration(
+      fill: colorScheme.surfaceContainerLowest,
+      borderRadius: BorderRadius.circular(16),
+      borderWidth: active ? 4 : 3,
+      outline: active ? colorScheme.primary : kStickerOutline,
+    ).copyWith(
+      // Mockup'ta aktif karttaki kalın altın kontur SIRASINDA gölge yine
+      // SABİT koyu renkte kalıyor (bkz. `CostumeCard`'daki AYNI not).
+      boxShadow: const [BoxShadow(color: kStickerOutline, offset: Offset(4, 4))],
     );
 
+    final radius = BorderRadius.circular(16);
+    // Dıştaki `Card` GÖRSEL OLARAK şeffaf — SADECE `widget_test.dart`'ın
+    // `find.ancestor(..., matching: find.byType(Card))` deseni (bkz.
+    // `kingCard`/`sunsetCard`/`winterCard`) bozulmasın diye korunuyor.
     if (!owned) {
       return Card(
-        shape: shape,
+        margin: EdgeInsets.zero,
+        color: Colors.transparent,
+        elevation: 0,
+        shape: const RoundedRectangleBorder(),
         child: Semantics(
           label: l10n.themeLockedSemanticLabel(localizedName, theme.price),
-          child: content,
+          child: Container(decoration: decoration, child: content),
         ),
       );
     }
 
     return Card(
+      margin: EdgeInsets.zero,
+      color: Colors.transparent,
+      elevation: 0,
+      shape: const RoundedRectangleBorder(),
       clipBehavior: Clip.antiAlias,
-      shape: shape,
-      child: Semantics(
-        button: true,
-        label: active
-            ? l10n.themeRemoveSemanticLabel(localizedName)
-            : l10n.themeApplySemanticLabel(localizedName),
-        child: InkWell(
-          onTap: () =>
-              context.read<AppThemeProvider>().toggleEquipped(theme.id),
-          child: content,
-        ),
-      ),
-    );
-  }
-}
-
-class _Badge extends StatelessWidget {
-  const _Badge({
-    required this.label,
-    required this.icon,
-    required this.background,
-    required this.foreground,
-  });
-
-  final String label;
-  final IconData icon;
-  final Color background;
-  final Color foreground;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
-        color: background,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
+      child: Stack(
         children: [
-          Icon(icon, size: 14, color: foreground),
-          const SizedBox(width: 4),
-          Flexible(
-            child: Text(
-              label,
-              overflow: TextOverflow.ellipsis,
-              maxLines: 1,
-              style: Theme.of(
-                context,
-              ).textTheme.labelSmall?.copyWith(color: foreground),
+          Container(decoration: decoration, child: content),
+          Positioned.fill(
+            child: Material(
+              color: Colors.transparent,
+              borderRadius: radius,
+              clipBehavior: Clip.antiAlias,
+              child: Semantics(
+                button: true,
+                label: active
+                    ? l10n.themeRemoveSemanticLabel(localizedName)
+                    : l10n.themeApplySemanticLabel(localizedName),
+                child: InkWell(
+                  borderRadius: radius,
+                  onTap: () =>
+                      context.read<AppThemeProvider>().toggleEquipped(theme.id),
+                ),
+              ),
             ),
           ),
         ],

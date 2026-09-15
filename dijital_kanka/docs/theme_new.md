@@ -574,9 +574,9 @@ genişletilmek istenirse önce burada AÇIKÇA onaylanmalı.
 | Ana Sayfa | ✅ Koda döküldü (`home_screen.dart` + paylaşılan chrome) |
 | Hedefler sekmesi | ✅ Koda döküldü (`goal_tracking_screen.dart`/`goal_card.dart`) |
 | Profil sekmesi | ✅ Koda döküldü (`profile_screen.dart` + `StickerRowCard` ailesi) |
-| Mağaza — Coin Al segmenti | ✅ Onaylandı — koda dökülmeyi bekliyor |
-| Mağaza — Kostümler segmenti | ✅ Onaylandı — koda dökülmeyi bekliyor |
-| Mağaza — Temalar segmenti | ✅ Onaylandı — koda dökülmeyi bekliyor |
+| Mağaza — Coin Al segmenti | ✅ Koda döküldü (`store_screen.dart`) |
+| Mağaza — Kostümler segmenti | ✅ Koda döküldü (`costume_card.dart`) |
+| Mağaza — Temalar segmenti | ✅ Koda döküldü (`theme_option_card.dart`) |
 | Alt bar + Z butonu (uygulama geneli bileşen) | ✅ Koda döküldü (`main_bottom_bar.dart`/`z_floating_button.dart` — çentiksiz düz bar, mockup'taki gibi) |
 | Modül menüsü (Z butonu sheet'i) | ✅ Koda döküldü (`modules_menu_sheet.dart`) |
 | Modül ekranı — Su Takibi | ✅ Onaylandı — koda dökülmeyi bekliyor |

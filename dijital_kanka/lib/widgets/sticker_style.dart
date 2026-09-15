@@ -21,6 +21,11 @@ const kStickerOutline = Color(0xFF14110C);
 /// (kostüm/tema rengine göre değişmez) — [kStickerOutline] ile AYNI gerekçe.
 const kAccentMuted = Color(0xFFC9A46B);
 
+/// Mockup'ın `--gold-deep` değişkeni — bonus/vurgu metinleri gibi normal
+/// altından biraz daha koyu bir ton gerektiren yerlerde (bkz. Mağaza'nın
+/// coin paketi kartlarındaki "+N bonus" etiketi). Tema-bağımsız SABİT.
+const kGoldDeep = Color(0xFFDC8F1E);
+
 /// Köşeli/yuvarlak bir dikdörtgen (kart, hap/pill, buton) için kalın kontur +
 /// düz ofsetli gölge üreten paylaşılan dekorasyon. [fill] dışındaki her şey
 /// SABİTTİR — [fill] çağıran taraftan (genelde `colorScheme`'den) gelmeli.
@@ -440,4 +445,103 @@ class _DashedLinePainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant _DashedLinePainter oldDelegate) =>
       oldDelegate.color != color || oldDelegate.strokeWidth != strokeWidth;
+}
+
+/// Mağaza'nın "Sahip olunan"/"Giyili"/"Aktif" rozetleri — mockup'ın
+/// `.status-pill` (bkz. `docs/theme_new.md` "Onaylanan: Mağaza" bölümleri).
+/// [filled] `false` = beyaz zemin ("Sahip olunan"), `true` = altın zemin
+/// ("Giyili"/"Aktif").
+class StickerStatusPill extends StatelessWidget {
+  const StickerStatusPill({super.key, required this.label, this.filled = false});
+
+  final String label;
+  final bool filled;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 7, horizontal: 4),
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: filled ? colorScheme.primary : colorScheme.surfaceContainerLowest,
+        border: Border.all(color: kStickerOutline, width: 2.5),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            '✓',
+            style: TextStyle(
+              fontWeight: FontWeight.w800,
+              fontSize: 11.5,
+              color: filled ? colorScheme.onPrimary : colorScheme.onSurface,
+            ),
+          ),
+          const SizedBox(width: 4),
+          // `label` KENDİ Text widget'ı olarak KALIYOR (checkmark'la aynı
+          // string'e BİRLEŞTİRİLMİYOR) — `widget_test.dart`'ın birçok yeri
+          // `find.text('Sahip olunan')`/`find.text('Giyili')`/`find.text(
+          // 'Aktif')` ile TAM eşleşme arıyor (bkz. o dosyadaki satırlar).
+          Flexible(
+            child: Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontWeight: FontWeight.w800,
+                fontSize: 11.5,
+                color: filled ? colorScheme.onPrimary : colorScheme.onSurface,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Mağaza'daki tüm "Satın Al"/"İzle" butonlarının paylaştığı sticker stili —
+/// bilerek gerçek [FilledButton]'ı DEĞİŞTİRMİYOR (yalnızca `style:` ve bir
+/// dış gölge sarmalayıcısı ekliyor) çünkü `widget_test.dart`'ın onlarca yeri
+/// `find.byType(FilledButton)` ile bu butonu ARIYOR — sıfırdan özel bir
+/// widget yazmak o testlerin hepsini kırardı.
+ButtonStyle stickerFilledButtonStyle(
+  BuildContext context, {
+  double radius = 10,
+  double fontSize = 12.5,
+}) {
+  final colorScheme = Theme.of(context).colorScheme;
+  return FilledButton.styleFrom(
+    backgroundColor: colorScheme.primary,
+    foregroundColor: colorScheme.onPrimary,
+    disabledBackgroundColor: colorScheme.primary.withValues(alpha: 0.4),
+    disabledForegroundColor: colorScheme.onPrimary.withValues(alpha: 0.7),
+    side: const BorderSide(color: kStickerOutline, width: 2.5),
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radius)),
+    elevation: 0,
+    padding: const EdgeInsets.symmetric(vertical: 10),
+    textStyle: TextStyle(
+      fontFamily: 'Baloo2',
+      fontVariations: const [FontVariation('wght', 700)],
+      fontSize: fontSize,
+    ),
+  );
+}
+
+/// [stickerFilledButtonStyle] ile stillenen bir butonun (veya herhangi bir
+/// çocuğun) ALTINA sticker'ın düz ofsetli gölgesini ekler — `FilledButton`'ın
+/// kendi `elevation`'ı BULANIK bir Material gölgesi ürettiği için (bkz.
+/// `stickerFilledButtonStyle`'daki `elevation:0`), gerçek "kesilmiş sticker"
+/// hissi bu ayrı, düz `BoxShadow` ile sağlanıyor.
+Widget stickerButtonShadow({required Widget child, double radius = 10}) {
+  return DecoratedBox(
+    decoration: BoxDecoration(
+      borderRadius: BorderRadius.circular(radius),
+      boxShadow: const [BoxShadow(color: kStickerOutline, offset: Offset(2, 2))],
+    ),
+    child: child,
+  );
 }
