@@ -9,7 +9,6 @@ import 'package:flutter/foundation.dart' show debugPrint, kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show MethodChannel, MissingPluginException;
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:stack_appodeal_flutter/stack_appodeal_flutter.dart';
 
@@ -151,27 +150,46 @@ final _buttonShape = RoundedRectangleBorder(
 
 /// "Çizgi Roman Çıkartması" görsel kimliğinin tipografi çifti (bkz.
 /// `docs/theme_new.md` "Tipografi" bölümü): başlıklarda SEYREK kullanılan
-/// yuvarlak/oyuncu **Baloo 2**, gövde/UI metninde **Nunito**. `colorScheme`
-/// verilen temanın (varsayılan AYDINLIK/KOYU ya da satın alınmış herhangi
-/// bir `AppThemeOption`) rol renklerini zaten doğru şekilde taşıyan bir
-/// temel `TextTheme` üstüne yalnızca font ailesini bindiriyoruz — böylece
-/// `onSurface`/boyut/kalınlık gibi roller `ColorScheme`'den gelmeye devam
-/// ediyor, yalnızca yazı tipi değişiyor.
+/// yuvarlak/oyuncu **Baloo 2**, gövde/UI metninde **Nunito**.
+///
+/// İkisi de `assets/fonts/`'a gömülü DEĞİŞKEN (variable) font dosyaları —
+/// `google_fonts` paketinin yaptığı gibi çalışma zamanında internetten
+/// İNDİRİLMİYOR. Bu bilinçli bir tercih: ilk denemede `google_fonts`
+/// kullanıldığında ağı olmayan bir cihazda/emülatörde font sessizce
+/// sistem varsayılanına düşüyordu (indirme başarısız oluyor ama hata
+/// göstermiyordu) — bu hem güvenilmez hem de gerçek kullanıcının ilk
+/// açılışta ağı yoksa aynı soruna düşebileceği anlamına geliyordu. Ağırlık
+/// `FontVariation` ile açıkça seçiliyor (tek bir değişken dosya TÜM
+/// ağırlıkları taşıyor, `FontWeight`'in otomatik eşleşmesine güvenmek
+/// yerine).
+TextStyle _withFont(TextStyle? style, String family, double weight) {
+  return (style ?? const TextStyle()).copyWith(
+    fontFamily: family,
+    fontVariations: [FontVariation('wght', weight)],
+  );
+}
+
 TextTheme _buildTextTheme(ColorScheme colorScheme) {
   final base = ThemeData(
     colorScheme: colorScheme,
     useMaterial3: true,
   ).textTheme;
-  final bodyTheme = GoogleFonts.nunitoTextTheme(base);
-  final displayTheme = GoogleFonts.baloo2TextTheme(base);
-  return bodyTheme.copyWith(
-    displayLarge: displayTheme.displayLarge,
-    displayMedium: displayTheme.displayMedium,
-    displaySmall: displayTheme.displaySmall,
-    headlineLarge: displayTheme.headlineLarge,
-    headlineMedium: displayTheme.headlineMedium,
-    headlineSmall: displayTheme.headlineSmall,
-    titleLarge: displayTheme.titleLarge,
+  return base.copyWith(
+    displayLarge: _withFont(base.displayLarge, 'Baloo2', 700),
+    displayMedium: _withFont(base.displayMedium, 'Baloo2', 700),
+    displaySmall: _withFont(base.displaySmall, 'Baloo2', 700),
+    headlineLarge: _withFont(base.headlineLarge, 'Baloo2', 700),
+    headlineMedium: _withFont(base.headlineMedium, 'Baloo2', 700),
+    headlineSmall: _withFont(base.headlineSmall, 'Baloo2', 700),
+    titleLarge: _withFont(base.titleLarge, 'Baloo2', 700),
+    titleMedium: _withFont(base.titleMedium, 'Nunito', 700),
+    titleSmall: _withFont(base.titleSmall, 'Nunito', 700),
+    bodyLarge: _withFont(base.bodyLarge, 'Nunito', 400),
+    bodyMedium: _withFont(base.bodyMedium, 'Nunito', 400),
+    bodySmall: _withFont(base.bodySmall, 'Nunito', 400),
+    labelLarge: _withFont(base.labelLarge, 'Nunito', 700),
+    labelMedium: _withFont(base.labelMedium, 'Nunito', 600),
+    labelSmall: _withFont(base.labelSmall, 'Nunito', 600),
   );
 }
 

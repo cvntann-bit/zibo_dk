@@ -99,6 +99,20 @@ flutter:
     - assets/images/
     - assets/sounds/
 
+  # "Çizgi Roman Çıkartması" tipografisi (bkz. docs/theme_new.md, main.dart
+  # `_buildTextTheme`) — DEĞİŞKEN (variable) font dosyaları olarak gömülü,
+  # her AĞIRLIK `FontVariation('wght', N)` ile seçiliyor (google_fonts
+  # paketinin çalışma zamanında internetten indirmesine GEREK YOK — bu hem
+  # ağsız cihazlarda/emülatörlerde güvenilirlik, hem de ilk açılışta ağ
+  # beklemeden doğru font görünmesi için bilinçli bir tercih).
+  fonts:
+    - family: Baloo2
+      fonts:
+        - asset: assets/fonts/Baloo2-Variable.ttf
+    - family: Nunito
+      fonts:
+        - asset: assets/fonts/Nunito-Variable.ttf
+
 flutter_launcher_icons:
   android: true
   ios: false
