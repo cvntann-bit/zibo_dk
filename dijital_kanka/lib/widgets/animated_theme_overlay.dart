@@ -95,7 +95,23 @@ class _AnimatedThemeOverlayState extends State<AnimatedThemeOverlay>
     // `isHomeTabActive` değişimi bir `ValueNotifier` dinleyicisinden geliyor,
     // `build()`'i otomatik tetiklemez — katmanın görünürlüğünü güncellemek
     // için elle `setState` gerekiyor.
-    if (mounted) setState(() {});
+    //
+    // **Bug düzeltmesi — Crashlytics'te tekrarlayan ("Regressed issue",
+    // 1.7.2–1.10.8) çökme.** Bu dinleyici SENKRON tetikleniyor: örneğin
+    // `FocusTimerScreen.dispose()` kendi `isHomeTabActive.value`'sini geri
+    // yüklerken (bkz. o dosya), bu BAŞKA widget'ın unmount edilme sürecinin
+    // TAM ORTASINDA (bir frame'in `SchedulerBinding._handleDrawFrame`'i
+    // içinde, widget ağacı "kilitliyken") çalışıyordu — o anda doğrudan
+    // `setState()` çağırmak "setState() or markNeedsBuild() called when
+    // widget tree was locked" hatasıyla çöküyordu (`mounted` `true` olsa
+    // bile, ağacın o anki kilitli durumunu KONTROL ETMİYOR). `addPostFrame
+    // Callback` ile çağrıyı bir SONRAKİ frame'e ertelemek — resmi Flutter
+    // deseni — görünür bir gecikme yaratmadan bu çakışmayı ortadan
+    // kaldırıyor.
+    if (!mounted) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) setState(() {});
+    });
   }
 
   @override

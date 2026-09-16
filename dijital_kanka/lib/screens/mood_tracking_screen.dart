@@ -51,14 +51,27 @@ class _MoodTrackingScreenState extends State<MoodTrackingScreen> {
   // alanı. `ProfileProvider`'ın isim alanındaki "onSubmitted/odak kaybında
   // kaydet" deseniyle AYNI — HER tuş vuruşunda DEĞİL, yalnızca gönderilince/
   // odak kaybedilince `MoodProvider.setTodayMood(...)` çağrılıyor.
-  late final _noteController = TextEditingController(
-    text: context.read<MoodProvider>().entryForDate(DateTime.now())?.note ?? '',
-  );
+  late final TextEditingController _noteController;
   final _noteFocusNode = FocusNode();
 
   @override
   void initState() {
     super.initState();
+    // **Bug düzeltmesi — Crashlytics'te tekrarlayan ("Regressed issue",
+    // 1.4.0–1.10.8) çökme.** Bu alan eskiden `late final _noteController =
+    // TextEditingController(text: context.read<MoodProvider>()...)` şeklinde
+    // bir alan başlatıcısıydı — `late final` başlatıcılar İLK ERİŞİMDE
+    // (tembel) çalışır. Ekran hiç `build()` edilmeden (ör. hızlı bir push+pop
+    // veya kesintiye uğrayan bir route geçişi) `dispose()`'a ulaşırsa, bu
+    // alana yapılan İLK dokunuş `dispose()`'taki `_noteController.dispose()`
+    // satırıydı — bu da lazy başlatıcıyı TAM O ANDA, `context.read` artık
+    // güvensiz olduğu bir sırada (`test/CLAUDE.md`'de belgelenen "context.
+    // read() dispose() içinde çağrılamaz" kuralı) tetikleyip çöküyordu.
+    // Çözüm: aynı kural — referansı `initState()`'te (context'in HENÜZ
+    // güvenli olduğu tek yer) oku, alanda sakla.
+    _noteController = TextEditingController(
+      text: context.read<MoodProvider>().entryForDate(DateTime.now())?.note ?? '',
+    );
     _timer = Timer.periodic(
       const Duration(seconds: 5),
       (_) => _showNewQuote(),
