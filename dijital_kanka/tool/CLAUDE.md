@@ -44,6 +44,22 @@ Mevcut bir kostüm/rozet görselini bu eski betiklerden biriyle YENİDEN işleme
 DEĞİL. `zibo_app_icon.png` PNG olarak KALDI çünkü `flutter_launcher_icons`'ın (pubspec.yaml
 `image_path`) WebP kaynak desteği doğrulanmadı.
 
+## İkinci geçiş: KAYIPLI (lossy) WebP (2026-09-16)
+
+Yukarıdaki kayıpsız geçiş yalnızca ~%25 kazandırmıştı (Play Console app-size raporunda
+`assets/` hâlâ AAB'nin baskın kısmıydı). `image` pub paketi lossy VP8 encoder İÇERMİYOR
+(yalnızca VP8L/lossless — kaynağı okunarak doğrulandı), bu yüzden `tool/convert_images_to_webp_lossy.dart`
+gerçek kodlamayı Google'ın `cwebp` aracına (libwebp, `winget install Google.Libwebp` — YENİ
+terminalde çalışır, PATH güncellemesi mevcut oturuma yansımaz, alternatif: `CWEBP_PATH` env
+değişkeni) devrediyor; `image` paketi yalnızca öncesi/sonrası doğrulama için kullanılıyor.
+Piksel-piksel eşitlik artık mümkün DEĞİL — doğrulama yerine (1) saydam pikseller saydam
+KALMALI (tool/CLAUDE.md'nin yukarıdaki "baked-in siyah kare" bug sınıfına karşı sert kapı),
+(2) opak piksellerde ortalama RGB farkı bir eşiğin altında kalmalı, (3) nihai onay ELLE
+görsel spot-check (`Read` önizlemesi artık BU aşamada güvenilir — saydamlık DEĞİL, kalite
+kontrolü için kullanılıyor). Sonuç: `assets/images` 56MB → 11MB. Kalite 85 varsayılan;
+gelecekte yeni bir kostüm/rozet eklenirse aynı akışın SONUNA (convert_images_to_webp.dart'tan
+SONRA) `dart run tool/convert_images_to_webp_lossy.dart` eklenmeli.
+
 ## Fake-async betikleri gerçek cihazda çalıştırma
 
 `flutter_test` + `RenderRepaintBoundary.toImage()` gerçek font/emoji yüklemez (tofu). Önizleme PNG'si
