@@ -45,6 +45,7 @@ import '../utils/tab_navigation.dart';
 import '../utils/motivation_quote_selector.dart';
 import '../utils/zibo_event_signal.dart';
 import '../widgets/ad_free_promo_sheet.dart';
+import '../widgets/banner_ad_slot.dart';
 import '../widgets/custom_messages_button.dart';
 import '../widgets/favorite_quote_button.dart';
 import '../widgets/home_module_widget.dart';
@@ -427,6 +428,16 @@ class _HomeScreenState extends State<HomeScreen>
               ],
             ),
           ),
+        ),
+        // 2026 yeni özellik — kalıcı banner reklam (bkz. CLAUDE.md). Zibo/
+        // konuşma balonu bölümü ile Su/Hedef kartları arasındaki, ekran
+        // yüksekliğine göre değişen boşluğa BAĞIMLI olmaması için buraya,
+        // kaydırılabilir alan ile sabit kart satırının TAM SINIRINA
+        // yerleştirildi — ekran boyu ne olursa olsun her zaman aynı yerde
+        // durur (yukarısı küçülür/büyür, aşağısı hiç kımıldamaz).
+        const Padding(
+          padding: EdgeInsets.only(top: 12, bottom: 4),
+          child: BannerAdSlot(),
         ),
         Padding(
           padding: const EdgeInsets.fromLTRB(24, 16, 24, 44),

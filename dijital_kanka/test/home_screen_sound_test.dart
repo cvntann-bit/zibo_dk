@@ -12,6 +12,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:dijital_kanka/l10n/app_localizations.dart';
+import 'package:dijital_kanka/providers/ad_free_provider.dart';
 import 'package:dijital_kanka/providers/app_theme_provider.dart';
 import 'package:dijital_kanka/providers/costume_provider.dart';
 import 'package:dijital_kanka/providers/custom_messages_provider.dart';
@@ -63,6 +64,7 @@ class _RecordingSoundEffectsService extends SoundEffectsService {
 Widget _buildTestApp(SoundEffectsService soundEffectsService) {
   return MultiProvider(
     providers: [
+      ChangeNotifierProvider(create: (_) => AdFreeProvider()),
       ChangeNotifierProvider(create: (_) => AppThemeProvider()),
       ChangeNotifierProvider(create: (_) => CostumeProvider()),
       ChangeNotifierProvider(create: (_) => CustomMessagesProvider()),

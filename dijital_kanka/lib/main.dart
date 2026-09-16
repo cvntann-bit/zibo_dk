@@ -486,6 +486,9 @@ void _initializeAppodeal() {
       adTypes: const [
         AppodealAdType.RewardedVideo,
         AppodealAdType.Interstitial,
+        // 2026 yeni özellik — kalıcı banner reklamlar (Ana Sayfa ve diğer
+        // modül ekranlarına tek tek yerleştiriliyor, bkz. `HomeBannerAd`).
+        AppodealAdType.Banner,
       ],
       // Init hataları eskiden tamamen yutuluyordu — "reklam gelmiyor"
       // tanısını imkânsız kılıyordu. Artık Crashlytics'e non-fatal olarak
