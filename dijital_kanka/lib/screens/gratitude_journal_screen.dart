@@ -18,6 +18,7 @@ import '../providers/profile_provider.dart';
 import '../providers/zibo_pose_provider.dart';
 import '../utils/address_term.dart';
 import '../utils/info_dialog.dart';
+import '../widgets/banner_ad_slot.dart';
 import '../widgets/dot_grid_background.dart';
 import '../widgets/speech_bubble.dart';
 import '../widgets/sticker_style.dart';
@@ -246,6 +247,8 @@ class _GratitudeJournalScreenState extends State<GratitudeJournalScreen> {
                         onTap: () => _showEntryDetail(entry),
                       ),
                     ),
+                const SizedBox(height: 20),
+                const BannerAdSlot(),
               ],
             ),
           ),

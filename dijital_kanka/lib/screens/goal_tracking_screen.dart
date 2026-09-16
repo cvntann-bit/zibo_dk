@@ -19,6 +19,7 @@ import '../services/sound_effects_service.dart';
 import '../utils/address_term.dart';
 import '../utils/info_dialog.dart';
 import '../utils/zibo_event_signal.dart';
+import '../widgets/banner_ad_slot.dart';
 import '../widgets/goal_card.dart';
 import '../widgets/goal_confetti_burst.dart';
 import '../widgets/share_zibo_button.dart';
@@ -320,7 +321,9 @@ class _GoalTrackingScreenState extends State<GoalTrackingScreen>
             ),
           ],
         ),
-        const SizedBox(height: 24),
+        const SizedBox(height: 20),
+        const BannerAdSlot(),
+        const SizedBox(height: 12),
         for (final goal in goals) ...[
           GoalCard(
             goal: goal,

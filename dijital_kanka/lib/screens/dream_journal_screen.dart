@@ -18,6 +18,7 @@ import '../providers/profile_provider.dart';
 import '../providers/zibo_pose_provider.dart';
 import '../utils/address_term.dart';
 import '../utils/dream_sentiment.dart';
+import '../widgets/banner_ad_slot.dart';
 import '../widgets/dot_grid_background.dart';
 import '../widgets/speech_bubble.dart';
 import '../widgets/sticker_style.dart';
@@ -163,6 +164,8 @@ class _DreamJournalScreenState extends State<DreamJournalScreen> {
                         onTap: () => _openForm(context, existing: dream),
                       ),
                     ),
+                const SizedBox(height: 20),
+                const BannerAdSlot(),
               ],
             ),
           ),
