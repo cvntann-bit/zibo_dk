@@ -2096,6 +2096,19 @@
   "@badgeClaimRewardButton": {
     "description": "Rozet kazanma popup'ındaki ödül alma butonu"
   },
+  "badgeGalleryClaimableLabel": "Ödülü Al",
+  "@badgeGalleryClaimableLabel": {
+    "description": "Rozetler Galerisi'nde kazanılmış ama HENÜZ ödülü alınmamış bir kartın üzerindeki tıklanabilir rozet/etiket"
+  },
+  "badgeRewardClaimedMessage": "+{amount} Zibo Coin kazandın!",
+  "@badgeRewardClaimedMessage": {
+    "description": "Rozetler Galerisi'nden, popup'ı kaçırılmış bir rozetin ödülü talep edilince gösterilen kısa kutlama mesajı",
+    "placeholders": {
+      "amount": {
+        "type": "int"
+      }
+    }
+  },
   "badgeCategoryModuleMastery": "Modül Ustalığı Rozetleri",
   "@badgeCategoryModuleMastery": {
     "description": "Rozetler Galerisi'ndeki Modül Ustalığı kategorisinin bölüm başlığı"

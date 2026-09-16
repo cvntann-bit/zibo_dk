@@ -1567,6 +1567,14 @@ class AppLocalizationsTr extends AppLocalizations {
   String get badgeClaimRewardButton => 'Ödülü Al';
 
   @override
+  String get badgeGalleryClaimableLabel => 'Ödülü Al';
+
+  @override
+  String badgeRewardClaimedMessage(int amount) {
+    return '+$amount Zibo Coin kazandın!';
+  }
+
+  @override
   String get badgeCategoryModuleMastery => 'Modül Ustalığı Rozetleri';
 
   @override

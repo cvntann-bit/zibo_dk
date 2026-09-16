@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -8,15 +6,11 @@ import '../data/costumes.dart';
 import '../l10n/app_localizations.dart';
 import '../models/badge_definition.dart';
 import '../models/badge_gift_reward.dart';
-import '../providers/app_theme_provider.dart';
-import '../providers/badge_provider.dart';
-import '../providers/coin_provider.dart';
-import '../providers/costume_provider.dart';
 import '../providers/sound_effects_provider.dart';
 import '../screens/badges_gallery_screen.dart';
 import '../services/sound_effects_service.dart';
 import '../utils/badge_celebration_signal.dart';
-import '../utils/badge_special_reward.dart';
+import '../utils/badge_claim.dart';
 import '../utils/root_navigator_key.dart';
 import 'goal_confetti_burst.dart';
 
@@ -280,44 +274,11 @@ class _BadgeClaimCard extends StatelessWidget {
                 width: double.infinity,
                 child: FilledButton(
                   onPressed: () {
-                    context.read<BadgeProvider>().markClaimed(badge.id);
-                    context.read<CoinProvider>().earnBadgeReward(
-                      badge.zcReward,
-                      badge.id,
-                    );
-                    // Hediye — kostüm tipi SABİT/deterministik (yukarıdaki
-                    // `giftCostume`'un AYNISI, `markOwned` idempotent olduğu
-                    // için kullanıcı zaten satın almış olsa bile GÜVENLE
-                    // tekrar çağrılabilir), tema tipi ise sahip OLUNMAYAN
-                    // standart temalardan rastgele seçiliyor. Verilecek
-                    // hiçbir şey kalmadıysa (yalnızca tema tipinde, teorik
-                    // olarak nadir) sessizce hiçbir şey verilmiyor.
-                    GrantedBadgeGift? granted;
-                    if (gift != null) {
-                      if (giftCostume != null) {
-                        unawaited(
-                          context.read<CostumeProvider>().markOwned(
-                            giftCostume.id,
-                          ),
-                        );
-                        granted = (
-                          type: BadgeGiftType.costume,
-                          name: giftCostume.localizedName(l10n),
-                        );
-                      } else {
-                        final themeProvider = context.read<AppThemeProvider>();
-                        final theme = pickRandomUnownedStandardTheme(
-                          themeProvider.ownedIds,
-                        );
-                        if (theme != null) {
-                          unawaited(themeProvider.markOwned(theme.id));
-                          granted = (
-                            type: BadgeGiftType.theme,
-                            name: theme.localizedName(l10n),
-                          );
-                        }
-                      }
-                    }
+                    // Ödül verme mantığının TEK kaynağı — bkz. `badge_claim.
+                    // dart` (`BadgesGalleryScreen`'in "kazanılmış ama HENÜZ
+                    // alınmamış" rozetler için sunduğu YAKALAMA claim'iyle
+                    // PAYLAŞILIYOR).
+                    final granted = claimBadgeReward(context, badge);
                     pendingBadgePopup.value = null;
                     onClaim(granted);
                   },

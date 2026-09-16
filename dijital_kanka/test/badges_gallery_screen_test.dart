@@ -13,12 +13,29 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:dijital_kanka/data/consistency_badges.dart';
 import 'package:dijital_kanka/data/hidden_badges.dart';
 import 'package:dijital_kanka/l10n/app_localizations.dart';
+import 'package:dijital_kanka/providers/app_theme_provider.dart';
 import 'package:dijital_kanka/providers/badge_provider.dart';
+import 'package:dijital_kanka/providers/coin_provider.dart';
+import 'package:dijital_kanka/providers/costume_provider.dart';
 import 'package:dijital_kanka/screens/badges_gallery_screen.dart';
 
-Widget _buildTestApp(BadgeProvider badges) {
-  return ChangeNotifierProvider<BadgeProvider>.value(
-    value: badges,
+Widget _buildTestApp(
+  BadgeProvider badges, {
+  CoinProvider? coin,
+  CostumeProvider? costume,
+  AppThemeProvider? appTheme,
+}) {
+  return MultiProvider(
+    providers: [
+      ChangeNotifierProvider<BadgeProvider>.value(value: badges),
+      ChangeNotifierProvider<CoinProvider>.value(value: coin ?? CoinProvider()),
+      ChangeNotifierProvider<CostumeProvider>.value(
+        value: costume ?? CostumeProvider(),
+      ),
+      ChangeNotifierProvider<AppThemeProvider>.value(
+        value: appTheme ?? AppThemeProvider(),
+      ),
+    ],
     child: MaterialApp(
       debugShowCheckedModeBanner: false,
       locale: const Locale('tr'),
@@ -149,6 +166,73 @@ void main() {
       // Kazanılmamış diğer iki gizli rozet HÂLÂ "???" gösteriyor (4 = 2×2).
       expect(find.text('???'), findsNWidgets(4));
       expect(tester.takeException(), isNull);
+    },
+  );
+
+  // **Bug düzeltmesi — gerçek kullanıcı raporu: "7 gün üst üste giriş yap
+  // rozetini vermedi".** `BadgeProvider`'ın `pendingBadgePopup` tek-slot
+  // sinyali ALTI `reconcileX` çağrısı arasında PAYLAŞILDIĞI için bir
+  // kategorinin popup'ı bir SONRAKİ kategorinin popup'ı tarafından
+  // SESSİZCE EZİLEBİLİYOR — bu senaryoyu `reconcileConsistencyBadges`'i
+  // (week_streak'i kazandırıp `pendingBadgePopup`'a yazar) `reconcileLoyalty
+  // Badges`'in (first_week'i kazandırıp ÜZERİNE yazar) HEMEN ARDINDAN
+  // çağırarak DOĞRUDAN yeniden üretiyor — tam olarak `BadgeCoordinator`'ın
+  // 7 gün ÜST ÜSTE açan bir kullanıcı için yapacağı SIRA. "1 Haftalık
+  // Seri"nin popup'ı hiç görünmedi ama `_earned`'de KAYITLI — galerideki
+  // yeni "Ödülü Al" affordance'ı olmadan ödülü SONSUZA DEK talep
+  // edilemezdi.
+  testWidgets(
+    'Popup\'ı kaçırılan (ör. AYNI reconcile turunda BAŞKA bir rozetin '
+    'popup\'ı tarafından ezilen) kazanılmış bir rozet, galeriden '
+    'tıklanarak talep edilebilir — coin eklenir ve "Ödülü Al" rozeti '
+    'kaybolur',
+    (tester) async {
+      final badges = BadgeProvider();
+      final coin = CoinProvider();
+      // Gerçek çakışmayı üret: week_streak ÖNCE kazanılıp popup'a yazılır,
+      // first_week HEMEN ARDINDAN kazanılıp popup'ı EZER — `week_streak`
+      // hiçbir zaman popup'ta görünmez.
+      badges.reconcileConsistencyBadges(
+        hasCompletedFirstGoalCycle: false,
+        appOpenStreak: 7,
+      );
+      badges.reconcileLoyaltyBadges(totalDaysOpened: 7, daysSinceFirstUsed: 7);
+      expect(badges.isEarned('week_streak'), isTrue);
+      expect(badges.isClaimed('week_streak'), isFalse);
+
+      await tester.pumpWidget(_buildTestApp(badges, coin: coin));
+      await tester.pumpAndSettle();
+
+      // Kazanılmış-ama-alınmamış İKİ kart (week_streak + first_week, AYNI
+      // çakışmanın İKİ tarafı) "Ödülü Al" rozetiyle işaretli.
+      expect(find.text('Ödülü Al'), findsNWidgets(2));
+
+      final balanceBefore = coin.balance;
+      await tester.tap(find.text('1 Haftalık Seri'));
+      await tester.pumpAndSettle();
+
+      // Kazanım onay dialog'u.
+      expect(find.textContaining('30'), findsWidgets);
+      await tester.tap(find.text('Tamam'));
+      await tester.pumpAndSettle();
+
+      expect(badges.isClaimed('week_streak'), isTrue);
+      expect(coin.balance, balanceBefore + 30);
+      // week_streak artık talep edildi — yalnızca first_week'in "Ödülü Al"
+      // rozeti kaldı.
+      expect(find.text('Ödülü Al'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'Kazanılmamış (henüz eşiği karşılamayan) bir kart tıklanabilir '
+    'DEĞİLDİR — "Ödülü Al" rozeti hiç görünmez',
+    (tester) async {
+      final badges = BadgeProvider();
+      await tester.pumpWidget(_buildTestApp(badges));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Ödülü Al'), findsNothing);
     },
   );
 }

@@ -2842,6 +2842,18 @@ abstract class AppLocalizations {
   /// **'Ödülü Al'**
   String get badgeClaimRewardButton;
 
+  /// Rozetler Galerisi'nde kazanılmış ama HENÜZ ödülü alınmamış bir kartın üzerindeki tıklanabilir rozet/etiket
+  ///
+  /// In tr, this message translates to:
+  /// **'Ödülü Al'**
+  String get badgeGalleryClaimableLabel;
+
+  /// Rozetler Galerisi'nden, popup'ı kaçırılmış bir rozetin ödülü talep edilince gösterilen kısa kutlama mesajı
+  ///
+  /// In tr, this message translates to:
+  /// **'+{amount} Zibo Coin kazandın!'**
+  String badgeRewardClaimedMessage(int amount);
+
   /// Rozetler Galerisi'ndeki Modül Ustalığı kategorisinin bölüm başlığı
   ///
   /// In tr, this message translates to:

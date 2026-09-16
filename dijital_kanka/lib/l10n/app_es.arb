@@ -464,6 +464,8 @@
   "badgeRequirementIronWill": "Abre la app 90 días seguidos",
   "badgeRequirementUnyielding": "Abre la app 180 días seguidos",
   "badgeClaimRewardButton": "Reclamar Recompensa",
+  "badgeGalleryClaimableLabel": "Reclamar Recompensa",
+  "badgeRewardClaimedMessage": "¡Ganaste +{amount} Zibo Coin!",
   "badgeCategoryModuleMastery": "Insignias de Maestría de Módulo",
   "badgeNameGratefulHeart": "Corazón Agradecido",
   "badgeNameWaterHero": "Héroe del Agua",

@@ -464,6 +464,8 @@
   "badgeRequirementIronWill": "Open the app 90 days in a row",
   "badgeRequirementUnyielding": "Open the app 180 days in a row",
   "badgeClaimRewardButton": "Claim Reward",
+  "badgeGalleryClaimableLabel": "Claim Reward",
+  "badgeRewardClaimedMessage": "+{amount} Zibo Coin earned!",
   "badgeCategoryModuleMastery": "Module Mastery Badges",
   "badgeNameGratefulHeart": "Grateful Heart",
   "badgeNameWaterHero": "Water Hero",

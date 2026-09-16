@@ -9,6 +9,7 @@ import '../l10n/app_localizations.dart';
 import '../models/badge_definition.dart';
 import '../models/badge_gift_reward.dart';
 import '../providers/badge_provider.dart';
+import '../utils/badge_claim.dart';
 import '../utils/info_dialog.dart';
 
 /// Rozetler Galerisi — bkz. CLAUDE.md "Rozet Sistemi" bölümü. Kazanılan
@@ -151,12 +152,42 @@ class _BadgeGalleryCard extends StatelessWidget {
 
   final ZiboBadgeDefinition badge;
 
+  /// **Bug düzeltmesi — gerçek kullanıcı raporu: "7 gün üst üste giriş yap
+  /// rozetini vermedi".** Kök neden: `BadgeProvider`'ın altı `reconcileX`
+  /// metodu AYNI `pendingBadgePopup` tek-slot sinyalini PAYLAŞIYOR — aynı
+  /// reconcile turunda İKİ FARKLI kategoriden rozet kazanılırsa (ör. bir
+  /// kullanıcı 7 gün ÜST ÜSTE açarsa `currentStreak` VE `totalDaysOpened`
+  /// AYNI ANDA 7'ye ulaşır, "1 Haftalık Seri" VE "İlk Hafta" AYNI ANDA
+  /// kazanılır), SONRAKİ kategorinin yazdığı değer ÖNCEKİni SESSİZCE EZER
+  /// — kullanıcı yalnızca birinin kutlamasını görür. Rozet `_earned`'de
+  /// KAYITLIDIR (bu kart renkli görünür) ama ödülü asla TALEP EDİLEMEZDİ —
+  /// galeri eskiden HİÇBİR "Ödülü Al" affordance'ı SUNMUYORDU. Artık
+  /// `earned && !claimed` olan HER kart doğrudan tıklanabilir — bkz.
+  /// `badge_claim.dart`'taki paylaşılan `claimBadgeReward` (popup'la AYNI
+  /// mantık).
+  Future<void> _claim(BuildContext context) async {
+    final l10n = AppLocalizations.of(context)!;
+    final granted = claimBadgeReward(context, badge);
+    if (!context.mounted) return;
+    await showInfoDialog(
+      context,
+      l10n.badgeRewardClaimedMessage(badge.zcReward),
+    );
+    if (granted == null || !context.mounted) return;
+    final message = granted.type == BadgeGiftType.costume
+        ? l10n.badgeGiftCostumeMessage(granted.name)
+        : l10n.badgeSpecialRewardThemeGrantedMessage(granted.name);
+    await showInfoDialog(context, message);
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
-    final earned = context.watch<BadgeProvider>().isEarned(badge.id);
+    final badgeProvider = context.watch<BadgeProvider>();
+    final earned = badgeProvider.isEarned(badge.id);
+    final claimable = earned && !badgeProvider.isClaimed(badge.id);
 
     // Gizli/Eğlenceli Rozetler — KAZANILMADAN önce hiçbir şey (görsel/isim/
     // koşul/ödül) ifşa edilmez, bkz. `ZiboBadgeDefinition.isHidden`
@@ -182,116 +213,153 @@ class _BadgeGalleryCard extends StatelessWidget {
       height: 118,
     );
 
-    return Card(
+    final card = Card(
       margin: EdgeInsets.zero,
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Gizem görseli KENDİSİ zaten "bilinmiyor" hissini taşıyan bir
-            // tasarım (`gizli_rozet.png`) — normal kazanılmamış rozetlerdeki
-            // gibi AYRICA gri tonlamaya/soluklaştırmaya TABİ TUTULMUYOR, tam
-            // renkli gösteriliyor.
-            earned || hiddenLocked
-                ? image
-                : ColorFiltered(
-                    colorFilter: const ColorFilter.matrix(_greyscaleMatrix),
-                    child: Opacity(opacity: 0.5, child: image),
-                  ),
-            const SizedBox(height: 10),
-            // Kullanıcı isteği: "alttaki yazıların boyutunu büyüt" —
-            // ad titleSmall → titleMedium'a, açıklama bodySmall →
-            // bodyMedium'a büyütüldü.
-            Text(
-              hiddenLocked ? l10n.badgeHiddenPlaceholder : badge.localizedName(l10n),
-              textAlign: TextAlign.center,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: earned ? null : colorScheme.onSurfaceVariant,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Flexible(
-              child: Text(
-                hiddenLocked
-                    ? l10n.badgeHiddenPlaceholder
-                    : badge.localizedRequirement(l10n),
+      child: InkWell(
+        // `earned && !claimed` iken tıklanabilir — bkz. yukarıdaki `_claim`
+        // dokümantasyonu. Diğer TÜM kartlarda `onTap: null` (dokunulamaz,
+        // eskisiyle BİREBİR aynı görünüm/davranış).
+        onTap: claimable ? () => _claim(context) : null,
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Gizem görseli KENDİSİ zaten "bilinmiyor" hissini taşıyan bir
+              // tasarım (`gizli_rozet.png`) — normal kazanılmamış rozetlerdeki
+              // gibi AYRICA gri tonlamaya/soluklaştırmaya TABİ TUTULMUYOR, tam
+              // renkli gösteriliyor.
+              earned || hiddenLocked
+                  ? image
+                  : ColorFiltered(
+                      colorFilter: const ColorFilter.matrix(_greyscaleMatrix),
+                      child: Opacity(opacity: 0.5, child: image),
+                    ),
+              const SizedBox(height: 10),
+              // Kullanıcı isteği: "alttaki yazıların boyutunu büyüt" —
+              // ad titleSmall → titleMedium'a, açıklama bodySmall →
+              // bodyMedium'a büyütüldü.
+              Text(
+                hiddenLocked ? l10n.badgeHiddenPlaceholder : badge.localizedName(l10n),
                 textAlign: TextAlign.center,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-                style: textTheme.bodyMedium?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
+                style: textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: earned ? null : colorScheme.onSurfaceVariant,
                 ),
               ),
-            ),
-            // Kullanıcı isteği: en altta kaç Zibo Coin ödülü olduğu, Zibo
-            // Coin ikonu PNG'siyle birlikte gösterilsin — `CoinBalanceWidget`/
-            // `CostumeCard`'daki AYNI `assets/images/zibo_coin.webp` kullanımı.
-            // 2026 güncellemesi: hem ikon hem metin büyütüldü ("10zc/30zc
-            // ve zc ikonunun boyutunu büyüt"). **2026 İKİNCİ güncelleme —
-            // Gizli/Eğlenceli Rozetler'de bu satır KAZANILMADAN önce de
-            // GÖRÜNÜR** (kullanıcının netleştirmesi: yalnızca isim/koşul
-            // "???" kalsın, ödül miktarı/ikonu HER ZAMAN görünsün) — ilk
-            // yazımda `hiddenLocked` iken TAMAMEN gizlenmişti, bu satır
-            // gizlemeyi KALDIRIP koşulsuz render etmeye çevrildi.
-            const SizedBox(height: 6),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Image.asset('assets/images/zibo_coin.webp', width: 20, height: 20),
-                const SizedBox(width: 5),
-                Text(
-                  l10n.storeCoinAmount(badge.zcReward),
-                  style: textTheme.labelMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: earned
-                        ? colorScheme.primary
-                        : colorScheme.onSurfaceVariant,
+              const SizedBox(height: 4),
+              Flexible(
+                child: Text(
+                  hiddenLocked
+                      ? l10n.badgeHiddenPlaceholder
+                      : badge.localizedRequirement(l10n),
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: textTheme.bodyMedium?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ),
+              // Kullanıcı isteği: en altta kaç Zibo Coin ödülü olduğu, Zibo
+              // Coin ikonu PNG'siyle birlikte gösterilsin — `CoinBalanceWidget`/
+              // `CostumeCard`'daki AYNI `assets/images/zibo_coin.webp` kullanımı.
+              // 2026 güncellemesi: hem ikon hem metin büyütüldü ("10zc/30zc
+              // ve zc ikonunun boyutunu büyüt"). **2026 İKİNCİ güncelleme —
+              // Gizli/Eğlenceli Rozetler'de bu satır KAZANILMADAN önce de
+              // GÖRÜNÜR** (kullanıcının netleştirmesi: yalnızca isim/koşul
+              // "???" kalsın, ödül miktarı/ikonu HER ZAMAN görünsün) — ilk
+              // yazımda `hiddenLocked` iken TAMAMEN gizlenmişti, bu satır
+              // gizlemeyi KALDIRIP koşulsuz render etmeye çevrildi.
+              const SizedBox(height: 6),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Image.asset('assets/images/zibo_coin.webp', width: 20, height: 20),
+                  const SizedBox(width: 5),
+                  Text(
+                    l10n.storeCoinAmount(badge.zcReward),
+                    style: textTheme.labelMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: earned
+                          ? colorScheme.primary
+                          : colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
+              // Kostüm/tema hediyesi önizlemesi — kullanıcı isteği: "rozet
+              // kartında ZC ödül yazısının HEMEN ALTINA 🎁 emojisi + hediye
+              // edilen kostümün/temanın küçük bir önizleme görseli." Kostüm
+              // tipi SABİT olduğu için gerçek görseli gösteriyoruz; tema tipi
+              // rastgele (yalnızca claim anında belli olduğu) için genel bir
+              // palet ikonu gösteriyoruz.
+              if (!hiddenLocked && gift != null) ...[
+                const SizedBox(height: 4),
+                Semantics(
+                  label: l10n.badgeGiftPreviewLabel(
+                    giftCostume?.localizedName(l10n) ??
+                        l10n.badgeSpecialRewardThemeNote,
+                  ),
+                  excludeSemantics: true,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text('🎁', style: TextStyle(fontSize: 13)),
+                      const SizedBox(width: 4),
+                      if (giftCostume != null)
+                        Image.asset(
+                          giftCostume.imageAsset,
+                          width: 24,
+                          height: 24,
+                        )
+                      else
+                        Icon(
+                          Icons.palette_rounded,
+                          size: 18,
+                          color: colorScheme.tertiary,
+                        ),
+                    ],
                   ),
                 ),
               ],
-            ),
-            // Kostüm/tema hediyesi önizlemesi — kullanıcı isteği: "rozet
-            // kartında ZC ödül yazısının HEMEN ALTINA 🎁 emojisi + hediye
-            // edilen kostümün/temanın küçük bir önizleme görseli." Kostüm
-            // tipi SABİT olduğu için gerçek görseli gösteriyoruz; tema tipi
-            // rastgele (yalnızca claim anında belli olduğu) için genel bir
-            // palet ikonu gösteriyoruz.
-            if (!hiddenLocked && gift != null) ...[
-              const SizedBox(height: 4),
-              Semantics(
-                label: l10n.badgeGiftPreviewLabel(
-                  giftCostume?.localizedName(l10n) ??
-                      l10n.badgeSpecialRewardThemeNote,
-                ),
-                excludeSemantics: true,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Text('🎁', style: TextStyle(fontSize: 13)),
-                    const SizedBox(width: 4),
-                    if (giftCostume != null)
-                      Image.asset(
-                        giftCostume.imageAsset,
-                        width: 24,
-                        height: 24,
-                      )
-                    else
-                      Icon(
-                        Icons.palette_rounded,
-                        size: 18,
-                        color: colorScheme.tertiary,
-                      ),
-                  ],
-                ),
-              ),
             ],
-          ],
+          ),
         ),
       ),
+    );
+
+    if (!claimable) return card;
+
+    // Kazanılmış-ama-HENÜZ-alınmamış bir rozeti diğerlerinden ayıran görsel
+    // işaret — kartın kendisi zaten tıklanabilir (`InkWell`), bu yalnızca
+    // kullanıcının bunu FARK ETMESİNİ sağlıyor.
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        card,
+        Positioned(
+          top: -6,
+          right: -6,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            decoration: BoxDecoration(
+              color: colorScheme.primary,
+              borderRadius: BorderRadius.circular(999),
+              border: Border.all(color: colorScheme.surface, width: 2),
+            ),
+            child: Text(
+              l10n.badgeGalleryClaimableLabel,
+              style: textTheme.labelSmall?.copyWith(
+                color: colorScheme.onPrimary,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

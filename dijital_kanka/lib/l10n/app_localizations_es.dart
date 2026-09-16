@@ -1576,6 +1576,14 @@ class AppLocalizationsEs extends AppLocalizations {
   String get badgeClaimRewardButton => 'Reclamar Recompensa';
 
   @override
+  String get badgeGalleryClaimableLabel => 'Reclamar Recompensa';
+
+  @override
+  String badgeRewardClaimedMessage(int amount) {
+    return '¡Ganaste +$amount Zibo Coin!';
+  }
+
+  @override
   String get badgeCategoryModuleMastery => 'Insignias de Maestría de Módulo';
 
   @override
