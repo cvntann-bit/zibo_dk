@@ -496,13 +496,21 @@ void _initializeAppodeal() {
       // burada görünür).
       onInitializationFinished: (errors) {
         if (errors == null || errors.isEmpty) return;
-        debugPrint('Appodeal init errors: $errors');
+        // **Bug düzeltmesi — Crashlytics'te 1.9.2'den beri her sürümde
+        // tekrar eden bu non-fatal, TEŞHİS EDİLEMEZ haldeydi:** `errors`
+        // elemanları `ApdInitializationError` — Dart'ın varsayılan
+        // `toString()`'i override edilmeyen bir sınıf için yalnızca
+        // "Instance of 'ApdInitializationError'" basıyor, gerçek nedeni
+        // (hangi ağ adaptörü/App Key/config sorunu) HİÇ göstermiyordu.
+        // Asıl bilgi `.description` alanında — artık ONU logluyoruz.
+        final descriptions = errors.map((e) => e.description).join('; ');
+        debugPrint('Appodeal init errors: $descriptions');
         // Firebase başlatılamadıysa (web önizleme / test) Crashlytics
         // çağrısı fırlatabilir — bu geç/asenkron callback ana try/catch'in
         // DIŞINDA çalıştığı için kendi guard'ı gerekiyor.
         try {
           FirebaseCrashlytics.instance.recordError(
-            'Appodeal initialization finished with errors: $errors',
+            'Appodeal initialization finished with errors: $descriptions',
             null,
             reason: 'appodeal-init',
             fatal: false,
