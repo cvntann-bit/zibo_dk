@@ -510,6 +510,42 @@ void _initializeAppodeal() {
         } catch (_) {}
       },
     );
+    // **Kullanıcı raporu: "banner reklam hâlâ görünmüyor".** `BannerAdSlot`
+    // ekranı ilk kurulduğunda BİR KEZ `Appodeal.show(Banner)` çağırıyor —
+    // ama SDK o anda henüz bir reklamı ÖNBELLEĞE ALMAMIŞ olabilir (`show()`
+    // o durumda `false` döner, TEKRAR denemez). `onBannerLoaded` GLOBAL bir
+    // SDK olayı — burada bir kez kaydedilip, SDK gerçekten YENİ bir banner
+    // önbelleğe aldığı HER anda `show()`'u tekrar deniyoruz; o sırada
+    // ekranda gerçekten bir `BannerAdSlot`/`AppodealBanner` MONTE değilse
+    // (ör. Reklamsız Zibo) gösterilecek bir kap olmadığı için bu çağrı
+    // zararsızca hiçbir şey yapmaz. `onBannerFailedToLoad`/`onBannerShow
+    // Failed` da `onInitializationFinished` ile AYNI gerekçeyle Crashlytics'e
+    // loglanıyor — "reklam gelmiyor" bir daha kör noktada kalmasın diye.
+    Appodeal.setBannerCallbacks(
+      onBannerLoaded: (isPrecache) {
+        Appodeal.show(AppodealAdType.Banner).catchError((_) => false);
+      },
+      onBannerFailedToLoad: () {
+        try {
+          FirebaseCrashlytics.instance.recordError(
+            'Appodeal banner failed to load',
+            null,
+            reason: 'appodeal-banner',
+            fatal: false,
+          );
+        } catch (_) {}
+      },
+      onBannerShowFailed: () {
+        try {
+          FirebaseCrashlytics.instance.recordError(
+            'Appodeal banner show failed',
+            null,
+            reason: 'appodeal-banner',
+            fatal: false,
+          );
+        } catch (_) {}
+      },
+    );
   } catch (_) {}
 }
 
