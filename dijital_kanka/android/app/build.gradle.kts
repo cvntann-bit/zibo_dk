@@ -134,9 +134,17 @@ dependencies {
     // Sürümler Appodeal SDK 4.2.0'ın resmî adaptör setinden (bkz. Appodeal
     // Flutter Plugin demo `build.gradle`). Yeni ağ eklerken aynı setten al —
     // uyumsuz sürüm derleme/çalışma-zamanı hatası verir.
-    implementation("com.appodeal.ads.sdk.adapters:unity_ads:4.17.0.0")
+    //
+    // **2026-09-19 — unity_ads ve bidmachine KASITLI olarak çıkarıldı** (Play
+    // Console'un "DEX kodu optimizasyonu eşiğin altında" uyarısına karşılık,
+    // bkz. android/CLAUDE.md). R8 mapping.txt analizi: unity_ads hiç fill
+    // vermiyordu (sıfır risk, kaldırıldı) — bidmachine ise Console'da yalnızca
+    // "ara sıra" reklam gösteriyordu ama DEX'teki karartılmamış/kilitli kodun
+    // TEK BAŞINA ~%29'unu (io.bidmachine + kendi protobuf'u com.explorestack.
+    // protobuf, ~139.000 üye) o taşıyordu — AppLovin+Unity+Vungle toplamından
+    // fazla. Console'da bu ağlardan biri tekrar açılırsa adaptörü BURAYA geri
+    // eklemeden fill vermez (yukarıdaki not geçerli).
     implementation("com.appodeal.ads.sdk.adapters:applovin:13.5.1.0")
-    implementation("com.appodeal.ads.sdk.adapters:bidmachine:3.7.1.0")
     implementation("com.appodeal.ads.sdk.adapters:vungle:7.6.1.0")
 
     // --- TikTok Business SDK (kurulum/olay takibi, UA kampanyaları için) ---

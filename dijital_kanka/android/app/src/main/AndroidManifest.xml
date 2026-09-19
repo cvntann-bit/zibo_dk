@@ -30,8 +30,8 @@
          "yalnızca reklam/analitik amacıyla" istemeyi AÇIKÇA yasaklıyor (bkz.
          Appodeal "What's next" dokümanı). Bu yüzden merge'de gelseler bile
          `tools:node="remove"` ile zorla çıkarılıyorlar — mevcut adaptör
-         setinde (Unity/AppLovin/BidMachine/Vungle) gelmiyorlar ama bu bir
-         güvenlik ağı. -->
+         setinde (AppLovin/Vungle, bkz. build.gradle.kts) gelmiyorlar ama bu
+         bir güvenlik ağı. -->
     <uses-permission
         android:name="android.permission.ACCESS_COARSE_LOCATION"
         tools:node="remove"/>
