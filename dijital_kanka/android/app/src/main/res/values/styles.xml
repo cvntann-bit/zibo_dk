@@ -5,23 +5,18 @@
         <!-- Show a splash screen on the activity. Automatically removed when
              the Flutter engine draws its first frame -->
         <item name="android:windowBackground">@drawable/launch_background</item>
-        <!-- Kökeni AdMob'un geçiş (interstitial) reklamları tam ekranı
-             kaplamıyor bug'ıydı (bkz. CLAUDE.md "AdMob Entegrasyonu"
-             bölümü) — `compileSdk = 37` (bkz. build.gradle.kts) Android
-             15+'ın ZORUNLU edge-to-edge davranışını devreye sokuyor, bu da
-             o zamanki `google_mobile_ads` reklam Activity'sinin durum
-             çubuğu alanını doğru kapatamamasına yol açıyordu. AdMob
-             projeden kaldırılıp Appodeal'e geçildi (bkz. o bölümdeki geçiş
-             notu) ama bu Android 15 API'si (`windowOptOutEdgeToEdgeEnforcement`)
-             `MainActivity`'nin KENDİ pencere davranışını GELENEKSEL (opak
-             durum çubuğu) tutmak için hâlâ faydalı olduğu için KORUNDU —
-             ad SDK'sından bağımsız, uygulamanın genel görsel tutarlılığı
-             için. Eski Android sürümlerinde bu öğe sessizce yok sayılır
-             (API 35'te eklendi), zararsız. **GEÇİCİ bir çözüm — Google, bu
-             bayrağın Android 16'yı hedefleyen uygulamalarda DEVRE DIŞI/
-             kullanılamaz olacağını duyurdu** — `targetSdk` Android 16'ya
-             yükseltilince bu davranış TEKRAR gözden geçirilmeli. -->
-        <item name="android:windowOptOutEdgeToEdgeEnforcement" tools:targetApi="35">true</item>
+        <!-- 2026-09-19 — `windowOptOutEdgeToEdgeEnforcement` (geleneksel/
+             edge-to-edge OLMAYAN pencere davranışını zorlayan bayrak)
+             KALDIRILDI. Kökeni AdMob'un `AdActivity` bileşeninin kendi
+             yarı saydam temasıydı (bkz. docs/history/ads-monetization-
+             appodeal.md "Reklamlar tam ekranı kaplamıyor" bölümü) — o
+             bileşen AdMob'dan Appodeal'e geçişte manifest'ten TAMAMEN
+             kalktı, kök neden artık YOK. Play Console'un "uçtan uca ekran"
+             uyarısına karşılık, ve zaten Google'ın bu bayrağı Android
+             16 targetSdk'sında devre dışı bırakacağını duyurmuş olması
+             üzerine kaldırıldı. Uygulamanın kendi Scaffold/AppBar/SafeArea
+             yapısı (bkz. root_screen.dart) sistem çubuklarını zaten doğru
+             yönetiyor. -->
     </style>
     <!-- Theme applied to the Android Window as soon as the process has started.
          This theme determines the color of the Android Window while your
@@ -31,7 +26,6 @@
          This Theme is only used starting with V2 of Flutter's Android embedding. -->
     <style name="NormalTheme" parent="@android:style/Theme.Light.NoTitleBar">
         <item name="android:windowBackground">#FFF8E8</item>
-        <item name="android:windowOptOutEdgeToEdgeEnforcement" tools:targetApi="35">true</item>
     </style>
     <!-- 2026 güncellemesi — `AdActivityTheme` (AdMob'un kendi `AdActivity`
          bileşenine `tools:replace="android:theme"` ile atanan tema)
