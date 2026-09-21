@@ -52,6 +52,7 @@ import 'providers/water_provider.dart';
 import 'providers/xp_provider.dart';
 import 'providers/zibo_pose_provider.dart';
 import 'utils/ad_free_promo_trigger.dart';
+import 'utils/banner_ad_reload_signal.dart';
 import 'utils/auth_switch.dart';
 import 'utils/root_navigator_key.dart';
 import 'models/app_theme_option.dart';
@@ -519,20 +520,28 @@ void _initializeAppodeal() {
         } catch (_) {}
       },
     );
-    // **Kullanıcı raporu: "banner reklam hâlâ görünmüyor".** `BannerAdSlot`
-    // ekranı ilk kurulduğunda BİR KEZ `Appodeal.show(Banner)` çağırıyor —
-    // ama SDK o anda henüz bir reklamı ÖNBELLEĞE ALMAMIŞ olabilir (`show()`
-    // o durumda `false` döner, TEKRAR denemez). `onBannerLoaded` GLOBAL bir
-    // SDK olayı — burada bir kez kaydedilip, SDK gerçekten YENİ bir banner
-    // önbelleğe aldığı HER anda `show()`'u tekrar deniyoruz; o sırada
-    // ekranda gerçekten bir `BannerAdSlot`/`AppodealBanner` MONTE değilse
-    // (ör. Reklamsız Zibo) gösterilecek bir kap olmadığı için bu çağrı
-    // zararsızca hiçbir şey yapmaz. `onBannerFailedToLoad`/`onBannerShow
-    // Failed` da `onInitializationFinished` ile AYNI gerekçeyle Crashlytics'e
-    // loglanıyor — "reklam gelmiyor" bir daha kör noktada kalmasın diye.
+    // **2026-09-22 düzeltmesi — kullanıcı raporu: "anasayfadaki banner alt
+    // bar'ı kapatıyor, olması gereken yerde değil".** Buradaki ÖNCEKİ kod
+    // `Appodeal.show(AppodealAdType.Banner)` çağırıyordu — bu, `BannerAdSlot`
+    // içindeki gömülü `AppodealBanner` widget'ının kullandığı
+    // `Appodeal.BANNER_VIEW` tipinden TAMAMEN FARKLI bir reklam yuvası
+    // (`Appodeal.BANNER`, klasik/konteynersiz tip — paket kaynağı
+    // `AppodealAdView.kt`'de doğrulandı). Appodeal'ın native SDK'sı bu
+    // klasik tipi HERHANGİ bir widget'a gömmeden, ekranın ALT kenarına sabit
+    // bir kaplama (overlay) olarak gösteriyor — bu yüzden doğru
+    // konumlandırılmış (konuşma balonu/widget'lar arası) banner'ın YANINDA,
+    // ekranın en altında alt navigasyon çubuğunu kapatan İKİNCİ, istenmeyen
+    // bir reklam beliriyordu. Daha önce fark edilmemişti çünkü prod'da bu
+    // klasik yuva genelde fill ALMIYORDU (bkz. daha önceki "no fill" teşhisi)
+    // — debug build'de test reklamları HER ZAMAN fill aldığı için ortaya
+    // çıktı. Artık `bannerAdReloadSignal`'ı artırıyoruz — `BannerAdSlot` bunu
+    // dinleyip `AppodealBanner`'ı YENİDEN oluşturarak (native `init{}`'in
+    // KENDİ, doğru `BANNER_VIEW` çağrısını tekrar tetikleyerek) reklamı
+    // gömülü kabına yerleştiriyor. `onBannerFailedToLoad`/`onBannerShowFailed`
+    // hâlâ AYNI gerekçeyle Crashlytics'e loglanıyor.
     Appodeal.setBannerCallbacks(
       onBannerLoaded: (isPrecache) {
-        Appodeal.show(AppodealAdType.Banner).catchError((_) => false);
+        bannerAdReloadSignal.value++;
       },
       onBannerFailedToLoad: () {
         try {
