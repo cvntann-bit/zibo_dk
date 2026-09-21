@@ -2,9 +2,8 @@ import 'dart:async';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// "Zibo ADS" (reklamsız deneyim) tanıtım ekranının (bkz.
-/// `widgets/ad_free_promo_sheet.dart`) ne zaman gösterileceğini belirleyen
-/// kural.
+/// Paywall tanıtım ekranının (bkz. `screens/paywall_screen.dart`,
+/// `docs/subscribe_model.md`) ne zaman gösterileceğini belirleyen kural.
 ///
 /// **2026 güncellemesi — kullanıcı raporu: "çok sık/rahatsız edici
 /// çıkıyor".** İlk sürüm YALNIZCA oturum bazlı bir sayaçtı (her 3. Mağaza

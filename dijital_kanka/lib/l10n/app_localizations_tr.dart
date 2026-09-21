@@ -1840,4 +1840,127 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get commonOkButton => 'Tamam';
+
+  @override
+  String get paywallAppBarTitle => 'Zibo Pro';
+
+  @override
+  String get paywallBannerTitle => 'Zibo\'yla Daha Yakın Kanka';
+
+  @override
+  String get paywallBannerSubtitle =>
+      'Reklamsız, daha hızlı, daha özel bir deneyim';
+
+  @override
+  String get paywallBillingToggleMonthly => 'Aylık';
+
+  @override
+  String get paywallBillingToggleYearly => 'Yıllık (2 ay bedava)';
+
+  @override
+  String get paywallOneTimeTitle => 'Tek Seferlik Reklamsız';
+
+  @override
+  String get paywallOneTimeBenefit => 'Tüm reklamlar kalksın';
+
+  @override
+  String get paywallProTitle => 'Zibo Pro';
+
+  @override
+  String get paywallProPlusTitle => 'Zibo Pro+';
+
+  @override
+  String get paywallMostPopularBadge => 'En Popüler';
+
+  @override
+  String get paywallCurrentPlanBadge => 'Mevcut Planın';
+
+  @override
+  String get paywallAlreadyProPlusBadge => 'Zaten Pro+ Kullanıcısısın';
+
+  @override
+  String get paywallBuyButton => 'Satın Al';
+
+  @override
+  String get paywallSubscribeButton => 'Abone Ol';
+
+  @override
+  String get paywallUpgradeButton => 'Pro+\'a Yükselt';
+
+  @override
+  String get paywallProPerkNoForcedAds => 'Zorunlu reklamlar kalkar';
+
+  @override
+  String get paywallProPerkCoinBonus => 'Check-in coin ödülü 1,5 kat';
+
+  @override
+  String get paywallProPerkStreakFreeze => 'Ayda 1 ücretsiz Streak Freeze';
+
+  @override
+  String get paywallProPerkWheelNoAds =>
+      'Şans Çarkı reklamsız + günde 1 ekstra çevirme';
+
+  @override
+  String get paywallProPerkUnlimitedHistory => 'Modüllerde sınırsız geçmiş';
+
+  @override
+  String get paywallProPerkNotificationTime => 'Bildirim saatini kişiselleştir';
+
+  @override
+  String get paywallProPlusPerkAllOfPro => 'Pro\'nun tüm avantajları';
+
+  @override
+  String get paywallProPlusPerkCoinBonus => 'Check-in coin ödülü 2 kat';
+
+  @override
+  String get paywallProPlusPerkStreakFreeze => 'Ayda 3 ücretsiz Streak Freeze';
+
+  @override
+  String get paywallProPlusPerkExclusiveItem =>
+      'Ayda 1 Pro\'ya özel kostüm/tema';
+
+  @override
+  String get paywallProPlusPerkProfileBadge => 'Özel profil rozeti/çerçevesi';
+
+  @override
+  String get paywallProPlusPerkWatermark =>
+      'Paylaşım kartlarında özel Pro+ filigranı';
+
+  @override
+  String get paywallProPlusPerkTrendChart => 'Detaylı trend grafiği';
+
+  @override
+  String get paywallProPlusPerkMoneyAnalysis =>
+      'Para & Birikim gelişmiş analiz';
+
+  @override
+  String get paywallProPlusPerkNotificationSounds => 'Özel bildirim sesleri';
+
+  @override
+  String get paywallPurchaseSuccessMessage =>
+      'Satın alma başarılı! Zibo\'ya hoş geldin 🎉';
+
+  @override
+  String get paywallPurchaseErrorMessage =>
+      'Satın alma tamamlanamadı, lütfen tekrar dene.';
+
+  @override
+  String get paywallUpgradeSuccessMessage => 'Pro+\'a yükseltme başarılı! 🎉';
+
+  @override
+  String get paywallUpgradeErrorMessage =>
+      'Yükseltme tamamlanamadı, lütfen tekrar dene.';
+
+  @override
+  String get paywallPerMonthSuffix => '/ay';
+
+  @override
+  String get paywallPerYearSuffix => '/yıl';
+
+  @override
+  String get settingsZiboProRowTitle => 'Zibo Pro';
+
+  @override
+  String get settingsZiboProRowSubtitle =>
+      'Daha fazla özellik, reklamsız deneyim';
 }

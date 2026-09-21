@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:in_app_purchase/in_app_purchase.dart';
+import 'package:in_app_purchase_android/billing_client_wrappers.dart'
+    show ReplacementMode;
 import 'package:in_app_purchase_android/in_app_purchase_android.dart';
 
 import '../models/coin_package.dart';
@@ -220,6 +222,64 @@ class InAppPurchasePurchaseService extends PurchaseService {
       return await _awaitPendingWithTimeout(offer.productId, completer);
     } catch (_) {
       _pending.remove(offer.productId);
+      return false;
+    }
+  }
+
+  /// Play'in yerel önbelleğinden (ağ isteği YOK) [productId]'ye ait
+  /// GÜNCEL/aktif satın almayı bulur — `ChangeSubscriptionParam`'ın
+  /// gerektirdiği eski satın alma TOKEN'ı için. Bu token'ı kendimiz
+  /// SAKLAMAMIZA gerek yok (bkz. `PurchaseService.upgradeSubscription`
+  /// dokümantasyonu) — Play Billing her an bunu yeniden sorgulatabiliyor.
+  Future<GooglePlayPurchaseDetails?> _findActivePurchase(
+    String productId,
+  ) async {
+    final addition = _iap
+        .getPlatformAddition<InAppPurchaseAndroidPlatformAddition>();
+    final response = await addition.queryPastPurchases();
+    for (final purchase in response.pastPurchases) {
+      if (purchase.productID == productId) return purchase;
+    }
+    return null;
+  }
+
+  @override
+  Future<bool> upgradeSubscription(
+    SubscriptionOffer newOffer, {
+    required String oldProductId,
+  }) async {
+    try {
+      if (!await _iap.isAvailable()) return false;
+
+      final oldPurchase = await _findActivePurchase(oldProductId);
+      if (oldPurchase == null) return false;
+
+      final response = await _iap.queryProductDetails({newOffer.productId});
+      if (response.error != null) return false;
+      final matched = _findBasePlanDetails(response.productDetails, newOffer);
+      if (matched == null) return false;
+
+      final completer = Completer<bool>();
+      _pending[newOffer.productId] = completer;
+
+      final started = await _iap.buyNonConsumable(
+        purchaseParam: GooglePlayPurchaseParam(
+          productDetails: matched,
+          offerToken: matched.offerToken,
+          changeSubscriptionParam: ChangeSubscriptionParam(
+            oldPurchaseDetails: oldPurchase,
+            replacementMode: ReplacementMode.withTimeProration,
+          ),
+        ),
+      );
+      if (!started) {
+        _pending.remove(newOffer.productId);
+        return false;
+      }
+
+      return await _awaitPendingWithTimeout(newOffer.productId, completer);
+    } catch (_) {
+      _pending.remove(newOffer.productId);
       return false;
     }
   }

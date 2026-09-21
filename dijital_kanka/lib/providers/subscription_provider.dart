@@ -121,6 +121,24 @@ class SubscriptionProvider extends ChangeNotifier {
     return success;
   }
 
+  /// Kullanıcının hâlihazırda AKTİF bir aboneliği ([_productId], ör.
+  /// `zibo_pro`) varken [offer]'a (ör. `zibo_proplus`) YÜKSELTİR —
+  /// [purchase]'ın aksine sıfırdan yeni bir abonelik BAŞLATMAZ, Play
+  /// Billing'in "abonelik değiştirme" akışını kullanır (bkz.
+  /// `PurchaseService.upgradeSubscription`). Aktif bir abonelik yoksa
+  /// (`_productId == null`) `false` döner — çağıran taraf (paywall) zaten
+  /// bu butonu yalnızca `isPro` iken gösteriyor olmalı.
+  Future<bool> upgradeToProPlus(SubscriptionOffer offer) async {
+    final oldProductId = _productId;
+    if (oldProductId == null) return false;
+    final success = await _purchaseService.upgradeSubscription(
+      offer,
+      oldProductId: oldProductId,
+    );
+    if (success) await _confirmActive(offer.tier, offer.productId);
+    return success;
+  }
+
   /// [PurchaseService.orphanedPurchaseProductIds]'ten gelen, bir önceki
   /// oturumdan kalan VEYA `restorePurchases()`'ın geri oynattığı bir
   /// abonelik — `productId` yalnızca ÜRÜN kimliğini verir (`zibo_pro`/

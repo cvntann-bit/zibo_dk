@@ -1853,4 +1853,133 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get commonOkButton => 'Vale';
+
+  @override
+  String get paywallAppBarTitle => 'Zibo Pro';
+
+  @override
+  String get paywallBannerTitle => 'Más Cerca de Zibo';
+
+  @override
+  String get paywallBannerSubtitle =>
+      'Una experiencia sin anuncios, más rápida y personal';
+
+  @override
+  String get paywallBillingToggleMonthly => 'Mensual';
+
+  @override
+  String get paywallBillingToggleYearly => 'Anual (2 meses gratis)';
+
+  @override
+  String get paywallOneTimeTitle => 'Sin Anuncios (Pago Único)';
+
+  @override
+  String get paywallOneTimeBenefit => 'Elimina todos los anuncios';
+
+  @override
+  String get paywallProTitle => 'Zibo Pro';
+
+  @override
+  String get paywallProPlusTitle => 'Zibo Pro+';
+
+  @override
+  String get paywallMostPopularBadge => 'Más Popular';
+
+  @override
+  String get paywallCurrentPlanBadge => 'Tu Plan Actual';
+
+  @override
+  String get paywallAlreadyProPlusBadge => 'Ya Eres Usuario Pro+';
+
+  @override
+  String get paywallBuyButton => 'Comprar';
+
+  @override
+  String get paywallSubscribeButton => 'Suscribirse';
+
+  @override
+  String get paywallUpgradeButton => 'Mejorar a Pro+';
+
+  @override
+  String get paywallProPerkNoForcedAds => 'Elimina los anuncios obligatorios';
+
+  @override
+  String get paywallProPerkCoinBonus =>
+      'Recompensa de monedas de check-in x1,5';
+
+  @override
+  String get paywallProPerkStreakFreeze => '1 Streak Freeze gratis al mes';
+
+  @override
+  String get paywallProPerkWheelNoAds =>
+      'Ruleta de la Suerte sin anuncios + 1 giro extra al día';
+
+  @override
+  String get paywallProPerkUnlimitedHistory =>
+      'Historial ilimitado en todos los módulos';
+
+  @override
+  String get paywallProPerkNotificationTime =>
+      'Personaliza la hora de tus notificaciones';
+
+  @override
+  String get paywallProPlusPerkAllOfPro => 'Todos los beneficios de Pro';
+
+  @override
+  String get paywallProPlusPerkCoinBonus =>
+      'Recompensa de monedas de check-in x2';
+
+  @override
+  String get paywallProPlusPerkStreakFreeze => '3 Streak Freeze gratis al mes';
+
+  @override
+  String get paywallProPlusPerkExclusiveItem =>
+      '1 disfraz/tema exclusivo Pro al mes';
+
+  @override
+  String get paywallProPlusPerkProfileBadge =>
+      'Insignia/marco de perfil exclusivo';
+
+  @override
+  String get paywallProPlusPerkWatermark =>
+      'Marca de agua Pro+ exclusiva en las tarjetas de compartir';
+
+  @override
+  String get paywallProPlusPerkTrendChart => 'Gráfico de tendencias detallado';
+
+  @override
+  String get paywallProPlusPerkMoneyAnalysis =>
+      'Análisis avanzado de Dinero y Ahorros';
+
+  @override
+  String get paywallProPlusPerkNotificationSounds =>
+      'Sonidos de notificación exclusivos';
+
+  @override
+  String get paywallPurchaseSuccessMessage =>
+      '¡Compra exitosa! Bienvenido a Zibo 🎉';
+
+  @override
+  String get paywallPurchaseErrorMessage =>
+      'No se pudo completar la compra, inténtalo de nuevo.';
+
+  @override
+  String get paywallUpgradeSuccessMessage => '¡Mejora a Pro+ exitosa! 🎉';
+
+  @override
+  String get paywallUpgradeErrorMessage =>
+      'No se pudo completar la mejora, inténtalo de nuevo.';
+
+  @override
+  String get paywallPerMonthSuffix => '/mes';
+
+  @override
+  String get paywallPerYearSuffix => '/año';
+
+  @override
+  String get settingsZiboProRowTitle => 'Zibo Pro';
+
+  @override
+  String get settingsZiboProRowSubtitle =>
+      'Más funciones, experiencia sin anuncios';
 }

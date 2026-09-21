@@ -13,9 +13,9 @@ import '../models/coin_package.dart';
 import '../providers/ad_free_provider.dart';
 import '../providers/auth_link_provider.dart';
 import '../providers/coin_provider.dart';
+import '../screens/paywall_screen.dart';
 import '../utils/ad_free_promo_trigger.dart';
 import '../utils/info_dialog.dart';
-import '../widgets/ad_free_promo_sheet.dart';
 import '../widgets/costume_card.dart';
 import '../widgets/google_link_promo_sheet.dart';
 import '../widgets/sticker_style.dart';
@@ -48,9 +48,9 @@ class StoreScreen extends StatefulWidget {
 
   /// Bu sekmenin şu anda görünen sekme olup olmadığı — `GoalTrackingScreen`
   /// ile AYNI desen (bkz. `RootScreen`'in `IndexedStack`'i, sekmeler hiç
-  /// unmount edilmiyor). "Zibo ADS" tanıtım sheet'inin (bkz.
-  /// `ad_free_promo_sheet.dart`) HER Mağaza ziyaretinde (ilk mount'ta değil,
-  /// her sekmeye GEÇİŞTE) tetiklenebilmesi için gerekli. `costume_closet_
+  /// unmount edilmiyor). Paywall tanıtımının (bkz. `paywall_screen.dart`)
+  /// HER Mağaza ziyaretinde (ilk mount'ta değil, her sekmeye GEÇİŞTE)
+  /// tetiklenebilmesi için gerekli. `costume_closet_
   /// preview.dart` gibi Mağaza'yı push edilen AYRI bir sayfa olarak açan
   /// yerlerde varsayılan `true` yeterli (o bağlamda zaten tek başına
   /// görünüyor).
@@ -91,7 +91,11 @@ class _StoreScreenState extends State<StoreScreen> {
     if (context.read<AdFreeProvider>().isAdFree) return;
     if (!AdFreePromoTrigger.shouldShowOnStoreVisit()) return;
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) showAdFreePromoSheet(context);
+      if (mounted) {
+        Navigator.of(
+          context,
+        ).push(MaterialPageRoute<void>(builder: (_) => const PaywallScreen()));
+      }
     });
   }
 
@@ -239,11 +243,11 @@ class _BuyCoinsSection extends StatelessWidget {
         // deneyim) yalnızca ARA SIRA çıkan bir tanıtım popup'ı (bkz.
         // `AdFreePromoTrigger`/`StoreScreen._maybeShowAdFreePromo`) değil,
         // kullanıcının istediği ZAMAN satın alabileceği KALICI bir giriş
-        // noktası da olsun. Bu kart AYNI `showAdFreePromoSheet(...)`'i açar
-        // (periyodik tetikleyicinin sayaç/cooldown mantığı burada
-        // ATLANIYOR — kullanıcı kendi isteğiyle geldiği için bekletmenin
-        // anlamı yok), tam sheet içeriği (fayda listesi + fiyat + mockup
-        // "Yakında!" akışı) HİÇ tekrarlanmadı.
+        // noktası da olsun. **2026-09-22 güncellemesi** — bu kart artık eski
+        // dar sheet yerine kapsamlı `PaywallScreen`'i açıyor (bkz.
+        // `docs/subscribe_model.md`) — periyodik tetikleyicinin sayaç/
+        // cooldown mantığı burada ATLANIYOR (kullanıcı kendi isteğiyle
+        // geldiği için bekletmenin anlamı yok).
         _SectionTitle(l10n.storeAdFreeSectionTitle),
         const SizedBox(height: 8),
         const _AdFreeCard(),
@@ -348,17 +352,10 @@ class _ThemesGrid extends StatelessWidget {
 /// Mağaza'nın "Reklamsız Zibo" bölümündeki kalıcı satın alma girişi —
 /// `_WatchAdCard` ile AYNI görsel dil (Card + ikon + başlık/alt metin +
 /// buton), ama "izleyip kazan" yerine "satın al" akışına bağlı. Basınca
-/// AYNI `showAdFreePromoSheet(...)`'i açar — periyodik tanıtımın kullandığı
-/// TAM fayda listesi + fiyat + GERÇEK Play Billing akışı burada da birebir
-/// aynı, ikinci bir kopya YAZILMADI. Kullanıcı ZATEN satın aldıysa (bkz.
-/// `AdFreeProvider.isAdFree`) buton yerine "Satın Alındı" rozeti gösterilir.
-/// **Kartın kendi başlığı/alt metni
-/// (`storeAdFreeCardTitle`/`storeAdFreeCardSubtitle`) BİLEREK sheet'in
-/// `adFreePromoTitle`/`adFreePromoSubtitle`'ından ("Zibo ADS"/"Reklamsız
-/// Deneyim") FARKLI** — aynı metni kullanmak `widget_test.dart`'taki
-/// periyodik tanıtımın görünürlüğünü `find.text('Zibo ADS')` ile kontrol
-/// eden testleri (kart HER ZAMAN ekranda dururken bu metin artık BİRDEN
-/// FAZLA yerde bulunurdu) bozardı.
+/// `PaywallScreen`'i açar (bkz. `docs/subscribe_model.md`) — periyodik
+/// tanıtımın kullandığı AYNI ekran, ikinci bir kopya YAZILMADI. Kullanıcı
+/// ZATEN satın aldıysa (bkz. `AdFreeProvider.isAdFree`) buton yerine "Satın
+/// Alındı" rozeti gösterilir.
 class _AdFreeCard extends StatefulWidget {
   const _AdFreeCard();
 
@@ -369,7 +366,7 @@ class _AdFreeCard extends StatefulWidget {
 class _AdFreeCardState extends State<_AdFreeCard> {
   /// Play Store'dan sorgulanan canlı fiyat — `_PackageCardState._livePrice`
   /// ile AYNI desen (bkz. `AdFreeProvider.queryLocalizedPrice`
-  /// dokümantasyonu: sabit `adFreePromoPrice` KDV/vergi yüzünden gerçek
+  /// dokümantasyonu: sabit `adFreeFallbackPrice` KDV/vergi yüzünden gerçek
   /// fiyattan farklı çıkabiliyor).
   String? _livePrice;
 
@@ -393,7 +390,7 @@ class _AdFreeCardState extends State<_AdFreeCard> {
     final isAdFree = context.watch<AdFreeProvider>().isAdFree;
     final priceLabel =
         _livePrice ??
-        adFreePromoPrice.formattedForLocale(
+        adFreeFallbackPrice.formattedForLocale(
           Localizations.localeOf(context).languageCode,
         );
 
@@ -410,7 +407,9 @@ class _AdFreeCardState extends State<_AdFreeCard> {
             )
           : _StorePromoCta(
               label: priceLabel,
-              onTap: () => showAdFreePromoSheet(context),
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(builder: (_) => const PaywallScreen()),
+              ),
             ),
     );
   }

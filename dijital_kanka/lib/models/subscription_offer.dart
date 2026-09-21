@@ -1,3 +1,4 @@
+import 'coin_package.dart';
 import 'subscription_tier.dart';
 
 /// Play Console'da satın alınabilir TEK bir abonelik teklifi — bir ürün
@@ -19,6 +20,7 @@ class SubscriptionOffer {
     required this.basePlanId,
     required this.tier,
     required this.isYearly,
+    required this.fallbackPrice,
   });
 
   /// Play Console ürün kimliği (`zibo_pro` / `zibo_proplus`).
@@ -33,4 +35,10 @@ class SubscriptionOffer {
   /// "Aylık"/"Yıllık" etiketini seçmek için, [basePlanId] string'ini
   /// karşılaştırmak yerine.
   final bool isYearly;
+
+  /// Play Store'un canlı fiyatı (bkz. `SubscriptionProvider.
+  /// queryLocalizedPrice`) HENÜZ gelmediyse gösterilen sabit/görsel bir İLK
+  /// TAHMİN — `adFreeFallbackPrice`/`CoinPackage.price` ile AYNI desen. Play
+  /// Console'a girilen KDV DAHİL fiyatla eşleşmeyebilir, yalnızca yer tutucu.
+  final PackagePrice fallbackPrice;
 }

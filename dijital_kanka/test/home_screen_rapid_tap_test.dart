@@ -25,6 +25,7 @@ import 'package:dijital_kanka/providers/home_quick_widgets_provider.dart';
 import 'package:dijital_kanka/providers/mood_provider.dart';
 import 'package:dijital_kanka/providers/profile_provider.dart';
 import 'package:dijital_kanka/providers/sound_effects_provider.dart';
+import 'package:dijital_kanka/providers/subscription_provider.dart';
 import 'package:dijital_kanka/providers/theme_provider.dart';
 import 'package:dijital_kanka/providers/water_provider.dart';
 import 'package:dijital_kanka/providers/zibo_pose_provider.dart';
@@ -75,6 +76,7 @@ Widget _buildTestApp({required Random random, required AdService adService}) {
       ChangeNotifierProvider(create: (_) => MoodProvider()),
       ChangeNotifierProvider(create: (_) => ProfileProvider()),
       ChangeNotifierProvider(create: (_) => SoundEffectsProvider()),
+      ChangeNotifierProvider(create: (_) => SubscriptionProvider()),
       ChangeNotifierProvider(create: (_) => ThemeProvider()),
       ChangeNotifierProvider(create: (_) => WaterProvider()),
       ChangeNotifierProvider(create: (_) => ZiboPoseProvider()),
@@ -126,12 +128,12 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(adService.interstitialCallCount, 1);
-      expect(find.byKey(const Key('adFreePromoBuyButton')), findsNothing);
+      expect(find.byKey(const Key('paywallOneTimeButton')), findsNothing);
     },
   );
 
   testWidgets(
-    'Zibo\'ya art arda 5 kez dokununca (düşük random değeri) Reklamsız Zibo teklifi gösterilir, reklam GÖSTERİLMEZ',
+    'Zibo\'ya art arda 5 kez dokununca (düşük random değeri) paywall açılır, reklam GÖSTERİLMEZ',
     (tester) async {
       final adService = _RecordingAdService();
       await tester.pumpWidget(
@@ -140,13 +142,13 @@ void main() {
       await _tapZiboNTimes(tester, 5);
       await tester.pumpAndSettle();
 
-      expect(find.byKey(const Key('adFreePromoBuyButton')), findsOneWidget);
+      expect(find.byKey(const Key('paywallOneTimeButton')), findsOneWidget);
       expect(adService.interstitialCallCount, 0);
     },
   );
 
   testWidgets(
-    '4 dokunuşta (eşik dolmadan) ne reklam ne de Reklamsız Zibo teklifi tetiklenir',
+    '4 dokunuşta (eşik dolmadan) ne reklam ne de paywall tetiklenir',
     (tester) async {
       final adService = _RecordingAdService();
       await tester.pumpWidget(
@@ -156,7 +158,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(adService.interstitialCallCount, 0);
-      expect(find.byKey(const Key('adFreePromoBuyButton')), findsNothing);
+      expect(find.byKey(const Key('paywallOneTimeButton')), findsNothing);
     },
   );
 }

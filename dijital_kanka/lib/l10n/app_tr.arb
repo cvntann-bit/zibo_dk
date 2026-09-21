@@ -2464,5 +2464,157 @@
   "commonOkButton": "Tamam",
   "@commonOkButton": {
     "description": "Kısa bilgi/uyarı diyaloglarını kapatan genel 'Tamam' butonu"
+  },
+  "paywallAppBarTitle": "Zibo Pro",
+  "@paywallAppBarTitle": {
+    "description": "Paywall ekranının AppBar başlığı"
+  },
+  "paywallBannerTitle": "Zibo'yla Daha Yakın Kanka",
+  "@paywallBannerTitle": {
+    "description": "Paywall'ın üst kırmızı şeridindeki motive edici başlık"
+  },
+  "paywallBannerSubtitle": "Reklamsız, daha hızlı, daha özel bir deneyim",
+  "@paywallBannerSubtitle": {
+    "description": "Paywall'ın üst kırmızı şeridindeki alt metin"
+  },
+  "paywallBillingToggleMonthly": "Aylık",
+  "@paywallBillingToggleMonthly": {
+    "description": "Paywall'daki aylık/yıllık geçiş anahtarının 'Aylık' seçeneği"
+  },
+  "paywallBillingToggleYearly": "Yıllık (2 ay bedava)",
+  "@paywallBillingToggleYearly": {
+    "description": "Paywall'daki aylık/yıllık geçiş anahtarının 'Yıllık' seçeneği"
+  },
+  "paywallOneTimeTitle": "Tek Seferlik Reklamsız",
+  "@paywallOneTimeTitle": {
+    "description": "Paywall'daki tek seferlik reklamsız kartın başlığı"
+  },
+  "paywallOneTimeBenefit": "Tüm reklamlar kalksın",
+  "@paywallOneTimeBenefit": {
+    "description": "Tek seferlik reklamsız kartındaki tek fayda satırı"
+  },
+  "paywallProTitle": "Zibo Pro",
+  "@paywallProTitle": {
+    "description": "Paywall'daki Zibo Pro kartının başlığı"
+  },
+  "paywallProPlusTitle": "Zibo Pro+",
+  "@paywallProPlusTitle": {
+    "description": "Paywall'daki Zibo Pro+ kartının başlığı"
+  },
+  "paywallMostPopularBadge": "En Popüler",
+  "@paywallMostPopularBadge": {
+    "description": "Pro+ kartının üstündeki öne çıkarma rozeti"
+  },
+  "paywallCurrentPlanBadge": "Mevcut Planın",
+  "@paywallCurrentPlanBadge": {
+    "description": "Kullanıcının hâlihazırda abone olduğu kartta gösterilen rozet"
+  },
+  "paywallAlreadyProPlusBadge": "Zaten Pro+ Kullanıcısısın",
+  "@paywallAlreadyProPlusBadge": {
+    "description": "Kullanıcı zaten Pro+ iken hem Pro hem Pro+ kartında gösterilen rozet"
+  },
+  "paywallBuyButton": "Satın Al",
+  "@paywallBuyButton": {
+    "description": "Tek seferlik reklamsız kartının satın alma butonu"
+  },
+  "paywallSubscribeButton": "Abone Ol",
+  "@paywallSubscribeButton": {
+    "description": "Pro/Pro+ kartlarının satın alma butonu"
+  },
+  "paywallUpgradeButton": "Pro+'a Yükselt",
+  "@paywallUpgradeButton": {
+    "description": "Kullanıcı zaten Pro iken Pro+ kartında gösterilen yükseltme butonu"
+  },
+  "paywallProPerkNoForcedAds": "Zorunlu reklamlar kalkar",
+  "@paywallProPerkNoForcedAds": {
+    "description": "Zibo Pro perk listesi satırı"
+  },
+  "paywallProPerkCoinBonus": "Check-in coin ödülü 1,5 kat",
+  "@paywallProPerkCoinBonus": {
+    "description": "Zibo Pro perk listesi satırı"
+  },
+  "paywallProPerkStreakFreeze": "Ayda 1 ücretsiz Streak Freeze",
+  "@paywallProPerkStreakFreeze": {
+    "description": "Zibo Pro perk listesi satırı"
+  },
+  "paywallProPerkWheelNoAds": "Şans Çarkı reklamsız + günde 1 ekstra çevirme",
+  "@paywallProPerkWheelNoAds": {
+    "description": "Zibo Pro perk listesi satırı"
+  },
+  "paywallProPerkUnlimitedHistory": "Modüllerde sınırsız geçmiş",
+  "@paywallProPerkUnlimitedHistory": {
+    "description": "Zibo Pro perk listesi satırı"
+  },
+  "paywallProPerkNotificationTime": "Bildirim saatini kişiselleştir",
+  "@paywallProPerkNotificationTime": {
+    "description": "Zibo Pro perk listesi satırı"
+  },
+  "paywallProPlusPerkAllOfPro": "Pro'nun tüm avantajları",
+  "@paywallProPlusPerkAllOfPro": {
+    "description": "Zibo Pro+ perk listesindeki ilk satır"
+  },
+  "paywallProPlusPerkCoinBonus": "Check-in coin ödülü 2 kat",
+  "@paywallProPlusPerkCoinBonus": {
+    "description": "Zibo Pro+ perk listesi satırı"
+  },
+  "paywallProPlusPerkStreakFreeze": "Ayda 3 ücretsiz Streak Freeze",
+  "@paywallProPlusPerkStreakFreeze": {
+    "description": "Zibo Pro+ perk listesi satırı"
+  },
+  "paywallProPlusPerkExclusiveItem": "Ayda 1 Pro'ya özel kostüm/tema",
+  "@paywallProPlusPerkExclusiveItem": {
+    "description": "Zibo Pro+ perk listesi satırı"
+  },
+  "paywallProPlusPerkProfileBadge": "Özel profil rozeti/çerçevesi",
+  "@paywallProPlusPerkProfileBadge": {
+    "description": "Zibo Pro+ perk listesi satırı"
+  },
+  "paywallProPlusPerkWatermark": "Paylaşım kartlarında özel Pro+ filigranı",
+  "@paywallProPlusPerkWatermark": {
+    "description": "Zibo Pro+ perk listesi satırı"
+  },
+  "paywallProPlusPerkTrendChart": "Detaylı trend grafiği",
+  "@paywallProPlusPerkTrendChart": {
+    "description": "Zibo Pro+ perk listesi satırı"
+  },
+  "paywallProPlusPerkMoneyAnalysis": "Para & Birikim gelişmiş analiz",
+  "@paywallProPlusPerkMoneyAnalysis": {
+    "description": "Zibo Pro+ perk listesi satırı"
+  },
+  "paywallProPlusPerkNotificationSounds": "Özel bildirim sesleri",
+  "@paywallProPlusPerkNotificationSounds": {
+    "description": "Zibo Pro+ perk listesi satırı"
+  },
+  "paywallPurchaseSuccessMessage": "Satın alma başarılı! Zibo'ya hoş geldin 🎉",
+  "@paywallPurchaseSuccessMessage": {
+    "description": "Paywall'da bir satın alma başarıyla tamamlanınca gösterilen mesaj"
+  },
+  "paywallPurchaseErrorMessage": "Satın alma tamamlanamadı, lütfen tekrar dene.",
+  "@paywallPurchaseErrorMessage": {
+    "description": "Paywall'da bir satın alma başarısız/iptal olunca gösterilen SnackBar metni"
+  },
+  "paywallUpgradeSuccessMessage": "Pro+'a yükseltme başarılı! 🎉",
+  "@paywallUpgradeSuccessMessage": {
+    "description": "Pro'dan Pro+'a yükseltme başarıyla tamamlanınca gösterilen mesaj"
+  },
+  "paywallUpgradeErrorMessage": "Yükseltme tamamlanamadı, lütfen tekrar dene.",
+  "@paywallUpgradeErrorMessage": {
+    "description": "Pro'dan Pro+'a yükseltme başarısız olunca gösterilen SnackBar metni"
+  },
+  "paywallPerMonthSuffix": "/ay",
+  "@paywallPerMonthSuffix": {
+    "description": "Sabit/görsel yer tutucu aylık fiyata eklenen sonek (canlı Play Store fiyatı zaten kendi sonekini içeriyor)"
+  },
+  "paywallPerYearSuffix": "/yıl",
+  "@paywallPerYearSuffix": {
+    "description": "Sabit/görsel yer tutucu yıllık fiyata eklenen sonek"
+  },
+  "settingsZiboProRowTitle": "Zibo Pro",
+  "@settingsZiboProRowTitle": {
+    "description": "Ayarlar'daki Zibo Pro paywall giriş satırının başlığı"
+  },
+  "settingsZiboProRowSubtitle": "Daha fazla özellik, reklamsız deneyim",
+  "@settingsZiboProRowSubtitle": {
+    "description": "Ayarlar'daki Zibo Pro paywall giriş satırının alt metni"
   }
 }

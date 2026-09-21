@@ -22,6 +22,7 @@ import '../widgets/language_flag_circle.dart';
 import '../widgets/rate_us_sheet.dart';
 import '../widgets/sticker_style.dart';
 import 'legal_placeholder_screen.dart';
+import 'paywall_screen.dart';
 import 'widgets_screen.dart';
 
 /// Destek e-postası — Ayarlar > Destek > "Bize Ulaşın" satırında hem
@@ -138,6 +139,22 @@ class SettingsScreen extends StatelessWidget {
           ListView(
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
             children: [
+              // --- Zibo Pro: paywall giriş noktası — bilerek EN ÜSTTE, kendi
+              // section eyebrow'u YOK (bir "ayar kategorisi" değil, tek bir
+              // teşvik/eylem satırı, bkz. docs/subscribe_model.md).
+              _SettingsGroupCard(
+                children: [
+                  _SettingsRow(
+                    iconContent: const Text('👑', style: TextStyle(fontSize: 15, height: 1)),
+                    title: l10n.settingsZiboProRowTitle,
+                    subtitle: l10n.settingsZiboProRowSubtitle,
+                    onTap: () => Navigator.of(context).push(
+                      MaterialPageRoute<void>(builder: (_) => const PaywallScreen()),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
               // --- Genel: koyu tema + dil + (varsa) bildirimler — kullanıcının
               // uygulama genelinde nasıl davrandığını belirlediği tercihler.
               _SectionEyebrow(l10n.settingsSectionGeneral),

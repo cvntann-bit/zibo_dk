@@ -3315,6 +3315,234 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'Tamam'**
   String get commonOkButton;
+
+  /// Paywall ekranının AppBar başlığı
+  ///
+  /// In tr, this message translates to:
+  /// **'Zibo Pro'**
+  String get paywallAppBarTitle;
+
+  /// Paywall'ın üst kırmızı şeridindeki motive edici başlık
+  ///
+  /// In tr, this message translates to:
+  /// **'Zibo\'yla Daha Yakın Kanka'**
+  String get paywallBannerTitle;
+
+  /// Paywall'ın üst kırmızı şeridindeki alt metin
+  ///
+  /// In tr, this message translates to:
+  /// **'Reklamsız, daha hızlı, daha özel bir deneyim'**
+  String get paywallBannerSubtitle;
+
+  /// Paywall'daki aylık/yıllık geçiş anahtarının 'Aylık' seçeneği
+  ///
+  /// In tr, this message translates to:
+  /// **'Aylık'**
+  String get paywallBillingToggleMonthly;
+
+  /// Paywall'daki aylık/yıllık geçiş anahtarının 'Yıllık' seçeneği
+  ///
+  /// In tr, this message translates to:
+  /// **'Yıllık (2 ay bedava)'**
+  String get paywallBillingToggleYearly;
+
+  /// Paywall'daki tek seferlik reklamsız kartın başlığı
+  ///
+  /// In tr, this message translates to:
+  /// **'Tek Seferlik Reklamsız'**
+  String get paywallOneTimeTitle;
+
+  /// Tek seferlik reklamsız kartındaki tek fayda satırı
+  ///
+  /// In tr, this message translates to:
+  /// **'Tüm reklamlar kalksın'**
+  String get paywallOneTimeBenefit;
+
+  /// Paywall'daki Zibo Pro kartının başlığı
+  ///
+  /// In tr, this message translates to:
+  /// **'Zibo Pro'**
+  String get paywallProTitle;
+
+  /// Paywall'daki Zibo Pro+ kartının başlığı
+  ///
+  /// In tr, this message translates to:
+  /// **'Zibo Pro+'**
+  String get paywallProPlusTitle;
+
+  /// Pro+ kartının üstündeki öne çıkarma rozeti
+  ///
+  /// In tr, this message translates to:
+  /// **'En Popüler'**
+  String get paywallMostPopularBadge;
+
+  /// Kullanıcının hâlihazırda abone olduğu kartta gösterilen rozet
+  ///
+  /// In tr, this message translates to:
+  /// **'Mevcut Planın'**
+  String get paywallCurrentPlanBadge;
+
+  /// Kullanıcı zaten Pro+ iken hem Pro hem Pro+ kartında gösterilen rozet
+  ///
+  /// In tr, this message translates to:
+  /// **'Zaten Pro+ Kullanıcısısın'**
+  String get paywallAlreadyProPlusBadge;
+
+  /// Tek seferlik reklamsız kartının satın alma butonu
+  ///
+  /// In tr, this message translates to:
+  /// **'Satın Al'**
+  String get paywallBuyButton;
+
+  /// Pro/Pro+ kartlarının satın alma butonu
+  ///
+  /// In tr, this message translates to:
+  /// **'Abone Ol'**
+  String get paywallSubscribeButton;
+
+  /// Kullanıcı zaten Pro iken Pro+ kartında gösterilen yükseltme butonu
+  ///
+  /// In tr, this message translates to:
+  /// **'Pro+\'a Yükselt'**
+  String get paywallUpgradeButton;
+
+  /// Zibo Pro perk listesi satırı
+  ///
+  /// In tr, this message translates to:
+  /// **'Zorunlu reklamlar kalkar'**
+  String get paywallProPerkNoForcedAds;
+
+  /// Zibo Pro perk listesi satırı
+  ///
+  /// In tr, this message translates to:
+  /// **'Check-in coin ödülü 1,5 kat'**
+  String get paywallProPerkCoinBonus;
+
+  /// Zibo Pro perk listesi satırı
+  ///
+  /// In tr, this message translates to:
+  /// **'Ayda 1 ücretsiz Streak Freeze'**
+  String get paywallProPerkStreakFreeze;
+
+  /// Zibo Pro perk listesi satırı
+  ///
+  /// In tr, this message translates to:
+  /// **'Şans Çarkı reklamsız + günde 1 ekstra çevirme'**
+  String get paywallProPerkWheelNoAds;
+
+  /// Zibo Pro perk listesi satırı
+  ///
+  /// In tr, this message translates to:
+  /// **'Modüllerde sınırsız geçmiş'**
+  String get paywallProPerkUnlimitedHistory;
+
+  /// Zibo Pro perk listesi satırı
+  ///
+  /// In tr, this message translates to:
+  /// **'Bildirim saatini kişiselleştir'**
+  String get paywallProPerkNotificationTime;
+
+  /// Zibo Pro+ perk listesindeki ilk satır
+  ///
+  /// In tr, this message translates to:
+  /// **'Pro\'nun tüm avantajları'**
+  String get paywallProPlusPerkAllOfPro;
+
+  /// Zibo Pro+ perk listesi satırı
+  ///
+  /// In tr, this message translates to:
+  /// **'Check-in coin ödülü 2 kat'**
+  String get paywallProPlusPerkCoinBonus;
+
+  /// Zibo Pro+ perk listesi satırı
+  ///
+  /// In tr, this message translates to:
+  /// **'Ayda 3 ücretsiz Streak Freeze'**
+  String get paywallProPlusPerkStreakFreeze;
+
+  /// Zibo Pro+ perk listesi satırı
+  ///
+  /// In tr, this message translates to:
+  /// **'Ayda 1 Pro\'ya özel kostüm/tema'**
+  String get paywallProPlusPerkExclusiveItem;
+
+  /// Zibo Pro+ perk listesi satırı
+  ///
+  /// In tr, this message translates to:
+  /// **'Özel profil rozeti/çerçevesi'**
+  String get paywallProPlusPerkProfileBadge;
+
+  /// Zibo Pro+ perk listesi satırı
+  ///
+  /// In tr, this message translates to:
+  /// **'Paylaşım kartlarında özel Pro+ filigranı'**
+  String get paywallProPlusPerkWatermark;
+
+  /// Zibo Pro+ perk listesi satırı
+  ///
+  /// In tr, this message translates to:
+  /// **'Detaylı trend grafiği'**
+  String get paywallProPlusPerkTrendChart;
+
+  /// Zibo Pro+ perk listesi satırı
+  ///
+  /// In tr, this message translates to:
+  /// **'Para & Birikim gelişmiş analiz'**
+  String get paywallProPlusPerkMoneyAnalysis;
+
+  /// Zibo Pro+ perk listesi satırı
+  ///
+  /// In tr, this message translates to:
+  /// **'Özel bildirim sesleri'**
+  String get paywallProPlusPerkNotificationSounds;
+
+  /// Paywall'da bir satın alma başarıyla tamamlanınca gösterilen mesaj
+  ///
+  /// In tr, this message translates to:
+  /// **'Satın alma başarılı! Zibo\'ya hoş geldin 🎉'**
+  String get paywallPurchaseSuccessMessage;
+
+  /// Paywall'da bir satın alma başarısız/iptal olunca gösterilen SnackBar metni
+  ///
+  /// In tr, this message translates to:
+  /// **'Satın alma tamamlanamadı, lütfen tekrar dene.'**
+  String get paywallPurchaseErrorMessage;
+
+  /// Pro'dan Pro+'a yükseltme başarıyla tamamlanınca gösterilen mesaj
+  ///
+  /// In tr, this message translates to:
+  /// **'Pro+\'a yükseltme başarılı! 🎉'**
+  String get paywallUpgradeSuccessMessage;
+
+  /// Pro'dan Pro+'a yükseltme başarısız olunca gösterilen SnackBar metni
+  ///
+  /// In tr, this message translates to:
+  /// **'Yükseltme tamamlanamadı, lütfen tekrar dene.'**
+  String get paywallUpgradeErrorMessage;
+
+  /// Sabit/görsel yer tutucu aylık fiyata eklenen sonek (canlı Play Store fiyatı zaten kendi sonekini içeriyor)
+  ///
+  /// In tr, this message translates to:
+  /// **'/ay'**
+  String get paywallPerMonthSuffix;
+
+  /// Sabit/görsel yer tutucu yıllık fiyata eklenen sonek
+  ///
+  /// In tr, this message translates to:
+  /// **'/yıl'**
+  String get paywallPerYearSuffix;
+
+  /// Ayarlar'daki Zibo Pro paywall giriş satırının başlığı
+  ///
+  /// In tr, this message translates to:
+  /// **'Zibo Pro'**
+  String get settingsZiboProRowTitle;
+
+  /// Ayarlar'daki Zibo Pro paywall giriş satırının alt metni
+  ///
+  /// In tr, this message translates to:
+  /// **'Daha fazla özellik, reklamsız deneyim'**
+  String get settingsZiboProRowSubtitle;
 }
 
 class _AppLocalizationsDelegate

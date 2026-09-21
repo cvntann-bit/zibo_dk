@@ -51,6 +51,7 @@ import 'package:dijital_kanka/providers/trusted_time_provider.dart';
 import 'package:dijital_kanka/providers/water_provider.dart';
 import 'package:dijital_kanka/providers/xp_provider.dart';
 import 'package:dijital_kanka/providers/zibo_pose_provider.dart';
+import 'package:dijital_kanka/screens/paywall_screen.dart';
 import 'package:dijital_kanka/screens/profile_screen.dart';
 import 'package:dijital_kanka/screens/root_screen.dart';
 import 'package:dijital_kanka/screens/wheel_screen.dart';
@@ -59,7 +60,6 @@ import 'package:dijital_kanka/services/home_widget_service.dart';
 import 'package:dijital_kanka/services/notification_service.dart';
 import 'package:dijital_kanka/models/coin_package.dart';
 import 'package:dijital_kanka/services/purchase_service.dart';
-import 'package:dijital_kanka/widgets/ad_free_promo_sheet.dart';
 import 'package:dijital_kanka/utils/ad_free_promo_trigger.dart';
 import 'package:dijital_kanka/utils/level_up_signal.dart';
 import 'package:dijital_kanka/utils/tab_navigation.dart';
@@ -898,8 +898,8 @@ void main() {
   });
 
   testWidgets(
-    'Zibo ADS (reklamsız deneyim) tanıtımı 5. Mağaza ziyaretinde görünür, '
-    '"Satın Al" BAŞARISIZ olunca hata mesajı gösterip sheet\'i kapatır',
+    'Paywall 5. Mağaza ziyaretinde açılır, tek seferlik reklamsız satın alma '
+    'BAŞARISIZ olunca hata SnackBar\'ı gösterip ekranda kalır',
     (WidgetTester tester) async {
       // Gerçek `InAppPurchasePurchaseService` (platform kanalı yok) test
       // ortamında `pumpAndSettle()`'ın bitirmediği bir Timer bırakıyor —
@@ -921,24 +921,23 @@ void main() {
       // ad_free_promo_trigger.dart) henüz ulaşılmadı.
       for (var i = 0; i < 4; i++) {
         await visitStoreThenLeave();
-        expect(find.text('Zibo ADS'), findsNothing);
+        expect(find.byType(PaywallScreen), findsNothing);
       }
 
-      // 5. ziyaret — tanıtım sheet'i açılmalı (cooldown de sıfır — bkz.
+      // 5. ziyaret — paywall açılmalı (cooldown de sıfır — bkz.
       // setUp()'taki AdFreePromoTrigger.resetForTest()).
       await tester.tap(find.byTooltip('Coin satın al'));
       await tester.pumpAndSettle();
-      expect(find.text('Zibo ADS'), findsOneWidget);
-      expect(find.text('Reklamsız Deneyim'), findsOneWidget);
-      expect(find.text('Reklam yok'), findsOneWidget);
-      expect(find.text('Kesintisiz kullanım'), findsOneWidget);
+      expect(find.byType(PaywallScreen), findsOneWidget);
+      expect(find.text('Tek Seferlik Reklamsız'), findsOneWidget);
+      expect(find.text('Tüm reklamlar kalksın'), findsOneWidget);
 
-      // "Satın Al" — `_FailingPurchaseService` her zaman `false` döner;
-      // sheet yine de kapanır, hata mesajı gösterilir (bkz. AYRI "BAŞARILI"
-      // testi aşağıda, orada MockPurchaseService var).
-      await tester.tap(find.byKey(const Key('adFreePromoBuyButton')));
+      // Tek seferlik kartın butonu — `_FailingPurchaseService` her zaman
+      // `false` döner; paywall AÇIK kalır, hata SnackBar'ı gösterilir (bkz.
+      // AYRI "BAŞARILI" testi aşağıda, orada MockPurchaseService var).
+      await tester.tap(find.byKey(const Key('paywallOneTimeButton')));
       await tester.pumpAndSettle();
-      expect(find.text('Zibo ADS'), findsNothing);
+      expect(find.byType(PaywallScreen), findsOneWidget);
       expect(
         find.textContaining('Satın alma tamamlanamadı'),
         findsOneWidget,
@@ -947,8 +946,8 @@ void main() {
   );
 
   testWidgets(
-    'Zibo ADS satın alma BAŞARILI olunca kalıcı hale gelir ve Mağaza '
-    'kartı "Satın Alındı" gösterir',
+    'Paywall\'dan tek seferlik reklamsız satın alma BAŞARILI olunca kalıcı '
+    'hale gelir, paywall kapanır ve Mağaza kartı "Satın Alındı" gösterir',
     (WidgetTester tester) async {
       await _pumpPastOnboarding(
         tester,
@@ -960,39 +959,41 @@ void main() {
       // Mağaza'daki kalıcı kart — henüz satın alınmamış, fiyat butonu var.
       expect(find.text('Satın Alındı'), findsNothing);
 
-      // Kalıcı `_AdFreeCard`'ın KENDİ fiyat butonuna basıp sheet'i aç —
+      // Kalıcı `_AdFreeCard`'ın KENDİ fiyat butonuna basıp paywall'ı aç —
       // periyodik tanıtımın AKSİNE (5 ziyaret eşiği), bu kart HER ZAMAN
       // ekranda durur (bkz. `store_screen.dart` dokümantasyonu).
-      await tester.tap(find.text(adFreePromoPrice.formattedForLocale('tr')));
+      await tester.tap(find.text(adFreeFallbackPrice.formattedForLocale('tr')));
       await tester.pumpAndSettle();
-      expect(find.byKey(const Key('adFreePromoBuyButton')), findsOneWidget);
+      expect(find.byKey(const Key('paywallOneTimeButton')), findsOneWidget);
 
       // `MockPurchaseService.purchaseAdRemoval()`'ın çıplak
       // `Future.delayed(600ms)`'i — `tester.tap()` sonrası TEK BAŞINA
       // `pumpAndSettle()` bunu GÜVENİLİR şekilde ilerletmiyor (hiçbir
       // animasyona/frame zamanlayıcısına bağlı olmadığı için `pumpAndSettle`
-      // "yerleşti" sanıp ERKEN dönebiliyor — coin satın alma testindeki AYNI
-      // gecikme, ARADA Google-bağlama sheet'inin KENDİ kapanış animasyonu
-      // olduğu için tesadüfen sorunsuz çalışıyor). Açık `pump(duration)` ile
+      // "yerleşti" sanıp ERKEN dönebiliyor). Açık `pump(duration)` ile
       // gecikmeyi BİZZAT ilerletip ANCAK ONDAN SONRA `pumpAndSettle()` ile
-      // ortaya çıkan SnackBar/kart animasyonlarını bitiriyoruz.
-      await tester.tap(find.byKey(const Key('adFreePromoBuyButton')));
+      // ortaya çıkan dialog animasyonlarını bitiriyoruz.
+      await tester.tap(find.byKey(const Key('paywallOneTimeButton')));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 700));
       await tester.pumpAndSettle();
       expect(
-        find.textContaining('Artık reklam görmeyeceksin'),
+        find.textContaining('Satın alma başarılı'),
         findsOneWidget,
       );
-      // Sheet kapandıktan sonra, sekmeden hiç çıkmadan kart otomatik
-      // "Satın Alındı" durumuna geçmeli (bkz. AdFreeProvider/`_AdFreeCard`
-      // `context.watch` dokümantasyonu).
+      // Başarı dialogunu "Tamam" ile kapat — bu ANCAK BUNDAN SONRA paywall
+      // ekranını da kapatıyor (bkz. `PaywallScreen._handlePurchaseResult`).
+      await tester.tap(find.byKey(const Key('infoDialogOkButton')));
+      await tester.pumpAndSettle();
+      expect(find.byType(PaywallScreen), findsNothing);
+      // Sekmeden hiç çıkmadan kart otomatik "Satın Alındı" durumuna geçmeli
+      // (bkz. AdFreeProvider/`_AdFreeCard` `context.watch` dokümantasyonu).
       expect(find.text('Satın Alındı'), findsOneWidget);
     },
   );
 
   testWidgets(
-    'Zibo ADS tanıtımı "Belki Sonra" ile mesaj göstermeden kapanır',
+    'Paywall AppBar\'ın geri tuşuyla, mesaj göstermeden kapanır',
     (WidgetTester tester) async {
       await _pumpPastOnboarding(tester, const DijitalKankaApp());
 
@@ -1008,25 +1009,25 @@ void main() {
       }
       await tester.tap(find.byTooltip('Coin satın al'));
       await tester.pumpAndSettle();
-      expect(find.text('Zibo ADS'), findsOneWidget);
+      expect(find.byType(PaywallScreen), findsOneWidget);
 
-      await tester.tap(find.byKey(const Key('adFreePromoDismissButton')));
+      await tester.tap(find.byTooltip('Geri'));
       await tester.pumpAndSettle();
-      expect(find.text('Zibo ADS'), findsNothing);
+      expect(find.byType(PaywallScreen), findsNothing);
       expect(
-        find.textContaining('Reklamsız deneyim çok yakında sunulacak'),
+        find.textContaining('Satın alma başarılı'),
         findsNothing,
       );
     },
   );
 
   testWidgets(
-    'Zibo ADS: cooldown süresi dolmadan aynı Mağaza ziyaret örüntüsü '
-    'tanıtımı TEKRAR göstermez',
+    'Paywall: cooldown süresi dolmadan aynı Mağaza ziyaret örüntüsü '
+    'paywall\'ı TEKRAR açmaz',
     (WidgetTester tester) async {
       // AdFreePromoTrigger.resetForTest ile "az önce gösterildi" durumu
       // simüle ediliyor — 5. ziyarette eşik dolsa bile 3 günlük cooldown
-      // (bkz. ad_free_promo_trigger.dart) henüz geçmediği için sheet
+      // (bkz. ad_free_promo_trigger.dart) henüz geçmediği için paywall
       // AÇILMAMALI.
       AdFreePromoTrigger.resetForTest(lastShownAt: DateTime.now());
 
@@ -1044,7 +1045,7 @@ void main() {
       }
       await tester.tap(find.byTooltip('Coin satın al'));
       await tester.pumpAndSettle();
-      expect(find.text('Zibo ADS'), findsNothing);
+      expect(find.byType(PaywallScreen), findsNothing);
     },
   );
 

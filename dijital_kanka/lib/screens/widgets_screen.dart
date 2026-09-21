@@ -95,7 +95,7 @@ void _showAddInstructionsSheet(
   showModalBottomSheet<void>(
     context: context,
     showDragHandle: true,
-    // `ad_free_promo_sheet.dart`'taki AYNI desen — üç adımlık talimat +
+    // Diğer sheet'lerdeki AYNI desen — üç adımlık talimat +
     // başlık + buton dar/kısa ekranlarda sabit sheet yüksekliğine
     // sığmayıp `RenderFlex overflow`'a yol açabiliyordu (gerçek bir hata,
     // yalnızca test viewport'una özgü değil — dar bir telefonda da

@@ -38,13 +38,13 @@ import '../screens/gratitude_journal_screen.dart';
 import '../screens/manifest_journal_screen.dart';
 import '../screens/money_screen.dart';
 import '../screens/mood_tracking_screen.dart';
+import '../screens/paywall_screen.dart';
 import '../services/sound_effects_service.dart';
 import '../utils/address_term.dart';
 import '../utils/home_quick_module_info.dart';
 import '../utils/tab_navigation.dart';
 import '../utils/motivation_quote_selector.dart';
 import '../utils/zibo_event_signal.dart';
-import '../widgets/ad_free_promo_sheet.dart';
 import '../widgets/banner_ad_slot.dart';
 import '../widgets/custom_messages_button.dart';
 import '../widgets/favorite_quote_button.dart';
@@ -280,7 +280,11 @@ class _HomeScreenState extends State<HomeScreen>
     _showingRapidTapPromo = true;
     try {
       if (_adPromoRandom.nextDouble() < _adFreePromoChanceOnRapidTap) {
-        if (mounted) await showAdFreePromoSheet(context);
+        if (mounted) {
+          await Navigator.of(
+            context,
+          ).push(MaterialPageRoute<void>(builder: (_) => const PaywallScreen()));
+        }
       } else {
         await context.read<CoinProvider>().showInterstitialAd();
       }

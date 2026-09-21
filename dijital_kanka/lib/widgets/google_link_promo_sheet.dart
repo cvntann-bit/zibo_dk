@@ -6,7 +6,7 @@ import '../utils/google_link_action.dart';
 /// Mağaza'da kullanıcı İLK GERÇEK Zibo Coin satın alma DENEMESİNDE (hesabı
 /// henüz Google'a bağlı değilse) gösterilen teşvik sheet'i — bkz.
 /// `StoreScreen._PackageCardState._buy` (`AuthLinkProvider.hasSeenLinkPrompt`
-/// kontrolü). `showAdFreePromoSheet` ile AYNI `showModalBottomSheet`
+/// kontrolü). `showModulesMenuSheet` ile AYNI `showModalBottomSheet`
 /// deseni. Kullanıcı isteği: "zorunlu tutma, güçlü şekilde teşvik et" —
 /// bu yüzden "Şimdilik Atla" her zaman kullanılabilir, sheet dokunarak
 /// dışarı çıkma/sürükleme tutamacıyla da kapanabilir; HANGİ yol seçilirse

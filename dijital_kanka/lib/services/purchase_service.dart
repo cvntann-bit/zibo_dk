@@ -54,7 +54,7 @@ abstract class PurchaseService {
   /// farklı olabiliyor (bkz. `AdFreeProvider.queryLocalizedPrice`
   /// dokümantasyonu — gerçek cihazda 159,90 TL yerine 189,90 TL çıkması BU
   /// yüzden). `null` dönerse çağıran taraf sabit/görsel fiyata (bkz.
-  /// `ad_free_promo_sheet.dart`'taki `adFreePromoPrice`) düşer.
+  /// `paywall_screen.dart`'taki `adFreeFallbackPrice`) düşer.
   Future<String?> queryAdRemovalLocalizedPrice() async => null;
 
   /// Bir abonelik teklifinin ([SubscriptionOffer] — ürün + temel plan)
@@ -71,6 +71,20 @@ abstract class PurchaseService {
   Future<String?> querySubscriptionLocalizedPrice(
     SubscriptionOffer offer,
   ) async => null;
+
+  /// Kullanıcının hâlihazırda AKTİF olan [oldProductId] aboneliğini
+  /// (ör. `zibo_pro`) [newOffer]'a (ör. `zibo_proplus` yıllık) YÜKSELTİR/
+  /// DEĞİŞTİRİR — [purchaseSubscription]'ın aksine SIFIRDAN bir abonelik
+  /// başlatmaz, Play Billing'in "abonelik değiştirme" akışını (Android'e
+  /// özgü `ChangeSubscriptionParam`) kullanır. Eski satın almanın TOKEN'ı
+  /// burada AYRICA saklanmaz — gerçek implementasyon her çağrıda Play'in
+  /// yerel önbelleğinden TAZE sorgular (bkz. `iap_purchase_service.dart`).
+  /// `docs/decisions/012-subscription-tier-tracking.md`'deki AYNI istemci-
+  /// yetkili mimari boşluk burada da geçerli.
+  Future<bool> upgradeSubscription(
+    SubscriptionOffer newOffer, {
+    required String oldProductId,
+  }) async => false;
 }
 
 /// Gerçek bir ödeme/mağaza SDK'sı bağlanana kadar kullanılan geçici/sahte
@@ -93,6 +107,15 @@ class MockPurchaseService extends PurchaseService {
 
   @override
   Future<bool> purchaseSubscription(SubscriptionOffer offer) async {
+    await Future.delayed(const Duration(milliseconds: 600));
+    return true;
+  }
+
+  @override
+  Future<bool> upgradeSubscription(
+    SubscriptionOffer newOffer, {
+    required String oldProductId,
+  }) async {
     await Future.delayed(const Duration(milliseconds: 600));
     return true;
   }
