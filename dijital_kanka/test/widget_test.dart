@@ -45,6 +45,7 @@ import 'package:dijital_kanka/providers/profile_provider.dart';
 import 'package:dijital_kanka/providers/profile_stats_archive_provider.dart';
 import 'package:dijital_kanka/providers/referral_provider.dart';
 import 'package:dijital_kanka/providers/sound_effects_provider.dart';
+import 'package:dijital_kanka/providers/subscription_provider.dart';
 import 'package:dijital_kanka/providers/theme_provider.dart';
 import 'package:dijital_kanka/providers/trusted_time_provider.dart';
 import 'package:dijital_kanka/providers/water_provider.dart';
@@ -182,6 +183,7 @@ Widget _buildAppWithClock(DateTime Function() now) {
       ChangeNotifierProvider(create: (_) => ProfileStatsArchiveProvider()),
       ChangeNotifierProvider(create: (_) => ReferralProvider()),
       ChangeNotifierProvider(create: (_) => SoundEffectsProvider()),
+      ChangeNotifierProvider(create: (_) => SubscriptionProvider(now: now)),
       ChangeNotifierProvider(create: (_) => ThemeProvider()),
       ChangeNotifierProvider(create: (_) => WaterProvider(now: now)),
       ChangeNotifierProvider(create: (_) => XpProvider()),

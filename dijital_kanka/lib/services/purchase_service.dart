@@ -1,4 +1,5 @@
 import '../models/coin_package.dart';
+import '../models/subscription_offer.dart';
 
 /// Uygulama içi satın alma (IAP) işlemlerinden sorumlu servisin soyut
 /// arayüzü. Gerçek implementasyon [InAppPurchasePurchaseService]
@@ -55,6 +56,21 @@ abstract class PurchaseService {
   /// yüzden). `null` dönerse çağıran taraf sabit/görsel fiyata (bkz.
   /// `ad_free_promo_sheet.dart`'taki `adFreePromoPrice`) düşer.
   Future<String?> queryAdRemovalLocalizedPrice() async => null;
+
+  /// Bir abonelik teklifinin ([SubscriptionOffer] — ürün + temel plan)
+  /// satın alma akışını başlatır. [purchaseAdRemoval] ile AYNI
+  /// istek/yanıt sözleşmesi (`Future<bool>`) — [SubscriptionProvider]
+  /// başarı sonrası kendi durumunu günceller, makbuz burada
+  /// doğrulanmaz (bkz. `docs/decisions/005-coin-economy-client-
+  /// authoritative.md` — IAP'lerin TAMAMI AYNI mimari boşlukta).
+  Future<bool> purchaseSubscription(SubscriptionOffer offer) async => false;
+
+  /// [offer]'ın Play Store'dan sorgulanan canlı/yerelleştirilmiş fiyat
+  /// metnini döner — [queryLocalizedPrice] ile AYNI gerekçe. `null`
+  /// dönerse çağıran taraf sabit/görsel bir fiyata düşer.
+  Future<String?> querySubscriptionLocalizedPrice(
+    SubscriptionOffer offer,
+  ) async => null;
 }
 
 /// Gerçek bir ödeme/mağaza SDK'sı bağlanana kadar kullanılan geçici/sahte
@@ -71,6 +87,12 @@ class MockPurchaseService extends PurchaseService {
 
   @override
   Future<bool> purchaseAdRemoval() async {
+    await Future.delayed(const Duration(milliseconds: 600));
+    return true;
+  }
+
+  @override
+  Future<bool> purchaseSubscription(SubscriptionOffer offer) async {
     await Future.delayed(const Duration(milliseconds: 600));
     return true;
   }

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -8,8 +9,10 @@ import '../data/legal_texts.dart';
 import '../l10n/app_localizations.dart';
 import '../providers/auth_link_provider.dart';
 import '../providers/locale_provider.dart';
+import '../models/subscription_tier.dart';
 import '../providers/notification_provider.dart';
 import '../providers/sound_effects_provider.dart';
+import '../providers/subscription_provider.dart';
 import '../providers/theme_provider.dart';
 import '../utils/google_link_action.dart';
 import '../utils/info_dialog.dart';
@@ -369,6 +372,10 @@ class SettingsScreen extends StatelessWidget {
               if (notificationsFeatureEnabled) ...[
                 const SizedBox(height: 24),
                 const _NotificationDebugPanel(),
+              ],
+              if (kDebugMode) ...[
+                const SizedBox(height: 24),
+                const _SubscriptionDebugPanel(),
               ],
             ],
           ),
@@ -895,6 +902,66 @@ class _NotificationDebugPanelState extends State<_NotificationDebugPanel> {
                 style: Theme.of(context).textTheme.bodySmall,
               ),
             ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// **Yalnızca debug build'lerde görünür** (`kDebugMode`) — Zibo Pro/Pro+
+/// abonelik durumunu gerçek bir satın alma yapmadan manuel değiştirip UI'ı
+/// test edebilmek için (bkz. `SubscriptionProvider.debugSetTier`).
+/// `_NotificationDebugPanel` ile AYNI geçici test-paneli deseni.
+class _SubscriptionDebugPanel extends StatelessWidget {
+  const _SubscriptionDebugPanel();
+
+  @override
+  Widget build(BuildContext context) {
+    final tier = context.watch<SubscriptionProvider>().tier;
+    final label = switch (tier) {
+      SubscriptionTier.free => 'Free',
+      SubscriptionTier.pro => 'Pro',
+      SubscriptionTier.proPlus => 'Pro+',
+    };
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Abonelik Test Paneli (geçici)',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            const SizedBox(height: 8),
+            Text('Şu an: $label'),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                OutlinedButton(
+                  onPressed: () => context
+                      .read<SubscriptionProvider>()
+                      .debugSetTier(SubscriptionTier.free),
+                  child: const Text('Free yap'),
+                ),
+                OutlinedButton(
+                  onPressed: () => context
+                      .read<SubscriptionProvider>()
+                      .debugSetTier(SubscriptionTier.pro),
+                  child: const Text('Pro yap'),
+                ),
+                OutlinedButton(
+                  onPressed: () => context
+                      .read<SubscriptionProvider>()
+                      .debugSetTier(SubscriptionTier.proPlus),
+                  child: const Text('Pro+ yap'),
+                ),
+              ],
+            ),
           ],
         ),
       ),

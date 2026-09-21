@@ -45,6 +45,7 @@ import 'providers/profile_provider.dart';
 import 'providers/profile_stats_archive_provider.dart';
 import 'providers/referral_provider.dart';
 import 'providers/sound_effects_provider.dart';
+import 'providers/subscription_provider.dart';
 import 'providers/theme_provider.dart';
 import 'providers/trusted_time_provider.dart';
 import 'providers/water_provider.dart';
@@ -744,6 +745,18 @@ class DijitalKankaApp extends StatelessWidget {
             purchaseService: resolvedPurchaseService,
           ),
         ),
+        // Zibo Pro / Zibo Pro+ abonelik durumu (bkz. SubscriptionProvider
+        // dokümantasyonu). `AdFreeProvider` ile AYNI `resolvedPurchaseService`
+        // örneğini paylaşır. `now` diğer "güne bağlı" provider'larla AYNI
+        // gerekçeyle `TrustedTimeProvider`'a bağlı (süre kontrolü cihaz
+        // saatine değil buna dayanıyor).
+        ChangeNotifierProvider(
+          create: (context) => SubscriptionProvider(
+            uid: uid,
+            purchaseService: resolvedPurchaseService,
+            now: _trustedNow(context),
+          ),
+        ),
         ChangeNotifierProvider(
           create: (context) {
             // `isSoundEnabled`/`isAdFree`/`onXpEarned`/`now` closure'ları da
@@ -977,6 +990,10 @@ class _AppStartupGate extends StatelessWidget {
     // provider'a YAZIYOR, geç tamamlanan bir ilk yükleme bu yazıyı sessizce
     // silebilirdi.
     final profile = context.watch<ProfileProvider>();
+    // Zibo Pro/Pro+ abonelik durumu — CoinProvider/CostumeProvider ile AYNI
+    // gerekçe: Pro'ya özel içerik ileride eklenince "önce free göster, sonra
+    // Pro'ya zıpla" titremesi olmasın diye startup kapısına dahil edildi.
+    final subscription = context.watch<SubscriptionProvider>();
 
     final ready =
         theme.isReady &&
@@ -985,7 +1002,8 @@ class _AppStartupGate extends StatelessWidget {
         coin.isReady &&
         costume.isReady &&
         onboarding.isReady &&
-        profile.isReady;
+        profile.isReady &&
+        subscription.isReady;
     // Uygulama İLK açılışta (bkz. OnboardingProvider.isCompleted == false)
     // RootScreen yerine tanıtım akışını gösterir — akış bittiğinde
     // (completeOnboarding çağrılınca) bu widget yeniden build olup doğrudan

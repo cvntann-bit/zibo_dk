@@ -16,3 +16,4 @@ Her küçük değişiklik için dosya YOK — yalnızca gerçekten kritik olanla
 | [009](009-permanent-ids-and-gift-contracts.md) | Kalıcı ID'ler + rozet hediye map'i | Kostüm/tema/rozet ID'leri değişmez; `badge_gift_rewards.dart` |
 | [010](010-r8-keep-xml.md) | Çalışma-zamanı string kaynakları `keep.xml`'de | R8 release'de sessizce siler → çökme/sessiz eksiklik |
 | [011](011-dart-package-name-unchanged.md) | Dart paket adı `dijital_kanka` sabit | Kullanıcı-görünür ad "Zibo" yalnızca ARB + manifest label |
+| [012](012-subscription-tier-tracking.md) | Abonelik durumu istemci-yetkili, süre kayan pencere | Kesin bitiş tarihi backend'siz mümkün değil; `restorePurchases` gerçek kaynak |

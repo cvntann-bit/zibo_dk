@@ -1,8 +1,10 @@
 import 'dart:async';
 
 import 'package:in_app_purchase/in_app_purchase.dart';
+import 'package:in_app_purchase_android/in_app_purchase_android.dart';
 
 import '../models/coin_package.dart';
+import '../models/subscription_offer.dart';
 import 'purchase_service.dart';
 
 /// Gerçek Google Play Billing entegrasyonu (`in_app_purchase` paketi).
@@ -163,6 +165,77 @@ class InAppPurchasePurchaseService extends PurchaseService {
     } catch (_) {
       _pending.remove(productId);
       return false;
+    }
+  }
+
+  /// `queryProductDetails({productId})`'in Android'de bir abonelik ürünü
+  /// için döndürdüğü liste — ürünün HER temel planı/teklifi için AYRI bir
+  /// `GooglePlayProductDetails` girdisi içerir (`GooglePlayProductDetails.
+  /// fromProductDetails` — bkz. `in_app_purchase_android` paket kaynağı).
+  /// [ProductDetails.id] hepsinde AYNI (ürün id'si) kalır, temel planı
+  /// ayırt eden şey `subscriptionOfferDetails[subscriptionIndex].
+  /// basePlanId`'dir — bu yüzden düz `queryProductDetails({package.id})`
+  /// gibi TEK bir eşleşme yeterli DEĞİL, [offer.basePlanId] ile eşleşen
+  /// GİRDİYİ bulmamız gerekiyor.
+  GooglePlayProductDetails? _findBasePlanDetails(
+    List<ProductDetails> productDetailsList,
+    SubscriptionOffer offer,
+  ) {
+    for (final details in productDetailsList) {
+      if (details is! GooglePlayProductDetails) continue;
+      if (details.id != offer.productId) continue;
+      final index = details.subscriptionIndex;
+      if (index == null) continue;
+      final basePlanId =
+          details.productDetails.subscriptionOfferDetails?[index].basePlanId;
+      if (basePlanId == offer.basePlanId) return details;
+    }
+    return null;
+  }
+
+  @override
+  Future<bool> purchaseSubscription(SubscriptionOffer offer) async {
+    try {
+      if (!await _iap.isAvailable()) return false;
+
+      final response = await _iap.queryProductDetails({offer.productId});
+      if (response.error != null) return false;
+      final matched = _findBasePlanDetails(response.productDetails, offer);
+      if (matched == null) return false;
+
+      final completer = Completer<bool>();
+      _pending[offer.productId] = completer;
+
+      final started = await _iap.buyNonConsumable(
+        purchaseParam: GooglePlayPurchaseParam(
+          productDetails: matched,
+          offerToken: matched.offerToken,
+        ),
+      );
+      if (!started) {
+        _pending.remove(offer.productId);
+        return false;
+      }
+
+      return await _awaitPendingWithTimeout(offer.productId, completer);
+    } catch (_) {
+      _pending.remove(offer.productId);
+      return false;
+    }
+  }
+
+  @override
+  Future<String?> querySubscriptionLocalizedPrice(
+    SubscriptionOffer offer,
+  ) async {
+    try {
+      if (!await _iap.isAvailable()) return null;
+      final response = await _iap.queryProductDetails({offer.productId});
+      if (response.error != null) return null;
+      final matched = _findBasePlanDetails(response.productDetails, offer);
+      return matched?.price;
+    } catch (_) {
+      return null;
     }
   }
 

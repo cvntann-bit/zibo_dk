@@ -89,15 +89,50 @@ service cloud.firestore {
         allow delete: if false;
       }
 
+      // --- subscriptionState: Zibo Pro/Pro+ abonelik durumu ------------------
+      // `coinState` ile AYNI mimari kısıt/gerekçe (bkz. yukarıdaki uzun not VE
+      // docs/decisions/012-subscription-tier-tracking.md): bu, istemcinin
+      // yazabileceği subscriptionState belgesinin ŞEKLİNİ kısıtlıyor —
+      // "sunucu tarafı yetki" DEĞİL, yalnızca bir hız engelleyici. Gerçek
+      // doğruluk kaynağı HER ZAMAN Play Store'un kendisi (`restorePurchases`,
+      // bkz. `SubscriptionProvider`) — bu belge yalnızca hızlı bir yerel
+      // önbellek. Cloud Functions olmadan (bkz. CLAUDE.md) tam koruma mümkün
+      // DEĞİL; kararlı bir betikle bu şekle uyan sahte bir "proplus" değeri
+      // yine de yazılabilir.
+      match /state/subscriptionState {
+        function isValidSubscription(d) {
+          return d.subscriptionTier in ['free', 'pro', 'proplus']
+            && (d.subscriptionProductId == null
+                || d.subscriptionProductId is string)
+            && (d.subscriptionExpiryDate == null
+                || (d.subscriptionExpiryDate is timestamp
+                    // Bariz bir sahte tarihi ("2099" gibi) engelleyen gevşek
+                    // üst sınır — en uzun gerçek plan (yıllık) + kayan
+                    // pencere toleransı (bkz. SubscriptionProvider).
+                    && d.subscriptionExpiryDate
+                       < request.time + duration.value(400, 'd')));
+        }
+
+        allow read: if isOwner();
+        allow create, update: if isOwner()
+          && isValidSubscription(request.resource.data);
+        allow delete: if false;
+      }
+
       // Diğer TÜM durum belgeleri (hedefler, günlükler, kostüm/tema
-      // SAHİPLİK listeleri, tercihler vb.) — coinState HARİÇ, eskisi gibi
-      // tam yetkili kalıyor. Kostüm/tema `ownedIds` listeleri DE aynı sınıf
+      // SAHİPLİK listeleri, tercihler vb.) — coinState/subscriptionState
+      // HARİÇ, eskisi gibi tam yetkili kalıyor (Firestore kuralları aynı yola
+      // uyan birden fazla `match` bloğunu OR olarak değerlendirir — bu
+      // istisna olmadan bu joker blok yukarıdaki dar doğrulamaları TAMAMEN
+      // BYPASS ederdi). Kostüm/tema `ownedIds` listeleri DE aynı sınıf
       // riski taşıyor (istemci doğrudan bir id ekleyip ödemeden "sahip"
       // olabilir) ama rules-only bir liste doğrulaması costumes.dart/
       // app_themes.dart ile SÜREKLİ senkron tutulması gereken, kırılgan bir
       // bakım yükü olurdu — bilerek kapsam DIŞI bırakıldı (bkz. CLAUDE.md).
       match /state/{stateDoc} {
-        allow read, write: if isOwner() && stateDoc != 'coinState';
+        allow read, write: if isOwner()
+          && stateDoc != 'coinState'
+          && stateDoc != 'subscriptionState';
       }
     }
 
