@@ -322,7 +322,7 @@ class _GoalTrackingScreenState extends State<GoalTrackingScreen>
           ],
         ),
         const SizedBox(height: 20),
-        const BannerAdSlot(),
+        BannerAdSlot(isActive: widget.isActive),
         const SizedBox(height: 12),
         for (final goal in goals) ...[
           GoalCard(

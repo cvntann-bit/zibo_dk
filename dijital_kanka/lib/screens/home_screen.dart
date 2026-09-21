@@ -435,9 +435,17 @@ class _HomeScreenState extends State<HomeScreen>
         // kaydırılabilir alan ile sabit kart satırının TAM SINIRINA
         // yerleştirildi — ekran boyu ne olursa olsun her zaman aynı yerde
         // durur (yukarısı küçülür/büyür, aşağısı hiç kımıldamaz).
-        const Padding(
-          padding: EdgeInsets.only(top: 12, bottom: 4),
-          child: BannerAdSlot(),
+        Padding(
+          padding: const EdgeInsets.only(top: 12, bottom: 4),
+          // `isHomeTabActive` ile — bkz. `BannerAdSlot.isActive`
+          // dokümantasyonu: `IndexedStack` bu sekmeyi görünmezken de monte
+          // tutuyor, bu yüzden yalnızca GERÇEKTEN seçiliyken bir platform
+          // view kurulmalı (aksi halde Hedefler sekmesiyle paylaşılan
+          // Appodeal banner görünümünü "çalabilir").
+          child: ValueListenableBuilder<bool>(
+            valueListenable: isHomeTabActive,
+            builder: (context, active, _) => BannerAdSlot(isActive: active),
+          ),
         ),
         Padding(
           padding: const EdgeInsets.fromLTRB(24, 16, 24, 44),
