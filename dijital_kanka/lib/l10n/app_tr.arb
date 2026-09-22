@@ -41,6 +41,53 @@
   "@historyLimitCardButton": {
     "description": "Aynı yükseltme kartındaki buton metni — dokununca paywall ekranı açılır"
   },
+  "streakFreezeOfferTitle": "Serini Kaybetme!",
+  "@streakFreezeOfferTitle": {
+    "description": "Kullanıcı tam 1 gün kaçırıp uygulamayı açtığında çıkan Streak Freeze teklif diyaloğunun başlığı"
+  },
+  "streakFreezeOfferBody": "{streak} günlük serin kırılmak üzere! Streak Freeze kullanarak koruyabilirsin.",
+  "@streakFreezeOfferBody": {
+    "description": "Streak Freeze teklif diyaloğunun gövde metni",
+    "placeholders": {
+      "streak": {
+        "type": "int"
+      }
+    }
+  },
+  "streakFreezeOfferFreeButton": "Ücretsiz Kullan ({remaining}/{quota} kaldı)",
+  "@streakFreezeOfferFreeButton": {
+    "description": "Pro/Pro+ kullanıcının aylık ücretsiz Streak Freeze hakkını kullanma butonu",
+    "placeholders": {
+      "remaining": {
+        "type": "int"
+      },
+      "quota": {
+        "type": "int"
+      }
+    }
+  },
+  "streakFreezeOfferCoinButton": "{cost} ZC ile Kullan",
+  "@streakFreezeOfferCoinButton": {
+    "description": "Ücretsiz hak yokken (veya free kullanıcıdaysa) coin ile Streak Freeze satın alma butonu",
+    "placeholders": {
+      "cost": {
+        "type": "int"
+      }
+    }
+  },
+  "streakFreezeOfferDeclineButton": "Vazgeç",
+  "@streakFreezeOfferDeclineButton": {
+    "description": "Streak Freeze teklifini reddetme butonu — seri normal şekilde sıfırlanır"
+  },
+  "streakFreezeRepairedMessage": "Serin kurtarıldı! {streak} gün üst üste devam ediyor.",
+  "@streakFreezeRepairedMessage": {
+    "description": "Streak Freeze başarıyla uygulandıktan sonra gösterilen onay mesajı",
+    "placeholders": {
+      "streak": {
+        "type": "int"
+      }
+    }
+  },
   "ziboImagePlaceholder": "Zibo",
   "@ziboImagePlaceholder": {
     "description": "Zibo görseli için erişilebilirlik (ekran okuyucu) etiketi"

@@ -714,18 +714,12 @@ class DijitalKankaApp extends StatelessWidget {
         ),
         ChangeNotifierProvider(create: (_) => AppThemeProvider(uid: uid)),
         // 2026 yeni özellik — Rozet Sistemi (bkz. CLAUDE.md "Rozet Sistemi"
-        // bölümü). `AppStreakProvider`, GoalsProvider'ın per-goal 7 günlük
-        // döngüsünden BAĞIMSIZ, "uygulamayı her gün açma" serisini tutuyor —
-        // güvenlik-kritik olduğu için diğer "güne bağlı" provider'larla AYNI
-        // gerekçeyle `TrustedTimeProvider.now()`'u kullanıyor. `BadgeProvider`
-        // kazanılan rozetleri tutuyor, ikisi de `BadgeCoordinator` tarafından
-        // (bkz. `RootScreen`) DIŞARIDAN dinleniyor.
-        ChangeNotifierProvider(
-          create: (context) => AppStreakProvider(
-            now: _trustedNow(context),
-            uid: uid,
-          ),
-        ),
+        // bölümü). `BadgeProvider` kazanılan rozetleri tutuyor —
+        // `BadgeCoordinator` tarafından (bkz. `RootScreen`) DIŞARIDAN
+        // dinleniyor. `AppStreakProvider`'ın kendisi ("uygulamayı her gün
+        // açma" serisi) artık AŞAĞIDA, `SubscriptionProvider`'dan SONRA
+        // kuruluyor (Faz 4 / B3 — `isPro`/`isProPlus` closure'larına ihtiyacı
+        // var, `CoinProvider` ile AYNI gerekçe).
         ChangeNotifierProvider(create: (_) => BadgeProvider(uid: uid)),
         // Gizli/Eğlenceli Rozetler ("Gece Kuşu"/"Erken Kuş") — BİLEREK
         // `AppStreakProvider`'ın AKSİNE `TrustedTimeProvider` VERİLMİYOR,
@@ -788,6 +782,20 @@ class DijitalKankaApp extends StatelessWidget {
               isProPlus: () => subscription.isProPlus,
               now: _trustedNow(context),
               onXpEarned: (amount) => xp.addXp(amount),
+            );
+          },
+        ),
+        // Faz 4 (B3) — aylık ücretsiz Streak Freeze hakkı `isPro`/`isProPlus`
+        // gerektirdiği için `SubscriptionProvider`'dan SONRA, `CoinProvider`
+        // ile AYNI closure-çözme desenle kuruluyor.
+        ChangeNotifierProvider(
+          create: (context) {
+            final subscription = context.read<SubscriptionProvider>();
+            return AppStreakProvider(
+              now: _trustedNow(context),
+              uid: uid,
+              isPro: () => subscription.isPro,
+              isProPlus: () => subscription.isProPlus,
             );
           },
         ),

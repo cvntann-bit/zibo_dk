@@ -7,6 +7,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../data/legal_texts.dart';
 import '../l10n/app_localizations.dart';
+import '../providers/app_streak_provider.dart';
 import '../providers/auth_link_provider.dart';
 import '../providers/locale_provider.dart';
 import '../models/subscription_tier.dart';
@@ -976,6 +977,16 @@ class _SubscriptionDebugPanel extends StatelessWidget {
                       .read<SubscriptionProvider>()
                       .debugSetTier(SubscriptionTier.proPlus),
                   child: const Text('Pro+ yap'),
+                ),
+                // Faz 4 (B3) — `AppStreakProvider.isStreakAtRisk`
+                // senaryosunu (StreakFreezeOfferDialog) `TrustedTimeProvider`ın
+                // saat-manipülasyonu korumasını atlayarak GERÇEK cihazda test
+                // edebilmek için (bkz. `debugSimulateMissedDay` dokümantasyonu).
+                OutlinedButton(
+                  onPressed: () => context
+                      .read<AppStreakProvider>()
+                      .debugSimulateMissedDay(),
+                  child: const Text('1 gün kaçırılmış say'),
                 ),
               ],
             ),

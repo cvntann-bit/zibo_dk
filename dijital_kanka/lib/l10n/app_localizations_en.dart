@@ -39,6 +39,32 @@ class AppLocalizationsEn extends AppLocalizations {
   String get historyLimitCardButton => 'Upgrade to Pro';
 
   @override
+  String get streakFreezeOfferTitle => 'Don\'t lose your streak!';
+
+  @override
+  String streakFreezeOfferBody(int streak) {
+    return 'Your $streak-day streak is about to break! You can protect it with a Streak Freeze.';
+  }
+
+  @override
+  String streakFreezeOfferFreeButton(int remaining, int quota) {
+    return 'Use for free ($remaining/$quota left)';
+  }
+
+  @override
+  String streakFreezeOfferCoinButton(int cost) {
+    return 'Use for $cost ZC';
+  }
+
+  @override
+  String get streakFreezeOfferDeclineButton => 'No thanks';
+
+  @override
+  String streakFreezeRepairedMessage(int streak) {
+    return 'Streak saved! You\'re now at $streak days in a row.';
+  }
+
+  @override
   String get ziboImagePlaceholder => 'Zibo';
 
   @override

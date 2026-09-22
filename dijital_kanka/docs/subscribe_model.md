@@ -68,7 +68,8 @@ fallbackPrice`'ta sabit/görsel yer tutucu olarak da tutuluyor):
 | Check-in coin ödülü 1,5x/2x (B1) | ✅ Uygulandı — `CoinProvider.earnDailyLoginReward()`, `isPro`/`isProPlus` callback'leri (`lib/main.dart`), bonus etiketi `CoinBalanceWidget` (`coinProBonusLabel`/`coinProPlusBonusLabel`) |
 | Şans Çarkı reklamsız + ekstra çevirme (B4) | ✅ Uygulandı — `CoinProvider.watchAdAndSpinWheel()` (`isPro` ise reklam atlanır) + `maxDailyWheelSpins` instance getter'ı (Pro/Pro+ +1 hak). Çark ekranındaki "Reklam İzle ve Çevir" görseli (`zibo_cark_frame.png`) HENÜZ güncellenmedi — Pro'da da aynı görünüyor, davranış doğru çalışıyor |
 | Modüllerde sınırsız geçmiş (D1) | ✅ Uygulandı — Şükran/Ruh Hali/Manifest ekranları `isPro` değilse listeyi son 30 güne filtreliyor (veri SİLİNMİYOR), gizli kayıt varsa ortak `HistoryLimitUpsellCard` (`lib/widgets/history_limit_upsell_card.dart`) gösteriliyor |
-| Ayda 1/3 ücretsiz Streak Freeze | ⏳ Yalnızca paywall'da METİN |
+| Ayda 1/3 ücretsiz Streak Freeze (B3) | ✅ Uygulandı — Streak Freeze mekaniği SIFIRDAN yazıldı (kodda hiç yoktu, yalnızca fiyat sabiti vardı). "Kaçırılan günü tamir et" modeli: `AppStreakProvider.isStreakAtRisk` + `StreakFreezeOfferDialog` (`lib/widgets/streak_freeze_offer_dialog.dart`), `RootScreen._recordAppStreakOpen()`. Aylık kota `freeStreakFreezesUsedThisMonth`/`freeStreakFreezeResetDate` (`appStreakState` dokümanı) |
+| Bildirim saati kişiselleştirme (E1) | ⏳ Yalnızca paywall'da METİN — planlandı, onay bekliyor |
 | Diğer Pro+'a özel perk'ler (kostüm/tema, profil rozeti, filigran, trend grafiği, Para&Birikim analizi, bildirim sesi) | ⏳ Yalnızca paywall'da METİN |
 
 ## Paywall ekranı (`lib/screens/paywall_screen.dart`)

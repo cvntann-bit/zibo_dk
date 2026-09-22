@@ -585,6 +585,63 @@ void main() {
     },
   );
 
+  testWidgets(
+    'Faz 4 (B3): TAM 1 gün kaçırılınca Streak Freeze teklifi çıkar; '
+    'reddedilirse seri normal şekilde 1e sıfırlanır',
+    (WidgetTester tester) async {
+      var currentDate = DateTime(2026, 1, 5);
+      await tester.pumpWidget(_buildAppWithClock(() => currentDate));
+      await tester.pumpAndSettle();
+
+      final streakProvider = Provider.of<AppStreakProvider>(
+        tester.element(find.byType(RootScreen)),
+        listen: false,
+      );
+      expect(streakProvider.currentStreak, 1); // soğuk başlangıçta kaydedildi
+
+      // 6 Ocak hiç açılmadı; uygulama 7 Ocak'ta öne geliyor.
+      currentDate = currentDate.add(const Duration(days: 2));
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+      await tester.pumpAndSettle();
+
+      expect(find.text('Serini Kaybetme!'), findsOneWidget);
+
+      await tester.tap(find.text('Vazgeç'));
+      await tester.pumpAndSettle();
+
+      expect(streakProvider.currentStreak, 1); // 1 gün kaçırıldığı için sıfırlandı
+    },
+  );
+
+  testWidgets(
+    'Faz 4 (B3): 80 ZC ile Streak Freeze kullanılırsa seri KIRILMADAN devam eder',
+    (WidgetTester tester) async {
+      var currentDate = DateTime(2026, 1, 5);
+      await tester.pumpWidget(_buildAppWithClock(() => currentDate));
+      await tester.pumpAndSettle();
+
+      final rootElement = tester.element(find.byType(RootScreen));
+      final streakProvider = Provider.of<AppStreakProvider>(
+        rootElement,
+        listen: false,
+      );
+      final coinProvider = Provider.of<CoinProvider>(rootElement, listen: false);
+      coinProvider.earnBadgeReward(100, 'test');
+
+      currentDate = currentDate.add(const Duration(days: 2));
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+      await tester.pumpAndSettle();
+
+      expect(find.text('80 ZC ile Kullan'), findsOneWidget);
+      await tester.tap(find.text('80 ZC ile Kullan'));
+      await tester.pumpAndSettle();
+      await _dismissInfoDialogIfShown(tester);
+
+      expect(streakProvider.currentStreak, 2); // 1'den KIRILMADAN 2'ye çıktı
+      expect(coinProvider.balance, 20); // 100 - 80
+    },
+  );
+
   testWidgets('Yeni hedef eklenebilir', (WidgetTester tester) async {
     await _pumpPastOnboarding(tester, const DijitalKankaApp());
 

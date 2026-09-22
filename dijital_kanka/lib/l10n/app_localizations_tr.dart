@@ -39,6 +39,32 @@ class AppLocalizationsTr extends AppLocalizations {
   String get historyLimitCardButton => 'Pro\'ya Geç';
 
   @override
+  String get streakFreezeOfferTitle => 'Serini Kaybetme!';
+
+  @override
+  String streakFreezeOfferBody(int streak) {
+    return '$streak günlük serin kırılmak üzere! Streak Freeze kullanarak koruyabilirsin.';
+  }
+
+  @override
+  String streakFreezeOfferFreeButton(int remaining, int quota) {
+    return 'Ücretsiz Kullan ($remaining/$quota kaldı)';
+  }
+
+  @override
+  String streakFreezeOfferCoinButton(int cost) {
+    return '$cost ZC ile Kullan';
+  }
+
+  @override
+  String get streakFreezeOfferDeclineButton => 'Vazgeç';
+
+  @override
+  String streakFreezeRepairedMessage(int streak) {
+    return 'Serin kurtarıldı! $streak gün üst üste devam ediyor.';
+  }
+
+  @override
   String get ziboImagePlaceholder => 'Zibo';
 
   @override

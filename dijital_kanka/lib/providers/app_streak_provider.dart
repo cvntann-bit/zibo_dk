@@ -25,7 +25,11 @@ class AppStreakProvider extends ChangeNotifier {
     String? uid,
     FirebaseFirestore? firestore,
     DateTime Function()? now,
+    bool Function() isPro = _alwaysFalse,
+    bool Function() isProPlus = _alwaysFalse,
   }) : _now = now ?? DateTime.now,
+       _isPro = isPro,
+       _isProPlus = isProPlus,
        _store = CloudStateStore(
          prefsKey: _prefsKey,
          uid: uid,
@@ -34,14 +38,31 @@ class AppStreakProvider extends ChangeNotifier {
     _loadFromPrefs();
   }
 
+  static bool _alwaysFalse() => false;
+
   static const _prefsKey = 'appStreakState';
   final DateTime Function() _now;
   final CloudStateStore _store;
+
+  /// **Faz 4 (B3) — Zibo Pro/Pro+ perk "aylık ücretsiz Streak Freeze".**
+  /// `CoinProvider`'daki AYNI enjekte edilebilir callback deseni —
+  /// `main.dart`'ta `SubscriptionProvider.isPro`/`isProPlus`'a bağlanır.
+  /// Yalnızca [freeStreakFreezeQuota]'yı belirlemek için kullanılır.
+  final bool Function() _isPro;
+  final bool Function() _isProPlus;
 
   DateTime? _lastOpenDate;
   int _currentStreak = 0;
   int _totalDaysOpened = 0;
   bool _isReady = false;
+
+  /// Bu ay şimdiye kadar kullanılan ücretsiz Streak Freeze sayısı — bkz.
+  /// [remainingFreeStreakFreezes]/[_maybeResetMonthlyFreezeQuota].
+  int _freeStreakFreezesUsedThisMonth = 0;
+
+  /// Bir sonraki aylık sıfırlama tarihi — `null` ise henüz hiç
+  /// ilklendirilmemiş (kullanıcı hiç Freeze kullanmadı/kontrol etmedi).
+  DateTime? _freeStreakFreezeResetDate;
 
   bool get isReady => _isReady;
   int get currentStreak => _currentStreak;
@@ -70,6 +91,15 @@ class AppStreakProvider extends ChangeNotifier {
         // bilinçli sadeleştirme, `WaterProvider`'daki eski-format-göçü
         // dersleriyle AYNI ruhta).
         _totalDaysOpened = data['totalDaysOpened'] as int? ?? _currentStreak;
+        // Faz 4 (B3) — bu iki alan eklenmeden ÖNCEki kayıtlı veride yok;
+        // bulunmazsa sırasıyla 0/`null`'a düşülür (`_maybeResetMonthlyFreezeQuota`
+        // ilk erişimde `null` resetDate'i normal şekilde ilklendirir).
+        _freeStreakFreezesUsedThisMonth =
+            data['freeStreakFreezesUsedThisMonth'] as int? ?? 0;
+        final rawResetDate = data['freeStreakFreezeResetDate'] as String?;
+        _freeStreakFreezeResetDate = rawResetDate != null
+            ? DateTime.tryParse(rawResetDate)
+            : null;
       }
     } catch (_) {
       // Bozuk/okunamayan veri — sıfırdan başla, diğer provider'lardaki AYNI
@@ -84,7 +114,98 @@ class AppStreakProvider extends ChangeNotifier {
       'lastOpenDate': _lastOpenDate?.toIso8601String(),
       'currentStreak': _currentStreak,
       'totalDaysOpened': _totalDaysOpened,
+      'freeStreakFreezesUsedThisMonth': _freeStreakFreezesUsedThisMonth,
+      'freeStreakFreezeResetDate': _freeStreakFreezeResetDate?.toIso8601String(),
     });
+  }
+
+  /// **Faz 4 (B3)** — kullanıcı TAM 1 gün kaçırdıysa (streak kırılmak
+  /// ÜZEREYSE) `true`. `RootScreen`, [recordOpenForToday] çağırmadan ÖNCE
+  /// bunu kontrol edip `true` ise `StreakFreezeOfferDialog`'u gösterir.
+  /// Yalnızca TEK günlük boşluk kapsanır (Streak Freeze bir seferde yalnızca
+  /// 1 günü tamir eder, Duolingo'daki AYNI kısıt) — 2+ gün kaçırıldıysa
+  /// `false` döner, seri normal şekilde sıfırlanır.
+  bool get isStreakAtRisk {
+    if (_lastOpenDate == null || _currentStreak == 0) return false;
+    final today = _dateOnly(_now());
+    final missedDay = today.subtract(const Duration(days: 2));
+    return _dateOnly(_lastOpenDate!) == missedDay;
+  }
+
+  /// Pro ayda 1, Pro+ ayda 3 ücretsiz Streak Freeze hakkı (`_isPro`,
+  /// Pro+'ta da `true` döndüğü için ÖNCE `_isProPlus` kontrol edilir).
+  int get freeStreakFreezeQuota => _isProPlus() ? 3 : (_isPro() ? 1 : 0);
+
+  /// Bu ay kalan ücretsiz Streak Freeze hakkı — `StreakFreezeOfferDialog`
+  /// bunu "X/Y ücretsiz hakkın kaldı" olarak gösterir.
+  int get remainingFreeStreakFreezes {
+    _maybeResetMonthlyFreezeQuota();
+    final quota = freeStreakFreezeQuota;
+    return (quota - _freeStreakFreezesUsedThisMonth).clamp(0, quota);
+  }
+
+  /// `resetDate` geçtiyse sayacı sıfırlar ve `resetDate`'i (kullanıcının
+  /// aylarca uygulamayı açmamış olma ihtimaline karşı `while` ile
+  /// ZİNCİRLEME) bir sonraki aya ilerletir — her zaman ÖNCEKİ `resetDate`'e
+  /// göre ilerletildiği için (`_now()`'a göre DEĞİL) tarih sürüklenmesi
+  /// birikmez. Güvenlik-kritik bir sınır DEĞİL (kullanıcının kendi isteği:
+  /// basit bir tarih kontrolü yeterli) — `TrustedTimeProvider` şart değil,
+  /// ama `_now` zaten öyle enjekte ediliyor (bkz. sınıf dokümantasyonu).
+  void _maybeResetMonthlyFreezeQuota() {
+    final now = _now();
+    if (_freeStreakFreezeResetDate == null) {
+      _freeStreakFreezeResetDate = DateTime(now.year, now.month + 1, now.day);
+      return;
+    }
+    var changed = false;
+    while (!now.isBefore(_freeStreakFreezeResetDate!)) {
+      _freeStreakFreezesUsedThisMonth = 0;
+      _freeStreakFreezeResetDate = DateTime(
+        _freeStreakFreezeResetDate!.year,
+        _freeStreakFreezeResetDate!.month + 1,
+        _freeStreakFreezeResetDate!.day,
+      );
+      changed = true;
+    }
+    if (changed) {
+      notifyListeners();
+      _save();
+    }
+  }
+
+  /// Streak Freeze kullanarak kaçırılan TEK günü tamir eder — [isStreakAtRisk]
+  /// `true` iken, `StreakFreezeOfferDialog`'un kabul akışından çağrılır.
+  /// Kaçırılan günü açılmış GİBİ SAYMAZ (yalnızca [_currentStreak] kırılmadan
+  /// devam eder) — [_totalDaysOpened] yalnızca BUGÜN için +1 artar, kullanıcı
+  /// dün GERÇEKTEN açmadığı için o gün için ikinci kez sayılmaz.
+  /// [usedFreeQuota] `true` ise aylık ücretsiz sayaç +1 artırılır; `false`
+  /// ise (çağıran taraf `CoinProvider.spendStreakFreeze()`'i ZATEN başarıyla
+  /// çağırdığı için) sayaca dokunulmaz.
+  void repairMissedDayWithFreeze({required bool usedFreeQuota}) {
+    final today = _dateOnly(_now());
+    _currentStreak += 1;
+    _totalDaysOpened += 1;
+    _lastOpenDate = today;
+    if (usedFreeQuota) {
+      _maybeResetMonthlyFreezeQuota();
+      _freeStreakFreezesUsedThisMonth += 1;
+    }
+    notifyListeners();
+    _save();
+  }
+
+  /// **Yalnızca debug'dan çağrılır** (bkz. `settings_screen.dart`
+  /// `_SubscriptionDebugPanel` ile AYNI gerekçe/desen) — [isStreakAtRisk]
+  /// senaryosunu GERÇEK cihazda test edebilmek için `_lastOpenDate`'i
+  /// "bugün - 2 gün"e çeker. `TrustedTimeProvider`'ın cihaz-saati-manipülasyonu
+  /// korumasından ETKİLENMEZ (doğrudan alanı değiştirir, saat okumaz) —
+  /// bilerek yalnızca `kDebugMode`de çağrılabilir bir test kolaylığı.
+  void debugSimulateMissedDay() {
+    if (!kDebugMode) return;
+    if (_currentStreak == 0) _currentStreak = 3;
+    _lastOpenDate = _dateOnly(_now()).subtract(const Duration(days: 2));
+    notifyListeners();
+    _save();
   }
 
   /// Uygulama her açıldığında/öne geldiğinde çağrılır (`RootScreen.initState`

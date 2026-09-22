@@ -42,6 +42,7 @@ import '../widgets/dot_grid_background.dart';
 import '../widgets/main_bottom_bar.dart';
 import '../widgets/modules_menu_sheet.dart';
 import '../widgets/sticker_style.dart';
+import '../widgets/streak_freeze_offer_dialog.dart';
 import '../widgets/wheel_trigger_button.dart';
 import '../widgets/z_floating_button.dart';
 import '../widgets/zibo_share_sheet.dart';
@@ -205,7 +206,7 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
     // taşınarak (ilk frame TAMAMLANDIKTAN sonra) düzeltildi.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      context.read<AppStreakProvider>().recordOpenForToday();
+      unawaited(_recordAppStreakOpen());
       // Gizli/Eğlenceli Rozetler — "Gece Kuşu"/"Erken Kuş" sayaçları,
       // `recordOpenForToday()` ile AYNI tetikleme anı (soğuk başlangıç).
       context.read<HiddenBadgeProvider>().recordOpenForCurrentTime();
@@ -250,6 +251,29 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
     // `DailyRewardsProvider.reconcileForToday()` ile AYNI "reconcile-on-
     // resume" felsefesi, bkz. `ReferralProvider.refresh()`'in dokümantasyonu.
     context.read<ReferralProvider>().refresh();
+  }
+
+  /// **Faz 4 (B3)** — `AppStreakProvider.recordOpenForToday()`'in HER İKİ
+  /// çağrı noktasının (`initState` postFrame + `didChangeAppLifecycleState`
+  /// resumed) ORTAK sarmalayıcısı. `isStreakAtRisk` (tam 1 gün kaçırılmış)
+  /// ise ÖNCE `StreakFreezeOfferDialog`'u gösterir; kullanıcı ne seçerse
+  /// seçsin (kabul/vazgeç) SONRA `recordOpenForToday()` koşulsuz çağrılır —
+  /// kabul edilmişse `_lastOpenDate` zaten bugüne eşit olduğu için no-op'a
+  /// düşer, vazgeçilmişse normal sıfırlama mantığı çalışır. `BadgeCoordinator`
+  /// `AppStreakProvider`'ı DIŞARIDAN dinlediği için (bkz. `initState`) bu
+  /// gecikmeli güncellemeyi otomatik yakalar, burada ekstra bir şey
+  /// GEREKMEZ.
+  Future<void> _recordAppStreakOpen() async {
+    final streak = context.read<AppStreakProvider>();
+    if (streak.isStreakAtRisk) {
+      await showDialog<void>(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => const StreakFreezeOfferDialog(),
+      );
+    }
+    if (!mounted) return;
+    streak.recordOpenForToday();
   }
 
   /// bkz. `utils/founder_badge_reconcile.dart`'taki `maybeClaimFounderBadge`
@@ -341,7 +365,7 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
       // Rozet Sistemi — uygulama her öne geldiğinde (yalnızca soğuk
       // başlangıçta DEĞİL) "bugün açıldı" kaydı tazeleniyor, aynı
       // `touchLastActive`/`syncAll` tetikleyicisiyle.
-      context.read<AppStreakProvider>().recordOpenForToday();
+      unawaited(_recordAppStreakOpen());
       // Gizli/Eğlenceli Rozetler — "Gece Kuşu"/"Erken Kuş" sayaçları,
       // uygulama HER öne geldiğinde (yalnızca soğuk başlangıçta DEĞİL)
       // cihazın O ANKİ saatine göre tazeleniyor — kullanıcı gece yarısı

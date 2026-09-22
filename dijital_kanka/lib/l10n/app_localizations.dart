@@ -154,6 +154,42 @@ abstract class AppLocalizations {
   /// **'Pro\'ya Geç'**
   String get historyLimitCardButton;
 
+  /// Kullanıcı tam 1 gün kaçırıp uygulamayı açtığında çıkan Streak Freeze teklif diyaloğunun başlığı
+  ///
+  /// In tr, this message translates to:
+  /// **'Serini Kaybetme!'**
+  String get streakFreezeOfferTitle;
+
+  /// Streak Freeze teklif diyaloğunun gövde metni
+  ///
+  /// In tr, this message translates to:
+  /// **'{streak} günlük serin kırılmak üzere! Streak Freeze kullanarak koruyabilirsin.'**
+  String streakFreezeOfferBody(int streak);
+
+  /// Pro/Pro+ kullanıcının aylık ücretsiz Streak Freeze hakkını kullanma butonu
+  ///
+  /// In tr, this message translates to:
+  /// **'Ücretsiz Kullan ({remaining}/{quota} kaldı)'**
+  String streakFreezeOfferFreeButton(int remaining, int quota);
+
+  /// Ücretsiz hak yokken (veya free kullanıcıdaysa) coin ile Streak Freeze satın alma butonu
+  ///
+  /// In tr, this message translates to:
+  /// **'{cost} ZC ile Kullan'**
+  String streakFreezeOfferCoinButton(int cost);
+
+  /// Streak Freeze teklifini reddetme butonu — seri normal şekilde sıfırlanır
+  ///
+  /// In tr, this message translates to:
+  /// **'Vazgeç'**
+  String get streakFreezeOfferDeclineButton;
+
+  /// Streak Freeze başarıyla uygulandıktan sonra gösterilen onay mesajı
+  ///
+  /// In tr, this message translates to:
+  /// **'Serin kurtarıldı! {streak} gün üst üste devam ediyor.'**
+  String streakFreezeRepairedMessage(int streak);
+
   /// Zibo görseli için erişilebilirlik (ekran okuyucu) etiketi
   ///
   /// In tr, this message translates to:
