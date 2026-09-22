@@ -301,6 +301,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get moneyTrendGranularityDaily => 'Daily';
 
   @override
+  String get moodTrendTitle => 'Mood Trend';
+
+  @override
+  String get moodTrendGranularityWeek => 'Weekly';
+
+  @override
+  String get moodTrendGranularityMonth => 'Monthly';
+
+  @override
+  String get moodTrendEmptyState => 'Not enough mood entries yet for a trend.';
+
+  @override
   String get moneyTrendGranularityWeekly => 'Weekly';
 
   @override

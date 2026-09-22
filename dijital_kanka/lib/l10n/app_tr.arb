@@ -406,6 +406,22 @@
   "@moneyTrendGranularityDaily": {
     "description": "Trend grafiğinin sağ üstündeki periyot seçicide 'günlük' seçeneği"
   },
+  "moodTrendTitle": "Ruh Hali Trendi",
+  "@moodTrendTitle": {
+    "description": "Zibo Pro+'a özel detaylı Ruh Hali trend grafiğinin başlığı (Profil > İstatistiklerim)"
+  },
+  "moodTrendGranularityWeek": "Haftalık",
+  "@moodTrendGranularityWeek": {
+    "description": "Ruh Hali trend grafiğinin periyot seçicisinde 'son 7 gün' seçeneği"
+  },
+  "moodTrendGranularityMonth": "Aylık",
+  "@moodTrendGranularityMonth": {
+    "description": "Ruh Hali trend grafiğinin periyot seçicisinde 'son 30 gün' seçeneği"
+  },
+  "moodTrendEmptyState": "Trend grafiği için henüz yeterli ruh hali kaydı yok.",
+  "@moodTrendEmptyState": {
+    "description": "Seçili periyotta hiç Ruh Hali kaydı yokken gösterilen metin"
+  },
   "moneyTrendGranularityWeekly": "Haftalık",
   "@moneyTrendGranularityWeekly": {
     "description": "Trend grafiğinin sağ üstündeki periyot seçicide 'haftalık' seçeneği"

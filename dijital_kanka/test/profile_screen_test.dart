@@ -13,6 +13,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:dijital_kanka/data/founder_badge.dart';
 import 'package:dijital_kanka/l10n/app_localizations.dart';
+import 'package:dijital_kanka/models/mood.dart';
+import 'package:dijital_kanka/models/subscription_tier.dart';
 import 'package:dijital_kanka/providers/auth_link_provider.dart';
 import 'package:dijital_kanka/providers/coin_provider.dart';
 import 'package:dijital_kanka/providers/costume_provider.dart';
@@ -24,6 +26,7 @@ import 'package:dijital_kanka/providers/gratitude_provider.dart';
 import 'package:dijital_kanka/providers/instagram_follow_provider.dart';
 import 'package:dijital_kanka/providers/manifest_provider.dart';
 import 'package:dijital_kanka/providers/money_provider.dart';
+import 'package:dijital_kanka/providers/mood_provider.dart';
 import 'package:dijital_kanka/providers/profile_provider.dart';
 import 'package:dijital_kanka/providers/profile_stats_archive_provider.dart';
 import 'package:dijital_kanka/providers/referral_provider.dart';
@@ -77,6 +80,7 @@ Widget _buildTestApp(PhotoPickerService photoService) {
       ChangeNotifierProvider(create: (_) => ReferralProvider()),
       ChangeNotifierProvider(create: (_) => SubscriptionProvider()),
       ChangeNotifierProvider(create: (_) => MoneyProvider()),
+      ChangeNotifierProvider(create: (_) => MoodProvider()),
       ChangeNotifierProvider(create: (_) => GratitudeProvider()),
       ChangeNotifierProvider(create: (_) => ManifestProvider()),
       ChangeNotifierProvider(create: (_) => GoalsProvider()),
@@ -199,6 +203,27 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byTooltip('Kurucu Üye'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'Faz 5 (D2): Ruh Hali detaylı trend grafiği yalnızca Pro+ '
+    'kullanıcıya görünür',
+    (tester) async {
+      await tester.pumpWidget(_buildTestApp(_FakePhotoService()));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Ruh Hali Trendi'), findsNothing);
+
+      final element = tester.element(find.byType(ProfileScreen));
+      Provider.of<MoodProvider>(element, listen: false).setTodayMood(Mood.happy);
+      await Provider.of<SubscriptionProvider>(
+        element,
+        listen: false,
+      ).debugSetTier(SubscriptionTier.proPlus);
+      await tester.pumpAndSettle();
+
+      expect(find.text('Ruh Hali Trendi'), findsOneWidget);
     },
   );
 }

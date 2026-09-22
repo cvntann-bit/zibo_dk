@@ -18,6 +18,7 @@ import '../providers/gratitude_provider.dart';
 import '../providers/instagram_follow_provider.dart';
 import '../providers/manifest_provider.dart';
 import '../providers/money_provider.dart';
+import '../providers/mood_provider.dart';
 import '../providers/profile_provider.dart';
 import '../providers/profile_stats_archive_provider.dart';
 import '../providers/referral_provider.dart';
@@ -38,6 +39,7 @@ import '../utils/profile_stats.dart';
 import '../widgets/costume_closet_preview.dart';
 import '../widgets/founder_badge_promo_card.dart';
 import '../widgets/instagram_follow_card.dart';
+import '../widgets/mood_trend_detail_chart.dart';
 import '../widgets/profile_stat_card.dart';
 import '../widgets/sticker_style.dart';
 import '../widgets/zibo_share_sheet.dart';
@@ -207,6 +209,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
 
     final money = context.watch<MoneyProvider>();
+    // Faz 5 (D2) — Zibo Pro+'a özel detaylı Ruh Hali trend grafiği.
+    final mood = context.watch<MoodProvider>();
     final gratitude = context.watch<GratitudeProvider>();
     final manifest = context.watch<ManifestProvider>();
     final goals = context.watch<GoalsProvider>();
@@ -443,6 +447,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ],
               ),
             ),
+            // Faz 5 (D2) — Zibo Pro+'a özel, EK bir kart (mevcut 4
+            // `ProfileStatCard`'a Ruh Hali hiç dahil değildi, HİÇBİRİNE
+            // dokunulmuyor). Pro/free hiçbir şey görmez.
+            if (subscription.isProPlus) ...[
+              StickerCard(
+                child: MoodTrendDetailChart(entries: mood.entries),
+              ),
+              const SizedBox(height: 12),
+            ],
             StickerRowCard(
               emoji: '📅',
               title: l10n.monthlyStatsRowTitle,

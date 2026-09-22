@@ -74,7 +74,8 @@ fallbackPrice`'ta sabit/görsel yer tutucu olarak da tutuluyor):
 | Paylaşım kartında Pro filigranı (C3) | ✅ Uygulandı — `ZiboShareCard`, Pro VE Pro+ ikisi de görüyor (`pro_watermark.png`, PLACEHOLDER). NOT: paywall metni bunu Pro+'a ÖZEL diye listeliyor, kullanıcının bu turki isteğiyle çelişiyor — ayrı görev olarak flaglendi |
 | Aylık rotasyonlu Pro+'a özel kostüm/tema (C1) | 🚫 Kullanıcı isteğiyle KAPSAM DIŞI — uygulanmayacak |
 | Pro+'a özel bildirim sesleri (E2) | ✅ Uygulandı — 3 YENİ Android bildirim kanalı (`push_notifications_proplus_1/2/3`, immutable kanal-sesi kısıtı yüzünden), `PushNotificationProvider.proPlusSoundChoice` (`users/{uid}` kök alanı, Pattern B), `notification-scripts/src/common.js`'in `sendToUser`'ı tek yerden çözüyor. Ses dosyaları PLACEHOLDER (bu makinede mp3 encoder yok — `zibo_notification.wav`'ın kopyası, `.mp3` adıyla, GERÇEK mp3 kodlaması DEĞİL). Sunucu tarafı yalnızca kod incelemesiyle doğrulandı, Node.js bu makinede yok |
-| Diğer Pro+'a özel perk'ler (trend grafiği, Para&Birikim analizi) | ⏳ Sırada — Faz 5 devam ediyor |
+| Ruh Hali detaylı trend grafiği (D2) | ✅ Uygulandı — `MoodTrendDetailChart` (`fl_chart`, `MoneyTrendChart` ile AYNI desen), Profil > İstatistiklerim'e EK bir kart olarak (mevcut 4 karta dokunulmadı, Ruh Hali onlara hiç dahil değildi). `Mood.score` (1-5) extension'ı eklendi |
+| Para & Birikim gelişmiş analiz (D3) | ⏳ Sırada — Faz 5 devam ediyor |
 
 ## Paywall ekranı (`lib/screens/paywall_screen.dart`)
 

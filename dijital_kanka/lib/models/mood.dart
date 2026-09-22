@@ -32,6 +32,14 @@ extension MoodEnergy on Mood {
   bool get isHighEnergy => index >= 3;
 }
 
+/// **Faz 5 (D2)** — Zibo Pro+'ın detaylı trend grafiği için sayısal skor
+/// (1-5, `veryUnhappy`=1 … `veryHappy`=5). [MoodLowness]/[MoodEnergy]'nin
+/// zaten `index`'i örtük bir skor gibi kullanmasıyla AYNI ruhta, yalnızca
+/// adı konmuş/genel amaçlı bir versiyonu.
+extension MoodScore on Mood {
+  int get score => index + 1;
+}
+
 /// Günlük Ruh Hali Takibi'nde tek bir güne ait kayıt.
 class MoodEntry {
   const MoodEntry({required this.date, required this.mood, this.note});

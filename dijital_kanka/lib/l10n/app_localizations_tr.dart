@@ -301,6 +301,19 @@ class AppLocalizationsTr extends AppLocalizations {
   String get moneyTrendGranularityDaily => 'Günlük';
 
   @override
+  String get moodTrendTitle => 'Ruh Hali Trendi';
+
+  @override
+  String get moodTrendGranularityWeek => 'Haftalık';
+
+  @override
+  String get moodTrendGranularityMonth => 'Aylık';
+
+  @override
+  String get moodTrendEmptyState =>
+      'Trend grafiği için henüz yeterli ruh hali kaydı yok.';
+
+  @override
   String get moneyTrendGranularityWeekly => 'Haftalık';
 
   @override

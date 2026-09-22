@@ -604,6 +604,30 @@ abstract class AppLocalizations {
   /// **'Günlük'**
   String get moneyTrendGranularityDaily;
 
+  /// Zibo Pro+'a özel detaylı Ruh Hali trend grafiğinin başlığı (Profil > İstatistiklerim)
+  ///
+  /// In tr, this message translates to:
+  /// **'Ruh Hali Trendi'**
+  String get moodTrendTitle;
+
+  /// Ruh Hali trend grafiğinin periyot seçicisinde 'son 7 gün' seçeneği
+  ///
+  /// In tr, this message translates to:
+  /// **'Haftalık'**
+  String get moodTrendGranularityWeek;
+
+  /// Ruh Hali trend grafiğinin periyot seçicisinde 'son 30 gün' seçeneği
+  ///
+  /// In tr, this message translates to:
+  /// **'Aylık'**
+  String get moodTrendGranularityMonth;
+
+  /// Seçili periyotta hiç Ruh Hali kaydı yokken gösterilen metin
+  ///
+  /// In tr, this message translates to:
+  /// **'Trend grafiği için henüz yeterli ruh hali kaydı yok.'**
+  String get moodTrendEmptyState;
+
   /// Trend grafiğinin sağ üstündeki periyot seçicide 'haftalık' seçeneği
   ///
   /// In tr, this message translates to:
