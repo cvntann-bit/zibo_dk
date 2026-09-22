@@ -22,6 +22,7 @@ import 'package:dijital_kanka/providers/home_quick_widgets_provider.dart';
 import 'package:dijital_kanka/providers/mood_provider.dart';
 import 'package:dijital_kanka/providers/profile_provider.dart';
 import 'package:dijital_kanka/providers/sound_effects_provider.dart';
+import 'package:dijital_kanka/providers/subscription_provider.dart';
 import 'package:dijital_kanka/providers/theme_provider.dart';
 import 'package:dijital_kanka/providers/water_provider.dart';
 import 'package:dijital_kanka/providers/zibo_pose_provider.dart';
@@ -74,6 +75,7 @@ Widget _buildTestApp(SoundEffectsService soundEffectsService) {
       ChangeNotifierProvider(create: (_) => MoodProvider()),
       ChangeNotifierProvider(create: (_) => ProfileProvider()),
       ChangeNotifierProvider(create: (_) => SoundEffectsProvider()),
+      ChangeNotifierProvider(create: (_) => SubscriptionProvider()),
       ChangeNotifierProvider(create: (_) => ThemeProvider()),
       ChangeNotifierProvider(create: (_) => WaterProvider()),
       ChangeNotifierProvider(create: (_) => ZiboPoseProvider()),

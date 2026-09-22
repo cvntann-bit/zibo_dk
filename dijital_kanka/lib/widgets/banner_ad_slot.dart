@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:stack_appodeal_flutter/stack_appodeal_flutter.dart';
 
 import '../providers/ad_free_provider.dart';
+import '../providers/subscription_provider.dart';
 import '../utils/banner_ad_reload_signal.dart';
 
 /// Kalıcı (sürekli gösterilen) 320×50 banner reklam — Ana Sayfa ve diğer
@@ -11,8 +12,11 @@ import '../utils/banner_ad_reload_signal.dart';
 /// "smart banner"ının aksine tam ekran genişliğine YAYILMIYOR) — bu yüzden
 /// [Center] ile ortalanıyor, aksi halde sol kenara yapışık kalırdı.
 ///
-/// **"Reklamsız Zibo" satın alanlarda TAMAMEN gizleniyor** — `AdFreeProvider`
-/// ile aynı guard.
+/// **"Reklamsız Zibo" satın alanlarda VE Zibo Pro/Pro+ abonelerinde TAMAMEN
+/// gizleniyor** — `AdFreeProvider.isAdFree` VEYA `SubscriptionProvider.isPro`
+/// (Faz 3 / A1, 2026-09-22 — "reklamsız deneyim" perk'i yalnızca interstitial'ı
+/// değil banner'ı da kapsıyor, aksi halde abone kullanıcı tek seferlik
+/// paketten daha kısıtlı bir "reklamsız" deneyim yaşardı).
 ///
 /// **2026-09-22 düzeltmesi #2 — [isActive] neden gerekli:** `AppodealBanner`
 /// widget'ının native tarafı (paket kaynağı `AppodealAdView.kt`) Appodeal'ın
@@ -58,7 +62,8 @@ class BannerAdSlot extends StatelessWidget {
     if (!isActive) return const SizedBox.shrink();
 
     final isAdFree = context.watch<AdFreeProvider>().isAdFree;
-    if (isAdFree) return const SizedBox.shrink();
+    final isPro = context.watch<SubscriptionProvider>().isPro;
+    if (isAdFree || isPro) return const SizedBox.shrink();
 
     // `AppodealBanner` kendi kendini `adSize`'a göre boyutlandırıyor (paket
     // içinde zaten bir `SizedBox.fromSize` ile sarılı) — burada yalnızca

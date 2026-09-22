@@ -18,6 +18,7 @@ import 'package:dijital_kanka/providers/costume_provider.dart';
 import 'package:dijital_kanka/providers/goals_provider.dart';
 import 'package:dijital_kanka/providers/profile_provider.dart';
 import 'package:dijital_kanka/providers/sound_effects_provider.dart';
+import 'package:dijital_kanka/providers/subscription_provider.dart';
 import 'package:dijital_kanka/providers/zibo_pose_provider.dart';
 import 'package:dijital_kanka/screens/goal_tracking_screen.dart';
 import 'package:dijital_kanka/services/ad_service.dart';
@@ -82,6 +83,7 @@ Widget _buildTestApp(
       ),
       ChangeNotifierProvider(create: (_) => ProfileProvider()),
       ChangeNotifierProvider(create: (_) => SoundEffectsProvider()),
+      ChangeNotifierProvider(create: (_) => SubscriptionProvider()),
       ChangeNotifierProvider(create: (_) => ZiboPoseProvider()),
       if (adService != null)
         ChangeNotifierProvider(create: (_) => CoinProvider(adService: adService)),

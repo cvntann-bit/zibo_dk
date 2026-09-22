@@ -64,7 +64,7 @@ fallbackPrice`'ta sabit/görsel yer tutucu olarak da tutuluyor):
 
 | Perk | Durum |
 |---|---|
-| Zorunlu reklamlar kalkar (A1) | ✅ Uygulandı — `CoinProvider.showInterstitialAd()`, `isPro` callback (`lib/main.dart`) |
+| Zorunlu reklamlar kalkar (A1) | ✅ Uygulandı — `CoinProvider.showInterstitialAd()` (interstitial) VE `BannerAdSlot` (banner) `isPro` kontrolü. Şans Çarkı'nın "çevirmek için reklam izle" zorunluluğu bu kapsamda DEĞİL, ayrı perk → bkz. B4. |
 | Check-in coin ödülü 1,5x/2x (B1) | ⏳ Yalnızca paywall'da METİN |
 | Şans Çarkı reklamsız + ekstra çevirme (B4) | ⏳ Yalnızca paywall'da METİN |
 | Modüllerde sınırsız geçmiş (D1) | ⏳ Yalnızca paywall'da METİN |
