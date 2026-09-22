@@ -776,6 +776,7 @@ class DijitalKankaApp extends StatelessWidget {
             final soundEffects = context.read<SoundEffectsProvider>();
             final xp = context.read<XpProvider>();
             final adFree = context.read<AdFreeProvider>();
+            final subscription = context.read<SubscriptionProvider>();
             return CoinProvider(
               uid: uid,
               adService: adService ?? AppodealAdService(),
@@ -783,6 +784,7 @@ class DijitalKankaApp extends StatelessWidget {
               soundEffectsService: AudioPlayersSoundEffectsService(),
               isSoundEnabled: () => soundEffects.enabled,
               isAdFree: () => adFree.isAdFree,
+              isPro: () => subscription.isPro,
               now: _trustedNow(context),
               onXpEarned: (amount) => xp.addXp(amount),
             );

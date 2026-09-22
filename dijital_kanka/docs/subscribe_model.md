@@ -64,7 +64,12 @@ fallbackPrice`'ta sabit/görsel yer tutucu olarak da tutuluyor):
 
 | Perk | Durum |
 |---|---|
-| (Hepsi) | ⏳ Yalnızca paywall'da METİN olarak var, davranış BAĞLANMADI |
+| Zorunlu reklamlar kalkar (A1) | ✅ Uygulandı — `CoinProvider.showInterstitialAd()`, `isPro` callback (`lib/main.dart`) |
+| Check-in coin ödülü 1,5x/2x (B1) | ⏳ Yalnızca paywall'da METİN |
+| Şans Çarkı reklamsız + ekstra çevirme (B4) | ⏳ Yalnızca paywall'da METİN |
+| Modüllerde sınırsız geçmiş (D1) | ⏳ Yalnızca paywall'da METİN |
+| Ayda 1/3 ücretsiz Streak Freeze | ⏳ Yalnızca paywall'da METİN |
+| Diğer Pro+'a özel perk'ler (kostüm/tema, profil rozeti, filigran, trend grafiği, Para&Birikim analizi, bildirim sesi) | ⏳ Yalnızca paywall'da METİN |
 
 ## Paywall ekranı (`lib/screens/paywall_screen.dart`)
 

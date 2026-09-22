@@ -33,6 +33,7 @@ class CoinProvider extends ChangeNotifier {
     DateTime Function() now = DateTime.now,
     bool Function() isSoundEnabled = _alwaysTrue,
     bool Function() isAdFree = _alwaysFalse,
+    bool Function() isPro = _alwaysFalse,
     void Function(int amount)? onXpEarned,
   }) : _adService = adService,
        _purchaseService = purchaseService,
@@ -41,6 +42,7 @@ class CoinProvider extends ChangeNotifier {
        _now = now,
        _isSoundEnabled = isSoundEnabled,
        _isAdFree = isAdFree,
+       _isPro = isPro,
        _onXpEarned = onXpEarned ?? _noopXpEarned,
        _store = CloudStateStore(prefsKey: _prefsKey, uid: uid) {
     _loadFromPrefs();
@@ -89,6 +91,16 @@ class CoinProvider extends ChangeNotifier {
   /// BURADA yapmak, her çağrı sitesine ayrı ayrı eklemek yerine, YENİ bir
   /// interstitial çağrısının bu kontrolü unutma riskini ORTADAN KALDIRIYOR.
   final bool Function() _isAdFree;
+
+  /// **Faz 3 (2026-09-22) — Zibo Pro/Pro+ perk "A1: reklamsız deneyim".**
+  /// `_isAdFree`/`_isSoundEnabled` ile AYNI enjekte edilebilir callback
+  /// deseni — `main.dart`'ta `SubscriptionProvider.isPro`'ya bağlanır
+  /// (Pro VE Pro+ ikisi de `true`, bkz. `SubscriptionProvider.isPro`'nun
+  /// kendi tanımı). Yalnızca [showInterstitialAd]'ı etkiler — ödüllü
+  /// (rewarded) reklamlar ([earnAdWatch]/[watchAdAndSpinWheel]) kullanıcının
+  /// KENDİ isteğiyle izlediği reklamlar olduğu için BİLEREK bu kontrolün
+  /// DIŞINDA, `_isAdFree` ile AYNI gerekçe.
+  final bool Function() _isPro;
 
   /// 2026 yeni özellik — Level/XP Sistemi. `main.dart`'ta
   /// `XpProvider.addXp`'ye bağlanır (`_isSoundEnabled` ile AYNI enjekte
@@ -564,8 +576,10 @@ class CoinProvider extends ChangeNotifier {
   /// yüklenmeye/gösterilmeye çalışılmadan `false` döner — ödüllü (rewarded)
   /// reklamlar (kullanıcının KENDİ isteğiyle izlediği, coin karşılığı)
   /// BİLEREK bu kontrolün DIŞINDA, yalnızca zorunlu/geçiş reklamı kapanıyor.
+  /// **Faz 3 — Zibo Pro/Pro+ perk "A1"**: Pro/Pro+ kullanıcılar ([_isPro])
+  /// için de AYNI şekilde reklam hiç yüklenmeye çalışılmadan `false` döner.
   Future<bool> showInterstitialAd() {
-    if (_isAdFree()) return Future.value(false);
+    if (_isAdFree() || _isPro()) return Future.value(false);
     return _adService.showInterstitialAd();
   }
 
