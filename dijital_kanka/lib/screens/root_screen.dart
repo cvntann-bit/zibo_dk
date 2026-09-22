@@ -24,6 +24,7 @@ import '../providers/mood_provider.dart';
 import '../providers/notification_provider.dart';
 import '../providers/profile_provider.dart';
 import '../providers/referral_provider.dart';
+import '../providers/subscription_provider.dart';
 import '../providers/trusted_time_provider.dart';
 import '../providers/water_provider.dart';
 import '../services/badge_coordinator.dart';
@@ -511,9 +512,22 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
     isHomeTabActive.value = index == 0;
   }
 
+  /// **Faz 5** — AppBar'daki Zibo logosu, kullanıcının aboneliğine göre
+  /// kendi "Pro"/"Pro+" rozetini taşıyan bir varyanta değişir (Zibo Pro(+)
+  /// materyalleri, sabit-genişlik DEĞİL — her logo kendi doğal en/boy
+  /// oranıyla `height: 28` sabitine göre ölçekleniyor).
+  String _ziboLogoAsset(SubscriptionProvider subscription) {
+    if (subscription.isProPlus) return 'assets/images/zibo_pro_plus_logo.webp';
+    if (subscription.isPro) return 'assets/images/zibo_pro_logo.webp';
+    return 'assets/images/zibo_logo_new.webp';
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    // Faz 5 — Zibo Pro/Pro+ kullanıcıya AppBar'da özel logo (bkz.
+    // `_ziboLogoAsset`).
+    final subscription = context.watch<SubscriptionProvider>();
 
     // GoalTrackingScreen, yalnızca gerçekten görünen sekme olduğunda
     // otomatik söz döndürme zamanlayıcısını çalıştırabilmek için hangi
@@ -530,7 +544,7 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
       appBar: AppBar(
         title: Semantics(
           label: l10n.homeAppBarTitle,
-          child: Image.asset('assets/images/zibo_logo_new.webp', height: 28),
+          child: Image.asset(_ziboLogoAsset(subscription), height: 28),
         ),
         centerTitle: false,
         actions: [

@@ -263,7 +263,47 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     width: 112,
                     height: 112,
                     child: Stack(
+                      // Faz 5 (C2) — halka biçimindeki Pro/Pro+ çerçevesi
+                      // 112x112 kutunun DIŞINA taşıyor (bkz. altta), varsayılan
+                      // `Clip.hardEdge` bunu keserdi.
+                      clipBehavior: Clip.none,
                       children: [
+                        // Faz 5 (C2) — Zibo Pro/Pro+ çerçevesi: avatarın
+                        // TAMAMINI saran bir halka (`pro_profile_frame.webp`/
+                        // `proplus_profile_frame.webp`, Zibo Pro(+) materyalleri).
+                        // 194x194 (112'nin ~1,73 katı) — halkanın iç deliği
+                        // GERÇEK dosyada ölçülüp (bkz. commit mesajı) 112px
+                        // avatarla TAM örtüşecek şekilde hesaplandı. Diğer
+                        // köşe rozetlerinden ÖNCE (Stack sırası = boyama
+                        // sırası) eklendi ki onlar üstte net kalsın.
+                        // `IgnorePointer` — halka fotoğraf değiştirme dokunma
+                        // alanını ENGELLEMESİN.
+                        if (subscription.isProPlus)
+                          Positioned(
+                            left: -41,
+                            top: -41,
+                            right: -41,
+                            bottom: -41,
+                            child: IgnorePointer(
+                              child: Image.asset(
+                                'assets/images/proplus_profile_frame.webp',
+                                semanticLabel: l10n.subscriptionBadgeProPlusTooltip,
+                              ),
+                            ),
+                          )
+                        else if (subscription.isPro)
+                          Positioned(
+                            left: -41,
+                            top: -41,
+                            right: -41,
+                            bottom: -41,
+                            child: IgnorePointer(
+                              child: Image.asset(
+                                'assets/images/pro_profile_frame.webp',
+                                semanticLabel: l10n.subscriptionBadgeProTooltip,
+                              ),
+                            ),
+                          ),
                         DecoratedBox(
                           decoration: stickerCircleDecoration(
                             fill: colorScheme.surfaceContainerLowest,
@@ -348,37 +388,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 width: 28,
                                 height: 28,
                                 semanticLabel: l10n.founderBadgeTooltip,
-                              ),
-                            ),
-                          ),
-                        // Faz 5 (C2) — Kurucu Üye rozetiyle AYNI desen,
-                        // boş kalan tek köşede (sol-alt). Free kullanıcıda
-                        // HİÇBİR şey eklenmez.
-                        if (subscription.isProPlus)
-                          Positioned(
-                            left: 0,
-                            bottom: 0,
-                            child: Tooltip(
-                              message: l10n.subscriptionBadgeProPlusTooltip,
-                              child: Image.asset(
-                                'assets/images/proplus_badge.png',
-                                width: 28,
-                                height: 28,
-                                semanticLabel: l10n.subscriptionBadgeProPlusTooltip,
-                              ),
-                            ),
-                          )
-                        else if (subscription.isPro)
-                          Positioned(
-                            left: 0,
-                            bottom: 0,
-                            child: Tooltip(
-                              message: l10n.subscriptionBadgeProTooltip,
-                              child: Image.asset(
-                                'assets/images/pro_badge.png',
-                                width: 28,
-                                height: 28,
-                                semanticLabel: l10n.subscriptionBadgeProTooltip,
                               ),
                             ),
                           ),
