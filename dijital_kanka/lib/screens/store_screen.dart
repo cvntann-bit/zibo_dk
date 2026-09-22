@@ -293,11 +293,11 @@ class _CostumesSection extends StatelessWidget {
       // olunan kartlardan (görsel + isim + rozet) daha uzun — en uzun durumu
       // taşırmayacak kadar düşük bir oran seçildi. "Çizgi Roman Çıkartması"
       // restyle'ında kart içeriği (görsel yüksekliği, dolgu, yazı boyutları)
-      // küçüldüğü için oran 0.56'dan 0.8'e ÇIKARILDI — aksi halde kartların
-      // altında büyük boş alan kalıyordu (bkz. CLAUDE.md'de bu projede
-      // tekrarlayan "yeni içerik ekleyince childAspectRatio overflow'u"
-      // dersi — bu kez TERSİ, boşluk sorunu).
-      childAspectRatio: 0.8,
+      // küçüldüğü için oran 0.56'dan 0.8'e ÇIKARILMIŞTI, ama gerçek cihazda
+      // (384dp genişlik, 2 sütun → ~166dp hücre) kilitli kart içeriği bu
+      // oranda ~14px taşıyordu (`_ThemesGrid`'in AYNI gerekçeyle 0.72'ye
+      // düşürülmesiyle AYNI kalıp) — 0.7'ye düşürüldü.
+      childAspectRatio: 0.7,
       children: [
         for (final costume in costumes) CostumeCard(costume: costume),
       ],

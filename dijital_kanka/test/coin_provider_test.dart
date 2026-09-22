@@ -342,7 +342,7 @@ void main() {
       () async {
         final provider = CoinProvider(now: () => DateTime(2026, 8, 17));
 
-        for (var i = 0; i < CoinProvider.maxDailyWheelSpins; i++) {
+        for (var i = 0; i < provider.maxDailyWheelSpins; i++) {
           expect(provider.canSpinWheelToday, isTrue);
           final prize = await provider.watchAdAndSpinWheel();
           expect(prize, isNotNull);
@@ -396,7 +396,7 @@ void main() {
         expect(prize, isNull);
         expect(
           provider.remainingWheelSpinsToday,
-          CoinProvider.maxDailyWheelSpins,
+          provider.maxDailyWheelSpins,
         );
       },
     );
@@ -408,7 +408,7 @@ void main() {
         var currentDate = DateTime(2026, 8, 17);
         final provider = CoinProvider(now: () => currentDate);
 
-        for (var i = 0; i < CoinProvider.maxDailyWheelSpins; i++) {
+        for (var i = 0; i < provider.maxDailyWheelSpins; i++) {
           await provider.watchAdAndSpinWheel();
         }
         for (var i = 0; i < CoinProvider.maxDailyAdWatches; i++) {
@@ -423,7 +423,7 @@ void main() {
         expect(provider.canWatchAdForCoinsToday, isTrue);
         expect(
           provider.remainingWheelSpinsToday,
-          CoinProvider.maxDailyWheelSpins,
+          provider.maxDailyWheelSpins,
         );
         expect(
           provider.remainingAdWatchesToday,
@@ -450,7 +450,7 @@ void main() {
 
         expect(
           secondLaunch.remainingWheelSpinsToday,
-          CoinProvider.maxDailyWheelSpins - 1,
+          secondLaunch.maxDailyWheelSpins - 1,
         );
         expect(
           secondLaunch.remainingAdWatchesToday,

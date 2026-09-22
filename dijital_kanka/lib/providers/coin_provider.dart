@@ -60,10 +60,6 @@ class CoinProvider extends ChangeNotifier {
   static const _prefsKey = 'coinState';
   static const _maxStoredTransactions = 200;
 
-  /// Şans Çarkı'nın reklam karşılığı günlük çevirme hakkı (bkz.
-  /// [remainingWheelSpinsToday]).
-  static const int maxDailyWheelSpins = 3;
-
   /// Mağaza'nın "Ücretsiz" kartındaki reklam karşılığı günlük coin kazanma
   /// hakkı (bkz. [remainingAdWatchesToday]).
   static const int maxDailyAdWatches = 2;
@@ -163,6 +159,11 @@ class CoinProvider extends ChangeNotifier {
   /// [wheelSpinsUsedToday] ile AYNI "gün değiştiyse 0" mantığı.
   int get adWatchesUsedToday =>
       _dailyLimitsDate == _dateOnly(_now()) ? _adWatchesUsedToday : 0;
+
+  /// Şans Çarkı'nın günlük çevirme hakkı (bkz. [remainingWheelSpinsToday]).
+  /// **Faz 3 (B4)** — Zibo Pro/Pro+ kullanıcılar normal 3 hakkın üstüne +1
+  /// alır (Pro/Pro+ arasında ayrım YOK, [_isPro] Pro+'ta da `true` döner).
+  int get maxDailyWheelSpins => 3 + (_isPro() ? 1 : 0);
 
   /// Bugün kalan Şans Çarkı hakkı (0-[maxDailyWheelSpins]) — arayüz bunu
   /// hem "kalan X hak" göstermek hem de 0 olduğunda butonu/kartı pasif
@@ -508,9 +509,13 @@ class CoinProvider extends ChangeNotifier {
   /// hiç GÖSTERMEDEN `null` döner — `earnAdWatch()`'taki AYNI ek güvenlik
   /// katmanı gerekçesi (arayüz zaten [canSpinWheelToday] `false`yken
   /// çevirme dokunma alanını devre dışı bırakıyor, bkz. `WheelScreen`).
+  ///
+  /// **Faz 3 (B4)** — Zibo Pro/Pro+ kullanıcılar ([_isPro]) reklam izleme
+  /// adımını ATLAR, doğrudan çevirir; free kullanıcılar aynen reklam
+  /// izlemek zorunda.
   Future<WheelPrize?> watchAdAndSpinWheel() async {
     if (!canSpinWheelToday) return null;
-    final rewarded = await _adService.showRewardedAd();
+    final rewarded = _isPro() || await _adService.showRewardedAd();
     if (!rewarded) return null;
     _consumeDailyLimit(isWheelSpin: true);
     final prize = pickWeightedPrize(wheelPrizes, _random);
