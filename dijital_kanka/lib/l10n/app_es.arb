@@ -4,6 +4,8 @@
   "homeAppBarTitle": "Zibo",
   "coinBalanceLabel": "{count} Zibo Coin",
   "insufficientCoins": "Zibo Coin insuficientes",
+  "coinProBonusLabel": "¡Bono Pro x1,5!",
+  "coinProPlusBonusLabel": "¡Bono Pro+ x2!",
   "ziboImagePlaceholder": "Zibo",
   "tapZiboHint": "Toca a Zibo para una nueva frase",
   "tabHome": "Inicio",

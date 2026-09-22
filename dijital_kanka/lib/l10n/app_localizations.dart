@@ -124,6 +124,18 @@ abstract class AppLocalizations {
   /// **'Yetersiz Zibo Coin'**
   String get insufficientCoins;
 
+  /// Zibo Pro abonesi günlük giriş ödülünü çarpanla aldığında, bakiye rozetindeki uçan '+N' efektinin altında beliren küçük etiket
+  ///
+  /// In tr, this message translates to:
+  /// **'1,5x Pro bonusu!'**
+  String get coinProBonusLabel;
+
+  /// Zibo Pro+ abonesi günlük giriş ödülünü çarpanla aldığında, bakiye rozetindeki uçan '+N' efektinin altında beliren küçük etiket
+  ///
+  /// In tr, this message translates to:
+  /// **'2x Pro+ bonusu!'**
+  String get coinProPlusBonusLabel;
+
   /// Zibo görseli için erişilebilirlik (ekran okuyucu) etiketi
   ///
   /// In tr, this message translates to:

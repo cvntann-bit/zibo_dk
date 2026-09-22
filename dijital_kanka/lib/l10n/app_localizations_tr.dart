@@ -23,6 +23,12 @@ class AppLocalizationsTr extends AppLocalizations {
   String get insufficientCoins => 'Yetersiz Zibo Coin';
 
   @override
+  String get coinProBonusLabel => '1,5x Pro bonusu!';
+
+  @override
+  String get coinProPlusBonusLabel => '2x Pro+ bonusu!';
+
+  @override
   String get ziboImagePlaceholder => 'Zibo';
 
   @override

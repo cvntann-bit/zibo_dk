@@ -29,6 +29,7 @@ class _CoinBalanceWidgetState extends State<CoinBalanceWidget>
 
   CoinProvider? _provider;
   int? _floatingDelta;
+  int? _floatingBonusPercent;
   int _displayedBalance = 0;
 
   @override
@@ -70,7 +71,10 @@ class _CoinBalanceWidgetState extends State<CoinBalanceWidget>
   void _onCoinsChanged() {
     final delta = _provider!.lastDelta;
     if (delta == null || !mounted) return;
-    setState(() => _floatingDelta = delta);
+    setState(() {
+      _floatingDelta = delta;
+      _floatingBonusPercent = _provider!.lastEarnBonusMultiplierPercent;
+    });
     _floatController.forward(from: 0);
   }
 
@@ -132,20 +136,54 @@ class _CoinBalanceWidgetState extends State<CoinBalanceWidget>
                     child: child,
                   ),
                 ),
-                child: Text(
-                  _floatingDelta! >= 0
-                      ? '+${_floatingDelta!}'
-                      : '${_floatingDelta!}',
-                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: _floatingDelta! >= 0
-                        ? Colors.green.shade700
-                        : colorScheme.error,
-                  ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      _floatingDelta! >= 0
+                          ? '+${_floatingDelta!}'
+                          : '${_floatingDelta!}',
+                      style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: _floatingDelta! >= 0
+                            ? Colors.green.shade700
+                            : colorScheme.error,
+                      ),
+                    ),
+                    // Faz 3 (B1) — Pro/Pro+ çarpanı uygulandıysa "+N"
+                    // efektinin altında küçük bir bonus etiketi.
+                    if (_floatingBonusPercent == 200)
+                      _BonusLabel(text: l10n.coinProPlusBonusLabel)
+                    else if (_floatingBonusPercent == 150)
+                      _BonusLabel(text: l10n.coinProBonusLabel),
+                  ],
                 ),
               ),
             ),
         ],
+      ),
+    );
+  }
+}
+
+/// Faz 3 (B1) — floating "+N" efektinin altında beliren küçük Pro/Pro+
+/// bonus etiketi (ör. "2x Pro+ bonusu!").
+class _BonusLabel extends StatelessWidget {
+  const _BonusLabel({required this.text});
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 2),
+      child: Text(
+        text,
+        textAlign: TextAlign.center,
+        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+          fontWeight: FontWeight.bold,
+          color: Colors.amber.shade800,
+        ),
       ),
     );
   }

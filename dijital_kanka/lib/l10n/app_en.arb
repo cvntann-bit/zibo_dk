@@ -4,6 +4,8 @@
   "homeAppBarTitle": "Zibo",
   "coinBalanceLabel": "{count} Zibo Coin",
   "insufficientCoins": "Not enough Zibo Coin",
+  "coinProBonusLabel": "1.5x Pro bonus!",
+  "coinProPlusBonusLabel": "2x Pro+ bonus!",
   "ziboImagePlaceholder": "Zibo",
   "tapZiboHint": "Tap Zibo for a new saying",
   "tabHome": "Home",

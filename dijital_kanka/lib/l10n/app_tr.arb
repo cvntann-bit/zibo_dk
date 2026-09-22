@@ -21,6 +21,14 @@
   "@insufficientCoins": {
     "description": "Kullanıcı bakiyesi yetmeyen bir harcama denediğinde gösterilen uyarı metni"
   },
+  "coinProBonusLabel": "1,5x Pro bonusu!",
+  "@coinProBonusLabel": {
+    "description": "Zibo Pro abonesi günlük giriş ödülünü çarpanla aldığında, bakiye rozetindeki uçan '+N' efektinin altında beliren küçük etiket"
+  },
+  "coinProPlusBonusLabel": "2x Pro+ bonusu!",
+  "@coinProPlusBonusLabel": {
+    "description": "Zibo Pro+ abonesi günlük giriş ödülünü çarpanla aldığında, bakiye rozetindeki uçan '+N' efektinin altında beliren küçük etiket"
+  },
   "ziboImagePlaceholder": "Zibo",
   "@ziboImagePlaceholder": {
     "description": "Zibo görseli için erişilebilirlik (ekran okuyucu) etiketi"

@@ -785,6 +785,7 @@ class DijitalKankaApp extends StatelessWidget {
               isSoundEnabled: () => soundEffects.enabled,
               isAdFree: () => adFree.isAdFree,
               isPro: () => subscription.isPro,
+              isProPlus: () => subscription.isProPlus,
               now: _trustedNow(context),
               onXpEarned: (amount) => xp.addXp(amount),
             );

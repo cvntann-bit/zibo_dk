@@ -34,6 +34,7 @@ class CoinProvider extends ChangeNotifier {
     bool Function() isSoundEnabled = _alwaysTrue,
     bool Function() isAdFree = _alwaysFalse,
     bool Function() isPro = _alwaysFalse,
+    bool Function() isProPlus = _alwaysFalse,
     void Function(int amount)? onXpEarned,
   }) : _adService = adService,
        _purchaseService = purchaseService,
@@ -43,6 +44,7 @@ class CoinProvider extends ChangeNotifier {
        _isSoundEnabled = isSoundEnabled,
        _isAdFree = isAdFree,
        _isPro = isPro,
+       _isProPlus = isProPlus,
        _onXpEarned = onXpEarned ?? _noopXpEarned,
        _store = CloudStateStore(prefsKey: _prefsKey, uid: uid) {
     _loadFromPrefs();
@@ -101,6 +103,13 @@ class CoinProvider extends ChangeNotifier {
   /// KENDİ isteğiyle izlediği reklamlar olduğu için BİLEREK bu kontrolün
   /// DIŞINDA, `_isAdFree` ile AYNI gerekçe.
   final bool Function() _isPro;
+
+  /// **Faz 3 (2026-09-22) — Zibo Pro/Pro+ perk "B1: check-in coin
+  /// çarpanı".** `_isPro` ile AYNI enjekte edilebilir callback deseni —
+  /// `main.dart`'ta `SubscriptionProvider.isProPlus`'a bağlanır. Yalnızca
+  /// Pro+ kullanıcıları ayırt etmek için gerekli (`_isPro` Pro VE Pro+
+  /// ikisinde de `true` döner) — bkz. [earnDailyLoginReward].
+  final bool Function() _isProPlus;
 
   /// 2026 yeni özellik — Level/XP Sistemi. `main.dart`'ta
   /// `XpProvider.addXp`'ye bağlanır (`_isSoundEnabled` ile AYNI enjekte
@@ -208,6 +217,16 @@ class CoinProvider extends ChangeNotifier {
   /// metni gibi geçici efektler için kullanılır; her bildirimde tazelenir.
   int? get lastDelta =>
       _transactions.isEmpty ? null : _transactions.first.signedAmount;
+
+  /// **Faz 3 (B1)** — [earnDailyLoginReward] Pro/Pro+ çarpanı uyguladıysa
+  /// (150 = 1,5x Pro, 200 = 2x Pro+), o çarpanı taşır; `null` ise son
+  /// kazanma bir çarpan İÇERMEDİ. `lastDelta` ile AYNI "tek seferlik, en
+  /// son işlem" deseni — kalıcı DEĞİL, yalnızca `CoinBalanceWidget`'ın
+  /// floating "+N" efektinin altına küçük bir bonus etiketi eklemesi için.
+  /// Metni ÇÖZMEK (`AppLocalizations`) widget'ın işi — `CoinProvider` bir
+  /// widget olmadığı için `context`'e erişemiyor.
+  int? _lastEarnBonusMultiplierPercent;
+  int? get lastEarnBonusMultiplierPercent => _lastEarnBonusMultiplierPercent;
 
   /// Bkz. `ThemeProvider.isReady` dokümantasyonu — aynı gerekçe (AppBar'daki
   /// bakiye rakamının sıfırdan gerçek değere aniden "zıplamasını" önlemek).
@@ -327,7 +346,14 @@ class CoinProvider extends ChangeNotifier {
     String reason, {
     bool playRewardSound = true,
     bool awardXp = true,
+    int? bonusMultiplierPercent,
   }) {
+    // Faz 3 (B1) — HER kazanma çağrısında (bonus taşımayanlar DAHİL)
+    // koşulsuz güncellenir, aksi halde `earnDailyLoginReward`'ın bıraktığı
+    // değer sonraki alakasız bir kazanmada (ör. hedef tamamlama) da
+    // görünmeye devam eder. `lastDelta`'nın HER zaman en son işlemden
+    // taze hesaplanmasıyla AYNI gerekçe.
+    _lastEarnBonusMultiplierPercent = bonusMultiplierPercent;
     _balance += amount;
     _totalEarned += amount;
     _record(CoinTransactionType.earn, amount, reason);
@@ -443,8 +469,27 @@ class CoinProvider extends ChangeNotifier {
   /// metodun döndürdüğü miktar günden güne değiştiği için `CoinEconomy`'de
   /// tek bir sabit yerine `dailyLoginRewards` DİZİSİ var; miktar burada
   /// parametre olarak alınır).
-  void earnDailyLoginReward(int amount) =>
-      _earn(amount, 'Günlük giriş ödülü');
+  ///
+  /// **Faz 3 (B1)** — Zibo Pro 1,5x, Zibo Pro+ 2x çarpan uygular
+  /// ([_isProPlus] önce kontrol edilir, `_isPro` Pro+'ta da `true` döner).
+  /// Ondalık sonuç `.round()` ile tamsayıya yuvarlanır (ör. 5 ZC × 1,5 =
+  /// 7,5 → 8 ZC).
+  void earnDailyLoginReward(int amount) {
+    int finalAmount = amount;
+    int? bonusPercent;
+    if (_isProPlus()) {
+      finalAmount = (amount * 2).round();
+      bonusPercent = 200;
+    } else if (_isPro()) {
+      finalAmount = (amount * 1.5).round();
+      bonusPercent = 150;
+    }
+    _earn(
+      finalAmount,
+      'Günlük giriş ödülü',
+      bonusMultiplierPercent: bonusPercent,
+    );
+  }
 
   /// Rozet Sistemi: bir rozet kazanılıp "Ödülü Al" butonuna basıldığında
   /// çağrılır (bkz. `BadgeCelebrationOverlay`/`BadgeProvider.markClaimed`) —

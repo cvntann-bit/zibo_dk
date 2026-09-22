@@ -23,6 +23,12 @@ class AppLocalizationsEs extends AppLocalizations {
   String get insufficientCoins => 'Zibo Coin insuficientes';
 
   @override
+  String get coinProBonusLabel => '¡Bono Pro x1,5!';
+
+  @override
+  String get coinProPlusBonusLabel => '¡Bono Pro+ x2!';
+
+  @override
   String get ziboImagePlaceholder => 'Zibo';
 
   @override
