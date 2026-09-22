@@ -8,6 +8,7 @@ import '../data/founder_badge.dart';
 import '../l10n/app_localizations.dart';
 import '../models/bond_level.dart';
 import '../models/xp_level.dart';
+import '../providers/app_streak_provider.dart';
 import '../providers/auth_link_provider.dart';
 import '../providers/coin_provider.dart';
 import '../providers/costume_provider.dart';
@@ -214,6 +215,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final gratitude = context.watch<GratitudeProvider>();
     final manifest = context.watch<ManifestProvider>();
     final goals = context.watch<GoalsProvider>();
+    final appStreak = context.watch<AppStreakProvider>();
     final water = context.watch<WaterProvider>();
     final coin = context.watch<CoinProvider>();
     // 2026 yeni özellik — Level/XP Sistemi + Odak Sayacı (bkz. CLAUDE.md).
@@ -249,6 +251,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
       statsArchive.archiveIfMonthChanged(stats, now);
     });
 
+    // Faz 6 düzeltmesi — Pro/Pro+ halka çerçevesi eskiden 112x112 avatar
+    // kutusunun 41px DIŞINA taşıyordu (`Positioned(left:-41,...)` +
+    // `Clip.none`). Artık dış kutu, çerçeveyi TAM içine alacak büyüklükte
+    // (`_frameDiameter`) hesaplanıyor — hiçbir şey kendi kutusunun dışına
+    // taşmıyor, `Clip.none` gerekmiyor. Avatar çapı da (112 → 96) biraz
+    // küçültüldü.
+    const avatarDiameter = 96.0;
+    const frameDiameter = 168.0;
+    final hasFrame = subscription.isPro;
+    final avatarOuterSize = hasFrame ? frameDiameter : avatarDiameter;
+
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 24, 20, 32),
       children: [
@@ -260,30 +273,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   button: true,
                   excludeSemantics: true,
                   child: SizedBox(
-                    width: 112,
-                    height: 112,
+                    width: avatarOuterSize,
+                    height: avatarOuterSize,
                     child: Stack(
-                      // Faz 5 (C2) — halka biçimindeki Pro/Pro+ çerçevesi
-                      // 112x112 kutunun DIŞINA taşıyor (bkz. altta), varsayılan
-                      // `Clip.hardEdge` bunu keserdi.
-                      clipBehavior: Clip.none,
                       children: [
                         // Faz 5 (C2) — Zibo Pro/Pro+ çerçevesi: avatarın
                         // TAMAMINI saran bir halka (`pro_profile_frame.webp`/
-                        // `proplus_profile_frame.webp`, Zibo Pro(+) materyalleri).
-                        // 194x194 (112'nin ~1,73 katı) — halkanın iç deliği
-                        // GERÇEK dosyada ölçülüp (bkz. commit mesajı) 112px
-                        // avatarla TAM örtüşecek şekilde hesaplandı. Diğer
-                        // köşe rozetlerinden ÖNCE (Stack sırası = boyama
-                        // sırası) eklendi ki onlar üstte net kalsın.
+                        // `proplus_profile_frame.webp`, Zibo Pro(+)
+                        // materyalleri). `Positioned.fill` ile dış kutuyu
+                        // (`frameDiameter`) TAM dolduruyor — kutu halkayı
+                        // içerecek büyüklükte hesaplandığı için taşma YOK.
                         // `IgnorePointer` — halka fotoğraf değiştirme dokunma
                         // alanını ENGELLEMESİN.
                         if (subscription.isProPlus)
-                          Positioned(
-                            left: -41,
-                            top: -41,
-                            right: -41,
-                            bottom: -41,
+                          Positioned.fill(
                             child: IgnorePointer(
                               child: Image.asset(
                                 'assets/images/proplus_profile_frame.webp',
@@ -292,11 +295,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             ),
                           )
                         else if (subscription.isPro)
-                          Positioned(
-                            left: -41,
-                            top: -41,
-                            right: -41,
-                            bottom: -41,
+                          Positioned.fill(
                             child: IgnorePointer(
                               child: Image.asset(
                                 'assets/images/pro_profile_frame.webp',
@@ -304,93 +303,56 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               ),
                             ),
                           ),
-                        DecoratedBox(
-                          decoration: stickerCircleDecoration(
-                            fill: colorScheme.surfaceContainerLowest,
-                            borderWidth: 3,
-                            shadowOffset: const Offset(4, 4),
-                          ),
-                          child: CircleAvatar(
-                            radius: 56,
-                            backgroundColor: Colors.transparent,
-                            // **2026 bug düzeltmesi — Crashlytics'teki EN
-                            // BÜYÜK tekrarlayan hata (bkz.
-                            // `manifest_journal_screen.dart`'taki
-                            // `_SafeFileImage` dokümantasyonu — AYNI kök
-                            // neden, AYNI çözüm). Burada `errorBuilder` BİLE
-                            // YOKTU (`backgroundImage` bir `ImageProvider`,
-                            // `Image.file` widget'ı DEĞİL) — dosya var mı
-                            // diye ÖNCEDEN `existsSync()` ile kontrol edip
-                            // yoksa `person_rounded` ikonuna düşüyoruz, hiç
-                            // `FileImage` OLUŞTURMUYORUZ.
-                            backgroundImage: _hasReadablePhoto(profile.photoPath)
-                                ? FileImage(File(profile.photoPath!))
-                                : null,
-                            child: _hasReadablePhoto(profile.photoPath)
-                                ? null
-                                : Icon(
-                                    Icons.person_rounded,
-                                    size: 56,
-                                    color: colorScheme.onSurfaceVariant,
-                                  ),
-                          ),
-                        ),
-                        Positioned(
-                          right: 0,
-                          bottom: 0,
+                        Center(
                           child: DecoratedBox(
                             decoration: stickerCircleDecoration(
-                              fill: colorScheme.primary,
-                              borderWidth: 2.5,
-                              shadowOffset: Offset.zero,
+                              fill: colorScheme.surfaceContainerLowest,
+                              borderWidth: 3,
+                              shadowOffset: const Offset(4, 4),
                             ),
-                            child: SizedBox(
-                              width: 32,
-                              height: 32,
-                              child: Center(
-                                child: _isPicking
-                                    ? SizedBox(
-                                        width: 16,
-                                        height: 16,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2,
-                                          color: colorScheme.onPrimary,
-                                        ),
-                                      )
-                                    : Icon(
-                                        Icons.camera_alt_rounded,
-                                        size: 16,
-                                        color: colorScheme.onPrimary,
+                            child: CircleAvatar(
+                              radius: avatarDiameter / 2,
+                              backgroundColor: Colors.transparent,
+                              // **2026 bug düzeltmesi — Crashlytics'teki EN
+                              // BÜYÜK tekrarlayan hata (bkz.
+                              // `manifest_journal_screen.dart`'taki
+                              // `_SafeFileImage` dokümantasyonu — AYNI kök
+                              // neden, AYNI çözüm). Burada `errorBuilder`
+                              // BİLE YOKTU (`backgroundImage` bir
+                              // `ImageProvider`, `Image.file` widget'ı
+                              // DEĞİL) — dosya var mı diye ÖNCEDEN
+                              // `existsSync()` ile kontrol edip yoksa "+"
+                              // ikonuna düşüyoruz, hiç `FileImage`
+                              // OLUŞTURMUYORUZ.
+                              backgroundImage: _hasReadablePhoto(profile.photoPath)
+                                  ? FileImage(File(profile.photoPath!))
+                                  : null,
+                              // Faz 6 düzeltmesi — ayrı bir köşe
+                              // kamera-rozeti YERİNE: fotoğraf yoksa
+                              // avatarın TAM ortasında büyük bir "+"
+                              // ikonu (kullanıcının isteği), fotoğraf
+                              // eklenince o alan fotoğrafla değişir.
+                              // Yükleniyor durumu AYNI merkezi konumda
+                              // küçük bir döner gösterge.
+                              child: _isPicking
+                                  ? SizedBox(
+                                      width: 22,
+                                      height: 22,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2.5,
+                                        color: colorScheme.onSurfaceVariant,
                                       ),
-                              ),
+                                    )
+                                  : (_hasReadablePhoto(profile.photoPath)
+                                        ? null
+                                        : Icon(
+                                            Icons.add_rounded,
+                                            size: 40,
+                                            color: colorScheme.onSurfaceVariant,
+                                          )),
                             ),
                           ),
                         ),
-                        // 2026 yeni özellik — "Kurucu Üye" rozeti (bkz.
-                        // CLAUDE.md "Kurucu Üye" bölümü). Kullanıcının
-                        // "profilde bu rozeti gösteren küçük bir simge
-                        // olsun" isteği — tam bir `_ProfileLinkRow` DEĞİL,
-                        // fotoğrafın karşı köşesinde küçük bir rozet.
-                        // Sahiplik `CostumeProvider.isOwned` üzerinden
-                        // (bkz. yukarıdaki `isFounder`) TAMAMEN
-                        // istemci-dışı bir yoldan geliyor — yalnızca
-                        // `notification-scripts/src/grantFounderBadges.js`
-                        // (bir kerelik bakım betiği) tarafından
-                        // Firestore'a yazılabilir.
-                        if (isFounder)
-                          Positioned(
-                            left: 0,
-                            top: 0,
-                            child: Tooltip(
-                              message: l10n.founderBadgeTooltip,
-                              child: Image.asset(
-                                founderBadgeImageAsset,
-                                width: 28,
-                                height: 28,
-                                semanticLabel: l10n.founderBadgeTooltip,
-                              ),
-                            ),
-                          ),
                       ],
                     ),
                   ),
@@ -428,6 +390,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ),
             const SizedBox(height: 20),
+            if (isFounder) ...[
+              const _FounderBadgeBanner(),
+              const SizedBox(height: 12),
+            ],
             // 2026 yeni özellik — Level/XP Sistemi. Mevcut seviye + bir
             // sonraki seviyeye ne kadar kaldığını gösteren bir ilerleme
             // çubuğu (bkz. CLAUDE.md "Level/XP Sistemi" bölümü).
@@ -496,7 +462,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             StickerRowCard(
               emoji: '🔥',
               title: l10n.longestStreakScreenTitle,
-              subtitle: l10n.profileStreakRowSubtitle(goals.longestStreak),
+              subtitle: l10n.profileStreakRowSubtitle(appStreak.longestStreakEver),
               onTap: () => Navigator.of(context).push(
                 MaterialPageRoute(builder: (_) => const LongestStreakScreen()),
               ),
@@ -672,6 +638,66 @@ class _LevelProgressCard extends StatelessWidget {
                 fontSize: 11.5,
                 color: colorScheme.onSurfaceVariant,
               ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Faz 6 düzeltmesi — "Kurucu Üye" rozeti eskiden avatarın sol-üst köşesinde
+/// küçük bir simgeydi (kullanıcı bu konumdan memnun değildi). Profil
+/// başlığının hemen altına, ayrı bir vurgu şeridi olarak taşındı. Kurucu Üye
+/// BİLEREK `consistency_badges.dart`/Rozetler Galerisi'nin DIŞINDA (satılamaz
+/// bir pseudo-kostüm, bkz. `founder_badge.dart`) — bu yüzden Galeri'nin
+/// `ZiboBadgeDefinition` tabanlı kart sistemini kullanmak yerine kendi basit
+/// şeridini alıyor. Yalnızca `isFounder` iken görünür.
+class _FounderBadgeBanner extends StatelessWidget {
+  const _FounderBadgeBanner();
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final colorScheme = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: stickerDecoration(
+        fill: colorScheme.primary,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Row(
+        children: [
+          Image.asset(
+            founderBadgeImageAsset,
+            width: 32,
+            height: 32,
+            semanticLabel: l10n.founderBadgeTooltip,
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  l10n.founderBadgeTooltip,
+                  style: TextStyle(
+                    fontFamily: 'Baloo2',
+                    fontVariations: const [FontVariation('wght', 700)],
+                    fontSize: 14,
+                    color: colorScheme.onPrimary,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  l10n.founderBadgeEarnedSubtitle,
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 12,
+                    color: colorScheme.onPrimary.withValues(alpha: 0.75),
+                  ),
+                ),
+              ],
             ),
           ),
         ],

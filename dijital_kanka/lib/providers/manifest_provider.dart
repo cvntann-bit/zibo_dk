@@ -152,8 +152,10 @@ class ManifestProvider extends ChangeNotifier {
 
   /// Yeni bir fotoğraf + niyet metni kaydeder — bir öncekinin YERİNE
   /// GEÇMEZ, ayrı bir kayıt olarak eklenir (aynı gün içinde istendiği kadar
-  /// çağrılabilir). [photoPath] veya [intentionText] (trim sonrası) boşsa
-  /// hiçbir şey yapmadan `false` döner.
+  /// çağrılabilir). **Faz 6 düzeltmesi** — [photoPath] ARTIK zorunlu değil
+  /// (yalnızca fotoğraf, yalnızca metin, ya da ikisi birden kabul edilir);
+  /// yalnızca İKİSİ DE boşsa (trim sonrası) hiçbir şey yapmadan `false`
+  /// döner.
   ///
   /// Dönen `bool`, bu kaydın coin ödülünü İLK KEZ hak edip etmediğini
   /// belirtir — çağıran taraf (bkz. `ManifestJournalScreen`)
@@ -163,9 +165,10 @@ class ManifestProvider extends ChangeNotifier {
   /// sonraki yeni girişler başarıyla kaydedilir ama `false` döner —
   /// kullanıcı aynı gün istediği kadar yeni giriş ekleyebilir, ama coin
   /// yalnızca bir kez verilir.
-  bool addEntry({required String photoPath, required String intentionText}) {
+  bool addEntry({String? photoPath, required String intentionText}) {
     final text = intentionText.trim();
-    if (photoPath.trim().isEmpty || text.isEmpty) return false;
+    final hasPhoto = photoPath != null && photoPath.trim().isNotEmpty;
+    if (!hasPhoto && text.isEmpty) return false;
 
     final today = _today;
     final alreadyClaimed = _rewardClaimedDates.contains(today);

@@ -2,10 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../l10n/app_localizations.dart';
-import '../providers/goals_provider.dart';
+import '../providers/app_streak_provider.dart';
 
-/// "En Uzun Seri Rekoru" satırının açtığı sayfa — Hedef Takibi'ndeki
-/// (bkz. `GoalsProvider.longestStreak`) en uzun kesintisiz seriyi gösterir.
+/// "En Uzun Seri Rekoru" satırının açtığı sayfa — uygulamayı HER GÜN açma
+/// serisinin (bkz. `AppStreakProvider.longestStreakEver`) hiç azalmayan
+/// rekorunu gösterir. **Faz 6 düzeltmesi** — eskiden yanlışlıkla
+/// `GoalsProvider.longestStreak` okunuyordu (Hedef Takibi'nin KENDİ 7 günlük
+/// döngüsü, `Goal.daysPerCycle` her tamamlandığında sıfırlanır — yapısal
+/// olarak 7'yi asla geçemiyordu).
 class LongestStreakScreen extends StatelessWidget {
   const LongestStreakScreen({super.key});
 
@@ -13,7 +17,7 @@ class LongestStreakScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final colorScheme = Theme.of(context).colorScheme;
-    final longestStreak = context.watch<GoalsProvider>().longestStreak;
+    final longestStreak = context.watch<AppStreakProvider>().longestStreakEver;
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.longestStreakScreenTitle)),

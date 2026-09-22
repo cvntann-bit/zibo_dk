@@ -166,6 +166,77 @@ void main() {
         expect(migrated.totalDaysOpened, 2);
       },
     );
+
+    test('Yeni provider longestStreakEver 0 ile başlar', () {
+      expect(provider.longestStreakEver, 0);
+    });
+
+    test(
+      'longestStreakEver, currentStreak ile BİRLİKTE artar (Faz 6 — '
+      '"En Uzun Seri Rekoru" bug düzeltmesi)',
+      () {
+        for (var i = 0; i < 9; i++) {
+          currentDate = DateTime(2026, 1, 5 + i);
+          provider.recordOpenForToday();
+        }
+
+        expect(provider.currentStreak, 9);
+        expect(provider.longestStreakEver, 9);
+      },
+    );
+
+    test(
+      'Bir gün kaçırılıp currentStreak sıfırlansa bile longestStreakEver '
+      'GERİLEMEZ (Rozet Sistemi\'nin kalıcı ölçütü)',
+      () {
+        for (var i = 0; i < 9; i++) {
+          currentDate = DateTime(2026, 1, 5 + i);
+          provider.recordOpenForToday();
+        }
+        expect(provider.longestStreakEver, 9);
+
+        currentDate = DateTime(2026, 1, 20); // uzun bir boşluk
+        provider.recordOpenForToday(); // seri 1'e sıfırlanır
+
+        expect(provider.currentStreak, 1);
+        expect(provider.longestStreakEver, 9);
+      },
+    );
+
+    test(
+      'Kalıcılık: longestStreakEver yeniden başlatmada hatırlanır (ve '
+      'ARDINDAN gelen daha düşük bir seriyle EZİLMEZ)',
+      () async {
+        for (var i = 0; i < 9; i++) {
+          currentDate = DateTime(2026, 1, 5 + i);
+          provider.recordOpenForToday();
+        }
+        currentDate = DateTime(2026, 1, 25); // boşluk — seri sıfırlanır
+        provider.recordOpenForToday();
+        await Future<void>.delayed(Duration.zero);
+
+        final reloaded = AppStreakProvider(now: () => currentDate);
+        await Future<void>.delayed(Duration.zero);
+
+        expect(reloaded.currentStreak, 1);
+        expect(reloaded.longestStreakEver, 9);
+      },
+    );
+
+    test(
+      'Göç: longestStreakEver alanı OLMAYAN eski kayıtlı veri currentStreak\'e '
+      'düşer (fazla saymaz)',
+      () async {
+        SharedPreferences.setMockInitialValues({
+          'appStreakState': '{"lastOpenDate":"2026-01-06T00:00:00.000","currentStreak":5}',
+        });
+
+        final migrated = AppStreakProvider(now: () => DateTime(2026, 1, 6));
+        await Future<void>.delayed(Duration.zero);
+
+        expect(migrated.longestStreakEver, 5);
+      },
+    );
   });
 
   group('AppStreakProvider — Faz 4 (B3) Streak Freeze', () {
@@ -223,6 +294,19 @@ void main() {
         expect(provider.currentStreak, 2);
         expect(provider.totalDaysOpened, 2);
         expect(provider.isStreakAtRisk, isFalse);
+      },
+    );
+
+    test(
+      'repairMissedDayWithFreeze de longestStreakEver\'ı günceller',
+      () {
+        provider.recordOpenForToday(); // 5 Ocak — seri 1
+        currentDate = DateTime(2026, 1, 7); // 6 Ocak kaçırıldı
+
+        provider.repairMissedDayWithFreeze(usedFreeQuota: false);
+
+        expect(provider.currentStreak, 2);
+        expect(provider.longestStreakEver, 2);
       },
     );
 

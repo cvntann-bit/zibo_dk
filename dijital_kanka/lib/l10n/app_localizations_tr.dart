@@ -1185,11 +1185,11 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get longestStreakScreenSubtitle =>
-      'Hedef Takibi\'ndeki en uzun kesintisiz serin';
+      'Zibo\'yu art arda en çok kaç gün açtığının rekoru';
 
   @override
   String get longestStreakEncouragement =>
-      'Bu rekoru geçmek için bugün de bir hedefini işaretle!';
+      'Bu rekoru geçmek için bugün de Zibo\'yu aç!';
 
   @override
   String get profileCostumeClosetRowTitle => 'Kostüm Dolabı';
@@ -1479,6 +1479,9 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get founderBadgeTooltip => 'Kurucu Üye';
+
+  @override
+  String get founderBadgeEarnedSubtitle => 'İlk 500 kullanıcıdan birisin';
 
   @override
   String get subscriptionBadgeProTooltip => 'Zibo Pro';

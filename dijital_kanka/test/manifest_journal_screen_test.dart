@@ -179,6 +179,48 @@ void main() {
   );
 
   testWidgets(
+    // Faz 6 düzeltmesi — fotoğraf artık ZORUNLU değil: yalnızca yazıyla
+    // (hiç fotoğraf seçmeden) da kayıt oluşturulabilmeli.
+    'Fotoğraf seçilmeden, YALNIZCA yazıyla da kaydedilebilir',
+    (tester) async {
+      final fakeService = _FakePhotoService();
+      await tester.pumpWidget(_buildTestApp(fakeService));
+      await tester.pumpAndSettle();
+
+      expect(
+        tester.widget<FilledButton>(find.byType(FilledButton, skipOffstage: false)).onPressed,
+        isNull,
+      );
+
+      await tester.enterText(
+        find.byType(TextField),
+        'Yalnızca yazıyla bir niyet.',
+      );
+      await tester.pumpAndSettle();
+
+      // Hiç fotoğraf seçilmedi ama metin girildiği için Kaydet artık aktif.
+      expect(
+        tester.widget<FilledButton>(find.byType(FilledButton, skipOffstage: false)).onPressed,
+        isNotNull,
+      );
+      tester.widget<FilledButton>(find.byType(FilledButton, skipOffstage: false)).onPressed!();
+      await tester.pumpAndSettle();
+
+      expect(fakeService.pickCount, 0);
+      expect(fakeService.saveCount, 0); // saveToPermanentStorage HİÇ çağrılmadı
+      expect(find.text('+5 Zibo Coin kazandın!'), findsOneWidget);
+      await tester.tap(find.byKey(const Key('infoDialogOkButton')));
+      await tester.pumpAndSettle();
+
+      await tester.scrollUntilVisible(
+        find.text('Yalnızca yazıyla bir niyet.'),
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
+    },
+  );
+
+  testWidgets(
     'Aynı gün ikinci bir giriş eklemek İLKİNİN üzerine yazmaz, coin tekrar '
     'vermez ve her iki giriş de geçmişte ayrı ayrı görünür',
     (tester) async {

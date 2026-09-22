@@ -95,8 +95,12 @@ class _ManifestJournalScreenState extends State<ManifestJournalScreen> {
     });
   }
 
+  // Faz 6 düzeltmesi — fotoğraf ZORUNLU değil artık: yalnızca fotoğrafla,
+  // yalnızca yazıyla veya ikisiyle birlikte kayıt oluşturulabilir (bkz.
+  // `ManifestProvider.addEntry`'nin AYNI şekilde gevşetilmiş validasyonu).
   bool get _canSave =>
-      !_isSaving && _photoPath != null && _textController.text.trim().isNotEmpty;
+      !_isSaving &&
+      (_photoPath != null || _textController.text.trim().isNotEmpty);
 
   Future<void> _pickPhoto() async {
     setState(() => _isPicking = true);
@@ -111,11 +115,13 @@ class _ManifestJournalScreenState extends State<ManifestJournalScreen> {
   Future<void> _save() async {
     if (!_canSave) return;
     final provider = context.read<ManifestProvider>();
-    final pickedPath = _photoPath!;
+    final pickedPath = _photoPath;
 
     setState(() => _isSaving = true);
     try {
-      final permanentPath = await widget.photoService.saveToPermanentStorage(pickedPath);
+      final permanentPath = pickedPath == null
+          ? null
+          : await widget.photoService.saveToPermanentStorage(pickedPath);
 
       final justCompleted = provider.addEntry(
         photoPath: permanentPath,

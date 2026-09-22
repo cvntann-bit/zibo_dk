@@ -1184,11 +1184,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get longestStreakScreenSubtitle =>
-      'Your longest unbroken streak in Goal Tracking';
+      'Your record for the most days in a row opening Zibo';
 
   @override
   String get longestStreakEncouragement =>
-      'Mark a goal today to beat this record!';
+      'Open Zibo today too to beat this record!';
 
   @override
   String get profileCostumeClosetRowTitle => 'Costume Closet';
@@ -1480,6 +1480,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get founderBadgeTooltip => 'Founding Member';
+
+  @override
+  String get founderBadgeEarnedSubtitle => 'You\'re one of the first 500 users';
 
   @override
   String get subscriptionBadgeProTooltip => 'Zibo Pro';

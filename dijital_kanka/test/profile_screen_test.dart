@@ -15,6 +15,7 @@ import 'package:dijital_kanka/data/founder_badge.dart';
 import 'package:dijital_kanka/l10n/app_localizations.dart';
 import 'package:dijital_kanka/models/mood.dart';
 import 'package:dijital_kanka/models/subscription_tier.dart';
+import 'package:dijital_kanka/providers/app_streak_provider.dart';
 import 'package:dijital_kanka/providers/auth_link_provider.dart';
 import 'package:dijital_kanka/providers/coin_provider.dart';
 import 'package:dijital_kanka/providers/costume_provider.dart';
@@ -84,6 +85,7 @@ Widget _buildTestApp(PhotoPickerService photoService) {
       ChangeNotifierProvider(create: (_) => GratitudeProvider()),
       ChangeNotifierProvider(create: (_) => ManifestProvider()),
       ChangeNotifierProvider(create: (_) => GoalsProvider()),
+      ChangeNotifierProvider(create: (_) => AppStreakProvider()),
       ChangeNotifierProvider(create: (_) => WaterProvider()),
       ChangeNotifierProvider(create: (_) => CoinProvider()),
       ChangeNotifierProvider(create: (_) => CostumeProvider()),
@@ -195,14 +197,16 @@ void main() {
       await tester.pumpWidget(_buildTestApp(_FakePhotoService()));
       await tester.pumpAndSettle();
 
-      expect(find.byTooltip('Kurucu Üye'), findsNothing);
+      // Faz 6 — rozet artık avatarın köşesinde bir tooltip DEĞİL, profil
+      // başlığının altında görünür metinli bir şerit (`_FounderBadgeBanner`).
+      expect(find.text('Kurucu Üye'), findsNothing);
 
       final element = tester.element(find.byType(ProfileScreen));
       final costume = Provider.of<CostumeProvider>(element, listen: false);
       await costume.markOwned(founderBadgeCostumeId);
       await tester.pumpAndSettle();
 
-      expect(find.byTooltip('Kurucu Üye'), findsOneWidget);
+      expect(find.text('Kurucu Üye'), findsOneWidget);
     },
   );
 

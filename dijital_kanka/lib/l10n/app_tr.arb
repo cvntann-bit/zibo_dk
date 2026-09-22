@@ -1648,11 +1648,11 @@
       "days": {"type": "int"}
     }
   },
-  "longestStreakScreenSubtitle": "Hedef Takibi'ndeki en uzun kesintisiz serin",
+  "longestStreakScreenSubtitle": "Zibo'yu art arda en çok kaç gün açtığının rekoru",
   "@longestStreakScreenSubtitle": {
     "description": "En Uzun Seri sayfasındaki büyük rakamın altındaki açıklama"
   },
-  "longestStreakEncouragement": "Bu rekoru geçmek için bugün de bir hedefini işaretle!",
+  "longestStreakEncouragement": "Bu rekoru geçmek için bugün de Zibo'yu aç!",
   "@longestStreakEncouragement": {
     "description": "En Uzun Seri sayfasındaki teşvik kartı metni"
   },
@@ -2009,7 +2009,11 @@
   },
   "founderBadgeTooltip": "Kurucu Üye",
   "@founderBadgeTooltip": {
-    "description": "Profil fotoğrafının köşesindeki Kurucu Üye rozetinin tooltip/erişilebilirlik etiketi"
+    "description": "Profildeki Kurucu Üye rozet şeridinin başlığı/erişilebilirlik etiketi"
+  },
+  "founderBadgeEarnedSubtitle": "İlk 500 kullanıcıdan birisin",
+  "@founderBadgeEarnedSubtitle": {
+    "description": "Profildeki Kurucu Üye rozet şeridinin alt metni"
   },
   "subscriptionBadgeProTooltip": "Zibo Pro",
   "@subscriptionBadgeProTooltip": {

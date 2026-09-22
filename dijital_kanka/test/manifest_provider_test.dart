@@ -48,17 +48,36 @@ void main() {
     );
 
     test(
-      'Boş fotoğraf yolu veya boş (trim sonrası) niyet metniyle kaydedilemez',
+      // Faz 6 düzeltmesi — fotoğraf ARTIK zorunlu değil: yalnızca metin,
+      // yalnızca fotoğraf, ya da ikisi birden kabul edilir; yalnızca İKİSİ
+      // DE boş/trim-sonrası-boşsa hiçbir kayıt eklenmeden reddedilir. Dönen
+      // `bool` KAYDEDİLDİ mi değil, coin ödülü İLK KEZ mi hak edildiğini
+      // belirttiği için (bkz. `addEntry` dokümantasyonu) başarı burada
+      // `provider.history` uzunluğuyla doğrulanıyor.
+      'Yalnızca metin veya yalnızca fotoğrafla kaydedilebilir, ikisi de '
+      'boşsa reddedilir',
       () {
         expect(
-          provider.addEntry(photoPath: '', intentionText: 'Bir niyet'),
+          provider.addEntry(photoPath: null, intentionText: 'Bir niyet'),
+          isTrue, // bugünün İLK girişi — coin ödülü hak edildi
+        );
+        expect(provider.history, hasLength(1));
+
+        expect(
+          provider.addEntry(photoPath: '/tmp/photo.jpg', intentionText: '   '),
+          isFalse, // başarıyla kaydedildi ama bugünün ödülü ZATEN alınmıştı
+        );
+        expect(provider.history, hasLength(2));
+
+        expect(
+          provider.addEntry(photoPath: null, intentionText: '   '),
           isFalse,
         );
         expect(
-          provider.addEntry(photoPath: '/tmp/photo.jpg', intentionText: '   '),
+          provider.addEntry(photoPath: '', intentionText: ''),
           isFalse,
         );
-        expect(provider.history, isEmpty);
+        expect(provider.history, hasLength(2)); // reddedilenler EKLENMEDİ
       },
     );
 

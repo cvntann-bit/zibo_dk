@@ -131,7 +131,7 @@ class BadgeCoordinator {
     if (!badges.isReady) return;
     badges.reconcileConsistencyBadges(
       hasCompletedFirstGoalCycle: goals.completions.isNotEmpty,
-      appOpenStreak: appStreak.currentStreak,
+      appOpenStreak: appStreak.longestStreakEver,
     );
     badges.reconcileModuleMasteryBadges(
       gratitudeCount: gratitude.entries.length,

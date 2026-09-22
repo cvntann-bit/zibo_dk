@@ -53,6 +53,7 @@ class AppStreakProvider extends ChangeNotifier {
 
   DateTime? _lastOpenDate;
   int _currentStreak = 0;
+  int _longestStreakEver = 0;
   int _totalDaysOpened = 0;
   bool _isReady = false;
 
@@ -66,6 +67,13 @@ class AppStreakProvider extends ChangeNotifier {
 
   bool get isReady => _isReady;
   int get currentStreak => _currentStreak;
+
+  /// [currentStreak] gibi bir gün kaçırılınca SIFIRLANMAYAN, MONOTONİK
+  /// kalıcı rekor — Profil > "En Uzun Seri Rekoru" ve İstikrar Rozetleri'nin
+  /// (`week_streak`/`month_streak`/`iron_will`/`unyielding`) kaynağı bu.
+  /// `GoalsProvider.longestStreak`'in AKSİNE 7 günlük bir tavana sahip
+  /// DEĞİL (bkz. sınıf dokümantasyonu).
+  int get longestStreakEver => _longestStreakEver;
 
   /// Uygulamanın açıldığı TOPLAM benzersiz gün sayısı — [currentStreak]'in
   /// AKSİNE bir gün kaçırılınca SIFIRLANMAZ, yalnızca MONOTONİK artar.
@@ -91,6 +99,11 @@ class AppStreakProvider extends ChangeNotifier {
         // bilinçli sadeleştirme, `WaterProvider`'daki eski-format-göçü
         // dersleriyle AYNI ruhta).
         _totalDaysOpened = data['totalDaysOpened'] as int? ?? _currentStreak;
+        // Faz 6 göçü — AYNI "oku-zamanı-göç-et" deseni: bu alan eklenmeden
+        // ÖNCEki kayıtlı veride yok, bulunmazsa mevcut `currentStreak`'e
+        // düşülür (en azından o kadarına ULAŞILDIĞI KESİN biliniyor).
+        _longestStreakEver =
+            data['longestStreakEver'] as int? ?? _currentStreak;
         // Faz 4 (B3) — bu iki alan eklenmeden ÖNCEki kayıtlı veride yok;
         // bulunmazsa sırasıyla 0/`null`'a düşülür (`_maybeResetMonthlyFreezeQuota`
         // ilk erişimde `null` resetDate'i normal şekilde ilklendirir).
@@ -113,6 +126,7 @@ class AppStreakProvider extends ChangeNotifier {
     return _store.save({
       'lastOpenDate': _lastOpenDate?.toIso8601String(),
       'currentStreak': _currentStreak,
+      'longestStreakEver': _longestStreakEver,
       'totalDaysOpened': _totalDaysOpened,
       'freeStreakFreezesUsedThisMonth': _freeStreakFreezesUsedThisMonth,
       'freeStreakFreezeResetDate': _freeStreakFreezeResetDate?.toIso8601String(),
@@ -184,6 +198,7 @@ class AppStreakProvider extends ChangeNotifier {
   void repairMissedDayWithFreeze({required bool usedFreeQuota}) {
     final today = _dateOnly(_now());
     _currentStreak += 1;
+    if (_currentStreak > _longestStreakEver) _longestStreakEver = _currentStreak;
     _totalDaysOpened += 1;
     _lastOpenDate = today;
     if (usedFreeQuota) {
@@ -225,6 +240,7 @@ class AppStreakProvider extends ChangeNotifier {
     } else {
       _currentStreak = 1;
     }
+    if (_currentStreak > _longestStreakEver) _longestStreakEver = _currentStreak;
     _totalDaysOpened += 1;
     _lastOpenDate = today;
     notifyListeners();

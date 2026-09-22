@@ -12,6 +12,13 @@ import 'package:flutter/material.dart';
 /// [StickerCircleButton]'ı çoğaltabilir — yeni bir ekran restyle edilirken
 /// kendi kontur/gölge sabitlerini ELLE tekrar yazmak YERİNE bunlar
 /// kullanılmalı, aksi halde tonlar zamanla birbirinden sapar.
+///
+/// **Faz 6 bug düzeltmesi — YALNIZCA kontur/gölge için kullan, İKON/METİN
+/// RENGİ için KULLANMA.** Karanlık modda `colorScheme.surfaceContainerLowest`
+/// M3'ün otomatik ürettiği EN KOYU tona düşüyor — bu neredeyse-siyah sabit
+/// tonu bir ikonun RENGİ olarak o zeminle eşleştirmek koyu-üstüne-koyu,
+/// görünmez bir buton üretir (`StickerIconButton.iconColor` için
+/// `colorScheme.onSurface` gibi tema-duyarlı bir renk kullan).
 const kStickerOutline = Color(0xFF14110C);
 
 /// "Kaçırıldı" gibi tek bir durum göstergesi için donuk/kahverengimsi sarı —
@@ -179,7 +186,7 @@ PreferredSizeWidget plainStickerAppBar(
           onPressed: () => Navigator.of(context).maybePop(),
           tooltip: MaterialLocalizations.of(context).backButtonTooltip,
           backgroundColor: colorScheme.surfaceContainerLowest,
-          iconColor: kStickerOutline,
+          iconColor: colorScheme.onSurface,
           size: 34,
           iconSize: 16,
           borderRadius: null,

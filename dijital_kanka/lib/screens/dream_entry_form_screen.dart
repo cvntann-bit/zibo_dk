@@ -118,7 +118,7 @@ class _DreamEntryFormScreenState extends State<DreamEntryFormScreen> {
                 onPressed: _confirmDelete,
                 tooltip: l10n.dreamDeleteEntryTooltip,
                 backgroundColor: colorScheme.surfaceContainerLowest,
-                iconColor: kStickerOutline,
+                iconColor: colorScheme.onSurface,
                 size: 34,
                 iconSize: 16,
                 borderRadius: null,

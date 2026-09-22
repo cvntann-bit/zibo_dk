@@ -1190,11 +1190,11 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get longestStreakScreenSubtitle =>
-      'Tu racha ininterrumpida más larga en Seguimiento de Metas';
+      'Tu récord de días seguidos abriendo Zibo';
 
   @override
   String get longestStreakEncouragement =>
-      '¡Marca una meta hoy para superar este récord!';
+      '¡Abre Zibo hoy también para superar este récord!';
 
   @override
   String get profileCostumeClosetRowTitle => 'Armario de Disfraces';
@@ -1485,6 +1485,10 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get founderBadgeTooltip => 'Miembro Fundador';
+
+  @override
+  String get founderBadgeEarnedSubtitle =>
+      'Eres uno de los primeros 500 usuarios';
 
   @override
   String get subscriptionBadgeProTooltip => 'Zibo Pro';

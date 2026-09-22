@@ -2485,7 +2485,7 @@ void main() {
       );
       tapRow('En Uzun Seri Rekoru');
       await tester.pumpAndSettle();
-      expect(find.text("Hedef Takibi'ndeki en uzun kesintisiz serin"), findsOneWidget);
+      expect(find.text("Zibo'yu art arda en çok kaç gün açtığının rekoru"), findsOneWidget);
       await tester.tap(find.byTooltip('Geri'));
       await tester.pumpAndSettle();
 

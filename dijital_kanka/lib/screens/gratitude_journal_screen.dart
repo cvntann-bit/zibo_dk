@@ -421,7 +421,7 @@ class _TodayDoneCard extends StatelessWidget {
                 onPressed: onEdit,
                 tooltip: l10n.gratitudeEditTooltip,
                 backgroundColor: colorScheme.surfaceContainerLowest,
-                iconColor: kStickerOutline,
+                iconColor: colorScheme.onSurface,
                 size: 30,
                 iconSize: 14,
                 borderRadius: null,

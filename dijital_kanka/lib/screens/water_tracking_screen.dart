@@ -289,7 +289,7 @@ class _WaterTrackingScreenState extends State<WaterTrackingScreen> {
               onPressed: () => _showGoalDialog(provider),
               tooltip: l10n.waterGoalSettingsTitle,
               backgroundColor: colorScheme.surfaceContainerLowest,
-              iconColor: kStickerOutline,
+              iconColor: colorScheme.onSurface,
               size: 34,
               iconSize: 16,
               borderRadius: null,

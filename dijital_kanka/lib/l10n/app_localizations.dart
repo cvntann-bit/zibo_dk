@@ -2167,13 +2167,13 @@ abstract class AppLocalizations {
   /// En Uzun Seri sayfasındaki büyük rakamın altındaki açıklama
   ///
   /// In tr, this message translates to:
-  /// **'Hedef Takibi\'ndeki en uzun kesintisiz serin'**
+  /// **'Zibo\'yu art arda en çok kaç gün açtığının rekoru'**
   String get longestStreakScreenSubtitle;
 
   /// En Uzun Seri sayfasındaki teşvik kartı metni
   ///
   /// In tr, this message translates to:
-  /// **'Bu rekoru geçmek için bugün de bir hedefini işaretle!'**
+  /// **'Bu rekoru geçmek için bugün de Zibo\'yu aç!'**
   String get longestStreakEncouragement;
 
   /// Kostüm Dolabı Önizlemesi satırının başlığı
@@ -2662,11 +2662,17 @@ abstract class AppLocalizations {
   /// **'Davet sistemi şu an kullanılamıyor, daha sonra tekrar dene.'**
   String get referralUnavailableMessage;
 
-  /// Profil fotoğrafının köşesindeki Kurucu Üye rozetinin tooltip/erişilebilirlik etiketi
+  /// Profildeki Kurucu Üye rozet şeridinin başlığı/erişilebilirlik etiketi
   ///
   /// In tr, this message translates to:
   /// **'Kurucu Üye'**
   String get founderBadgeTooltip;
+
+  /// Profildeki Kurucu Üye rozet şeridinin alt metni
+  ///
+  /// In tr, this message translates to:
+  /// **'İlk 500 kullanıcıdan birisin'**
+  String get founderBadgeEarnedSubtitle;
 
   /// Profil fotoğrafının köşesindeki Zibo Pro rozetinin tooltip/erişilebilirlik etiketi
   ///
