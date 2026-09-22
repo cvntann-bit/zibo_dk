@@ -22,6 +22,7 @@ import '../widgets/founder_badge_promo_card.dart';
 import '../widgets/language_flag_circle.dart';
 import '../widgets/rate_us_sheet.dart';
 import '../widgets/sticker_style.dart';
+import '../widgets/streak_freeze_offer_dialog.dart';
 import 'legal_placeholder_screen.dart';
 import 'paywall_screen.dart';
 import 'widgets_screen.dart';
@@ -982,11 +983,23 @@ class _SubscriptionDebugPanel extends StatelessWidget {
                 // senaryosunu (StreakFreezeOfferDialog) `TrustedTimeProvider`ın
                 // saat-manipülasyonu korumasını atlayarak GERÇEK cihazda test
                 // edebilmek için (bkz. `debugSimulateMissedDay` dokümantasyonu).
+                // Diyalog GERÇEK akışta yalnızca uygulama açılışında/öne
+                // gelişinde çıktığı için (bkz. `RootScreen._recordAppStreakOpen`),
+                // burada test kolaylığı olarak DOĞRUDAN gösteriliyor — aksi
+                // halde butona basmanın hiçbir görünür etkisi olmuyordu
+                // (kullanıcı raporu: "bastım ama birşey olmuyor").
                 OutlinedButton(
-                  onPressed: () => context
-                      .read<AppStreakProvider>()
-                      .debugSimulateMissedDay(),
-                  child: const Text('1 gün kaçırılmış say'),
+                  onPressed: () {
+                    final streak = context.read<AppStreakProvider>();
+                    streak.debugSimulateMissedDay();
+                    if (!streak.isStreakAtRisk) return;
+                    showDialog<void>(
+                      context: context,
+                      barrierDismissible: false,
+                      builder: (_) => const StreakFreezeOfferDialog(),
+                    );
+                  },
+                  child: const Text('1 gün kaçırılmış say + teklifi göster'),
                 ),
               ],
             ),
