@@ -265,10 +265,27 @@ const TYPE_INFO = {
   water_reminder: { field: 'waterReminder' },
 };
 
+/** Faz 5 (E2) — Zibo Pro+'a özel bildirim sesleri. Android bir kanalın
+ * sesini OLUŞTURULDUKTAN SONRA değiştiremediği için (bkz.
+ * lib/services/notification_service.dart'taki AYNI gerekçe), 3 seçenek 3
+ * AYRI, istemcide önceden oluşturulmuş kanala karşılık geliyor —
+ * `user.proPlusSoundChoice` (`users/{uid}` kök alanı, istemci PushNotification
+ * Provider.setProPlusSoundChoice tarafından yazılıyor) burada TEK bir yerde
+ * çözülüyor, 5 betiğin HİÇBİRİNİN kendi başına bilmesi gerekmiyor. Sunucu
+ * tarafında abonelik durumu TEKRAR doğrulanmıyor — istemci zaten seçim
+ * arayüzünü yalnızca Pro+ kullanıcıya gösteriyor (bu projenin coin ekonomisiyle
+ * AYNI istemci-yetkili mimarisi, bkz. docs/decisions/002/005). */
+const PROPLUS_SOUND_CHANNELS = {
+  '1': 'push_notifications_proplus_1',
+  '2': 'push_notifications_proplus_2',
+  '3': 'push_notifications_proplus_3',
+};
+
 async function sendToUser(user, type, title, body) {
   if (!user.fcmToken) return;
   const info = TYPE_INFO[type];
   if (!(await isTypeEnabled(user.uid, info.field))) return;
+  const channelId = PROPLUS_SOUND_CHANNELS[user.proPlusSoundChoice] || 'push_notifications';
   try {
     await messaging.send({
       token: user.fcmToken,
@@ -277,13 +294,14 @@ async function sendToUser(user, type, title, body) {
       android: {
         priority: 'high',
         notification: {
-          // Uygulama içindeki `push_notifications` kanalıyla (bkz.
+          // Uygulama içindeki kanallardan (bkz.
           // lib/services/notification_service.dart) BİREBİR aynı id —
           // Android O+'ta bildirim, kanal ADI/ID'sine göre o kanalın kayıtlı
-          // özel sesini (zibo_notification.wav, res/raw/) kullanır. Kanal
-          // önceden (uygulama ilk açıldığında) oluşturulmamışsa bildirim
-          // SESSİZCE düşer — bkz. PushNotificationService.initialize().
-          channelId: 'push_notifications',
+          // özel sesini (varsayılan: zibo_notification.wav, Pro+ seçtiyse
+          // proplus_sound_N.mp3, res/raw/) kullanır. Kanal önceden (uygulama
+          // ilk açıldığında) oluşturulmamışsa bildirim SESSİZCE düşer — bkz.
+          // PushNotificationService.initialize().
+          channelId,
           // Yalnızca ÇOK eski (Android 7 ve altı, kanal kavramı olmayan)
           // cihazlar için geri düşüş — kanal varsa bu alan yok sayılır.
           sound: 'zibo_notification',

@@ -376,6 +376,30 @@ abstract class AppLocalizations {
   /// **'Ses Efektleri'**
   String get settingsSoundEffects;
 
+  /// Ayarlar listesindeki, yalnızca Zibo Pro+ kullanıcıya açık bildirim sesi seçim satırının başlığı
+  ///
+  /// In tr, this message translates to:
+  /// **'Bildirim Sesi'**
+  String get settingsProPlusSoundTitle;
+
+  /// Free/Pro kullanıcı bildirim sesi satırını gördüğünde, kilitli olduğunu belirten alt metin
+  ///
+  /// In tr, this message translates to:
+  /// **'Pro+\'a özel — geçmek için dokun'**
+  String get settingsProPlusSoundLockedSubtitle;
+
+  /// Bildirim sesi seçim sheet'indeki varsayılan (standart Zibo sesi) seçeneği
+  ///
+  /// In tr, this message translates to:
+  /// **'Varsayılan'**
+  String get settingsProPlusSoundDefault;
+
+  /// Bildirim sesi seçim sheet'indeki Pro+'a özel ses seçeneklerinden biri
+  ///
+  /// In tr, this message translates to:
+  /// **'Ses {number}'**
+  String settingsProPlusSoundOption(int number);
+
   /// Ayarlar listesindeki 'Genel' bölüm başlığı (koyu tema/dil/bildirimler)
   ///
   /// In tr, this message translates to:

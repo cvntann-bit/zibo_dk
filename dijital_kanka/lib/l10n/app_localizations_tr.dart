@@ -176,6 +176,21 @@ class AppLocalizationsTr extends AppLocalizations {
   String get settingsSoundEffects => 'Ses Efektleri';
 
   @override
+  String get settingsProPlusSoundTitle => 'Bildirim Sesi';
+
+  @override
+  String get settingsProPlusSoundLockedSubtitle =>
+      'Pro+\'a özel — geçmek için dokun';
+
+  @override
+  String get settingsProPlusSoundDefault => 'Varsayılan';
+
+  @override
+  String settingsProPlusSoundOption(int number) {
+    return 'Ses $number';
+  }
+
+  @override
   String get settingsSectionGeneral => 'Genel';
 
   @override

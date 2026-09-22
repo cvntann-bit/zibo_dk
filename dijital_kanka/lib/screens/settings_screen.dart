@@ -12,6 +12,7 @@ import '../providers/auth_link_provider.dart';
 import '../providers/locale_provider.dart';
 import '../models/subscription_tier.dart';
 import '../providers/notification_provider.dart';
+import '../providers/push_notification_provider.dart';
 import '../providers/sound_effects_provider.dart';
 import '../providers/subscription_provider.dart';
 import '../providers/theme_provider.dart';
@@ -118,6 +119,50 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
+  /// **Faz 5 (E2)** — yalnızca Zibo Pro+ kullanıcıya açık, `_showThemeModePicker`
+  /// ile BİREBİR AYNI `_SettingsPickerSheet`/`_SheetOptionRow` deseni.
+  /// Seçim `PushNotificationProvider.setProPlusSoundChoice`'a gidiyor —
+  /// gerçek ses yalnızca sunucudan gelen bir push bildirimi ANINDA duyulur
+  /// (bkz. `notification-scripts/src/common.js`), burada anında bir önizleme
+  /// YOK.
+  Future<void> _showProPlusSoundPicker(BuildContext context) async {
+    final l10n = AppLocalizations.of(context)!;
+    final pushProvider = context.read<PushNotificationProvider>();
+    final options = {
+      null: l10n.settingsProPlusSoundDefault,
+      '1': l10n.settingsProPlusSoundOption(1),
+      '2': l10n.settingsProPlusSoundOption(2),
+      '3': l10n.settingsProPlusSoundOption(3),
+    };
+
+    await showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      builder: (sheetContext) => _SettingsPickerSheet(
+        title: l10n.settingsProPlusSoundTitle,
+        children: [
+          for (final entry in options.entries)
+            _SheetOptionRow(
+              label: entry.value,
+              selected: pushProvider.proPlusSoundChoice == entry.key,
+              onTap: () {
+                pushProvider.setProPlusSoundChoice(entry.key);
+                Navigator.of(sheetContext).pop();
+              },
+            ),
+        ],
+      ),
+    );
+  }
+
+  String _proPlusSoundLabel(AppLocalizations l10n, String? choice) =>
+      switch (choice) {
+        '1' => l10n.settingsProPlusSoundOption(1),
+        '2' => l10n.settingsProPlusSoundOption(2),
+        '3' => l10n.settingsProPlusSoundOption(3),
+        _ => l10n.settingsProPlusSoundDefault,
+      };
+
   String _themeModeLabel(AppLocalizations l10n, ThemeMode mode) => switch (mode) {
     ThemeMode.light => l10n.settingsThemeModeLight,
     ThemeMode.dark => l10n.settingsThemeModeDark,
@@ -132,6 +177,9 @@ class SettingsScreen extends StatelessWidget {
     final soundEffectsEnabled = context.watch<SoundEffectsProvider>().enabled;
     final currentLanguageCode = context.watch<LocaleProvider>().locale.languageCode;
     final authLink = context.watch<AuthLinkProvider>();
+    // Faz 5 (E2) — Pro+'a özel bildirim sesi satırı.
+    final isProPlus = context.watch<SubscriptionProvider>().isProPlus;
+    final proPlusSoundChoice = context.watch<PushNotificationProvider>().proPlusSoundChoice;
 
     return Scaffold(
       appBar: plainStickerAppBar(context, title: l10n.tabSettings),
@@ -187,6 +235,28 @@ class SettingsScreen extends StatelessWidget {
                     onTap: () => context
                         .read<SoundEffectsProvider>()
                         .setEnabled(!soundEffectsEnabled),
+                  ),
+                  _groupDivider(context),
+                  // Faz 5 (E2) — TÜM kullanıcılara GÖRÜNÜR (D1'in
+                  // `HistoryLimitUpsellCard`'ıyla AYNI "gizlemek yerine
+                  // görünür+yönlendirici" felsefesi): Pro+ ise mevcut
+                  // seçimi gösterip seçim sheet'ini açar, değilse küçük bir
+                  // kilit rozeti gösterip paywall'a yönlendirir.
+                  _SettingsRow(
+                    iconContent: Text(
+                      isProPlus ? '🎵' : '🔒',
+                      style: const TextStyle(fontSize: 15, height: 1),
+                    ),
+                    title: l10n.settingsProPlusSoundTitle,
+                    subtitle: isProPlus ? null : l10n.settingsProPlusSoundLockedSubtitle,
+                    trailingValue: isProPlus
+                        ? _proPlusSoundLabel(l10n, proPlusSoundChoice)
+                        : null,
+                    onTap: () => isProPlus
+                        ? _showProPlusSoundPicker(context)
+                        : Navigator.of(context).push(
+                            MaterialPageRoute<void>(builder: (_) => const PaywallScreen()),
+                          ),
                   ),
                   _groupDivider(context),
                   // Dil satırı: seçili dilin küçük yuvarlak bayrağı + adı

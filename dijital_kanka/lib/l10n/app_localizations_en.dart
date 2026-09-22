@@ -176,6 +176,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsSoundEffects => 'Sound Effects';
 
   @override
+  String get settingsProPlusSoundTitle => 'Notification Sound';
+
+  @override
+  String get settingsProPlusSoundLockedSubtitle =>
+      'Pro+ exclusive — tap to upgrade';
+
+  @override
+  String get settingsProPlusSoundDefault => 'Default';
+
+  @override
+  String settingsProPlusSoundOption(int number) {
+    return 'Sound $number';
+  }
+
+  @override
   String get settingsSectionGeneral => 'General';
 
   @override

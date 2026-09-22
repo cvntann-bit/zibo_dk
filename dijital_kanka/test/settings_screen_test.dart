@@ -19,6 +19,7 @@ import 'package:dijital_kanka/providers/app_streak_provider.dart';
 import 'package:dijital_kanka/providers/auth_link_provider.dart';
 import 'package:dijital_kanka/providers/founder_badge_provider.dart';
 import 'package:dijital_kanka/providers/locale_provider.dart';
+import 'package:dijital_kanka/providers/push_notification_provider.dart';
 import 'package:dijital_kanka/providers/sound_effects_provider.dart';
 import 'package:dijital_kanka/providers/subscription_provider.dart';
 import 'package:dijital_kanka/providers/theme_provider.dart';
@@ -68,6 +69,7 @@ Widget _buildTestApp(AuthLinkProvider authLink) {
       ChangeNotifierProvider(create: (_) => LocaleProvider()),
       ChangeNotifierProvider(create: (_) => AppStreakProvider()),
       ChangeNotifierProvider(create: (_) => FounderBadgeProvider()),
+      ChangeNotifierProvider(create: (_) => PushNotificationProvider()),
       ChangeNotifierProvider(create: (_) => SubscriptionProvider()),
       ChangeNotifierProvider.value(value: authLink),
     ],

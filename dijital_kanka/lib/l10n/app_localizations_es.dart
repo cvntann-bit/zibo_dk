@@ -176,6 +176,21 @@ class AppLocalizationsEs extends AppLocalizations {
   String get settingsSoundEffects => 'Efectos de Sonido';
 
   @override
+  String get settingsProPlusSoundTitle => 'Sonido de Notificación';
+
+  @override
+  String get settingsProPlusSoundLockedSubtitle =>
+      'Exclusivo de Pro+ — toca para mejorar';
+
+  @override
+  String get settingsProPlusSoundDefault => 'Predeterminado';
+
+  @override
+  String settingsProPlusSoundOption(int number) {
+    return 'Sonido $number';
+  }
+
+  @override
   String get settingsSectionGeneral => 'General';
 
   @override

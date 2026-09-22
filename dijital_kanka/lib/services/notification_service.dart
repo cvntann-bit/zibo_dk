@@ -185,6 +185,28 @@ class LocalNotificationService extends NotificationService {
     'zibo_notification',
   );
 
+  /// **Faz 5 (E2) — Zibo Pro+'a özel bildirim sesleri.** Android bir bildirim
+  /// kanalının sesini OLUŞTURULDUKTAN SONRA DEĞİŞTİREMEZ
+  /// (`AndroidNotificationChannel` immutable) — bu yüzden "3 farklı ses
+  /// seçeneği" tek bir kanalın sesini değiştirerek DEĞİL, HER seçenek için
+  /// AYRI, kendi sesiyle sabit bir kanal önceden oluşturarak yapılıyor.
+  /// `push_notifications` (yukarıdaki) DEĞİŞMİYOR — free/Pro kullanıcının
+  /// varsayılanı. `notification-scripts/src/common.js`'in `sendToUser`'ı
+  /// kullanıcının `proPlusSoundChoice` alanına göre BU üç kanaldan birini
+  /// (veya varsayılanı) hedefliyor. Ses dosyaları `android/app/src/main/
+  /// res/raw/proplus_sound_1/2/3.mp3` — ŞU AN PLACEHOLDER (bu makinede mp3
+  /// encoder yok), kullanıcı gerçek dosyaları aynı ada koyacak.
+  static const _proPlusChannelIds = [
+    'push_notifications_proplus_1',
+    'push_notifications_proplus_2',
+    'push_notifications_proplus_3',
+  ];
+  static const _proPlusChannelSounds = [
+    RawResourceAndroidNotificationSound('proplus_sound_1'),
+    RawResourceAndroidNotificationSound('proplus_sound_2'),
+    RawResourceAndroidNotificationSound('proplus_sound_3'),
+  ];
+
   final _plugin = FlutterLocalNotificationsPlugin();
   bool _initialized = false;
 
@@ -245,6 +267,21 @@ class LocalNotificationService extends NotificationService {
           sound: _pushChannelSound,
         ),
       );
+      // Faz 5 (E2) — Pro+'a özel 3 ses kanalı, AYNI erken/koşulsuz
+      // gerekçeyle (yukarıdaki push kanalı yorumuna bkz.) HER uygulama
+      // başlangıcında oluşturuluyor — kullanıcı Pro+ olsun ya da olmasın,
+      // kanal var OLMASI ile SEÇİLEBİLİR olması ayrı şeyler (seçim UI'ı
+      // zaten `isProPlus` ile korunuyor, bkz. `settings_screen.dart`).
+      for (var i = 0; i < _proPlusChannelIds.length; i++) {
+        await androidImpl?.createNotificationChannel(
+          AndroidNotificationChannel(
+            _proPlusChannelIds[i],
+            '$_pushChannelName (Pro+ ${i + 1})',
+            description: _pushChannelDescription,
+            sound: _proPlusChannelSounds[i],
+          ),
+        );
+      }
 
       _initialized = true;
     } catch (_) {

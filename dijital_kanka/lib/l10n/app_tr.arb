@@ -249,6 +249,27 @@
   "@settingsSoundEffects": {
     "description": "Ayarlar listesindeki uygulama içi ses efektleri (ör. Zibo dokunma sesi) anahtarının başlığı"
   },
+  "settingsProPlusSoundTitle": "Bildirim Sesi",
+  "@settingsProPlusSoundTitle": {
+    "description": "Ayarlar listesindeki, yalnızca Zibo Pro+ kullanıcıya açık bildirim sesi seçim satırının başlığı"
+  },
+  "settingsProPlusSoundLockedSubtitle": "Pro+'a özel — geçmek için dokun",
+  "@settingsProPlusSoundLockedSubtitle": {
+    "description": "Free/Pro kullanıcı bildirim sesi satırını gördüğünde, kilitli olduğunu belirten alt metin"
+  },
+  "settingsProPlusSoundDefault": "Varsayılan",
+  "@settingsProPlusSoundDefault": {
+    "description": "Bildirim sesi seçim sheet'indeki varsayılan (standart Zibo sesi) seçeneği"
+  },
+  "settingsProPlusSoundOption": "Ses {number}",
+  "@settingsProPlusSoundOption": {
+    "description": "Bildirim sesi seçim sheet'indeki Pro+'a özel ses seçeneklerinden biri",
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
   "settingsSectionGeneral": "Genel",
   "@settingsSectionGeneral": {
     "description": "Ayarlar listesindeki 'Genel' bölüm başlığı (koyu tema/dil/bildirimler)"

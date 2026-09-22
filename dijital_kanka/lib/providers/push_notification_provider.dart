@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 import '../models/push_notification_type.dart';
@@ -23,12 +24,14 @@ import '../services/cloud_state_store.dart';
 /// betikte filtreleme yapıyor (bkz. CLAUDE.md "Push Bildirimleri" bölümü).
 class PushNotificationProvider extends ChangeNotifier {
   PushNotificationProvider({String? uid})
-    : _store = CloudStateStore(prefsKey: _prefsKey, uid: uid) {
+    : _uid = uid,
+      _store = CloudStateStore(prefsKey: _prefsKey, uid: uid) {
     _loadFromPrefs();
   }
 
   static const _prefsKey = 'pushNotificationState';
 
+  final String? _uid;
   final CloudStateStore _store;
 
   // Varsayılan hepsi AÇIK — kullanıcı isterse Ayarlar'dan tek tek kapatabilir
@@ -41,6 +44,17 @@ class PushNotificationProvider extends ChangeNotifier {
   bool _reEngagement = true;
   bool _waterReminder = true;
 
+  /// **Faz 5 (E2)** — Zibo Pro+'a özel bildirim sesi tercihi (`'1'|'2'|'3'`,
+  /// `null` = varsayılan `zibo_notification` sesi). Yalnızca UI-tarafı
+  /// tercih burada tutuluyor (`pushNotificationState` dokümanı,
+  /// `CloudStateStore`) — sunucunun (`notification-scripts`) OKUYABİLMESİ
+  /// için AYRICA `users/{uid}` KÖK dokümanına da yazılıyor (bkz.
+  /// `PushNotificationService.updateProPlusSoundChoice` — `timeZone` ile
+  /// AYNI "Pattern B" gerekçesi: 5 bildirim betiğinin HEPSİ aynı seçimi
+  /// kullanmalı, `fetchAllUsers()` ile zaten TEK seferde gelen bir kök alan
+  /// betik başına ek Firestore sorgusundan daha ucuz).
+  String? _proPlusSoundChoice;
+
   bool isEnabled(PushNotificationType type) => switch (type) {
     PushNotificationType.dailyMotivation => _dailyMotivation,
     PushNotificationType.streakReminder => _streakReminder,
@@ -48,6 +62,8 @@ class PushNotificationProvider extends ChangeNotifier {
     PushNotificationType.reEngagement => _reEngagement,
     PushNotificationType.waterReminder => _waterReminder,
   };
+
+  String? get proPlusSoundChoice => _proPlusSoundChoice;
 
   Future<void> _loadFromPrefs() async {
     final data = await _store.load();
@@ -57,6 +73,7 @@ class PushNotificationProvider extends ChangeNotifier {
       _dailyReward = data['dailyReward'] as bool? ?? true;
       _reEngagement = data['reEngagement'] as bool? ?? true;
       _waterReminder = data['waterReminder'] as bool? ?? true;
+      _proPlusSoundChoice = data['proPlusSoundChoice'] as String?;
     }
     notifyListeners();
   }
@@ -80,12 +97,43 @@ class PushNotificationProvider extends ChangeNotifier {
         _waterReminder = value;
     }
     notifyListeners();
-    await _store.save({
+    await _save();
+  }
+
+  /// **Faz 5 (E2)** — `'1'|'2'|'3'` (bkz. `LocalNotificationService`'in Pro+
+  /// kanalları) veya `null` (varsayılan). Yalnızca Ayarlar'daki Pro+-korumalı
+  /// seçim satırından çağrılır. `CloudStateStore`'a ([_store]) EK OLARAK
+  /// `users/{uid}` KÖK dokümanına da yazıyor — sunucu betiklerinin
+  /// (`notification-scripts/src/common.js`) `fetchAllUsers()` ile ZATEN
+  /// aldığı aynı dokümandan okuyabilmesi için (`timeZone`/`lastActiveAt` ile
+  /// AYNI desen, bkz. `PushNotificationService.touchLastActive`). `uid`
+  /// `null` ise (Firebase kullanılamıyor) yalnızca yerel/`CloudStateStore`
+  /// kalıcılığı çalışır — sessizce atlanır, diğer `CloudStateStore` yazma
+  /// yollarındaki AYNI "asla çökme" güvenlik ağı.
+  Future<void> setProPlusSoundChoice(String? choice) async {
+    if (_proPlusSoundChoice == choice) return;
+    _proPlusSoundChoice = choice;
+    notifyListeners();
+    await _save();
+    if (_uid == null) return;
+    try {
+      await FirebaseFirestore.instance.collection('users').doc(_uid).set({
+        'proPlusSoundChoice': _proPlusSoundChoice,
+      }, SetOptions(merge: true));
+    } catch (_) {
+      // Yoksayılır — bir sonraki değişiklikte tekrar denenecek, yerel
+      // tercih zaten kaydedildi.
+    }
+  }
+
+  Future<void> _save() {
+    return _store.save({
       'dailyMotivation': _dailyMotivation,
       'streakReminder': _streakReminder,
       'dailyReward': _dailyReward,
       'reEngagement': _reEngagement,
       'waterReminder': _waterReminder,
+      'proPlusSoundChoice': _proPlusSoundChoice,
     });
   }
 }
