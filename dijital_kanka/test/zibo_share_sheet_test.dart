@@ -19,6 +19,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:dijital_kanka/l10n/app_localizations.dart';
 import 'package:dijital_kanka/providers/badge_provider.dart';
 import 'package:dijital_kanka/providers/referral_provider.dart';
+import 'package:dijital_kanka/providers/subscription_provider.dart';
 import 'package:dijital_kanka/providers/xp_provider.dart';
 import 'package:dijital_kanka/services/share_service.dart';
 import 'package:dijital_kanka/widgets/share_zibo_button.dart';
@@ -61,6 +62,7 @@ Widget _buildTestApp(ShareService shareService) {
     providers: [
       ChangeNotifierProvider(create: (_) => BadgeProvider()),
       ChangeNotifierProvider(create: (_) => ReferralProvider()),
+      ChangeNotifierProvider(create: (_) => SubscriptionProvider()),
       ChangeNotifierProvider(create: (_) => XpProvider()),
     ],
     child: MaterialApp(

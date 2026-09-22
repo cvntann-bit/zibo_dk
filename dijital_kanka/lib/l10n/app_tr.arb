@@ -1954,6 +1954,18 @@
   "@founderBadgeTooltip": {
     "description": "Profil fotoğrafının köşesindeki Kurucu Üye rozetinin tooltip/erişilebilirlik etiketi"
   },
+  "subscriptionBadgeProTooltip": "Zibo Pro",
+  "@subscriptionBadgeProTooltip": {
+    "description": "Profil fotoğrafının köşesindeki Zibo Pro rozetinin tooltip/erişilebilirlik etiketi"
+  },
+  "subscriptionBadgeProPlusTooltip": "Zibo Pro+",
+  "@subscriptionBadgeProPlusTooltip": {
+    "description": "Profil fotoğrafının köşesindeki Zibo Pro+ rozetinin tooltip/erişilebilirlik etiketi"
+  },
+  "shareCardProWatermarkSemanticLabel": "Zibo Pro filigranı",
+  "@shareCardProWatermarkSemanticLabel": {
+    "description": "Paylaşım kartının köşesindeki Pro filigranının erişilebilirlik etiketi"
+  },
   "founderBadgePromoTitle": "Kurucu Üye Rozeti Kazan",
   "@founderBadgePromoTitle": {
     "description": "Google hesabına bağlanma satırının üstündeki, henüz bağlanmamış kullanıcılara gösterilen teşvik kartının başlığı"

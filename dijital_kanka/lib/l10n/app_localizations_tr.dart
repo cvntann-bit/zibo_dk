@@ -1437,6 +1437,15 @@ class AppLocalizationsTr extends AppLocalizations {
   String get founderBadgeTooltip => 'Kurucu Üye';
 
   @override
+  String get subscriptionBadgeProTooltip => 'Zibo Pro';
+
+  @override
+  String get subscriptionBadgeProPlusTooltip => 'Zibo Pro+';
+
+  @override
+  String get shareCardProWatermarkSemanticLabel => 'Zibo Pro filigranı';
+
+  @override
   String get founderBadgePromoTitle => 'Kurucu Üye Rozeti Kazan';
 
   @override

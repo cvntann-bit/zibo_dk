@@ -21,6 +21,7 @@ import '../providers/money_provider.dart';
 import '../providers/profile_provider.dart';
 import '../providers/profile_stats_archive_provider.dart';
 import '../providers/referral_provider.dart';
+import '../providers/subscription_provider.dart';
 import '../providers/trusted_time_provider.dart';
 import '../providers/water_provider.dart';
 import '../providers/xp_provider.dart';
@@ -220,6 +221,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final isFounder = context
         .watch<CostumeProvider>()
         .isOwned(founderBadgeCostumeId);
+    // Faz 5 (C2) — Zibo Pro/Pro+ rozeti, avatarın boş kalan tek köşesinde
+    // (sol-üst Kurucu Üye'de, sağ-alt kamera/düzenle ikonunda dolu).
+    final subscription = context.watch<SubscriptionProvider>();
     final statsArchive = context.watch<ProfileStatsArchiveProvider>();
     final now = context.watch<TrustedTimeProvider>().now();
 
@@ -340,6 +344,37 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 width: 28,
                                 height: 28,
                                 semanticLabel: l10n.founderBadgeTooltip,
+                              ),
+                            ),
+                          ),
+                        // Faz 5 (C2) — Kurucu Üye rozetiyle AYNI desen,
+                        // boş kalan tek köşede (sol-alt). Free kullanıcıda
+                        // HİÇBİR şey eklenmez.
+                        if (subscription.isProPlus)
+                          Positioned(
+                            left: 0,
+                            bottom: 0,
+                            child: Tooltip(
+                              message: l10n.subscriptionBadgeProPlusTooltip,
+                              child: Image.asset(
+                                'assets/images/proplus_badge.png',
+                                width: 28,
+                                height: 28,
+                                semanticLabel: l10n.subscriptionBadgeProPlusTooltip,
+                              ),
+                            ),
+                          )
+                        else if (subscription.isPro)
+                          Positioned(
+                            left: 0,
+                            bottom: 0,
+                            child: Tooltip(
+                              message: l10n.subscriptionBadgeProTooltip,
+                              child: Image.asset(
+                                'assets/images/pro_badge.png',
+                                width: 28,
+                                height: 28,
+                                semanticLabel: l10n.subscriptionBadgeProTooltip,
                               ),
                             ),
                           ),

@@ -1439,6 +1439,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get founderBadgeTooltip => 'Founding Member';
 
   @override
+  String get subscriptionBadgeProTooltip => 'Zibo Pro';
+
+  @override
+  String get subscriptionBadgeProPlusTooltip => 'Zibo Pro+';
+
+  @override
+  String get shareCardProWatermarkSemanticLabel => 'Zibo Pro watermark';
+
+  @override
   String get founderBadgePromoTitle => 'Earn the Founding Member Badge';
 
   @override

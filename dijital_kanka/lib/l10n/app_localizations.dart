@@ -2590,6 +2590,24 @@ abstract class AppLocalizations {
   /// **'Kurucu Üye'**
   String get founderBadgeTooltip;
 
+  /// Profil fotoğrafının köşesindeki Zibo Pro rozetinin tooltip/erişilebilirlik etiketi
+  ///
+  /// In tr, this message translates to:
+  /// **'Zibo Pro'**
+  String get subscriptionBadgeProTooltip;
+
+  /// Profil fotoğrafının köşesindeki Zibo Pro+ rozetinin tooltip/erişilebilirlik etiketi
+  ///
+  /// In tr, this message translates to:
+  /// **'Zibo Pro+'**
+  String get subscriptionBadgeProPlusTooltip;
+
+  /// Paylaşım kartının köşesindeki Pro filigranının erişilebilirlik etiketi
+  ///
+  /// In tr, this message translates to:
+  /// **'Zibo Pro filigranı'**
+  String get shareCardProWatermarkSemanticLabel;
+
   /// Google hesabına bağlanma satırının üstündeki, henüz bağlanmamış kullanıcılara gösterilen teşvik kartının başlığı
   ///
   /// In tr, this message translates to:

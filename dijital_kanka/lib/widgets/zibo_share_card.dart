@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../l10n/app_localizations.dart';
+import '../providers/subscription_provider.dart';
 
 /// "Zibonu Paylaş" için 9:16 (Instagram/TikTok Hikaye oranı) paylaşım kartı.
 /// Hem canlı önizleme olarak hem de [RenderRepaintBoundary.toImage] ile PNG'ye
@@ -57,6 +59,10 @@ class ZiboShareCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    // Faz 5 (C3) — Zibo Pro/Pro+ filigranı, RepaintBoundary ile yakalanan
+    // BU widget ağacına eklenmeli (ZiboShareSheet'e DEĞİL) — aksi halde
+    // oluşturulan PNG'de görünmez. Free kullanıcıda kart AYNEN kalır.
+    final isPro = context.watch<SubscriptionProvider>().isPro;
 
     return SizedBox(
       width: width,
@@ -128,6 +134,17 @@ class ZiboShareCard extends StatelessWidget {
                 ),
               ),
             ),
+            if (isPro)
+              Positioned(
+                top: 16,
+                right: 16,
+                child: Image.asset(
+                  'assets/images/pro_watermark.png',
+                  width: 48,
+                  height: 48,
+                  semanticLabel: l10n.shareCardProWatermarkSemanticLabel,
+                ),
+              ),
           ],
         ),
       ),

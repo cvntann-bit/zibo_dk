@@ -69,8 +69,11 @@ fallbackPrice`'ta sabit/görsel yer tutucu olarak da tutuluyor):
 | Şans Çarkı reklamsız + ekstra çevirme (B4) | ✅ Uygulandı — `CoinProvider.watchAdAndSpinWheel()` (`isPro` ise reklam atlanır) + `maxDailyWheelSpins` instance getter'ı (Pro/Pro+ +1 hak). Çark ekranındaki "Reklam İzle ve Çevir" görseli (`zibo_cark_frame.png`) HENÜZ güncellenmedi — Pro'da da aynı görünüyor, davranış doğru çalışıyor |
 | Modüllerde sınırsız geçmiş (D1) | ✅ Uygulandı — Şükran/Ruh Hali/Manifest ekranları `isPro` değilse listeyi son 30 güne filtreliyor (veri SİLİNMİYOR), gizli kayıt varsa ortak `HistoryLimitUpsellCard` (`lib/widgets/history_limit_upsell_card.dart`) gösteriliyor |
 | Ayda 1/3 ücretsiz Streak Freeze (B3) | ✅ Uygulandı — Streak Freeze mekaniği SIFIRDAN yazıldı (kodda hiç yoktu, yalnızca fiyat sabiti vardı). "Kaçırılan günü tamir et" modeli: `AppStreakProvider.isStreakAtRisk` + `StreakFreezeOfferDialog` (`lib/widgets/streak_freeze_offer_dialog.dart`), `RootScreen._recordAppStreakOpen()`. Aylık kota `freeStreakFreezesUsedThisMonth`/`freeStreakFreezeResetDate` (`appStreakState` dokümanı) |
-| Bildirim saati kişiselleştirme (E1) | ⏳ Yalnızca paywall'da METİN — planlandı, onay bekliyor |
-| Diğer Pro+'a özel perk'ler (kostüm/tema, profil rozeti, filigran, trend grafiği, Para&Birikim analizi, bildirim sesi) | ⏳ Yalnızca paywall'da METİN |
+| Bildirim saati kişiselleştirme (E1) | ⏳ Yalnızca paywall'da METİN — planlandı ama kullanıcı Faz 5'e geçince ertelendi, henüz onay YOK |
+| Profil rozeti/çerçevesi (C2) | ✅ Uygulandı — `ProfileScreen` avatar köşesi (`pro_badge.png`/`proplus_badge.png`, PLACEHOLDER — gerçek görsel bekliyor) |
+| Paylaşım kartında Pro filigranı (C3) | ✅ Uygulandı — `ZiboShareCard`, Pro VE Pro+ ikisi de görüyor (`pro_watermark.png`, PLACEHOLDER). NOT: paywall metni bunu Pro+'a ÖZEL diye listeliyor, kullanıcının bu turki isteğiyle çelişiyor — ayrı görev olarak flaglendi |
+| Aylık rotasyonlu Pro+'a özel kostüm/tema (C1) | 🚫 Kullanıcı isteğiyle KAPSAM DIŞI — uygulanmayacak |
+| Diğer Pro+'a özel perk'ler (trend grafiği, Para&Birikim analizi, bildirim sesi) | ⏳ Sırada — Faz 5 devam ediyor |
 
 ## Paywall ekranı (`lib/screens/paywall_screen.dart`)
 
