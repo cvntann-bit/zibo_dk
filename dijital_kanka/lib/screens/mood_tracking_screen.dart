@@ -13,11 +13,13 @@ import '../models/mood.dart';
 import '../providers/costume_provider.dart';
 import '../providers/mood_provider.dart';
 import '../providers/profile_provider.dart';
+import '../providers/subscription_provider.dart';
 import '../providers/xp_provider.dart';
 import '../providers/zibo_pose_provider.dart';
 import '../utils/address_term.dart';
 import '../widgets/banner_ad_slot.dart';
 import '../widgets/dot_grid_background.dart';
+import '../widgets/history_limit_upsell_card.dart';
 import '../widgets/speech_bubble.dart';
 import '../widgets/sticker_style.dart';
 import '../widgets/zibo_animated_image.dart';
@@ -142,6 +144,16 @@ class _MoodTrackingScreenState extends State<MoodTrackingScreen> {
     final provider = context.watch<MoodProvider>();
     final today = DateTime.now();
     final todayDateOnly = DateTime(today.year, today.month, today.day);
+    // Faz 3 (D1) — Zibo Pro/Pro+ olmayan kullanıcı geçmiş listesinde
+    // yalnızca son 30 günü görür (haftalık özet şeridi ZATEN son 7 gün
+    // olduğu için etkilenmiyor); eskiler SİLİNMİYOR, yalnızca ekrana
+    // geçirilen liste filtreleniyor.
+    final isPro = context.watch<SubscriptionProvider>().isPro;
+    final cutoffDate = DateTime.now().subtract(const Duration(days: 30));
+    final visibleEntries = isPro
+        ? provider.entries
+        : provider.entries.where((e) => e.date.isAfter(cutoffDate)).toList();
+    final hasHiddenEntries = visibleEntries.length < provider.entries.length;
     final locale = Localizations.localeOf(context);
     final quotes = moodQuotesForLocale(locale);
     final addressTerm = context.watch<ProfileProvider>().addressTerm;
@@ -297,7 +309,7 @@ class _MoodTrackingScreenState extends State<MoodTrackingScreen> {
                     ),
                   )
                 else
-                  for (final entry in provider.entries)
+                  for (final entry in visibleEntries)
                     Padding(
                       padding: const EdgeInsets.only(bottom: 12),
                       child: StickerRowCard(
@@ -338,6 +350,7 @@ class _MoodTrackingScreenState extends State<MoodTrackingScreen> {
                         ),
                       ),
                     ),
+                if (hasHiddenEntries) const HistoryLimitUpsellCard(),
                 const SizedBox(height: 20),
                 const BannerAdSlot(),
               ],

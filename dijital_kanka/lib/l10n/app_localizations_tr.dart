@@ -29,6 +29,16 @@ class AppLocalizationsTr extends AppLocalizations {
   String get coinProPlusBonusLabel => '2x Pro+ bonusu!';
 
   @override
+  String get historyLimitCardTitle => 'Daha eski kayıtlar Pro\'da';
+
+  @override
+  String get historyLimitCardSubtitle =>
+      'Daha eski kayıtları görmek için Zibo Pro\'ya geç';
+
+  @override
+  String get historyLimitCardButton => 'Pro\'ya Geç';
+
+  @override
   String get ziboImagePlaceholder => 'Zibo';
 
   @override

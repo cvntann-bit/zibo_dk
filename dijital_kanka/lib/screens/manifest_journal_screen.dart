@@ -15,11 +15,13 @@ import '../providers/coin_provider.dart';
 import '../providers/costume_provider.dart';
 import '../providers/manifest_provider.dart';
 import '../providers/profile_provider.dart';
+import '../providers/subscription_provider.dart';
 import '../providers/zibo_pose_provider.dart';
 import '../services/photo_picker_service.dart';
 import '../utils/address_term.dart';
 import '../utils/info_dialog.dart';
 import '../widgets/dot_grid_background.dart';
+import '../widgets/history_limit_upsell_card.dart';
 import '../widgets/speech_bubble.dart';
 import '../widgets/sticker_style.dart';
 import '../widgets/zibo_animated_image.dart';
@@ -186,6 +188,15 @@ class _ManifestJournalScreenState extends State<ManifestJournalScreen> {
     final colorScheme = Theme.of(context).colorScheme;
     final provider = context.watch<ManifestProvider>();
     final history = provider.history;
+    // Faz 3 (D1) — Zibo Pro/Pro+ olmayan kullanıcı yalnızca son 30 günün
+    // kayıtlarını görür; eskiler SİLİNMİYOR, yalnızca ekrana geçirilen
+    // liste filtreleniyor.
+    final isPro = context.watch<SubscriptionProvider>().isPro;
+    final cutoffDate = DateTime.now().subtract(const Duration(days: 30));
+    final visibleHistory = isPro
+        ? history
+        : history.where((e) => e.date.isAfter(cutoffDate)).toList();
+    final hasHiddenEntries = visibleHistory.length < history.length;
     final locale = Localizations.localeOf(context);
     final quotes = manifestQuotesForLocale(locale);
     final addressTerm = context.watch<ProfileProvider>().addressTerm;
@@ -325,7 +336,7 @@ class _ManifestJournalScreenState extends State<ManifestJournalScreen> {
                   GridView.builder(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
-                    itemCount: history.length,
+                    itemCount: visibleHistory.length,
                     gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: 2,
                       crossAxisSpacing: 12,
@@ -333,7 +344,7 @@ class _ManifestJournalScreenState extends State<ManifestJournalScreen> {
                       childAspectRatio: 0.6,
                     ),
                     itemBuilder: (context, index) {
-                      final entry = history[index];
+                      final entry = visibleHistory[index];
                       return _HistoryCard(
                         key: ValueKey(entry.id),
                         entry: entry,
@@ -341,6 +352,10 @@ class _ManifestJournalScreenState extends State<ManifestJournalScreen> {
                       );
                     },
                   ),
+                if (hasHiddenEntries) ...[
+                  const SizedBox(height: 12),
+                  const HistoryLimitUpsellCard(),
+                ],
               ],
             ),
           ),

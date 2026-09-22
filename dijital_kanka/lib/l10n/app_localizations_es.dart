@@ -29,6 +29,16 @@ class AppLocalizationsEs extends AppLocalizations {
   String get coinProPlusBonusLabel => '¡Bono Pro+ x2!';
 
   @override
+  String get historyLimitCardTitle => 'Registros antiguos con Pro';
+
+  @override
+  String get historyLimitCardSubtitle =>
+      'Mejora a Zibo Pro para ver registros más antiguos';
+
+  @override
+  String get historyLimitCardButton => 'Mejorar a Pro';
+
+  @override
   String get ziboImagePlaceholder => 'Zibo';
 
   @override

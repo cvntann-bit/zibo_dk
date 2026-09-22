@@ -29,6 +29,18 @@
   "@coinProPlusBonusLabel": {
     "description": "Zibo Pro+ abonesi günlük giriş ödülünü çarpanla aldığında, bakiye rozetindeki uçan '+N' efektinin altında beliren küçük etiket"
   },
+  "historyLimitCardTitle": "Daha eski kayıtlar Pro'da",
+  "@historyLimitCardTitle": {
+    "description": "Şükran/Ruh Hali/Manifest geçmişinde, free kullanıcının 30 günden eski kayıtlara erişemediği durumda gösterilen yükseltme kartının başlığı"
+  },
+  "historyLimitCardSubtitle": "Daha eski kayıtları görmek için Zibo Pro'ya geç",
+  "@historyLimitCardSubtitle": {
+    "description": "Aynı yükseltme kartının alt metni"
+  },
+  "historyLimitCardButton": "Pro'ya Geç",
+  "@historyLimitCardButton": {
+    "description": "Aynı yükseltme kartındaki buton metni — dokununca paywall ekranı açılır"
+  },
   "ziboImagePlaceholder": "Zibo",
   "@ziboImagePlaceholder": {
     "description": "Zibo görseli için erişilebilirlik (ekran okuyucu) etiketi"

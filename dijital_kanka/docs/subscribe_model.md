@@ -67,7 +67,7 @@ fallbackPrice`'ta sabit/görsel yer tutucu olarak da tutuluyor):
 | Zorunlu reklamlar kalkar (A1) | ✅ Uygulandı — `CoinProvider.showInterstitialAd()` (interstitial) VE `BannerAdSlot` (banner) `isPro` kontrolü. Şans Çarkı'nın "çevirmek için reklam izle" zorunluluğu bu kapsamda DEĞİL, ayrı perk → bkz. B4. |
 | Check-in coin ödülü 1,5x/2x (B1) | ✅ Uygulandı — `CoinProvider.earnDailyLoginReward()`, `isPro`/`isProPlus` callback'leri (`lib/main.dart`), bonus etiketi `CoinBalanceWidget` (`coinProBonusLabel`/`coinProPlusBonusLabel`) |
 | Şans Çarkı reklamsız + ekstra çevirme (B4) | ✅ Uygulandı — `CoinProvider.watchAdAndSpinWheel()` (`isPro` ise reklam atlanır) + `maxDailyWheelSpins` instance getter'ı (Pro/Pro+ +1 hak). Çark ekranındaki "Reklam İzle ve Çevir" görseli (`zibo_cark_frame.png`) HENÜZ güncellenmedi — Pro'da da aynı görünüyor, davranış doğru çalışıyor |
-| Modüllerde sınırsız geçmiş (D1) | ⏳ Yalnızca paywall'da METİN |
+| Modüllerde sınırsız geçmiş (D1) | ✅ Uygulandı — Şükran/Ruh Hali/Manifest ekranları `isPro` değilse listeyi son 30 güne filtreliyor (veri SİLİNMİYOR), gizli kayıt varsa ortak `HistoryLimitUpsellCard` (`lib/widgets/history_limit_upsell_card.dart`) gösteriliyor |
 | Ayda 1/3 ücretsiz Streak Freeze | ⏳ Yalnızca paywall'da METİN |
 | Diğer Pro+'a özel perk'ler (kostüm/tema, profil rozeti, filigran, trend grafiği, Para&Birikim analizi, bildirim sesi) | ⏳ Yalnızca paywall'da METİN |
 

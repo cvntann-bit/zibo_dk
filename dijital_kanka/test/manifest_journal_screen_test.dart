@@ -17,6 +17,7 @@ import 'package:dijital_kanka/providers/coin_provider.dart';
 import 'package:dijital_kanka/providers/costume_provider.dart';
 import 'package:dijital_kanka/providers/manifest_provider.dart';
 import 'package:dijital_kanka/providers/profile_provider.dart';
+import 'package:dijital_kanka/providers/subscription_provider.dart';
 import 'package:dijital_kanka/providers/zibo_pose_provider.dart';
 import 'package:dijital_kanka/screens/manifest_journal_screen.dart';
 import 'package:dijital_kanka/services/photo_picker_service.dart';
@@ -57,6 +58,7 @@ Widget _buildTestApp(
       ChangeNotifierProvider(create: (_) => CostumeProvider()),
       ChangeNotifierProvider(create: (_) => ManifestProvider(now: now)),
       ChangeNotifierProvider(create: (_) => ProfileProvider(now: now)),
+      ChangeNotifierProvider(create: (_) => SubscriptionProvider()),
       ChangeNotifierProvider(create: (_) => ZiboPoseProvider()),
     ],
     child: MaterialApp(
@@ -237,7 +239,12 @@ void main() {
     'Bugün için zaten bir kayıt olsa bile ekran açılışında form BOŞ olur, '
     'mevcut kayıt geçmişte görünür',
     (tester) async {
-      final currentDate = DateTime(2026, 1, 5);
+      // Faz 3 (D1) — ManifestJournalScreen artık geçmişi GERÇEK duvar
+      // saatine göre (`DateTime.now()`) son 30 güne filtreliyor (bkz.
+      // history_limit_upsell_card.dart), bu yüzden burada sabit/eski bir
+      // tarih YERİNE gerçek "bugün" kullanılıyor — aksi halde bu test
+      // kendi eklediği kaydı kendi filtresiyle gizlerdi.
+      final currentDate = DateTime.now();
       // Ekran hiç açılmadan ÖNCE bugüne ait bir kayıt olsun (ör. kullanıcı
       // sayfayı kapatıp aynı gün tekrar açtı) — provider'a doğrudan
       // yazılıyor, gereksiz bir "yeniden mount" karmaşıklığından kaçınmak
@@ -256,6 +263,7 @@ void main() {
             ChangeNotifierProvider(create: (_) => CostumeProvider()),
             ChangeNotifierProvider.value(value: manifestProvider),
             ChangeNotifierProvider(create: (_) => ProfileProvider()),
+            ChangeNotifierProvider(create: (_) => SubscriptionProvider()),
             ChangeNotifierProvider(create: (_) => ZiboPoseProvider()),
           ],
           child: MaterialApp(

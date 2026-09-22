@@ -136,6 +136,24 @@ abstract class AppLocalizations {
   /// **'2x Pro+ bonusu!'**
   String get coinProPlusBonusLabel;
 
+  /// Şükran/Ruh Hali/Manifest geçmişinde, free kullanıcının 30 günden eski kayıtlara erişemediği durumda gösterilen yükseltme kartının başlığı
+  ///
+  /// In tr, this message translates to:
+  /// **'Daha eski kayıtlar Pro\'da'**
+  String get historyLimitCardTitle;
+
+  /// Aynı yükseltme kartının alt metni
+  ///
+  /// In tr, this message translates to:
+  /// **'Daha eski kayıtları görmek için Zibo Pro\'ya geç'**
+  String get historyLimitCardSubtitle;
+
+  /// Aynı yükseltme kartındaki buton metni — dokununca paywall ekranı açılır
+  ///
+  /// In tr, this message translates to:
+  /// **'Pro\'ya Geç'**
+  String get historyLimitCardButton;
+
   /// Zibo görseli için erişilebilirlik (ekran okuyucu) etiketi
   ///
   /// In tr, this message translates to:
