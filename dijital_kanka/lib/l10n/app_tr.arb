@@ -390,6 +390,26 @@
   "@moneyTrendSectionTitle": {
     "description": "Sayfanın en altındaki harcama/birikim trend grafiği bölümünün başlığı"
   },
+  "moneyAdvancedAnalysisTitle": "Gelişmiş Analiz",
+  "@moneyAdvancedAnalysisTitle": {
+    "description": "Zibo Pro+'a özel Para & Birikim analiz bölümünün başlığı"
+  },
+  "moneyAdvancedAnalysisAvgExpense": "Ortalama Aylık Harcama",
+  "@moneyAdvancedAnalysisAvgExpense": {
+    "description": "Gelişmiş analiz bölümündeki ortalama aylık harcama satırının etiketi"
+  },
+  "moneyAdvancedAnalysisAvgSaving": "Ortalama Aylık Birikim",
+  "@moneyAdvancedAnalysisAvgSaving": {
+    "description": "Gelişmiş analiz bölümündeki ortalama aylık birikim satırının etiketi"
+  },
+  "moneyAdvancedAnalysisTopExpense": "En Çok Harcadığın Kalem",
+  "@moneyAdvancedAnalysisTopExpense": {
+    "description": "Gelişmiş analiz bölümündeki, isme göre en yüksek toplamlı harcama kalemi satırının etiketi"
+  },
+  "moneyAdvancedAnalysisEmpty": "Analiz için henüz yeterli veri yok.",
+  "@moneyAdvancedAnalysisEmpty": {
+    "description": "Seçili para biriminde hiç harcama/birikim kaydı yokken gösterilen metin"
+  },
   "moneyTrendEmpty": "Trend grafiği için henüz yeterli veri yok. Harcama veya birikim ekleyince burada görünecek.",
   "@moneyTrendEmpty": {
     "description": "Trend grafiğinde gösterilecek hiç harcama/birikim kaydı yokken gösterilen metin"

@@ -580,6 +580,36 @@ abstract class AppLocalizations {
   /// **'Mevcut Durum'**
   String get moneyTrendSectionTitle;
 
+  /// Zibo Pro+'a özel Para & Birikim analiz bölümünün başlığı
+  ///
+  /// In tr, this message translates to:
+  /// **'Gelişmiş Analiz'**
+  String get moneyAdvancedAnalysisTitle;
+
+  /// Gelişmiş analiz bölümündeki ortalama aylık harcama satırının etiketi
+  ///
+  /// In tr, this message translates to:
+  /// **'Ortalama Aylık Harcama'**
+  String get moneyAdvancedAnalysisAvgExpense;
+
+  /// Gelişmiş analiz bölümündeki ortalama aylık birikim satırının etiketi
+  ///
+  /// In tr, this message translates to:
+  /// **'Ortalama Aylık Birikim'**
+  String get moneyAdvancedAnalysisAvgSaving;
+
+  /// Gelişmiş analiz bölümündeki, isme göre en yüksek toplamlı harcama kalemi satırının etiketi
+  ///
+  /// In tr, this message translates to:
+  /// **'En Çok Harcadığın Kalem'**
+  String get moneyAdvancedAnalysisTopExpense;
+
+  /// Seçili para biriminde hiç harcama/birikim kaydı yokken gösterilen metin
+  ///
+  /// In tr, this message translates to:
+  /// **'Analiz için henüz yeterli veri yok.'**
+  String get moneyAdvancedAnalysisEmpty;
+
   /// Trend grafiğinde gösterilecek hiç harcama/birikim kaydı yokken gösterilen metin
   ///
   /// In tr, this message translates to:

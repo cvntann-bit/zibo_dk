@@ -288,6 +288,22 @@ class AppLocalizationsTr extends AppLocalizations {
   String get moneyTrendSectionTitle => 'Mevcut Durum';
 
   @override
+  String get moneyAdvancedAnalysisTitle => 'Gelişmiş Analiz';
+
+  @override
+  String get moneyAdvancedAnalysisAvgExpense => 'Ortalama Aylık Harcama';
+
+  @override
+  String get moneyAdvancedAnalysisAvgSaving => 'Ortalama Aylık Birikim';
+
+  @override
+  String get moneyAdvancedAnalysisTopExpense => 'En Çok Harcadığın Kalem';
+
+  @override
+  String get moneyAdvancedAnalysisEmpty =>
+      'Analiz için henüz yeterli veri yok.';
+
+  @override
   String get moneyTrendEmpty =>
       'Trend grafiği için henüz yeterli veri yok. Harcama veya birikim ekleyince burada görünecek.';
 

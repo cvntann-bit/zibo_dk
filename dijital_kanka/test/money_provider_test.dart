@@ -262,5 +262,84 @@ void main() {
         expect(provider.hasEntryToday, isTrue);
       },
     );
+
+    test(
+      'Faz 5 (D3): averageMonthlyFor boş kategori için boş map döner',
+      () {
+        final provider = MoneyProvider();
+        expect(provider.averageMonthlyFor(MoneyCategory.expense), isEmpty);
+      },
+    );
+
+    test(
+      'Faz 5 (D3): averageMonthlyFor toplamı (ilk kayıttan bugüne ay '
+      'sayısına) böler',
+      () {
+        var currentDate = DateTime(2026, 1, 5);
+        final provider = MoneyProvider(now: () => currentDate);
+        provider.addEntry(
+          MoneyCategory.expense,
+          name: 'Market',
+          amount: 300,
+          currencyCode: 'TRY',
+        );
+        currentDate = DateTime(2026, 3, 5); // 2 ay sonra, toplam 3 ay kapsanır
+        provider.addEntry(
+          MoneyCategory.expense,
+          name: 'Kira',
+          amount: 300,
+          currencyCode: 'TRY',
+        );
+
+        // Toplam 600, Ocak-Şubat-Mart = 3 ay → ortalama 200.
+        expect(provider.averageMonthlyFor(MoneyCategory.expense)['TRY'], 200);
+      },
+    );
+
+    test(
+      'Faz 5 (D3): topExpenseItemByCurrency boş kategori için boş map döner',
+      () {
+        final provider = MoneyProvider();
+        expect(provider.topExpenseItemByCurrency(), isEmpty);
+      },
+    );
+
+    test(
+      'Faz 5 (D3): topExpenseItemByCurrency isme göre gruplayıp en yüksek '
+      'toplamlı kalemi döner',
+      () {
+        final provider = MoneyProvider();
+        provider.addEntry(
+          MoneyCategory.expense,
+          name: 'Kira',
+          amount: 1000,
+          currencyCode: 'TRY',
+        );
+        for (var i = 0; i < 3; i++) {
+          provider.addEntry(
+            MoneyCategory.expense,
+            name: 'Market',
+            amount: 300,
+            currencyCode: 'TRY',
+          );
+        }
+
+        // Kira tek kayıtta 1000, Market 3 kayıtta toplam 900 — Kira önde.
+        var top = provider.topExpenseItemByCurrency()['TRY']!;
+        expect(top.name, 'Kira');
+        expect(top.total, 1000);
+
+        // Bir Market kaydı daha (toplam 1200) — artık Market önde.
+        provider.addEntry(
+          MoneyCategory.expense,
+          name: 'Market',
+          amount: 300,
+          currencyCode: 'TRY',
+        );
+        top = provider.topExpenseItemByCurrency()['TRY']!;
+        expect(top.name, 'Market');
+        expect(top.total, 1200);
+      },
+    );
   });
 }

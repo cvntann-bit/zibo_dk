@@ -68,6 +68,55 @@ class MoneyProvider extends ChangeNotifier {
     return totals;
   }
 
+  /// **Faz 5 (D3)** — kategori başına, PARA BİRİMİNE göre (bkz.
+  /// [totalsByCurrencyFor]) aylık ORTALAMA tutar: toplam / (ilk kayıttan
+  /// bugüne kadar geçen ay sayısı, en az 1). Zibo Pro+'a özel basit analiz
+  /// kartları için.
+  Map<String, double> averageMonthlyFor(MoneyCategory category) {
+    final entries = _entries[category]!;
+    if (entries.isEmpty) return {};
+    final totals = totalsByCurrencyFor(category);
+    final earliest = entries
+        .map((e) => e.date)
+        .reduce((a, b) => a.isBefore(b) ? a : b);
+    final now = _now();
+    final monthsSpanned =
+        ((now.year - earliest.year) * 12 + (now.month - earliest.month) + 1)
+            .clamp(1, 1 << 30);
+    return {
+      for (final entry in totals.entries) entry.key: entry.value / monthsSpanned,
+    };
+  }
+
+  /// **Faz 5 (D3)** — Harcamalar kategorisinde, PARA BİRİMİ başına en çok
+  /// harcanan KALEM (`MoneyEntry.name`'e göre gruplanmış toplam).
+  /// `MoneyCategory`'nin yalnızca 3 sabit kovası (`expense`/`saving`/
+  /// `income`) olduğu için "en çok harcanan kategori" burada kaydın ADI
+  /// anlamına geliyor (ör. kullanıcı tekrar tekrar "Kira" yazdıysa o).
+  Map<String, ({String name, double total})> topExpenseItemByCurrency() {
+    final totalsByCurrencyAndName = <String, Map<String, double>>{};
+    for (final entry in _entries[MoneyCategory.expense]!) {
+      final byName = totalsByCurrencyAndName.putIfAbsent(
+        entry.currencyCode,
+        () => {},
+      );
+      byName[entry.name] = (byName[entry.name] ?? 0) + entry.amount;
+    }
+    final result = <String, ({String name, double total})>{};
+    for (final currencyEntry in totalsByCurrencyAndName.entries) {
+      var bestName = '';
+      var bestTotal = -1.0;
+      for (final nameEntry in currencyEntry.value.entries) {
+        if (nameEntry.value > bestTotal) {
+          bestTotal = nameEntry.value;
+          bestName = nameEntry.key;
+        }
+      }
+      result[currencyEntry.key] = (name: bestName, total: bestTotal);
+    }
+    return result;
+  }
+
   Future<void> _loadFromPrefs() async {
     final decoded = await _store.load();
     if (decoded == null) return;

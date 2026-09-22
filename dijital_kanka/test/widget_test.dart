@@ -17,6 +17,8 @@ import 'package:dijital_kanka/data/money_quotes.dart';
 import 'package:dijital_kanka/data/wheel_prizes.dart';
 import 'package:dijital_kanka/l10n/app_localizations.dart';
 import 'package:dijital_kanka/main.dart';
+import 'package:dijital_kanka/models/money_entry.dart';
+import 'package:dijital_kanka/models/subscription_tier.dart';
 import 'package:dijital_kanka/providers/ad_free_provider.dart';
 import 'package:dijital_kanka/providers/app_streak_provider.dart';
 import 'package:dijital_kanka/providers/app_theme_provider.dart';
@@ -51,6 +53,7 @@ import 'package:dijital_kanka/providers/trusted_time_provider.dart';
 import 'package:dijital_kanka/providers/water_provider.dart';
 import 'package:dijital_kanka/providers/xp_provider.dart';
 import 'package:dijital_kanka/providers/zibo_pose_provider.dart';
+import 'package:dijital_kanka/screens/money_screen.dart';
 import 'package:dijital_kanka/screens/paywall_screen.dart';
 import 'package:dijital_kanka/screens/profile_screen.dart';
 import 'package:dijital_kanka/screens/root_screen.dart';
@@ -689,6 +692,43 @@ void main() {
       // Zamanlayıcıyı durdurmak için ekrandan geri çık (pushed bir rota
       // olduğu için `dispose()` çağrılır, artık `isActive`/sekme değişimi
       // gerekmiyor).
+      await tester.tap(find.byTooltip('Geri'));
+      await tester.pumpAndSettle();
+    },
+  );
+
+  testWidgets(
+    'Faz 5 (D3): Para & Birikim gelişmiş analiz yalnızca Pro+ kullanıcıya görünür',
+    (WidgetTester tester) async {
+      await _pumpPastOnboarding(tester, const DijitalKankaApp());
+
+      await _openModulesMenu(tester);
+      await tester.scrollUntilVisible(
+        find.text('Harcamalar ve Birikimler'),
+        100,
+        scrollable: find.byType(Scrollable).last,
+      );
+      await tester.tap(find.text('Harcamalar ve Birikimler'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Gelişmiş Analiz'), findsNothing);
+
+      final element = tester.element(find.byType(MoneyScreen));
+      Provider.of<MoneyProvider>(element, listen: false).addEntry(
+        MoneyCategory.expense,
+        name: 'Market',
+        amount: 300,
+        currencyCode: 'TRY',
+      );
+      await Provider.of<SubscriptionProvider>(
+        element,
+        listen: false,
+      ).debugSetTier(SubscriptionTier.proPlus);
+      await tester.pumpAndSettle();
+      await tester.scrollUntilVisible(find.text('Gelişmiş Analiz'), 200);
+
+      expect(find.text('Gelişmiş Analiz'), findsOneWidget);
+
       await tester.tap(find.byTooltip('Geri'));
       await tester.pumpAndSettle();
     },

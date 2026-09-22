@@ -288,6 +288,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String get moneyTrendSectionTitle => 'Current Status';
 
   @override
+  String get moneyAdvancedAnalysisTitle => 'Advanced Analysis';
+
+  @override
+  String get moneyAdvancedAnalysisAvgExpense => 'Average Monthly Expense';
+
+  @override
+  String get moneyAdvancedAnalysisAvgSaving => 'Average Monthly Saving';
+
+  @override
+  String get moneyAdvancedAnalysisTopExpense => 'Your Top Expense Item';
+
+  @override
+  String get moneyAdvancedAnalysisEmpty =>
+      'Not enough data yet for an analysis.';
+
+  @override
   String get moneyTrendEmpty =>
       'Not enough data for a trend chart yet. Add an expense or saving and it\'ll show up here.';
 

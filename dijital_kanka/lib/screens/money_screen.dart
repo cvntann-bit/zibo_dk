@@ -14,6 +14,7 @@ import '../providers/costume_provider.dart';
 import '../providers/currency_provider.dart';
 import '../providers/money_provider.dart';
 import '../providers/profile_provider.dart';
+import '../providers/subscription_provider.dart';
 import '../providers/zibo_pose_provider.dart';
 import '../utils/address_term.dart';
 import '../widgets/dot_grid_background.dart';
@@ -185,6 +186,8 @@ class _MoneyScreenState extends State<MoneyScreen> {
     // kayıt eklerken varsayılan seçim + trend grafiğinin başlangıç filtresi
     // için kullanılıyor, GÖRÜNTÜLEME artık buna bağımlı değil.
     final defaultCurrencyCode = context.watch<CurrencyProvider>().currencyCode;
+    // Faz 5 (D3) — Pro+'a özel gelişmiş analiz bölümü.
+    final isProPlus = context.watch<SubscriptionProvider>().isProPlus;
 
     return Scaffold(
       appBar: plainStickerAppBar(
@@ -218,6 +221,7 @@ class _MoneyScreenState extends State<MoneyScreen> {
               equippedImageAsset,
               moneyProvider,
               defaultCurrencyCode,
+              isProPlus,
             ),
           ),
         ],
@@ -234,6 +238,7 @@ class _MoneyScreenState extends State<MoneyScreen> {
     String equippedImageAsset,
     MoneyProvider moneyProvider,
     String defaultCurrencyCode,
+    bool isProPlus,
   ) {
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
@@ -301,6 +306,140 @@ class _MoneyScreenState extends State<MoneyScreen> {
             savings: moneyProvider.entriesFor(MoneyCategory.saving),
             incomes: moneyProvider.entriesFor(MoneyCategory.income),
             defaultCurrencyCode: defaultCurrencyCode,
+          ),
+        ),
+        // Faz 5 (D3) — Zibo Pro+'a özel gelişmiş analiz. Pro/free hiçbir
+        // şey görmez, mevcut kartların (yukarıdaki üçü + trend grafiği)
+        // hiçbirine dokunulmuyor.
+        if (isProPlus) ...[
+          const SizedBox(height: 12),
+          StickerCard(
+            child: _AdvancedAnalysisSection(
+              moneyProvider: moneyProvider,
+              currencyCode: defaultCurrencyCode,
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+/// **Faz 5 (D3)** — `MoneyTrendChart`'ın başlık tipografisiyle AYNI, 2-3
+/// basit istatistik satırı (gauge/grafik YOK, `profile_stat_card.dart`'ın
+/// ikon-dairesi düzeninden BASİTLEŞTİRİLMİŞ hali). Yalnızca [currencyCode]
+/// (Para ve Birikim AppBar'ından seçilen güncel para birimi) için hesaplanır
+/// — `MoneyTrendChart`'ın AKSİNE bir para birimi seçici YOK, basit tutmak
+/// için kullanıcının o an baktığı para birimiyle sınırlı.
+class _AdvancedAnalysisSection extends StatelessWidget {
+  const _AdvancedAnalysisSection({
+    required this.moneyProvider,
+    required this.currencyCode,
+  });
+
+  final MoneyProvider moneyProvider;
+  final String currencyCode;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final colorScheme = Theme.of(context).colorScheme;
+    final symbol = currencyByCode(currencyCode).symbol;
+
+    final avgExpense = moneyProvider.averageMonthlyFor(MoneyCategory.expense)[currencyCode];
+    final avgSaving = moneyProvider.averageMonthlyFor(MoneyCategory.saving)[currencyCode];
+    final topExpense = moneyProvider.topExpenseItemByCurrency()[currencyCode];
+
+    if (avgExpense == null && avgSaving == null && topExpense == null) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            l10n.moneyAdvancedAnalysisTitle,
+            style: const TextStyle(
+              fontFamily: 'Baloo2',
+              fontVariations: [FontVariation('wght', 800)],
+              fontSize: 13.5,
+            ),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            l10n.moneyAdvancedAnalysisEmpty,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ],
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          l10n.moneyAdvancedAnalysisTitle,
+          style: const TextStyle(
+            fontFamily: 'Baloo2',
+            fontVariations: [FontVariation('wght', 800)],
+            fontSize: 13.5,
+          ),
+        ),
+        const SizedBox(height: 12),
+        if (avgExpense != null)
+          _AnalysisStatRow(
+            label: l10n.moneyAdvancedAnalysisAvgExpense,
+            value: '$symbol${avgExpense.toStringAsFixed(0)}',
+          ),
+        if (avgSaving != null) ...[
+          const SizedBox(height: 8),
+          _AnalysisStatRow(
+            label: l10n.moneyAdvancedAnalysisAvgSaving,
+            value: '$symbol${avgSaving.toStringAsFixed(0)}',
+          ),
+        ],
+        if (topExpense != null) ...[
+          const SizedBox(height: 8),
+          _AnalysisStatRow(
+            label: l10n.moneyAdvancedAnalysisTopExpense,
+            value: '${topExpense.name} ($symbol${topExpense.total.toStringAsFixed(0)})',
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+class _AnalysisStatRow extends StatelessWidget {
+  const _AnalysisStatRow({required this.label, required this.value});
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Expanded(
+          child: Text(
+            label,
+            style: TextStyle(
+              fontWeight: FontWeight.w600,
+              fontSize: 12,
+              color: colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Text(
+          value,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(
+            fontWeight: FontWeight.w800,
+            fontSize: 13,
+            color: colorScheme.onSurface,
           ),
         ),
       ],

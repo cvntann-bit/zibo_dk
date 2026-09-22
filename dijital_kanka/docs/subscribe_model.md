@@ -75,7 +75,7 @@ fallbackPrice`'ta sabit/görsel yer tutucu olarak da tutuluyor):
 | Aylık rotasyonlu Pro+'a özel kostüm/tema (C1) | 🚫 Kullanıcı isteğiyle KAPSAM DIŞI — uygulanmayacak |
 | Pro+'a özel bildirim sesleri (E2) | ✅ Uygulandı — 3 YENİ Android bildirim kanalı (`push_notifications_proplus_1/2/3`, immutable kanal-sesi kısıtı yüzünden), `PushNotificationProvider.proPlusSoundChoice` (`users/{uid}` kök alanı, Pattern B), `notification-scripts/src/common.js`'in `sendToUser`'ı tek yerden çözüyor. Ses dosyaları PLACEHOLDER (bu makinede mp3 encoder yok — `zibo_notification.wav`'ın kopyası, `.mp3` adıyla, GERÇEK mp3 kodlaması DEĞİL). Sunucu tarafı yalnızca kod incelemesiyle doğrulandı, Node.js bu makinede yok |
 | Ruh Hali detaylı trend grafiği (D2) | ✅ Uygulandı — `MoodTrendDetailChart` (`fl_chart`, `MoneyTrendChart` ile AYNI desen), Profil > İstatistiklerim'e EK bir kart olarak (mevcut 4 karta dokunulmadı, Ruh Hali onlara hiç dahil değildi). `Mood.score` (1-5) extension'ı eklendi |
-| Para & Birikim gelişmiş analiz (D3) | ⏳ Sırada — Faz 5 devam ediyor |
+| Para & Birikim gelişmiş analiz (D3) | ✅ Uygulandı — `MoneyProvider.averageMonthlyFor`/`topExpenseItemByCurrency` (yeni getter'lar) + Para ve Birikim'e EK bir `StickerCard` (Ortalama Aylık Harcama/Birikim, En Çok Harcadığın Kalem). "En çok harcanan kategori" `MoneyCategory`'nin yalnızca 3 sabit kovası olduğu için kaydın ADINA (`entry.name`) göre yorumlandı — kullanıcı isterse değiştirilebilir |
 
 ## Paywall ekranı (`lib/screens/paywall_screen.dart`)
 
