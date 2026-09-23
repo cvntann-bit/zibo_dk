@@ -44,7 +44,23 @@ class CustomMessagesScreen extends StatelessWidget {
         ),
       );
     } finally {
-      controller.dispose();
+      // Faz 6 KRİTİK bug düzeltmesi — Crashlytics'te "yeni mesaj eklerken
+      // çöküyor" olarak bildirilen, `_dependents.isEmpty`/"Duplicate
+      // GlobalKeys" gibi İKİNCİL assertion'lara da yol açan gerçek kök
+      // neden: `TextField`'ın `autofocus: true` ile aldığı odağı, diyalog
+      // kapanırken (route pop) KAYBETMESİ bir `FocusManager` MİKROGÖREVİ
+      // ZAMANLIYOR (`EditableTextState._handleFocusChanged` →
+      // `controller.clearComposing()`). Bu mikrogörev, `showDialog`
+      // Future'ı tamamlandığı AN çalışan bu `finally` bloğuyla YARIŞIYOR —
+      // `controller.dispose()` HEMEN/SENKRON çağrılırsa mikrogörev SONRA
+      // çalışıp "TextEditingController was used after being disposed"
+      // fırlatıyor; bu istisna bir frame'in ORTASINDA (widget ağacı
+      // "kilitliyken") oluştuğu için ağacı YARIM GÜNCELLENMİŞ bırakıyor —
+      // SONRAKİ herhangi bir etkileşim (ör. tema değiştirme) o bozuk ağaç
+      // yüzünden AYRI/İLGİSİZ görünen assertion'larla çöküyor. **Çözüm:**
+      // disposal'ı bir SONRAKİ frame'e ertelemek — o mikrogörev bu ANDA
+      // ZATEN tamamlanmış oluyor, yarış ortadan kalkıyor.
+      WidgetsBinding.instance.addPostFrameCallback((_) => controller.dispose());
     }
   }
 

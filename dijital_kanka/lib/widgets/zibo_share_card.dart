@@ -56,13 +56,23 @@ class ZiboShareCard extends StatelessWidget {
   static double _baseFontSize(String message) =>
       message.contains('\n') ? 26 : 36;
 
+  /// **Faz 6 düzeltmesi** — eskiden sağ üst köşede AYRI bir "Pro" rozeti
+  /// vardı; kullanıcı isteğiyle kaldırıldı, YERİNE kartın sol üstündeki
+  /// Zibo logosu abonelik durumuna göre değişiyor (`root_screen.dart`'taki
+  /// `_ziboLogoAsset` ile AYNI varlık/mantık — free/Pro/Pro+).
+  static String _logoAsset(SubscriptionProvider subscription) {
+    if (subscription.isProPlus) return 'assets/images/zibo_pro_plus_logo.webp';
+    if (subscription.isPro) return 'assets/images/zibo_pro_logo.webp';
+    return 'assets/images/zibo_logo_new.webp';
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     // Faz 5 (C3) — Zibo Pro/Pro+ filigranı, RepaintBoundary ile yakalanan
     // BU widget ağacına eklenmeli (ZiboShareSheet'e DEĞİL) — aksi halde
     // oluşturulan PNG'de görünmez. Free kullanıcıda kart AYNEN kalır.
-    final isPro = context.watch<SubscriptionProvider>().isPro;
+    final subscription = context.watch<SubscriptionProvider>();
 
     return SizedBox(
       width: width,
@@ -75,7 +85,7 @@ class ZiboShareCard extends StatelessWidget {
               top: 40,
               left: 32,
               child: Image.asset(
-                'assets/images/zibo_logo_new.webp',
+                _logoAsset(subscription),
                 width: 100,
                 semanticLabel: l10n.ziboImagePlaceholder,
               ),
@@ -134,17 +144,6 @@ class ZiboShareCard extends StatelessWidget {
                 ),
               ),
             ),
-            if (isPro)
-              Positioned(
-                top: 16,
-                right: 16,
-                child: Image.asset(
-                  'assets/images/pro_watermark.png',
-                  width: 48,
-                  height: 48,
-                  semanticLabel: l10n.shareCardProWatermarkSemanticLabel,
-                ),
-              ),
           ],
         ),
       ),

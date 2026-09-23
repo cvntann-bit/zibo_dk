@@ -121,29 +121,47 @@ class _AnimatedThemeOverlayState extends State<AnimatedThemeOverlay>
     super.dispose();
   }
 
+  // **Faz 6 KRİTİK bug düzeltmesi — Crashlytics'te "tema değiştirince/başka
+  // bir ekran açılınca çöküyor" olarak bildirilen `_dependents.isEmpty`
+  // assertion'ı.** Bu widget `main.dart`'ta `MaterialApp.builder:`
+  // seviyesinde, UYGULAMANIN TAMAMININ (Navigator dahil) ÜSTÜNDE oturuyor.
+  // Eskiden `animationType == none || !isHomeTabActive.value` iken
+  // `widget.child`'ı DOĞRUDAN (bir `Stack`'in dışında, `build()`'in tek
+  // sonucu olarak), aksi halde AYNI `widget.child`'ı bir `Stack`'in İLK
+  // ELEMANI olarak döndürüyordu — `widget.child`'ın ağaçtaki DERİNLİĞİ
+  // (slot'u) bu iki durum arasında DEĞİŞİYORDU. Flutter'ın element
+  // uzlaştırması bunu "aynı alt ağaç, yeri değişti" olarak DEĞİL, "eski
+  // silinsin, yeni yerine kurulsun" olarak ele alıyor — `widget.child`
+  // TÜM UYGULAMA (Navigator, tüm route'lar, tüm Provider'ların Inherited
+  // element'leri) olduğu için bu YIKIM/YENİDEN-KURMA sırasında bazı
+  // Inherited element'lerin `_dependents` listesi düzgün temizlenmeden
+  // unmount ediliyor. **Düzeltme:** `build()` ARTIK HER ZAMAN AYNI YAPIYI
+  // (her zaman bir `Stack`, `widget.child` HER ZAMAN 0. eleman) döndürüyor
+  // — yalnızca parçacık katmanının VAR OLUP OLMADIĞI değişiyor, bu
+  // `widget.child`'ın derinliğini/element kimliğini HİÇ ETKİLEMiyor.
   @override
   Widget build(BuildContext context) {
-    if (widget.animationType == ThemeAnimationType.none ||
-        !isHomeTabActive.value) {
-      return widget.child;
-    }
+    final showParticles =
+        widget.animationType != ThemeAnimationType.none &&
+        isHomeTabActive.value;
     return Stack(
       children: [
         widget.child,
         // Dokunuşları ALTINDAKİ gerçek içeriğe geçirmesi ZORUNLU — bu salt
         // dekoratif bir katman, hiçbir buton/kart tıklamasını engellememeli.
-        Positioned.fill(
-          child: IgnorePointer(
-            child: RepaintBoundary(
-              child: ThemeParticleEffect(
-                key: const Key('themeParticleEffect'),
-                type: widget.animationType,
-                progress: _controller,
-                isDark: widget.isDark,
+        if (showParticles)
+          Positioned.fill(
+            child: IgnorePointer(
+              child: RepaintBoundary(
+                child: ThemeParticleEffect(
+                  key: const Key('themeParticleEffect'),
+                  type: widget.animationType,
+                  progress: _controller,
+                  isDark: widget.isDark,
+                ),
               ),
             ),
           ),
-        ),
       ],
     );
   }
