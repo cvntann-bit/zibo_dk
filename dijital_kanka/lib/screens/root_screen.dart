@@ -515,9 +515,8 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
   /// **Faz 5** — AppBar'daki Zibo logosu, kullanıcının aboneliğine göre
   /// kendi "Pro"/"Pro+" rozetini taşıyan bir varyanta değişir (Zibo Pro(+)
   /// materyalleri, sabit-genişlik DEĞİL — her logo kendi doğal en/boy
-  /// oranıyla `height: 38` sabitine göre ölçekleniyor — Faz 6'da 28'den
-  /// büyütüldü, yanındaki 30px ikon butonları/coin rozetiyle orantılı
-  /// olsun diye).
+  /// oranıyla `height: 46` sabitine göre ölçekleniyor — Faz 6'da kullanıcı
+  /// geri bildirimiyle 28 → 38 → 46'ya büyütüldü).
   String _ziboLogoAsset(SubscriptionProvider subscription) {
     if (subscription.isProPlus) return 'assets/images/zibo_pro_plus_logo.webp';
     if (subscription.isPro) return 'assets/images/zibo_pro_logo.webp';
@@ -546,7 +545,7 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
       appBar: AppBar(
         title: Semantics(
           label: l10n.homeAppBarTitle,
-          child: Image.asset(_ziboLogoAsset(subscription), height: 38),
+          child: Image.asset(_ziboLogoAsset(subscription), height: 46),
         ),
         centerTitle: false,
         actions: [

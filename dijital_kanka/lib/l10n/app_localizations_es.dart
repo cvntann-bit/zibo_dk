@@ -1089,6 +1089,22 @@ class AppLocalizationsEs extends AppLocalizations {
   String get manifestSavedMessage => 'Se guardó el registro de hoy.';
 
   @override
+  String get manifestDeleteEntryTooltip => 'Eliminar';
+
+  @override
+  String get manifestDeleteConfirmTitle => '¿Eliminar este registro?';
+
+  @override
+  String get manifestDeleteConfirmBody =>
+      'Este registro se eliminará permanentemente.';
+
+  @override
+  String get manifestDeleteConfirmYes => 'Sí';
+
+  @override
+  String get manifestDeleteConfirmNo => 'No';
+
+  @override
   String get manifestCoinRewardMessage => '¡Ganaste 5 Zibo Coin!';
 
   @override

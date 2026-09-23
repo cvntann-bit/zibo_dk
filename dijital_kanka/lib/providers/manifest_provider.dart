@@ -181,6 +181,21 @@ class ManifestProvider extends ChangeNotifier {
     return !alreadyClaimed;
   }
 
+  /// Faz 6 — kullanıcı isterse geçmişteki bir kaydı kalıcı olarak siler.
+  /// `_rewardClaimedDates`'e DOKUNMAZ — o günün coin ödülü zaten verilmiş
+  /// olabilir, bir kaydı silmek geriye dönük coin iadesi/iptali GEREKTİRMEZ
+  /// (diğer modüllerin "kayıt silinince ödül geri alınmaz" davranışıyla
+  /// AYNI). Fotoğraf dosyasının diskten silinmesi bu provider'ın işi DEĞİL
+  /// (bkz. `ManifestJournalScreen`'in `PhotoPickerService.deletePhoto`
+  /// çağrısı — provider'lar dosya sistemine dokunmaz).
+  void deleteEntry(String id) {
+    final removed = _entries.any((e) => e.id == id);
+    if (!removed) return;
+    _entries.removeWhere((e) => e.id == id);
+    notifyListeners();
+    _save();
+  }
+
   /// **2026 bug düzeltmesi — Crashlytics'teki EN BÜYÜK tekrarlayan hata,
   /// bkz. CLAUDE.md "Manifest Günlüğü ↔ Profil fotoğrafı" bölümü.**
   /// "Cihazlar arası fotoğraf taşınmaz" sınırlaması yüzünden (yalnızca

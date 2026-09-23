@@ -1084,6 +1084,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String get manifestSavedMessage => 'Today\'s entry was saved.';
 
   @override
+  String get manifestDeleteEntryTooltip => 'Delete';
+
+  @override
+  String get manifestDeleteConfirmTitle => 'Delete this entry?';
+
+  @override
+  String get manifestDeleteConfirmBody =>
+      'This entry will be permanently deleted.';
+
+  @override
+  String get manifestDeleteConfirmYes => 'Yes';
+
+  @override
+  String get manifestDeleteConfirmNo => 'No';
+
+  @override
   String get manifestCoinRewardMessage => 'You earned 5 Zibo Coin!';
 
   @override

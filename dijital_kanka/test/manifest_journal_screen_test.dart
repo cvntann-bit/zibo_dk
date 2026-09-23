@@ -335,4 +335,76 @@ void main() {
       );
     },
   );
+
+  testWidgets(
+    // Faz 6 düzeltmesi — kullanıcı isteği: geçmişteki bir kaydı silebilme.
+    'Geçmiş kartındaki "Sil" ikonuna dokunup onaylayınca kayıt kalıcı olarak '
+    'silinir; "Hayır" ile vazgeçilince kayıt KALIR',
+    (tester) async {
+      final currentDate = DateTime.now();
+      final manifestProvider = ManifestProvider(now: () => currentDate)
+        ..addEntry(photoPath: null, intentionText: 'Silinecek niyet');
+      final fakeService = _FakePhotoService();
+
+      await tester.pumpWidget(
+        MultiProvider(
+          providers: [
+            ChangeNotifierProvider(create: (_) => CoinProvider()),
+            ChangeNotifierProvider(create: (_) => CostumeProvider()),
+            ChangeNotifierProvider.value(value: manifestProvider),
+            ChangeNotifierProvider(create: (_) => ProfileProvider()),
+            ChangeNotifierProvider(create: (_) => SubscriptionProvider()),
+            ChangeNotifierProvider(create: (_) => ZiboPoseProvider()),
+          ],
+          child: MaterialApp(
+            debugShowCheckedModeBanner: false,
+            locale: const Locale('tr'),
+            localizationsDelegates: const [
+              AppLocalizations.delegate,
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: ManifestJournalScreen(photoService: fakeService),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.scrollUntilVisible(
+        find.text('Silinecek niyet'),
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
+
+      // IndexedStack/GridView içindeki köşe ikonu için koordinat tabanlı
+      // tap() hit-test uyuşmazlığı yaşayabiliyor (bkz. test/CLAUDE.md) —
+      // bu yüzden Tooltip'in içindeki InkWell'in onTap'ini DOĞRUDAN çağırıyoruz.
+      void tapDeleteIcon() {
+        tester
+            .widget<InkWell>(
+              find.descendant(of: find.byTooltip('Sil'), matching: find.byType(InkWell)),
+            )
+            .onTap!();
+      }
+
+      // "Hayır" ile vazgeçilince kayıt KALIR.
+      tapDeleteIcon();
+      await tester.pumpAndSettle();
+      expect(find.text('Hayalini silmek istiyor musun?'), findsOneWidget);
+      await tester.tap(find.text('Hayır'));
+      await tester.pumpAndSettle();
+      expect(manifestProvider.history, hasLength(1));
+
+      // "Evet" ile onaylanınca kayıt SİLİNİR.
+      tapDeleteIcon();
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Evet'));
+      await tester.pumpAndSettle();
+
+      expect(manifestProvider.history, isEmpty);
+      expect(find.text('Silinecek niyet'), findsNothing);
+    },
+  );
 }

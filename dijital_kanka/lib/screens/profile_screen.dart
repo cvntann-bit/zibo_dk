@@ -305,10 +305,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           ),
                         Center(
                           child: DecoratedBox(
+                            // Faz 6 düzeltmesi — Pro/Pro+ halkası zaten
+                            // kendi kalın konturunu taşıyor; avatarın KENDİ
+                            // ofsetli sticker gölgesi (varsayılan sağ-alta
+                            // kaymış düz silüet) dar halka boşluğunun İÇİNDE
+                            // asimetrik bir siyah hilal olarak taşıp
+                            // dairenin "yamuk" görünmesine sebep oluyordu —
+                            // çerçeve VARKEN gölge kaldırılıyor.
                             decoration: stickerCircleDecoration(
                               fill: colorScheme.surfaceContainerLowest,
                               borderWidth: 3,
-                              shadowOffset: const Offset(4, 4),
+                              shadowOffset: hasFrame ? Offset.zero : const Offset(4, 4),
                             ),
                             child: CircleAvatar(
                               radius: avatarDiameter / 2,

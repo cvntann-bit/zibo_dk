@@ -1990,6 +1990,36 @@ abstract class AppLocalizations {
   /// **'Bugünün girişi kaydedildi.'**
   String get manifestSavedMessage;
 
+  /// Geçmiş kartının köşesindeki silme ikonunun tooltip'i
+  ///
+  /// In tr, this message translates to:
+  /// **'Sil'**
+  String get manifestDeleteEntryTooltip;
+
+  /// Manifest kaydı silme onay diyaloğunun başlığı
+  ///
+  /// In tr, this message translates to:
+  /// **'Hayalini silmek istiyor musun?'**
+  String get manifestDeleteConfirmTitle;
+
+  /// Manifest kaydı silme onay diyaloğunun açıklama metni
+  ///
+  /// In tr, this message translates to:
+  /// **'Bu kayıt kalıcı olarak silinecek.'**
+  String get manifestDeleteConfirmBody;
+
+  /// Manifest kaydı silme onay diyaloğundaki olumlu buton
+  ///
+  /// In tr, this message translates to:
+  /// **'Evet'**
+  String get manifestDeleteConfirmYes;
+
+  /// Manifest kaydı silme onay diyaloğundaki olumsuz buton
+  ///
+  /// In tr, this message translates to:
+  /// **'Hayır'**
+  String get manifestDeleteConfirmNo;
+
   /// Bugünün girişi İLK KEZ tamamlanıp coin kazanılınca gösterilen kısa kutlama mesajı
   ///
   /// In tr, this message translates to:

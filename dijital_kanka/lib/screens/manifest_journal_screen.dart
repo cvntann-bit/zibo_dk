@@ -155,6 +155,33 @@ class _ManifestJournalScreenState extends State<ManifestJournalScreen> {
     }
   }
 
+  Future<void> _confirmDeleteEntry(ManifestEntry entry) async {
+    final l10n = AppLocalizations.of(context)!;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n.manifestDeleteConfirmTitle),
+        content: Text(l10n.manifestDeleteConfirmBody),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(l10n.manifestDeleteConfirmNo),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text(l10n.manifestDeleteConfirmYes),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    context.read<ManifestProvider>().deleteEntry(entry.id);
+    final photoPath = entry.photoPath;
+    if (photoPath != null) {
+      unawaited(widget.photoService.deletePhoto(photoPath));
+    }
+  }
+
   void _showEntryDetail(ManifestEntry entry) {
     final l10n = AppLocalizations.of(context)!;
     showDialog<void>(
@@ -355,6 +382,7 @@ class _ManifestJournalScreenState extends State<ManifestJournalScreen> {
                         key: ValueKey(entry.id),
                         entry: entry,
                         onTap: () => _showEntryDetail(entry),
+                        onDelete: () => _confirmDeleteEntry(entry),
                       );
                     },
                   ),
@@ -487,13 +515,20 @@ class _PhotoPickerArea extends StatelessWidget {
 /// Geçmiş vizyon panosu galerisindeki tek bir kart — küçük fotoğraf +
 /// kısaltılmış niyet metni + tarih. Dokununca tam detay diyaloğu açılır.
 class _HistoryCard extends StatelessWidget {
-  const _HistoryCard({super.key, required this.entry, required this.onTap});
+  const _HistoryCard({
+    super.key,
+    required this.entry,
+    required this.onTap,
+    required this.onDelete,
+  });
 
   final ManifestEntry entry;
   final VoidCallback onTap;
+  final VoidCallback onDelete;
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final colorScheme = Theme.of(context).colorScheme;
     final radius = BorderRadius.circular(16);
     final content = Column(
@@ -554,6 +589,33 @@ class _HistoryCard extends StatelessWidget {
               color: Colors.transparent,
               borderRadius: radius,
               child: InkWell(borderRadius: radius, onTap: onTap),
+            ),
+          ),
+          // Faz 6 — kullanıcı isteği: kayıt silme. Stack'in EN ÜSTÜNDE
+          // (yukarıdaki tam-kart InkWell'den SONRA) olduğu için dokunma
+          // önceliği bunda — tıklayınca detay diyaloğu AÇILMAZ, doğrudan
+          // silme onayı sorulur.
+          Positioned(
+            right: 4,
+            top: 4,
+            child: Tooltip(
+              message: l10n.manifestDeleteEntryTooltip,
+              child: Material(
+                color: colorScheme.errorContainer,
+                shape: const CircleBorder(),
+                child: InkWell(
+                  customBorder: const CircleBorder(),
+                  onTap: onDelete,
+                  child: Padding(
+                    padding: const EdgeInsets.all(5),
+                    child: Icon(
+                      Icons.close_rounded,
+                      size: 14,
+                      color: colorScheme.onErrorContainer,
+                    ),
+                  ),
+                ),
+              ),
             ),
           ),
         ],

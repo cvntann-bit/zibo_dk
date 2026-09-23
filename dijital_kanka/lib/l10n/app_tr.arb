@@ -1522,6 +1522,26 @@
   "@manifestSavedMessage": {
     "description": "Bugün zaten tamamlanmışken (coin tekrar verilmeden) tekrar kaydedilince gösterilen kısa mesaj"
   },
+  "manifestDeleteEntryTooltip": "Sil",
+  "@manifestDeleteEntryTooltip": {
+    "description": "Geçmiş kartının köşesindeki silme ikonunun tooltip'i"
+  },
+  "manifestDeleteConfirmTitle": "Hayalini silmek istiyor musun?",
+  "@manifestDeleteConfirmTitle": {
+    "description": "Manifest kaydı silme onay diyaloğunun başlığı"
+  },
+  "manifestDeleteConfirmBody": "Bu kayıt kalıcı olarak silinecek.",
+  "@manifestDeleteConfirmBody": {
+    "description": "Manifest kaydı silme onay diyaloğunun açıklama metni"
+  },
+  "manifestDeleteConfirmYes": "Evet",
+  "@manifestDeleteConfirmYes": {
+    "description": "Manifest kaydı silme onay diyaloğundaki olumlu buton"
+  },
+  "manifestDeleteConfirmNo": "Hayır",
+  "@manifestDeleteConfirmNo": {
+    "description": "Manifest kaydı silme onay diyaloğundaki olumsuz buton"
+  },
   "manifestCoinRewardMessage": "+5 Zibo Coin kazandın!",
   "@manifestCoinRewardMessage": {
     "description": "Bugünün girişi İLK KEZ tamamlanıp coin kazanılınca gösterilen kısa kutlama mesajı"

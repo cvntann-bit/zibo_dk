@@ -1084,6 +1084,21 @@ class AppLocalizationsTr extends AppLocalizations {
   String get manifestSavedMessage => 'Bugünün girişi kaydedildi.';
 
   @override
+  String get manifestDeleteEntryTooltip => 'Sil';
+
+  @override
+  String get manifestDeleteConfirmTitle => 'Hayalini silmek istiyor musun?';
+
+  @override
+  String get manifestDeleteConfirmBody => 'Bu kayıt kalıcı olarak silinecek.';
+
+  @override
+  String get manifestDeleteConfirmYes => 'Evet';
+
+  @override
+  String get manifestDeleteConfirmNo => 'Hayır';
+
+  @override
   String get manifestCoinRewardMessage => '+5 Zibo Coin kazandın!';
 
   @override
