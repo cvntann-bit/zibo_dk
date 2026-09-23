@@ -601,4 +601,67 @@ void main() {
       expect(provider.balance, 100);
     });
   });
+
+  // Faz 6 — Günlük Giriş Ödülleri tablosunun Pro/Pro+ çarpanını GÖRÜNÜR
+  // hale getiren yeniden tasarımının regresyon testleri. `previewDailyLoginReward`/
+  // `dailyLoginMultiplierLabel`, `earnDailyLoginReward`'ın KENDİSİYLE aynı
+  // hesaplamayı paylaşıyor — ekranda gösterilen tutarın gerçekte eklenenden
+  // hiçbir zaman SAPMAMASI bu testlerle garanti altına alınıyor.
+  group('CoinProvider - Günlük Giriş Ödülü Pro/Pro+ çarpanı', () {
+    test(
+      'Ücretsiz kullanıcı: çarpan etiketi yok, önizleme temel tutarla AYNI',
+      () {
+        final provider = CoinProvider();
+
+        expect(provider.dailyLoginMultiplierLabel, isNull);
+        expect(provider.previewDailyLoginReward(5), 5);
+        expect(provider.previewDailyLoginReward(100), 100);
+
+        provider.earnDailyLoginReward(5);
+        expect(provider.balance, 5);
+      },
+    );
+
+    test(
+      'Zibo Pro: çarpan etiketi "1.5x", önizleme YARIM YUVARLAMA ile 1,5x',
+      () {
+        final provider = CoinProvider(isPro: () => true);
+
+        expect(provider.dailyLoginMultiplierLabel, '1.5x');
+        // 5 × 1,5 = 7,5 → 8 (round, yarısı yukarı)
+        expect(provider.previewDailyLoginReward(5), 8);
+        expect(provider.previewDailyLoginReward(20), 30);
+        expect(provider.previewDailyLoginReward(100), 150);
+
+        provider.earnDailyLoginReward(5);
+        expect(provider.balance, 8);
+      },
+    );
+
+    test('Zibo Pro+: çarpan etiketi "2x", önizleme tam 2x', () {
+      final provider = CoinProvider(isPro: () => true, isProPlus: () => true);
+
+      expect(provider.dailyLoginMultiplierLabel, '2x');
+      expect(provider.previewDailyLoginReward(5), 10);
+      expect(provider.previewDailyLoginReward(100), 200);
+
+      provider.earnDailyLoginReward(5);
+      expect(provider.balance, 10);
+    });
+
+    test(
+      'previewDailyLoginReward TÜM CoinEconomy.dailyLoginRewards değerleri '
+      'için earnDailyLoginReward ile AYNI tutarı hesaplar (Pro+)',
+      () {
+        final provider = CoinProvider(isPro: () => true, isProPlus: () => true);
+
+        for (final base in CoinEconomy.dailyLoginRewards) {
+          final preview = provider.previewDailyLoginReward(base);
+          final before = provider.balance;
+          provider.earnDailyLoginReward(base);
+          expect(provider.balance - before, preview);
+        }
+      },
+    );
+  });
 }

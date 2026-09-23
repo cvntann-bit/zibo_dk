@@ -476,20 +476,39 @@ class CoinProvider extends ChangeNotifier {
   /// Ondalık sonuç `.round()` ile tamsayıya yuvarlanır (ör. 5 ZC × 1,5 =
   /// 7,5 → 8 ZC).
   void earnDailyLoginReward(int amount) {
-    int finalAmount = amount;
-    int? bonusPercent;
-    if (_isProPlus()) {
-      finalAmount = (amount * 2).round();
-      bonusPercent = 200;
-    } else if (_isPro()) {
-      finalAmount = (amount * 1.5).round();
-      bonusPercent = 150;
-    }
     _earn(
-      finalAmount,
+      previewDailyLoginReward(amount),
       'Günlük giriş ödülü',
-      bonusMultiplierPercent: bonusPercent,
+      bonusMultiplierPercent: _dailyLoginBonusPercent,
     );
+  }
+
+  int? get _dailyLoginBonusPercent {
+    if (_isProPlus()) return 200;
+    if (_isPro()) return 150;
+    return null;
+  }
+
+  /// [amount] (bir günün TEMEL ödülü, `CoinEconomy.dailyLoginRewards`)
+  /// için — Pro/Pro+ çarpanı uygulandıktan SONRAKİ gerçek tutarı, herhangi
+  /// bir yan etki OLMADAN (bakiyeye eklemeden) döner. `DailyRewardsScreen`
+  /// bunu kullanıcıya "bu günü alınca kaç ZC kazanacak" diye göstermek için
+  /// çağırır — [earnDailyLoginReward] ile AYNI hesaplamayı TEK yerden
+  /// yaparak ekranda gösterilen tutarla GERÇEKTEN kazanılan tutarın asla
+  /// birbirinden sapmamasını garantiler.
+  int previewDailyLoginReward(int amount) {
+    if (_isProPlus()) return (amount * 2).round();
+    if (_isPro()) return (amount * 1.5).round();
+    return amount;
+  }
+
+  /// Günlük giriş ödülleri tablosunda her günün yanında gösterilecek
+  /// çarpan etiketi — Pro+ "2x", Pro "1.5x", ücretsiz kullanıcı için
+  /// `null` (rozet hiç gösterilmez).
+  String? get dailyLoginMultiplierLabel {
+    if (_isProPlus()) return '2x';
+    if (_isPro()) return '1.5x';
+    return null;
   }
 
   /// Rozet Sistemi: bir rozet kazanılıp "Ödülü Al" butonuna basıldığında
