@@ -2745,6 +2745,30 @@
   "@paywallProPlusPerkNotificationSounds": {
     "description": "Zibo Pro+ perk listesi satırı"
   },
+  "paywallCloseTooltip": "Kapat",
+  "@paywallCloseTooltip": {
+    "description": "Paywall'ın sağ üst köşesindeki küçük kapatma butonunun erişilebilirlik etiketi"
+  },
+  "paywallSocialProofLine": "⭐ 4,8 puan · binlerce mutlu Kanka Zibo Pro kullanıyor",
+  "@paywallSocialProofLine": {
+    "description": "PLACEHOLDER — gerçek puan/kullanıcı sayısı geldiğinde güncellenmeli. Paywall'daki sosyal kanıt satırı"
+  },
+  "paywallCompareTableTitle": "Hangisi sana uygun?",
+  "@paywallCompareTableTitle": {
+    "description": "Kartların altındaki Ücretsiz/Pro/Pro+ karşılaştırma tablosunun başlığı"
+  },
+  "paywallCompareColumnFree": "Ücretsiz",
+  "@paywallCompareColumnFree": {
+    "description": "Karşılaştırma tablosunun ilk sütun başlığı"
+  },
+  "paywallCompareColumnPro": "Pro",
+  "@paywallCompareColumnPro": {
+    "description": "Karşılaştırma tablosunun ikinci sütun başlığı"
+  },
+  "paywallCompareColumnProPlus": "Pro+",
+  "@paywallCompareColumnProPlus": {
+    "description": "Karşılaştırma tablosunun üçüncü sütun başlığı"
+  },
   "paywallPurchaseSuccessMessage": "Satın alma başarılı! Zibo'ya hoş geldin 🎉",
   "@paywallPurchaseSuccessMessage": {
     "description": "Paywall'da bir satın alma başarıyla tamamlanınca gösterilen mesaj"

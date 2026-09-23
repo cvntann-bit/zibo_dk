@@ -1090,7 +1090,7 @@ void main() {
   );
 
   testWidgets(
-    'Paywall AppBar\'ın geri tuşuyla, mesaj göstermeden kapanır',
+    'Paywall küçük kapatma (X) butonuyla, mesaj göstermeden kapanır',
     (WidgetTester tester) async {
       await _pumpPastOnboarding(tester, const DijitalKankaApp());
 
@@ -1108,7 +1108,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.byType(PaywallScreen), findsOneWidget);
 
-      await tester.tap(find.byTooltip('Geri'));
+      await tester.tap(find.byTooltip('Kapat'));
       await tester.pumpAndSettle();
       expect(find.byType(PaywallScreen), findsNothing);
       expect(

@@ -2059,6 +2059,25 @@ class AppLocalizationsEn extends AppLocalizations {
       'Exclusive notification sounds';
 
   @override
+  String get paywallCloseTooltip => 'Close';
+
+  @override
+  String get paywallSocialProofLine =>
+      '⭐ 4.8 rating · thousands of happy Kankas use Zibo Pro';
+
+  @override
+  String get paywallCompareTableTitle => 'Which one\'s right for you?';
+
+  @override
+  String get paywallCompareColumnFree => 'Free';
+
+  @override
+  String get paywallCompareColumnPro => 'Pro';
+
+  @override
+  String get paywallCompareColumnProPlus => 'Pro+';
+
+  @override
   String get paywallPurchaseSuccessMessage =>
       'Purchase successful! Welcome to Zibo 🎉';
 

@@ -2050,6 +2050,25 @@ class AppLocalizationsTr extends AppLocalizations {
   String get paywallProPlusPerkNotificationSounds => 'Özel bildirim sesleri';
 
   @override
+  String get paywallCloseTooltip => 'Kapat';
+
+  @override
+  String get paywallSocialProofLine =>
+      '⭐ 4,8 puan · binlerce mutlu Kanka Zibo Pro kullanıyor';
+
+  @override
+  String get paywallCompareTableTitle => 'Hangisi sana uygun?';
+
+  @override
+  String get paywallCompareColumnFree => 'Ücretsiz';
+
+  @override
+  String get paywallCompareColumnPro => 'Pro';
+
+  @override
+  String get paywallCompareColumnProPlus => 'Pro+';
+
+  @override
   String get paywallPurchaseSuccessMessage =>
       'Satın alma başarılı! Zibo\'ya hoş geldin 🎉';
 

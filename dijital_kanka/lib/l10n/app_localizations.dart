@@ -3694,6 +3694,42 @@ abstract class AppLocalizations {
   /// **'Özel bildirim sesleri'**
   String get paywallProPlusPerkNotificationSounds;
 
+  /// Paywall'ın sağ üst köşesindeki küçük kapatma butonunun erişilebilirlik etiketi
+  ///
+  /// In tr, this message translates to:
+  /// **'Kapat'**
+  String get paywallCloseTooltip;
+
+  /// PLACEHOLDER — gerçek puan/kullanıcı sayısı geldiğinde güncellenmeli. Paywall'daki sosyal kanıt satırı
+  ///
+  /// In tr, this message translates to:
+  /// **'⭐ 4,8 puan · binlerce mutlu Kanka Zibo Pro kullanıyor'**
+  String get paywallSocialProofLine;
+
+  /// Kartların altındaki Ücretsiz/Pro/Pro+ karşılaştırma tablosunun başlığı
+  ///
+  /// In tr, this message translates to:
+  /// **'Hangisi sana uygun?'**
+  String get paywallCompareTableTitle;
+
+  /// Karşılaştırma tablosunun ilk sütun başlığı
+  ///
+  /// In tr, this message translates to:
+  /// **'Ücretsiz'**
+  String get paywallCompareColumnFree;
+
+  /// Karşılaştırma tablosunun ikinci sütun başlığı
+  ///
+  /// In tr, this message translates to:
+  /// **'Pro'**
+  String get paywallCompareColumnPro;
+
+  /// Karşılaştırma tablosunun üçüncü sütun başlığı
+  ///
+  /// In tr, this message translates to:
+  /// **'Pro+'**
+  String get paywallCompareColumnProPlus;
+
   /// Paywall'da bir satın alma başarıyla tamamlanınca gösterilen mesaj
   ///
   /// In tr, this message translates to:
