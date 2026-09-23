@@ -187,24 +187,33 @@ class LocalNotificationService extends NotificationService {
 
   /// **Faz 5 (E2) — Zibo Pro+'a özel bildirim sesleri.** Android bir bildirim
   /// kanalının sesini OLUŞTURULDUKTAN SONRA DEĞİŞTİREMEZ
-  /// (`AndroidNotificationChannel` immutable) — bu yüzden "3 farklı ses
+  /// (`AndroidNotificationChannel` immutable) — bu yüzden "5 farklı ses
   /// seçeneği" tek bir kanalın sesini değiştirerek DEĞİL, HER seçenek için
   /// AYRI, kendi sesiyle sabit bir kanal önceden oluşturarak yapılıyor.
   /// `push_notifications` (yukarıdaki) DEĞİŞMİYOR — free/Pro kullanıcının
   /// varsayılanı. `notification-scripts/src/common.js`'in `sendToUser`'ı
-  /// kullanıcının `proPlusSoundChoice` alanına göre BU üç kanaldan birini
+  /// kullanıcının `proPlusSoundChoice` alanına göre BU beş kanaldan birini
   /// (veya varsayılanı) hedefliyor. Ses dosyaları `android/app/src/main/
-  /// res/raw/proplus_sound_1/2/3.mp3` — ŞU AN PLACEHOLDER (bu makinede mp3
-  /// encoder yok), kullanıcı gerçek dosyaları aynı ada koyacak.
+  /// res/raw/proplus_sound_1..5.mp3` — 2026-09-23'te GERÇEK ses dosyalarıyla
+  /// dolduruldu. **Zaten kurulu bir uygulamada kanal ses değişikliğini
+  /// yansıtmaz** (yukarıdaki immutable kısıt) — bu makinedeki test cihazı
+  /// dahil, `proplus_sound_1/2/3` ile ÖNCEDEN kanal oluşturmuş her kurulum
+  /// eski (placeholder) sesi duymaya devam eder; yeni sesi duymak için
+  /// uygulamanın TAMAMEN kaldırılıp yeniden kurulması gerekir (bkz.
+  /// `android/CLAUDE.md` "Bildirimler / kanallar").
   static const _proPlusChannelIds = [
     'push_notifications_proplus_1',
     'push_notifications_proplus_2',
     'push_notifications_proplus_3',
+    'push_notifications_proplus_4',
+    'push_notifications_proplus_5',
   ];
   static const _proPlusChannelSounds = [
     RawResourceAndroidNotificationSound('proplus_sound_1'),
     RawResourceAndroidNotificationSound('proplus_sound_2'),
     RawResourceAndroidNotificationSound('proplus_sound_3'),
+    RawResourceAndroidNotificationSound('proplus_sound_4'),
+    RawResourceAndroidNotificationSound('proplus_sound_5'),
   ];
 
   final _plugin = FlutterLocalNotificationsPlugin();

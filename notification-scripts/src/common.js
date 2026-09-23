@@ -267,7 +267,7 @@ const TYPE_INFO = {
 
 /** Faz 5 (E2) — Zibo Pro+'a özel bildirim sesleri. Android bir kanalın
  * sesini OLUŞTURULDUKTAN SONRA değiştiremediği için (bkz.
- * lib/services/notification_service.dart'taki AYNI gerekçe), 3 seçenek 3
+ * lib/services/notification_service.dart'taki AYNI gerekçe), 5 seçenek 5
  * AYRI, istemcide önceden oluşturulmuş kanala karşılık geliyor —
  * `user.proPlusSoundChoice` (`users/{uid}` kök alanı, istemci PushNotification
  * Provider.setProPlusSoundChoice tarafından yazılıyor) burada TEK bir yerde
@@ -279,6 +279,8 @@ const PROPLUS_SOUND_CHANNELS = {
   '1': 'push_notifications_proplus_1',
   '2': 'push_notifications_proplus_2',
   '3': 'push_notifications_proplus_3',
+  '4': 'push_notifications_proplus_4',
+  '5': 'push_notifications_proplus_5',
 };
 
 async function sendToUser(user, type, title, body) {

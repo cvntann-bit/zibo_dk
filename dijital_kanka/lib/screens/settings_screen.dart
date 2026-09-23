@@ -133,6 +133,8 @@ class SettingsScreen extends StatelessWidget {
       '1': l10n.settingsProPlusSoundOption(1),
       '2': l10n.settingsProPlusSoundOption(2),
       '3': l10n.settingsProPlusSoundOption(3),
+      '4': l10n.settingsProPlusSoundOption(4),
+      '5': l10n.settingsProPlusSoundOption(5),
     };
 
     await showModalBottomSheet<void>(
@@ -160,6 +162,8 @@ class SettingsScreen extends StatelessWidget {
         '1' => l10n.settingsProPlusSoundOption(1),
         '2' => l10n.settingsProPlusSoundOption(2),
         '3' => l10n.settingsProPlusSoundOption(3),
+        '4' => l10n.settingsProPlusSoundOption(4),
+        '5' => l10n.settingsProPlusSoundOption(5),
         _ => l10n.settingsProPlusSoundDefault,
       };
 
