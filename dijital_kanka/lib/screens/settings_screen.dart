@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -35,6 +38,33 @@ const _contactEmail = 'contact@getzibo.com';
 /// Web sitesi — Ayarlar > Hakkında > "Web Sitesi" satırında hem görünen
 /// metin hem `https://` hedefi olarak kullanılıyor.
 const _websiteHost = 'getzibo.com';
+
+/// `android/CLAUDE.md` "Değiştirilmemesi gereken kritik contract'lar" —
+/// `applicationId` SABİT, `android.resource://` URI'siyle Pro+ bildirim
+/// seslerini native `res/raw/` kaynağından ÖNİZLEMEK için kullanılıyor
+/// (bkz. [_playProPlusSoundPreview]) — bu sesler Flutter asset'i DEĞİL,
+/// gerçek bildirim kanalıyla AYNI dosyalar (`SoundEffectsService`'in
+/// `assets/sounds/` + `AssetSource` deseninden BİLEREK FARKLI).
+const _androidApplicationId = 'com.dijitalkanka.dijital_kanka';
+
+/// Ayarlar'daki Pro+ ses seçicisinde bir seçeneğe dokununca O SESİ hemen
+/// çalar — `choice == null` ("Varsayılan") `zibo_notification`'ı,
+/// `'1'..'5'` ise `proplus_sound_N`'i önizler. Kısa ömürlü, tek kullanımlık
+/// bir `AudioPlayer` oluşturup çalma bitince kendini dispose ediyor (sheet
+/// hemen kapandığı için kalıcı bir State'e bağlı OLAMAZ).
+Future<void> _playProPlusSoundPreview(String? choice) async {
+  final resourceName = choice == null ? 'zibo_notification' : 'proplus_sound_$choice';
+  try {
+    final player = AudioPlayer();
+    unawaited(player.onPlayerComplete.first.then((_) => player.dispose()));
+    await player.play(
+      UrlSource('android.resource://$_androidApplicationId/raw/$resourceName'),
+    );
+  } catch (_) {
+    // Ses altyapısı bu ortamda/cihazda kullanılamıyor — sessizce yok say,
+    // seçim (`setProPlusSoundChoice`) zaten ayrı çağrıldığı için etkilenmez.
+  }
+}
 
 /// [uri]'yi açmayı dener; cihazda uygun bir uygulama yoksa (ör. hiç mail
 /// istemcisi kurulu değilse) sessizce başarısız olmak yerine kullanıcıya
@@ -121,10 +151,9 @@ class SettingsScreen extends StatelessWidget {
 
   /// **Faz 5 (E2)** — yalnızca Zibo Pro+ kullanıcıya açık, `_showThemeModePicker`
   /// ile BİREBİR AYNI `_SettingsPickerSheet`/`_SheetOptionRow` deseni.
-  /// Seçim `PushNotificationProvider.setProPlusSoundChoice`'a gidiyor —
-  /// gerçek ses yalnızca sunucudan gelen bir push bildirimi ANINDA duyulur
-  /// (bkz. `notification-scripts/src/common.js`), burada anında bir önizleme
-  /// YOK.
+  /// Seçim `PushNotificationProvider.setProPlusSoundChoice`'a gidiyor;
+  /// AYRICA dokunulan seçeneğin sesi [_playProPlusSoundPreview] ile hemen
+  /// çalınır (kullanıcı isteği — gerçek push bildirimini beklemeden önizleme).
   Future<void> _showProPlusSoundPicker(BuildContext context) async {
     final l10n = AppLocalizations.of(context)!;
     final pushProvider = context.read<PushNotificationProvider>();
@@ -149,6 +178,7 @@ class SettingsScreen extends StatelessWidget {
               selected: pushProvider.proPlusSoundChoice == entry.key,
               onTap: () {
                 pushProvider.setProPlusSoundChoice(entry.key);
+                unawaited(_playProPlusSoundPreview(entry.key));
                 Navigator.of(sheetContext).pop();
               },
             ),
