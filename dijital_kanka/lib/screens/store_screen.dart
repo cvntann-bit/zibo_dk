@@ -21,9 +21,11 @@ import '../widgets/google_link_promo_sheet.dart';
 import '../widgets/sticker_style.dart';
 import '../widgets/theme_option_card.dart';
 
-/// Mağaza'nın üç segmenti — dışarıdan (ör. Profil > Kostüm Dolabı
-/// önizlemesi) doğrudan bir segmentle açılabilmesi için public.
-enum StoreSection { coins, costumes, themes }
+/// Mağaza'nın dört segmenti — dışarıdan (ör. Profil > Kostüm Dolabı
+/// önizlemesi) doğrudan bir segmentle açılabilmesi için public. `pro`
+/// (2026 güncellemesi) — eskiden Ayarlar'ın en üstünde duran paywall giriş
+/// noktası, kullanıcı isteğiyle buraya taşındı (bkz. `_ZiboProSection`).
+enum StoreSection { coins, costumes, themes, pro }
 
 /// Zibo Coin satın alma ve kostüm mağazası. Alt gezinme çubuğundaki
 /// "Mağaza" sekmesi ve başlık çubuğundaki '+' ikonu (aynı sekmeye geçer)
@@ -125,6 +127,7 @@ class _StoreScreenState extends State<StoreScreen> {
           StoreSection.coins => const _BuyCoinsSection(),
           StoreSection.costumes => const _CostumesSection(),
           StoreSection.themes => const _ThemesSection(),
+          StoreSection.pro => const _ZiboProSection(),
         },
       ],
     );
@@ -158,6 +161,10 @@ class _StoreSegmentedControl extends StatelessWidget {
         Expanded(
           child: _segment(context, StoreSection.themes, l10n.storeThemesTabLabel),
         ),
+        const SizedBox(width: 6),
+        Expanded(
+          child: _segment(context, StoreSection.pro, l10n.storeProTabLabel),
+        ),
       ],
     );
   }
@@ -169,7 +176,7 @@ class _StoreSegmentedControl extends StatelessWidget {
     return Stack(
       children: [
         Container(
-          padding: const EdgeInsets.symmetric(vertical: 9),
+          padding: const EdgeInsets.symmetric(vertical: 9, horizontal: 2),
           alignment: Alignment.center,
           // Dolgu + kontur + gölge AYNI `BoxDecoration`'da olmalı — ayrı bir
           // `Material` katmanına bölünürse gölge (düz, bulanıksız kopya)
@@ -184,15 +191,21 @@ class _StoreSegmentedControl extends StatelessWidget {
                 ? const [BoxShadow(color: kStickerOutline, offset: Offset(2, 2))]
                 : null,
           ),
-          child: Text(
-            label,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              fontFamily: 'Baloo2',
-              fontVariations: const [FontVariation('wght', 700)],
-              fontSize: 12.5,
-              color: active ? colorScheme.onPrimary : colorScheme.onSurfaceVariant,
+          // 4. segment (Zibo Pro) eklenince hücreler daraldı — `FittedBox`
+          // ile metin gerekirse küçülüyor, `maxLines`/`ellipsis`'in
+          // "Zibo Pro" gibi KISALTILMASI anlamsız bir marka adını yarım
+          // kesmesindense tam okunur kalması tercih edildi.
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              label,
+              maxLines: 1,
+              style: TextStyle(
+                fontFamily: 'Baloo2',
+                fontVariations: const [FontVariation('wght', 700)],
+                fontSize: 12.5,
+                color: active ? colorScheme.onPrimary : colorScheme.onSurfaceVariant,
+              ),
             ),
           ),
         ),
@@ -321,6 +334,22 @@ class _ThemesSection extends StatelessWidget {
       ..sort((a, b) => a.price.compareTo(b.price));
 
     return _ThemesGrid(themes: sortedThemes);
+  }
+}
+
+/// Mağaza'nın "Zibo Pro" sekmesi — eskiden Ayarlar'ın en üstünde duran
+/// paywall giriş noktasının YERİNE geçti (kullanıcı isteği, 2026-09-23:
+/// "artık ayarlar kısmında durmasın"). `PaywallContent(embedded: true)`
+/// DOĞRUDAN gömülüyor — ayrı bir sayfaya `Navigator.push` YOK, kullanıcı
+/// diğer sekmeler gibi bu sekmeye geçip/çıkabiliyor (bkz. o widget'ın
+/// `embedded` dokümantasyonu: kapatma X'i yok, kendi kaydırması yok, satın
+/// alma sonrası sekmeden ayrılmıyor).
+class _ZiboProSection extends StatelessWidget {
+  const _ZiboProSection();
+
+  @override
+  Widget build(BuildContext context) {
+    return const PaywallContent(embedded: true);
   }
 }
 

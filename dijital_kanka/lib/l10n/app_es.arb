@@ -159,6 +159,7 @@
   "costumeUnlockViaWater": "🎯 Desbloquéalo gratis con {target} días de seguimiento de agua ({current}/{target})",
   "costumeUnlockedViaGoalMessage": "🎉 ¡Desbloqueaste {name} gratis al cumplir tu meta!",
   "storeThemesTabLabel": "Temas",
+  "storeProTabLabel": "Zibo Pro",
   "adFreePromoTitle": "Zibo ADS",
   "adFreePromoSubtitle": "Experiencia Sin Anuncios",
   "adFreePromoBenefitNoAds": "Sin anuncios",

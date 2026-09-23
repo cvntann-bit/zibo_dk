@@ -556,6 +556,9 @@ class AppLocalizationsTr extends AppLocalizations {
   String get storeThemesTabLabel => 'Temalar';
 
   @override
+  String get storeProTabLabel => 'Zibo Pro';
+
+  @override
   String get adFreePromoTitle => 'Zibo ADS';
 
   @override

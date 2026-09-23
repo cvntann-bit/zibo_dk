@@ -783,6 +783,10 @@
   "@storeThemesTabLabel": {
     "description": "Mağaza sayfasındaki üç segmentten 'temalar' segmentinin etiketi"
   },
+  "storeProTabLabel": "Zibo Pro",
+  "@storeProTabLabel": {
+    "description": "Mağaza sayfasındaki 4. segment — Pro/Pro+ paywall'ının gömülü olduğu sekme. Marka adı, üç dilde de aynı kalır."
+  },
   "adFreePromoTitle": "Zibo ADS",
   "@adFreePromoTitle": {
     "description": "Zibo ADS (reklamsız deneyim) mockup tanıtım sheet'inin kırmızı banner'ındaki ana başlık"

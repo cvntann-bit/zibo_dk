@@ -1054,6 +1054,12 @@ abstract class AppLocalizations {
   /// **'Temalar'**
   String get storeThemesTabLabel;
 
+  /// Mağaza sayfasındaki 4. segment — Pro/Pro+ paywall'ının gömülü olduğu sekme. Marka adı, üç dilde de aynı kalır.
+  ///
+  /// In tr, this message translates to:
+  /// **'Zibo Pro'**
+  String get storeProTabLabel;
+
   /// Zibo ADS (reklamsız deneyim) mockup tanıtım sheet'inin kırmızı banner'ındaki ana başlık
   ///
   /// In tr, this message translates to:

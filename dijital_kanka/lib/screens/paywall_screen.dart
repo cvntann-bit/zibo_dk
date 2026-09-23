@@ -29,11 +29,31 @@ const adFreeFallbackPrice = PackagePrice(amount: 159.90);
 /// [SubscriptionOffer] modeline UYMUYOR (abonelik değil).
 const _adFreeProductId = 'remove_ads_lifetime';
 
-/// Zibo Pro / Zibo Pro+ / tek seferlik reklamsız paketin satıldığı TEK,
-/// kapsamlı paywall ekranı — bkz. `docs/subscribe_model.md`. Görsel dil
-/// uygulamanın "sticker" temasına (bkz. `sticker_style.dart`) uyarlandı: Zibo
-/// karakteri + dönen teşvik balonu, yan yana Pro/Pro+ kartları (Pro+ öne
-/// çıkarılmış), Ücretsiz/Pro/Pro+ karşılaştırma tablosu.
+/// `PaywallContent`'i tam ekran, KENDİ `Scaffold`'unda açan ince sarmalayıcı —
+/// Ana Sayfa'da Zibo'ya art arda dokunma, Mağaza'nın periyodik "Zibo ADS"
+/// tanıtımı ve kilitli Pro+ özelliklerinden gelen yönlendirmeler gibi
+/// KESİNTİ/modal tarzı giriş noktaları için (kapatma X'i + tam ekran
+/// gradyan). Mağaza'nın kendi "Zibo Pro" sekmesi (bkz. `store_screen.dart`)
+/// bunun yerine `PaywallContent(embedded: true)`'ı DOĞRUDAN gömer — o akışta
+/// zaten sekme değiştirerek "kapatılabildiği" için ayrı bir X/Scaffold'a
+/// gerek yok.
+class PaywallScreen extends StatelessWidget {
+  const PaywallScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      body: const PaywallContent(),
+    );
+  }
+}
+
+/// Zibo Pro / Zibo Pro+ / tek seferlik reklamsız paketin satıldığı asıl
+/// içerik — bkz. `docs/subscribe_model.md`. Görsel dil uygulamanın "sticker"
+/// temasına (bkz. `sticker_style.dart`) uyarlandı: Zibo karakteri + dönen
+/// teşvik balonu, yan yana Pro/Pro+ kartları (Pro+ öne çıkarılmış),
+/// Ücretsiz/Pro/Pro+ karşılaştırma tablosu.
 ///
 /// **Bilerek DIŞARIDA bırakılan iki perk** (bkz. `paywall_comparison.dart`
 /// dokümantasyonu): "Bildirim saatini kişiselleştir" (hiç implement
@@ -43,17 +63,25 @@ const _adFreeProductId = 'remove_ads_lifetime';
 /// filigran yok. Bu üç ARB anahtarı proje konvansiyonu gereği SİLİNMEDİ,
 /// yalnızca burada REFERANS edilmiyor.
 ///
-/// **Kapatma kontrolü KASITLI olarak her zaman görünür/erişilebilir** (sağ
-/// üstte küçük bir X) — Play Store politikası satın almaya teşvik ederken
-/// kapatmayı gizlemeyi/zorlaştırmayı yasaklıyor.
-class PaywallScreen extends StatefulWidget {
-  const PaywallScreen({super.key});
+/// [embedded] `false` (varsayılan, `PaywallScreen`): tam ekran gradyan +
+/// KASITLI olarak her zaman görünür/erişilebilir kapatma X'i (Play Store
+/// politikası satın almaya teşvik ederken kapatmayı gizlemeyi/
+/// zorlaştırmayı yasaklıyor) + kendi iç kaydırması + satın alma başarılı
+/// olunca `Navigator.pop`. `true` (Mağaza'nın "Zibo Pro" sekmesi): X YOK
+/// (sekme zaten "kapatılabilir"), dış `ListView`'in kaydırmasına bırakılır
+/// (kendi içinde AYRICA kaydırma alanı AÇMAZ — iç içe iki dikey scrollable
+/// "unbounded height" hatası verir), satın alma sonrası pop YAPILMAZ (Mağaza
+/// sekmesinden ayrılmaz, kullanıcı yeni durumunu AYNI sekmede görür).
+class PaywallContent extends StatefulWidget {
+  const PaywallContent({super.key, this.embedded = false});
+
+  final bool embedded;
 
   @override
-  State<PaywallScreen> createState() => _PaywallScreenState();
+  State<PaywallContent> createState() => _PaywallContentState();
 }
 
-class _PaywallScreenState extends State<PaywallScreen>
+class _PaywallContentState extends State<PaywallContent>
     with TickerProviderStateMixin {
   bool _isYearly = false;
 
@@ -199,7 +227,7 @@ class _PaywallScreenState extends State<PaywallScreen>
           : l10n.paywallPurchaseSuccessMessage;
       await showInfoDialog(context, message);
       if (!mounted) return;
-      Navigator.of(context).pop();
+      if (!widget.embedded) Navigator.of(context).pop();
     } else {
       final message = isUpgrade
           ? l10n.paywallUpgradeErrorMessage
@@ -216,6 +244,7 @@ class _PaywallScreenState extends State<PaywallScreen>
     final isAdFree = context.watch<AdFreeProvider>().isAdFree;
     final subscription = context.watch<SubscriptionProvider>();
     final colorScheme = Theme.of(context).colorScheme;
+    final embedded = widget.embedded;
 
     final proOffer = _offerFor(SubscriptionTier.pro);
     final proPlusOffer = _offerFor(SubscriptionTier.proPlus);
@@ -224,167 +253,180 @@ class _PaywallScreenState extends State<PaywallScreen>
     final quoteText = quotes[_quoteIndex % quotes.length];
     final comparisonRows = paywallComparisonRowsForLocale(locale);
 
-    return Scaffold(
-      backgroundColor: colorScheme.surface,
-      body: DecoratedBox(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [colorScheme.primaryContainer, colorScheme.surface],
-            stops: const [0, 0.6],
+    final column = Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (!embedded) const SizedBox(height: 32),
+        _PaywallHero(quoteText: quoteText, breathScale: _ambientPulseScale),
+        const SizedBox(height: 14),
+        Center(
+          child: Text(
+            l10n.paywallSocialProofLine,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontWeight: FontWeight.w700,
+              fontSize: 12.5,
+              color: colorScheme.onSurfaceVariant,
+            ),
           ),
         ),
-        child: SafeArea(
-          child: Stack(
+        const SizedBox(height: 18),
+        Center(
+          child: _BillingToggle(
+            isYearly: _isYearly,
+            monthlyLabel: l10n.paywallBillingToggleMonthly,
+            yearlyLabel: l10n.paywallBillingToggleYearly,
+            onChanged: (value) => setState(() => _isYearly = value),
+          ),
+        ),
+        const SizedBox(height: 20),
+        IntrinsicHeight(
+          child: Row(
+            // `stretch` — Pro/Pro+ kartları EŞİT yükseklikte olsun diye
+            // (bkz. `_PlanCard`'ın `Spacer`'ı); önceki `start` kısa kalan
+            // kartın altını boş bırakıyor, iki kart orantısız görünüyordu.
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              FadeTransition(
-                opacity: _entranceFade,
-                child: SlideTransition(
-                  position: _entranceSlide,
-                  child: SingleChildScrollView(
-                    // Sayfa TEK bir uzun kaydırma alanı — içerik sabit/sınırlı
-                    // olduğu için (dev listesi değil) `ListView` yerine
-                    // `SingleChildScrollView` BİLEREK seçildi: `ListView`'ın
-                    // sliver tabanlı "onstage" izleme mantığı, alt kısımdaki
-                    // (tek seferlik satır, karşılaştırma tablosu) öğeleri ilk
-                    // kaydırmadan ÖNCE `WidgetTester.pumpAndSettle()`
-                    // sonrasında bile "onstage" saymayabiliyor (bkz.
-                    // `test/CLAUDE.md`) — tüm içerik BAŞTAN inşa edilsin diye.
-                    padding: const EdgeInsets.fromLTRB(16, 4, 16, 32),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                      const SizedBox(height: 32),
-                      _PaywallHero(
-                        quoteText: quoteText,
-                        breathScale: _ambientPulseScale,
-                      ),
-                      const SizedBox(height: 14),
-                      Center(
-                        child: Text(
-                          l10n.paywallSocialProofLine,
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontWeight: FontWeight.w700,
-                            fontSize: 12.5,
-                            color: colorScheme.onSurfaceVariant,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 18),
-                      Center(
-                        child: _BillingToggle(
-                          isYearly: _isYearly,
-                          monthlyLabel: l10n.paywallBillingToggleMonthly,
-                          yearlyLabel: l10n.paywallBillingToggleYearly,
-                          onChanged: (value) => setState(() => _isYearly = value),
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      IntrinsicHeight(
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Expanded(
-                              child: _PlanCard(
-                                buttonKey: const Key('paywallProButton'),
-                                title: l10n.paywallProTitle,
-                                perks: [
-                                  l10n.paywallProPerkNoForcedAds,
-                                  l10n.paywallProPerkCoinBonus,
-                                  l10n.paywallProPerkStreakFreeze,
-                                  l10n.paywallProPerkWheelNoAds,
-                                ],
-                                priceLabel: _subscriptionPriceLabel(proOffer, l10n, languageCode),
-                                badgeText: subscription.isProPlus
-                                    ? l10n.paywallAlreadyProPlusBadge
-                                    : subscription.isPro
-                                    ? l10n.paywallCurrentPlanBadge
-                                    : null,
-                                buttonLabel: l10n.paywallSubscribeButton,
-                                isLoading: _purchasingProductId == proOffer.productId,
-                                onTap: subscription.isPro ? null : () => _subscribe(proOffer),
-                                ctaPulseScale: _ambientPulseScale,
-                              ),
-                            ),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: _PlanCard(
-                                buttonKey: const Key('paywallProPlusButton'),
-                                title: l10n.paywallProPlusTitle,
-                                highlightLabel: l10n.paywallMostPopularBadge,
-                                emphasized: true,
-                                perks: [
-                                  l10n.paywallProPlusPerkCoinBonus,
-                                  l10n.paywallProPlusPerkStreakFreeze,
-                                  l10n.paywallProPlusPerkMoneyAnalysis,
-                                  l10n.paywallProPlusPerkNotificationSounds,
-                                ],
-                                priceLabel: _subscriptionPriceLabel(proPlusOffer, l10n, languageCode),
-                                badgeText: subscription.isProPlus
-                                    ? l10n.paywallAlreadyProPlusBadge
-                                    : null,
-                                buttonLabel: subscription.isPro
-                                    ? l10n.paywallUpgradeButton
-                                    : l10n.paywallSubscribeButton,
-                                isLoading: _purchasingProductId == proPlusOffer.productId,
-                                onTap: subscription.isProPlus
-                                    ? null
-                                    : subscription.isPro
-                                    ? () => _upgrade(proPlusOffer)
-                                    : () => _subscribe(proPlusOffer),
-                                ctaPulseScale: _ambientPulseScale,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      // Tek seferlik reklamsız satır — kullanıcı zaten Pro/
-                      // Pro+ ise GİZLİ (Pro zaten reklamları kaldırıyor, ayrıca
-                      // göstermek kafa karıştırır — bkz. `docs/subscribe_model.md`).
-                      if (!subscription.isPro) ...[
-                        const SizedBox(height: 12),
-                        _OneTimeAdFreeRow(
-                          buttonKey: const Key('paywallOneTimeButton'),
-                          title: l10n.paywallOneTimeTitle,
-                          benefit: l10n.paywallOneTimeBenefit,
-                          priceLabel: _adFreePriceLabel(languageCode),
-                          badgeText: isAdFree ? l10n.storeAdFreeCardPurchasedLabel : null,
-                          buttonLabel: l10n.paywallBuyButton,
-                          isLoading: _purchasingProductId == _adFreeProductId,
-                          onTap: isAdFree ? null : _buyAdFree,
-                        ),
-                      ],
-                      const SizedBox(height: 22),
-                      _ComparisonTable(
-                        title: l10n.paywallCompareTableTitle,
-                        columnFree: l10n.paywallCompareColumnFree,
-                        columnPro: l10n.paywallCompareColumnPro,
-                        columnProPlus: l10n.paywallCompareColumnProPlus,
-                        rows: comparisonRows,
-                      ),
-                      ],
-                    ),
-                  ),
+              Expanded(
+                child: _PlanCard(
+                  buttonKey: const Key('paywallProButton'),
+                  title: l10n.paywallProTitle,
+                  perks: [
+                    l10n.paywallProPerkNoForcedAds,
+                    l10n.paywallProPerkCoinBonus,
+                    l10n.paywallProPerkStreakFreeze,
+                    l10n.paywallProPerkWheelNoAds,
+                  ],
+                  priceLabel: _subscriptionPriceLabel(proOffer, l10n, languageCode),
+                  badgeText: subscription.isProPlus
+                      ? l10n.paywallAlreadyProPlusBadge
+                      : subscription.isPro
+                      ? l10n.paywallCurrentPlanBadge
+                      : null,
+                  buttonLabel: l10n.paywallSubscribeButton,
+                  isLoading: _purchasingProductId == proOffer.productId,
+                  onTap: subscription.isPro ? null : () => _subscribe(proOffer),
+                  ctaPulseScale: _ambientPulseScale,
                 ),
               ),
-              Positioned(
-                top: 4,
-                right: 4,
-                child: StickerIconButton(
-                  icon: Icons.close_rounded,
-                  tooltip: l10n.paywallCloseTooltip,
-                  onPressed: () => Navigator.of(context).maybePop(),
-                  backgroundColor: colorScheme.surfaceContainerLowest,
-                  iconColor: colorScheme.onSurface,
-                  size: 34,
-                  iconSize: 18,
+              const SizedBox(width: 10),
+              Expanded(
+                child: _PlanCard(
+                  buttonKey: const Key('paywallProPlusButton'),
+                  title: l10n.paywallProPlusTitle,
+                  highlightLabel: l10n.paywallMostPopularBadge,
+                  emphasized: true,
+                  perks: [
+                    l10n.paywallProPlusPerkCoinBonus,
+                    l10n.paywallProPlusPerkStreakFreeze,
+                    l10n.paywallProPlusPerkMoneyAnalysis,
+                    l10n.paywallProPlusPerkNotificationSounds,
+                  ],
+                  priceLabel: _subscriptionPriceLabel(proPlusOffer, l10n, languageCode),
+                  badgeText: subscription.isProPlus ? l10n.paywallAlreadyProPlusBadge : null,
+                  buttonLabel: subscription.isPro
+                      ? l10n.paywallUpgradeButton
+                      : l10n.paywallSubscribeButton,
+                  isLoading: _purchasingProductId == proPlusOffer.productId,
+                  onTap: subscription.isProPlus
+                      ? null
+                      : subscription.isPro
+                      ? () => _upgrade(proPlusOffer)
+                      : () => _subscribe(proPlusOffer),
+                  ctaPulseScale: _ambientPulseScale,
                 ),
               ),
             ],
           ),
         ),
+        // Tek seferlik reklamsız satır — kullanıcı zaten Pro/Pro+ ise GİZLİ
+        // (Pro zaten reklamları kaldırıyor, ayrıca göstermek kafa
+        // karıştırır — bkz. `docs/subscribe_model.md`).
+        if (!subscription.isPro) ...[
+          const SizedBox(height: 12),
+          _OneTimeAdFreeRow(
+            buttonKey: const Key('paywallOneTimeButton'),
+            title: l10n.paywallOneTimeTitle,
+            benefit: l10n.paywallOneTimeBenefit,
+            priceLabel: _adFreePriceLabel(languageCode),
+            badgeText: isAdFree ? l10n.storeAdFreeCardPurchasedLabel : null,
+            buttonLabel: l10n.paywallBuyButton,
+            isLoading: _purchasingProductId == _adFreeProductId,
+            onTap: isAdFree ? null : _buyAdFree,
+          ),
+        ],
+        const SizedBox(height: 22),
+        _ComparisonTable(
+          title: l10n.paywallCompareTableTitle,
+          columnFree: l10n.paywallCompareColumnFree,
+          columnPro: l10n.paywallCompareColumnPro,
+          columnProPlus: l10n.paywallCompareColumnProPlus,
+          rows: comparisonRows,
+        ),
+      ],
+    );
+
+    final paddedColumn = Padding(
+      padding: EdgeInsets.fromLTRB(16, embedded ? 16 : 4, 16, embedded ? 16 : 32),
+      child: column,
+    );
+
+    // `embedded` (Mağaza sekmesi): dış `ListView` ZATEN kaydırıyor — burada
+    // İKİNCİ bir dikey `SingleChildScrollView` açmak "unbounded height"
+    // hatası verir, bu yüzden düz `Padding` yeterli. `embedded` DEĞİLKEN
+    // (tam ekran `PaywallScreen`) içerik KENDİ `SingleChildScrollView`'ında
+    // kayar — `ListView` yerine BİLEREK seçildi: `ListView`'ın sliver
+    // tabanlı "onstage" izleme mantığı, alt kısımdaki öğeleri ilk
+    // kaydırmadan ÖNCE `WidgetTester.pumpAndSettle()` sonrasında bile
+    // "onstage" saymayabiliyor (bkz. `test/CLAUDE.md`).
+    final scrollableContent = embedded
+        ? paddedColumn
+        : SingleChildScrollView(child: paddedColumn);
+
+    final gradientBox = DecoratedBox(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [colorScheme.primaryContainer, colorScheme.surface],
+          stops: const [0, 0.6],
+        ),
+        borderRadius: embedded ? BorderRadius.circular(20) : null,
+        border: embedded ? Border.all(color: kStickerOutline, width: 3) : null,
+      ),
+      child: embedded
+          ? ClipRRect(
+              borderRadius: BorderRadius.circular(17),
+              child: scrollableContent,
+            )
+          : scrollableContent,
+    );
+
+    final animated = FadeTransition(
+      opacity: _entranceFade,
+      child: SlideTransition(position: _entranceSlide, child: gradientBox),
+    );
+
+    if (embedded) return animated;
+
+    return SafeArea(
+      child: Stack(
+        children: [
+          animated,
+          Positioned(
+            top: 4,
+            right: 4,
+            child: StickerIconButton(
+              icon: Icons.close_rounded,
+              tooltip: l10n.paywallCloseTooltip,
+              onPressed: () => Navigator.of(context).maybePop(),
+              backgroundColor: colorScheme.surfaceContainerLowest,
+              iconColor: colorScheme.onSurface,
+              size: 34,
+              iconSize: 18,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -571,7 +613,11 @@ class _PlanCard extends StatelessWidget {
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
-        mainAxisSize: MainAxisSize.min,
+        // `max` (Pro ile Pro+ EŞİT yükseklikte kalsın diye, bkz. bu
+        // widget'ı çağıran `Row`'daki `IntrinsicHeight` +
+        // `CrossAxisAlignment.stretch`) — aşağıdaki `Spacer` fazla boşluğu
+        // yutup butonu HER İKİ kartta da aynı alt hizaya sabitliyor.
+        mainAxisSize: MainAxisSize.max,
         children: [
           Text(
             title,
@@ -602,6 +648,7 @@ class _PlanCard extends StatelessWidget {
             const SizedBox(height: 6),
           ],
           const SizedBox(height: 6),
+          const Spacer(),
           showButton
               ? ScaleTransition(
                   scale: ctaPulseScale,

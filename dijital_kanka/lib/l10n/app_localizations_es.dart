@@ -560,6 +560,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get storeThemesTabLabel => 'Temas';
 
   @override
+  String get storeProTabLabel => 'Zibo Pro';
+
+  @override
   String get adFreePromoTitle => 'Zibo ADS';
 
   @override

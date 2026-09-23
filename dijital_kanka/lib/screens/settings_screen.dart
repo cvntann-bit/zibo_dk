@@ -189,22 +189,6 @@ class SettingsScreen extends StatelessWidget {
           ListView(
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
             children: [
-              // --- Zibo Pro: paywall giriş noktası — bilerek EN ÜSTTE, kendi
-              // section eyebrow'u YOK (bir "ayar kategorisi" değil, tek bir
-              // teşvik/eylem satırı, bkz. docs/subscribe_model.md).
-              _SettingsGroupCard(
-                children: [
-                  _SettingsRow(
-                    iconContent: const Text('👑', style: TextStyle(fontSize: 15, height: 1)),
-                    title: l10n.settingsZiboProRowTitle,
-                    subtitle: l10n.settingsZiboProRowSubtitle,
-                    onTap: () => Navigator.of(context).push(
-                      MaterialPageRoute<void>(builder: (_) => const PaywallScreen()),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 24),
               // --- Genel: koyu tema + dil + (varsa) bildirimler — kullanıcının
               // uygulama genelinde nasıl davrandığını belirlediği tercihler.
               _SectionEyebrow(l10n.settingsSectionGeneral),
