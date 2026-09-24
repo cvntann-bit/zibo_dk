@@ -257,6 +257,10 @@
   "@settingsProPlusSoundLockedSubtitle": {
     "description": "Free/Pro kullanıcı bildirim sesi satırını gördüğünde, kilitli olduğunu belirten alt metin"
   },
+  "settingsProPlusSoundPreviewTooltip": "Sesi dinle",
+  "@settingsProPlusSoundPreviewTooltip": {
+    "description": "Bildirim sesi seçim sheet'inde her seçeneğin yanındaki küçük oynat butonunun erişilebilirlik etiketi/ipucu"
+  },
   "settingsProPlusSoundDefault": "Varsayılan",
   "@settingsProPlusSoundDefault": {
     "description": "Bildirim sesi seçim sheet'indeki varsayılan (standart Zibo sesi) seçeneği"

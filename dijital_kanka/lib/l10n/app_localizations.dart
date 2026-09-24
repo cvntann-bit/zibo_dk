@@ -388,6 +388,12 @@ abstract class AppLocalizations {
   /// **'Pro+\'a özel — geçmek için dokun'**
   String get settingsProPlusSoundLockedSubtitle;
 
+  /// Bildirim sesi seçim sheet'inde her seçeneğin yanındaki küçük oynat butonunun erişilebilirlik etiketi/ipucu
+  ///
+  /// In tr, this message translates to:
+  /// **'Sesi dinle'**
+  String get settingsProPlusSoundPreviewTooltip;
+
   /// Bildirim sesi seçim sheet'indeki varsayılan (standart Zibo sesi) seçeneği
   ///
   /// In tr, this message translates to:

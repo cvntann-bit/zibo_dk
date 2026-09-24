@@ -183,6 +183,9 @@ class AppLocalizationsTr extends AppLocalizations {
       'Pro+\'a özel — geçmek için dokun';
 
   @override
+  String get settingsProPlusSoundPreviewTooltip => 'Sesi dinle';
+
+  @override
   String get settingsProPlusSoundDefault => 'Varsayılan';
 
   @override

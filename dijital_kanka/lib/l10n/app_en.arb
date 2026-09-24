@@ -48,6 +48,7 @@
   "settingsSoundEffects": "Sound Effects",
   "settingsProPlusSoundTitle": "Notification Sound",
   "settingsProPlusSoundLockedSubtitle": "Pro+ exclusive — tap to upgrade",
+  "settingsProPlusSoundPreviewTooltip": "Play sound",
   "settingsProPlusSoundDefault": "Default",
   "settingsProPlusSoundOption": "Sound {number}",
   "settingsSectionGeneral": "General",

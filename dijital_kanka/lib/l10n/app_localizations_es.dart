@@ -183,6 +183,9 @@ class AppLocalizationsEs extends AppLocalizations {
       'Exclusivo de Pro+ — toca para mejorar';
 
   @override
+  String get settingsProPlusSoundPreviewTooltip => 'Escuchar sonido';
+
+  @override
   String get settingsProPlusSoundDefault => 'Predeterminado';
 
   @override

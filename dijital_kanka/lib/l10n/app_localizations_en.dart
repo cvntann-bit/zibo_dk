@@ -183,6 +183,9 @@ class AppLocalizationsEn extends AppLocalizations {
       'Pro+ exclusive — tap to upgrade';
 
   @override
+  String get settingsProPlusSoundPreviewTooltip => 'Play sound';
+
+  @override
   String get settingsProPlusSoundDefault => 'Default';
 
   @override

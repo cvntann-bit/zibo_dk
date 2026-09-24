@@ -15,6 +15,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:dijital_kanka/l10n/app_localizations.dart';
+import 'package:dijital_kanka/models/subscription_tier.dart';
 import 'package:dijital_kanka/providers/app_streak_provider.dart';
 import 'package:dijital_kanka/providers/auth_link_provider.dart';
 import 'package:dijital_kanka/providers/founder_badge_provider.dart';
@@ -234,6 +235,38 @@ void main() {
 
       expect(service.signInCallCount, 1);
       expect(switchToUid.value, null);
+    },
+  );
+
+  // ▶ butonuna BİLEREK dokunulmuyor — gerçek `audioplayers` platform
+  // kanalını tetiklerdi (bkz. test/CLAUDE.md belgelenmiş flake).
+  testWidgets(
+    'Pro+ bildirim sesi seçici: her seçeneğin yanında ▶ önizleme butonu '
+    'var, satıra dokunmak sesi seçip sheet\'i kapatır',
+    (tester) async {
+      final authLink = AuthLinkProvider(
+        googleAuthService: _FakeGoogleAuthService(),
+      );
+      await tester.pumpWidget(_buildTestApp(authLink));
+      await tester.pumpAndSettle();
+
+      final context = tester.element(find.byType(SettingsScreen));
+      await context.read<SubscriptionProvider>().debugSetTier(SubscriptionTier.proPlus);
+      await tester.pumpAndSettle();
+
+      await tester.ensureVisible(find.text('Bildirim Sesi'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Bildirim Sesi'));
+      await tester.pumpAndSettle();
+
+      expect(find.byTooltip('Sesi dinle'), findsNWidgets(6));
+
+      await tester.tap(find.text('Ses 3'));
+      await tester.pumpAndSettle();
+
+      expect(find.byTooltip('Sesi dinle'), findsNothing);
+      expect(context.read<PushNotificationProvider>().proPlusSoundChoice, '3');
+      expect(tester.takeException(), isNull);
     },
   );
 }

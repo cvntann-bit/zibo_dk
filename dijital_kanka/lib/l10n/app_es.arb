@@ -48,6 +48,7 @@
   "settingsSoundEffects": "Efectos de Sonido",
   "settingsProPlusSoundTitle": "Sonido de Notificación",
   "settingsProPlusSoundLockedSubtitle": "Exclusivo de Pro+ — toca para mejorar",
+  "settingsProPlusSoundPreviewTooltip": "Escuchar sonido",
   "settingsProPlusSoundDefault": "Predeterminado",
   "settingsProPlusSoundOption": "Sonido {number}",
   "settingsSectionGeneral": "General",

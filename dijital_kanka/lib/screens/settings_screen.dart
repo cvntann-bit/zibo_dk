@@ -47,16 +47,27 @@ const _websiteHost = 'getzibo.com';
 /// `assets/sounds/` + `AssetSource` deseninden BİLEREK FARKLI).
 const _androidApplicationId = 'com.dijitalkanka.dijital_kanka';
 
-/// Ayarlar'daki Pro+ ses seçicisinde bir seçeneğe dokununca O SESİ hemen
-/// çalar — `choice == null` ("Varsayılan") `zibo_notification`'ı,
-/// `'1'..'5'` ise `proplus_sound_N`'i önizler. Kısa ömürlü, tek kullanımlık
-/// bir `AudioPlayer` oluşturup çalma bitince kendini dispose ediyor (sheet
-/// hemen kapandığı için kalıcı bir State'e bağlı OLAMAZ).
+AudioPlayer? _activeSoundPreviewPlayer;
+
+/// Ayarlar'daki Pro+ ses seçicisinde bir seçeneğin yanındaki ▶ butonuna
+/// basınca O SESİ hemen çalar — `choice == null` ("Varsayılan")
+/// `zibo_notification`'ı, `'1'..'5'` ise `proplus_sound_N`'i önizler. Yeni
+/// bir önizleme, hâlâ çalan öncekini durdurur (sesler üst üste binmesin).
 Future<void> _playProPlusSoundPreview(String? choice) async {
   final resourceName = choice == null ? 'zibo_notification' : 'proplus_sound_$choice';
   try {
+    final previous = _activeSoundPreviewPlayer;
+    _activeSoundPreviewPlayer = null;
+    if (previous != null) unawaited(previous.dispose());
+
     final player = AudioPlayer();
-    unawaited(player.onPlayerComplete.first.then((_) => player.dispose()));
+    _activeSoundPreviewPlayer = player;
+    unawaited(player.onPlayerComplete.first.then((_) {
+      if (identical(_activeSoundPreviewPlayer, player)) {
+        _activeSoundPreviewPlayer = null;
+        player.dispose();
+      }
+    }));
     await player.play(
       UrlSource('android.resource://$_androidApplicationId/raw/$resourceName'),
     );
@@ -151,9 +162,9 @@ class SettingsScreen extends StatelessWidget {
 
   /// **Faz 5 (E2)** — yalnızca Zibo Pro+ kullanıcıya açık, `_showThemeModePicker`
   /// ile BİREBİR AYNI `_SettingsPickerSheet`/`_SheetOptionRow` deseni.
-  /// Seçim `PushNotificationProvider.setProPlusSoundChoice`'a gidiyor;
-  /// AYRICA dokunulan seçeneğin sesi [_playProPlusSoundPreview] ile hemen
-  /// çalınır (kullanıcı isteği — gerçek push bildirimini beklemeden önizleme).
+  /// Satıra dokunmak seçer ve kapatır (`setProPlusSoundChoice`); her
+  /// satırın sağındaki ▶ butonu ise sheet'i KAPATMADAN yalnızca o sesi
+  /// [_playProPlusSoundPreview] ile çalar — kullanıcı dinleyip sonra seçer.
   Future<void> _showProPlusSoundPicker(BuildContext context) async {
     final l10n = AppLocalizations.of(context)!;
     final pushProvider = context.read<PushNotificationProvider>();
@@ -176,9 +187,13 @@ class SettingsScreen extends StatelessWidget {
             _SheetOptionRow(
               label: entry.value,
               selected: pushProvider.proPlusSoundChoice == entry.key,
+              trailing: _SoundPreviewButton(
+                key: ValueKey('soundPreview_${entry.key ?? 'default'}'),
+                tooltip: l10n.settingsProPlusSoundPreviewTooltip,
+                onPressed: () => unawaited(_playProPlusSoundPreview(entry.key)),
+              ),
               onTap: () {
                 pushProvider.setProPlusSoundChoice(entry.key);
-                unawaited(_playProPlusSoundPreview(entry.key));
                 Navigator.of(sheetContext).pop();
               },
             ),
@@ -804,12 +819,18 @@ class _SheetOptionRow extends StatelessWidget {
     required this.selected,
     required this.onTap,
     this.leading,
+    this.trailing,
   });
 
   final String label;
   final bool selected;
   final VoidCallback onTap;
   final Widget? leading;
+
+  /// ✓ işaretinden SONRA, satırın en sağında duran ek kontrol (ör. ses
+  /// önizleme ▶ butonu) — kendi dokunmasını yakalar, satırın [onTap]'ini
+  /// tetiklemez.
+  final Widget? trailing;
 
   @override
   Widget build(BuildContext context) {
@@ -840,7 +861,48 @@ class _SheetOptionRow extends StatelessWidget {
                   color: colorScheme.primary,
                 ),
               ),
+            if (trailing != null) ...[const SizedBox(width: 12), trailing!],
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Bildirim sesi seçicisindeki küçük yuvarlak ▶ butonu — sticker çerçeveli,
+/// 32px. Satırın seçim dokunmasından bağımsız çalışır.
+class _SoundPreviewButton extends StatelessWidget {
+  const _SoundPreviewButton({
+    super.key,
+    required this.tooltip,
+    required this.onPressed,
+  });
+
+  final String tooltip;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Tooltip(
+      message: tooltip,
+      child: Material(
+        color: colorScheme.primary,
+        shape: const CircleBorder(
+          side: BorderSide(color: kStickerOutline, width: 2),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onPressed,
+          child: SizedBox(
+            width: 32,
+            height: 32,
+            child: Icon(
+              Icons.play_arrow_rounded,
+              size: 20,
+              color: colorScheme.onPrimary,
+            ),
+          ),
         ),
       ),
     );
