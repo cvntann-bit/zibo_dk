@@ -972,6 +972,21 @@ class AppLocalizationsTr extends AppLocalizations {
   }
 
   @override
+  String waterProgressMlShort(int ml) {
+    return '$ml ml';
+  }
+
+  @override
+  String get waterTrendTitle => 'Su Tüketimi Trendi';
+
+  @override
+  String get waterTrendEmptyState =>
+      'Trend grafiği için henüz yeterli su takibi kaydı yok.';
+
+  @override
+  String get waterGoalRateTitle => 'Ortalama Hedef Tutturma';
+
+  @override
   String waterGlassFilledLabel(int index, String unit) {
     return '$index. $unit, dolu';
   }

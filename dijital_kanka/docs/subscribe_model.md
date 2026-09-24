@@ -79,6 +79,7 @@ fallbackPrice`'ta sabit/görsel yer tutucu olarak da tutuluyor):
 | Pro+'a özel bildirim sesleri (E2) | ✅ Uygulandı — 5 YENİ Android bildirim kanalı (`push_notifications_proplus_1..5`, immutable kanal-sesi kısıtı yüzünden), `PushNotificationProvider.proPlusSoundChoice` (`users/{uid}` kök alanı, Pattern B), `notification-scripts/src/common.js`'in `sendToUser`'ı tek yerden çözüyor. **2026-09-23** — kullanıcının Masaüstü'ne koyduğu 5 GERÇEK ses dosyası (`zibo_alert_1..5.mp3`) `android/app/src/main/res/raw/proplus_sound_1..5.mp3` olarak eklendi, artık placeholder DEĞİL. Kanal immutable kısıtı yüzünden ZATEN 1/2/3 kanalıyla kurulmuş bir cihaz (bu makinedeki test cihazı dahil) eski sesi duymaya devam eder — yeni sesi duymak için uygulamanın TAMAMEN kaldırılıp yeniden kurulması gerekir. **2026-09-23 EK** — Ayarlar'daki seçicide bir seçeneğe dokununca sesi ANINDA önizler (`_playProPlusSoundPreview`, `audioplayers` + `android.resource://` URI'siyle native `res/raw/` kaynağını doğrudan çalıyor, Flutter asset kopyası GEREKMEDİ). Sunucu tarafı yalnızca kod incelemesiyle doğrulandı, Node.js bu makinede yok |
 | Ruh Hali detaylı trend grafiği (D2) | ✅ Uygulandı — `MoodTrendDetailChart` (`fl_chart`, `MoneyTrendChart` ile AYNI desen), `Mood.score` (1-5) extension'ı eklendi. **2026-09-24 yeniden tasarım/taşıma** — Profil > İstatistiklerim'den kaldırılıp Ruh Hali Takibi'nin kendi ekranına ("Son 7 Gün" şeridinin altına) taşındı; günlük ham skor yerine seçilen granülariteye göre (haftalık ISO hafta/aylık takvim ayı) ORTALAMA skoru kovalayıp çiziyor, son 8 haftalık/6 aylık dolu kova gösteriliyor. İlk mount'ta düz taban çizgisinden gerçek değerlere "dolma" animasyonu eklendi (`LineChart`'ın implicit `duration`/`curve`'ü) — projedeki ilk grafik giriş animasyonu, diğer trend grafikleri için şablon. **2026-09-24 İKİNCİ güncelleme — kilit deseni değişti**: artık Pro+ olmayan kullanıcıdan TAMAMEN gizlenmiyor, `LockedFeatureOverlay` ile başlık/toggle görünür kalıp yalnızca çizim alanı bulanıklaştırılıyor (bkz. aşağıdaki "Pro+ grafik kilidi" bölümü). Veri yoksa VE kilitliyse sabit bir örnek dalga bulanıklaştırılıyor (gerçek veri gibi sunulmuyor) |
 | Para & Birikim gelişmiş analiz (D3) | ✅ Uygulandı, **2026-09-24 TAMAMEN yeniden tasarlandı** — eski 3 satırlık metin özeti (ortalama aylık harcama/birikim, en çok harcanan kalem) KALDIRILDI, yerine: (1) her para biriminin KENDİ ayrı kartında üç kategori toplamı (`MoneyProvider.totalsByCurrencyFor`, otomatik kur çevirisi YOK — mevcut çoklu para birimi mimarisiyle AYNI kural), (2) harcama kalemlerinin donut grafiği (`fl_chart` `PieChart`, en büyük 4 kalem + "Diğer" dilimi, `MoneyProvider.expenseBreakdownByNameFor` — YENİ getter, TAM dağılım döner). `averageMonthlyFor`/`topExpenseItemByCurrency` getter'ları KODDA KALDI (silinmedi, artık UI'da kullanılmıyor). Bölüm `LockedFeatureOverlay` ile bulanıklaştırılıyor (aşağıya bkz.). Bonus: "Mevcut Durum" trend grafiğine (bu bölümün DIŞINDA, HERKESE açık) üçüncü bir "Aylık" granülarite seçeneği eklendi |
+| Su Takibi trend grafiği + hedef oranı (2026-09-24, YENİ) | ✅ Uygulandı — `WaterTrendChart` (`lib/widgets/water_trend_chart.dart`), Mood/Money ile AYNI desen: Günlük/Haftalık/Aylık `SegmentedButton` (Haftalık/Aylık metinleri `moneyTrendGranularityWeekly/Monthly` ARB anahtarları YENİDEN KULLANILIYOR, aynı metin olduğu için yeni anahtar açılmadı), günlük görünüm son 14 güne ait ham `consumedMl`, haftalık/aylık ISO-hafta/takvim-ayı bazında ORTALAMA (son 8/6 dolu kova, boş kova atlanıyor). Grafiğin üstünde hedefi gösteren kesikli yatay referans çizgisi (`ExtraLinesData`/`HorizontalLine`, `goalMl`), altında ortalama hedef tutturma yüzdesi özeti (`_GoalRateSummary`, tüm `WaterEntry.unitCount/goalUnitCount` ortalaması). `LockedFeatureOverlay` ile bulanıklaştırılıyor; veri yoksa VE kilitliyse 7 noktalık sabit örnek seri kullanılıyor. `WaterEntry` geçmiş günlerin O GÜNKÜ hedef/birim ayarını koruduğu için hedef çizgisi/oran hesap doğru kalıyor |
 
 ## Paywall ekranı (`lib/screens/paywall_screen.dart`)
 
@@ -147,9 +148,9 @@ bulanıklaştıracak bir şey olsun diye sabit bir ÖRNEK veri seti kullanılıy
 
 Şu an bu deseni kullanan grafikler: Ruh Hali Trendi (`MoodTrendDetailChart`),
 Para & Birikim Gelişmiş Analiz (`money_screen.dart`'taki
-`_AdvancedAnalysisSection`). **Devam eden "Pro+ analitik/grafik genişletmesi"
-girişiminin** (aşağıya bkz.) TÜM yeni grafikleri bu deseni kullanacak —
-ortak görsel dil olarak sabitlendi.
+`_AdvancedAnalysisSection`), Su Takibi Trendi (`WaterTrendChart`). **Devam
+eden "Pro+ analitik/grafik genişletmesi" girişiminin** (aşağıya bkz.) TÜM
+yeni grafikleri bu deseni kullanacak — ortak görsel dil olarak sabitlendi.
 
 ## Pro+ Analitik/Grafik Genişletmesi (2026-09-24, DEVAM EDİYOR)
 
@@ -159,10 +160,10 @@ Kullanıcının 6 maddelik iri bir istek listesi — adım adım ilerleniyor:
 |---|---|---|
 | 1 | Ruh Hali grafiğini Profil'den kendi moduluna taşı, haftalık/aylık ortalamaya yeniden tasarla | ✅ Tamamlandı (yukarıdaki D2 satırı) |
 | 2 | Para ve Birikim'e çoklu para birimi kartları + kategori pasta grafiği + trend genişletmesi | ✅ Tamamlandı (yukarıdaki D3 satırı) |
-| 3 | Su Takibi'ne trend grafiği + hedef oranı özeti | ⏳ Sırada |
+| 3 | Su Takibi'ne trend grafiği + hedef oranı özeti | ✅ Tamamlandı (yukarıdaki "Su Takibi trend grafiği" satırı) |
 | 4 | Şükran Günlüğü'ne katkı ısı haritası, Hedef Takibi'ne tamamlama/streak çubuk grafiği | ⏳ Bekliyor |
 | 5 | Haftalık/Aylık "Zibo Karnesi" özet raporu + paylaşılabilir kart | ⏳ Bekliyor |
-| 6 | Ortak grafik tasarım standardı (renk/font/animasyon, boş durum, giriş animasyonu) | 🔶 Kısmen — `LockedFeatureOverlay` (kilit deseni) + `LineChart`'ın "taban çizgisinden dolma" giriş animasyonu (madde 1'de kuruldu) şu ana kadarki İKİ grafikte uygulandı, madde 3-5'e de uygulanacak |
+| 6 | Ortak grafik tasarım standardı (renk/font/animasyon, boş durum, giriş animasyonu) | 🔶 Kısmen — `LockedFeatureOverlay` (kilit deseni) + `LineChart`'ın "taban çizgisinden dolma" giriş animasyonu (madde 1'de kuruldu) şu ana kadarki ÜÇ grafikte uygulandı, madde 4-5'e de uygulanacak |
 
 ## Pro → Pro+ yükseltme mekanizması
 
@@ -219,4 +220,6 @@ Pro→Pro+ katman yükseltmesi var.
   grafiği eklendi (madde 2) → gating deseni "tam gizleme"den paylaşılan
   `LockedFeatureOverlay` (bulanıklaştır + kilit rozeti + paywall
   yönlendirmesi) desenine geçirildi, HER İKİ grafiğe de uygulandı (madde 6,
-  kısmen). Devam ediyor — bkz. yukarıdaki durum tablosu.
+  kısmen) → Su Takibi'ne Günlük/Haftalık/Aylık trend grafiği + hedef
+  tutturma oranı özeti eklendi, AYNI `LockedFeatureOverlay` deseniyle
+  (madde 3). Devam ediyor — bkz. yukarıdaki durum tablosu.

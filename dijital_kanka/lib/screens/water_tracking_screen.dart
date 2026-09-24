@@ -14,6 +14,7 @@ import '../providers/coin_provider.dart';
 import '../providers/costume_provider.dart';
 import '../providers/profile_provider.dart';
 import '../providers/sound_effects_provider.dart';
+import '../providers/subscription_provider.dart';
 import '../providers/water_provider.dart';
 import '../providers/zibo_pose_provider.dart';
 import '../services/sound_effects_service.dart';
@@ -22,6 +23,7 @@ import '../utils/info_dialog.dart';
 import '../widgets/dot_grid_background.dart';
 import '../widgets/speech_bubble.dart';
 import '../widgets/sticker_style.dart';
+import '../widgets/water_trend_chart.dart';
 import '../widgets/zibo_animated_image.dart';
 
 String _unitLabel(AppLocalizations l10n, WaterUnit unit) =>
@@ -237,6 +239,7 @@ class _WaterTrackingScreenState extends State<WaterTrackingScreen> {
     final unit = provider.unit;
     final unitLabel = _unitLabel(l10n, unit);
     final history = provider.history;
+    final isProPlus = context.watch<SubscriptionProvider>().isProPlus;
     final locale = Localizations.localeOf(context);
     final quotes = waterQuotesForLocale(locale);
     final addressTerm = context.watch<ProfileProvider>().addressTerm;
@@ -301,9 +304,18 @@ class _WaterTrackingScreenState extends State<WaterTrackingScreen> {
         children: [
           const Positioned.fill(child: DotGridBackground()),
           SafeArea(
-            child: ListView(
+            child: SingleChildScrollView(
+              // `ListView(children:)` DEĞİL — Pro+ trend grafiği artık
+              // HERKESE (kilitliyse örnek veriyle bile) göründüğü için
+              // alt kısımdaki "Geçmiş" bölümü `ListView`'ın sliver tabanlı
+              // "onstage" izleme mantığıyla ilk kaydırmadan ÖNCE test
+              // ortamında bulunamayabiliyordu (bkz. `test/CLAUDE.md`, AYNI
+              // kök neden `paywall_screen.dart`/`mood_tracking_screen.dart`'ta
+              // da yaşandı).
               padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
-              children: [
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
                 Column(
                   children: [
                     ZiboAnimatedImage(
@@ -378,6 +390,22 @@ class _WaterTrackingScreenState extends State<WaterTrackingScreen> {
                     ],
                   ),
                 ),
+                // Faz 5 (D2) Pro+ Analitik Genişletmesi (2026-09-25) — Su
+                // Tüketimi trendi + ortalama hedef tutturma özeti. Pro/
+                // ücretsiz kullanıcı da bölümün var olduğunu görür, yalnızca
+                // grafik/özet bulanıklaştırılıp kilit rozeti gösterilir
+                // (bkz. `LockedFeatureOverlay`).
+                const SizedBox(height: 20),
+                StickerCard(
+                  child: WaterTrendChart(
+                    entries: [
+                      ...history,
+                      if (provider.todayEntry != null) provider.todayEntry!,
+                    ],
+                    goalMl: provider.goalMl,
+                    locked: !isProPlus,
+                  ),
+                ),
                 const SizedBox(height: 20),
                 Text(
                   l10n.waterHistoryTitle,
@@ -420,7 +448,8 @@ class _WaterTrackingScreenState extends State<WaterTrackingScreen> {
                       ],
                     ),
                   ),
-              ],
+                ],
+              ),
             ),
           ),
         ],

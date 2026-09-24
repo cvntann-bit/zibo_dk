@@ -1367,6 +1367,25 @@
       "goalMl": {"type": "int"}
     }
   },
+  "waterProgressMlShort": "{ml} ml",
+  "@waterProgressMlShort": {
+    "description": "Su trend grafiğinin dokunma ipucunda (tooltip) tek bir noktanın ml değeri",
+    "placeholders": {
+      "ml": {"type": "int"}
+    }
+  },
+  "waterTrendTitle": "Su Tüketimi Trendi",
+  "@waterTrendTitle": {
+    "description": "Zibo Pro+'a özel Su Takibi trend grafiğinin başlığı"
+  },
+  "waterTrendEmptyState": "Trend grafiği için henüz yeterli su takibi kaydı yok.",
+  "@waterTrendEmptyState": {
+    "description": "Seçili periyotta hiç su takibi kaydı yokken gösterilen metin"
+  },
+  "waterGoalRateTitle": "Ortalama Hedef Tutturma",
+  "@waterGoalRateTitle": {
+    "description": "Su Takibi'nde tüm günlerin ortalama hedef tutturma yüzdesini gösteren özet satırının etiketi"
+  },
   "waterGlassFilledLabel": "{index}. {unit}, dolu",
   "@waterGlassFilledLabel": {
     "description": "Doldurulmuş bir su birimi ikonunun erişilebilirlik etiketi",

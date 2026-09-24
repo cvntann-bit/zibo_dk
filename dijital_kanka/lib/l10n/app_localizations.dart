@@ -1804,6 +1804,30 @@ abstract class AppLocalizations {
   /// **'{consumedMl} ml / {goalMl} ml'**
   String waterProgressMl(int consumedMl, int goalMl);
 
+  /// Su trend grafiğinin dokunma ipucunda (tooltip) tek bir noktanın ml değeri
+  ///
+  /// In tr, this message translates to:
+  /// **'{ml} ml'**
+  String waterProgressMlShort(int ml);
+
+  /// Zibo Pro+'a özel Su Takibi trend grafiğinin başlığı
+  ///
+  /// In tr, this message translates to:
+  /// **'Su Tüketimi Trendi'**
+  String get waterTrendTitle;
+
+  /// Seçili periyotta hiç su takibi kaydı yokken gösterilen metin
+  ///
+  /// In tr, this message translates to:
+  /// **'Trend grafiği için henüz yeterli su takibi kaydı yok.'**
+  String get waterTrendEmptyState;
+
+  /// Su Takibi'nde tüm günlerin ortalama hedef tutturma yüzdesini gösteren özet satırının etiketi
+  ///
+  /// In tr, this message translates to:
+  /// **'Ortalama Hedef Tutturma'**
+  String get waterGoalRateTitle;
+
   /// Doldurulmuş bir su birimi ikonunun erişilebilirlik etiketi
   ///
   /// In tr, this message translates to:
