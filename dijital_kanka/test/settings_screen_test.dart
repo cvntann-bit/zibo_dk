@@ -8,6 +8,7 @@
 // `GoogleAuthService` deseni burada da kullanılıyor.
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -238,12 +239,25 @@ void main() {
     },
   );
 
-  // ▶ butonuna BİLEREK dokunulmuyor — gerçek `audioplayers` platform
-  // kanalını tetiklerdi (bkz. test/CLAUDE.md belgelenmiş flake).
   testWidgets(
-    'Pro+ bildirim sesi seçici: her seçeneğin yanında ▶ önizleme butonu '
-    'var, satıra dokunmak sesi seçip sheet\'i kapatır',
+    'Pro+ bildirim sesi seçici: ▶ sheet\'i kapatmadan o sesin res/raw '
+    'adıyla native önizlemeyi çağırır, satıra dokunmak sesi seçip kapatır',
     (tester) async {
+      final previewCalls = <Object?>[];
+      tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        const MethodChannel('dijital_kanka/sound_preview'),
+        (call) async {
+          previewCalls.add('${call.method}:${(call.arguments as Map)['name']}');
+          return true;
+        },
+      );
+      addTearDown(
+        () => tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+          const MethodChannel('dijital_kanka/sound_preview'),
+          null,
+        ),
+      );
+
       final authLink = AuthLinkProvider(
         googleAuthService: _FakeGoogleAuthService(),
       );
@@ -260,6 +274,15 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byTooltip('Sesi dinle'), findsNWidgets(6));
+
+      await tester.tap(find.byKey(const ValueKey('soundPreview_4')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('soundPreview_default')));
+      await tester.pumpAndSettle();
+
+      expect(previewCalls, ['play:proplus_sound_4', 'play:zibo_notification']);
+      expect(find.byTooltip('Sesi dinle'), findsNWidgets(6));
+      expect(context.read<PushNotificationProvider>().proPlusSoundChoice, isNull);
 
       await tester.tap(find.text('Ses 3'));
       await tester.pumpAndSettle();

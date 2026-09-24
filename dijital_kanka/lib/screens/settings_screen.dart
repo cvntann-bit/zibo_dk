@@ -1,8 +1,8 @@
 import 'dart:async';
 
-import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show MethodChannel;
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
@@ -39,41 +39,20 @@ const _contactEmail = 'contact@getzibo.com';
 /// metin hem `https://` hedefi olarak kullanılıyor.
 const _websiteHost = 'getzibo.com';
 
-/// `android/CLAUDE.md` "Değiştirilmemesi gereken kritik contract'lar" —
-/// `applicationId` SABİT, `android.resource://` URI'siyle Pro+ bildirim
-/// seslerini native `res/raw/` kaynağından ÖNİZLEMEK için kullanılıyor
-/// (bkz. [_playProPlusSoundPreview]) — bu sesler Flutter asset'i DEĞİL,
-/// gerçek bildirim kanalıyla AYNI dosyalar (`SoundEffectsService`'in
-/// `assets/sounds/` + `AssetSource` deseninden BİLEREK FARKLI).
-const _androidApplicationId = 'com.dijitalkanka.dijital_kanka';
-
-AudioPlayer? _activeSoundPreviewPlayer;
+const _soundPreviewChannel = MethodChannel('dijital_kanka/sound_preview');
 
 /// Ayarlar'daki Pro+ ses seçicisinde bir seçeneğin yanındaki ▶ butonuna
 /// basınca O SESİ hemen çalar — `choice == null` ("Varsayılan")
-/// `zibo_notification`'ı, `'1'..'5'` ise `proplus_sound_N`'i önizler. Yeni
-/// bir önizleme, hâlâ çalan öncekini durdurur (sesler üst üste binmesin).
+/// `zibo_notification`'ı, `'1'..'5'` ise `proplus_sound_N`'i önizler.
+/// Native `MainActivity.playRawSound` bildirim kanalıyla AYNI `res/raw/`
+/// dosyasını çalıyor (`audioplayers` `android.resource://` URI'sini
+/// çalamıyor — cihazda "Failed to set source" verdi).
 Future<void> _playProPlusSoundPreview(String? choice) async {
   final resourceName = choice == null ? 'zibo_notification' : 'proplus_sound_$choice';
   try {
-    final previous = _activeSoundPreviewPlayer;
-    _activeSoundPreviewPlayer = null;
-    if (previous != null) unawaited(previous.dispose());
-
-    final player = AudioPlayer();
-    _activeSoundPreviewPlayer = player;
-    unawaited(player.onPlayerComplete.first.then((_) {
-      if (identical(_activeSoundPreviewPlayer, player)) {
-        _activeSoundPreviewPlayer = null;
-        player.dispose();
-      }
-    }));
-    await player.play(
-      UrlSource('android.resource://$_androidApplicationId/raw/$resourceName'),
-    );
+    await _soundPreviewChannel.invokeMethod<bool>('play', {'name': resourceName});
   } catch (_) {
-    // Ses altyapısı bu ortamda/cihazda kullanılamıyor — sessizce yok say,
-    // seçim (`setProPlusSoundChoice`) zaten ayrı çağrıldığı için etkilenmez.
+    // Kanal bu ortamda yok (test/web) — seçim ayrı çağrıldığı için etkilenmez.
   }
 }
 
