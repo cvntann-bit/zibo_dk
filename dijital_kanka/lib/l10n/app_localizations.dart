@@ -2404,6 +2404,96 @@ abstract class AppLocalizations {
   /// **'Yıldızlı'**
   String get manifestFrameStars;
 
+  /// Köşelerinde kalpler olan çerçeve
+  ///
+  /// In tr, this message translates to:
+  /// **'Kalpli'**
+  String get manifestFrameHearts;
+
+  /// Çizgili defter sayfası çerçevesi
+  ///
+  /// In tr, this message translates to:
+  /// **'Defter'**
+  String get manifestFrameNotebook;
+
+  /// Kraft kâğıdı ve fotoğraf köşelikli çerçeve
+  ///
+  /// In tr, this message translates to:
+  /// **'Albüm'**
+  String get manifestFrameAlbum;
+
+  /// Çizgi roman noktalı çerçeve
+  ///
+  /// In tr, this message translates to:
+  /// **'Pop'**
+  String get manifestFramePop;
+
+  /// Posta pulu çerçevesi
+  ///
+  /// In tr, this message translates to:
+  /// **'Pul'**
+  String get manifestFrameStamp;
+
+  /// Premium parlayan neon çerçeve
+  ///
+  /// In tr, this message translates to:
+  /// **'Neon'**
+  String get manifestFrameNeon;
+
+  /// Premium çiçekli çerçeve
+  ///
+  /// In tr, this message translates to:
+  /// **'Çiçekli'**
+  String get manifestFrameFloral;
+
+  /// Premium yıldızlı gece çerçevesi
+  ///
+  /// In tr, this message translates to:
+  /// **'Gece Gökyüzü'**
+  String get manifestFrameNight;
+
+  /// Premium bordo-altın taçlı çerçeve
+  ///
+  /// In tr, this message translates to:
+  /// **'Kraliyet'**
+  String get manifestFrameRoyal;
+
+  /// Premium, köşesinden Zibo bakan çerçeve
+  ///
+  /// In tr, this message translates to:
+  /// **'Zibo\'lu'**
+  String get manifestFrameZibo;
+
+  /// Sticker sekmesindeki emoji grubu başlığı
+  ///
+  /// In tr, this message translates to:
+  /// **'Manifest & şans'**
+  String get manifestEmojiGroupLuck;
+
+  /// Sticker sekmesindeki emoji grubu başlığı
+  ///
+  /// In tr, this message translates to:
+  /// **'Sevgi'**
+  String get manifestEmojiGroupLove;
+
+  /// Sticker sekmesindeki emoji grubu başlığı
+  ///
+  /// In tr, this message translates to:
+  /// **'Doğa'**
+  String get manifestEmojiGroupNature;
+
+  /// Sticker sekmesindeki emoji grubu başlığı
+  ///
+  /// In tr, this message translates to:
+  /// **'Hedef & başarı'**
+  String get manifestEmojiGroupGoals;
+
+  /// Sticker sekmesindeki emoji grubu başlığı
+  ///
+  /// In tr, this message translates to:
+  /// **'Kutlama'**
+  String get manifestEmojiGroupParty;
+
   /// Kilitli premium çerçeve önizlenirken tuvalin üstündeki buton
   ///
   /// In tr, this message translates to:

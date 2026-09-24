@@ -1306,6 +1306,51 @@ class AppLocalizationsTr extends AppLocalizations {
   String get manifestFrameStars => 'Yıldızlı';
 
   @override
+  String get manifestFrameHearts => 'Kalpli';
+
+  @override
+  String get manifestFrameNotebook => 'Defter';
+
+  @override
+  String get manifestFrameAlbum => 'Albüm';
+
+  @override
+  String get manifestFramePop => 'Pop';
+
+  @override
+  String get manifestFrameStamp => 'Pul';
+
+  @override
+  String get manifestFrameNeon => 'Neon';
+
+  @override
+  String get manifestFrameFloral => 'Çiçekli';
+
+  @override
+  String get manifestFrameNight => 'Gece Gökyüzü';
+
+  @override
+  String get manifestFrameRoyal => 'Kraliyet';
+
+  @override
+  String get manifestFrameZibo => 'Zibo\'lu';
+
+  @override
+  String get manifestEmojiGroupLuck => 'Manifest & şans';
+
+  @override
+  String get manifestEmojiGroupLove => 'Sevgi';
+
+  @override
+  String get manifestEmojiGroupNature => 'Doğa';
+
+  @override
+  String get manifestEmojiGroupGoals => 'Hedef & başarı';
+
+  @override
+  String get manifestEmojiGroupParty => 'Kutlama';
+
+  @override
   String manifestEditorLockedPreview(int price) {
     return '🔒 Önizleme · $price ZC ile aç';
   }

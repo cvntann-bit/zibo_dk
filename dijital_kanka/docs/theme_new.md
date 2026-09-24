@@ -645,6 +645,25 @@ kullanıcının 30 günlük geçmiş sınırına uyar — yalnızca görünen ka
 
 **Onaylandı** — [mockup](https://claude.ai/artifact/D6AbNAeHSW4NCCVMnmakkD).
 
+## Onaylanan: Ek çerçeveler ve emoji sticker'ları (2026-09-24)
+
+Çerçeve sayısı 6 → 16, emoji 7 → 42 (`lib/data/manifest_frames.dart`,
+`lib/widgets/manifest_frame_view.dart`). Eski çerçevelerin id'leri aynı
+(satın alınanlar korunur); tepsi sırası önce ücretsizler.
+
+- **Yeni ücretsiz**: Kalpli, Defter (çizgili sayfa + tarih), Albüm (kraft +
+  foto köşelikleri), Pop (çizgi roman noktaları + "WOW!"), Pul (tırtıklı).
+- **Yeni ücretli (ZC)**: Çiçekli 250, Neon 300, Gece Gökyüzü 300, Zibo'lu 350
+  (köşeden bakan `zibo_df_pose3`), Kraliyet 400.
+- **Renk kuralı istisnası (kullanıcı onayı)**: çerçeveler kullanıcının
+  görseli sayıldığı için Çiçekli (pembe) ve Kraliyet (bordo) arayüzün tek
+  vurgu rengi kuralının DIŞINDA — bu istisna yalnızca çıktı görselindeki
+  çerçeveler için, uygulama arayüzüne taşınmaz.
+- **Emoji**: Sticker sekmesinde başlıklı gruplar — Zibo, Manifest & şans,
+  Sevgi, Doğa, Hedef & başarı, Kutlama (`ManifestEmojiGroup`).
+
+**Onaylandı** — [mockup](https://claude.ai/artifact/7NbtXQqxnpiHbbEq5ZLT5p).
+
 ## Kapsam dışı — kesinlikle DEĞİŞMEYECEK
 
 Kullanıcı açıkça belirtti, bu redesign'a DAHİL DEĞİL:

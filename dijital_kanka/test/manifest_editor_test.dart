@@ -21,6 +21,7 @@ import 'package:dijital_kanka/providers/subscription_provider.dart';
 import 'package:dijital_kanka/screens/manifest_editor_screen.dart';
 import 'package:dijital_kanka/services/photo_picker_service.dart';
 import 'package:dijital_kanka/services/share_service.dart';
+import 'package:dijital_kanka/widgets/manifest_frame_view.dart';
 
 class _FakeShareService extends ShareService {
   final shared = <Uint8List>[];
@@ -176,6 +177,7 @@ void main() {
     await tester.pumpWidget(h.build());
     await tester.pumpAndSettle();
 
+    await _scrollTrayTo(tester, const Key('manifestFrame_gold'));
     await tester.tap(find.byKey(const Key('manifestFrame_gold')));
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('manifestFrameLockedPill')), findsOneWidget);
@@ -195,6 +197,7 @@ void main() {
     await tester.pumpWidget(h.build());
     await tester.pumpAndSettle();
 
+    await _scrollTrayTo(tester, const Key('manifestFrame_gold'));
     await tester.tap(find.byKey(const Key('manifestFrame_gold')));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('manifestFrameLockedPill')));
@@ -245,6 +248,65 @@ void main() {
 
     expect(h.share.shared, hasLength(1));
     expect(h.share.shared.single.sublist(1, 4), [0x50, 0x4E, 0x47]); // "PNG"
+  });
+
+  testWidgets('16 çerçevenin hepsi tepsi boyutunda ve 4:5/9:16 tuvalde hatasız çizilir', (tester) async {
+    expect(ManifestFrame.values, hasLength(16));
+    for (final size in const [Size(44, 44), Size(320, 400), Size(230, 409)]) {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: SingleChildScrollView(
+              child: Wrap(
+                children: [
+                  for (final frame in ManifestFrame.values)
+                    SizedBox.fromSize(
+                      size: size,
+                      child: ManifestFrameView(
+                        frame: frame,
+                        width: size.width,
+                        caption: '24 Eylül 2026 · Hayalimdeki ev',
+                        photo: const ColoredBox(color: Color(0xFF7FB6C9)),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull, reason: 'boyut: $size');
+    }
+  });
+
+  testWidgets('yeni ücretli çerçeveler kilitli, ücretsizler açık başlar', (tester) async {
+    final decor = ManifestDecorProvider();
+    for (final frame in [ManifestFrame.hearts, ManifestFrame.notebook, ManifestFrame.album, ManifestFrame.pop, ManifestFrame.stamp]) {
+      expect(decor.isFrameUnlocked(frame), isTrue, reason: frame.id);
+    }
+    for (final frame in [ManifestFrame.neon, ManifestFrame.floral, ManifestFrame.night, ManifestFrame.royal, ManifestFrame.zibo]) {
+      expect(decor.isFrameUnlocked(frame), isFalse, reason: frame.id);
+      expect(frame.price, inInclusiveRange(250, 400));
+    }
+  });
+
+  testWidgets('gruplu emoji tepsisinden sticker eklenir', (tester) async {
+    final h = _Harness();
+    await tester.pumpWidget(h.build());
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('manifestEditorTab_sticker')));
+    await tester.pumpAndSettle();
+    final rocket = find.byKey(const Key('manifestEmoji_🚀'));
+    await tester.dragUntilVisible(rocket, find.byType(ListView).last, const Offset(-300, 0));
+    await tester.pumpAndSettle();
+    expect(find.text('Hedef & başarı'), findsOneWidget);
+    await tester.tap(rocket);
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('manifestStickerDelete')), findsOneWidget);
+    expect(find.text('🚀'), findsNWidgets(2)); // tepsi + tuval
   });
 
   group('Kolaj modu', () {
@@ -325,4 +387,10 @@ void main() {
       expect(h.share.shared, hasLength(1));
     });
   });
+}
+
+/// Tepsi yatay ve tembel (lazy) — sağda kalan öğeye dokunmadan önce kaydır.
+Future<void> _scrollTrayTo(WidgetTester tester, Key key) async {
+  await tester.dragUntilVisible(find.byKey(key), find.byType(ListView).last, const Offset(-200, 0));
+  await tester.pumpAndSettle();
 }

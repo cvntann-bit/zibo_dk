@@ -1,15 +1,27 @@
 import 'dart:ui' show Locale;
 
-/// Manifest süsleme editörünün çerçeveleri (onaylı mockup:
-/// https://claude.ai/artifact/21kf1TZT3sDKqgrpkc1Pew). [id]'ler KALICI —
-/// premium olanların sahipliği `ManifestDecorProvider`'da bu id'yle saklanır.
+/// Manifest süsleme editörünün çerçeveleri (onaylı mockup'lar:
+/// https://claude.ai/artifact/21kf1TZT3sDKqgrpkc1Pew ilk 6,
+/// https://claude.ai/artifact/7NbtXQqxnpiHbbEq5ZLT5p sonraki 10). [id]'ler
+/// KALICI — premium olanların sahipliği `ManifestDecorProvider`'da bu id'yle
+/// saklanır. Sıra = tepsideki sıra (önce ücretsizler).
 enum ManifestFrame {
   none('none'),
   polaroid('polaroid'),
   film('film'),
   washi('washi'),
+  hearts('hearts'),
+  notebook('notebook'),
+  album('album'),
+  pop('pop'),
+  stamp('stamp'),
   gold('gold', price: 250),
-  stars('stars', price: 250);
+  stars('stars', price: 250),
+  floral('floral', price: 250),
+  neon('neon', price: 300),
+  night('night', price: 300),
+  zibo('zibo', price: 350),
+  royal('royal', price: 400);
 
   const ManifestFrame(this.id, {this.price = 0});
 
@@ -32,7 +44,18 @@ const freeZiboStickerAssets = [
   'assets/images/zibo_df_pose5.webp',
 ];
 
-const manifestEmojiStickers = ['✨', '💛', '⭐', '🌙', '🌈', '🦋', '🍀'];
+/// Sticker sekmesindeki emoji grupları (başlıklı, kullanıcı onayı).
+enum ManifestEmojiGroup {
+  luck(['✨', '🌟', '💫', '⭐', '🔮', '🧿', '🍀', '🌠', '🕯️']),
+  love(['💛', '❤️', '💕', '💖', '🥰', '😍', '🤍']),
+  nature(['🌸', '🌻', '🌷', '🌈', '🌙', '☀️', '🦋', '🌊', '🌿']),
+  goals(['🏆', '🎯', '💪', '🚀', '💰', '💎', '🏡', '✈️', '🎓', '📚']),
+  party(['🎉', '🥳', '🎁', '🎈', '🍾', '🙌', '🔥']);
+
+  const ManifestEmojiGroup(this.emojis);
+
+  final List<String> emojis;
+}
 
 /// Editörün "Yazı" sekmesindeki hazır olumlamalar — içerik havuzu deseni
 /// (`xTr/xEn/xEs` + `xForLocale`, üç dil BİREBİR aynı uzunlukta).

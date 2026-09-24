@@ -1826,6 +1826,66 @@
   "@manifestFrameStars": {
     "description": "Premium yıldızlı çerçeve"
   },
+  "manifestFrameHearts": "Kalpli",
+  "@manifestFrameHearts": {
+    "description": "Köşelerinde kalpler olan çerçeve"
+  },
+  "manifestFrameNotebook": "Defter",
+  "@manifestFrameNotebook": {
+    "description": "Çizgili defter sayfası çerçevesi"
+  },
+  "manifestFrameAlbum": "Albüm",
+  "@manifestFrameAlbum": {
+    "description": "Kraft kâğıdı ve fotoğraf köşelikli çerçeve"
+  },
+  "manifestFramePop": "Pop",
+  "@manifestFramePop": {
+    "description": "Çizgi roman noktalı çerçeve"
+  },
+  "manifestFrameStamp": "Pul",
+  "@manifestFrameStamp": {
+    "description": "Posta pulu çerçevesi"
+  },
+  "manifestFrameNeon": "Neon",
+  "@manifestFrameNeon": {
+    "description": "Premium parlayan neon çerçeve"
+  },
+  "manifestFrameFloral": "Çiçekli",
+  "@manifestFrameFloral": {
+    "description": "Premium çiçekli çerçeve"
+  },
+  "manifestFrameNight": "Gece Gökyüzü",
+  "@manifestFrameNight": {
+    "description": "Premium yıldızlı gece çerçevesi"
+  },
+  "manifestFrameRoyal": "Kraliyet",
+  "@manifestFrameRoyal": {
+    "description": "Premium bordo-altın taçlı çerçeve"
+  },
+  "manifestFrameZibo": "Zibo'lu",
+  "@manifestFrameZibo": {
+    "description": "Premium, köşesinden Zibo bakan çerçeve"
+  },
+  "manifestEmojiGroupLuck": "Manifest & şans",
+  "@manifestEmojiGroupLuck": {
+    "description": "Sticker sekmesindeki emoji grubu başlığı"
+  },
+  "manifestEmojiGroupLove": "Sevgi",
+  "@manifestEmojiGroupLove": {
+    "description": "Sticker sekmesindeki emoji grubu başlığı"
+  },
+  "manifestEmojiGroupNature": "Doğa",
+  "@manifestEmojiGroupNature": {
+    "description": "Sticker sekmesindeki emoji grubu başlığı"
+  },
+  "manifestEmojiGroupGoals": "Hedef & başarı",
+  "@manifestEmojiGroupGoals": {
+    "description": "Sticker sekmesindeki emoji grubu başlığı"
+  },
+  "manifestEmojiGroupParty": "Kutlama",
+  "@manifestEmojiGroupParty": {
+    "description": "Sticker sekmesindeki emoji grubu başlığı"
+  },
   "manifestEditorLockedPreview": "🔒 Önizleme · {price} ZC ile aç",
   "@manifestEditorLockedPreview": {
     "description": "Kilitli premium çerçeve önizlenirken tuvalin üstündeki buton",

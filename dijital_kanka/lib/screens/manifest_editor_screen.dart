@@ -200,6 +200,16 @@ class _ManifestEditorScreenState extends State<ManifestEditorScreen> {
     ManifestFrame.washi => l10n.manifestFrameWashi,
     ManifestFrame.gold => l10n.manifestFrameGold,
     ManifestFrame.stars => l10n.manifestFrameStars,
+    ManifestFrame.hearts => l10n.manifestFrameHearts,
+    ManifestFrame.notebook => l10n.manifestFrameNotebook,
+    ManifestFrame.album => l10n.manifestFrameAlbum,
+    ManifestFrame.pop => l10n.manifestFramePop,
+    ManifestFrame.stamp => l10n.manifestFrameStamp,
+    ManifestFrame.neon => l10n.manifestFrameNeon,
+    ManifestFrame.floral => l10n.manifestFrameFloral,
+    ManifestFrame.night => l10n.manifestFrameNight,
+    ManifestFrame.royal => l10n.manifestFrameRoyal,
+    ManifestFrame.zibo => l10n.manifestFrameZibo,
   };
 
   void _addSticker(_PlacedSticker sticker) {
@@ -877,40 +887,79 @@ class _ManifestEditorScreenState extends State<ManifestEditorScreen> {
     for (final costume in costumes) {
       (costumeProvider.isOwned(costume.id) ? owned : locked).add(costume);
     }
+    final colorScheme = Theme.of(context).colorScheme;
+
+    Widget group(String title, List<Widget> thumbs) {
+      return Padding(
+        padding: const EdgeInsets.only(right: 8),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              title,
+              style: TextStyle(
+                fontWeight: FontWeight.w800,
+                fontSize: 11,
+                letterSpacing: 0.4,
+                color: colorScheme.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Row(children: thumbs),
+          ],
+        ),
+      );
+    }
+
     return ListView(
       scrollDirection: Axis.horizontal,
       padding: const EdgeInsets.symmetric(horizontal: 14),
       children: [
-        for (final asset in freeZiboStickerAssets)
-          _TrayThumb(
-            key: Key('manifestSticker_$asset'),
-            onTap: () => _addSticker(_PlacedSticker(_StickerKind.image, asset)),
-            child: Image.asset(asset, height: 54),
-          ),
-        for (final costume in owned)
-          _TrayThumb(
-            key: Key('manifestSticker_${costume.id}'),
-            onTap: () => _addSticker(_PlacedSticker(_StickerKind.image, costume.imageAsset)),
-            child: Image.asset(costume.imageAsset, height: 54),
-          ),
-        for (final emoji in manifestEmojiStickers)
-          _TrayThumb(
-            onTap: () => _addSticker(_PlacedSticker(_StickerKind.emoji, emoji)),
-            child: Text(emoji, style: const TextStyle(fontSize: 30, height: 1)),
-          ),
-        for (final costume in locked)
-          _TrayThumb(
-            key: Key('manifestSticker_${costume.id}'),
-            lockLabel: '🔒',
-            onTap: () => showInfoDialog(
-              context,
-              l10n.manifestEditorCostumeLocked(costume.localizedName(l10n)),
+        group('Zibo', [
+          for (final asset in freeZiboStickerAssets)
+            _TrayThumb(
+              key: Key('manifestSticker_$asset'),
+              onTap: () => _addSticker(_PlacedSticker(_StickerKind.image, asset)),
+              child: Image.asset(asset, height: 54),
             ),
-            child: Opacity(opacity: 0.45, child: Image.asset(costume.imageAsset, height: 54)),
-          ),
+          for (final costume in owned)
+            _TrayThumb(
+              key: Key('manifestSticker_${costume.id}'),
+              onTap: () => _addSticker(_PlacedSticker(_StickerKind.image, costume.imageAsset)),
+              child: Image.asset(costume.imageAsset, height: 54),
+            ),
+          for (final costume in locked)
+            _TrayThumb(
+              key: Key('manifestSticker_${costume.id}'),
+              lockLabel: '🔒',
+              onTap: () => showInfoDialog(
+                context,
+                l10n.manifestEditorCostumeLocked(costume.localizedName(l10n)),
+              ),
+              child: Opacity(opacity: 0.45, child: Image.asset(costume.imageAsset, height: 54)),
+            ),
+        ]),
+        for (final emojiGroup in ManifestEmojiGroup.values)
+          group(_emojiGroupName(l10n, emojiGroup), [
+            for (final emoji in emojiGroup.emojis)
+              _TrayThumb(
+                key: Key('manifestEmoji_$emoji'),
+                onTap: () => _addSticker(_PlacedSticker(_StickerKind.emoji, emoji)),
+                child: Text(emoji, style: const TextStyle(fontSize: 30, height: 1)),
+              ),
+          ]),
       ],
     );
   }
+
+  String _emojiGroupName(AppLocalizations l10n, ManifestEmojiGroup group) => switch (group) {
+    ManifestEmojiGroup.luck => l10n.manifestEmojiGroupLuck,
+    ManifestEmojiGroup.love => l10n.manifestEmojiGroupLove,
+    ManifestEmojiGroup.nature => l10n.manifestEmojiGroupNature,
+    ManifestEmojiGroup.goals => l10n.manifestEmojiGroupGoals,
+    ManifestEmojiGroup.party => l10n.manifestEmojiGroupParty,
+  };
 
   Widget _buildTextTray(AppLocalizations l10n, ColorScheme colorScheme) {
     final affirmations = manifestAffirmationsForLocale(Localizations.localeOf(context));

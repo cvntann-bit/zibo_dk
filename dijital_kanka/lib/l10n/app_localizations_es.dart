@@ -1312,6 +1312,51 @@ class AppLocalizationsEs extends AppLocalizations {
   String get manifestFrameStars => 'Estrellado';
 
   @override
+  String get manifestFrameHearts => 'Corazones';
+
+  @override
+  String get manifestFrameNotebook => 'Cuaderno';
+
+  @override
+  String get manifestFrameAlbum => 'Álbum';
+
+  @override
+  String get manifestFramePop => 'Pop';
+
+  @override
+  String get manifestFrameStamp => 'Sello';
+
+  @override
+  String get manifestFrameNeon => 'Neón';
+
+  @override
+  String get manifestFrameFloral => 'Floral';
+
+  @override
+  String get manifestFrameNight => 'Cielo Nocturno';
+
+  @override
+  String get manifestFrameRoyal => 'Real';
+
+  @override
+  String get manifestFrameZibo => 'Con Zibo';
+
+  @override
+  String get manifestEmojiGroupLuck => 'Manifiesto y suerte';
+
+  @override
+  String get manifestEmojiGroupLove => 'Amor';
+
+  @override
+  String get manifestEmojiGroupNature => 'Naturaleza';
+
+  @override
+  String get manifestEmojiGroupGoals => 'Metas y éxito';
+
+  @override
+  String get manifestEmojiGroupParty => 'Celebración';
+
+  @override
   String manifestEditorLockedPreview(int price) {
     return '🔒 Vista previa · Desbloquear por $price ZC';
   }
