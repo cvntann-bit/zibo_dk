@@ -5,6 +5,7 @@ import '../data/currencies.dart';
 import '../l10n/app_localizations.dart';
 import '../models/money_entry.dart';
 import '../providers/money_provider.dart';
+import 'rate_prompt_dialog.dart';
 import 'sticker_style.dart';
 
 /// Para ve Birikim sayfasındaki tek bir kategoriyi (ör. Harcamalar); adını,
@@ -152,6 +153,7 @@ class MoneyCategoryCard extends StatelessWidget {
         amount: result.$2,
         currencyCode: result.$3,
       );
+      maybeShowRatePrompt(context);
     } else {
       context.read<MoneyProvider>().updateEntry(
         category,

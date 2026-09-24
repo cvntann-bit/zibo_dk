@@ -52,6 +52,7 @@ import 'providers/water_provider.dart';
 import 'providers/xp_provider.dart';
 import 'providers/zibo_pose_provider.dart';
 import 'utils/ad_free_promo_trigger.dart';
+import 'utils/rate_prompt_trigger.dart';
 import 'utils/banner_ad_reload_signal.dart';
 import 'utils/auth_switch.dart';
 import 'utils/root_navigator_key.dart';
@@ -341,6 +342,7 @@ void main() async {
   // yüklenmemiş sayılıp tetikleyici hiç göstermez (bkz. o dosyadaki güvenli
   // varsayılan).
   await AdFreePromoTrigger.initialize();
+  await RatePromptTrigger.initialize();
   // `android/app/google-services.json`'daki proje bilgilerini okuyup
   // Firebase'i başlatır — Android tarafında `google-services` Gradle
   // plugin'i (bkz. android/app/build.gradle.kts) bu dosyadan gerekli

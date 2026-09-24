@@ -278,6 +278,30 @@ class AppLocalizationsEs extends AppLocalizations {
       '¡Toca las estrellas para calificarnos en Play Store!';
 
   @override
+  String get ratePromptTitle => '¿Qué tal con Zibo?';
+
+  @override
+  String get ratePromptBody =>
+      'Unas estrellas y una reseña corta en Google Play ayudan a que Zibo llegue a más amigos.';
+
+  @override
+  String get ratePromptStarHint => 'Toca una estrella';
+
+  @override
+  String get ratePromptRateButton => 'Calificar en Google Play';
+
+  @override
+  String get ratePromptLaterButton => 'Más Tarde';
+
+  @override
+  String get ratePromptAlreadyRatedButton => 'Ya califiqué';
+
+  @override
+  String ratePromptStarLabel(int count) {
+    return '$count estrellas';
+  }
+
+  @override
   String get settingsVersion => 'Versión';
 
   @override

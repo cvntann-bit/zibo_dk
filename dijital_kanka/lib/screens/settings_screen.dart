@@ -24,6 +24,7 @@ import '../utils/info_dialog.dart';
 import '../widgets/dot_grid_background.dart';
 import '../widgets/founder_badge_promo_card.dart';
 import '../widgets/language_flag_circle.dart';
+import '../widgets/rate_prompt_dialog.dart';
 import '../widgets/rate_us_sheet.dart';
 import '../widgets/sticker_style.dart';
 import '../widgets/streak_freeze_offer_dialog.dart';
@@ -1129,6 +1130,12 @@ class _SubscriptionDebugPanel extends StatelessWidget {
                     );
                   },
                   child: const Text('1 gün kaçırılmış say + teklifi göster'),
+                ),
+                // Puanlama penceresi normalde %20 şans + bekleme + ilk 2 gün
+                // kuralıyla çıktığı için cihazda doğrudan denemek için.
+                OutlinedButton(
+                  onPressed: () => showRatePromptDialog(context),
+                  child: const Text('Puanlama penceresini göster'),
                 ),
               ],
             ),

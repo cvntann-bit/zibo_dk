@@ -13,6 +13,7 @@ import '../utils/badge_celebration_signal.dart';
 import '../utils/badge_claim.dart';
 import '../utils/root_navigator_key.dart';
 import 'goal_confetti_burst.dart';
+import 'rate_prompt_dialog.dart';
 
 /// Bir rozet kazanıldığında uygulamanın HER YERİNDE (hangi ekranda olursa
 /// olsun) konfeti + kazanım popup'ı gösteren, `MaterialApp.builder`
@@ -97,11 +98,21 @@ class _BadgeCelebrationOverlayState extends State<BadgeCelebrationOverlay>
 
   void _dismissAndOpenGallery(GrantedBadgeGift? grantedGift) {
     setState(() => _badge = null);
-    rootNavigatorKey.currentState?.push(
-      MaterialPageRoute<void>(
-        builder: (_) => BadgesGalleryScreen(grantedGift: grantedGift),
-      ),
-    );
+    final navigator = rootNavigatorKey.currentState;
+    if (navigator == null) return;
+    // Kullanıcı kazandığı rozeti galeride gördükten sonra dönünce — mutlu an.
+    navigator
+        .push(
+          MaterialPageRoute<void>(
+            builder: (_) => BadgesGalleryScreen(grantedGift: grantedGift),
+          ),
+        )
+        .then((_) {
+          final navigatorContext = rootNavigatorKey.currentContext;
+          if (navigatorContext != null && navigatorContext.mounted) {
+            maybeShowRatePrompt(navigatorContext);
+          }
+        });
   }
 
   @override

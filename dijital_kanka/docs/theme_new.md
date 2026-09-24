@@ -579,6 +579,28 @@ ekranını sticker temasına taşıyor.
 
 **Onaylandı** — [mockup](https://claude.ai/artifact/QiNofQrxMaXBJUssm1sTp6).
 
+## Onaylanan: "Bizi Google Play'de Puanla" penceresi (2026-09-24)
+
+Yeni bileşen (`lib/widgets/rate_prompt_dialog.dart`) — mutlu anlarda
+rastgele çıkan ortada açılır pencere, Ayarlar'daki eski "Bizi Puanla" alt
+penceresinden (`rate_us_sheet.dart`) AYRI.
+
+- **Görsel**: `zibo_df_pose3.webp` (yanaklarını tutan mutlu Zibo) kartın
+  üstünden taşıyor — kart sticker kontur + düz gölge, ✕ sağ üstte sticker
+  daire.
+- **İçerik**: Baloo2 başlık "Zibo'yla Aran Nasıl?", kısa açıklama, 5 kalın
+  konturlu sticker yıldız (dolu = `primary`, boş = `primary`'nin soluk tonu),
+  "Bir yıldıza dokun" ipucu, tam genişlik "Google Play'de Puanla" butonu,
+  "Daha Sonra" ve küçük altı çizili "Zaten puanladım".
+- **Davranış**: yıldız veya Puanla → Play Store + bir daha çıkmaz; Daha
+  Sonra / ✕ → 5 gün bekleme; Zaten puanladım → bir daha çıkmaz.
+- **Tetikleme**: 7 günlük hedef, para/birikim girişi, Manifest/Şükran
+  kaydı, su hedefi, rozet — her birinde %20 şans, ilk 2 kullanım günü yok,
+  kutlama/bilgi penceresi kapandıktan sonra (7 günlük hedefte o seferki
+  reklamın yerine). Kurallar `lib/utils/rate_prompt_trigger.dart`'ta.
+
+**Onaylandı** — [mockup](https://claude.ai/artifact/Qf33JAT5BwXqEkiuHU3cBr).
+
 ## Kapsam dışı — kesinlikle DEĞİŞMEYECEK
 
 Kullanıcı açıkça belirtti, bu redesign'a DAHİL DEĞİL:
@@ -618,4 +640,5 @@ genişletilmek istenirse önce burada AÇIKÇA onaylanmalı.
 | Modül ekranı — Para ve Birikim | ✅ Koda döküldü (`money_screen.dart`/`money_category_card.dart`/`money_trend_chart.dart`) |
 | Modül ekranı — Odak Sayacı | ✅ Koda döküldü (`focus_timer_screen.dart`, karanlık mod hariç) |
 | Ayarlar ekranı | ✅ Koda döküldü (`settings_screen.dart`) |
+| "Bizi Google Play'de Puanla" penceresi | ✅ Koda döküldü (`rate_prompt_dialog.dart` + `rate_prompt_trigger.dart`) |
 | Şans Çarkı / Günlük Ödül / Rozet pop-up'ları | 🚫 Kapsam dışı — değişmeyecek |

@@ -386,6 +386,39 @@
   "@rateUsSheetSubtitle": {
     "description": "Yıldız puanlama sheet'indeki açıklama metni"
   },
+  "ratePromptTitle": "Zibo'yla Aran Nasıl?",
+  "@ratePromptTitle": {
+    "description": "Mutlu anlarda rastgele çıkan Google Play puanlama penceresinin başlığı"
+  },
+  "ratePromptBody": "Google Play'de birkaç yıldız ve kısa bir yorum, Zibo'nun daha çok kankaya ulaşmasını sağlar.",
+  "@ratePromptBody": {
+    "description": "Puanlama penceresinin açıklama metni"
+  },
+  "ratePromptStarHint": "Bir yıldıza dokun",
+  "@ratePromptStarHint": {
+    "description": "Puanlama penceresinde yıldızların altındaki ipucu"
+  },
+  "ratePromptRateButton": "Google Play'de Puanla",
+  "@ratePromptRateButton": {
+    "description": "Puanlama penceresinin ana butonu — Play Store'u açar"
+  },
+  "ratePromptLaterButton": "Daha Sonra",
+  "@ratePromptLaterButton": {
+    "description": "Puanlama penceresini kapatır, birkaç gün sonra tekrar çıkabilir"
+  },
+  "ratePromptAlreadyRatedButton": "Zaten puanladım",
+  "@ratePromptAlreadyRatedButton": {
+    "description": "Puanlama penceresini kalıcı olarak kapatır"
+  },
+  "ratePromptStarLabel": "{count} yıldız",
+  "@ratePromptStarLabel": {
+    "description": "Puanlama penceresindeki her yıldızın erişilebilirlik etiketi",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "settingsVersion": "Sürüm",
   "@settingsVersion": {
     "description": "Hakkında bölümündeki uygulama sürüm numarası satırının başlığı"

@@ -22,6 +22,7 @@ import '../utils/address_term.dart';
 import '../utils/info_dialog.dart';
 import '../widgets/dot_grid_background.dart';
 import '../widgets/history_limit_upsell_card.dart';
+import '../widgets/rate_prompt_dialog.dart';
 import '../widgets/speech_bubble.dart';
 import '../widgets/sticker_style.dart';
 import '../widgets/zibo_animated_image.dart';
@@ -144,11 +145,15 @@ class _ManifestJournalScreenState extends State<ManifestJournalScreen> {
         context.read<CoinProvider>().earnManifestJournal();
       }
       final l10n = AppLocalizations.of(context)!;
-      showInfoDialog(
-        context,
-        justCompleted
-            ? l10n.manifestCoinRewardMessage
-            : l10n.manifestSavedMessage,
+      unawaited(
+        showInfoDialog(
+          context,
+          justCompleted
+              ? l10n.manifestCoinRewardMessage
+              : l10n.manifestSavedMessage,
+        ).then((_) {
+          if (mounted) maybeShowRatePrompt(context);
+        }),
       );
     } finally {
       if (mounted) setState(() => _isSaving = false);

@@ -21,6 +21,7 @@ import '../services/sound_effects_service.dart';
 import '../utils/address_term.dart';
 import '../utils/info_dialog.dart';
 import '../widgets/dot_grid_background.dart';
+import '../widgets/rate_prompt_dialog.dart';
 import '../widgets/speech_bubble.dart';
 import '../widgets/sticker_style.dart';
 import '../widgets/water_trend_chart.dart';
@@ -225,7 +226,11 @@ class _WaterTrackingScreenState extends State<WaterTrackingScreen> {
     if (justCompleted) {
       final l10n = AppLocalizations.of(context)!;
       context.read<CoinProvider>().earnWaterGoal();
-      showInfoDialog(context, l10n.waterGoalCompletedMessage);
+      unawaited(
+        showInfoDialog(context, l10n.waterGoalCompletedMessage).then((_) {
+          if (mounted) maybeShowRatePrompt(context);
+        }),
+      );
     }
   }
 

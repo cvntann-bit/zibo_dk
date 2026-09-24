@@ -277,6 +277,30 @@ class AppLocalizationsTr extends AppLocalizations {
       'Yıldızlara dokun, Play Store\'da bizi değerlendir!';
 
   @override
+  String get ratePromptTitle => 'Zibo\'yla Aran Nasıl?';
+
+  @override
+  String get ratePromptBody =>
+      'Google Play\'de birkaç yıldız ve kısa bir yorum, Zibo\'nun daha çok kankaya ulaşmasını sağlar.';
+
+  @override
+  String get ratePromptStarHint => 'Bir yıldıza dokun';
+
+  @override
+  String get ratePromptRateButton => 'Google Play\'de Puanla';
+
+  @override
+  String get ratePromptLaterButton => 'Daha Sonra';
+
+  @override
+  String get ratePromptAlreadyRatedButton => 'Zaten puanladım';
+
+  @override
+  String ratePromptStarLabel(int count) {
+    return '$count yıldız';
+  }
+
+  @override
   String get settingsVersion => 'Sürüm';
 
   @override

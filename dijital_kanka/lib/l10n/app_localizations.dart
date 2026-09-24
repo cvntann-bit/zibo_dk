@@ -544,6 +544,48 @@ abstract class AppLocalizations {
   /// **'Yıldızlara dokun, Play Store\'da bizi değerlendir!'**
   String get rateUsSheetSubtitle;
 
+  /// Mutlu anlarda rastgele çıkan Google Play puanlama penceresinin başlığı
+  ///
+  /// In tr, this message translates to:
+  /// **'Zibo\'yla Aran Nasıl?'**
+  String get ratePromptTitle;
+
+  /// Puanlama penceresinin açıklama metni
+  ///
+  /// In tr, this message translates to:
+  /// **'Google Play\'de birkaç yıldız ve kısa bir yorum, Zibo\'nun daha çok kankaya ulaşmasını sağlar.'**
+  String get ratePromptBody;
+
+  /// Puanlama penceresinde yıldızların altındaki ipucu
+  ///
+  /// In tr, this message translates to:
+  /// **'Bir yıldıza dokun'**
+  String get ratePromptStarHint;
+
+  /// Puanlama penceresinin ana butonu — Play Store'u açar
+  ///
+  /// In tr, this message translates to:
+  /// **'Google Play\'de Puanla'**
+  String get ratePromptRateButton;
+
+  /// Puanlama penceresini kapatır, birkaç gün sonra tekrar çıkabilir
+  ///
+  /// In tr, this message translates to:
+  /// **'Daha Sonra'**
+  String get ratePromptLaterButton;
+
+  /// Puanlama penceresini kalıcı olarak kapatır
+  ///
+  /// In tr, this message translates to:
+  /// **'Zaten puanladım'**
+  String get ratePromptAlreadyRatedButton;
+
+  /// Puanlama penceresindeki her yıldızın erişilebilirlik etiketi
+  ///
+  /// In tr, this message translates to:
+  /// **'{count} yıldız'**
+  String ratePromptStarLabel(int count);
+
   /// Hakkında bölümündeki uygulama sürüm numarası satırının başlığı
   ///
   /// In tr, this message translates to:

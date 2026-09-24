@@ -22,6 +22,7 @@ import '../utils/zibo_event_signal.dart';
 import '../widgets/banner_ad_slot.dart';
 import '../widgets/goal_card.dart';
 import '../widgets/goal_confetti_burst.dart';
+import '../widgets/rate_prompt_dialog.dart';
 import '../widgets/share_zibo_button.dart';
 import '../widgets/speech_bubble.dart';
 import '../widgets/sticker_style.dart';
@@ -111,7 +112,11 @@ class _GoalTrackingScreenState extends State<GoalTrackingScreen>
       // diye bilerek buraya (animasyonun GERÇEK bitiş anına) bağlandı.
       if (_pendingCycleCompletionAd) {
         _pendingCycleCompletionAd = false;
-        unawaited(context.read<CoinProvider>().showInterstitialAd());
+        // Puanlama penceresi çıkarsa o seferki reklam GÖSTERİLMEZ — ikisi
+        // üst üste binmesin.
+        if (!maybeShowRatePrompt(context)) {
+          unawaited(context.read<CoinProvider>().showInterstitialAd());
+        }
       }
     }
   });

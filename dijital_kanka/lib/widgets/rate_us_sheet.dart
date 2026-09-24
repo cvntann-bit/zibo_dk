@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../l10n/app_localizations.dart';
+import '../utils/rate_prompt_trigger.dart';
 
 /// Uygulamanın Play Console paket adı — `notification_service.dart`'taki
 /// (Android "kullanılmayan uygulama" ayarları intent'i) AYNI ham dize,
@@ -55,26 +56,9 @@ class _RateUsSheetContentState extends State<_RateUsSheetContent> {
     // reddediyor) — bunu `await` etmek sheet'in KAPANMASINI sonsuza kadar
     // engellerdi. Sheet, kullanıcının Play Store'a GERÇEKTEN gittiğini
     // beklemeden hemen kapanıyor — yönlendirme arka planda devam ediyor.
-    unawaited(_openPlayStoreListing());
+    RatePromptTrigger.markCompleted();
+    unawaited(openPlayStoreListing());
     if (mounted) Navigator.of(context).pop();
-  }
-
-  Future<void> _openPlayStoreListing() async {
-    // ÖNCE Play Store uygulamasını DOĞRUDAN açmayı dene (`market:` şeması)
-    // — tarayıcıya hiç uğramadan, en doğal/hızlı deneyim (AndroidManifest'in
-    // `<queries>` bloğuna bu şema eklendi). Başarısız olursa (Play Store
-    // kurulu değil, emülatör vb.) `https://play.google.com/...` web
-    // adresine (zaten sorgulanabilir `https:` şeması) geri düşülüyor.
-    final marketUri = Uri.parse('market://details?id=$_packageName');
-    final openedMarket = await launchUrl(
-      marketUri,
-      mode: LaunchMode.externalApplication,
-    ).catchError((_) => false);
-    if (openedMarket) return;
-    await launchUrl(
-      Uri.https('play.google.com', '/store/apps/details', {'id': _packageName}),
-      mode: LaunchMode.externalApplication,
-    ).catchError((_) => false);
   }
 
   @override
@@ -131,4 +115,22 @@ class _RateUsSheetContentState extends State<_RateUsSheetContent> {
       ),
     );
   }
+}
+
+/// Play Store'daki Zibo sayfasını açar — `RatePromptDialog` da kullanıyor.
+/// ÖNCE Play Store uygulamasını DOĞRUDAN açmayı dener (`market:` şeması,
+/// AndroidManifest `<queries>`'te kayıtlı); başarısız olursa (Play Store
+/// kurulu değil, emülatör vb.) `https://play.google.com/...` web adresine
+/// düşer.
+Future<void> openPlayStoreListing() async {
+  final marketUri = Uri.parse('market://details?id=$_packageName');
+  final openedMarket = await launchUrl(
+    marketUri,
+    mode: LaunchMode.externalApplication,
+  ).catchError((_) => false);
+  if (openedMarket) return;
+  await launchUrl(
+    Uri.https('play.google.com', '/store/apps/details', {'id': _packageName}),
+    mode: LaunchMode.externalApplication,
+  ).catchError((_) => false);
 }

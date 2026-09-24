@@ -22,6 +22,7 @@ import '../utils/info_dialog.dart';
 import '../widgets/banner_ad_slot.dart';
 import '../widgets/dot_grid_background.dart';
 import '../widgets/history_limit_upsell_card.dart';
+import '../widgets/rate_prompt_dialog.dart';
 import '../widgets/speech_bubble.dart';
 import '../widgets/sticker_style.dart';
 import '../widgets/zibo_animated_image.dart';
@@ -103,7 +104,11 @@ class _GratitudeJournalScreenState extends State<GratitudeJournalScreen> {
       // GratitudeProvider.saveToday dokümantasyonu.
       context.read<CoinProvider>().earnGratitudeJournal();
       final l10n = AppLocalizations.of(context)!;
-      showInfoDialog(context, l10n.gratitudeCoinRewardMessage);
+      unawaited(
+        showInfoDialog(context, l10n.gratitudeCoinRewardMessage).then((_) {
+          if (mounted) maybeShowRatePrompt(context);
+        }),
+      );
     }
   }
 
