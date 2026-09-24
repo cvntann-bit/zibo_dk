@@ -18,6 +18,7 @@ import '../providers/coin_provider.dart';
 import '../providers/costume_provider.dart';
 import '../providers/manifest_decor_provider.dart';
 import '../providers/subscription_provider.dart';
+import '../services/photo_picker_service.dart';
 import '../services/share_service.dart';
 import '../utils/coin_feedback.dart';
 import '../utils/info_dialog.dart';
@@ -48,9 +49,39 @@ enum _Ratio {
   final double aspect;
 }
 
-enum _Tab { frame, sticker, text }
+enum _Tab { frame, template, background, sticker, text }
 
 enum _StickerKind { image, emoji, text }
+
+File? _existingFile(String? path) {
+  if (path == null) return null;
+  try {
+    final file = File(path);
+    return file.existsSync() ? file : null;
+  } catch (_) {
+    return null;
+  }
+}
+
+/// Kolaj kutusunun içeriği: fotoğraf ya da (fotoğrafsız manifest için)
+/// niyet yazısı. [zoom]/[offset] kutu içinde parmakla kaydırma/yakınlaştırma
+/// (offset kutu boyutuna göre kesirli).
+class _TileContent {
+  _TileContent.photo(File this.file) : text = null;
+  _TileContent.text(String this.text) : file = null;
+
+  final File? file;
+  final String? text;
+  double zoom = 1;
+  Offset offset = Offset.zero;
+
+  static _TileContent? fromEntry(ManifestEntry entry) {
+    final file = _existingFile(entry.photoPath);
+    if (file != null) return _TileContent.photo(file);
+    final text = entry.intentionText.trim();
+    return text.isEmpty ? null : _TileContent.text(text);
+  }
+}
 
 class _TextColor {
   const _TextColor(this.fill, this.stroke);
@@ -82,17 +113,37 @@ class _PlacedSticker {
 /// galeriye kaydedilir. Premium çerçeveler Zibo Coin ile açılır, kostümlü
 /// Zibo sticker'ları yalnızca sahip olunan kostümler için açıktır, Pro
 /// olmayan kullanıcının görselinde küçük "zibo" logosu bulunur.
+///
+/// [ManifestEditorScreen.collage] aynı editörü kolaj modunda açar (onaylı
+/// mockup: https://claude.ai/artifact/D6AbNAeHSW4NCCVMnmakkD): çerçeve yerine
+/// şablon + arka plan; kutular manifest kayıtlarından (fotoğrafsız olanlar
+/// yazı kutusu) ya da telefon galerisinden doldurulur. Sticker/yazı/boyut/
+/// dışa aktarma ortak.
 class ManifestEditorScreen extends StatefulWidget {
   const ManifestEditorScreen({
     super.key,
-    required this.entry,
+    required ManifestEntry this.entry,
     this.shareService = const SharePlusService(),
     this.gallerySaver = saveImageToGallery,
-  });
+    this.photoService = const ImagePickerPhotoService(),
+  }) : collageEntries = const [];
 
-  final ManifestEntry entry;
+  const ManifestEditorScreen.collage({
+    super.key,
+    required this.collageEntries,
+    this.shareService = const SharePlusService(),
+    this.gallerySaver = saveImageToGallery,
+    this.photoService = const ImagePickerPhotoService(),
+  }) : entry = null;
+
+  /// Tek fotoğraf modunda süslenen kayıt; kolaj modunda `null`.
+  final ManifestEntry? entry;
+
+  /// Kolaj modunda seçilebilecek kayıtlar (en yeni önce).
+  final List<ManifestEntry> collageEntries;
   final ShareService shareService;
   final GallerySaver gallerySaver;
+  final PhotoPickerService photoService;
 
   @override
   State<ManifestEditorScreen> createState() => _ManifestEditorScreenState();
@@ -112,16 +163,33 @@ class _ManifestEditorScreenState extends State<ManifestEditorScreen> {
   double _gestureStartScale = 1;
   double _gestureStartRotation = 0;
   bool _busy = false;
+  bool _capturing = false;
+
+  CollageTemplate _template = CollageTemplate.three;
+  CollageBackground _background = CollageBackground.dots;
+  final List<_TileContent?> _tiles = List.filled(CollageTemplate.maxSlots, null);
+  double _tileStartZoom = 1;
+
+  bool get _isCollage => widget.entry == null;
 
   @override
   void initState() {
     super.initState();
-    final path = widget.entry.photoPath;
-    if (path != null) {
-      try {
-        final file = File(path);
-        if (file.existsSync()) _photoFile = file;
-      } catch (_) {}
+    final entry = widget.entry;
+    if (entry != null) {
+      _photoFile = _existingFile(entry.photoPath);
+      return;
+    }
+    _tab = _Tab.template;
+    // Önce fotoğraflı kayıtlar (en yeni önce), sonra yalnızca yazı olanlar.
+    final contents =
+        widget.collageEntries.map(_TileContent.fromEntry).whereType<_TileContent>().toList();
+    final ordered = [
+      ...contents.where((c) => c.file != null),
+      ...contents.where((c) => c.file == null),
+    ];
+    for (var i = 0; i < _tiles.length && i < ordered.length; i++) {
+      _tiles[i] = ordered[i];
     }
   }
 
@@ -194,14 +262,21 @@ class _ManifestEditorScreenState extends State<ManifestEditorScreen> {
   }
 
   Future<Uint8List?> _capture() async {
-    setState(() => _selected = null);
-    await WidgetsBinding.instance.endOfFrame;
-    final boundary = _captureKey.currentContext?.findRenderObject() as RenderRepaintBoundary?;
-    if (boundary == null) return null;
-    final image = await boundary.toImage(pixelRatio: _exportWidth / boundary.size.width);
-    final data = await image.toByteData(format: ui.ImageByteFormat.png);
-    image.dispose();
-    return data?.buffer.asUint8List();
+    setState(() {
+      _selected = null;
+      _capturing = true;
+    });
+    try {
+      await WidgetsBinding.instance.endOfFrame;
+      final boundary = _captureKey.currentContext?.findRenderObject() as RenderRepaintBoundary?;
+      if (boundary == null) return null;
+      final image = await boundary.toImage(pixelRatio: _exportWidth / boundary.size.width);
+      final data = await image.toByteData(format: ui.ImageByteFormat.png);
+      image.dispose();
+      return data?.buffer.asUint8List();
+    } finally {
+      if (mounted) setState(() => _capturing = false);
+    }
   }
 
   String get _fileName => 'zibo_manifest_${DateTime.now().millisecondsSinceEpoch}.png';
@@ -240,7 +315,7 @@ class _ManifestEditorScreenState extends State<ManifestEditorScreen> {
 
   Future<void> _openExportSheet() async {
     if (_busy) return;
-    if (!await _unlockFrame(_frame) || !mounted) return;
+    if (!_isCollage && (!await _unlockFrame(_frame) || !mounted)) return;
     setState(() => _selected = null);
     final l10n = AppLocalizations.of(context)!;
     final isPro = context.read<SubscriptionProvider>().isPro;
@@ -266,12 +341,12 @@ class _ManifestEditorScreenState extends State<ManifestEditorScreen> {
     final l10n = AppLocalizations.of(context)!;
     final colorScheme = Theme.of(context).colorScheme;
     final decor = context.watch<ManifestDecorProvider>();
-    final frameLocked = !decor.isFrameUnlocked(_frame);
+    final frameLocked = !_isCollage && !decor.isFrameUnlocked(_frame);
 
     return Scaffold(
       appBar: plainStickerAppBar(
         context,
-        title: l10n.manifestEditorTitle,
+        title: _isCollage ? l10n.manifestCollageTitle : l10n.manifestEditorTitle,
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 14),
@@ -348,12 +423,14 @@ class _ManifestEditorScreenState extends State<ManifestEditorScreen> {
                   clipBehavior: Clip.hardEdge,
                   children: [
                     Positioned.fill(
-                      child: ManifestFrameView(
-                        frame: _frame,
-                        width: w,
-                        photo: _buildPhoto(w),
-                        caption: _caption(),
-                      ),
+                      child: _isCollage
+                          ? _buildCollage(size)
+                          : ManifestFrameView(
+                              frame: _frame,
+                              width: w,
+                              photo: _buildPhoto(w),
+                              caption: _caption(),
+                            ),
                     ),
                     for (final sticker in _stickers) _buildSticker(sticker, size),
                     if (!context.watch<SubscriptionProvider>().isPro)
@@ -391,8 +468,9 @@ class _ManifestEditorScreenState extends State<ManifestEditorScreen> {
   }
 
   String? _caption() {
-    final date = formatLongDate(widget.entry.date, Localizations.localeOf(context));
-    final text = widget.entry.intentionText.trim();
+    final entry = widget.entry!;
+    final date = formatLongDate(entry.date, Localizations.localeOf(context));
+    final text = entry.intentionText.trim();
     return text.isEmpty ? date : '$date · $text';
   }
 
@@ -402,25 +480,26 @@ class _ManifestEditorScreenState extends State<ManifestEditorScreen> {
       return Image.file(
         file,
         fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) => _textBackdrop(w),
+        errorBuilder: (context, error, stackTrace) => _textBackdrop(widget.entry!.intentionText, w),
       );
     }
-    return _textBackdrop(w);
+    return _textBackdrop(widget.entry!.intentionText, w);
   }
 
-  Widget _textBackdrop(double w) {
+  Widget _textBackdrop(String text, double w, {double fontFactor = 0.07}) {
     return ColoredBox(
       color: const Color(0xFFF6D488),
       child: Center(
         child: Padding(
           padding: EdgeInsets.all(w * 0.08),
           child: Text(
-            widget.entry.intentionText,
+            text,
             textAlign: TextAlign.center,
+            overflow: TextOverflow.fade,
             style: TextStyle(
               fontFamily: 'Baloo2',
               fontVariations: const [FontVariation('wght', 800)],
-              fontSize: w * 0.07,
+              fontSize: w * fontFactor,
               height: 1.2,
               color: kStickerOutline,
             ),
@@ -428,6 +507,195 @@ class _ManifestEditorScreenState extends State<ManifestEditorScreen> {
         ),
       ),
     );
+  }
+
+  static const _collageBackgroundColors = {
+    CollageBackground.cream: Color(0xFFFFF4DE),
+    CollageBackground.honey: Color(0xFFF6D488),
+    CollageBackground.gold: Color(0xFFF3B23C),
+    CollageBackground.night: Color(0xFF1B1712),
+    CollageBackground.dots: Color(0xFFFFF4DE),
+  };
+
+  String _templateName(AppLocalizations l10n, CollageTemplate t) => switch (t) {
+    CollageTemplate.twoStacked => l10n.manifestTemplateTwoStacked,
+    CollageTemplate.twoSide => l10n.manifestTemplateTwoSide,
+    CollageTemplate.three => l10n.manifestTemplateThree,
+    CollageTemplate.four => l10n.manifestTemplateFour,
+    CollageTemplate.six => l10n.manifestTemplateSix,
+    CollageTemplate.polaroidWall => l10n.manifestTemplatePolaroidWall,
+  };
+
+  String _backgroundName(AppLocalizations l10n, CollageBackground b) => switch (b) {
+    CollageBackground.cream => l10n.manifestBgCream,
+    CollageBackground.honey => l10n.manifestBgHoney,
+    CollageBackground.gold => l10n.manifestBgGold,
+    CollageBackground.night => l10n.manifestBgNight,
+    CollageBackground.dots => l10n.manifestBgDots,
+  };
+
+  Widget _collageBackground(CollageBackground bg, double unit) {
+    return DecoratedBox(
+      decoration: BoxDecoration(color: _collageBackgroundColors[bg]),
+      child: bg == CollageBackground.dots
+          ? CustomPaint(painter: _CollageDotPainter(unit: unit), child: const SizedBox.expand())
+          : const SizedBox.expand(),
+    );
+  }
+
+  Widget _buildCollage(Size size) {
+    final w = size.width;
+    final gap = w * 0.022;
+    final outline = w * 0.008 + 1.5;
+    return DecoratedBox(
+      position: DecorationPosition.foreground,
+      decoration: BoxDecoration(
+        border: Border.all(color: kStickerOutline, width: outline),
+        borderRadius: BorderRadius.circular(w * 0.03),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(w * 0.03),
+        child: Stack(
+          children: [
+            Positioned.fill(child: _collageBackground(_background, w)),
+            for (var i = 0; i < _template.slots.length; i++)
+              _buildTile(i, _template.slots[i], size, gap, outline),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTile(int index, CollageSlot slot, Size size, double gap, double outline) {
+    final polaroid = _template.isPolaroid;
+    // Dış kenarlarda tam, iç kenarlarda yarım boşluk → her yerde eşit aralık.
+    double nearEdge(double start) => polaroid ? 0 : (start <= 0.001 ? gap : gap / 2);
+    double farEdge(double start, double length) =>
+        polaroid ? 0 : (start + length >= 0.999 ? gap : gap / 2);
+    final left = slot.left * size.width + nearEdge(slot.left);
+    final top = slot.top * size.height + nearEdge(slot.top);
+    final width = slot.width * size.width - nearEdge(slot.left) - farEdge(slot.left, slot.width);
+    final height = slot.height * size.height - nearEdge(slot.top) - farEdge(slot.top, slot.height);
+    final content = _tiles[index];
+    final inset = polaroid
+        ? EdgeInsets.fromLTRB(width * 0.05, width * 0.05, width * 0.05, width * 0.16)
+        : EdgeInsets.zero;
+    final photoW = width - inset.horizontal - outline * 2;
+    final photoH = height - inset.vertical - outline * 2;
+
+    return Positioned(
+      left: left,
+      top: top,
+      width: width,
+      height: height,
+      child: Transform.rotate(
+        angle: slot.rotationDeg * 3.1415926535 / 180,
+        child: GestureDetector(
+          key: Key('manifestCollageTile_$index'),
+          behavior: HitTestBehavior.opaque,
+          onTap: () => _pickForTile(index),
+          onScaleStart: (_) {
+            _selected = null;
+            _tileStartZoom = content?.zoom ?? 1;
+          },
+          onScaleUpdate: (d) {
+            if (content?.file == null) return;
+            setState(() {
+              final c = content!;
+              if (d.pointerCount > 1) c.zoom = (_tileStartZoom * d.scale).clamp(1.0, 4.0);
+              final limit = (c.zoom - 1) / 2;
+              c.offset = Offset(
+                (c.offset.dx + d.focalPointDelta.dx / photoW).clamp(-limit, limit),
+                (c.offset.dy + d.focalPointDelta.dy / photoH).clamp(-limit, limit),
+              );
+            });
+          },
+          child: Container(
+            padding: inset,
+            decoration: BoxDecoration(
+              color: polaroid ? const Color(0xFFFFFDF7) : null,
+              border: Border.all(color: kStickerOutline, width: outline),
+              borderRadius: BorderRadius.circular(polaroid ? width * 0.02 : size.width * 0.02),
+              boxShadow: polaroid
+                  ? [BoxShadow(color: kStickerOutline.withValues(alpha: 0.5), offset: Offset(outline, outline))]
+                  : null,
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(polaroid ? 0 : size.width * 0.012),
+              child: _tileContent(content, photoW, photoH),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _tileContent(_TileContent? content, double w, double h) {
+    if (content == null) {
+      return ColoredBox(
+        color: const Color(0xFFF3E4C0),
+        child: _capturing
+            ? const SizedBox.expand()
+            : Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.add_photo_alternate_outlined, color: kStickerOutline),
+                    if (h > 70) ...[
+                      const SizedBox(height: 4),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 6),
+                        child: Text(
+                          AppLocalizations.of(context)!.manifestCollageEmptyTile,
+                          textAlign: TextAlign.center,
+                          maxLines: 2,
+                          style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 11, color: kStickerOutline),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+      );
+    }
+    final file = content.file;
+    if (file == null) return _textBackdrop(content.text!, w, fontFactor: 0.1);
+    return ClipRect(
+      child: Transform.translate(
+        offset: Offset(content.offset.dx * w, content.offset.dy * h),
+        child: Transform.scale(
+          scale: content.zoom,
+          child: Image.file(
+            file,
+            width: w,
+            height: h,
+            fit: BoxFit.cover,
+            cacheWidth: 1080,
+            errorBuilder: (context, error, stackTrace) => const ColoredBox(color: Color(0xFFF3E4C0)),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _pickForTile(int index) async {
+    setState(() => _selected = null);
+    final choice = await showModalBottomSheet<Object>(
+      context: context,
+      showDragHandle: true,
+      isScrollControlled: true,
+      builder: (_) => _CollagePickerSheet(entries: widget.collageEntries),
+    );
+    if (!mounted || choice == null) return;
+    _TileContent? content;
+    if (choice is ManifestEntry) {
+      content = _TileContent.fromEntry(choice);
+    } else if (choice == _CollagePickerSheet.galleryChoice) {
+      final path = await widget.photoService.pickFromGallery();
+      final file = _existingFile(path);
+      if (file != null) content = _TileContent.photo(file);
+    }
+    if (content != null && mounted) setState(() => _tiles[index] = content);
   }
 
   Widget _buildSticker(_PlacedSticker s, Size canvas) {
@@ -553,6 +821,37 @@ class _ManifestEditorScreenState extends State<ManifestEditorScreen> {
                     ),
                   ),
                 ),
+              ),
+            ),
+        ],
+      ),
+      _Tab.template => ListView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 14),
+        children: [
+          for (final t in CollageTemplate.values)
+            _TrayThumb(
+              key: Key('manifestTemplate_${t.name}'),
+              label: _templateName(l10n, t),
+              selected: t == _template,
+              onTap: () => setState(() => _template = t),
+              child: SizedBox(width: 48, height: 48, child: _TemplatePreview(template: t)),
+            ),
+        ],
+      ),
+      _Tab.background => ListView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 14),
+        children: [
+          for (final b in CollageBackground.values)
+            _TrayThumb(
+              key: Key('manifestBackground_${b.name}'),
+              label: _backgroundName(l10n, b),
+              selected: b == _background,
+              onTap: () => setState(() => _background = b),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(9),
+                child: SizedBox(width: 58, height: 58, child: _collageBackground(b, 58 * 4)),
               ),
             ),
         ],
@@ -726,7 +1025,11 @@ class _ManifestEditorScreenState extends State<ManifestEditorScreen> {
       ),
       child: Row(
         children: [
-          tab(_Tab.frame, Icons.crop_square_rounded, l10n.manifestEditorTabFrame),
+          if (_isCollage) ...[
+            tab(_Tab.template, Icons.dashboard_outlined, l10n.manifestEditorTabTemplate),
+            tab(_Tab.background, Icons.palette_outlined, l10n.manifestEditorTabBackground),
+          ] else
+            tab(_Tab.frame, Icons.crop_square_rounded, l10n.manifestEditorTabFrame),
           tab(_Tab.sticker, Icons.emoji_emotions_outlined, l10n.manifestEditorTabSticker),
           tab(_Tab.text, Icons.text_fields_rounded, l10n.manifestEditorTabText),
         ],
@@ -1162,6 +1465,206 @@ class _CustomTextDialogState extends State<_CustomTextDialog> {
           child: Text(l10n.manifestEditorAddText),
         ),
       ],
+    );
+  }
+}
+
+class _CollageDotPainter extends CustomPainter {
+  const _CollageDotPainter({required this.unit});
+
+  final double unit;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final dot = Paint()..color = const Color(0xB3F3B23C);
+    final step = unit * 0.034;
+    for (var y = step / 2; y < size.height; y += step) {
+      for (var x = step / 2; x < size.width; x += step) {
+        canvas.drawCircle(Offset(x, y), unit * 0.0045, dot);
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(_CollageDotPainter oldDelegate) => oldDelegate.unit != unit;
+}
+
+/// Şablon tepsisindeki küçük önizleme — kutuların yerleşimini gösterir.
+class _TemplatePreview extends StatelessWidget {
+  const _TemplatePreview({required this.template});
+
+  final CollageTemplate template;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final s = constraints.biggest;
+        return Stack(
+          children: [
+            for (final slot in template.slots)
+              Positioned(
+                left: slot.left * s.width + 1.5,
+                top: slot.top * s.height + 1.5,
+                width: slot.width * s.width - 3,
+                height: slot.height * s.height - 3,
+                child: Transform.rotate(
+                  angle: slot.rotationDeg * 3.1415926535 / 180,
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: template.isPolaroid ? const Color(0xFFFFFDF7) : const Color(0xFF7FB6C9),
+                      border: Border.all(color: kStickerOutline, width: 1.5),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+/// Kolaj kutusu için seçici: manifest kayıtları (fotoğraflı olanlar küçük
+/// resim, yalnızca yazı olanlar sarı kart) + telefon galerisi. Seçilen
+/// `ManifestEntry`'yi ya da [galleryChoice]'ı döndürür.
+class _CollagePickerSheet extends StatelessWidget {
+  const _CollagePickerSheet({required this.entries});
+
+  static const galleryChoice = 'gallery';
+
+  final List<ManifestEntry> entries;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final colorScheme = Theme.of(context).colorScheme;
+    final usable = entries.where((e) => _TileContent.fromEntry(e) != null).toList();
+
+    return SafeArea(
+      child: ConstrainedBox(
+        constraints: BoxConstraints(maxHeight: MediaQuery.sizeOf(context).height * 0.7),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                l10n.manifestCollagePickTitle,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontFamily: 'Baloo2',
+                  fontVariations: const [FontVariation('wght', 800)],
+                  fontSize: 18,
+                  color: colorScheme.onSurface,
+                ),
+              ),
+              if (usable.isNotEmpty) ...[
+                const SizedBox(height: 10),
+                Text(
+                  l10n.manifestCollageFromManifests,
+                  style: TextStyle(
+                    fontWeight: FontWeight.w800,
+                    fontSize: 11,
+                    letterSpacing: 0.6,
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Flexible(
+                  child: GridView.count(
+                    shrinkWrap: true,
+                    crossAxisCount: 4,
+                    mainAxisSpacing: 8,
+                    crossAxisSpacing: 8,
+                    children: [
+                      for (final entry in usable)
+                        GestureDetector(
+                          key: Key('manifestCollagePick_${entry.id}'),
+                          onTap: () => Navigator.of(context).pop(entry),
+                          child: _PickerThumb(entry: entry),
+                        ),
+                    ],
+                  ),
+                ),
+              ],
+              const SizedBox(height: 12),
+              stickerButtonShadow(
+                radius: 14,
+                child: Material(
+                  color: colorScheme.surfaceContainerLowest,
+                  borderRadius: BorderRadius.circular(14),
+                  child: InkWell(
+                    key: const Key('manifestCollageFromGallery'),
+                    borderRadius: BorderRadius.circular(14),
+                    onTap: () => Navigator.of(context).pop(galleryChoice),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 11),
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        border: Border.all(color: kStickerOutline, width: 3),
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: Text(
+                        l10n.manifestCollageFromGallery,
+                        style: TextStyle(
+                          fontFamily: 'Baloo2',
+                          fontVariations: const [FontVariation('wght', 700)],
+                          fontSize: 15,
+                          color: colorScheme.onSurface,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _PickerThumb extends StatelessWidget {
+  const _PickerThumb({required this.entry});
+
+  final ManifestEntry entry;
+
+  @override
+  Widget build(BuildContext context) {
+    final file = _existingFile(entry.photoPath);
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: const Color(0xFFF6D488),
+        border: Border.all(color: kStickerOutline, width: 2.5),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(8),
+        child: file != null
+            ? Image.file(file, fit: BoxFit.cover, cacheWidth: 240)
+            : Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(4),
+                  child: Text(
+                    entry.intentionText,
+                    textAlign: TextAlign.center,
+                    maxLines: 4,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontFamily: 'Baloo2',
+                      fontVariations: [FontVariation('wght', 800)],
+                      fontSize: 10.5,
+                      height: 1.1,
+                      color: kStickerOutline,
+                    ),
+                  ),
+                ),
+              ),
+      ),
     );
   }
 }

@@ -19,6 +19,7 @@ import 'package:dijital_kanka/providers/costume_provider.dart';
 import 'package:dijital_kanka/providers/manifest_decor_provider.dart';
 import 'package:dijital_kanka/providers/subscription_provider.dart';
 import 'package:dijital_kanka/screens/manifest_editor_screen.dart';
+import 'package:dijital_kanka/services/photo_picker_service.dart';
 import 'package:dijital_kanka/services/share_service.dart';
 
 class _FakeShareService extends ShareService {
@@ -33,13 +34,33 @@ class _FakeShareService extends ShareService {
   Future<void> shareText(String text) async {}
 }
 
+class _FakePhotoService extends PhotoPickerService {
+  int pickCalls = 0;
+
+  @override
+  Future<String?> pickFromGallery() async {
+    pickCalls++;
+    return null;
+  }
+
+  @override
+  Future<String> saveToPermanentStorage(String sourcePath) async => sourcePath;
+
+  @override
+  Future<void> deletePhoto(String path) async {}
+}
+
+ManifestEntry _textEntry(String id, String text) =>
+    ManifestEntry(id: id, date: DateTime(2026, 9, 20), photoPath: null, intentionText: text);
+
 class _Harness {
   final coins = CoinProvider();
   final decor = ManifestDecorProvider();
   final subscription = SubscriptionProvider();
   final share = _FakeShareService();
+  final photos = _FakePhotoService();
 
-  Widget build() {
+  Widget build({List<ManifestEntry>? collage}) {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider.value(value: coins),
@@ -56,16 +77,24 @@ class _Harness {
           GlobalCupertinoLocalizations.delegate,
         ],
         supportedLocales: AppLocalizations.supportedLocales,
-        home: ManifestEditorScreen(
-          entry: ManifestEntry(
-            id: '1',
-            date: DateTime(2026, 9, 24),
-            photoPath: null,
-            intentionText: 'Hayalimdeki ev',
-          ),
-          shareService: share,
-          gallerySaver: (bytes, name) async => true,
-        ),
+        home: collage != null
+            ? ManifestEditorScreen.collage(
+                collageEntries: collage,
+                shareService: share,
+                gallerySaver: (bytes, name) async => true,
+                photoService: photos,
+              )
+            : ManifestEditorScreen(
+                entry: ManifestEntry(
+                  id: '1',
+                  date: DateTime(2026, 9, 24),
+                  photoPath: null,
+                  intentionText: 'Hayalimdeki ev',
+                ),
+                shareService: share,
+                gallerySaver: (bytes, name) async => true,
+                photoService: photos,
+              ),
       ),
     );
   }
@@ -216,5 +245,84 @@ void main() {
 
     expect(h.share.shared, hasLength(1));
     expect(h.share.shared.single.sublist(1, 4), [0x50, 0x4E, 0x47]); // "PNG"
+  });
+
+  group('Kolaj modu', () {
+    testWidgets('açılışta kutular manifestlerden otomatik dolar, çerçeve sekmesi yok, taşma yok',
+        (tester) async {
+      final h = _Harness();
+      await tester.pumpWidget(h.build(collage: [_textEntry('1', 'Deniz kenarı ev'), _textEntry('2', 'Kendi işim')]));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Kolaj Yap'), findsOneWidget);
+      expect(find.text('Deniz kenarı ev'), findsOneWidget);
+      expect(find.text('Kendi işim'), findsOneWidget);
+      expect(find.byKey(const Key('manifestEditorTab_frame')), findsNothing);
+      expect(find.byKey(const Key('manifestEditorTab_template')), findsOneWidget);
+      // Varsayılan 3'lü şablon: 3 kutu.
+      expect(find.byKey(const Key('manifestCollageTile_2')), findsOneWidget);
+      expect(find.byKey(const Key('manifestCollageTile_3')), findsNothing);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('şablon değişince kutu sayısı değişir, içerik korunur', (tester) async {
+      final h = _Harness();
+      await tester.pumpWidget(h.build(collage: [_textEntry('1', 'Deniz kenarı ev')]));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(const Key('manifestTemplate_six')));
+      await tester.pumpAndSettle();
+
+      expect(find.byKey(const Key('manifestCollageTile_5')), findsOneWidget);
+      expect(find.text('Deniz kenarı ev'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('boş kutuya dokununca seçici açılır, seçilen manifest kutuya yerleşir', (tester) async {
+      final h = _Harness();
+      await tester.pumpWidget(h.build(collage: [_textEntry('1', 'Deniz kenarı ev'), _textEntry('2', 'Kendi işim')]));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(const Key('manifestCollageTile_2')));
+      await tester.pumpAndSettle();
+      expect(find.text('Bu kutuya fotoğraf seç'), findsOneWidget);
+      expect(find.byKey(const Key('manifestCollageFromGallery')), findsOneWidget);
+
+      await tester.tap(find.byKey(const Key('manifestCollagePick_1')));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Bu kutuya fotoğraf seç'), findsNothing);
+      expect(find.text('Deniz kenarı ev'), findsNWidgets(2));
+    });
+
+    testWidgets('galeri seçeneği fotoğraf seçici servisini çağırır, iptalde kutu boş kalır', (tester) async {
+      final h = _Harness();
+      await tester.pumpWidget(h.build(collage: [_textEntry('1', 'Deniz kenarı ev')]));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(const Key('manifestCollageTile_1')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('manifestCollageFromGallery')));
+      await tester.pumpAndSettle();
+
+      expect(h.photos.pickCalls, 1);
+      expect(find.text('Dokun, fotoğraf seç'), findsWidgets);
+    });
+
+    testWidgets('kolajda paylaşım çerçeve kilidi sormadan PNG üretir', (tester) async {
+      final h = _Harness();
+      await tester.pumpWidget(h.build(collage: [_textEntry('1', 'Deniz kenarı ev')]));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(const Key('manifestEditorShareButton')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('manifestExportShare')));
+      for (var i = 0; i < 20 && h.share.shared.isEmpty; i++) {
+        await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 50)));
+        await tester.pump();
+      }
+
+      expect(h.share.shared, hasLength(1));
+    });
   });
 }

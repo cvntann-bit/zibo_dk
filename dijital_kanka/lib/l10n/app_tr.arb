@@ -1694,6 +1694,82 @@
   "@manifestDecorateNowButton": {
     "description": "Fotoğraflı manifest kaydedildikten sonraki pencerede editörü açan buton"
   },
+  "manifestCollageButton": "🧩 Kolaj Yap",
+  "@manifestCollageButton": {
+    "description": "Manifest ekranında kolaj editörünü açan buton"
+  },
+  "manifestCollageTitle": "Kolaj Yap",
+  "@manifestCollageTitle": {
+    "description": "Kolaj editörünün başlığı"
+  },
+  "manifestEditorTabTemplate": "Şablon",
+  "@manifestEditorTabTemplate": {
+    "description": "Kolaj editörünün şablon sekmesi"
+  },
+  "manifestEditorTabBackground": "Arka Plan",
+  "@manifestEditorTabBackground": {
+    "description": "Kolaj editörünün arka plan sekmesi"
+  },
+  "manifestCollagePickTitle": "Bu kutuya fotoğraf seç",
+  "@manifestCollagePickTitle": {
+    "description": "Kolaj kutusuna fotoğraf seçme penceresinin başlığı"
+  },
+  "manifestCollageFromManifests": "Manifestlerimden",
+  "@manifestCollageFromManifests": {
+    "description": "Fotoğraf seçme penceresinde manifest kayıtları bölümünün başlığı"
+  },
+  "manifestCollageFromGallery": "📷 Telefon galerisinden seç",
+  "@manifestCollageFromGallery": {
+    "description": "Kolaj kutusuna telefon galerisinden fotoğraf seçen buton"
+  },
+  "manifestCollageEmptyTile": "Dokun, fotoğraf seç",
+  "@manifestCollageEmptyTile": {
+    "description": "Boş kolaj kutusundaki ipucu"
+  },
+  "manifestTemplateTwoStacked": "2'li",
+  "@manifestTemplateTwoStacked": {
+    "description": "Alt alta iki kutulu kolaj şablonu"
+  },
+  "manifestTemplateTwoSide": "2'li yan",
+  "@manifestTemplateTwoSide": {
+    "description": "Yan yana iki kutulu kolaj şablonu"
+  },
+  "manifestTemplateThree": "3'lü",
+  "@manifestTemplateThree": {
+    "description": "Bir büyük iki küçük kutulu kolaj şablonu"
+  },
+  "manifestTemplateFour": "4'lü",
+  "@manifestTemplateFour": {
+    "description": "Dört kutulu ızgara kolaj şablonu"
+  },
+  "manifestTemplateSix": "6'lı",
+  "@manifestTemplateSix": {
+    "description": "Altı kutulu ızgara kolaj şablonu"
+  },
+  "manifestTemplatePolaroidWall": "Polaroid",
+  "@manifestTemplatePolaroidWall": {
+    "description": "Eğik polaroidlerden oluşan kolaj şablonu"
+  },
+  "manifestBgCream": "Krem",
+  "@manifestBgCream": {
+    "description": "Kolaj arka plan rengi"
+  },
+  "manifestBgHoney": "Bal",
+  "@manifestBgHoney": {
+    "description": "Kolaj arka plan rengi"
+  },
+  "manifestBgGold": "Altın",
+  "@manifestBgGold": {
+    "description": "Kolaj arka plan rengi"
+  },
+  "manifestBgNight": "Gece",
+  "@manifestBgNight": {
+    "description": "Kolaj arka plan rengi"
+  },
+  "manifestBgDots": "Noktalı",
+  "@manifestBgDots": {
+    "description": "Kolaj arka plan deseni"
+  },
   "manifestEditorTitle": "Manifestini Süsle",
   "@manifestEditorTitle": {
     "description": "Manifest süsleme editörünün başlığı"

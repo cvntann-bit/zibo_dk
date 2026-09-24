@@ -1208,6 +1208,63 @@ class AppLocalizationsEn extends AppLocalizations {
   String get manifestDecorateNowButton => '🎨 Decorate Now';
 
   @override
+  String get manifestCollageButton => '🧩 Make a Collage';
+
+  @override
+  String get manifestCollageTitle => 'Make a Collage';
+
+  @override
+  String get manifestEditorTabTemplate => 'Layout';
+
+  @override
+  String get manifestEditorTabBackground => 'Background';
+
+  @override
+  String get manifestCollagePickTitle => 'Pick a photo for this box';
+
+  @override
+  String get manifestCollageFromManifests => 'From my manifests';
+
+  @override
+  String get manifestCollageFromGallery => '📷 Pick from phone gallery';
+
+  @override
+  String get manifestCollageEmptyTile => 'Tap to pick a photo';
+
+  @override
+  String get manifestTemplateTwoStacked => '2 stacked';
+
+  @override
+  String get manifestTemplateTwoSide => '2 side';
+
+  @override
+  String get manifestTemplateThree => '3 photos';
+
+  @override
+  String get manifestTemplateFour => '4 grid';
+
+  @override
+  String get manifestTemplateSix => '6 grid';
+
+  @override
+  String get manifestTemplatePolaroidWall => 'Polaroid';
+
+  @override
+  String get manifestBgCream => 'Cream';
+
+  @override
+  String get manifestBgHoney => 'Honey';
+
+  @override
+  String get manifestBgGold => 'Gold';
+
+  @override
+  String get manifestBgNight => 'Night';
+
+  @override
+  String get manifestBgDots => 'Dotted';
+
+  @override
   String get manifestEditorTitle => 'Decorate Your Manifest';
 
   @override

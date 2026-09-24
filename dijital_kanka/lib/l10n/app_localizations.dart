@@ -2206,6 +2206,120 @@ abstract class AppLocalizations {
   /// **'🎨 Hemen Süsle'**
   String get manifestDecorateNowButton;
 
+  /// Manifest ekranında kolaj editörünü açan buton
+  ///
+  /// In tr, this message translates to:
+  /// **'🧩 Kolaj Yap'**
+  String get manifestCollageButton;
+
+  /// Kolaj editörünün başlığı
+  ///
+  /// In tr, this message translates to:
+  /// **'Kolaj Yap'**
+  String get manifestCollageTitle;
+
+  /// Kolaj editörünün şablon sekmesi
+  ///
+  /// In tr, this message translates to:
+  /// **'Şablon'**
+  String get manifestEditorTabTemplate;
+
+  /// Kolaj editörünün arka plan sekmesi
+  ///
+  /// In tr, this message translates to:
+  /// **'Arka Plan'**
+  String get manifestEditorTabBackground;
+
+  /// Kolaj kutusuna fotoğraf seçme penceresinin başlığı
+  ///
+  /// In tr, this message translates to:
+  /// **'Bu kutuya fotoğraf seç'**
+  String get manifestCollagePickTitle;
+
+  /// Fotoğraf seçme penceresinde manifest kayıtları bölümünün başlığı
+  ///
+  /// In tr, this message translates to:
+  /// **'Manifestlerimden'**
+  String get manifestCollageFromManifests;
+
+  /// Kolaj kutusuna telefon galerisinden fotoğraf seçen buton
+  ///
+  /// In tr, this message translates to:
+  /// **'📷 Telefon galerisinden seç'**
+  String get manifestCollageFromGallery;
+
+  /// Boş kolaj kutusundaki ipucu
+  ///
+  /// In tr, this message translates to:
+  /// **'Dokun, fotoğraf seç'**
+  String get manifestCollageEmptyTile;
+
+  /// Alt alta iki kutulu kolaj şablonu
+  ///
+  /// In tr, this message translates to:
+  /// **'2\'li'**
+  String get manifestTemplateTwoStacked;
+
+  /// Yan yana iki kutulu kolaj şablonu
+  ///
+  /// In tr, this message translates to:
+  /// **'2\'li yan'**
+  String get manifestTemplateTwoSide;
+
+  /// Bir büyük iki küçük kutulu kolaj şablonu
+  ///
+  /// In tr, this message translates to:
+  /// **'3\'lü'**
+  String get manifestTemplateThree;
+
+  /// Dört kutulu ızgara kolaj şablonu
+  ///
+  /// In tr, this message translates to:
+  /// **'4\'lü'**
+  String get manifestTemplateFour;
+
+  /// Altı kutulu ızgara kolaj şablonu
+  ///
+  /// In tr, this message translates to:
+  /// **'6\'lı'**
+  String get manifestTemplateSix;
+
+  /// Eğik polaroidlerden oluşan kolaj şablonu
+  ///
+  /// In tr, this message translates to:
+  /// **'Polaroid'**
+  String get manifestTemplatePolaroidWall;
+
+  /// Kolaj arka plan rengi
+  ///
+  /// In tr, this message translates to:
+  /// **'Krem'**
+  String get manifestBgCream;
+
+  /// Kolaj arka plan rengi
+  ///
+  /// In tr, this message translates to:
+  /// **'Bal'**
+  String get manifestBgHoney;
+
+  /// Kolaj arka plan rengi
+  ///
+  /// In tr, this message translates to:
+  /// **'Altın'**
+  String get manifestBgGold;
+
+  /// Kolaj arka plan rengi
+  ///
+  /// In tr, this message translates to:
+  /// **'Gece'**
+  String get manifestBgNight;
+
+  /// Kolaj arka plan deseni
+  ///
+  /// In tr, this message translates to:
+  /// **'Noktalı'**
+  String get manifestBgDots;
+
   /// Manifest süsleme editörünün başlığı
   ///
   /// In tr, this message translates to:

@@ -70,3 +70,52 @@ List<String> manifestAffirmationsForLocale(Locale locale) {
       return manifestAffirmationsTr;
   }
 }
+
+/// Kolaj kutusu — tuvale göre 0..1 kesirli dikdörtgen; [rotationDeg] yalnızca
+/// Polaroid Duvarı'nda.
+class CollageSlot {
+  const CollageSlot(this.left, this.top, this.width, this.height, {this.rotationDeg = 0});
+
+  final double left;
+  final double top;
+  final double width;
+  final double height;
+  final double rotationDeg;
+}
+
+/// Kolaj şablonları (onaylı mockup: https://claude.ai/artifact/D6AbNAeHSW4NCCVMnmakkD).
+/// Hepsi ücretsiz. Izgara şablonlarında kutular arası boşluğu editör ekler.
+enum CollageTemplate {
+  twoStacked([CollageSlot(0, 0, 1, 0.5), CollageSlot(0, 0.5, 1, 0.5)]),
+  twoSide([CollageSlot(0, 0, 0.5, 1), CollageSlot(0.5, 0, 0.5, 1)]),
+  three([CollageSlot(0, 0, 1, 0.56), CollageSlot(0, 0.56, 0.5, 0.44), CollageSlot(0.5, 0.56, 0.5, 0.44)]),
+  four([
+    CollageSlot(0, 0, 0.5, 0.5),
+    CollageSlot(0.5, 0, 0.5, 0.5),
+    CollageSlot(0, 0.5, 0.5, 0.5),
+    CollageSlot(0.5, 0.5, 0.5, 0.5),
+  ]),
+  six([
+    CollageSlot(0, 0, 0.5, 1 / 3),
+    CollageSlot(0.5, 0, 0.5, 1 / 3),
+    CollageSlot(0, 1 / 3, 0.5, 1 / 3),
+    CollageSlot(0.5, 1 / 3, 0.5, 1 / 3),
+    CollageSlot(0, 2 / 3, 0.5, 1 / 3),
+    CollageSlot(0.5, 2 / 3, 0.5, 1 / 3),
+  ]),
+  polaroidWall([
+    CollageSlot(0.06, 0.05, 0.52, 0.40, rotationDeg: -6),
+    CollageSlot(0.44, 0.16, 0.50, 0.38, rotationDeg: 5),
+    CollageSlot(0.08, 0.52, 0.48, 0.38, rotationDeg: 4),
+    CollageSlot(0.46, 0.56, 0.46, 0.36, rotationDeg: -5),
+  ], isPolaroid: true);
+
+  const CollageTemplate(this.slots, {this.isPolaroid = false});
+
+  final List<CollageSlot> slots;
+  final bool isPolaroid;
+
+  static int get maxSlots => 6;
+}
+
+enum CollageBackground { cream, honey, gold, night, dots }

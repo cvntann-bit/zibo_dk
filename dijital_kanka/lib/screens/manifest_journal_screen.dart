@@ -398,13 +398,55 @@ class _ManifestJournalScreenState extends State<ManifestJournalScreen> {
                   ),
                 ),
                 const SizedBox(height: 20),
-                Text(
-                  l10n.manifestHistoryTitle,
-                  style: const TextStyle(
-                    fontFamily: 'Baloo2',
-                    fontVariations: [FontVariation('wght', 800)],
-                    fontSize: 16,
-                  ),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        l10n.manifestHistoryTitle,
+                        style: const TextStyle(
+                          fontFamily: 'Baloo2',
+                          fontVariations: [FontVariation('wght', 800)],
+                          fontSize: 16,
+                        ),
+                      ),
+                    ),
+                    if (visibleHistory.isNotEmpty)
+                      stickerButtonShadow(
+                        child: Material(
+                          color: colorScheme.primary,
+                          borderRadius: BorderRadius.circular(10),
+                          child: InkWell(
+                            key: const Key('manifestCollageButton'),
+                            borderRadius: BorderRadius.circular(10),
+                            // Ücretsiz kullanıcının 30 gün geçmiş sınırına
+                            // (Pro perk D1) uyuyor — yalnızca görünen kayıtlar.
+                            onTap: () => Navigator.of(context).push(
+                              MaterialPageRoute<void>(
+                                builder: (_) => ManifestEditorScreen.collage(
+                                  collageEntries: visibleHistory,
+                                ),
+                              ),
+                            ),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                              decoration: BoxDecoration(
+                                border: Border.all(color: kStickerOutline, width: 2.5),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Text(
+                                l10n.manifestCollageButton,
+                                style: TextStyle(
+                                  fontFamily: 'Baloo2',
+                                  fontVariations: const [FontVariation('wght', 700)],
+                                  fontSize: 13,
+                                  color: colorScheme.onPrimary,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
                 const SizedBox(height: 12),
                 if (history.isEmpty)

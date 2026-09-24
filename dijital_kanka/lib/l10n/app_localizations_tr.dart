@@ -1207,6 +1207,63 @@ class AppLocalizationsTr extends AppLocalizations {
   String get manifestDecorateNowButton => '🎨 Hemen Süsle';
 
   @override
+  String get manifestCollageButton => '🧩 Kolaj Yap';
+
+  @override
+  String get manifestCollageTitle => 'Kolaj Yap';
+
+  @override
+  String get manifestEditorTabTemplate => 'Şablon';
+
+  @override
+  String get manifestEditorTabBackground => 'Arka Plan';
+
+  @override
+  String get manifestCollagePickTitle => 'Bu kutuya fotoğraf seç';
+
+  @override
+  String get manifestCollageFromManifests => 'Manifestlerimden';
+
+  @override
+  String get manifestCollageFromGallery => '📷 Telefon galerisinden seç';
+
+  @override
+  String get manifestCollageEmptyTile => 'Dokun, fotoğraf seç';
+
+  @override
+  String get manifestTemplateTwoStacked => '2\'li';
+
+  @override
+  String get manifestTemplateTwoSide => '2\'li yan';
+
+  @override
+  String get manifestTemplateThree => '3\'lü';
+
+  @override
+  String get manifestTemplateFour => '4\'lü';
+
+  @override
+  String get manifestTemplateSix => '6\'lı';
+
+  @override
+  String get manifestTemplatePolaroidWall => 'Polaroid';
+
+  @override
+  String get manifestBgCream => 'Krem';
+
+  @override
+  String get manifestBgHoney => 'Bal';
+
+  @override
+  String get manifestBgGold => 'Altın';
+
+  @override
+  String get manifestBgNight => 'Gece';
+
+  @override
+  String get manifestBgDots => 'Noktalı';
+
+  @override
   String get manifestEditorTitle => 'Manifestini Süsle';
 
   @override

@@ -620,9 +620,30 @@ pencerede "🎨 Hemen Süsle".
   yazı, 3 renk, kalın konturlu sticker yazısı.
 - **Filigran**: Pro olmayan kullanıcının görselinde köşede küçük "zibo";
   Pro/Pro+'ta yok (kullanıcı kararı).
-- **Sonraki aşamalar** (onay bekliyor): kolaj şablonları, aylık otomatik pano.
+- **Sonraki aşamalar**: kolaj (aşağıda, tamamlandı), aylık otomatik pano (bekliyor).
 
 **Onaylandı** — [mockup](https://claude.ai/artifact/21kf1TZT3sDKqgrpkc1Pew).
+
+## Onaylanan: Manifest kolajı — 2. aşama (2026-09-24)
+
+Aynı editörün kolaj modu: `ManifestEditorScreen.collage`. Giriş: Manifest
+ekranında vizyon panosu başlığının yanındaki "🧩 Kolaj Yap" (ücretsiz
+kullanıcının 30 günlük geçmiş sınırına uyar — yalnızca görünen kayıtlar).
+
+- **Şablonlar** (hepsi ücretsiz): 2'li alt alta, 2'li yan yana, 3'lü (1
+  büyük + 2 küçük), 4'lü, 6'lı, Polaroid Duvarı (eğik, beyaz kenarlı).
+  `lib/data/manifest_frames.dart` → `CollageTemplate`.
+- **Kutular**: açılışta en yeni fotoğraflı manifestlerle, sonra yazı-only
+  olanlarla otomatik dolar. Dokununca seçici: manifest kayıtları
+  (fotoğrafsız olanlar sarı yazı kartı) + telefon galerisi. Kutu içinde
+  parmakla kaydırma, iki parmakla yakınlaştırma. Boş kutu dışa aktarımda
+  ipucu yazısı olmadan düz renk çıkar.
+- **Arka plan**: Krem, Bal, Altın, Gece, Noktalı.
+- **Sticker/yazı/boyut/filigran/dışa aktarma**: tek fotoğraf editörüyle ortak.
+- Soruların varsayılanları (kullanıcı mockup'ı olduğu gibi onayladı): galeri
+  dahil, yazı kutusu var, şablonlar ücretsiz.
+
+**Onaylandı** — [mockup](https://claude.ai/artifact/D6AbNAeHSW4NCCVMnmakkD).
 
 ## Kapsam dışı — kesinlikle DEĞİŞMEYECEK
 
@@ -665,4 +686,5 @@ genişletilmek istenirse önce burada AÇIKÇA onaylanmalı.
 | Ayarlar ekranı | ✅ Koda döküldü (`settings_screen.dart`) |
 | "Bizi Google Play'de Puanla" penceresi | ✅ Koda döküldü (`rate_prompt_dialog.dart` + `rate_prompt_trigger.dart`) |
 | Manifest süsleme editörü (tek fotoğraf) | ✅ Koda döküldü (`manifest_editor_screen.dart` + `manifest_frame_view.dart`) |
+| Manifest kolajı | ✅ Koda döküldü (`ManifestEditorScreen.collage`) |
 | Şans Çarkı / Günlük Ödül / Rozet pop-up'ları | 🚫 Kapsam dışı — değişmeyecek |
