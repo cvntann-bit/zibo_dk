@@ -1,6 +1,8 @@
 # Zibo Pro / Pro+ Abonelik Modeli
 
-> **Durum:** Faz 1 (altyapı) + Faz 2 (paywall ekranı) tamamlandı. Bu dosya
+> **Durum:** Faz 1 (altyapı) + Faz 2 (paywall ekranı) tamamlandı, paywall
+> 2026-09-23'te komple yeniden tasarlanıp Mağaza'ya taşındı, "Pro+ Analitik/
+> Grafik Genişletmesi" (2026-09-24, aşağıya bkz.) devam ediyor. Bu dosya
 > abonelik sistemiyle ilgili HER ŞEYİN (ürünler, fiyatlar, perk listeleri,
 > giriş noktaları, teknik mimari) tek kaynağı — **abonelik modeliyle ilgili
 > her değişiklikte (yeni perk, fiyat güncellemesi, yeni giriş noktası vb.)
@@ -74,11 +76,27 @@ fallbackPrice`'ta sabit/görsel yer tutucu olarak da tutuluyor):
 | Zibo logosu Pro/Pro+ varyantı (ek istek) | ✅ Uygulandı — `RootScreen` AppBar'ındaki Zibo logosu artık abonelik durumuna göre `zibo_pro_logo.webp`/`zibo_pro_plus_logo.webp` (Pro+ dosyası bir dama-deseni arka plan sorunu taşıyordu, `tool/` ile temizlendi) |
 | Paylaşım kartında Pro filigranı (C3) | ✅ Uygulandı — `ZiboShareCard`, Pro VE Pro+ ikisi de görüyor (`pro_watermark.png`, HÂLÂ PLACEHOLDER). NOT: paywall metni bunu Pro+'a ÖZEL diye listeliyor, kullanıcının bu turki isteğiyle çelişiyor — ayrı görev olarak flaglendi |
 | Aylık rotasyonlu Pro+'a özel kostüm/tema (C1) | 🚫 Kullanıcı isteğiyle KAPSAM DIŞI — uygulanmayacak |
-| Pro+'a özel bildirim sesleri (E2) | ✅ Uygulandı — 5 YENİ Android bildirim kanalı (`push_notifications_proplus_1..5`, immutable kanal-sesi kısıtı yüzünden), `PushNotificationProvider.proPlusSoundChoice` (`users/{uid}` kök alanı, Pattern B), `notification-scripts/src/common.js`'in `sendToUser`'ı tek yerden çözüyor. **2026-09-23** — kullanıcının Masaüstü'ne koyduğu 5 GERÇEK ses dosyası (`zibo_alert_1..5.mp3`) `android/app/src/main/res/raw/proplus_sound_1..5.mp3` olarak eklendi, artık placeholder DEĞİL. Kanal immutable kısıtı yüzünden ZATEN 1/2/3 kanalıyla kurulmuş bir cihaz (bu makinedeki test cihazı dahil) eski sesi duymaya devam eder — yeni sesi duymak için uygulamanın TAMAMEN kaldırılıp yeniden kurulması gerekir. Sunucu tarafı yalnızca kod incelemesiyle doğrulandı, Node.js bu makinede yok |
-| Ruh Hali detaylı trend grafiği (D2) | ✅ Uygulandı — `MoodTrendDetailChart` (`fl_chart`, `MoneyTrendChart` ile AYNI desen), `Mood.score` (1-5) extension'ı eklendi. **2026-09-24 yeniden tasarım/taşıma** — Profil > İstatistiklerim'den kaldırılıp Ruh Hali Takibi'nin kendi ekranına ("Son 7 Gün" şeridinin altına) taşındı; günlük ham skor yerine seçilen granülariteye göre (haftalık ISO hafta/aylık takvim ayı) ORTALAMA skoru kovalayıp çiziyor, son 8 haftalık/6 aylık dolu kova gösteriliyor. İlk mount'ta düz taban çizgisinden gerçek değerlere "dolma" animasyonu eklendi (`LineChart`'ın implicit `duration`/`curve`'ü) — projedeki ilk grafik giriş animasyonu, diğer trend grafikleri için şablon |
-| Para & Birikim gelişmiş analiz (D3) | ✅ Uygulandı — `MoneyProvider.averageMonthlyFor`/`topExpenseItemByCurrency` (yeni getter'lar) + Para ve Birikim'e EK bir `StickerCard` (Ortalama Aylık Harcama/Birikim, En Çok Harcadığın Kalem). "En çok harcanan kategori" `MoneyCategory`'nin yalnızca 3 sabit kovası olduğu için kaydın ADINA (`entry.name`) göre yorumlandı — kullanıcı isterse değiştirilebilir |
+| Pro+'a özel bildirim sesleri (E2) | ✅ Uygulandı — 5 YENİ Android bildirim kanalı (`push_notifications_proplus_1..5`, immutable kanal-sesi kısıtı yüzünden), `PushNotificationProvider.proPlusSoundChoice` (`users/{uid}` kök alanı, Pattern B), `notification-scripts/src/common.js`'in `sendToUser`'ı tek yerden çözüyor. **2026-09-23** — kullanıcının Masaüstü'ne koyduğu 5 GERÇEK ses dosyası (`zibo_alert_1..5.mp3`) `android/app/src/main/res/raw/proplus_sound_1..5.mp3` olarak eklendi, artık placeholder DEĞİL. Kanal immutable kısıtı yüzünden ZATEN 1/2/3 kanalıyla kurulmuş bir cihaz (bu makinedeki test cihazı dahil) eski sesi duymaya devam eder — yeni sesi duymak için uygulamanın TAMAMEN kaldırılıp yeniden kurulması gerekir. **2026-09-23 EK** — Ayarlar'daki seçicide bir seçeneğe dokununca sesi ANINDA önizler (`_playProPlusSoundPreview`, `audioplayers` + `android.resource://` URI'siyle native `res/raw/` kaynağını doğrudan çalıyor, Flutter asset kopyası GEREKMEDİ). Sunucu tarafı yalnızca kod incelemesiyle doğrulandı, Node.js bu makinede yok |
+| Ruh Hali detaylı trend grafiği (D2) | ✅ Uygulandı — `MoodTrendDetailChart` (`fl_chart`, `MoneyTrendChart` ile AYNI desen), `Mood.score` (1-5) extension'ı eklendi. **2026-09-24 yeniden tasarım/taşıma** — Profil > İstatistiklerim'den kaldırılıp Ruh Hali Takibi'nin kendi ekranına ("Son 7 Gün" şeridinin altına) taşındı; günlük ham skor yerine seçilen granülariteye göre (haftalık ISO hafta/aylık takvim ayı) ORTALAMA skoru kovalayıp çiziyor, son 8 haftalık/6 aylık dolu kova gösteriliyor. İlk mount'ta düz taban çizgisinden gerçek değerlere "dolma" animasyonu eklendi (`LineChart`'ın implicit `duration`/`curve`'ü) — projedeki ilk grafik giriş animasyonu, diğer trend grafikleri için şablon. **2026-09-24 İKİNCİ güncelleme — kilit deseni değişti**: artık Pro+ olmayan kullanıcıdan TAMAMEN gizlenmiyor, `LockedFeatureOverlay` ile başlık/toggle görünür kalıp yalnızca çizim alanı bulanıklaştırılıyor (bkz. aşağıdaki "Pro+ grafik kilidi" bölümü). Veri yoksa VE kilitliyse sabit bir örnek dalga bulanıklaştırılıyor (gerçek veri gibi sunulmuyor) |
+| Para & Birikim gelişmiş analiz (D3) | ✅ Uygulandı, **2026-09-24 TAMAMEN yeniden tasarlandı** — eski 3 satırlık metin özeti (ortalama aylık harcama/birikim, en çok harcanan kalem) KALDIRILDI, yerine: (1) her para biriminin KENDİ ayrı kartında üç kategori toplamı (`MoneyProvider.totalsByCurrencyFor`, otomatik kur çevirisi YOK — mevcut çoklu para birimi mimarisiyle AYNI kural), (2) harcama kalemlerinin donut grafiği (`fl_chart` `PieChart`, en büyük 4 kalem + "Diğer" dilimi, `MoneyProvider.expenseBreakdownByNameFor` — YENİ getter, TAM dağılım döner). `averageMonthlyFor`/`topExpenseItemByCurrency` getter'ları KODDA KALDI (silinmedi, artık UI'da kullanılmıyor). Bölüm `LockedFeatureOverlay` ile bulanıklaştırılıyor (aşağıya bkz.). Bonus: "Mevcut Durum" trend grafiğine (bu bölümün DIŞINDA, HERKESE açık) üçüncü bir "Aylık" granülarite seçeneği eklendi |
 
 ## Paywall ekranı (`lib/screens/paywall_screen.dart`)
+
+**2026-09-23'te "sticker" görsel diline göre komple yeniden tasarlandı**
+(bkz. Güncelleme geçmişi) — Zibo karakteri + dönen teşvik balonu, sosyal
+kanıt satırı, yan yana Pro/Pro+ kartları (Pro+ öne çıkarılmış, "En Popüler"
+rozeti — kartlar EŞİT yükseklikte, `Row`'a `stretch` + kartın içine `Spacer`
+ile hizalanıyor), altında de-emphasize edilmiş Tek Seferlik Reklamsız satırı,
+Ücretsiz/Pro/Pro+ karşılaştırma tablosu. İlk mount'ta fade+slide giriş
+animasyonu + CTA butonlarında sonlu (3 döngü, `repeat()` DEĞİL — testlerin
+`pumpAndSettle()`'ını sonsuza kadar bekletmemesi için) bir nabız animasyonu.
+
+Ekran ikiye ayrıldı: **`PaywallContent`** (asıl içerik, `embedded: bool`
+parametresiyle hem tam ekran modal hem Mağaza'ya gömülü kullanılabiliyor) +
+**`PaywallScreen`** (`embedded: false` için ince `Scaffold` sarmalayıcısı,
+sağ üstte KASITLI olarak her zaman görünür/erişilebilir kapatma X'i — Play
+Store politikası satın almaya teşvik ederken kapatmayı gizlemeyi/
+zorlaştırmayı yasaklıyor).
 
 3 seçenek TEK ekranda: Tek Seferlik Reklamsız + Zibo Pro + Zibo Pro+, üstte
 Aylık/Yıllık geçiş anahtarı. Kullanıcı zaten Pro/Pro+ ise:
@@ -89,25 +107,62 @@ Aylık/Yıllık geçiş anahtarı. Kullanıcı zaten Pro/Pro+ ise:
   Play Billing "abonelik değiştirme" akışı — aşağıya bkz.); Pro+ ise "Zaten
   Pro+ Kullanıcısısın" rozeti.
 
-Görsel parçalar (`_PaywallHeaderBanner`, `_PlanCard`, `_PerkRow`) BİLEREK
-küçük, ayrı private widget'lara bölündü — ileride yalnızca görsel/asset
-değişikliği (kullanıcı isteği) tek bir widget'ı düzenlemek kadar kolay olsun
-diye.
+### Giriş noktaları
 
-### Giriş noktaları (hepsi AYNI `PaywallScreen`'i açar)
-
-1. **Ayarlar** — en üstte, kendi "Zibo Pro" satırı (`settings_screen.dart`).
+1. **Mağaza'nın "Zibo Pro" sekmesi** (`store_screen.dart`, `StoreSection.pro`)
+   — **2026-09-23'te Ayarlar'ın YERİNE geçti** (kullanıcı isteği: "artık
+   ayarlar kısmında durmasın"). `PaywallContent(embedded: true)` DOĞRUDAN
+   gömülü — kapatma X'i YOK (sekme zaten "kapatılabilir"), kendi kaydırması
+   YOK (dış `ListView`'a bırakılıyor), satın alma sonrası sekmeden
+   AYRILMIYOR. Coin Al/Kostümler/Temalar'ın yanına 4. segment olarak eklendi.
 2. **Ana Sayfa'da Zibo'ya art arda 5 hızlı dokunma** — %25 ihtimalle (bkz.
-   `home_screen.dart` `_showRapidTapPromoOrAd`).
+   `home_screen.dart` `_showRapidTapPromoOrAd`). Tam ekran `PaywallScreen`
+   (`embedded: false`) açar.
 3. **Mağaza'daki kalıcı "Reklamsız Zibo" kartı** (`store_screen.dart`
-   `_AdFreeCard`) — her zaman ekranda durur.
+   `_AdFreeCard`) — her zaman ekranda durur, tam ekran `PaywallScreen` açar.
 4. **Mağaza'ya periyodik ziyaret promosu** (`AdFreePromoTrigger` — her 5.
    ziyaret + 3 günlük cooldown, `store_screen.dart`
-   `_maybeShowAdFreePromo`).
+   `_maybeShowAdFreePromo`). Tam ekran `PaywallScreen` açar.
+5. **Ayarlar'daki kilitli Pro+ özellik satırları** (ör. "Bildirim Sesi" —
+   Pro+ değilse 🔒 + dokununca paywall) — bunlar STANDALONE bir "Zibo Pro"
+   girişi DEĞİL, bir özelliğin İÇİNDEKİ kontextual kilit/upsell, bu yüzden
+   madde 1'in aksine Ayarlar'dan KALDIRILMADI.
 
-Eskiden (Faz 2 ÖNCESİ) bu 4 giriş noktası yalnızca tek seferlik reklamsız
+Eskiden (Faz 2 ÖNCESİ) bu giriş noktaları yalnızca tek seferlik reklamsız
 paketi satan dar bir bottom sheet'i (`ad_free_promo_sheet.dart`) açıyordu —
 o dosya SİLİNDİ, hepsi artık kapsamlı paywall'a yönlendiriyor.
+
+## Pro+ grafik kilidi — `LockedFeatureOverlay` (2026-09-24)
+
+**Kullanıcı isteğiyle GATİNG FELSEFESİ değişti**: Pro+'a özel grafikler
+artık `if (isProPlus) ... else gösterme` (tam gizleme) deseniyle DEĞİL,
+paylaşılan `lib/widgets/locked_feature_overlay.dart` ile gösteriliyor —
+başlık/toggle HER ZAMAN görünür (kullanıcı bölümün var olduğunu ve neyi
+kaçırdığını görsün), yalnızca asıl çizim alanı `BackdropFilter`/
+`ImageFilter.blur` ile bulanıklaştırılıp üstüne 🔒 rozeti + "Zibo Pro+'a
+Bugün Geç" (`l10n.lockedChartCta`) yazısı bindiriliyor, dokununca
+`PaywallScreen`'e yönlendiriyor. Veri YOKSA ve kilitliyse (yeni kullanıcı)
+bulanıklaştıracak bir şey olsun diye sabit bir ÖRNEK veri seti kullanılıyor
+(gerçek veri gibi SUNULMUYOR).
+
+Şu an bu deseni kullanan grafikler: Ruh Hali Trendi (`MoodTrendDetailChart`),
+Para & Birikim Gelişmiş Analiz (`money_screen.dart`'taki
+`_AdvancedAnalysisSection`). **Devam eden "Pro+ analitik/grafik genişletmesi"
+girişiminin** (aşağıya bkz.) TÜM yeni grafikleri bu deseni kullanacak —
+ortak görsel dil olarak sabitlendi.
+
+## Pro+ Analitik/Grafik Genişletmesi (2026-09-24, DEVAM EDİYOR)
+
+Kullanıcının 6 maddelik iri bir istek listesi — adım adım ilerleniyor:
+
+| # | Madde | Durum |
+|---|---|---|
+| 1 | Ruh Hali grafiğini Profil'den kendi moduluna taşı, haftalık/aylık ortalamaya yeniden tasarla | ✅ Tamamlandı (yukarıdaki D2 satırı) |
+| 2 | Para ve Birikim'e çoklu para birimi kartları + kategori pasta grafiği + trend genişletmesi | ✅ Tamamlandı (yukarıdaki D3 satırı) |
+| 3 | Su Takibi'ne trend grafiği + hedef oranı özeti | ⏳ Sırada |
+| 4 | Şükran Günlüğü'ne katkı ısı haritası, Hedef Takibi'ne tamamlama/streak çubuk grafiği | ⏳ Bekliyor |
+| 5 | Haftalık/Aylık "Zibo Karnesi" özet raporu + paylaşılabilir kart | ⏳ Bekliyor |
+| 6 | Ortak grafik tasarım standardı (renk/font/animasyon, boş durum, giriş animasyonu) | 🔶 Kısmen — `LockedFeatureOverlay` (kilit deseni) + `LineChart`'ın "taban çizgisinden dolma" giriş animasyonu (madde 1'de kuruldu) şu ana kadarki İKİ grafikte uygulandı, madde 3-5'e de uygulanacak |
 
 ## Pro → Pro+ yükseltme mekanizması
 
@@ -143,3 +198,25 @@ Pro→Pro+ katman yükseltmesi var.
 - **2026-09-22 — Faz 2**: `PaywallScreen`, 4 giriş noktasının tamamının
   yönlendirilmesi, Pro→Pro+ yükseltme akışı, eski `ad_free_promo_sheet.dart`
   silindi.
+- **2026-09-23 — Paywall komple yeniden tasarım**: sticker görsel dili,
+  Zibo karakteri + dönen teşvik balonu, yan yana Pro/Pro+ kartları,
+  karşılaştırma tablosu, giriş/nabız animasyonları. `PaywallScreen` →
+  `PaywallContent` (`embedded`) + ince `PaywallScreen` sarmalayıcısına
+  ayrıldı. Pro/Pro+ kart yükseklik orantısızlığı düzeltildi (`Row.stretch`
+  + kartın içinde `Spacer`).
+- **2026-09-23 — Paywall'ı Mağaza'ya taşı**: Ayarlar'ın en üstündeki
+  standalone "Zibo Pro" satırı KALDIRILDI, yerine Mağaza'da Coin Al/
+  Kostümler/Temalar'ın yanına 4. bir "Zibo Pro" sekmesi eklendi
+  (`PaywallContent(embedded: true)` doğrudan gömülü).
+- **2026-09-23 — Pro+ bildirim sesleri**: kullanıcının hazırladığı 5 gerçek
+  ses dosyası `res/raw/proplus_sound_1..5.mp3` olarak eklendi (artık
+  placeholder değil), 2 yeni kanal (4/5) + seçicide dokununca ANINDA
+  önizleme (`android.resource://` URI'siyle).
+- **2026-09-24 — Pro+ Analitik/Grafik Genişletmesi başladı** (kullanıcının
+  6 maddelik iri isteği, adım adım): Ruh Hali trend grafiği Profil'den
+  Ruh Hali Takibi'ne taşındı ve haftalık/aylık ORTALAMAYA yeniden tasarlandı
+  (madde 1) → Para & Birikim'e çoklu para birimi kartları + harcama donut
+  grafiği eklendi (madde 2) → gating deseni "tam gizleme"den paylaşılan
+  `LockedFeatureOverlay` (bulanıklaştır + kilit rozeti + paywall
+  yönlendirmesi) desenine geçirildi, HER İKİ grafiğe de uygulandı (madde 6,
+  kısmen). Devam ediyor — bkz. yukarıdaki durum tablosu.
