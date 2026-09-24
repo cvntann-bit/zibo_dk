@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math';
 
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -18,6 +19,7 @@ import '../providers/subscription_provider.dart';
 import '../providers/zibo_pose_provider.dart';
 import '../utils/address_term.dart';
 import '../widgets/dot_grid_background.dart';
+import '../widgets/locked_feature_overlay.dart';
 import '../widgets/money_category_card.dart';
 import '../widgets/money_trend_chart.dart';
 import '../widgets/share_zibo_button.dart';
@@ -308,60 +310,78 @@ class _MoneyScreenState extends State<MoneyScreen> {
             defaultCurrencyCode: defaultCurrencyCode,
           ),
         ),
-        // Faz 5 (D3) — Zibo Pro+'a özel gelişmiş analiz. Pro/free hiçbir
-        // şey görmez, mevcut kartların (yukarıdaki üçü + trend grafiği)
-        // hiçbirine dokunulmuyor.
-        if (isProPlus) ...[
-          const SizedBox(height: 12),
-          StickerCard(
-            child: _AdvancedAnalysisSection(
-              moneyProvider: moneyProvider,
-              currencyCode: defaultCurrencyCode,
-            ),
+        // Faz 5 (D3) — Zibo Pro+'a özel gelişmiş analiz. 2026-09-24
+        // güncellemesi — kullanıcı isteğiyle artık HERKESE görünür; Pro+
+        // olmayan yalnızca bulanıklaştırılmış + kilit rozetli bir önizleme
+        // görür (bkz. `LockedFeatureOverlay`), mevcut kartların (yukarıdaki
+        // üçü + trend grafiği) hiçbirine dokunulmuyor.
+        const SizedBox(height: 12),
+        StickerCard(
+          child: _AdvancedAnalysisSection(
+            moneyProvider: moneyProvider,
+            currencyCode: defaultCurrencyCode,
+            locked: !isProPlus,
           ),
-        ],
+        ),
       ],
     );
   }
 }
 
-/// **Faz 5 (D3)** — `MoneyTrendChart`'ın başlık tipografisiyle AYNI, 2-3
-/// basit istatistik satırı (gauge/grafik YOK, `profile_stat_card.dart`'ın
-/// ikon-dairesi düzeninden BASİTLEŞTİRİLMİŞ hali). Yalnızca [currencyCode]
-/// (Para ve Birikim AppBar'ından seçilen güncel para birimi) için hesaplanır
-/// — `MoneyTrendChart`'ın AKSİNE bir para birimi seçici YOK, basit tutmak
-/// için kullanıcının o an baktığı para birimiyle sınırlı.
+/// **Faz 5 (D3), 2026-09-24 yeniden tasarım.** Zibo Pro+'a özel gelişmiş
+/// analiz — kullanıcı isteğiyle önceki basit 3-satırlık metin özetinin
+/// YERİNE: (1) her para biriminin KENDİ ayrı kartında üç kategori toplamı
+/// (otomatik kur çevirisi YOK, `MoneyProvider.totalsByCurrencyFor` — mevcut
+/// çoklu para birimi mimarisiyle AYNI "her birimi kendi başına göster"
+/// kuralı), (2) [currencyCode] (Para ve Birikim AppBar'ından seçilen güncel
+/// para birimi) için harcama kalemlerinin dağılımını gösteren bir donut
+/// grafik (`MoneyProvider.expenseBreakdownByNameFor`).
+///
+/// **Kilit deseni** — başlık her zaman görünür; [locked] `true` iken (Pro+
+/// değil) gövde (para birimi kartları + donut) [LockedFeatureOverlay] ile
+/// bulanıklaştırılıp kilit rozeti bindiriliyor. Kullanıcının HİÇ verisi
+/// yoksa ve kilitliyse, bulanıklaştıracak bir şey olsun diye sabit bir
+/// ÖRNEK veri seti kullanılır (asla gerçek veri gibi sunulmuyor, yalnızca
+/// bulanık haliyle görünür) — Pro+ kullanıcı için veri gerçekten yoksa
+/// normal boş durum metni gösterilir.
 class _AdvancedAnalysisSection extends StatelessWidget {
   const _AdvancedAnalysisSection({
     required this.moneyProvider,
     required this.currencyCode,
+    required this.locked,
   });
 
   final MoneyProvider moneyProvider;
   final String currencyCode;
+  final bool locked;
+
+  static const _placeholderCurrency = 'TRY';
+  static const _placeholderTotals = (expense: 1250.0, saving: 400.0, income: 3200.0);
+  static const _placeholderBreakdown = {'Market': 420.0, 'Kira': 600.0, 'Faturalar': 230.0};
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final colorScheme = Theme.of(context).colorScheme;
-    final symbol = currencyByCode(currencyCode).symbol;
 
-    final avgExpense = moneyProvider.averageMonthlyFor(MoneyCategory.expense)[currencyCode];
-    final avgSaving = moneyProvider.averageMonthlyFor(MoneyCategory.saving)[currencyCode];
-    final topExpense = moneyProvider.topExpenseItemByCurrency()[currencyCode];
+    final realCurrencies = moneyProvider.availableCurrencies;
+    final realBreakdown = moneyProvider.expenseBreakdownByNameFor(currencyCode);
+    final hasRealData = realCurrencies.isNotEmpty;
 
-    if (avgExpense == null && avgSaving == null && topExpense == null) {
+    final titleText = Text(
+      l10n.moneyAdvancedAnalysisTitle,
+      style: const TextStyle(
+        fontFamily: 'Baloo2',
+        fontVariations: [FontVariation('wght', 800)],
+        fontSize: 13.5,
+      ),
+    );
+
+    if (!hasRealData && !locked) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            l10n.moneyAdvancedAnalysisTitle,
-            style: const TextStyle(
-              fontFamily: 'Baloo2',
-              fontVariations: [FontVariation('wght', 800)],
-              fontSize: 13.5,
-            ),
-          ),
+          titleText,
           const SizedBox(height: 10),
           Text(
             l10n.moneyAdvancedAnalysisEmpty,
@@ -373,74 +393,255 @@ class _AdvancedAnalysisSection extends StatelessWidget {
       );
     }
 
+    final usePlaceholder = !hasRealData && locked;
+    final currencies = usePlaceholder ? const [_placeholderCurrency] : realCurrencies;
+    final breakdown = usePlaceholder ? _placeholderBreakdown : realBreakdown;
+    final breakdownCurrency = usePlaceholder ? _placeholderCurrency : currencyCode;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          l10n.moneyAdvancedAnalysisTitle,
-          style: const TextStyle(
-            fontFamily: 'Baloo2',
-            fontVariations: [FontVariation('wght', 800)],
-            fontSize: 13.5,
+        titleText,
+        const SizedBox(height: 12),
+        LockedFeatureOverlay(
+          locked: locked,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                l10n.moneyCurrencyTotalsTitle,
+                style: TextStyle(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 11.5,
+                  color: colorScheme.onSurfaceVariant,
+                ),
+              ),
+              const SizedBox(height: 8),
+              for (final code in currencies) ...[
+                _CurrencyTotalsCard(
+                  currencyCode: code,
+                  expense: usePlaceholder
+                      ? _placeholderTotals.expense
+                      : (moneyProvider.totalsByCurrencyFor(MoneyCategory.expense)[code] ?? 0),
+                  saving: usePlaceholder
+                      ? _placeholderTotals.saving
+                      : (moneyProvider.totalsByCurrencyFor(MoneyCategory.saving)[code] ?? 0),
+                  income: usePlaceholder
+                      ? _placeholderTotals.income
+                      : (moneyProvider.totalsByCurrencyFor(MoneyCategory.income)[code] ?? 0),
+                ),
+                const SizedBox(height: 8),
+              ],
+              const SizedBox(height: 4),
+              Text(
+                l10n.moneyExpenseBreakdownTitle,
+                style: TextStyle(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 11.5,
+                  color: colorScheme.onSurfaceVariant,
+                ),
+              ),
+              const SizedBox(height: 8),
+              _ExpenseDonutChart(breakdown: breakdown, currencyCode: breakdownCurrency),
+            ],
           ),
         ),
-        const SizedBox(height: 12),
-        if (avgExpense != null)
-          _AnalysisStatRow(
-            label: l10n.moneyAdvancedAnalysisAvgExpense,
-            value: '$symbol${avgExpense.toStringAsFixed(0)}',
-          ),
-        if (avgSaving != null) ...[
-          const SizedBox(height: 8),
-          _AnalysisStatRow(
-            label: l10n.moneyAdvancedAnalysisAvgSaving,
-            value: '$symbol${avgSaving.toStringAsFixed(0)}',
-          ),
-        ],
-        if (topExpense != null) ...[
-          const SizedBox(height: 8),
-          _AnalysisStatRow(
-            label: l10n.moneyAdvancedAnalysisTopExpense,
-            value: '${topExpense.name} ($symbol${topExpense.total.toStringAsFixed(0)})',
-          ),
-        ],
       ],
     );
   }
 }
 
-class _AnalysisStatRow extends StatelessWidget {
-  const _AnalysisStatRow({required this.label, required this.value});
+/// Tek bir para biriminin üç kategori toplamını gösteren kompakt kart —
+/// `MoneyCategoryCard`'ın (ana kartlar) AKSİNE tek bir para birimiyle
+/// sınırlı, yan yana/alt alta birden fazlası gösterilebilsin diye küçük.
+class _CurrencyTotalsCard extends StatelessWidget {
+  const _CurrencyTotalsCard({
+    required this.currencyCode,
+    required this.expense,
+    required this.saving,
+    required this.income,
+  });
+
+  final String currencyCode;
+  final double expense;
+  final double saving;
+  final double income;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final colorScheme = Theme.of(context).colorScheme;
+    final symbol = currencyByCode(currencyCode).symbol;
+
+    return Container(
+      padding: const EdgeInsets.all(10),
+      decoration: stickerDecoration(
+        fill: colorScheme.surfaceContainerLowest,
+        borderRadius: BorderRadius.circular(12),
+        borderWidth: 2,
+        shadowOffset: const Offset(2, 2),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '$currencyCode ($symbol)',
+            style: TextStyle(
+              fontFamily: 'Baloo2',
+              fontVariations: const [FontVariation('wght', 800)],
+              fontSize: 12,
+              color: colorScheme.onSurface,
+            ),
+          ),
+          const SizedBox(height: 6),
+          _MiniStatRow(label: l10n.moneyExpenses, value: expense, symbol: symbol, color: _expenseRed),
+          _MiniStatRow(label: l10n.moneySavings, value: saving, symbol: symbol, color: _savingGreen),
+          _MiniStatRow(label: l10n.moneyIncome, value: income, symbol: symbol, color: _incomeBlue),
+        ],
+      ),
+    );
+  }
+}
+
+class _MiniStatRow extends StatelessWidget {
+  const _MiniStatRow({
+    required this.label,
+    required this.value,
+    required this.symbol,
+    required this.color,
+  });
 
   final String label;
-  final String value;
+  final double value;
+  final String symbol;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Row(
+        children: [
+          Container(width: 8, height: 8, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
+          const SizedBox(width: 6),
+          Expanded(
+            child: Text(
+              label,
+              style: TextStyle(fontWeight: FontWeight.w600, fontSize: 11, color: colorScheme.onSurfaceVariant),
+            ),
+          ),
+          Text(
+            '$symbol${value.toStringAsFixed(0)}',
+            style: TextStyle(fontWeight: FontWeight.w800, fontSize: 12, color: colorScheme.onSurface),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Harcama kalemlerinin (`MoneyEntry.name`) dağılımını gösteren donut grafik
+/// — en büyük 4 kalem kendi dilimini alır, geri kalanı `moneyExpenseOtherLabel`
+/// altında tek bir dilimde toplanır (çok sayıda küçük dilim okunaksız
+/// olurdu).
+class _ExpenseDonutChart extends StatelessWidget {
+  const _ExpenseDonutChart({required this.breakdown, required this.currencyCode});
+
+  final Map<String, double> breakdown;
+  final String currencyCode;
+
+  static const _sliceColors = [
+    Color(0xFFE53935),
+    Color(0xFFFB8C00),
+    Color(0xFF1E88E5),
+    Color(0xFF43A047),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final colorScheme = Theme.of(context).colorScheme;
+
+    if (breakdown.isEmpty) {
+      return Text(
+        l10n.moneyAdvancedAnalysisEmpty,
+        style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: colorScheme.onSurfaceVariant),
+      );
+    }
+
+    final sorted = breakdown.entries.toList()..sort((a, b) => b.value.compareTo(a.value));
+    const maxSlices = 4;
+    final top = sorted.take(maxSlices).toList();
+    final otherTotal = sorted.skip(maxSlices).fold<double>(0, (sum, e) => sum + e.value);
+
+    final slices = [
+      for (var i = 0; i < top.length; i++)
+        (name: top[i].key, value: top[i].value, color: _sliceColors[i % _sliceColors.length]),
+      if (otherTotal > 0)
+        (name: l10n.moneyExpenseOtherLabel, value: otherTotal, color: colorScheme.outlineVariant),
+    ];
+    final total = slices.fold<double>(0, (sum, s) => sum + s.value);
+
+    return Column(
+      children: [
+        SizedBox(
+          height: 150,
+          child: PieChart(
+            duration: const Duration(milliseconds: 900),
+            curve: Curves.easeOutCubic,
+            PieChartData(
+              sectionsSpace: 2,
+              centerSpaceRadius: 32,
+              sections: [
+                for (final slice in slices)
+                  PieChartSectionData(
+                    value: slice.value,
+                    color: slice.color,
+                    radius: 40,
+                    showTitle: false,
+                  ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 10),
+        Wrap(
+          alignment: WrapAlignment.center,
+          spacing: 12,
+          runSpacing: 6,
+          children: [
+            for (final slice in slices)
+              _LegendChip(
+                color: slice.color,
+                label: slice.name,
+                percent: (slice.value / total * 100).round(),
+              ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class _LegendChip extends StatelessWidget {
+  const _LegendChip({required this.color, required this.label, required this.percent});
+
+  final Color color;
+  final String label;
+  final int percent;
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      mainAxisSize: MainAxisSize.min,
       children: [
-        Expanded(
-          child: Text(
-            label,
-            style: TextStyle(
-              fontWeight: FontWeight.w600,
-              fontSize: 12,
-              color: colorScheme.onSurfaceVariant,
-            ),
-          ),
-        ),
-        const SizedBox(width: 8),
+        Container(width: 9, height: 9, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
+        const SizedBox(width: 5),
         Text(
-          value,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: TextStyle(
-            fontWeight: FontWeight.w800,
-            fontSize: 13,
-            color: colorScheme.onSurface,
-          ),
+          '$label · $percent%',
+          style: TextStyle(fontWeight: FontWeight.w700, fontSize: 10.5, color: colorScheme.onSurfaceVariant),
         ),
       ],
     );

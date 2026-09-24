@@ -117,6 +117,33 @@ class MoneyProvider extends ChangeNotifier {
     return result;
   }
 
+  /// **Faz 5 (D3) — Zibo Pro+ gelişmiş analiz.** TÜM kategorilerde (Harcama/
+  /// Birikim/Gelir) en az bir kayıt taşıyan para birimi kodlarının alfabetik
+  /// sıralı listesi — `MoneyTrendChart`'ın kendi içinde tekrarladığı AYNI
+  /// hesap (bkz. o dosyadaki `availableCurrencies` yerel değişkeni), burada
+  /// tek bir yerden okunsun diye.
+  List<String> get availableCurrencies {
+    final codes = <String>{
+      for (final list in _entries.values)
+        for (final entry in list) entry.currencyCode,
+    };
+    return codes.toList()..sort();
+  }
+
+  /// **Faz 5 (D3)** — Harcamalar kategorisinde, [currencyCode] için TÜM
+  /// kalemlerin (`MoneyEntry.name`) toplamı — [topExpenseItemByCurrency]'nin
+  /// yalnızca "en yükseği" döndüren halinin AKSİNE, pasta/donut grafiği
+  /// beslemek için TAM dağılım. Anahtar sırası GÜVENCE ALTINDA DEĞİL, çağıran
+  /// taraf kendi sıralamasını (ör. büyükten küçüğe) uygular.
+  Map<String, double> expenseBreakdownByNameFor(String currencyCode) {
+    final byName = <String, double>{};
+    for (final entry in _entries[MoneyCategory.expense]!) {
+      if (entry.currencyCode != currencyCode) continue;
+      byName[entry.name] = (byName[entry.name] ?? 0) + entry.amount;
+    }
+    return byName;
+  }
+
   Future<void> _loadFromPrefs() async {
     final decoded = await _store.load();
     if (decoded == null) return;

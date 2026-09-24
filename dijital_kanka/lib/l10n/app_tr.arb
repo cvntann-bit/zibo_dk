@@ -410,6 +410,22 @@
   "@moneyAdvancedAnalysisEmpty": {
     "description": "Seçili para biriminde hiç harcama/birikim kaydı yokken gösterilen metin"
   },
+  "lockedChartCta": "Zibo Pro+'a Bugün Geç",
+  "@lockedChartCta": {
+    "description": "Pro+ olmayan kullanıcıya bulanıklaştırılmış bir grafiğin üstünde gösterilen, dokununca paywall'a yönlendiren kilit rozetinin metni — TÜM Pro+ grafikleri (Ruh Hali, Para ve Birikim, vb.) paylaşıyor"
+  },
+  "moneyExpenseBreakdownTitle": "Harcama Dağılımı",
+  "@moneyExpenseBreakdownTitle": {
+    "description": "Gelişmiş Analiz bölümündeki, harcama kalemlerinin pasta/donut grafiğinin üst başlığı"
+  },
+  "moneyExpenseOtherLabel": "Diğer",
+  "@moneyExpenseOtherLabel": {
+    "description": "Harcama dağılımı pasta grafiğinde, en büyük birkaç kalemin dışında kalan geri kalanının toplandığı dilimin etiketi"
+  },
+  "moneyCurrencyTotalsTitle": "Para Birimlerine Göre",
+  "@moneyCurrencyTotalsTitle": {
+    "description": "Gelişmiş Analiz bölümündeki, her para biriminin kendi kartında ayrı toplamlarını gösteren bölümün üst başlığı"
+  },
   "moneyTrendEmpty": "Trend grafiği için henüz yeterli veri yok. Harcama veya birikim ekleyince burada görünecek.",
   "@moneyTrendEmpty": {
     "description": "Trend grafiğinde gösterilecek hiç harcama/birikim kaydı yokken gösterilen metin"
@@ -445,6 +461,10 @@
   "moneyTrendGranularityWeekly": "Haftalık",
   "@moneyTrendGranularityWeekly": {
     "description": "Trend grafiğinin sağ üstündeki periyot seçicide 'haftalık' seçeneği"
+  },
+  "moneyTrendGranularityMonthly": "Aylık",
+  "@moneyTrendGranularityMonthly": {
+    "description": "Trend grafiğinin sağ üstündeki periyot seçicide 'aylık' seçeneği"
   },
   "moneyEmptyCategory": "Henüz kayıt yok",
   "@moneyEmptyCategory": {

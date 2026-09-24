@@ -304,6 +304,18 @@ class AppLocalizationsEn extends AppLocalizations {
       'Not enough data yet for an analysis.';
 
   @override
+  String get lockedChartCta => 'Go Zibo Pro+ Today';
+
+  @override
+  String get moneyExpenseBreakdownTitle => 'Expense Breakdown';
+
+  @override
+  String get moneyExpenseOtherLabel => 'Other';
+
+  @override
+  String get moneyCurrencyTotalsTitle => 'By Currency';
+
+  @override
   String get moneyTrendEmpty =>
       'Not enough data for a trend chart yet. Add an expense or saving and it\'ll show up here.';
 
@@ -330,6 +342,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get moneyTrendGranularityWeekly => 'Weekly';
+
+  @override
+  String get moneyTrendGranularityMonthly => 'Monthly';
 
   @override
   String get moneyEmptyCategory => 'No entries yet';

@@ -610,6 +610,30 @@ abstract class AppLocalizations {
   /// **'Analiz için henüz yeterli veri yok.'**
   String get moneyAdvancedAnalysisEmpty;
 
+  /// Pro+ olmayan kullanıcıya bulanıklaştırılmış bir grafiğin üstünde gösterilen, dokununca paywall'a yönlendiren kilit rozetinin metni — TÜM Pro+ grafikleri (Ruh Hali, Para ve Birikim, vb.) paylaşıyor
+  ///
+  /// In tr, this message translates to:
+  /// **'Zibo Pro+\'a Bugün Geç'**
+  String get lockedChartCta;
+
+  /// Gelişmiş Analiz bölümündeki, harcama kalemlerinin pasta/donut grafiğinin üst başlığı
+  ///
+  /// In tr, this message translates to:
+  /// **'Harcama Dağılımı'**
+  String get moneyExpenseBreakdownTitle;
+
+  /// Harcama dağılımı pasta grafiğinde, en büyük birkaç kalemin dışında kalan geri kalanının toplandığı dilimin etiketi
+  ///
+  /// In tr, this message translates to:
+  /// **'Diğer'**
+  String get moneyExpenseOtherLabel;
+
+  /// Gelişmiş Analiz bölümündeki, her para biriminin kendi kartında ayrı toplamlarını gösteren bölümün üst başlığı
+  ///
+  /// In tr, this message translates to:
+  /// **'Para Birimlerine Göre'**
+  String get moneyCurrencyTotalsTitle;
+
   /// Trend grafiğinde gösterilecek hiç harcama/birikim kaydı yokken gösterilen metin
   ///
   /// In tr, this message translates to:
@@ -663,6 +687,12 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'Haftalık'**
   String get moneyTrendGranularityWeekly;
+
+  /// Trend grafiğinin sağ üstündeki periyot seçicide 'aylık' seçeneği
+  ///
+  /// In tr, this message translates to:
+  /// **'Aylık'**
+  String get moneyTrendGranularityMonthly;
 
   /// Bir kategoride hiç kayıt yokken gösterilen metin
   ///

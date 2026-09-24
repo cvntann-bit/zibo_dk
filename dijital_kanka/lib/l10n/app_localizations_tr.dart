@@ -304,6 +304,18 @@ class AppLocalizationsTr extends AppLocalizations {
       'Analiz için henüz yeterli veri yok.';
 
   @override
+  String get lockedChartCta => 'Zibo Pro+\'a Bugün Geç';
+
+  @override
+  String get moneyExpenseBreakdownTitle => 'Harcama Dağılımı';
+
+  @override
+  String get moneyExpenseOtherLabel => 'Diğer';
+
+  @override
+  String get moneyCurrencyTotalsTitle => 'Para Birimlerine Göre';
+
+  @override
   String get moneyTrendEmpty =>
       'Trend grafiği için henüz yeterli veri yok. Harcama veya birikim ekleyince burada görünecek.';
 
@@ -331,6 +343,9 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get moneyTrendGranularityWeekly => 'Haftalık';
+
+  @override
+  String get moneyTrendGranularityMonthly => 'Aylık';
 
   @override
   String get moneyEmptyCategory => 'Henüz kayıt yok';

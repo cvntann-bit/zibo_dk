@@ -11,7 +11,7 @@ const _expenseRed = Color(0xFFE53935);
 const _savingGreen = Color(0xFF43A047);
 const _incomeBlue = Color(0xFF1E88E5);
 
-enum _Granularity { daily, weekly }
+enum _Granularity { daily, weekly, monthly }
 
 /// [expenses]/[savings]/[incomes], seçili [_Granularity]'ye göre (gün ya da
 /// hafta) GRUPLANIP kümülatif (biriken) toplam olarak çizilir — "Mevcut
@@ -147,43 +147,46 @@ class _MoneyTrendChartState extends State<MoneyTrendChart> {
     final lastIndex = series.buckets.length.toDouble();
     final xInterval = lastIndex <= 4 ? 1.0 : (lastIndex / 4).ceilToDouble();
 
+    // 3 granülarite segmenti (Günlük/Haftalık/Aylık) artık başlıkla AYNI
+    // satıra sığmıyor (2 segmentken sığıyordu) — başlık kendi satırında,
+    // toggle ALTTA kendi satırında; `MoodTrendDetailChart`'ın 2-segmentli
+    // AKSİNE burada BİLEREK ayrı satırlar.
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Flexible(child: titleText),
-            const SizedBox(width: 8),
-            SegmentedButton<_Granularity>(
-              style: SegmentedButton.styleFrom(
-                visualDensity: VisualDensity.compact,
-                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                minimumSize: Size.zero,
-                backgroundColor: colorScheme.surfaceContainerLowest,
-                foregroundColor: colorScheme.onSurface,
-                selectedBackgroundColor: colorScheme.primary,
-                selectedForegroundColor: colorScheme.onPrimary,
-                side: const BorderSide(color: kStickerOutline, width: 1.5),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(9)),
-                textStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 9.5),
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-              ),
-              segments: [
-                ButtonSegment(
-                  value: _Granularity.daily,
-                  label: Text(l10n.moneyTrendGranularityDaily),
-                ),
-                ButtonSegment(
-                  value: _Granularity.weekly,
-                  label: Text(l10n.moneyTrendGranularityWeekly),
-                ),
-              ],
-              selected: {_granularity},
-              onSelectionChanged: (selection) =>
-                  setState(() => _granularity = selection.first),
+        titleText,
+        const SizedBox(height: 8),
+        SegmentedButton<_Granularity>(
+          style: SegmentedButton.styleFrom(
+            visualDensity: VisualDensity.compact,
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            minimumSize: Size.zero,
+            backgroundColor: colorScheme.surfaceContainerLowest,
+            foregroundColor: colorScheme.onSurface,
+            selectedBackgroundColor: colorScheme.primary,
+            selectedForegroundColor: colorScheme.onPrimary,
+            side: const BorderSide(color: kStickerOutline, width: 1.5),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(9)),
+            textStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 9.5),
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+          ),
+          segments: [
+            ButtonSegment(
+              value: _Granularity.daily,
+              label: Text(l10n.moneyTrendGranularityDaily),
+            ),
+            ButtonSegment(
+              value: _Granularity.weekly,
+              label: Text(l10n.moneyTrendGranularityWeekly),
+            ),
+            ButtonSegment(
+              value: _Granularity.monthly,
+              label: Text(l10n.moneyTrendGranularityMonthly),
             ),
           ],
+          selected: {_granularity},
+          onSelectionChanged: (selection) =>
+              setState(() => _granularity = selection.first),
         ),
         if (availableCurrencies.length > 1) ...[
           const SizedBox(height: 6),
@@ -243,7 +246,7 @@ class _MoneyTrendChartState extends State<MoneyTrendChart> {
                       return Padding(
                         padding: const EdgeInsets.only(top: 4),
                         child: Text(
-                          formatShortAxisDate(series.buckets[index - 1], locale),
+                          _bucketAxisLabel(series.buckets[index - 1], _granularity, locale),
                           style: TextStyle(fontSize: 10, color: colorScheme.onSurfaceVariant),
                         ),
                       );
@@ -335,9 +338,20 @@ class _MoneyTrendSeries {
 /// istikrarlı bir gruplama anahtarı için).
 DateTime _bucketStart(DateTime date, _Granularity granularity) {
   final day = DateTime(date.year, date.month, date.day);
-  if (granularity == _Granularity.daily) return day;
-  return day.subtract(Duration(days: day.weekday - DateTime.monday));
+  return switch (granularity) {
+    _Granularity.daily => day,
+    _Granularity.weekly => day.subtract(Duration(days: day.weekday - DateTime.monday)),
+    _Granularity.monthly => DateTime(date.year, date.month),
+  };
 }
+
+/// Alt eksen etiketi — günlük/haftalık modda gün+kısa ay adı (`formatShort
+/// AxisDate`), aylık modda bir GÜN sayısı anlamsız olduğu için yalnızca ay
+/// adı (bkz. `MoodTrendDetailChart._bucketLabel`'daki AYNI ayrım).
+String _bucketAxisLabel(DateTime bucket, _Granularity granularity, Locale locale) =>
+    granularity == _Granularity.monthly
+        ? monthNamesShortForLocale(locale)[bucket.month - 1]
+        : formatShortAxisDate(bucket, locale);
 
 Map<DateTime, double> _sumByBucket(List<MoneyEntry> entries, _Granularity granularity) {
   final map = <DateTime, double>{};

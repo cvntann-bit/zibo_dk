@@ -698,7 +698,9 @@ void main() {
   );
 
   testWidgets(
-    'Faz 5 (D3): Para & Birikim gelişmiş analiz yalnızca Pro+ kullanıcıya görünür',
+    'Faz 5 (D3), 2026-09-24: Para & Birikim gelişmiş analiz HERKESE görünür, '
+    'Pro+ değilken bulanık+kilitli önizleme gösterip dokununca paywall\'a '
+    'yönlendirir',
     (WidgetTester tester) async {
       await _pumpPastOnboarding(tester, const DijitalKankaApp());
 
@@ -711,7 +713,22 @@ void main() {
       await tester.tap(find.text('Harcamalar ve Birikimler'));
       await tester.pumpAndSettle();
 
-      expect(find.text('Gelişmiş Analiz'), findsNothing);
+      // Başlık artık HER ZAMAN görünür (kullanıcı isteği: "tüm grafikler
+      // gözüksün") — Pro+ olmayan kullanıcı bile bölümün var olduğunu görür,
+      // yalnızca gövde (para birimi kartları + donut) bulanıklaştırılmış.
+      await tester.scrollUntilVisible(find.text('Gelişmiş Analiz'), 200);
+      expect(find.text('Gelişmiş Analiz'), findsOneWidget);
+      expect(find.text('Zibo Pro+\'a Bugün Geç'), findsOneWidget);
+
+      await tester.ensureVisible(find.text('Zibo Pro+\'a Bugün Geç'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Zibo Pro+\'a Bugün Geç'));
+      await tester.pumpAndSettle();
+      expect(find.byType(PaywallScreen), findsOneWidget);
+
+      await tester.tap(find.byTooltip('Kapat'));
+      await tester.pumpAndSettle();
+      expect(find.byType(PaywallScreen), findsNothing);
 
       final element = tester.element(find.byType(MoneyScreen));
       Provider.of<MoneyProvider>(element, listen: false).addEntry(
@@ -725,9 +742,11 @@ void main() {
         listen: false,
       ).debugSetTier(SubscriptionTier.proPlus);
       await tester.pumpAndSettle();
-      await tester.scrollUntilVisible(find.text('Gelişmiş Analiz'), 200);
 
-      expect(find.text('Gelişmiş Analiz'), findsOneWidget);
+      // Pro+ olunca kilit kayboluyor, gerçek veri/grafik erişilebilir kalıyor.
+      expect(find.text('Zibo Pro+\'a Bugün Geç'), findsNothing);
+      await tester.scrollUntilVisible(find.text('Harcama Dağılımı'), 200);
+      expect(find.text('Harcama Dağılımı'), findsOneWidget);
 
       await tester.tap(find.byTooltip('Geri'));
       await tester.pumpAndSettle();
@@ -2171,7 +2190,10 @@ void main() {
       await _openModulesMenu(tester);
       await tester.tap(find.text('Günlük Ruh Hali Takibi'));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('😢'));
+      // `.first` — Pro+ trend grafiği artık HERKESE (kilitli/örnek veriyle
+      // bile) göründüğü için Y ekseni AYNI emoji'yi tekrar eşleştirebiliyor;
+      // seçim satırındaki gerçek buton ağaçta ÖNCE gelir.
+      await tester.tap(find.text('😢').first);
       await tester.pumpAndSettle();
       await tester.tap(find.byTooltip('Geri'));
       await tester.pumpAndSettle();
@@ -2255,9 +2277,10 @@ void main() {
       expect(find.text('Geçmiş'), findsOneWidget);
       expect(find.text('Henüz bir kayıt yok.'), findsOneWidget);
 
-      // Bu noktada listede hiç kayıt yok, o yüzden emoji yalnızca seçim
-      // sırasında bir kez geçiyor — dokunmak tekil eşleşir.
-      await tester.tap(find.text('🙂'));
+      // `.first` — Pro+ trend grafiği artık HERKESE (kilitli/örnek veriyle
+      // bile) göründüğü için Y ekseni AYNI emoji'yi tekrar eşleştirebiliyor;
+      // seçim satırındaki gerçek buton ağaçta ÖNCE gelir.
+      await tester.tap(find.text('🙂').first);
       await tester.pumpAndSettle();
 
       // Kaydedildi: geçmiş listesinde artık bir kayıt var (boş durum metni gitti).
@@ -2280,7 +2303,10 @@ void main() {
       // mood_tracking_screen.dart — `todayMood == null` iken gizli).
       expect(find.byType(TextField), findsNothing);
 
-      await tester.tap(find.text('😄')); // veryHappy
+      // `.first` — Pro+ trend grafiği artık HERKESE (kilitli/örnek veriyle
+      // bile) göründüğü için Y ekseni AYNI emoji'yi tekrar eşleştirebiliyor;
+      // seçim satırındaki gerçek buton ağaçta ÖNCE gelir.
+      await tester.tap(find.text('😄').first); // veryHappy
       await tester.pumpAndSettle();
 
       // Şimdi not alanı belirdi.
@@ -2300,8 +2326,9 @@ void main() {
   );
 
   testWidgets(
-    'Faz 5 (D2), 2026-09-24: Ruh Hali trend grafiği artık Ruh Hali Takibi '
-    'ekranında yaşıyor ve yalnızca Pro+ kullanıcıya görünür',
+    'Faz 5 (D2), 2026-09-24: Ruh Hali trend grafiği Ruh Hali Takibi '
+    'ekranında HERKESE görünür, Pro+ değilken bulanık+kilitli önizleme '
+    'gösterip dokununca paywall\'a yönlendirir',
     (WidgetTester tester) async {
       await _pumpPastOnboarding(tester, const DijitalKankaApp());
 
@@ -2309,10 +2336,29 @@ void main() {
       await tester.tap(find.text('Günlük Ruh Hali Takibi'));
       await tester.pumpAndSettle();
 
-      expect(find.text('Ruh Hali Trendi'), findsNothing);
-
-      await tester.tap(find.text('🙂'));
+      // `.first` — grafik artık Pro+ olmayana da (kilitli/örnek veriyle)
+      // göründüğü için Y ekseni emoji etiketleri AYNI emoji'yi tekrar
+      // eşleştirebiliyor; seçim satırındaki gerçek buton ağaçta ÖNCE gelir.
+      await tester.tap(find.text('🙂').first);
       await tester.pumpAndSettle();
+
+      // Başlık/granülarite toggle'ı HER ZAMAN görünür (kullanıcı isteği:
+      // "tüm grafikler gözüksün") — yalnızca çizim alanı bulanıklaştırılır.
+      expect(find.text('Ruh Hali Trendi'), findsOneWidget);
+      expect(find.text('Haftalık'), findsOneWidget);
+      expect(find.text('Aylık'), findsOneWidget);
+      // Pro+ değilken kilit rozetinin CTA'sı görünür.
+      expect(find.text('Zibo Pro+\'a Bugün Geç'), findsOneWidget);
+
+      await tester.ensureVisible(find.text('Zibo Pro+\'a Bugün Geç'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Zibo Pro+\'a Bugün Geç'));
+      await tester.pumpAndSettle();
+      expect(find.byType(PaywallScreen), findsOneWidget);
+
+      await tester.tap(find.byTooltip('Kapat'));
+      await tester.pumpAndSettle();
+      expect(find.byType(PaywallScreen), findsNothing);
 
       final element = tester.element(find.text('Son 7 Gün'));
       await Provider.of<SubscriptionProvider>(
@@ -2321,10 +2367,8 @@ void main() {
       ).debugSetTier(SubscriptionTier.proPlus);
       await tester.pumpAndSettle();
 
-      expect(find.text('Ruh Hali Trendi'), findsOneWidget);
-      // Granülarite seçici — varsayılan "Haftalık".
-      expect(find.text('Haftalık'), findsOneWidget);
-      expect(find.text('Aylık'), findsOneWidget);
+      // Pro+ olunca kilit kayboluyor, gerçek grafik erişilebilir kalıyor.
+      expect(find.text('Zibo Pro+\'a Bugün Geç'), findsNothing);
     },
   );
 

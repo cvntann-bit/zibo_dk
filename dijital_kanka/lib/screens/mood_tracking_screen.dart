@@ -181,9 +181,18 @@ class _MoodTrackingScreenState extends State<MoodTrackingScreen> {
         children: [
           const Positioned.fill(child: DotGridBackground()),
           SafeArea(
-            child: ListView(
+            child: SingleChildScrollView(
+              // `ListView(children:)` DEĞİL — plain `ListView`'ın sliver
+              // tabanlı "onstage" izleme mantığı, Pro+ trend grafiği (artık
+              // HERKESE, kilitliyse örnek veriyle bile render edildiği için
+              // önceden daha uzun) alt kısımdaki "Geçmiş" bölümünü ilk
+              // kaydırmadan ÖNCE `WidgetTester.pumpAndSettle()` sonrasında
+              // bile "onstage" saymayabiliyor (bkz. `test/CLAUDE.md`, AYNI
+              // kök neden `paywall_screen.dart`'ta da yaşandı).
               padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
-              children: [
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
                 Column(
                   children: [
                     ZiboAnimatedImage(
@@ -292,15 +301,17 @@ class _MoodTrackingScreenState extends State<MoodTrackingScreen> {
                   ),
                 ),
                 // Faz 5 (D2), 2026-09-24 — artık Profil'de DEĞİL, Ruh Hali
-                // Takibi'nin kendi ekranında: Zibo Pro+'a özel haftalık/aylık
-                // ortalama trend grafiği. Pro/ücretsiz kullanıcı bu bölümü
-                // hiç GÖRMEZ (kilitli önizleme YOK — kullanıcı isteği).
-                if (subscription.isProPlus) ...[
-                  const SizedBox(height: 20),
-                  StickerCard(
-                    child: MoodTrendDetailChart(entries: provider.entries),
+                // Takibi'nin kendi ekranında. 2026-09-24 GÜNCELLEMESİ —
+                // kullanıcı isteğiyle artık HER kullanıcıya görünür; Pro+
+                // olmayan yalnızca bulanıklaştırılmış + kilit rozetli bir
+                // önizleme görür (bkz. `LockedFeatureOverlay`).
+                const SizedBox(height: 20),
+                StickerCard(
+                  child: MoodTrendDetailChart(
+                    entries: provider.entries,
+                    locked: !subscription.isProPlus,
                   ),
-                ],
+                ),
                 const SizedBox(height: 20),
                 Text(
                   l10n.moodHistoryTitle,
@@ -366,7 +377,8 @@ class _MoodTrackingScreenState extends State<MoodTrackingScreen> {
                 if (hasHiddenEntries) const HistoryLimitUpsellCard(),
                 const SizedBox(height: 20),
                 const BannerAdSlot(),
-              ],
+                ],
+              ),
             ),
           ),
         ],

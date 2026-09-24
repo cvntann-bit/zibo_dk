@@ -306,6 +306,18 @@ class AppLocalizationsEs extends AppLocalizations {
       'Aún no hay suficientes datos para un análisis.';
 
   @override
+  String get lockedChartCta => 'Pásate a Zibo Pro+ Hoy';
+
+  @override
+  String get moneyExpenseBreakdownTitle => 'Distribución de Gastos';
+
+  @override
+  String get moneyExpenseOtherLabel => 'Otros';
+
+  @override
+  String get moneyCurrencyTotalsTitle => 'Por Moneda';
+
+  @override
   String get moneyTrendEmpty =>
       'Aún no hay suficientes datos para un gráfico de tendencia. Agrega un gasto o ahorro y aparecerá aquí.';
 
@@ -333,6 +345,9 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get moneyTrendGranularityWeekly => 'Semanal';
+
+  @override
+  String get moneyTrendGranularityMonthly => 'Mensual';
 
   @override
   String get moneyEmptyCategory => 'Aún no hay registros';
