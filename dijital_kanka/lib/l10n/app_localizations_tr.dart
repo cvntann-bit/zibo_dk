@@ -65,6 +65,35 @@ class AppLocalizationsTr extends AppLocalizations {
   }
 
   @override
+  String streakFreezeOfferOwnedButton(int count) {
+    return 'Stoktan Kullan ($count adet var)';
+  }
+
+  @override
+  String get streakFreezeStoreSectionTitle => 'Seri Koruması';
+
+  @override
+  String get streakFreezeStoreCardTitle => 'Streak Freeze';
+
+  @override
+  String streakFreezeStoreCardSubtitle(int count) {
+    return 'Bir gün kaçırırsan serini korur · Stoğunda: $count';
+  }
+
+  @override
+  String streakFreezePurchasedMessage(int count) {
+    return 'Streak Freeze stoğuna eklendi! Artık $count adet var.';
+  }
+
+  @override
+  String get streakFreezeBalanceTitle => 'Streak Freeze Stoğun';
+
+  @override
+  String streakFreezeBalanceHint(int price) {
+    return 'Bir gün kaçırırsan serini korur. Mağaza\'dan $price ZC\'ye alabilirsin.';
+  }
+
+  @override
   String get ziboImagePlaceholder => 'Zibo';
 
   @override

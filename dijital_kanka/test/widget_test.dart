@@ -617,7 +617,7 @@ void main() {
   );
 
   testWidgets(
-    'Faz 4 (B3): 80 ZC ile Streak Freeze kullanılırsa seri KIRILMADAN devam eder',
+    'Faz 4 (B3): stok yokken 200 ZC ile anında Streak Freeze kullanılırsa seri KIRILMADAN devam eder',
     (WidgetTester tester) async {
       var currentDate = DateTime(2026, 1, 5);
       await tester.pumpWidget(_buildAppWithClock(() => currentDate));
@@ -629,19 +629,54 @@ void main() {
         listen: false,
       );
       final coinProvider = Provider.of<CoinProvider>(rootElement, listen: false);
-      coinProvider.earnBadgeReward(100, 'test');
+      coinProvider.earnBadgeReward(250, 'test');
 
       currentDate = currentDate.add(const Duration(days: 2));
       tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
       await tester.pumpAndSettle();
 
-      expect(find.text('80 ZC ile Kullan'), findsOneWidget);
-      await tester.tap(find.text('80 ZC ile Kullan'));
+      expect(find.text('200 ZC ile Kullan'), findsOneWidget);
+      await tester.tap(find.text('200 ZC ile Kullan'));
       await tester.pumpAndSettle();
       await _dismissInfoDialogIfShown(tester);
 
       expect(streakProvider.currentStreak, 2); // 1'den KIRILMADAN 2'ye çıktı
-      expect(coinProvider.balance, 20); // 100 - 80
+      expect(coinProvider.balance, 50); // 250 - 200
+    },
+  );
+
+  testWidgets(
+    'Streak Freeze: Mağaza\'dan 150 ZC ile alınan stok, seri kırılmak '
+    'üzereyken ZC harcamadan kullanılır',
+    (WidgetTester tester) async {
+      var currentDate = DateTime(2026, 1, 5);
+      await tester.pumpWidget(_buildAppWithClock(() => currentDate));
+      await tester.pumpAndSettle();
+
+      final rootElement = tester.element(find.byType(RootScreen));
+      final streakProvider = Provider.of<AppStreakProvider>(
+        rootElement,
+        listen: false,
+      );
+      final coinProvider = Provider.of<CoinProvider>(rootElement, listen: false);
+      coinProvider.earnBadgeReward(160, 'test');
+      expect(coinProvider.spendStreakFreezeStorePurchase(), isTrue);
+      streakProvider.addOwnedStreakFreeze();
+      expect(coinProvider.balance, 10);
+
+      currentDate = currentDate.add(const Duration(days: 2));
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+      await tester.pumpAndSettle();
+
+      expect(find.text('Stoktan Kullan (1 adet var)'), findsOneWidget);
+      expect(find.text('200 ZC ile Kullan'), findsNothing);
+      await tester.tap(find.text('Stoktan Kullan (1 adet var)'));
+      await tester.pumpAndSettle();
+      await _dismissInfoDialogIfShown(tester);
+
+      expect(streakProvider.currentStreak, 2);
+      expect(streakProvider.ownedStreakFreezes, 0);
+      expect(coinProvider.balance, 10);
     },
   );
 

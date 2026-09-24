@@ -88,6 +88,54 @@
       }
     }
   },
+  "streakFreezeOfferOwnedButton": "Stoktan Kullan ({count} adet var)",
+  "@streakFreezeOfferOwnedButton": {
+    "description": "Seri kırılmak üzereyken, Mağaza'dan alınmış stoktaki bir Streak Freeze'i kullanma butonu",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "streakFreezeStoreSectionTitle": "Seri Koruması",
+  "@streakFreezeStoreSectionTitle": {
+    "description": "Mağaza > Coin Al sekmesindeki Streak Freeze bölümünün başlığı"
+  },
+  "streakFreezeStoreCardTitle": "Streak Freeze",
+  "@streakFreezeStoreCardTitle": {
+    "description": "Mağaza'daki Zibo Coin ile alınan Streak Freeze ürününün adı"
+  },
+  "streakFreezeStoreCardSubtitle": "Bir gün kaçırırsan serini korur · Stoğunda: {count}",
+  "@streakFreezeStoreCardSubtitle": {
+    "description": "Mağaza'daki Streak Freeze kartının açıklaması + kullanıcının mevcut stoğu",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "streakFreezePurchasedMessage": "Streak Freeze stoğuna eklendi! Artık {count} adet var.",
+  "@streakFreezePurchasedMessage": {
+    "description": "Mağaza'dan Streak Freeze satın alındıktan sonraki onay mesajı",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "streakFreezeBalanceTitle": "Streak Freeze Stoğun",
+  "@streakFreezeBalanceTitle": {
+    "description": "Hedefler ve En Uzun Seri Rekoru ekranlarındaki Streak Freeze stok kartının başlığı"
+  },
+  "streakFreezeBalanceHint": "Bir gün kaçırırsan serini korur. Mağaza'dan {price} ZC'ye alabilirsin.",
+  "@streakFreezeBalanceHint": {
+    "description": "Streak Freeze stok kartının açıklaması",
+    "placeholders": {
+      "price": {
+        "type": "int"
+      }
+    }
+  },
   "ziboImagePlaceholder": "Zibo",
   "@ziboImagePlaceholder": {
     "description": "Zibo görseli için erişilebilirlik (ekran okuyucu) etiketi"

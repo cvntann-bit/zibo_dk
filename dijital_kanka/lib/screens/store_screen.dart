@@ -11,14 +11,17 @@ import '../models/app_theme_option.dart';
 import '../models/coin_economy.dart';
 import '../models/coin_package.dart';
 import '../providers/ad_free_provider.dart';
+import '../providers/app_streak_provider.dart';
 import '../providers/auth_link_provider.dart';
 import '../providers/coin_provider.dart';
 import '../screens/paywall_screen.dart';
 import '../utils/ad_free_promo_trigger.dart';
+import '../utils/coin_feedback.dart';
 import '../utils/info_dialog.dart';
 import '../widgets/costume_card.dart';
 import '../widgets/google_link_promo_sheet.dart';
 import '../widgets/sticker_style.dart';
+import '../widgets/streak_freeze_balance_card.dart' show streakFreezeIconAsset;
 import '../widgets/theme_option_card.dart';
 
 /// Mağaza'nın dört segmenti — dışarıdan (ör. Profil > Kostüm Dolabı
@@ -265,6 +268,10 @@ class _BuyCoinsSection extends StatelessWidget {
         const SizedBox(height: 8),
         const _AdFreeCard(),
         const SizedBox(height: 24),
+        _SectionTitle(l10n.streakFreezeStoreSectionTitle),
+        const SizedBox(height: 8),
+        const _StreakFreezeCard(),
+        const SizedBox(height: 24),
         _SectionTitle(l10n.storeFreeSectionTitle),
         const SizedBox(height: 8),
         const _WatchAdCard(),
@@ -444,18 +451,58 @@ class _AdFreeCardState extends State<_AdFreeCard> {
   }
 }
 
+/// Zibo Coin ile alınan, stoğa eklenen Streak Freeze. Seri kırılmak
+/// üzereyken `StreakFreezeOfferDialog` önce bu stoğu kullanır.
+class _StreakFreezeCard extends StatelessWidget {
+  const _StreakFreezeCard();
+
+  Future<void> _buy(BuildContext context) async {
+    final coins = context.read<CoinProvider>();
+    if (coins.balance < CoinEconomy.streakFreezeStorePrice ||
+        !coins.spendStreakFreezeStorePurchase()) {
+      showInsufficientCoinsWarning(context);
+      return;
+    }
+    final streak = context.read<AppStreakProvider>()..addOwnedStreakFreeze();
+    final l10n = AppLocalizations.of(context)!;
+    await showInfoDialog(
+      context,
+      l10n.streakFreezePurchasedMessage(streak.ownedStreakFreezes),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final owned = context.watch<AppStreakProvider>().ownedStreakFreezes;
+    return _StorePromoCard(
+      leading: Image.asset(streakFreezeIconAsset, width: 38, height: 38),
+      title: l10n.streakFreezeStoreCardTitle,
+      subtitle: l10n.streakFreezeStoreCardSubtitle(owned),
+      trailing: _StorePromoCta(
+        key: const Key('streakFreezeStoreBuyButton'),
+        label: '${CoinEconomy.streakFreezeStorePrice} ZC',
+        onTap: () => _buy(context),
+      ),
+    );
+  }
+}
+
 /// Mockup'ın `.promo-card` — "Reklamsız Zibo"/"Ücretsiz" bölümlerindeki iki
 /// kart (bkz. `_AdFreeCard`/`_WatchAdCard`) AYNI ikon dairesi + başlık/alt
-/// metin + sağdaki CTA yerleşimini paylaşıyor.
+/// metin + sağdaki CTA yerleşimini paylaşıyor. [leading] verilirse emoji
+/// dairesinin yerine geçer.
 class _StorePromoCard extends StatelessWidget {
   const _StorePromoCard({
-    required this.emoji,
+    this.emoji = '',
+    this.leading,
     required this.title,
     required this.subtitle,
     required this.trailing,
   });
 
   final String emoji;
+  final Widget? leading;
   final String title;
   final String subtitle;
   final Widget trailing;
@@ -471,18 +518,19 @@ class _StorePromoCard extends StatelessWidget {
       ),
       child: Row(
         children: [
-          DecoratedBox(
-            decoration: stickerCircleDecoration(
-              fill: colorScheme.primary,
-              borderWidth: 2.5,
-              shadowOffset: Offset.zero,
-            ),
-            child: SizedBox(
-              width: 38,
-              height: 38,
-              child: Center(child: Text(emoji, style: const TextStyle(fontSize: 17, height: 1))),
-            ),
-          ),
+          leading ??
+              DecoratedBox(
+                decoration: stickerCircleDecoration(
+                  fill: colorScheme.primary,
+                  borderWidth: 2.5,
+                  shadowOffset: Offset.zero,
+                ),
+                child: SizedBox(
+                  width: 38,
+                  height: 38,
+                  child: Center(child: Text(emoji, style: const TextStyle(fontSize: 17, height: 1))),
+                ),
+              ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -526,7 +574,12 @@ class _StorePromoCard extends StatelessWidget {
 /// METNİYLE dokunuyor — bkz. `widget_test.dart`), bu yüzden düz bir
 /// `GestureDetector` yeterli.
 class _StorePromoCta extends StatelessWidget {
-  const _StorePromoCta({required this.label, required this.onTap, this.loading = false});
+  const _StorePromoCta({
+    super.key,
+    required this.label,
+    required this.onTap,
+    this.loading = false,
+  });
 
   final String label;
   final VoidCallback? onTap;

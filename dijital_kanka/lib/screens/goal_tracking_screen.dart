@@ -25,6 +25,7 @@ import '../widgets/goal_confetti_burst.dart';
 import '../widgets/share_zibo_button.dart';
 import '../widgets/speech_bubble.dart';
 import '../widgets/sticker_style.dart';
+import '../widgets/streak_freeze_balance_card.dart';
 import '../widgets/zibo_animated_image.dart';
 
 /// Hedef Takibi sayfası. [isActive], bu sekmenin şu anda görünen sekme olup
@@ -322,6 +323,8 @@ class _GoalTrackingScreenState extends State<GoalTrackingScreen>
           ],
         ),
         const SizedBox(height: 20),
+        const StreakFreezeBalanceCard(),
+        const SizedBox(height: 12),
         BannerAdSlot(isActive: widget.isActive),
         const SizedBox(height: 12),
         for (final goal in goals) ...[

@@ -289,7 +289,7 @@ void main() {
         provider.recordOpenForToday(); // 5 Ocak — seri 1, toplam 1
         currentDate = DateTime(2026, 1, 7); // 6 Ocak kaçırıldı
 
-        provider.repairMissedDayWithFreeze(usedFreeQuota: false);
+        provider.repairMissedDayWithFreeze(source: StreakFreezeSource.coins);
 
         expect(provider.currentStreak, 2);
         expect(provider.totalDaysOpened, 2);
@@ -303,7 +303,7 @@ void main() {
         provider.recordOpenForToday(); // 5 Ocak — seri 1
         currentDate = DateTime(2026, 1, 7); // 6 Ocak kaçırıldı
 
-        provider.repairMissedDayWithFreeze(usedFreeQuota: false);
+        provider.repairMissedDayWithFreeze(source: StreakFreezeSource.coins);
 
         expect(provider.currentStreak, 2);
         expect(provider.longestStreakEver, 2);
@@ -325,7 +325,7 @@ void main() {
     });
 
     test(
-      'repairMissedDayWithFreeze(usedFreeQuota: true) aylık ücretsiz '
+      'repairMissedDayWithFreeze(source: StreakFreezeSource.freeQuota) aylık ücretsiz '
       'sayacı artırır',
       () {
         final pro = AppStreakProvider(now: () => currentDate, isPro: () => true);
@@ -333,7 +333,7 @@ void main() {
         currentDate = DateTime(2026, 1, 7);
 
         expect(pro.remainingFreeStreakFreezes, 1);
-        pro.repairMissedDayWithFreeze(usedFreeQuota: true);
+        pro.repairMissedDayWithFreeze(source: StreakFreezeSource.freeQuota);
 
         expect(pro.remainingFreeStreakFreezes, 0);
       },
@@ -343,7 +343,7 @@ void main() {
       final pro = AppStreakProvider(now: () => currentDate, isPro: () => true);
       pro.recordOpenForToday();
       currentDate = DateTime(2026, 1, 7);
-      pro.repairMissedDayWithFreeze(usedFreeQuota: true);
+      pro.repairMissedDayWithFreeze(source: StreakFreezeSource.freeQuota);
       expect(pro.remainingFreeStreakFreezes, 0);
 
       currentDate = DateTime(2026, 2, 10); // bir ay sonrası
@@ -357,7 +357,7 @@ void main() {
         final pro = AppStreakProvider(now: () => currentDate, isPro: () => true);
         pro.recordOpenForToday();
         currentDate = DateTime(2026, 1, 7);
-        pro.repairMissedDayWithFreeze(usedFreeQuota: true);
+        pro.repairMissedDayWithFreeze(source: StreakFreezeSource.freeQuota);
         expect(pro.remainingFreeStreakFreezes, 0);
 
         currentDate = DateTime(2026, 5, 20); // 4 ay sonrası
@@ -372,7 +372,7 @@ void main() {
         final pro = AppStreakProvider(now: () => currentDate, isPro: () => true);
         pro.recordOpenForToday();
         currentDate = DateTime(2026, 1, 7);
-        pro.repairMissedDayWithFreeze(usedFreeQuota: true);
+        pro.repairMissedDayWithFreeze(source: StreakFreezeSource.freeQuota);
         await Future<void>.delayed(Duration.zero);
 
         final reloaded = AppStreakProvider(
@@ -384,5 +384,43 @@ void main() {
         expect(reloaded.remainingFreeStreakFreezes, 0);
       },
     );
+
+    test('Stok: addOwnedStreakFreeze artırır, owned kaynağıyla tamir 1 düşer', () {
+      provider.recordOpenForToday();
+      provider.addOwnedStreakFreeze();
+      provider.addOwnedStreakFreeze();
+      expect(provider.ownedStreakFreezes, 2);
+
+      currentDate = DateTime(2026, 1, 7);
+      expect(
+        provider.repairMissedDayWithFreeze(source: StreakFreezeSource.owned),
+        isTrue,
+      );
+
+      expect(provider.currentStreak, 2);
+      expect(provider.ownedStreakFreezes, 1);
+    });
+
+    test('Stok boşken owned kaynağıyla tamir REDDEDİLİR, seri değişmez', () {
+      provider.recordOpenForToday();
+      currentDate = DateTime(2026, 1, 7);
+
+      expect(
+        provider.repairMissedDayWithFreeze(source: StreakFreezeSource.owned),
+        isFalse,
+      );
+      expect(provider.currentStreak, 1);
+      expect(provider.isStreakAtRisk, isTrue);
+    });
+
+    test('Stok yeniden başlatmada hatırlanır', () async {
+      provider.addOwnedStreakFreeze();
+      await Future<void>.delayed(Duration.zero);
+
+      final reloaded = AppStreakProvider(now: () => currentDate);
+      await Future<void>.delayed(Duration.zero);
+
+      expect(reloaded.ownedStreakFreezes, 1);
+    });
   });
 }

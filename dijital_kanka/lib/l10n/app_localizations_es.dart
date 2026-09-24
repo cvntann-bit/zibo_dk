@@ -65,6 +65,35 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
+  String streakFreezeOfferOwnedButton(int count) {
+    return 'Usar del inventario (te quedan $count)';
+  }
+
+  @override
+  String get streakFreezeStoreSectionTitle => 'Protección de Racha';
+
+  @override
+  String get streakFreezeStoreCardTitle => 'Streak Freeze';
+
+  @override
+  String streakFreezeStoreCardSubtitle(int count) {
+    return 'Protege tu racha si faltas un día · En inventario: $count';
+  }
+
+  @override
+  String streakFreezePurchasedMessage(int count) {
+    return '¡Streak Freeze añadido a tu inventario! Ahora tienes $count.';
+  }
+
+  @override
+  String get streakFreezeBalanceTitle => 'Tus Streak Freeze';
+
+  @override
+  String streakFreezeBalanceHint(int price) {
+    return 'Protege tu racha si faltas un día. Consigue más en la Tienda por $price ZC.';
+  }
+
+  @override
   String get ziboImagePlaceholder => 'Zibo';
 
   @override

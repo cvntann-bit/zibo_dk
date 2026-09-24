@@ -13,6 +13,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:dijital_kanka/l10n/app_localizations.dart';
 import 'package:dijital_kanka/providers/ad_free_provider.dart';
+import 'package:dijital_kanka/providers/app_streak_provider.dart';
 import 'package:dijital_kanka/providers/coin_provider.dart';
 import 'package:dijital_kanka/providers/costume_provider.dart';
 import 'package:dijital_kanka/providers/goals_provider.dart';
@@ -77,6 +78,7 @@ Widget _buildTestApp(
   return MultiProvider(
     providers: [
       ChangeNotifierProvider(create: (_) => AdFreeProvider()),
+      ChangeNotifierProvider(create: (_) => AppStreakProvider()),
       ChangeNotifierProvider(create: (_) => CostumeProvider()),
       ChangeNotifierProvider(
         create: (_) => GoalsProvider(now: now ?? DateTime.now),

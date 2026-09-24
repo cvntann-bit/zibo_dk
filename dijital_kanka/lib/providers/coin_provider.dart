@@ -605,7 +605,10 @@ class CoinProvider extends ChangeNotifier {
   // --- Harcama mekanikleri ---------------------------------------------
 
   bool spendStreakFreeze() =>
-      _spend(CoinEconomy.streakFreeze, 'Streak Freeze');
+      _spend(CoinEconomy.streakFreezeInstantRepair, 'Streak Freeze');
+
+  bool spendStreakFreezeStorePurchase() =>
+      _spend(CoinEconomy.streakFreezeStorePrice, 'Streak Freeze (Mağaza)');
 
   bool spendLockedPersonalityMode() =>
       _spend(CoinEconomy.lockedPersonalityMode, 'Kilitli kişilik modu');

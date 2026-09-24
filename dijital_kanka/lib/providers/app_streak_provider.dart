@@ -3,6 +3,19 @@ import 'package:flutter/foundation.dart';
 
 import '../services/cloud_state_store.dart';
 
+/// Kaçırılan bir günü tamir eden Streak Freeze'in nereden geldiği.
+enum StreakFreezeSource {
+  /// Pro/Pro+ aylık ücretsiz hakkı.
+  freeQuota,
+
+  /// Mağaza'dan önceden alınmış stok ([AppStreakProvider.ownedStreakFreezes]).
+  owned,
+
+  /// Diyalogda anında ZC ile ödendi — çağıran `CoinProvider.spendStreakFreeze()`'i
+  /// ZATEN başarıyla çağırmış olmalı.
+  coins,
+}
+
 /// Uygulamayı HER GÜN açma serisi — Hedef Takibi'nin per-goal 7 günlük
 /// döngüsünden TAMAMEN BAĞIMSIZ, yeni/ayrı bir metrik (bkz. CLAUDE.md "Rozet
 /// Sistemi" bölümü — kullanıcının `AskUserQuestion` ile seçtiği ölçü).
@@ -65,7 +78,12 @@ class AppStreakProvider extends ChangeNotifier {
   /// ilklendirilmemiş (kullanıcı hiç Freeze kullanmadı/kontrol etmedi).
   DateTime? _freeStreakFreezeResetDate;
 
+  int _ownedStreakFreezes = 0;
+
   bool get isReady => _isReady;
+
+  /// Mağaza'dan Zibo Coin ile alınıp stokta bekleyen Streak Freeze sayısı.
+  int get ownedStreakFreezes => _ownedStreakFreezes;
   int get currentStreak => _currentStreak;
 
   /// [currentStreak] gibi bir gün kaçırılınca SIFIRLANMAYAN, MONOTONİK
@@ -113,6 +131,7 @@ class AppStreakProvider extends ChangeNotifier {
         _freeStreakFreezeResetDate = rawResetDate != null
             ? DateTime.tryParse(rawResetDate)
             : null;
+        _ownedStreakFreezes = data['ownedStreakFreezes'] as int? ?? 0;
       }
     } catch (_) {
       // Bozuk/okunamayan veri — sıfırdan başla, diğer provider'lardaki AYNI
@@ -130,7 +149,17 @@ class AppStreakProvider extends ChangeNotifier {
       'totalDaysOpened': _totalDaysOpened,
       'freeStreakFreezesUsedThisMonth': _freeStreakFreezesUsedThisMonth,
       'freeStreakFreezeResetDate': _freeStreakFreezeResetDate?.toIso8601String(),
+      'ownedStreakFreezes': _ownedStreakFreezes,
     });
+  }
+
+  /// Mağaza satın alımından sonra çağrılır — çağıran taraf
+  /// `CoinProvider.spendStreakFreezeStorePurchase()`'i ZATEN başarıyla
+  /// çağırmış olmalı.
+  void addOwnedStreakFreeze() {
+    _ownedStreakFreezes += 1;
+    notifyListeners();
+    _save();
   }
 
   /// **Faz 4 (B3)** — kullanıcı TAM 1 gün kaçırdıysa (streak kırılmak
@@ -192,21 +221,30 @@ class AppStreakProvider extends ChangeNotifier {
   /// Kaçırılan günü açılmış GİBİ SAYMAZ (yalnızca [_currentStreak] kırılmadan
   /// devam eder) — [_totalDaysOpened] yalnızca BUGÜN için +1 artar, kullanıcı
   /// dün GERÇEKTEN açmadığı için o gün için ikinci kez sayılmaz.
-  /// [usedFreeQuota] `true` ise aylık ücretsiz sayaç +1 artırılır; `false`
-  /// ise (çağıran taraf `CoinProvider.spendStreakFreeze()`'i ZATEN başarıyla
-  /// çağırdığı için) sayaca dokunulmaz.
-  void repairMissedDayWithFreeze({required bool usedFreeQuota}) {
+  /// [source] harcanan hakkı belirler: `freeQuota` aylık sayacı +1 artırır,
+  /// `owned` stoktan 1 düşer (stok boşsa HİÇBİR ŞEY değişmez, `false`
+  /// döner), `coins` hiçbir sayaca dokunmaz.
+  bool repairMissedDayWithFreeze({required StreakFreezeSource source}) {
+    if (source == StreakFreezeSource.owned && _ownedStreakFreezes <= 0) {
+      return false;
+    }
     final today = _dateOnly(_now());
     _currentStreak += 1;
     if (_currentStreak > _longestStreakEver) _longestStreakEver = _currentStreak;
     _totalDaysOpened += 1;
     _lastOpenDate = today;
-    if (usedFreeQuota) {
-      _maybeResetMonthlyFreezeQuota();
-      _freeStreakFreezesUsedThisMonth += 1;
+    switch (source) {
+      case StreakFreezeSource.freeQuota:
+        _maybeResetMonthlyFreezeQuota();
+        _freeStreakFreezesUsedThisMonth += 1;
+      case StreakFreezeSource.owned:
+        _ownedStreakFreezes -= 1;
+      case StreakFreezeSource.coins:
+        break;
     }
     notifyListeners();
     _save();
+    return true;
   }
 
   /// **Yalnızca debug'dan çağrılır** (bkz. `settings_screen.dart`

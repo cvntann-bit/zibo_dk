@@ -7,15 +7,16 @@ import '../providers/app_streak_provider.dart';
 import '../providers/coin_provider.dart';
 import '../utils/coin_feedback.dart';
 import '../utils/info_dialog.dart';
+import 'streak_freeze_balance_card.dart' show streakFreezeIconAsset;
 
 /// **Faz 4 (B3)** — kullanıcı TAM 1 gün kaçırıp uygulamayı açtığında
 /// (`AppStreakProvider.isStreakAtRisk`), `RootScreen` bu diyaloğu
-/// `recordOpenForToday()` çağırmadan ÖNCE gösterir. Zibo Pro/Pro+ ise önce
-/// aylık ücretsiz hak sunulur (`remainingFreeStreakFreezes`); yoksa (veya
-/// free kullanıcıysa) `CoinEconomy.streakFreeze` (80 ZC) karşılığı satın
-/// alma seçeneği sunulur. "Vazgeç" seçilirse (veya kapatılırsa) hiçbir şey
-/// değişmez — `RootScreen` ardından normal `recordOpenForToday()`'i çağırıp
-/// seriyi 1'e sıfırlar.
+/// `recordOpenForToday()` çağırmadan ÖNCE gösterir. Tek bir ana buton,
+/// sırasıyla ilk mevcut kaynağı sunar: (1) Pro/Pro+ aylık ücretsiz hak,
+/// (2) Mağaza'dan alınmış stok (`ownedStreakFreezes`), (3) anında
+/// `CoinEconomy.streakFreezeInstantRepair` ZC ile tamir. "Vazgeç" seçilirse
+/// hiçbir şey değişmez — `RootScreen` ardından normal `recordOpenForToday()`'i
+/// çağırıp seriyi 1'e sıfırlar.
 ///
 /// Görsel: uygulamadaki HER dialog (`wheelResultTitle`, `showInfoDialog` vb.)
 /// bilerek düz `AlertDialog` kabuğu kullanıyor — buradaki "Çizgi Roman
@@ -26,18 +27,18 @@ import '../utils/info_dialog.dart';
 class StreakFreezeOfferDialog extends StatelessWidget {
   const StreakFreezeOfferDialog({super.key});
 
-  Future<void> _useFreeFreeze(BuildContext context) async {
+  Future<void> _useFreeOrOwned(BuildContext context, StreakFreezeSource source) async {
     final streak = context.read<AppStreakProvider>();
     final l10n = AppLocalizations.of(context)!;
     final newStreak = streak.currentStreak + 1;
-    streak.repairMissedDayWithFreeze(usedFreeQuota: true);
+    if (!streak.repairMissedDayWithFreeze(source: source)) return;
     Navigator.of(context).pop();
     await showInfoDialog(context, l10n.streakFreezeRepairedMessage(newStreak));
   }
 
   Future<void> _useCoins(BuildContext context) async {
     final coins = context.read<CoinProvider>();
-    if (coins.balance < CoinEconomy.streakFreeze) {
+    if (coins.balance < CoinEconomy.streakFreezeInstantRepair) {
       showInsufficientCoinsWarning(context);
       return;
     }
@@ -49,7 +50,7 @@ class StreakFreezeOfferDialog extends StatelessWidget {
       return;
     }
     final newStreak = streak.currentStreak + 1;
-    streak.repairMissedDayWithFreeze(usedFreeQuota: false);
+    streak.repairMissedDayWithFreeze(source: StreakFreezeSource.coins);
     Navigator.of(context).pop();
     await showInfoDialog(context, l10n.streakFreezeRepairedMessage(newStreak));
   }
@@ -61,6 +62,7 @@ class StreakFreezeOfferDialog extends StatelessWidget {
     final streak = context.watch<AppStreakProvider>();
     final remainingFree = streak.remainingFreeStreakFreezes;
     final quota = streak.freeStreakFreezeQuota;
+    final owned = streak.ownedStreakFreezes;
 
     return PopScope(
       canPop: false,
@@ -69,7 +71,7 @@ class StreakFreezeOfferDialog extends StatelessWidget {
         title: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Image.asset('assets/images/streak_freeze_icon.webp', width: 88),
+            Image.asset(streakFreezeIconAsset, width: 88),
             const SizedBox(height: 14),
             Text(
               l10n.streakFreezeOfferTitle,
@@ -105,16 +107,24 @@ class StreakFreezeOfferDialog extends StatelessWidget {
             child: remainingFree > 0
                 ? FilledButton(
                     key: const Key('streakFreezeUseFreeButton'),
-                    onPressed: () => _useFreeFreeze(context),
+                    onPressed: () => _useFreeOrOwned(context, StreakFreezeSource.freeQuota),
                     child: Text(
                       l10n.streakFreezeOfferFreeButton(remainingFree, quota),
                     ),
+                  )
+                : owned > 0
+                ? FilledButton(
+                    key: const Key('streakFreezeUseOwnedButton'),
+                    onPressed: () => _useFreeOrOwned(context, StreakFreezeSource.owned),
+                    child: Text(l10n.streakFreezeOfferOwnedButton(owned)),
                   )
                 : FilledButton(
                     key: const Key('streakFreezeUseCoinsButton'),
                     onPressed: () => _useCoins(context),
                     child: Text(
-                      l10n.streakFreezeOfferCoinButton(CoinEconomy.streakFreeze),
+                      l10n.streakFreezeOfferCoinButton(
+                        CoinEconomy.streakFreezeInstantRepair,
+                      ),
                     ),
                   ),
           ),

@@ -25,7 +25,13 @@ abstract final class CoinEconomy {
   static const List<int> dailyLoginRewards = [5, 10, 15, 20, 30, 40, 100];
 
   // Harcama mekanikleri
-  static const int streakFreeze = 80;
+  /// Mağaza'dan önceden stoğa alınan Streak Freeze.
+  static const int streakFreezeStorePrice = 150;
+
+  /// Seri kırılmak üzereyken, stok yokken diyalogda ANINDA tamir — mağaza
+  /// fiyatından BİLEREK pahalı (önceden almak mantıklı kalsın; kullanıcı
+  /// kararı 2026-09-24, eskiden 80 ZC'ydi).
+  static const int streakFreezeInstantRepair = 200;
   static const int lockedPersonalityMode = 500;
   static const int specialReplyPack = 150;
 

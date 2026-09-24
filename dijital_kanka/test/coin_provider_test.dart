@@ -311,13 +311,14 @@ void main() {
 
       provider.earnDailyCheckIn();
       provider.earnReferral();
-      expect(provider.totalEarned, 5 + 100);
+      provider.earnReferral();
+      expect(provider.totalEarned, 5 + 100 + 100);
       expect(provider.totalSpent, 0);
 
       final spent = provider.spendStreakFreeze();
       expect(spent, isTrue);
-      expect(provider.totalSpent, 80);
-      expect(provider.totalEarned, 5 + 100); // kazanılan toplam değişmez
+      expect(provider.totalSpent, CoinEconomy.streakFreezeInstantRepair);
+      expect(provider.totalEarned, 5 + 100 + 100); // kazanılan toplam değişmez
     });
 
     test('totalEarned/totalSpent kalıcı depoya yazılır; uygulama yeniden '

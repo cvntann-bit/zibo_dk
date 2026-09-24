@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../l10n/app_localizations.dart';
 import '../providers/app_streak_provider.dart';
+import '../widgets/streak_freeze_balance_card.dart';
 
 /// "En Uzun Seri Rekoru" satırının açtığı sayfa — uygulamayı HER GÜN açma
 /// serisinin (bkz. `AppStreakProvider.longestStreakEver`) hiç azalmayan
@@ -52,6 +53,8 @@ class LongestStreakScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 32),
+            const StreakFreezeBalanceCard(),
+            const SizedBox(height: 16),
             Card(
               child: Padding(
                 padding: const EdgeInsets.all(20),

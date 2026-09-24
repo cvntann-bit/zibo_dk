@@ -190,6 +190,48 @@ abstract class AppLocalizations {
   /// **'Serin kurtarıldı! {streak} gün üst üste devam ediyor.'**
   String streakFreezeRepairedMessage(int streak);
 
+  /// Seri kırılmak üzereyken, Mağaza'dan alınmış stoktaki bir Streak Freeze'i kullanma butonu
+  ///
+  /// In tr, this message translates to:
+  /// **'Stoktan Kullan ({count} adet var)'**
+  String streakFreezeOfferOwnedButton(int count);
+
+  /// Mağaza > Coin Al sekmesindeki Streak Freeze bölümünün başlığı
+  ///
+  /// In tr, this message translates to:
+  /// **'Seri Koruması'**
+  String get streakFreezeStoreSectionTitle;
+
+  /// Mağaza'daki Zibo Coin ile alınan Streak Freeze ürününün adı
+  ///
+  /// In tr, this message translates to:
+  /// **'Streak Freeze'**
+  String get streakFreezeStoreCardTitle;
+
+  /// Mağaza'daki Streak Freeze kartının açıklaması + kullanıcının mevcut stoğu
+  ///
+  /// In tr, this message translates to:
+  /// **'Bir gün kaçırırsan serini korur · Stoğunda: {count}'**
+  String streakFreezeStoreCardSubtitle(int count);
+
+  /// Mağaza'dan Streak Freeze satın alındıktan sonraki onay mesajı
+  ///
+  /// In tr, this message translates to:
+  /// **'Streak Freeze stoğuna eklendi! Artık {count} adet var.'**
+  String streakFreezePurchasedMessage(int count);
+
+  /// Hedefler ve En Uzun Seri Rekoru ekranlarındaki Streak Freeze stok kartının başlığı
+  ///
+  /// In tr, this message translates to:
+  /// **'Streak Freeze Stoğun'**
+  String get streakFreezeBalanceTitle;
+
+  /// Streak Freeze stok kartının açıklaması
+  ///
+  /// In tr, this message translates to:
+  /// **'Bir gün kaçırırsan serini korur. Mağaza\'dan {price} ZC\'ye alabilirsin.'**
+  String streakFreezeBalanceHint(int price);
+
   /// Zibo görseli için erişilebilirlik (ekran okuyucu) etiketi
   ///
   /// In tr, this message translates to:
