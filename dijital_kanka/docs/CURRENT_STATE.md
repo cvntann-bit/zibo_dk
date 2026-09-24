@@ -3,7 +3,7 @@
 Bu dosya projenin **ŞU ANKİ GERÇEĞİNİ** anlatır — changelog DEĞİL. Bir şey değiştiğinde bu dosya
 GÜNCELLENİR (eski gerçek `docs/history/`'ye gitmez, sadece buradaki cümle değişir).
 
-Son güncelleme bağlamı: sürüm `1.8.1+25`, `flutter test` ~530 test yeşil (+1 belgelenmiş flake).
+Son güncelleme bağlamı: sürüm `1.13.0+47` (2026-09-24, dahili testte sorunsuz, Üretim'e terfi bekliyor — Zibo Pro/Pro+ aboneliklerinin kullanıcıya açıldığı ilk sürüm), `flutter test` 683 test yeşil (+1 belgelenmiş flake). Bu dosyanın aşağıdaki bölümlerinin bir kısmı daha eski bir sürümün bağlamını taşıyor; abonelik durumu için `docs/subscribe_model.md` güncel kaynak.
 
 ---
 
