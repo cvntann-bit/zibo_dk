@@ -8,15 +8,26 @@ import 'sticker_style.dart';
 
 enum _Granularity { week, month }
 
-/// **Faz 5 (D2)** — Zibo Pro+'a özel, Ruh Hali Takibi'nin haftalık/aylık
-/// detaylı trend grafiği. `MoneyTrendChart`'ın (bkz. o dosya) `fl_chart`
-/// `LineChart` deseniyle AYNI iskelet (granularite `SegmentedButton`'ı,
-/// `FlGridData`/`FlTitlesData`/`LineTouchData`) ama TEK çizgi (para
-/// birimi seçici/kümülatif toplam YOK — ruh hali kümülatif bir miktar
-/// değil, GÜNLÜK bir skor). Yalnızca `mood_tracking_screen.dart`'ın
-/// mevcut "Son 7 Gün" noktalı şeridinden FARKLI, EK bir görünüm —
-/// `ProfileScreen`'in "İstatistiklerim" bölümüne ekleniyor, o şeride
-/// dokunulmuyor.
+/// **Faz 5 (D2), 2026-09-24 yeniden tasarım** — Zibo Pro+'a özel, Ruh Hali
+/// Takibi'nin haftalık/aylık trend grafiği. Artık GÜNLÜK ham skorları değil,
+/// seçilen granülariteye göre KOVALANMIŞ (haftalık: ISO hafta başlangıcı,
+/// aylık: takvim ayı) ORTALAMA ruh hali skorunu çiziyor — `MoneyTrendChart`'ın
+/// kova/bucket deseniyle AYNI ruhta (yalnızca kümülatif toplam yerine
+/// ortalama). Veri OLMAYAN kovalar atlanıyor (boş bir haftayı/ayı sıfır
+/// gibi göstermek yanıltıcı olurdu). Son 8 haftalık/6 aylık DOLU kova
+/// gösteriliyor.
+///
+/// **Artık Profil'de DEĞİL** — kullanıcı isteğiyle Ruh Hali Takibi'nin
+/// kendi ekranına (bkz. `mood_tracking_screen.dart`, "Son 7 Gün" şeridinin
+/// hemen altı) taşındı; `ProfileScreen`'in "İstatistiklerim" bölümüne hiç
+/// referans vermiyor.
+///
+/// **Giriş animasyonu** — ilk mount'ta çizgi düz bir taban çizgisinden
+/// (`minY`) gerçek değerlere doğru `LineChart`'ın kendi implicit animasyonu
+/// (`duration`/`curve`) ile "dolarak" beliriyor; granülarite değiştirmek bu
+/// sıfırlamayı TEKRAR TETİKLEMİYOR (iki gerçek veri seti arasında doğrudan
+/// geçiş yapıyor). Bu, projedeki İLK grafik giriş animasyonu — gelecekteki
+/// diğer trend grafikleri (Para, Su, Hedef, Şükran) için şablon.
 class MoodTrendDetailChart extends StatefulWidget {
   const MoodTrendDetailChart({super.key, required this.entries});
 
@@ -26,8 +37,61 @@ class MoodTrendDetailChart extends StatefulWidget {
   State<MoodTrendDetailChart> createState() => _MoodTrendDetailChartState();
 }
 
+class _Bucket {
+  const _Bucket({required this.periodStart, required this.average});
+
+  final DateTime periodStart;
+  final double average;
+}
+
+DateTime _isoWeekStart(DateTime date) {
+  final dayOnly = DateTime(date.year, date.month, date.day);
+  return dayOnly.subtract(Duration(days: dayOnly.weekday - 1));
+}
+
 class _MoodTrendDetailChartState extends State<MoodTrendDetailChart> {
   _Granularity _granularity = _Granularity.week;
+
+  /// İlk build'den SONRA `true` olur — yalnızca İLK görünüşte düz taban
+  /// çizgisinden gerçek değerlere "dolma" animasyonu tetiklensin diye
+  /// (granülarite değişiminde TEKRAR sıfırlanmaz).
+  bool _hasAppeared = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) setState(() => _hasAppeared = true);
+    });
+  }
+
+  List<_Bucket> _buckets() {
+    final grouped = <DateTime, List<MoodEntry>>{};
+    for (final entry in widget.entries) {
+      final key = _granularity == _Granularity.week
+          ? _isoWeekStart(entry.date)
+          : DateTime(entry.date.year, entry.date.month);
+      grouped.putIfAbsent(key, () => []).add(entry);
+    }
+    final sortedKeys = grouped.keys.toList()..sort();
+    final windowSize = _granularity == _Granularity.week ? 8 : 6;
+    final recentKeys = sortedKeys.length > windowSize
+        ? sortedKeys.sublist(sortedKeys.length - windowSize)
+        : sortedKeys;
+    return [
+      for (final key in recentKeys)
+        _Bucket(
+          periodStart: key,
+          average:
+              grouped[key]!.map((e) => e.mood.score).reduce((a, b) => a + b) /
+              grouped[key]!.length,
+        ),
+    ];
+  }
+
+  String _bucketLabel(_Bucket bucket, Locale locale) => _granularity == _Granularity.week
+      ? formatShortAxisDate(bucket.periodStart, locale)
+      : monthNamesShortForLocale(locale)[bucket.periodStart.month - 1];
 
   @override
   Widget build(BuildContext context) {
@@ -35,12 +99,7 @@ class _MoodTrendDetailChartState extends State<MoodTrendDetailChart> {
     final colorScheme = Theme.of(context).colorScheme;
     final locale = Localizations.localeOf(context);
 
-    final days = _granularity == _Granularity.week ? 7 : 30;
-    final today = DateTime.now();
-    final todayDateOnly = DateTime(today.year, today.month, today.day);
-    final cutoff = todayDateOnly.subtract(Duration(days: days - 1));
-    final relevant = widget.entries.where((e) => !e.date.isBefore(cutoff)).toList()
-      ..sort((a, b) => a.date.compareTo(b.date));
+    final buckets = _buckets();
 
     final titleText = Text(
       l10n.moodTrendTitle,
@@ -82,7 +141,7 @@ class _MoodTrendDetailChartState extends State<MoodTrendDetailChart> {
           setState(() => _granularity = selection.first),
     );
 
-    if (relevant.isEmpty) {
+    if (buckets.isEmpty) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -101,8 +160,9 @@ class _MoodTrendDetailChartState extends State<MoodTrendDetailChart> {
       );
     }
 
-    final lastIndex = (relevant.length - 1).toDouble();
+    final lastIndex = (buckets.length - 1).toDouble();
     final xInterval = lastIndex <= 4 ? 1.0 : (lastIndex / 4).ceilToDouble();
+    const baselineY = 0.5;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -115,10 +175,12 @@ class _MoodTrendDetailChartState extends State<MoodTrendDetailChart> {
         SizedBox(
           height: 180,
           child: LineChart(
+            duration: const Duration(milliseconds: 900),
+            curve: Curves.easeOutCubic,
             LineChartData(
               minX: 0,
               maxX: lastIndex <= 0 ? 1 : lastIndex,
-              minY: 0.5,
+              minY: baselineY,
               maxY: 5.5,
               gridData: FlGridData(
                 show: true,
@@ -156,13 +218,13 @@ class _MoodTrendDetailChartState extends State<MoodTrendDetailChart> {
                     interval: xInterval,
                     getTitlesWidget: (value, meta) {
                       final index = value.round();
-                      if (index < 0 || index >= relevant.length) {
+                      if (index < 0 || index >= buckets.length) {
                         return const SizedBox.shrink();
                       }
                       return Padding(
                         padding: const EdgeInsets.only(top: 4),
                         child: Text(
-                          formatShortAxisDate(relevant[index].date, locale),
+                          _bucketLabel(buckets[index], locale),
                           style: TextStyle(fontSize: 10, color: colorScheme.onSurfaceVariant),
                         ),
                       );
@@ -175,7 +237,7 @@ class _MoodTrendDetailChartState extends State<MoodTrendDetailChart> {
                 touchTooltipData: LineTouchTooltipData(
                   getTooltipItems: (touchedSpots) => touchedSpots.map((spot) {
                     final mood = Mood.values.firstWhere(
-                      (m) => m.score == spot.y.round(),
+                      (m) => m.score == spot.y.round().clamp(1, 5),
                     );
                     return LineTooltipItem(
                       mood.emoji,
@@ -187,8 +249,8 @@ class _MoodTrendDetailChartState extends State<MoodTrendDetailChart> {
               lineBarsData: [
                 LineChartBarData(
                   spots: [
-                    for (var i = 0; i < relevant.length; i++)
-                      FlSpot(i.toDouble(), relevant[i].mood.score.toDouble()),
+                    for (var i = 0; i < buckets.length; i++)
+                      FlSpot(i.toDouble(), _hasAppeared ? buckets[i].average : baselineY),
                   ],
                   isCurved: true,
                   color: colorScheme.primary,

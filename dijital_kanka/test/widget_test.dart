@@ -2300,6 +2300,35 @@ void main() {
   );
 
   testWidgets(
+    'Faz 5 (D2), 2026-09-24: Ruh Hali trend grafiği artık Ruh Hali Takibi '
+    'ekranında yaşıyor ve yalnızca Pro+ kullanıcıya görünür',
+    (WidgetTester tester) async {
+      await _pumpPastOnboarding(tester, const DijitalKankaApp());
+
+      await _openModulesMenu(tester);
+      await tester.tap(find.text('Günlük Ruh Hali Takibi'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Ruh Hali Trendi'), findsNothing);
+
+      await tester.tap(find.text('🙂'));
+      await tester.pumpAndSettle();
+
+      final element = tester.element(find.text('Son 7 Gün'));
+      await Provider.of<SubscriptionProvider>(
+        element,
+        listen: false,
+      ).debugSetTier(SubscriptionTier.proPlus);
+      await tester.pumpAndSettle();
+
+      expect(find.text('Ruh Hali Trendi'), findsOneWidget);
+      // Granülarite seçici — varsayılan "Haftalık".
+      expect(find.text('Haftalık'), findsOneWidget);
+      expect(find.text('Aylık'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
     'Su Takibi: 8 bardak işaretlenince hedef tamamlanır ve 5 Zibo Coin kazanılır',
     (WidgetTester tester) async {
       await _pumpPastOnboarding(tester, const DijitalKankaApp());

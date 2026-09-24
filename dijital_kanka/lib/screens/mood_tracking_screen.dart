@@ -20,6 +20,7 @@ import '../utils/address_term.dart';
 import '../widgets/banner_ad_slot.dart';
 import '../widgets/dot_grid_background.dart';
 import '../widgets/history_limit_upsell_card.dart';
+import '../widgets/mood_trend_detail_chart.dart';
 import '../widgets/speech_bubble.dart';
 import '../widgets/sticker_style.dart';
 import '../widgets/zibo_animated_image.dart';
@@ -33,9 +34,10 @@ String _moodLabel(AppLocalizations l10n, Mood mood) => switch (mood) {
 };
 
 /// Günlük Ruh Hali Takibi sayfası: 5 emoji'lik günlük seçim (dokununca
-/// otomatik kaydedilir) + son 7 günün renkli özeti + tam geçmiş listesi.
-/// Şimdilik sekme değil, Ayarlar sayfasındaki bir satırdan push ediliyor
-/// (bkz. CLAUDE.md "Günlük Ruh Hali Takibi" bölümü).
+/// otomatik kaydedilir) + son 7 günün renkli özeti + (Zibo Pro+'a özel,
+/// 2026-09-24'te Profil'den taşındı) haftalık/aylık trend grafiği + tam
+/// geçmiş listesi. Şimdilik sekme değil, Ayarlar sayfasındaki bir satırdan
+/// push ediliyor (bkz. CLAUDE.md "Günlük Ruh Hali Takibi" bölümü).
 class MoodTrackingScreen extends StatefulWidget {
   const MoodTrackingScreen({super.key});
 
@@ -148,7 +150,8 @@ class _MoodTrackingScreenState extends State<MoodTrackingScreen> {
     // yalnızca son 30 günü görür (haftalık özet şeridi ZATEN son 7 gün
     // olduğu için etkilenmiyor); eskiler SİLİNMİYOR, yalnızca ekrana
     // geçirilen liste filtreleniyor.
-    final isPro = context.watch<SubscriptionProvider>().isPro;
+    final subscription = context.watch<SubscriptionProvider>();
+    final isPro = subscription.isPro;
     final cutoffDate = DateTime.now().subtract(const Duration(days: 30));
     final visibleEntries = isPro
         ? provider.entries
@@ -288,6 +291,16 @@ class _MoodTrackingScreenState extends State<MoodTrackingScreen> {
                     ],
                   ),
                 ),
+                // Faz 5 (D2), 2026-09-24 — artık Profil'de DEĞİL, Ruh Hali
+                // Takibi'nin kendi ekranında: Zibo Pro+'a özel haftalık/aylık
+                // ortalama trend grafiği. Pro/ücretsiz kullanıcı bu bölümü
+                // hiç GÖRMEZ (kilitli önizleme YOK — kullanıcı isteği).
+                if (subscription.isProPlus) ...[
+                  const SizedBox(height: 20),
+                  StickerCard(
+                    child: MoodTrendDetailChart(entries: provider.entries),
+                  ),
+                ],
                 const SizedBox(height: 20),
                 Text(
                   l10n.moodHistoryTitle,
