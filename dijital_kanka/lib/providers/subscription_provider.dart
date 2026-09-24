@@ -164,9 +164,8 @@ class SubscriptionProvider extends ChangeNotifier {
     await _save();
   }
 
-  /// **Yalnızca debug panelinden çağrılır** (bkz. `settings_screen.dart`
-  /// `_SubscriptionDebugPanel`, `kDebugMode` ile korunuyor) — gerçek satın
-  /// alma yapmadan UI'ı manuel test edebilmek için.
+  /// **Yalnızca testlerden çağrılır** — gerçek satın alma yapmadan katmanı
+  /// ayarlar. (Ayarlar'daki geçici debug paneli 2026-09-24'te kaldırıldı.)
   Future<void> debugSetTier(SubscriptionTier tier) async {
     _storedTier = tier;
     _expiryDate = tier == SubscriptionTier.free

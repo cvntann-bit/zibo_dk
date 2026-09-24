@@ -189,9 +189,11 @@ Pro→Pro+ katman yükseltmesi var.
 - **Süre (expiry) "kayan pencere" ile TAHMİN ediliyor** (her başarılı
   satın alma/restore onayında `now + 35 gün`'e uzatılır) — Play Billing'in
   istemci API'si kesin bitiş tarihi VERMİYOR, bkz. karar 012.
-- **Debug test paneli** — Ayarlar'ın en altında (`kDebugMode` ile korunan
-  `_SubscriptionDebugPanel`), gerçek satın alma yapmadan Free/Pro/Pro+ arası
-  geçiş.
+- **Debug test paneli YOK** — Ayarlar'daki geçici `_SubscriptionDebugPanel`
+  (Free/Pro/Pro+ geçişi, "1 gün kaçırılmış say", puanlama penceresini
+  göster) 2026-09-24'te kullanıcı isteğiyle kaldırıldı. Katman artık yalnızca
+  testlerde `SubscriptionProvider.debugSetTier` ile değiştiriliyor; cihazda
+  Pro/Pro+ denemek için gerçek (test hesabıyla) satın alma gerekiyor.
 
 ## Güncelleme geçmişi
 
@@ -235,3 +237,6 @@ Pro→Pro+ katman yükseltmesi var.
 - **2026-09-24 — Manifest süsleme editörü**: Pro/Pro+ kullanıcının dışa
   aktardığı görselde "zibo" filigranı yok (ücretsizde var). Premium
   çerçeveler abonelikten bağımsız, 250 ZC ile açılıyor.
+- **2026-09-24 — Abonelik test paneli kaldırıldı**: Ayarlar'daki geçici
+  debug paneli (katman değiştirme + Streak Freeze/puanlama test butonları)
+  silindi; kullanılmayan `AppStreakProvider.debugSimulateMissedDay` de gitti.

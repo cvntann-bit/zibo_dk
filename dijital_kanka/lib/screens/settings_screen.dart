@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show MethodChannel;
 import 'package:flutter_svg/flutter_svg.dart';
@@ -10,10 +9,8 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../data/legal_texts.dart';
 import '../l10n/app_localizations.dart';
-import '../providers/app_streak_provider.dart';
 import '../providers/auth_link_provider.dart';
 import '../providers/locale_provider.dart';
-import '../models/subscription_tier.dart';
 import '../providers/notification_provider.dart';
 import '../providers/push_notification_provider.dart';
 import '../providers/sound_effects_provider.dart';
@@ -24,10 +21,8 @@ import '../utils/info_dialog.dart';
 import '../widgets/dot_grid_background.dart';
 import '../widgets/founder_badge_promo_card.dart';
 import '../widgets/language_flag_circle.dart';
-import '../widgets/rate_prompt_dialog.dart';
 import '../widgets/rate_us_sheet.dart';
 import '../widgets/sticker_style.dart';
-import '../widgets/streak_freeze_offer_dialog.dart';
 import 'legal_placeholder_screen.dart';
 import 'paywall_screen.dart';
 import 'widgets_screen.dart';
@@ -474,10 +469,6 @@ class SettingsScreen extends StatelessWidget {
               if (notificationsFeatureEnabled) ...[
                 const SizedBox(height: 24),
                 const _NotificationDebugPanel(),
-              ],
-              if (kDebugMode) ...[
-                const SizedBox(height: 24),
-                const _SubscriptionDebugPanel(),
               ],
             ],
           ),
@@ -1051,94 +1042,6 @@ class _NotificationDebugPanelState extends State<_NotificationDebugPanel> {
                 style: Theme.of(context).textTheme.bodySmall,
               ),
             ],
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-/// **Yalnızca debug build'lerde görünür** (`kDebugMode`) — Zibo Pro/Pro+
-/// abonelik durumunu gerçek bir satın alma yapmadan manuel değiştirip UI'ı
-/// test edebilmek için (bkz. `SubscriptionProvider.debugSetTier`).
-/// `_NotificationDebugPanel` ile AYNI geçici test-paneli deseni.
-class _SubscriptionDebugPanel extends StatelessWidget {
-  const _SubscriptionDebugPanel();
-
-  @override
-  Widget build(BuildContext context) {
-    final tier = context.watch<SubscriptionProvider>().tier;
-    final label = switch (tier) {
-      SubscriptionTier.free => 'Free',
-      SubscriptionTier.pro => 'Pro',
-      SubscriptionTier.proPlus => 'Pro+',
-    };
-
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Abonelik Test Paneli (geçici)',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            const SizedBox(height: 8),
-            Text('Şu an: $label'),
-            const SizedBox(height: 8),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                OutlinedButton(
-                  onPressed: () => context
-                      .read<SubscriptionProvider>()
-                      .debugSetTier(SubscriptionTier.free),
-                  child: const Text('Free yap'),
-                ),
-                OutlinedButton(
-                  onPressed: () => context
-                      .read<SubscriptionProvider>()
-                      .debugSetTier(SubscriptionTier.pro),
-                  child: const Text('Pro yap'),
-                ),
-                OutlinedButton(
-                  onPressed: () => context
-                      .read<SubscriptionProvider>()
-                      .debugSetTier(SubscriptionTier.proPlus),
-                  child: const Text('Pro+ yap'),
-                ),
-                // Faz 4 (B3) — `AppStreakProvider.isStreakAtRisk`
-                // senaryosunu (StreakFreezeOfferDialog) `TrustedTimeProvider`ın
-                // saat-manipülasyonu korumasını atlayarak GERÇEK cihazda test
-                // edebilmek için (bkz. `debugSimulateMissedDay` dokümantasyonu).
-                // Diyalog GERÇEK akışta yalnızca uygulama açılışında/öne
-                // gelişinde çıktığı için (bkz. `RootScreen._recordAppStreakOpen`),
-                // burada test kolaylığı olarak DOĞRUDAN gösteriliyor — aksi
-                // halde butona basmanın hiçbir görünür etkisi olmuyordu
-                // (kullanıcı raporu: "bastım ama birşey olmuyor").
-                OutlinedButton(
-                  onPressed: () {
-                    final streak = context.read<AppStreakProvider>();
-                    streak.debugSimulateMissedDay();
-                    if (!streak.isStreakAtRisk) return;
-                    showDialog<void>(
-                      context: context,
-                      barrierDismissible: false,
-                      builder: (_) => const StreakFreezeOfferDialog(),
-                    );
-                  },
-                  child: const Text('1 gün kaçırılmış say + teklifi göster'),
-                ),
-                // Puanlama penceresi normalde %20 şans + bekleme + ilk 2 gün
-                // kuralıyla çıktığı için cihazda doğrudan denemek için.
-                OutlinedButton(
-                  onPressed: () => showRatePromptDialog(context),
-                  child: const Text('Puanlama penceresini göster'),
-                ),
-              ],
-            ),
           ],
         ),
       ),

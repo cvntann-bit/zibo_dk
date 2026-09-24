@@ -247,20 +247,6 @@ class AppStreakProvider extends ChangeNotifier {
     return true;
   }
 
-  /// **Yalnızca debug'dan çağrılır** (bkz. `settings_screen.dart`
-  /// `_SubscriptionDebugPanel` ile AYNI gerekçe/desen) — [isStreakAtRisk]
-  /// senaryosunu GERÇEK cihazda test edebilmek için `_lastOpenDate`'i
-  /// "bugün - 2 gün"e çeker. `TrustedTimeProvider`'ın cihaz-saati-manipülasyonu
-  /// korumasından ETKİLENMEZ (doğrudan alanı değiştirir, saat okumaz) —
-  /// bilerek yalnızca `kDebugMode`de çağrılabilir bir test kolaylığı.
-  void debugSimulateMissedDay() {
-    if (!kDebugMode) return;
-    if (_currentStreak == 0) _currentStreak = 3;
-    _lastOpenDate = _dateOnly(_now()).subtract(const Duration(days: 2));
-    notifyListeners();
-    _save();
-  }
-
   /// Uygulama her açıldığında/öne geldiğinde çağrılır (`RootScreen.initState`
   /// postFrameCallback'i + `didChangeAppLifecycleState`'in `resumed` dalı —
   /// `GoalsProvider.reconcileForToday`/`DailyRewardsProvider.
