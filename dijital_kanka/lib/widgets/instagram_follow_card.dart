@@ -13,37 +13,71 @@ import '../utils/badge_special_reward.dart';
 import '../utils/info_dialog.dart';
 import 'sticker_style.dart';
 
-/// 2026 yeni özellik — Instagram Takip Kartı ve Ödülü (bkz. CLAUDE.md).
-/// Profil'de, ödül henüz alınmamışsa gösterilen bir teşvik kartı — kullanıcı
-/// "Instagram'ı Aç" ile @zibo.app hesabına yönlendirilir, "Takip Ettim"e
-/// basınca (gerçek takip doğrulaması teknik olarak MÜMKÜN OLMADIĞI için
-/// kullanıcı BEYANINA dayalı, `InstagramFollowProvider.markClaimed()` ile
-/// tek seferlik kalıcı bir bayrakla korunan) 100 ZC + rastgele bir standart
-/// tema + rastgele düşük fiyatlı bir kostüm veriliyor.
+Future<bool> _launchExternally(Uri uri) =>
+    launchUrl(uri, mode: LaunchMode.externalApplication);
+
+/// Instagram Takip Kartı ve Ödülü. Profil'de, ödül henüz alınmamışsa
+/// gösterilen teşvik kartı — TEK buton ("Instagram'ı Aç") @zibo.app'i açar;
+/// kullanıcı uygulamadan gerçekten ÇIKIP (`paused`/`hidden`) geri
+/// döndüğünde (`resumed`) ödül otomatik verilir: 100 ZC + rastgele bir
+/// standart tema + rastgele düşük fiyatlı bir kostüm. Gerçek takip
+/// doğrulaması teknik olarak mümkün değil; tekrar almayı
+/// `InstagramFollowProvider.markClaimed()`'in kalıcı bayrağı engelliyor.
+/// Yalnızca `inactive` (bildirim paneli vb.) çıkış sayılmaz.
 ///
-/// **Ödül alındıktan sonra kart TAMAMEN GİZLENİR** (`SizedBox.shrink()`) —
-/// kullanıcının "ara sıra gösterilsin" isteği, gerçek olasılıksal bir
-/// zamanlama yerine BASİTÇE "henüz alınmadığı sürece görünür" olarak
-/// yorumlandı (bkz. CLAUDE.md'deki kapsam kararı notu).
+/// Ödül alındıktan sonra kart TAMAMEN GİZLENİR (`SizedBox.shrink()`).
 class InstagramFollowCard extends StatefulWidget {
-  const InstagramFollowCard({super.key});
+  const InstagramFollowCard({super.key, this.launcher = _launchExternally});
+
+  /// Testte sahtesi enjekte edilir; `false`/istisna → "açılamadı".
+  final Future<bool> Function(Uri uri) launcher;
 
   @override
   State<InstagramFollowCard> createState() => _InstagramFollowCardState();
 }
 
-class _InstagramFollowCardState extends State<InstagramFollowCard> {
+class _InstagramFollowCardState extends State<InstagramFollowCard>
+    with WidgetsBindingObserver {
   bool _isClaiming = false;
+  bool _awaitingReturn = false;
+  bool _leftApp = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (!_awaitingReturn) return;
+    if (state == AppLifecycleState.paused || state == AppLifecycleState.hidden) {
+      _leftApp = true;
+    } else if (state == AppLifecycleState.resumed && _leftApp) {
+      _awaitingReturn = false;
+      _leftApp = false;
+      unawaited(_claim());
+    }
+  }
 
   Future<void> _openInstagram() async {
-    final uri = Uri.parse('https://www.instagram.com/zibo.app');
+    // Uygulama `launchUrl`'ün Future'ı dönmeden ÖNCE arka plana geçebiliyor,
+    // bu yüzden bekleme bayrağı çağrıdan önce kuruluyor.
+    _awaitingReturn = true;
+    _leftApp = false;
+    bool launched;
     try {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
+      launched = await widget.launcher(Uri.parse('https://www.instagram.com/zibo.app'));
     } catch (_) {
-      // Instagram uygulaması/tarayıcı açılamadı — sessizce yok say, diğer
-      // `url_launcher` kullanımlarındaki (Ayarlar > "Bize Ulaşın" vb.) AYNI
-      // "başarısızlık kritik değil" felsefesi.
+      launched = false;
     }
+    if (!launched && !_leftApp) _awaitingReturn = false;
   }
 
   Future<void> _claim() async {
@@ -130,35 +164,23 @@ class _InstagramFollowCardState extends State<InstagramFollowCard> {
             ),
           ),
           const SizedBox(height: 14),
-          Row(
-            children: [
-              Expanded(
-                child: _StickerRowButton(
-                  onPressed: _openInstagram,
-                  fill: colorScheme.surfaceContainerLowest,
-                  foreground: colorScheme.onSurface,
-                  child: Text(l10n.instagramFollowOpenButton),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: _StickerRowButton(
-                  onPressed: _isClaiming ? null : _claim,
-                  fill: colorScheme.primary,
-                  foreground: colorScheme.onPrimary,
-                  child: _isClaiming
-                      ? SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: colorScheme.onPrimary,
-                          ),
-                        )
-                      : Text(l10n.instagramFollowClaimButton),
-                ),
-              ),
-            ],
+          SizedBox(
+            width: double.infinity,
+            child: _StickerRowButton(
+              onPressed: _isClaiming ? null : _openInstagram,
+              fill: colorScheme.primary,
+              foreground: colorScheme.onPrimary,
+              child: _isClaiming
+                  ? SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: colorScheme.onPrimary,
+                      ),
+                    )
+                  : Text(l10n.instagramFollowOpenButton),
+            ),
           ),
         ],
       ),

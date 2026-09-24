@@ -435,7 +435,7 @@ class CoinProvider extends ChangeNotifier {
 
   void earnReferral() => _earn(CoinEconomy.referral, 'Arkadaş daveti');
 
-  /// Instagram Takip Kartı: kullanıcı "Takip Ettim"e bastığında (bkz.
+  /// Instagram Takip Kartı: kullanıcı Instagram'ı açıp uygulamaya döndüğünde (bkz.
   /// `InstagramFollowProvider.markClaimed()` — tek seferlik, kalıcı bir
   /// bayrakla korunuyor, bu yüzden burada ayrıca bir tekrar-önleme
   /// kontrolüne gerek YOK, çağıran taraf zaten yalnızca İLK başarılı
