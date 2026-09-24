@@ -1201,6 +1201,132 @@ class AppLocalizationsTr extends AppLocalizations {
   String get manifestDetailCloseButton => 'Kapat';
 
   @override
+  String get manifestDecorateButton => '🎨 Süsle ve Paylaş';
+
+  @override
+  String get manifestDecorateNowButton => '🎨 Hemen Süsle';
+
+  @override
+  String get manifestEditorTitle => 'Manifestini Süsle';
+
+  @override
+  String get manifestEditorShareButton => 'Paylaş';
+
+  @override
+  String get manifestEditorRatioPost => 'Gönderi';
+
+  @override
+  String get manifestEditorRatioSquare => 'Kare';
+
+  @override
+  String get manifestEditorRatioStory => 'Hikâye';
+
+  @override
+  String get manifestEditorTabFrame => 'Çerçeve';
+
+  @override
+  String get manifestEditorTabSticker => 'Sticker';
+
+  @override
+  String get manifestEditorTabText => 'Yazı';
+
+  @override
+  String get manifestFrameNone => 'Yok';
+
+  @override
+  String get manifestFramePolaroid => 'Polaroid';
+
+  @override
+  String get manifestFrameFilm => 'Film';
+
+  @override
+  String get manifestFrameWashi => 'Washi';
+
+  @override
+  String get manifestFrameGold => 'Altın';
+
+  @override
+  String get manifestFrameStars => 'Yıldızlı';
+
+  @override
+  String manifestEditorLockedPreview(int price) {
+    return '🔒 Önizleme · $price ZC ile aç';
+  }
+
+  @override
+  String manifestEditorUnlockTitle(String name) {
+    return '$name çerçevesini aç';
+  }
+
+  @override
+  String manifestEditorUnlockBody(int price) {
+    return 'Bu çerçeveyi $price Zibo Coin ile kalıcı olarak açmak ister misin?';
+  }
+
+  @override
+  String manifestEditorUnlockButton(int price) {
+    return '$price ZC ile Aç';
+  }
+
+  @override
+  String manifestEditorUnlockedMessage(String name) {
+    return '$name çerçevesi artık senin! 🎉';
+  }
+
+  @override
+  String manifestEditorCostumeLocked(String name) {
+    return '$name kostümüne sahip olunca bu sticker açılır.';
+  }
+
+  @override
+  String get manifestEditorCustomText => '✏️ Kendi yazın';
+
+  @override
+  String get manifestEditorCustomTextHint => 'Olumlaman';
+
+  @override
+  String get manifestEditorAddText => 'Ekle';
+
+  @override
+  String get manifestEditorColorLabel => 'Renk';
+
+  @override
+  String get manifestEditorDeleteSticker => 'Sil';
+
+  @override
+  String get manifestEditorResizeSticker => 'Büyüt veya küçült';
+
+  @override
+  String get manifestEditorExportTitle => 'Manifestin hazır! 🎉';
+
+  @override
+  String get manifestEditorExportPost => '4:5 · Instagram gönderisi için ideal';
+
+  @override
+  String get manifestEditorExportSquare => '1:1 · Kare, her yerde paylaşılır';
+
+  @override
+  String get manifestEditorExportStory =>
+      '9:16 · Instagram ve WhatsApp hikâyesi';
+
+  @override
+  String get manifestEditorSaveToGallery => 'Galeriye Kaydet';
+
+  @override
+  String get manifestEditorWatermarkNote =>
+      'Köşede küçük bir “zibo” logosu olur · Zibo Pro\'da logo yok';
+
+  @override
+  String get manifestEditorSaved => 'Galeriye kaydedildi ✅';
+
+  @override
+  String get manifestEditorSaveFailed =>
+      'Kaydedilemedi. Galeri iznini kontrol edip tekrar dene.';
+
+  @override
+  String get manifestEditorShareCaption => 'Zibo ile manifestim ✨';
+
+  @override
   String get profileScreenTitle => 'Profil';
 
   @override

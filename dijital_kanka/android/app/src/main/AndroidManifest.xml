@@ -23,6 +23,12 @@
     <uses-permission
         android:name="android.permission.READ_EXTERNAL_STORAGE"
         android:maxSdkVersion="32"/>
+    <!-- Manifest süsleme editörünün "Galeriye Kaydet"i (`gal` paketi) —
+         yalnızca Android 10 (API 29) ve altında gerekli; yeni sürümlerde
+         MediaStore izinsiz yazıyor, bu izin hiç istenmiyor. -->
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="29"/>
     <!-- 2026 — Appodeal reklam mediasyonu. Bazı reklam ağı adaptörleri
          (özellikle ileride eklenebilecek Meta / Mintegral / InMobi) manifest
          merge sırasında konum izinlerini sessizce enjekte edebiliyor. Zibo

@@ -601,6 +601,29 @@ penceresinden (`rate_us_sheet.dart`) AYRI.
 
 **Onaylandı** — [mockup](https://claude.ai/artifact/Qf33JAT5BwXqEkiuHU3cBr).
 
+## Onaylanan: Manifest süsleme editörü — 1. aşama, tek fotoğraf (2026-09-24)
+
+`lib/screens/manifest_editor_screen.dart` + `lib/widgets/manifest_frame_view.dart`.
+Giriş: kayıt detayındaki "🎨 Süsle ve Paylaş" ve fotoğraflı kayıt sonrası
+pencerede "🎨 Hemen Süsle".
+
+- **Tuval**: 4:5 / 1:1 / 9:16; fotoğraf yoksa niyet yazısı bal sarısı zemin
+  üzerinde. Dışa aktarma 1080px genişlikte PNG (4:5 → 1080×1350).
+- **Çerçeveler**: Yok, Polaroid (tarih · niyet), Film, Washi ücretsiz;
+  **Altın** ve **Yıldızlı** 250 ZC ile bir kez açılır (kullanıcı kararı).
+  Kilitli çerçeve önizlenir, kaydetmek/paylaşmak için açılması gerekir.
+  Çerçeve renkleri temadan bağımsız (çıktı her temada aynı).
+- **Sticker**: 5 ücretsiz Zibo pozu + emoji; **kostümlü Zibo sticker'ları
+  yalnızca sahip olunan kostümlerden** (kullanıcı kararı). Sürükle, iki
+  parmakla büyüt/döndür, köşe tutamacıyla büyüt, ✕ ile sil.
+- **Yazı**: hazır olumlamalar (`manifestAffirmationsForLocale`) + serbest
+  yazı, 3 renk, kalın konturlu sticker yazısı.
+- **Filigran**: Pro olmayan kullanıcının görselinde köşede küçük "zibo";
+  Pro/Pro+'ta yok (kullanıcı kararı).
+- **Sonraki aşamalar** (onay bekliyor): kolaj şablonları, aylık otomatik pano.
+
+**Onaylandı** — [mockup](https://claude.ai/artifact/21kf1TZT3sDKqgrpkc1Pew).
+
 ## Kapsam dışı — kesinlikle DEĞİŞMEYECEK
 
 Kullanıcı açıkça belirtti, bu redesign'a DAHİL DEĞİL:
@@ -641,4 +664,5 @@ genişletilmek istenirse önce burada AÇIKÇA onaylanmalı.
 | Modül ekranı — Odak Sayacı | ✅ Koda döküldü (`focus_timer_screen.dart`, karanlık mod hariç) |
 | Ayarlar ekranı | ✅ Koda döküldü (`settings_screen.dart`) |
 | "Bizi Google Play'de Puanla" penceresi | ✅ Koda döküldü (`rate_prompt_dialog.dart` + `rate_prompt_trigger.dart`) |
+| Manifest süsleme editörü (tek fotoğraf) | ✅ Koda döküldü (`manifest_editor_screen.dart` + `manifest_frame_view.dart`) |
 | Şans Çarkı / Günlük Ödül / Rozet pop-up'ları | 🚫 Kapsam dışı — değişmeyecek |

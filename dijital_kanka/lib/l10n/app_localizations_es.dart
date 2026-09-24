@@ -1207,6 +1207,134 @@ class AppLocalizationsEs extends AppLocalizations {
   String get manifestDetailCloseButton => 'Cerrar';
 
   @override
+  String get manifestDecorateButton => '🎨 Decorar y Compartir';
+
+  @override
+  String get manifestDecorateNowButton => '🎨 Decorar Ahora';
+
+  @override
+  String get manifestEditorTitle => 'Decora tu Manifiesto';
+
+  @override
+  String get manifestEditorShareButton => 'Compartir';
+
+  @override
+  String get manifestEditorRatioPost => 'Post';
+
+  @override
+  String get manifestEditorRatioSquare => 'Cuadrado';
+
+  @override
+  String get manifestEditorRatioStory => 'Historia';
+
+  @override
+  String get manifestEditorTabFrame => 'Marco';
+
+  @override
+  String get manifestEditorTabSticker => 'Sticker';
+
+  @override
+  String get manifestEditorTabText => 'Texto';
+
+  @override
+  String get manifestFrameNone => 'Ninguno';
+
+  @override
+  String get manifestFramePolaroid => 'Polaroid';
+
+  @override
+  String get manifestFrameFilm => 'Película';
+
+  @override
+  String get manifestFrameWashi => 'Washi';
+
+  @override
+  String get manifestFrameGold => 'Dorado';
+
+  @override
+  String get manifestFrameStars => 'Estrellado';
+
+  @override
+  String manifestEditorLockedPreview(int price) {
+    return '🔒 Vista previa · Desbloquear por $price ZC';
+  }
+
+  @override
+  String manifestEditorUnlockTitle(String name) {
+    return 'Desbloquear el marco $name';
+  }
+
+  @override
+  String manifestEditorUnlockBody(int price) {
+    return '¿Desbloquear este marco para siempre por $price Zibo Coins?';
+  }
+
+  @override
+  String manifestEditorUnlockButton(int price) {
+    return 'Desbloquear por $price ZC';
+  }
+
+  @override
+  String manifestEditorUnlockedMessage(String name) {
+    return '¡El marco $name ya es tuyo! 🎉';
+  }
+
+  @override
+  String manifestEditorCostumeLocked(String name) {
+    return 'Consigue el disfraz $name para desbloquear este sticker.';
+  }
+
+  @override
+  String get manifestEditorCustomText => '✏️ Escribe el tuyo';
+
+  @override
+  String get manifestEditorCustomTextHint => 'Tu afirmación';
+
+  @override
+  String get manifestEditorAddText => 'Añadir';
+
+  @override
+  String get manifestEditorColorLabel => 'Color';
+
+  @override
+  String get manifestEditorDeleteSticker => 'Eliminar';
+
+  @override
+  String get manifestEditorResizeSticker => 'Cambiar tamaño';
+
+  @override
+  String get manifestEditorExportTitle => '¡Tu manifiesto está listo! 🎉';
+
+  @override
+  String get manifestEditorExportPost =>
+      '4:5 · Ideal para un post de Instagram';
+
+  @override
+  String get manifestEditorExportSquare =>
+      '1:1 · Cuadrado, sirve en todas partes';
+
+  @override
+  String get manifestEditorExportStory =>
+      '9:16 · Historias de Instagram y WhatsApp';
+
+  @override
+  String get manifestEditorSaveToGallery => 'Guardar en Galería';
+
+  @override
+  String get manifestEditorWatermarkNote =>
+      'Aparece un pequeño logo “zibo” en la esquina · Sin logo con Zibo Pro';
+
+  @override
+  String get manifestEditorSaved => 'Guardado en la galería ✅';
+
+  @override
+  String get manifestEditorSaveFailed =>
+      'No se pudo guardar. Revisa el permiso de galería e inténtalo de nuevo.';
+
+  @override
+  String get manifestEditorShareCaption => 'Mi manifiesto con Zibo ✨';
+
+  @override
   String get profileScreenTitle => 'Perfil';
 
   @override

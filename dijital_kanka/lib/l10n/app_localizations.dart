@@ -2194,6 +2194,228 @@ abstract class AppLocalizations {
   /// **'Kapat'**
   String get manifestDetailCloseButton;
 
+  /// Manifest kaydı detayından süsleme editörünü açan buton
+  ///
+  /// In tr, this message translates to:
+  /// **'🎨 Süsle ve Paylaş'**
+  String get manifestDecorateButton;
+
+  /// Fotoğraflı manifest kaydedildikten sonraki pencerede editörü açan buton
+  ///
+  /// In tr, this message translates to:
+  /// **'🎨 Hemen Süsle'**
+  String get manifestDecorateNowButton;
+
+  /// Manifest süsleme editörünün başlığı
+  ///
+  /// In tr, this message translates to:
+  /// **'Manifestini Süsle'**
+  String get manifestEditorTitle;
+
+  /// Editörün üst çubuğundaki dışa aktarma butonu
+  ///
+  /// In tr, this message translates to:
+  /// **'Paylaş'**
+  String get manifestEditorShareButton;
+
+  /// 4:5 boyut seçeneğinin etiketi
+  ///
+  /// In tr, this message translates to:
+  /// **'Gönderi'**
+  String get manifestEditorRatioPost;
+
+  /// 1:1 boyut seçeneğinin etiketi
+  ///
+  /// In tr, this message translates to:
+  /// **'Kare'**
+  String get manifestEditorRatioSquare;
+
+  /// 9:16 boyut seçeneğinin etiketi
+  ///
+  /// In tr, this message translates to:
+  /// **'Hikâye'**
+  String get manifestEditorRatioStory;
+
+  /// Editörün çerçeve sekmesi
+  ///
+  /// In tr, this message translates to:
+  /// **'Çerçeve'**
+  String get manifestEditorTabFrame;
+
+  /// Editörün sticker sekmesi
+  ///
+  /// In tr, this message translates to:
+  /// **'Sticker'**
+  String get manifestEditorTabSticker;
+
+  /// Editörün yazı sekmesi
+  ///
+  /// In tr, this message translates to:
+  /// **'Yazı'**
+  String get manifestEditorTabText;
+
+  /// Çerçevesiz seçenek
+  ///
+  /// In tr, this message translates to:
+  /// **'Yok'**
+  String get manifestFrameNone;
+
+  /// Polaroid çerçeve
+  ///
+  /// In tr, this message translates to:
+  /// **'Polaroid'**
+  String get manifestFramePolaroid;
+
+  /// Film şeridi çerçeve
+  ///
+  /// In tr, this message translates to:
+  /// **'Film'**
+  String get manifestFrameFilm;
+
+  /// Washi bantlı çerçeve
+  ///
+  /// In tr, this message translates to:
+  /// **'Washi'**
+  String get manifestFrameWashi;
+
+  /// Premium altın çerçeve
+  ///
+  /// In tr, this message translates to:
+  /// **'Altın'**
+  String get manifestFrameGold;
+
+  /// Premium yıldızlı çerçeve
+  ///
+  /// In tr, this message translates to:
+  /// **'Yıldızlı'**
+  String get manifestFrameStars;
+
+  /// Kilitli premium çerçeve önizlenirken tuvalin üstündeki buton
+  ///
+  /// In tr, this message translates to:
+  /// **'🔒 Önizleme · {price} ZC ile aç'**
+  String manifestEditorLockedPreview(int price);
+
+  /// Premium çerçeve satın alma penceresinin başlığı
+  ///
+  /// In tr, this message translates to:
+  /// **'{name} çerçevesini aç'**
+  String manifestEditorUnlockTitle(String name);
+
+  /// Premium çerçeve satın alma penceresinin açıklaması
+  ///
+  /// In tr, this message translates to:
+  /// **'Bu çerçeveyi {price} Zibo Coin ile kalıcı olarak açmak ister misin?'**
+  String manifestEditorUnlockBody(int price);
+
+  /// Premium çerçeveyi Zibo Coin ile açan buton
+  ///
+  /// In tr, this message translates to:
+  /// **'{price} ZC ile Aç'**
+  String manifestEditorUnlockButton(int price);
+
+  /// Premium çerçeve açıldıktan sonraki onay
+  ///
+  /// In tr, this message translates to:
+  /// **'{name} çerçevesi artık senin! 🎉'**
+  String manifestEditorUnlockedMessage(String name);
+
+  /// Sahip olunmayan kostümün sticker'ına dokununca çıkan mesaj
+  ///
+  /// In tr, this message translates to:
+  /// **'{name} kostümüne sahip olunca bu sticker açılır.'**
+  String manifestEditorCostumeLocked(String name);
+
+  /// Serbest olumlama yazısı ekleme butonu
+  ///
+  /// In tr, this message translates to:
+  /// **'✏️ Kendi yazın'**
+  String get manifestEditorCustomText;
+
+  /// Serbest yazı alanının ipucu
+  ///
+  /// In tr, this message translates to:
+  /// **'Olumlaman'**
+  String get manifestEditorCustomTextHint;
+
+  /// Serbest yazı penceresindeki ekleme butonu
+  ///
+  /// In tr, this message translates to:
+  /// **'Ekle'**
+  String get manifestEditorAddText;
+
+  /// Yazı rengi seçicisinin etiketi
+  ///
+  /// In tr, this message translates to:
+  /// **'Renk'**
+  String get manifestEditorColorLabel;
+
+  /// Seçili sticker'ı silen butonun erişilebilirlik etiketi
+  ///
+  /// In tr, this message translates to:
+  /// **'Sil'**
+  String get manifestEditorDeleteSticker;
+
+  /// Seçili sticker'ın boyut tutamacının erişilebilirlik etiketi
+  ///
+  /// In tr, this message translates to:
+  /// **'Büyüt veya küçült'**
+  String get manifestEditorResizeSticker;
+
+  /// Dışa aktarma penceresinin başlığı
+  ///
+  /// In tr, this message translates to:
+  /// **'Manifestin hazır! 🎉'**
+  String get manifestEditorExportTitle;
+
+  /// 4:5 seçiliyken dışa aktarma penceresindeki açıklama
+  ///
+  /// In tr, this message translates to:
+  /// **'4:5 · Instagram gönderisi için ideal'**
+  String get manifestEditorExportPost;
+
+  /// 1:1 seçiliyken dışa aktarma penceresindeki açıklama
+  ///
+  /// In tr, this message translates to:
+  /// **'1:1 · Kare, her yerde paylaşılır'**
+  String get manifestEditorExportSquare;
+
+  /// 9:16 seçiliyken dışa aktarma penceresindeki açıklama
+  ///
+  /// In tr, this message translates to:
+  /// **'9:16 · Instagram ve WhatsApp hikâyesi'**
+  String get manifestEditorExportStory;
+
+  /// Görseli cihaz galerisine kaydeden buton
+  ///
+  /// In tr, this message translates to:
+  /// **'Galeriye Kaydet'**
+  String get manifestEditorSaveToGallery;
+
+  /// Ücretsiz kullanıcıya dışa aktarma penceresinde gösterilen filigran notu
+  ///
+  /// In tr, this message translates to:
+  /// **'Köşede küçük bir “zibo” logosu olur · Zibo Pro\'da logo yok'**
+  String get manifestEditorWatermarkNote;
+
+  /// Görsel galeriye kaydedilince
+  ///
+  /// In tr, this message translates to:
+  /// **'Galeriye kaydedildi ✅'**
+  String get manifestEditorSaved;
+
+  /// Görsel galeriye kaydedilemezse
+  ///
+  /// In tr, this message translates to:
+  /// **'Kaydedilemedi. Galeri iznini kontrol edip tekrar dene.'**
+  String get manifestEditorSaveFailed;
+
+  /// Paylaşılan görselle birlikte giden kısa metin
+  ///
+  /// In tr, this message translates to:
+  /// **'Zibo ile manifestim ✨'**
+  String get manifestEditorShareCaption;
+
   /// Profil sayfasının AppBar başlığı ve modül menüsündeki kart başlığı
   ///
   /// In tr, this message translates to:

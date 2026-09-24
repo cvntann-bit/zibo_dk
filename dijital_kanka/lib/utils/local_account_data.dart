@@ -61,6 +61,7 @@ const localAccountDataKeys = <String>[
   'moodEntries',
   'gratitudeEntries',
   'manifestEntries',
+  'manifestDecorState',
   'dreamEntries',
   'moneyEntries',
   'currencyState',

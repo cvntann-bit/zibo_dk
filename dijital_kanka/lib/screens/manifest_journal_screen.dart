@@ -26,6 +26,7 @@ import '../widgets/rate_prompt_dialog.dart';
 import '../widgets/speech_bubble.dart';
 import '../widgets/sticker_style.dart';
 import '../widgets/zibo_animated_image.dart';
+import 'manifest_editor_screen.dart';
 
 const _intentionMaxLength = 280;
 
@@ -145,14 +146,20 @@ class _ManifestJournalScreenState extends State<ManifestJournalScreen> {
         context.read<CoinProvider>().earnManifestJournal();
       }
       final l10n = AppLocalizations.of(context)!;
+      final savedEntry = provider.history.first;
       unawaited(
-        showInfoDialog(
-          context,
+        _showSavedDialog(
           justCompleted
               ? l10n.manifestCoinRewardMessage
               : l10n.manifestSavedMessage,
-        ).then((_) {
-          if (mounted) maybeShowRatePrompt(context);
+          offerDecorate: permanentPath != null,
+        ).then((decorate) {
+          if (!mounted) return;
+          if (decorate) {
+            _openEditor(savedEntry);
+          } else {
+            maybeShowRatePrompt(context);
+          }
         }),
       );
     } finally {
@@ -215,9 +222,49 @@ class _ManifestJournalScreenState extends State<ManifestJournalScreen> {
             onPressed: () => Navigator.of(dialogContext).pop(),
             child: Text(l10n.manifestDetailCloseButton),
           ),
+          FilledButton(
+            key: const Key('manifestDecorateButton'),
+            onPressed: () {
+              Navigator.of(dialogContext).pop();
+              _openEditor(entry);
+            },
+            child: Text(l10n.manifestDecorateButton),
+          ),
         ],
       ),
     );
+  }
+
+  void _openEditor(ManifestEntry entry) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(builder: (_) => ManifestEditorScreen(entry: entry)),
+    );
+  }
+
+  /// Kayıt sonrası bilgi penceresi. Fotoğraflı kayıtta "Hemen Süsle"
+  /// seçeneği de sunar; seçilirse `true` döner.
+  Future<bool> _showSavedDialog(String message, {required bool offerDecorate}) async {
+    final l10n = AppLocalizations.of(context)!;
+    final decorate = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        content: Text(message),
+        actions: [
+          TextButton(
+            key: const Key('infoDialogOkButton'),
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(l10n.commonOkButton),
+          ),
+          if (offerDecorate)
+            FilledButton(
+              key: const Key('manifestDecorateNowButton'),
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              child: Text(l10n.manifestDecorateNowButton),
+            ),
+        ],
+      ),
+    );
+    return decorate ?? false;
   }
 
   @override

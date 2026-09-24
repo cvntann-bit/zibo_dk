@@ -34,6 +34,7 @@ import 'providers/gratitude_provider.dart';
 import 'providers/hidden_badge_provider.dart';
 import 'providers/home_quick_widgets_provider.dart';
 import 'providers/instagram_follow_provider.dart';
+import 'providers/manifest_decor_provider.dart';
 import 'providers/locale_provider.dart';
 import 'providers/manifest_provider.dart';
 import 'providers/money_provider.dart';
@@ -837,6 +838,9 @@ class DijitalKankaApp extends StatelessWidget {
         // 2026 yeni özellik — Instagram Takip Kartı ve Ödülü (bkz. CLAUDE.md).
         ChangeNotifierProvider(
           create: (_) => InstagramFollowProvider(uid: uid),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => ManifestDecorProvider(uid: uid),
         ),
         ChangeNotifierProvider(
           create: (context) => GoalsProvider(

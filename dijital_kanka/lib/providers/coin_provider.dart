@@ -636,6 +636,12 @@ class CoinProvider extends ChangeNotifier {
     return success;
   }
 
+  bool spendOnManifestFrame({required String frameId, required int cost}) {
+    final success = _spend(cost, 'Manifest çerçevesi: $frameId');
+    if (success && _isSoundEnabled()) _soundEffectsService.playThemeBuy();
+    return success;
+  }
+
   // --- Reklam gösterimi (coin ekonomisiyle DOĞRUDAN ilgisiz) -----------
 
   /// Ana Sayfa'da Zibo'ya art arda hızlı dokunulduğunda gösterilen geçiş

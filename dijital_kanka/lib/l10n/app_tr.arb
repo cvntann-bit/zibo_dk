@@ -1686,6 +1686,184 @@
   "@manifestDetailCloseButton": {
     "description": "Geçmiş kayıt detay diyaloğunu kapatan butonun etiketi"
   },
+  "manifestDecorateButton": "🎨 Süsle ve Paylaş",
+  "@manifestDecorateButton": {
+    "description": "Manifest kaydı detayından süsleme editörünü açan buton"
+  },
+  "manifestDecorateNowButton": "🎨 Hemen Süsle",
+  "@manifestDecorateNowButton": {
+    "description": "Fotoğraflı manifest kaydedildikten sonraki pencerede editörü açan buton"
+  },
+  "manifestEditorTitle": "Manifestini Süsle",
+  "@manifestEditorTitle": {
+    "description": "Manifest süsleme editörünün başlığı"
+  },
+  "manifestEditorShareButton": "Paylaş",
+  "@manifestEditorShareButton": {
+    "description": "Editörün üst çubuğundaki dışa aktarma butonu"
+  },
+  "manifestEditorRatioPost": "Gönderi",
+  "@manifestEditorRatioPost": {
+    "description": "4:5 boyut seçeneğinin etiketi"
+  },
+  "manifestEditorRatioSquare": "Kare",
+  "@manifestEditorRatioSquare": {
+    "description": "1:1 boyut seçeneğinin etiketi"
+  },
+  "manifestEditorRatioStory": "Hikâye",
+  "@manifestEditorRatioStory": {
+    "description": "9:16 boyut seçeneğinin etiketi"
+  },
+  "manifestEditorTabFrame": "Çerçeve",
+  "@manifestEditorTabFrame": {
+    "description": "Editörün çerçeve sekmesi"
+  },
+  "manifestEditorTabSticker": "Sticker",
+  "@manifestEditorTabSticker": {
+    "description": "Editörün sticker sekmesi"
+  },
+  "manifestEditorTabText": "Yazı",
+  "@manifestEditorTabText": {
+    "description": "Editörün yazı sekmesi"
+  },
+  "manifestFrameNone": "Yok",
+  "@manifestFrameNone": {
+    "description": "Çerçevesiz seçenek"
+  },
+  "manifestFramePolaroid": "Polaroid",
+  "@manifestFramePolaroid": {
+    "description": "Polaroid çerçeve"
+  },
+  "manifestFrameFilm": "Film",
+  "@manifestFrameFilm": {
+    "description": "Film şeridi çerçeve"
+  },
+  "manifestFrameWashi": "Washi",
+  "@manifestFrameWashi": {
+    "description": "Washi bantlı çerçeve"
+  },
+  "manifestFrameGold": "Altın",
+  "@manifestFrameGold": {
+    "description": "Premium altın çerçeve"
+  },
+  "manifestFrameStars": "Yıldızlı",
+  "@manifestFrameStars": {
+    "description": "Premium yıldızlı çerçeve"
+  },
+  "manifestEditorLockedPreview": "🔒 Önizleme · {price} ZC ile aç",
+  "@manifestEditorLockedPreview": {
+    "description": "Kilitli premium çerçeve önizlenirken tuvalin üstündeki buton",
+    "placeholders": {
+      "price": {
+        "type": "int"
+      }
+    }
+  },
+  "manifestEditorUnlockTitle": "{name} çerçevesini aç",
+  "@manifestEditorUnlockTitle": {
+    "description": "Premium çerçeve satın alma penceresinin başlığı",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "manifestEditorUnlockBody": "Bu çerçeveyi {price} Zibo Coin ile kalıcı olarak açmak ister misin?",
+  "@manifestEditorUnlockBody": {
+    "description": "Premium çerçeve satın alma penceresinin açıklaması",
+    "placeholders": {
+      "price": {
+        "type": "int"
+      }
+    }
+  },
+  "manifestEditorUnlockButton": "{price} ZC ile Aç",
+  "@manifestEditorUnlockButton": {
+    "description": "Premium çerçeveyi Zibo Coin ile açan buton",
+    "placeholders": {
+      "price": {
+        "type": "int"
+      }
+    }
+  },
+  "manifestEditorUnlockedMessage": "{name} çerçevesi artık senin! 🎉",
+  "@manifestEditorUnlockedMessage": {
+    "description": "Premium çerçeve açıldıktan sonraki onay",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "manifestEditorCostumeLocked": "{name} kostümüne sahip olunca bu sticker açılır.",
+  "@manifestEditorCostumeLocked": {
+    "description": "Sahip olunmayan kostümün sticker'ına dokununca çıkan mesaj",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "manifestEditorCustomText": "✏️ Kendi yazın",
+  "@manifestEditorCustomText": {
+    "description": "Serbest olumlama yazısı ekleme butonu"
+  },
+  "manifestEditorCustomTextHint": "Olumlaman",
+  "@manifestEditorCustomTextHint": {
+    "description": "Serbest yazı alanının ipucu"
+  },
+  "manifestEditorAddText": "Ekle",
+  "@manifestEditorAddText": {
+    "description": "Serbest yazı penceresindeki ekleme butonu"
+  },
+  "manifestEditorColorLabel": "Renk",
+  "@manifestEditorColorLabel": {
+    "description": "Yazı rengi seçicisinin etiketi"
+  },
+  "manifestEditorDeleteSticker": "Sil",
+  "@manifestEditorDeleteSticker": {
+    "description": "Seçili sticker'ı silen butonun erişilebilirlik etiketi"
+  },
+  "manifestEditorResizeSticker": "Büyüt veya küçült",
+  "@manifestEditorResizeSticker": {
+    "description": "Seçili sticker'ın boyut tutamacının erişilebilirlik etiketi"
+  },
+  "manifestEditorExportTitle": "Manifestin hazır! 🎉",
+  "@manifestEditorExportTitle": {
+    "description": "Dışa aktarma penceresinin başlığı"
+  },
+  "manifestEditorExportPost": "4:5 · Instagram gönderisi için ideal",
+  "@manifestEditorExportPost": {
+    "description": "4:5 seçiliyken dışa aktarma penceresindeki açıklama"
+  },
+  "manifestEditorExportSquare": "1:1 · Kare, her yerde paylaşılır",
+  "@manifestEditorExportSquare": {
+    "description": "1:1 seçiliyken dışa aktarma penceresindeki açıklama"
+  },
+  "manifestEditorExportStory": "9:16 · Instagram ve WhatsApp hikâyesi",
+  "@manifestEditorExportStory": {
+    "description": "9:16 seçiliyken dışa aktarma penceresindeki açıklama"
+  },
+  "manifestEditorSaveToGallery": "Galeriye Kaydet",
+  "@manifestEditorSaveToGallery": {
+    "description": "Görseli cihaz galerisine kaydeden buton"
+  },
+  "manifestEditorWatermarkNote": "Köşede küçük bir “zibo” logosu olur · Zibo Pro'da logo yok",
+  "@manifestEditorWatermarkNote": {
+    "description": "Ücretsiz kullanıcıya dışa aktarma penceresinde gösterilen filigran notu"
+  },
+  "manifestEditorSaved": "Galeriye kaydedildi ✅",
+  "@manifestEditorSaved": {
+    "description": "Görsel galeriye kaydedilince"
+  },
+  "manifestEditorSaveFailed": "Kaydedilemedi. Galeri iznini kontrol edip tekrar dene.",
+  "@manifestEditorSaveFailed": {
+    "description": "Görsel galeriye kaydedilemezse"
+  },
+  "manifestEditorShareCaption": "Zibo ile manifestim ✨",
+  "@manifestEditorShareCaption": {
+    "description": "Paylaşılan görselle birlikte giden kısa metin"
+  },
   "profileScreenTitle": "Profil",
   "@profileScreenTitle": {
     "description": "Profil sayfasının AppBar başlığı ve modül menüsündeki kart başlığı"
