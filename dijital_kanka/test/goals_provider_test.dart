@@ -65,7 +65,8 @@ void main() {
     });
 
     test(
-      'Bir gün atlanırsa (uygulama hiç açılmazsa) o gün kaçırılmış sayılır ve döngü bugünden sıfırlanır',
+      'Bir gün atlanırsa (uygulama hiç açılmazsa) önce Streak Freeze kararı beklenir, '
+      'vazgeçilince döngü bugünden sıfırlanır',
       () {
         final goal = provider.goals.first;
         provider.toggleToday(goal.id); // Gün 1 (Pzt) tamam
@@ -73,7 +74,9 @@ void main() {
         // Salı hiç açılmadı, doğrudan Çarşamba'ya geçiliyor.
         currentDate = currentDate.add(const Duration(days: 2));
 
-        final resetNames = provider.reconcileForToday();
+        // Karar verilmeden sıfırlanmaz (RootScreen önce freeze teklif eder).
+        expect(provider.reconcileForToday(), isEmpty);
+        final resetNames = provider.resolveYesterdayFreeze(frozen: false).resetNames;
 
         expect(resetNames, [goal.name]);
         expect(goal.cycleStartDate, provider.today);

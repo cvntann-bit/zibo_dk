@@ -1,8 +1,21 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 
 import '../models/goal.dart';
 import '../models/goal_completion.dart';
 import '../services/cloud_state_store.dart';
+
+/// [GoalsProvider.resolveYesterdayFreeze] sonucu.
+class GoalReconcileResult {
+  const GoalReconcileResult({this.resetNames = const [], this.completedNames = const []});
+
+  /// Kaçırılan gün yüzünden sıfırlanan hedefler.
+  final List<String> resetNames;
+
+  /// Dondurulan son günle 7/7'yi tamamlayıp arşive düşen hedefler.
+  final List<String> completedNames;
+}
 
 /// Kullanıcının hedeflerini ve her hedefin gerçek takvim tarihlerine bağlı
 /// 7 günlük döngüsünü tutan tek kaynak. `SharedPreferences` ile kalıcı —
@@ -79,7 +92,31 @@ class GoalsProvider extends ChangeNotifier {
   bool get hasAnyRecordToday =>
       _goals.any((g) => g.completedDates.contains(today));
 
+  bool _isReady = false;
+  bool get isReady => _isReady;
+  final _readyCompleter = Completer<void>();
+
+  /// Kayıtlı veri yüklendiğinde tamamlanır — `AppStreakProvider.ready` ile
+  /// AYNI gerekçe: yükleme bitmeden yapılan bir sıfırlama/kayıt, kayıtlı
+  /// veriyi ezip ilerlemeyi SİLERDİ.
+  Future<void> get ready => _readyCompleter.future;
+
+  /// Streak Freeze kararının (kullan/vazgeç) en son hangi gün için verildiği.
+  /// Bugün için karar VERİLMEDEN, yalnızca dünü kaçırmış hedefler
+  /// sıfırlanmaz — kullanıcıya önce dondurma teklif edilir.
+  DateTime? _freezeDecisionDate;
+
   Future<void> _loadFromPrefs() async {
+    try {
+      await _loadFromStore();
+    } finally {
+      _isReady = true;
+      if (!_readyCompleter.isCompleted) _readyCompleter.complete();
+      notifyListeners();
+    }
+  }
+
+  Future<void> _loadFromStore() async {
     final decoded = await _store.load();
     if (decoded == null) {
       // İlk kurulum: BOŞ listeyle başla — kullanıcı isteği ("otomatik
@@ -99,6 +136,10 @@ class GoalsProvider extends ChangeNotifier {
           cycleStartDate: DateTime.parse(map['cycleStartDate'] as String),
         );
         goal.completedDates = (map['completedDates'] as List)
+            .map((d) => DateTime.parse(d as String))
+            .toSet();
+        // Oku-zamanı-göç-et: bu alan 2026-09-26'dan önceki kayıtlarda yok.
+        goal.frozenDates = ((map['frozenDates'] as List?) ?? const [])
             .map((d) => DateTime.parse(d as String))
             .toSet();
         _goals.add(goal);
@@ -132,6 +173,9 @@ class GoalsProvider extends ChangeNotifier {
               'name': g.name,
               'cycleStartDate': g.cycleStartDate.toIso8601String(),
               'completedDates': g.completedDates
+                  .map((d) => d.toIso8601String())
+                  .toList(),
+              'frozenDates': g.frozenDates
                   .map((d) => d.toIso8601String())
                   .toList(),
             },
@@ -174,31 +218,106 @@ class GoalsProvider extends ChangeNotifier {
   ///
   /// Kaçırılan gün yüzünden sıfırlanan hedeflerin adlarını döner; boşsa
   /// hiçbir şey sıfırlanmamış demektir.
-  List<String> reconcileForToday() {
+  ///
+  /// **Streak Freeze:** Bugün için dondurma kararı henüz verilmediyse
+  /// ([resolveYesterdayFreeze] çağrılmadıysa), YALNIZCA dünü kaçırmış
+  /// hedefler ([goalsAtRiskToday]) sıfırlanmaz — önce kullanıcıya dondurma
+  /// teklif edilir. 2+ gün kaçırılmış hedefler her zaman sıfırlanır.
+  /// Yükleme bitmeden çağrılırsa hiçbir şey yapmaz (kayıtlı veriyi ezmesin).
+  List<String> reconcileForToday() => _reconcile().resetNames;
+
+  GoalReconcileResult _reconcile() {
+    if (!_isReady) return const GoalReconcileResult();
+    final decided = _freezeDecisionDate == today;
     final resetGoalNames = <String>[];
+    final completedGoalNames = <String>[];
     for (final goal in _goals) {
-      if (_reconcileGoal(goal)) {
+      if (!decided && _isAtRisk(goal)) continue;
+      if (_archiveIfCycleFilled(goal)) {
+        completedGoalNames.add(goal.name);
+      } else if (_reconcileGoal(goal)) {
         resetGoalNames.add(goal.name);
       }
     }
     // Sıfırlama olmasa bile bildir: gün değişimi (ör. bugün artık "Gün 2"
     // olduğu için kutucuk durumlarının yeniden çizilmesi gerekebilir).
     notifyListeners();
-    if (resetGoalNames.isNotEmpty) _save();
-    return resetGoalNames;
+    if (resetGoalNames.isNotEmpty || completedGoalNames.isNotEmpty) _save();
+    return GoalReconcileResult(resetNames: resetGoalNames, completedNames: completedGoalNames);
   }
 
   bool _reconcileGoal(Goal goal) {
     var cursor = goal.cycleStartDate;
     while (cursor.isBefore(today)) {
-      if (!goal.completedDates.contains(cursor)) {
+      if (!goal.isCovered(cursor)) {
         goal.cycleStartDate = today;
         goal.completedDates = {};
+        goal.frozenDates = {};
         return true;
       }
       cursor = cursor.add(const Duration(days: 1));
     }
     return false;
+  }
+
+  /// Döngünün 7 günü (işaretli + donmuş) dolmuş ama işaretlemeyle
+  /// tamamlanmamışsa — ör. 7. gün dondurulduysa — arşivler ve yeni döngüyü
+  /// bugünden başlatır.
+  bool _archiveIfCycleFilled(Goal goal) {
+    if (goal.progressCount < Goal.daysPerCycle) return false;
+    final lastDay = goal.dateForDay(Goal.daysPerCycle - 1);
+    if (!lastDay.isBefore(today)) return false;
+    _completions.add(
+      GoalCompletion(
+        goalId: goal.id,
+        goalName: goal.name,
+        cycleStartDate: goal.cycleStartDate,
+        completionDate: lastDay,
+      ),
+    );
+    goal.cycleStartDate = today;
+    goal.completedDates = {};
+    goal.frozenDates = {};
+    return true;
+  }
+
+  DateTime get _yesterday => today.subtract(const Duration(days: 1));
+
+  /// Yalnızca DÜN kaçırılmış (ondan önceki tüm günleri işaretli/donmuş) ve
+  /// korunacak ilerlemesi olan hedef — Streak Freeze ile kurtarılabilir.
+  bool _isAtRisk(Goal goal) {
+    final yesterday = _yesterday;
+    if (goal.cycleStartDate.isAfter(yesterday)) return false;
+    if (goal.isCovered(yesterday)) return false;
+    if (goal.completedDates.isEmpty) return false;
+    var cursor = goal.cycleStartDate;
+    while (cursor.isBefore(yesterday)) {
+      if (!goal.isCovered(cursor)) return false;
+      cursor = cursor.add(const Duration(days: 1));
+    }
+    return true;
+  }
+
+  /// Bugün için dondurma kararı bekleyen (dünü kaçırmış) hedefler.
+  List<Goal> get goalsAtRiskToday {
+    if (!_isReady || _freezeDecisionDate == today) return const [];
+    return _goals.where(_isAtRisk).toList();
+  }
+
+  /// Kullanıcının bugünkü Streak Freeze kararını uygular: [frozen] ise dünü
+  /// kaçırmış hedeflerin o günü dondurulur (mavi ❄️, sıfırlanmaz); değilse
+  /// normal sıfırlama çalışır. Ardından tüm hedefler bugüne göre uzlaştırılır.
+  GoalReconcileResult resolveYesterdayFreeze({required bool frozen}) {
+    if (!_isReady) return const GoalReconcileResult();
+    if (frozen) {
+      final yesterday = _yesterday;
+      for (final goal in goalsAtRiskToday) {
+        goal.frozenDates.add(yesterday);
+      }
+      _save();
+    }
+    _freezeDecisionDate = today;
+    return _reconcile();
   }
 
   /// Bugünü işaretler/işaretini kaldırır. Yalnızca döngünün gerçekten
@@ -222,7 +341,9 @@ class GoalsProvider extends ChangeNotifier {
     if (goal.completedDates.length > _longestStreak) {
       _longestStreak = goal.completedDates.length;
     }
-    final cycleCompleted = goal.completedDates.length == Goal.daysPerCycle;
+    // Donmuş günler de 7/7'ye sayılır (kullanıcı isteği: "donsun ve devam
+    // etsin, sıfırlanmasın").
+    final cycleCompleted = goal.progressCount == Goal.daysPerCycle;
     if (cycleCompleted) {
       // Döngü sıfırlanmadan ÖNCE kalıcı bir tamamlanma kaydı düş — aksi
       // halde `completedDates`/`cycleStartDate` hemen ardından sıfırlanınca
@@ -237,6 +358,7 @@ class GoalsProvider extends ChangeNotifier {
       );
       goal.cycleStartDate = today.add(const Duration(days: 1));
       goal.completedDates = {};
+      goal.frozenDates = {};
     }
     notifyListeners();
     _save();

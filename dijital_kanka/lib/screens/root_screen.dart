@@ -14,6 +14,7 @@ import '../providers/currency_provider.dart';
 import '../providers/daily_rewards_provider.dart';
 import '../providers/dream_journal_provider.dart';
 import '../providers/founder_badge_provider.dart';
+import '../providers/coin_provider.dart';
 import '../providers/goals_provider.dart';
 import '../providers/gratitude_provider.dart';
 import '../providers/hidden_badge_provider.dart';
@@ -33,8 +34,10 @@ import '../services/home_widget_sync_coordinator.dart';
 import '../services/notification_service.dart';
 import '../services/push_notification_service.dart';
 import '../utils/founder_badge_reconcile.dart';
+import '../utils/info_dialog.dart';
 import '../utils/level_up_signal.dart';
 import '../utils/tab_navigation.dart';
+import '../utils/zibo_event_signal.dart';
 import '../utils/widget_module.dart';
 import '../widgets/badges_trigger_button.dart';
 import '../widgets/coin_balance_widget.dart';
@@ -264,18 +267,67 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
   /// `AppStreakProvider`'ı DIŞARIDAN dinlediği için (bkz. `initState`) bu
   /// gecikmeli güncellemeyi otomatik yakalar, burada ekstra bir şey
   /// GEREKMEZ.
+  ///
+  /// **2026-09-26 yeniden yazıldı** — iki kritik düzeltme:
+  ///  1. İki provider da kayıtlı veriyi YÜKLEDİKTEN sonra çalışır. Eskiden
+  ///     ilk karede, veri gelmeden çalışıyordu: seri her açılışta 1'e
+  ///     sıfırlanıyor, "dün kaçırıldı" hiç görülmediği için Streak Freeze
+  ///     penceresi HİÇ çıkmıyordu.
+  ///  2. Hedefler de artık Streak Freeze ile korunuyor: dünü kaçırılmış
+  ///     hedefler aynı pencerede listelenir, TEK bir freeze dünü her yerde
+  ///     kurtarır (hedefte o gün mavi ❄️ olur, döngü sıfırlanmaz). Hedef
+  ///     sıfırlama/uzlaştırma da artık yalnızca BURADA yapılıyor (eskiden
+  ///     `GoalTrackingScreen` kendi başına, karar beklemeden sıfırlıyordu).
   Future<void> _recordAppStreakOpen() async {
-    final streak = context.read<AppStreakProvider>();
-    if (streak.isStreakAtRisk) {
-      await showDialog<void>(
-        context: context,
-        barrierDismissible: false,
-        builder: (_) => const StreakFreezeOfferDialog(),
-      );
+    // Soğuk başlangıçta hem ilk kare hem `resumed` tetikleyebiliyor — iki
+    // pencere/iki kayıt olmasın.
+    if (_dailyStreakCheckRunning) return;
+    _dailyStreakCheckRunning = true;
+    try {
+      final streak = context.read<AppStreakProvider>();
+      final goals = context.read<GoalsProvider>();
+      await Future.wait([streak.ready, goals.ready]);
+      if (!mounted) return;
+
+      final appAtRisk = streak.isStreakAtRisk;
+      final atRiskGoals = goals.goalsAtRiskToday.map((g) => g.name).toList();
+      var frozen = false;
+      if (appAtRisk || atRiskGoals.isNotEmpty) {
+        frozen = await showDialog<bool>(
+              context: context,
+              barrierDismissible: false,
+              builder: (_) => StreakFreezeOfferDialog(
+                appStreakAtRisk: appAtRisk,
+                atRiskGoalNames: atRiskGoals,
+              ),
+            ) ??
+            false;
+        if (!mounted) return;
+      }
+
+      final result = goals.resolveYesterdayFreeze(frozen: frozen);
+      streak.recordOpenForToday();
+
+      if (result.completedNames.isNotEmpty) {
+        final coins = context.read<CoinProvider>();
+        for (var i = 0; i < result.completedNames.length; i++) {
+          coins.earnStreak7Bonus();
+        }
+        pendingZiboEvent.value = ZiboEventType.goalCycleCompleted;
+      }
+      if (result.resetNames.isNotEmpty) {
+        // Olay Tetiklemeli Özel Mesajlar — Ana Sayfa balonu nazik bir
+        // "tekrar deneyelim" mesajı gösterir (bkz. `zibo_event_signal.dart`).
+        pendingZiboEvent.value = ZiboEventType.streakBroken;
+        final l10n = AppLocalizations.of(context)!;
+        await showInfoDialog(context, l10n.goalStreakReset(result.resetNames.join(', ')));
+      }
+    } finally {
+      _dailyStreakCheckRunning = false;
     }
-    if (!mounted) return;
-    streak.recordOpenForToday();
   }
+
+  bool _dailyStreakCheckRunning = false;
 
   /// bkz. `utils/founder_badge_reconcile.dart`'taki `maybeClaimFounderBadge`
   /// dokümantasyonu — gerçek mantık orada, saf/test edilebilir bir üst

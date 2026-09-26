@@ -196,6 +196,37 @@
       }
     }
   },
+  "goalDayFrozen": "Gün {day}, Streak Freeze ile donduruldu",
+  "@goalDayFrozen": {
+    "description": "Streak Freeze ile dondurulmuş (mavi) bir gün kutucuğunun erişilebilirlik etiketi",
+    "placeholders": {
+      "day": {
+        "type": "int"
+      }
+    }
+  },
+  "streakFreezeOfferGoalsLine": "Dün şu hedeflerini de işaretlemedin: {goals}. Streak Freeze o günü dondurur ❄️, hedeflerin sıfırlanmaz.",
+  "@streakFreezeOfferGoalsLine": {
+    "description": "Seri kurtarma penceresinde, dünü kaçırılmış hedefleri de listeleyen ek satır",
+    "placeholders": {
+      "goals": {
+        "type": "String"
+      }
+    }
+  },
+  "streakFreezeOfferGoalsOnlyBody": "Dün şu hedeflerini işaretlemeyi kaçırdın: {goals}. Streak Freeze kullanırsan o gün donar ❄️ ve hedeflerin sıfırlanmadan devam eder.",
+  "@streakFreezeOfferGoalsOnlyBody": {
+    "description": "Uygulama serisi sağlamken yalnızca dünü kaçırılmış hedefler için gösterilen kurtarma metni",
+    "placeholders": {
+      "goals": {
+        "type": "String"
+      }
+    }
+  },
+  "streakFreezeGoalsRepairedMessage": "Dünün donduruldu ❄️ Hedeflerin kaldığı yerden devam ediyor.",
+  "@streakFreezeGoalsRepairedMessage": {
+    "description": "Yalnızca hedefler için Streak Freeze kullanıldıktan sonraki onay"
+  },
   "goalDayUpcoming": "Gün {day}, henüz açılmadı",
   "@goalDayUpcoming": {
     "description": "Tarihi henüz gelmemiş, kilitli bir gün kutucuğunun erişilebilirlik etiketi",
@@ -1641,6 +1672,10 @@
   "manifestIntentionHint": "Bugün ne manifest etmek istiyorsun?",
   "@manifestIntentionHint": {
     "description": "Niyet metni alanının etiketi"
+  },
+  "photoPickEmptyError": "Bu fotoğraf okunamadı (dosya boş görünüyor). Telefonuna tamamen inmemiş bir bulut fotoğrafı olabilir, lütfen başka bir fotoğraf seç.",
+  "@photoPickEmptyError": {
+    "description": "Galeriden seçilen fotoğraf 0 bayt olduğunda gösterilen uyarı"
   },
   "manifestSaveButton": "Kaydet",
   "@manifestSaveButton": {

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 
@@ -82,6 +84,12 @@ class AppStreakProvider extends ChangeNotifier {
 
   bool get isReady => _isReady;
 
+  final _readyCompleter = Completer<void>();
+  bool _pendingOpen = false;
+
+  /// Kayıtlı veri yüklendiğinde tamamlanır.
+  Future<void> get ready => _readyCompleter.future;
+
   /// Mağaza'dan Zibo Coin ile alınıp stokta bekleyen Streak Freeze sayısı.
   int get ownedStreakFreezes => _ownedStreakFreezes;
   int get currentStreak => _currentStreak;
@@ -138,6 +146,11 @@ class AppStreakProvider extends ChangeNotifier {
       // "asla çökme" güvenlik ağı.
     }
     _isReady = true;
+    if (!_readyCompleter.isCompleted) _readyCompleter.complete();
+    if (_pendingOpen) {
+      _pendingOpen = false;
+      recordOpenForToday();
+    }
     notifyListeners();
   }
 
@@ -247,13 +260,43 @@ class AppStreakProvider extends ChangeNotifier {
     return true;
   }
 
+  /// Uygulama açma serisi SAĞLAMKEN (dün açıldı) yalnızca dünü kaçırılmış
+  /// HEDEFLERİ dondurmak için bir Streak Freeze harcar — seriye dokunmaz.
+  /// [source] kuralları [repairMissedDayWithFreeze] ile aynı.
+  bool consumeFreezeForGoals({required StreakFreezeSource source}) {
+    switch (source) {
+      case StreakFreezeSource.freeQuota:
+        if (remainingFreeStreakFreezes <= 0) return false;
+        _maybeResetMonthlyFreezeQuota();
+        _freeStreakFreezesUsedThisMonth += 1;
+      case StreakFreezeSource.owned:
+        if (_ownedStreakFreezes <= 0) return false;
+        _ownedStreakFreezes -= 1;
+      case StreakFreezeSource.coins:
+        break;
+    }
+    notifyListeners();
+    _save();
+    return true;
+  }
+
   /// Uygulama her açıldığında/öne geldiğinde çağrılır (`RootScreen.initState`
   /// postFrameCallback'i + `didChangeAppLifecycleState`'in `resumed` dalı —
   /// `GoalsProvider.reconcileForToday`/`DailyRewardsProvider.
   /// reconcileForToday` ile AYNI tetikleme deseni). Bugün ZATEN kaydedilmişse
   /// no-op; dün kaydedilmişse seri +1; aksi halde (bugünden ÖNCE bir gün
   /// kaçırılmışsa VEYA hiç kayıt yoksa) seri 1'e sıfırlanır.
+  ///
+  /// **Kayıtlı veri yüklenmeden çağrılırsa ertelenir** (yükleme bitince
+  /// işlenir). Eskiden hemen işleniyordu: ilk karede `_lastOpenDate` henüz
+  /// `null` göründüğü için seri HER açılışta 1'e sıfırlanıp buluta
+  /// yazılıyordu — "En Uzun Seri Rekoru 1'de takılı" ve "Streak Freeze hiç
+  /// çıkmıyor" hatalarının kök nedeni (bkz. `test/app_streak_race_test.dart`).
   void recordOpenForToday() {
+    if (!_isReady) {
+      _pendingOpen = true;
+      return;
+    }
     final today = _dateOnly(_now());
     if (_lastOpenDate != null && _dateOnly(_lastOpenDate!) == today) {
       return;

@@ -132,6 +132,25 @@ class AppLocalizationsTr extends AppLocalizations {
   }
 
   @override
+  String goalDayFrozen(int day) {
+    return 'Gün $day, Streak Freeze ile donduruldu';
+  }
+
+  @override
+  String streakFreezeOfferGoalsLine(String goals) {
+    return 'Dün şu hedeflerini de işaretlemedin: $goals. Streak Freeze o günü dondurur ❄️, hedeflerin sıfırlanmaz.';
+  }
+
+  @override
+  String streakFreezeOfferGoalsOnlyBody(String goals) {
+    return 'Dün şu hedeflerini işaretlemeyi kaçırdın: $goals. Streak Freeze kullanırsan o gün donar ❄️ ve hedeflerin sıfırlanmadan devam eder.';
+  }
+
+  @override
+  String get streakFreezeGoalsRepairedMessage =>
+      'Dünün donduruldu ❄️ Hedeflerin kaldığı yerden devam ediyor.';
+
+  @override
   String goalDayUpcoming(int day) {
     return 'Gün $day, henüz açılmadı';
   }
@@ -1165,6 +1184,10 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get manifestIntentionHint => 'Bugün ne manifest etmek istiyorsun?';
+
+  @override
+  String get photoPickEmptyError =>
+      'Bu fotoğraf okunamadı (dosya boş görünüyor). Telefonuna tamamen inmemiş bir bulut fotoğrafı olabilir, lütfen başka bir fotoğraf seç.';
 
   @override
   String get manifestSaveButton => 'Kaydet';

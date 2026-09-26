@@ -132,6 +132,25 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String goalDayFrozen(int day) {
+    return 'Day $day, frozen with a Streak Freeze';
+  }
+
+  @override
+  String streakFreezeOfferGoalsLine(String goals) {
+    return 'You also didn\'t check these goals yesterday: $goals. A Streak Freeze freezes that day ❄️ so your goals don\'t reset.';
+  }
+
+  @override
+  String streakFreezeOfferGoalsOnlyBody(String goals) {
+    return 'You missed checking these goals yesterday: $goals. Use a Streak Freeze to freeze that day ❄️ and keep your goals going without a reset.';
+  }
+
+  @override
+  String get streakFreezeGoalsRepairedMessage =>
+      'Yesterday is frozen ❄️ Your goals continue where you left off.';
+
+  @override
   String goalDayUpcoming(int day) {
     return 'Day $day, not open yet';
   }
@@ -1165,6 +1184,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get manifestIntentionHint => 'What do you want to manifest today?';
+
+  @override
+  String get photoPickEmptyError =>
+      'This photo couldn\'t be read (the file looks empty). It may be a cloud photo that hasn\'t fully downloaded, please pick another one.';
 
   @override
   String get manifestSaveButton => 'Save';

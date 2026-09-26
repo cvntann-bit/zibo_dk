@@ -16,6 +16,7 @@ import 'package:dijital_kanka/data/goal_quotes.dart';
 import 'package:dijital_kanka/data/money_quotes.dart';
 import 'package:dijital_kanka/data/wheel_prizes.dart';
 import 'package:dijital_kanka/l10n/app_localizations.dart';
+import 'package:dijital_kanka/models/goal.dart';
 import 'package:dijital_kanka/main.dart';
 import 'package:dijital_kanka/models/money_entry.dart';
 import 'package:dijital_kanka/models/subscription_tier.dart';
@@ -556,7 +557,7 @@ void main() {
   );
 
   testWidgets(
-    'Bir gün kaçırılırsa uygulama arka plandan öne gelince döngü sıfırlanır ve kullanıcı bilgilendirilir',
+    'Bir gün kaçırılırsa öne gelince Streak Freeze teklif edilir; vazgeçilince döngü sıfırlanır ve kullanıcı bilgilendirilir',
     (WidgetTester tester) async {
       var currentDate = DateTime(2026, 1, 5);
       await tester.pumpWidget(_buildAppWithClock(() => currentDate));
@@ -583,8 +584,62 @@ void main() {
       tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
       await tester.pumpAndSettle();
 
+      // Dünü kaçırılan hedef pencerede listelenir; kullanıcı vazgeçiyor.
+      expect(find.textContaining('Günde 30 dakika kitap oku'), findsWidgets);
+      await tester.tap(find.byKey(const Key('streakFreezeDeclineButton')));
+      await tester.pumpAndSettle();
+
       expect(find.textContaining('bir gün kaçırıldı'), findsOneWidget);
       expect(find.text('0/7 gün'), findsOneWidget); // döngü sıfırlandı
+    },
+  );
+
+  testWidgets(
+    'Streak Freeze hedefte: 3. gün kaçırılıp freeze kullanılınca o gün mavi ❄️, '
+    '4. gün bugün, sıfırlanma yok',
+    (WidgetTester tester) async {
+      var currentDate = DateTime(2026, 1, 5);
+      await tester.pumpWidget(_buildAppWithClock(() => currentDate));
+      await tester.pumpAndSettle();
+
+      final rootElement = tester.element(find.byType(RootScreen));
+      final goalsProvider = Provider.of<GoalsProvider>(rootElement, listen: false);
+      final streak = Provider.of<AppStreakProvider>(rootElement, listen: false);
+      goalsProvider.addGoal('Kitap oku');
+      streak.addOwnedStreakFreeze();
+
+      // Gün 1 ve Gün 2 işaretlenir (her gün uygulama açılıyor).
+      final goalId = goalsProvider.goals.single.id;
+      goalsProvider.toggleToday(goalId);
+      currentDate = DateTime(2026, 1, 6);
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+      await tester.pumpAndSettle();
+      goalsProvider.toggleToday(goalId);
+
+      // Gün 3 (7 Ocak) unutuldu, Gün 4'te açılıyor.
+      currentDate = DateTime(2026, 1, 8);
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('Kitap oku'), findsWidgets);
+      await tester.tap(find.byKey(const Key('streakFreezeUseOwnedButton')));
+      await tester.pumpAndSettle();
+      await _dismissInfoDialogIfShown(tester);
+
+      final goal = goalsProvider.goals.single;
+      expect(goal.statusForDay(2, goalsProvider.today), GoalDayStatus.frozen);
+      expect(goal.statusForDay(3, goalsProvider.today), GoalDayStatus.today);
+
+      await tester.tap(find.bySemanticsLabel('Hedef Takibi'));
+      await tester.pumpAndSettle();
+
+      expect(find.bySemanticsLabel(RegExp('Gün 3, Streak Freeze ile donduruldu')), findsOneWidget);
+      expect(find.byIcon(Icons.ac_unit_rounded), findsOneWidget);
+      expect(find.text('3/7 gün'), findsOneWidget);
+      expect(streak.ownedStreakFreezes, 0);
+      // Uygulama serisi de kırılmadı: 5, 6 Ocak + bugün (donmuş 7 Ocak seriyi
+      // korur ama açılmış gün sayılmaz — Duolingo ile aynı kural).
+      expect(streak.currentStreak, 3);
     },
   );
 

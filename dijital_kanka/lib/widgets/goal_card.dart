@@ -114,7 +114,7 @@ class GoalCard extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(top: 2),
             child: Text(
-              l10n.goalProgressLabel(goal.completedCount),
+              l10n.goalProgressLabel(goal.progressCount),
               style: TextStyle(
                 fontWeight: FontWeight.w700,
                 fontSize: 11,
@@ -178,6 +178,9 @@ class _DeleteButton extends StatelessWidget {
   }
 }
 
+const _frozenBlue = Color(0xFF8FD3FF);
+const _frozenInk = Color(0xFF0E3A5C);
+
 class _DayBox extends StatelessWidget {
   const _DayBox({
     required this.dayNumber,
@@ -216,6 +219,14 @@ class _DayBox extends StatelessWidget {
           '$dayNumber',
           style: TextStyle(color: foreground, fontWeight: FontWeight.w800, fontSize: 12),
         );
+      case GoalDayStatus.frozen:
+        // Kullanıcı isteği: dondurulan gün MAVİ olsun. Tek vurgu rengi
+        // kuralının bilinçli istisnası — "buz" anlamını renk taşıyor.
+        semanticLabel = l10n.goalDayFrozen(dayNumber);
+        background = _frozenBlue;
+        foreground = _frozenInk;
+        borderColor = kStickerOutline;
+        content = const Icon(Icons.ac_unit_rounded, size: 15, color: _frozenInk);
       case GoalDayStatus.missed:
         semanticLabel = l10n.goalDayMissed(dayNumber);
         background = kAccentMuted;

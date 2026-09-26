@@ -292,6 +292,30 @@ abstract class AppLocalizations {
   /// **'Gün {day}, kaçırıldı'**
   String goalDayMissed(int day);
 
+  /// Streak Freeze ile dondurulmuş (mavi) bir gün kutucuğunun erişilebilirlik etiketi
+  ///
+  /// In tr, this message translates to:
+  /// **'Gün {day}, Streak Freeze ile donduruldu'**
+  String goalDayFrozen(int day);
+
+  /// Seri kurtarma penceresinde, dünü kaçırılmış hedefleri de listeleyen ek satır
+  ///
+  /// In tr, this message translates to:
+  /// **'Dün şu hedeflerini de işaretlemedin: {goals}. Streak Freeze o günü dondurur ❄️, hedeflerin sıfırlanmaz.'**
+  String streakFreezeOfferGoalsLine(String goals);
+
+  /// Uygulama serisi sağlamken yalnızca dünü kaçırılmış hedefler için gösterilen kurtarma metni
+  ///
+  /// In tr, this message translates to:
+  /// **'Dün şu hedeflerini işaretlemeyi kaçırdın: {goals}. Streak Freeze kullanırsan o gün donar ❄️ ve hedeflerin sıfırlanmadan devam eder.'**
+  String streakFreezeOfferGoalsOnlyBody(String goals);
+
+  /// Yalnızca hedefler için Streak Freeze kullanıldıktan sonraki onay
+  ///
+  /// In tr, this message translates to:
+  /// **'Dünün donduruldu ❄️ Hedeflerin kaldığı yerden devam ediyor.'**
+  String get streakFreezeGoalsRepairedMessage;
+
   /// Tarihi henüz gelmemiş, kilitli bir gün kutucuğunun erişilebilirlik etiketi
   ///
   /// In tr, this message translates to:
@@ -2127,6 +2151,12 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'Bugün ne manifest etmek istiyorsun?'**
   String get manifestIntentionHint;
+
+  /// Galeriden seçilen fotoğraf 0 bayt olduğunda gösterilen uyarı
+  ///
+  /// In tr, this message translates to:
+  /// **'Bu fotoğraf okunamadı (dosya boş görünüyor). Telefonuna tamamen inmemiş bir bulut fotoğrafı olabilir, lütfen başka bir fotoğraf seç.'**
+  String get photoPickEmptyError;
 
   /// Manifest Günlüğü formundaki kaydet butonunun etiketi
   ///

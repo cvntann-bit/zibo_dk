@@ -17,8 +17,6 @@ import '../providers/sound_effects_provider.dart';
 import '../providers/zibo_pose_provider.dart';
 import '../services/sound_effects_service.dart';
 import '../utils/address_term.dart';
-import '../utils/info_dialog.dart';
-import '../utils/zibo_event_signal.dart';
 import '../widgets/banner_ad_slot.dart';
 import '../widgets/goal_card.dart';
 import '../widgets/goal_confetti_burst.dart';
@@ -48,7 +46,7 @@ class GoalTrackingScreen extends StatefulWidget {
 }
 
 class _GoalTrackingScreenState extends State<GoalTrackingScreen>
-    with WidgetsBindingObserver, TickerProviderStateMixin {
+    with TickerProviderStateMixin {
   final _random = Random();
   // Dizin tabanlı (metin değil) — dil değişince (bkz. LocaleProvider) aynı
   // "konum" korunarak build()'de doğru dildeki karşılığı gösterebilmek için.
@@ -138,10 +136,10 @@ class _GoalTrackingScreenState extends State<GoalTrackingScreen>
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addObserver(this);
-    // Ekran ilk kurulduğunda (uygulama soğuk başlangıçta) bugüne göre
-    // kontrol et.
-    WidgetsBinding.instance.addPostFrameCallback((_) => _reconcileForToday());
+    // Günlük uzlaştırma (kaçırılan gün → Streak Freeze teklifi / sıfırlama)
+    // artık yalnızca `RootScreen._recordAppStreakOpen`'da, veri yüklendikten
+    // ve dondurma kararı alındıktan SONRA yapılıyor. Eskiden burada, karar
+    // beklemeden (ve bazen veri yüklenmeden) sıfırlıyordu.
     if (widget.isActive) _startQuoteTimer();
   }
 
@@ -156,16 +154,7 @@ class _GoalTrackingScreenState extends State<GoalTrackingScreen>
   }
 
   @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    // Uygulama arka plandan öne geldiğinde (ör. bir gece boyunca kapalı
-    // kaldıktan sonra) günün değişip değişmediğini gerçek cihaz tarihine
-    // göre yeniden kontrol et.
-    if (state == AppLifecycleState.resumed) _reconcileForToday();
-  }
-
-  @override
   void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
     _stopQuoteTimer();
     _confettiDelayTimer?.cancel();
     _shakeController.dispose();
@@ -225,21 +214,6 @@ class _GoalTrackingScreenState extends State<GoalTrackingScreen>
       } while (next == _quoteIndex);
       _quoteIndex = next;
     });
-  }
-
-  void _reconcileForToday() {
-    if (!mounted) return;
-    final resetNames = context.read<GoalsProvider>().reconcileForToday();
-    if (resetNames.isEmpty || !mounted) return;
-
-    // 2026 yeni özellik — Olay Tetiklemeli Özel Mesajlar (bkz. CLAUDE.md):
-    // kaçırılan bir gün yüzünden döngü sıfırlanınca, Ana Sayfa'nın
-    // konuşma balonu bir SONRAKİ seçiminde nazik/suçlamayan bir "tekrar
-    // deneyelim" mesajı gösterecek — bkz. `zibo_event_signal.dart`.
-    pendingZiboEvent.value = ZiboEventType.streakBroken;
-
-    final l10n = AppLocalizations.of(context)!;
-    showInfoDialog(context, l10n.goalStreakReset(resetNames.join(', ')));
   }
 
   Future<void> _showAddGoalDialog(BuildContext context) async {

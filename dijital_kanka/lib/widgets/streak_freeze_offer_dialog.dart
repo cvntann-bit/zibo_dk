@@ -9,50 +9,51 @@ import '../utils/coin_feedback.dart';
 import '../utils/info_dialog.dart';
 import 'streak_freeze_balance_card.dart' show streakFreezeIconAsset;
 
-/// **Faz 4 (B3)** — kullanıcı TAM 1 gün kaçırıp uygulamayı açtığında
-/// (`AppStreakProvider.isStreakAtRisk`), `RootScreen` bu diyaloğu
-/// `recordOpenForToday()` çağırmadan ÖNCE gösterir. Tek bir ana buton,
-/// sırasıyla ilk mevcut kaynağı sunar: (1) Pro/Pro+ aylık ücretsiz hak,
-/// (2) Mağaza'dan alınmış stok (`ownedStreakFreezes`), (3) anında
-/// `CoinEconomy.streakFreezeInstantRepair` ZC ile tamir. "Vazgeç" seçilirse
-/// hiçbir şey değişmez — `RootScreen` ardından normal `recordOpenForToday()`'i
-/// çağırıp seriyi 1'e sıfırlar.
+/// Dün kaçırılan günü kurtarma teklifi. `RootScreen` her açılışta/öne
+/// gelişte, iki provider da yüklendikten SONRA gösterir: "Zibo'yu açma"
+/// serisi risk altındaysa ([appStreakAtRisk]) ve/veya dünü işaretlenmemiş
+/// hedefler varsa ([atRiskGoalNames]). TEK bir Streak Freeze dünü HER YERDE
+/// kurtarır — iki ayrı pencere/iki ayrı ödeme yok.
 ///
-/// Görsel: uygulamadaki HER dialog (`wheelResultTitle`, `showInfoDialog` vb.)
-/// bilerek düz `AlertDialog` kabuğu kullanıyor — buradaki "Çizgi Roman
-/// Çıkartması" teması bu YÜZDEN dialog'un kendi ÇERÇEVESİNE (sticker
-/// border/gölge) DEĞİL, İÇERİĞİNE uygulanıyor: `streak_freeze_icon.webp`
-/// (Zibo Pro+ materyalleri) + Baloo2 başlık tipografisi, ekranlardaki
-/// kartlarla AYNI dil.
+/// Ana buton sırasıyla ilk mevcut kaynağı sunar: (1) Pro/Pro+ aylık ücretsiz
+/// hak, (2) Mağaza stoğu, (3) anında `CoinEconomy.streakFreezeInstantRepair`
+/// ZC. Kullanılırsa `true`, "Vazgeç" seçilirse `false` döner; hedeflerin
+/// dondurulması/sıfırlanması `RootScreen`'de `GoalsProvider.
+/// resolveYesterdayFreeze` ile yapılır.
 class StreakFreezeOfferDialog extends StatelessWidget {
-  const StreakFreezeOfferDialog({super.key});
+  const StreakFreezeOfferDialog({
+    super.key,
+    this.appStreakAtRisk = true,
+    this.atRiskGoalNames = const [],
+  });
 
-  Future<void> _useFreeOrOwned(BuildContext context, StreakFreezeSource source) async {
+  final bool appStreakAtRisk;
+  final List<String> atRiskGoalNames;
+
+  bool _consume(AppStreakProvider streak, StreakFreezeSource source) => appStreakAtRisk
+      ? streak.repairMissedDayWithFreeze(source: source)
+      : streak.consumeFreezeForGoals(source: source);
+
+  Future<void> _accept(BuildContext context, StreakFreezeSource source) async {
     final streak = context.read<AppStreakProvider>();
     final l10n = AppLocalizations.of(context)!;
-    final newStreak = streak.currentStreak + 1;
-    if (!streak.repairMissedDayWithFreeze(source: source)) return;
-    Navigator.of(context).pop();
-    await showInfoDialog(context, l10n.streakFreezeRepairedMessage(newStreak));
-  }
-
-  Future<void> _useCoins(BuildContext context) async {
-    final coins = context.read<CoinProvider>();
-    if (coins.balance < CoinEconomy.streakFreezeInstantRepair) {
-      showInsufficientCoinsWarning(context);
-      return;
-    }
-    final streak = context.read<AppStreakProvider>();
-    final l10n = AppLocalizations.of(context)!;
-    final success = coins.spendStreakFreeze();
-    if (!success) {
-      showInsufficientCoinsWarning(context);
-      return;
+    if (source == StreakFreezeSource.coins) {
+      final coins = context.read<CoinProvider>();
+      if (coins.balance < CoinEconomy.streakFreezeInstantRepair || !coins.spendStreakFreeze()) {
+        showInsufficientCoinsWarning(context);
+        return;
+      }
     }
     final newStreak = streak.currentStreak + 1;
-    streak.repairMissedDayWithFreeze(source: StreakFreezeSource.coins);
-    Navigator.of(context).pop();
-    await showInfoDialog(context, l10n.streakFreezeRepairedMessage(newStreak));
+    if (!_consume(streak, source)) return;
+    final navigator = Navigator.of(context);
+    navigator.pop(true);
+    await showInfoDialog(
+      navigator.context,
+      appStreakAtRisk
+          ? l10n.streakFreezeRepairedMessage(newStreak)
+          : l10n.streakFreezeGoalsRepairedMessage,
+    );
   }
 
   @override
@@ -63,6 +64,14 @@ class StreakFreezeOfferDialog extends StatelessWidget {
     final remainingFree = streak.remainingFreeStreakFreezes;
     final quota = streak.freeStreakFreezeQuota;
     final owned = streak.ownedStreakFreezes;
+    final goals = atRiskGoalNames.join(', ');
+
+    final body = appStreakAtRisk
+        ? [
+            l10n.streakFreezeOfferBody(streak.currentStreak),
+            if (atRiskGoalNames.isNotEmpty) l10n.streakFreezeOfferGoalsLine(goals),
+          ].join('\n\n')
+        : l10n.streakFreezeOfferGoalsOnlyBody(goals);
 
     return PopScope(
       canPop: false,
@@ -85,46 +94,41 @@ class StreakFreezeOfferDialog extends StatelessWidget {
             ),
           ],
         ),
-        content: Text(
-          l10n.streakFreezeOfferBody(streak.currentStreak),
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontWeight: FontWeight.w600,
-            fontSize: 14,
-            height: 1.4,
-            color: colorScheme.onSurfaceVariant,
+        content: SingleChildScrollView(
+          child: Text(
+            body,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontWeight: FontWeight.w600,
+              fontSize: 14,
+              height: 1.4,
+              color: colorScheme.onSurfaceVariant,
+            ),
           ),
         ),
         actionsAlignment: MainAxisAlignment.center,
         actions: [
-          // `SizedBox(width: double.infinity)` — `OverflowBar`'ın (AlertDialog
-          // actions'ın varsayılan yerleşimi) birden fazla sonsuz-genişlikli
-          // çocuğu YAN YANA sığdıramayıp otomatik ALT ALTA dizmesinden
-          // yararlanıyor: iki tam-genişlik buton, "Vazgeç"i küçük bir metin
-          // butonu olarak sıkıştırmak yerine.
+          // `SizedBox(width: double.infinity)` — `OverflowBar`'ın birden fazla
+          // sonsuz-genişlikli çocuğu otomatik ALT ALTA dizmesinden yararlanıyor.
           SizedBox(
             width: double.infinity,
             child: remainingFree > 0
                 ? FilledButton(
                     key: const Key('streakFreezeUseFreeButton'),
-                    onPressed: () => _useFreeOrOwned(context, StreakFreezeSource.freeQuota),
-                    child: Text(
-                      l10n.streakFreezeOfferFreeButton(remainingFree, quota),
-                    ),
+                    onPressed: () => _accept(context, StreakFreezeSource.freeQuota),
+                    child: Text(l10n.streakFreezeOfferFreeButton(remainingFree, quota)),
                   )
                 : owned > 0
                 ? FilledButton(
                     key: const Key('streakFreezeUseOwnedButton'),
-                    onPressed: () => _useFreeOrOwned(context, StreakFreezeSource.owned),
+                    onPressed: () => _accept(context, StreakFreezeSource.owned),
                     child: Text(l10n.streakFreezeOfferOwnedButton(owned)),
                   )
                 : FilledButton(
                     key: const Key('streakFreezeUseCoinsButton'),
-                    onPressed: () => _useCoins(context),
+                    onPressed: () => _accept(context, StreakFreezeSource.coins),
                     child: Text(
-                      l10n.streakFreezeOfferCoinButton(
-                        CoinEconomy.streakFreezeInstantRepair,
-                      ),
+                      l10n.streakFreezeOfferCoinButton(CoinEconomy.streakFreezeInstantRepair),
                     ),
                   ),
           ),
@@ -132,7 +136,7 @@ class StreakFreezeOfferDialog extends StatelessWidget {
             width: double.infinity,
             child: TextButton(
               key: const Key('streakFreezeDeclineButton'),
-              onPressed: () => Navigator.of(context).pop(),
+              onPressed: () => Navigator.of(context).pop(false),
               child: Text(l10n.streakFreezeOfferDeclineButton),
             ),
           ),
