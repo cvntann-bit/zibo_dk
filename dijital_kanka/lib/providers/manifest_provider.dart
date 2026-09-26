@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/manifest_entry.dart';
 import '../services/cloud_state_store.dart';
+import '../utils/photo_file.dart';
 
 /// Manifest Günlüğü'ndeki kayıtları tutan tek kaynak. `DreamJournalProvider`
 /// ile aynı "id ile ayrı ayrı biriken kayıtlar" deseni — bir güne BİRDEN
@@ -217,13 +218,8 @@ class ManifestProvider extends ChangeNotifier {
       final entry = _entries[i];
       final path = entry.photoPath;
       if (path == null) continue;
-      bool exists;
-      try {
-        exists = File(path).existsSync();
-      } catch (_) {
-        exists = false;
-      }
-      if (exists) continue;
+      // Boş (0 bayt) dosya da "kayıp" sayılır — bkz. `isReadablePhotoFile`.
+      if (isReadablePhotoFile(path)) continue;
       _entries[i] = ManifestEntry(
         id: entry.id,
         date: entry.date,

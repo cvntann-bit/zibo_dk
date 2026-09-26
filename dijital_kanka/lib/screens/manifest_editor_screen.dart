@@ -25,6 +25,7 @@ import '../utils/info_dialog.dart';
 import '../widgets/dot_grid_background.dart';
 import '../widgets/manifest_frame_view.dart';
 import '../widgets/sticker_style.dart';
+import '../utils/photo_file.dart';
 
 typedef GallerySaver = Future<bool> Function(Uint8List png, String name);
 
@@ -53,15 +54,7 @@ enum _Tab { frame, template, background, sticker, text }
 
 enum _StickerKind { image, emoji, text }
 
-File? _existingFile(String? path) {
-  if (path == null) return null;
-  try {
-    final file = File(path);
-    return file.existsSync() ? file : null;
-  } catch (_) {
-    return null;
-  }
-}
+File? _existingFile(String? path) => isReadablePhotoFile(path) ? File(path!) : null;
 
 /// Kolaj kutusunun içeriği: fotoğraf ya da (fotoğrafsız manifest için)
 /// niyet yazısı. [zoom]/[offset] kutu içinde parmakla kaydırma/yakınlaştırma

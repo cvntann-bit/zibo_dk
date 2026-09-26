@@ -12,56 +12,12 @@ class CustomMessagesScreen extends StatelessWidget {
   const CustomMessagesScreen({super.key});
 
   Future<void> _showAddDialog(BuildContext context) async {
-    final l10n = AppLocalizations.of(context)!;
-    final controller = TextEditingController();
     final provider = context.read<CustomMessagesProvider>();
-    try {
-      await showDialog<void>(
-        context: context,
-        builder: (dialogContext) => AlertDialog(
-          title: Text(l10n.customMessagesAddButton),
-          content: TextField(
-            controller: controller,
-            autofocus: true,
-            minLines: 1,
-            maxLines: 3,
-            textCapitalization: TextCapitalization.sentences,
-            decoration: InputDecoration(hintText: l10n.customMessagesFieldHint),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(),
-              child: Text(l10n.customMessagesCancelButton),
-            ),
-            FilledButton(
-              onPressed: () {
-                provider.addMessage(controller.text);
-                Navigator.of(dialogContext).pop();
-              },
-              child: Text(l10n.customMessagesSaveButton),
-            ),
-          ],
-        ),
-      );
-    } finally {
-      // Faz 6 KRİTİK bug düzeltmesi — Crashlytics'te "yeni mesaj eklerken
-      // çöküyor" olarak bildirilen, `_dependents.isEmpty`/"Duplicate
-      // GlobalKeys" gibi İKİNCİL assertion'lara da yol açan gerçek kök
-      // neden: `TextField`'ın `autofocus: true` ile aldığı odağı, diyalog
-      // kapanırken (route pop) KAYBETMESİ bir `FocusManager` MİKROGÖREVİ
-      // ZAMANLIYOR (`EditableTextState._handleFocusChanged` →
-      // `controller.clearComposing()`). Bu mikrogörev, `showDialog`
-      // Future'ı tamamlandığı AN çalışan bu `finally` bloğuyla YARIŞIYOR —
-      // `controller.dispose()` HEMEN/SENKRON çağrılırsa mikrogörev SONRA
-      // çalışıp "TextEditingController was used after being disposed"
-      // fırlatıyor; bu istisna bir frame'in ORTASINDA (widget ağacı
-      // "kilitliyken") oluştuğu için ağacı YARIM GÜNCELLENMİŞ bırakıyor —
-      // SONRAKİ herhangi bir etkileşim (ör. tema değiştirme) o bozuk ağaç
-      // yüzünden AYRI/İLGİSİZ görünen assertion'larla çöküyor. **Çözüm:**
-      // disposal'ı bir SONRAKİ frame'e ertelemek — o mikrogörev bu ANDA
-      // ZATEN tamamlanmış oluyor, yarış ortadan kalkıyor.
-      WidgetsBinding.instance.addPostFrameCallback((_) => controller.dispose());
-    }
+    final text = await showDialog<String>(
+      context: context,
+      builder: (_) => const _AddMessageDialog(),
+    );
+    if (text != null && text.trim().isNotEmpty) provider.addMessage(text);
   }
 
   @override
@@ -133,6 +89,60 @@ class CustomMessagesScreen extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// "Yeni mesaj" diyaloğu. `TextEditingController`'ın ömrü diyaloğun KENDİ
+/// `State`'ine bağlı — `dispose()` yalnızca diyalog (kapanış animasyonu
+/// dahil) ağaçtan tamamen çıkınca çalışır.
+///
+/// Eskiden controller `showDialog` Future'ı dönünce (önce hemen, sonra
+/// "bir sonraki kare"de) dispose ediliyordu; ama `TextField` kapanış
+/// animasyonu boyunca (birkaç kare) hâlâ ağaçtaydı ve odak kaybı bildirimi
+/// dispose edilmiş controller'ı kullanıyordu → Crashlytics'te "A
+/// TextEditingController was used after being disposed ... dispatching
+/// notifications for FocusNode" + ikincil "Duplicate GlobalKeys" /
+/// "wrong build scope" (test/CLAUDE.md'deki AYNI ders).
+class _AddMessageDialog extends StatefulWidget {
+  const _AddMessageDialog();
+
+  @override
+  State<_AddMessageDialog> createState() => _AddMessageDialogState();
+}
+
+class _AddMessageDialogState extends State<_AddMessageDialog> {
+  final _controller = TextEditingController();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return AlertDialog(
+      title: Text(l10n.customMessagesAddButton),
+      content: TextField(
+        controller: _controller,
+        autofocus: true,
+        minLines: 1,
+        maxLines: 3,
+        textCapitalization: TextCapitalization.sentences,
+        decoration: InputDecoration(hintText: l10n.customMessagesFieldHint),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text(l10n.customMessagesCancelButton),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.of(context).pop(_controller.text),
+          child: Text(l10n.customMessagesSaveButton),
+        ),
+      ],
     );
   }
 }

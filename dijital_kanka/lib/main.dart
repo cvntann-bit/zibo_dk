@@ -384,10 +384,25 @@ void main() async {
     // GEREKTİREN bir global hata yakalayıcı asla Firebase'siz bir ortamda
     // KURULMUYOR.
     //
+    // (0) Debug build'ler Crashlytics'e RAPOR GÖNDERMEZ — 2026-09-26'da
+    // Crashlytics'teki olayların büyük çoğunluğunun geliştirici test
+    // telefonundaki debug build'lerden (yalnızca debug'da çalışan assert'ler,
+    // 1.12.6 SM-A226BR) geldiği görüldü; gerçek kullanıcı verisini
+    // gölgeliyordu.
+    await FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(!kDebugMode);
     // (1) Flutter FRAMEWORK'ünün kendi hata mekanizması (widget build/
     // layout/paint hataları) — varsayılan davranış (konsola yazdırıp devam
     // etmek) yerine ARTIK Crashlytics'e de FATAL olarak bildiriliyor.
-    FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
+    // İstisna: resim yükleme hataları (ör. 0 baytlık fotoğraf dosyası)
+    // uygulamayı çökertmiyor, yalnızca o resim görünmüyor — non-fatal
+    // kaydediliyor ki "çökmesiz kullanıcı" oranını yanıltmasın.
+    FlutterError.onError = (details) {
+      if (details.library == 'image resource service') {
+        FirebaseCrashlytics.instance.recordFlutterError(details);
+        return;
+      }
+      FirebaseCrashlytics.instance.recordFlutterFatalError(details);
+    };
     // (2) Flutter'ın KENDİ hata bölgesinin (error zone) DIŞINDA kalan
     // hatalar — ör. bir `Future` içinde yakalanmamış (unhandled) asenkron
     // bir hata, veya bir platform kanalı callback'inde fırlatılan bir

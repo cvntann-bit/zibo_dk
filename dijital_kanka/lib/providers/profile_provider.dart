@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 
 import '../data/address_terms.dart';
 import '../services/cloud_state_store.dart';
+import '../utils/photo_file.dart';
 
 /// Kullanıcının profil bilgilerini (isim + fotoğraf + Zibo ile ilk
 /// tanışma tarihi + hitap tercihi) tutan tek kaynak. `CloudStateStore` ile
@@ -130,13 +131,8 @@ class ProfileProvider extends ChangeNotifier {
   void reconcileMissingPhoto() {
     final path = _photoPath;
     if (path == null) return;
-    bool exists;
-    try {
-      exists = File(path).existsSync();
-    } catch (_) {
-      exists = false;
-    }
-    if (exists) return;
+    // Boş (0 bayt) dosya da "kayıp" sayılır — bkz. `isReadablePhotoFile`.
+    if (isReadablePhotoFile(path)) return;
     _photoPath = null;
     notifyListeners();
     unawaited(_save());

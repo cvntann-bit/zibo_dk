@@ -26,6 +26,7 @@ import '../widgets/rate_prompt_dialog.dart';
 import '../widgets/speech_bubble.dart';
 import '../widgets/sticker_style.dart';
 import '../widgets/zibo_animated_image.dart';
+import '../utils/photo_file.dart';
 import 'manifest_editor_screen.dart';
 
 const _intentionMaxLength = 280;
@@ -108,7 +109,12 @@ class _ManifestJournalScreenState extends State<ManifestJournalScreen> {
     setState(() => _isPicking = true);
     try {
       final picked = await widget.photoService.pickFromGallery();
-      if (picked != null && mounted) setState(() => _photoPath = picked);
+      if (!mounted) return;
+      if (isEmptyPhotoFile(picked)) {
+        showInfoDialog(context, AppLocalizations.of(context)!.photoPickEmptyError);
+        return;
+      }
+      if (picked != null) setState(() => _photoPath = picked);
     } finally {
       if (mounted) setState(() => _isPicking = false);
     }
@@ -783,15 +789,7 @@ class _SafeFileImage extends StatelessWidget {
   final String? path;
   final BoxFit fit;
 
-  bool get _exists {
-    final p = path;
-    if (p == null) return false;
-    try {
-      return File(p).existsSync();
-    } catch (_) {
-      return false;
-    }
-  }
+  bool get _exists => isReadablePhotoFile(path);
 
   @override
   Widget build(BuildContext context) {

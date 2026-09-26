@@ -42,6 +42,8 @@ import '../widgets/instagram_follow_card.dart';
 import '../widgets/profile_stat_card.dart';
 import '../widgets/sticker_style.dart';
 import '../widgets/zibo_share_sheet.dart';
+import '../utils/info_dialog.dart';
+import '../utils/photo_file.dart';
 
 /// **2026 bug düzeltmesi — Crashlytics'teki EN BÜYÜK tekrarlayan hata**
 /// (`_File.length` → `PathNotFoundException`, `FileImage._loadAsync`
@@ -53,14 +55,7 @@ import '../widgets/zibo_share_sheet.dart';
 /// `errorBuilder`'ı gibi bir savunma mekanizması hiç YOK) beklediği için,
 /// dosyanın gerçekten OKUNABİLİR olup olmadığını `build()` sırasında
 /// senkron kontrol eden küçük bir yardımcı.
-bool _hasReadablePhoto(String? photoPath) {
-  if (photoPath == null) return false;
-  try {
-    return File(photoPath).existsSync();
-  } catch (_) {
-    return false;
-  }
-}
+bool _hasReadablePhoto(String? photoPath) => isReadablePhotoFile(photoPath);
 
 /// Profil sayfası: üstte kullanıcının fotoğrafı + ismi (ikisi de kalıcı,
 /// `ProfileProvider` üzerinden Firestore'a senkronize), altında
@@ -183,6 +178,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
     try {
       final picked = await widget.photoService.pickFromGallery();
       if (picked == null || !mounted) return;
+      if (isEmptyPhotoFile(picked)) {
+        showInfoDialog(context, AppLocalizations.of(context)!.photoPickEmptyError);
+        return;
+      }
       final permanentPath = await widget.photoService.saveToPermanentStorage(picked);
       if (!mounted) return;
       final profile = context.read<ProfileProvider>();
