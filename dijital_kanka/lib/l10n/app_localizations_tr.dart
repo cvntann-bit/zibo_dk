@@ -39,7 +39,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get historyLimitCardButton => 'Pro\'ya Geç';
 
   @override
-  String get streakFreezeOfferTitle => 'Serini Kaybetme!';
+  String get streakFreezeOfferTitle => 'Serin tehlikede!';
 
   @override
   String streakFreezeOfferBody(int streak) {
@@ -2435,4 +2435,87 @@ class AppLocalizationsTr extends AppLocalizations {
   @override
   String get settingsZiboProRowSubtitle =>
       'Daha fazla özellik, reklamsız deneyim';
+
+  @override
+  String streakFreezePillStreak(int count) {
+    return '🔥 $count günlük seri';
+  }
+
+  @override
+  String streakFreezePillGoals(int count) {
+    return '🎯 $count hedef tehlikede';
+  }
+
+  @override
+  String get streakFreezePillGoalsSaved => '🎯 Hedeflerin devam ediyor';
+
+  @override
+  String get streakFreezeBodyStreak =>
+      'Dün Zibo\'ya uğramadın. Bir Streak Freeze dünü dondurur ❄️ ve serin kaldığı yerden devam eder.';
+
+  @override
+  String get streakFreezeBodyBoth =>
+      'Dün Zibo\'ya uğramadın ve bazı hedeflerini işaretlemedin. Tek bir Streak Freeze dünü her yerde dondurur ❄️.';
+
+  @override
+  String get streakFreezeBodyGoals =>
+      'Serin sağlam ama dün bu hedefleri işaretlemedin. Bir Streak Freeze dünü dondurur ❄️, hedeflerin sıfırlanmaz.';
+
+  @override
+  String get streakFreezeGoalsHeader => 'Dün işaretlenmeyen hedeflerin';
+
+  @override
+  String get streakFreezeDayYesterday => 'Dün';
+
+  @override
+  String get streakFreezeDayToday => 'Bugün';
+
+  @override
+  String streakFreezeResourceFree(int remaining, int quota) {
+    return 'Pro hakkın: $remaining/$quota bu ay';
+  }
+
+  @override
+  String streakFreezeResourceOwned(int count) {
+    return '❄️ Stoğunda $count adet';
+  }
+
+  @override
+  String streakFreezeResourceCoins(int balance) {
+    return 'Stok yok · Bakiyen $balance ZC';
+  }
+
+  @override
+  String get streakFreezeUseFreeLabel => 'Ücretsiz Kullan';
+
+  @override
+  String get streakFreezeUseOwnedLabel => '❄️ Stoktan Kullan';
+
+  @override
+  String get streakFreezeDeclineHintBoth => 'Seri ve hedefler sıfırlanır';
+
+  @override
+  String get streakFreezeDeclineHintStreak => 'Seri sıfırlanır';
+
+  @override
+  String get streakFreezeDeclineHintGoals => 'Hedefler sıfırlanır';
+
+  @override
+  String get streakFreezeDoneTitle => 'Dün donduruldu!';
+
+  @override
+  String streakFreezeDoneBodyStreak(int day) {
+    return 'Serin kırılmadı, bugün $day. gün 🎉';
+  }
+
+  @override
+  String get streakFreezeDoneBodyBoth =>
+      'Serin ve hedeflerin kaldığı yerden devam ediyor 🎉';
+
+  @override
+  String get streakFreezeDoneBodyGoals =>
+      'Hedeflerin kaldığı yerden devam ediyor 🎉';
+
+  @override
+  String get streakFreezeDoneButton => 'Harika!';
 }

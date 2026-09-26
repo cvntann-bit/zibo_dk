@@ -290,7 +290,7 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
       if (!mounted) return;
 
       final appAtRisk = streak.isStreakAtRisk;
-      final atRiskGoals = goals.goalsAtRiskToday.map((g) => g.name).toList();
+      final atRiskGoals = goals.goalsAtRiskToday;
       var frozen = false;
       if (appAtRisk || atRiskGoals.isNotEmpty) {
         frozen = await showDialog<bool>(
@@ -298,7 +298,7 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
               barrierDismissible: false,
               builder: (_) => StreakFreezeOfferDialog(
                 appStreakAtRisk: appAtRisk,
-                atRiskGoalNames: atRiskGoals,
+                atRiskGoals: atRiskGoals,
               ),
             ) ??
             false;

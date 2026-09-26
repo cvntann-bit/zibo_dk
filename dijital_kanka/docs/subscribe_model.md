@@ -244,3 +244,7 @@ Pro→Pro+ katman yükseltmesi var.
   genişletildi**: açılış yarışı (seri her açılışta 1'e düşüyor, pencere hiç
   çıkmıyordu) düzeltildi; dünü kaçırılmış hedefler aynı freeze ile mavi ❄️
   olarak dondurulup sıfırlanmadan devam ediyor.
+- **2026-09-26 — Streak Freeze penceresi yeniden tasarlandı**: sticker
+  diyalog, gün şeridi (dün kesikli → mavi ❄️), hedef kutusu, kaynak
+  etiketi, sonucu yazan Vazgeç; kullanım sonrası aynı pencerede "Dün
+  donduruldu!" onayı (ayrı bilgi penceresi kaldırıldı). Bkz. theme_new.md.

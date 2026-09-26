@@ -664,6 +664,29 @@ kullanıcının 30 günlük geçmiş sınırına uyar — yalnızca görünen ka
 
 **Onaylandı** — [mockup](https://claude.ai/artifact/7NbtXQqxnpiHbbEq5ZLT5p).
 
+## Onaylanan: Streak Freeze penceresi (2026-09-26)
+
+`lib/widgets/streak_freeze_offer_dialog.dart` yeniden tasarlandı — Puanla
+penceresiyle aynı sticker diyalog dili (freeze görseli kartın üstüne taşar).
+
+- **Başlık**: "Serin tehlikede!" (eski "Serini Kaybetme!" yerine, kullanıcı
+  kararı). Altında altın rozet: "🔥 N günlük seri" ya da yalnızca hedefler
+  tehlikedeyse "🎯 N hedef tehlikede".
+- **Gün şeridi**: dünden önceki 3 gün ✓ (altın), dün buz renginde kesikli
+  "?", bugün vurgulu ✦. Freeze kullanılınca dün mavi ❄️ olur.
+- **Hedef kutusu**: kesikli kenarlı, dünü kaçırılan hedefler 7 günlük mini
+  noktalarıyla; yalnızca seri tehlikedeyse görünmez.
+- **Kaynak etiketi**: "Pro hakkın: x/y bu ay" / "❄️ Stoğunda N adet" /
+  "Stok yok · Bakiyen N ZC"; ana buton buna göre değişir.
+- **Vazgeç**: altında sonucu yazar ("Seri ve hedefler sıfırlanır" vb.).
+- **Sonrası**: ayrı bilgi penceresi yok, aynı pencere "Dün donduruldu!"
+  onayına döner, "Harika!" ile kapanır.
+- **Renk kuralı**: buz mavisi (`#8FD3FF` / mürekkep `#0E3A5C`) yalnızca
+  donmuş gün ve Freeze etiketi için; geri kalan her şey temanın altını
+  (kullanıcı onayı).
+
+**Onaylandı** — [mockup](https://claude.ai/artifact/1keevubiqgQexouMtYb5tZ).
+
 ## Kapsam dışı — kesinlikle DEĞİŞMEYECEK
 
 Kullanıcı açıkça belirtti, bu redesign'a DAHİL DEĞİL:
@@ -706,4 +729,5 @@ genişletilmek istenirse önce burada AÇIKÇA onaylanmalı.
 | "Bizi Google Play'de Puanla" penceresi | ✅ Koda döküldü (`rate_prompt_dialog.dart` + `rate_prompt_trigger.dart`) |
 | Manifest süsleme editörü (tek fotoğraf) | ✅ Koda döküldü (`manifest_editor_screen.dart` + `manifest_frame_view.dart`) |
 | Manifest kolajı | ✅ Koda döküldü (`ManifestEditorScreen.collage`) |
+| Streak Freeze penceresi | ✅ Koda döküldü (`streak_freeze_offer_dialog.dart`) |
 | Şans Çarkı / Günlük Ödül / Rozet pop-up'ları | 🚫 Kapsam dışı — değişmeyecek |

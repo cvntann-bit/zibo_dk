@@ -157,7 +157,7 @@ abstract class AppLocalizations {
   /// Kullanıcı tam 1 gün kaçırıp uygulamayı açtığında çıkan Streak Freeze teklif diyaloğunun başlığı
   ///
   /// In tr, this message translates to:
-  /// **'Serini Kaybetme!'**
+  /// **'Serin tehlikede!'**
   String get streakFreezeOfferTitle;
 
   /// Streak Freeze teklif diyaloğunun gövde metni
@@ -4383,6 +4383,138 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'Daha fazla özellik, reklamsız deneyim'**
   String get settingsZiboProRowSubtitle;
+
+  /// Streak Freeze penceresindeki seri rozeti
+  ///
+  /// In tr, this message translates to:
+  /// **'🔥 {count} günlük seri'**
+  String streakFreezePillStreak(int count);
+
+  /// Yalnızca hedefler tehlikedeyken Streak Freeze penceresindeki rozet
+  ///
+  /// In tr, this message translates to:
+  /// **'🎯 {count} hedef tehlikede'**
+  String streakFreezePillGoals(int count);
+
+  /// Streak Freeze yalnızca hedeflere kullanıldıktan sonraki rozet
+  ///
+  /// In tr, this message translates to:
+  /// **'🎯 Hedeflerin devam ediyor'**
+  String get streakFreezePillGoalsSaved;
+
+  /// Streak Freeze penceresi gövdesi — yalnızca seri tehlikede
+  ///
+  /// In tr, this message translates to:
+  /// **'Dün Zibo\'ya uğramadın. Bir Streak Freeze dünü dondurur ❄️ ve serin kaldığı yerden devam eder.'**
+  String get streakFreezeBodyStreak;
+
+  /// Streak Freeze penceresi gövdesi — seri ve hedefler tehlikede
+  ///
+  /// In tr, this message translates to:
+  /// **'Dün Zibo\'ya uğramadın ve bazı hedeflerini işaretlemedin. Tek bir Streak Freeze dünü her yerde dondurur ❄️.'**
+  String get streakFreezeBodyBoth;
+
+  /// Streak Freeze penceresi gövdesi — yalnızca hedefler tehlikede
+  ///
+  /// In tr, this message translates to:
+  /// **'Serin sağlam ama dün bu hedefleri işaretlemedin. Bir Streak Freeze dünü dondurur ❄️, hedeflerin sıfırlanmaz.'**
+  String get streakFreezeBodyGoals;
+
+  /// Streak Freeze penceresindeki hedef kutusunun başlığı
+  ///
+  /// In tr, this message translates to:
+  /// **'Dün işaretlenmeyen hedeflerin'**
+  String get streakFreezeGoalsHeader;
+
+  /// Streak Freeze gün şeridinde dünün etiketi
+  ///
+  /// In tr, this message translates to:
+  /// **'Dün'**
+  String get streakFreezeDayYesterday;
+
+  /// Streak Freeze gün şeridinde bugünün etiketi
+  ///
+  /// In tr, this message translates to:
+  /// **'Bugün'**
+  String get streakFreezeDayToday;
+
+  /// Streak Freeze kaynağı — Pro aylık ücretsiz hak
+  ///
+  /// In tr, this message translates to:
+  /// **'Pro hakkın: {remaining}/{quota} bu ay'**
+  String streakFreezeResourceFree(int remaining, int quota);
+
+  /// Streak Freeze kaynağı — Mağaza stoğu
+  ///
+  /// In tr, this message translates to:
+  /// **'❄️ Stoğunda {count} adet'**
+  String streakFreezeResourceOwned(int count);
+
+  /// Streak Freeze kaynağı — ZC ile anında
+  ///
+  /// In tr, this message translates to:
+  /// **'Stok yok · Bakiyen {balance} ZC'**
+  String streakFreezeResourceCoins(int balance);
+
+  /// Streak Freeze ana butonu — Pro ücretsiz hak
+  ///
+  /// In tr, this message translates to:
+  /// **'Ücretsiz Kullan'**
+  String get streakFreezeUseFreeLabel;
+
+  /// Streak Freeze ana butonu — stok
+  ///
+  /// In tr, this message translates to:
+  /// **'❄️ Stoktan Kullan'**
+  String get streakFreezeUseOwnedLabel;
+
+  /// Vazgeç butonunun altındaki sonuç metni — seri + hedefler
+  ///
+  /// In tr, this message translates to:
+  /// **'Seri ve hedefler sıfırlanır'**
+  String get streakFreezeDeclineHintBoth;
+
+  /// Vazgeç butonunun altındaki sonuç metni — seri
+  ///
+  /// In tr, this message translates to:
+  /// **'Seri sıfırlanır'**
+  String get streakFreezeDeclineHintStreak;
+
+  /// Vazgeç butonunun altındaki sonuç metni — hedefler
+  ///
+  /// In tr, this message translates to:
+  /// **'Hedefler sıfırlanır'**
+  String get streakFreezeDeclineHintGoals;
+
+  /// Streak Freeze kullanıldıktan sonraki başlık
+  ///
+  /// In tr, this message translates to:
+  /// **'Dün donduruldu!'**
+  String get streakFreezeDoneTitle;
+
+  /// Streak Freeze sonrası gövde — seri
+  ///
+  /// In tr, this message translates to:
+  /// **'Serin kırılmadı, bugün {day}. gün 🎉'**
+  String streakFreezeDoneBodyStreak(int day);
+
+  /// Streak Freeze sonrası gövde — seri + hedefler
+  ///
+  /// In tr, this message translates to:
+  /// **'Serin ve hedeflerin kaldığı yerden devam ediyor 🎉'**
+  String get streakFreezeDoneBodyBoth;
+
+  /// Streak Freeze sonrası gövde — hedefler
+  ///
+  /// In tr, this message translates to:
+  /// **'Hedeflerin kaldığı yerden devam ediyor 🎉'**
+  String get streakFreezeDoneBodyGoals;
+
+  /// Streak Freeze sonrası kapatma butonu
+  ///
+  /// In tr, this message translates to:
+  /// **'Harika!'**
+  String get streakFreezeDoneButton;
 }
 
 class _AppLocalizationsDelegate

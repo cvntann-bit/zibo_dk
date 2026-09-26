@@ -39,7 +39,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get historyLimitCardButton => 'Upgrade to Pro';
 
   @override
-  String get streakFreezeOfferTitle => 'Don\'t lose your streak!';
+  String get streakFreezeOfferTitle => 'Your streak is in danger!';
 
   @override
   String streakFreezeOfferBody(int streak) {
@@ -2443,4 +2443,93 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsZiboProRowSubtitle => 'More features, ad-free experience';
+
+  @override
+  String streakFreezePillStreak(int count) {
+    return '🔥 $count-day streak';
+  }
+
+  @override
+  String streakFreezePillGoals(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '🎯 $count goals at risk',
+      one: '🎯 1 goal at risk',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get streakFreezePillGoalsSaved => '🎯 Your goals carry on';
+
+  @override
+  String get streakFreezeBodyStreak =>
+      'You didn\'t visit Zibo yesterday. A Streak Freeze freezes yesterday ❄️ and your streak carries on.';
+
+  @override
+  String get streakFreezeBodyBoth =>
+      'You didn\'t visit Zibo yesterday and missed some goals. One Streak Freeze freezes yesterday everywhere ❄️.';
+
+  @override
+  String get streakFreezeBodyGoals =>
+      'Your streak is safe, but you didn\'t check off these goals yesterday. A Streak Freeze freezes yesterday ❄️ so your goals don\'t reset.';
+
+  @override
+  String get streakFreezeGoalsHeader => 'Goals you missed yesterday';
+
+  @override
+  String get streakFreezeDayYesterday => 'Yesterday';
+
+  @override
+  String get streakFreezeDayToday => 'Today';
+
+  @override
+  String streakFreezeResourceFree(int remaining, int quota) {
+    return 'Pro freezes: $remaining/$quota this month';
+  }
+
+  @override
+  String streakFreezeResourceOwned(int count) {
+    return '❄️ $count in stock';
+  }
+
+  @override
+  String streakFreezeResourceCoins(int balance) {
+    return 'None in stock · Balance $balance ZC';
+  }
+
+  @override
+  String get streakFreezeUseFreeLabel => 'Use for Free';
+
+  @override
+  String get streakFreezeUseOwnedLabel => '❄️ Use from Stock';
+
+  @override
+  String get streakFreezeDeclineHintBoth => 'Your streak and goals will reset';
+
+  @override
+  String get streakFreezeDeclineHintStreak => 'Your streak will reset';
+
+  @override
+  String get streakFreezeDeclineHintGoals => 'Your goals will reset';
+
+  @override
+  String get streakFreezeDoneTitle => 'Yesterday is frozen!';
+
+  @override
+  String streakFreezeDoneBodyStreak(int day) {
+    return 'Your streak is intact, today is day $day 🎉';
+  }
+
+  @override
+  String get streakFreezeDoneBodyBoth =>
+      'Your streak and goals pick up where they left off 🎉';
+
+  @override
+  String get streakFreezeDoneBodyGoals =>
+      'Your goals pick up where they left off 🎉';
+
+  @override
+  String get streakFreezeDoneButton => 'Awesome!';
 }

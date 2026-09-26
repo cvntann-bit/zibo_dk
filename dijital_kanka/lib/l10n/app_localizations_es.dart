@@ -39,7 +39,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get historyLimitCardButton => 'Mejorar a Pro';
 
   @override
-  String get streakFreezeOfferTitle => '¡No pierdas tu racha!';
+  String get streakFreezeOfferTitle => '¡Tu racha está en peligro!';
 
   @override
   String streakFreezeOfferBody(int streak) {
@@ -2458,4 +2458,93 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get settingsZiboProRowSubtitle =>
       'Más funciones, experiencia sin anuncios';
+
+  @override
+  String streakFreezePillStreak(int count) {
+    return '🔥 Racha de $count días';
+  }
+
+  @override
+  String streakFreezePillGoals(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '🎯 $count metas en riesgo',
+      one: '🎯 1 meta en riesgo',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get streakFreezePillGoalsSaved => '🎯 Tus metas siguen';
+
+  @override
+  String get streakFreezeBodyStreak =>
+      'Ayer no visitaste a Zibo. Un Streak Freeze congela el día de ayer ❄️ y tu racha sigue.';
+
+  @override
+  String get streakFreezeBodyBoth =>
+      'Ayer no visitaste a Zibo y no marcaste algunas metas. Un solo Streak Freeze congela el día de ayer en todas partes ❄️.';
+
+  @override
+  String get streakFreezeBodyGoals =>
+      'Tu racha está a salvo, pero ayer no marcaste estas metas. Un Streak Freeze congela el día de ayer ❄️ y tus metas no se reinician.';
+
+  @override
+  String get streakFreezeGoalsHeader => 'Metas que no marcaste ayer';
+
+  @override
+  String get streakFreezeDayYesterday => 'Ayer';
+
+  @override
+  String get streakFreezeDayToday => 'Hoy';
+
+  @override
+  String streakFreezeResourceFree(int remaining, int quota) {
+    return 'Congelaciones Pro: $remaining/$quota este mes';
+  }
+
+  @override
+  String streakFreezeResourceOwned(int count) {
+    return '❄️ $count en el inventario';
+  }
+
+  @override
+  String streakFreezeResourceCoins(int balance) {
+    return 'Sin inventario · Saldo $balance ZC';
+  }
+
+  @override
+  String get streakFreezeUseFreeLabel => 'Usar gratis';
+
+  @override
+  String get streakFreezeUseOwnedLabel => '❄️ Usar del inventario';
+
+  @override
+  String get streakFreezeDeclineHintBoth => 'Tu racha y tus metas se reinician';
+
+  @override
+  String get streakFreezeDeclineHintStreak => 'Tu racha se reinicia';
+
+  @override
+  String get streakFreezeDeclineHintGoals => 'Tus metas se reinician';
+
+  @override
+  String get streakFreezeDoneTitle => '¡Ayer quedó congelado!';
+
+  @override
+  String streakFreezeDoneBodyStreak(int day) {
+    return 'Tu racha sigue intacta, hoy es el día $day 🎉';
+  }
+
+  @override
+  String get streakFreezeDoneBodyBoth =>
+      'Tu racha y tus metas siguen donde las dejaste 🎉';
+
+  @override
+  String get streakFreezeDoneBodyGoals =>
+      'Tus metas siguen donde las dejaste 🎉';
+
+  @override
+  String get streakFreezeDoneButton => '¡Genial!';
 }

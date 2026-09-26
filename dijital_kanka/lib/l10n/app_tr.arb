@@ -41,7 +41,7 @@
   "@historyLimitCardButton": {
     "description": "Aynı yükseltme kartındaki buton metni — dokununca paywall ekranı açılır"
   },
-  "streakFreezeOfferTitle": "Serini Kaybetme!",
+  "streakFreezeOfferTitle": "Serin tehlikede!",
   "@streakFreezeOfferTitle": {
     "description": "Kullanıcı tam 1 gün kaçırıp uygulamayı açtığında çıkan Streak Freeze teklif diyaloğunun başlığı"
   },
@@ -3277,5 +3277,126 @@
   "settingsZiboProRowSubtitle": "Daha fazla özellik, reklamsız deneyim",
   "@settingsZiboProRowSubtitle": {
     "description": "Ayarlar'daki Zibo Pro paywall giriş satırının alt metni"
+  },
+  "streakFreezePillStreak": "🔥 {count} günlük seri",
+  "@streakFreezePillStreak": {
+    "description": "Streak Freeze penceresindeki seri rozeti",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "streakFreezePillGoals": "🎯 {count} hedef tehlikede",
+  "@streakFreezePillGoals": {
+    "description": "Yalnızca hedefler tehlikedeyken Streak Freeze penceresindeki rozet",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "streakFreezePillGoalsSaved": "🎯 Hedeflerin devam ediyor",
+  "@streakFreezePillGoalsSaved": {
+    "description": "Streak Freeze yalnızca hedeflere kullanıldıktan sonraki rozet"
+  },
+  "streakFreezeBodyStreak": "Dün Zibo'ya uğramadın. Bir Streak Freeze dünü dondurur ❄️ ve serin kaldığı yerden devam eder.",
+  "@streakFreezeBodyStreak": {
+    "description": "Streak Freeze penceresi gövdesi — yalnızca seri tehlikede"
+  },
+  "streakFreezeBodyBoth": "Dün Zibo'ya uğramadın ve bazı hedeflerini işaretlemedin. Tek bir Streak Freeze dünü her yerde dondurur ❄️.",
+  "@streakFreezeBodyBoth": {
+    "description": "Streak Freeze penceresi gövdesi — seri ve hedefler tehlikede"
+  },
+  "streakFreezeBodyGoals": "Serin sağlam ama dün bu hedefleri işaretlemedin. Bir Streak Freeze dünü dondurur ❄️, hedeflerin sıfırlanmaz.",
+  "@streakFreezeBodyGoals": {
+    "description": "Streak Freeze penceresi gövdesi — yalnızca hedefler tehlikede"
+  },
+  "streakFreezeGoalsHeader": "Dün işaretlenmeyen hedeflerin",
+  "@streakFreezeGoalsHeader": {
+    "description": "Streak Freeze penceresindeki hedef kutusunun başlığı"
+  },
+  "streakFreezeDayYesterday": "Dün",
+  "@streakFreezeDayYesterday": {
+    "description": "Streak Freeze gün şeridinde dünün etiketi"
+  },
+  "streakFreezeDayToday": "Bugün",
+  "@streakFreezeDayToday": {
+    "description": "Streak Freeze gün şeridinde bugünün etiketi"
+  },
+  "streakFreezeResourceFree": "Pro hakkın: {remaining}/{quota} bu ay",
+  "@streakFreezeResourceFree": {
+    "description": "Streak Freeze kaynağı — Pro aylık ücretsiz hak",
+    "placeholders": {
+      "remaining": {
+        "type": "int"
+      },
+      "quota": {
+        "type": "int"
+      }
+    }
+  },
+  "streakFreezeResourceOwned": "❄️ Stoğunda {count} adet",
+  "@streakFreezeResourceOwned": {
+    "description": "Streak Freeze kaynağı — Mağaza stoğu",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "streakFreezeResourceCoins": "Stok yok · Bakiyen {balance} ZC",
+  "@streakFreezeResourceCoins": {
+    "description": "Streak Freeze kaynağı — ZC ile anında",
+    "placeholders": {
+      "balance": {
+        "type": "int"
+      }
+    }
+  },
+  "streakFreezeUseFreeLabel": "Ücretsiz Kullan",
+  "@streakFreezeUseFreeLabel": {
+    "description": "Streak Freeze ana butonu — Pro ücretsiz hak"
+  },
+  "streakFreezeUseOwnedLabel": "❄️ Stoktan Kullan",
+  "@streakFreezeUseOwnedLabel": {
+    "description": "Streak Freeze ana butonu — stok"
+  },
+  "streakFreezeDeclineHintBoth": "Seri ve hedefler sıfırlanır",
+  "@streakFreezeDeclineHintBoth": {
+    "description": "Vazgeç butonunun altındaki sonuç metni — seri + hedefler"
+  },
+  "streakFreezeDeclineHintStreak": "Seri sıfırlanır",
+  "@streakFreezeDeclineHintStreak": {
+    "description": "Vazgeç butonunun altındaki sonuç metni — seri"
+  },
+  "streakFreezeDeclineHintGoals": "Hedefler sıfırlanır",
+  "@streakFreezeDeclineHintGoals": {
+    "description": "Vazgeç butonunun altındaki sonuç metni — hedefler"
+  },
+  "streakFreezeDoneTitle": "Dün donduruldu!",
+  "@streakFreezeDoneTitle": {
+    "description": "Streak Freeze kullanıldıktan sonraki başlık"
+  },
+  "streakFreezeDoneBodyStreak": "Serin kırılmadı, bugün {day}. gün 🎉",
+  "@streakFreezeDoneBodyStreak": {
+    "description": "Streak Freeze sonrası gövde — seri",
+    "placeholders": {
+      "day": {
+        "type": "int"
+      }
+    }
+  },
+  "streakFreezeDoneBodyBoth": "Serin ve hedeflerin kaldığı yerden devam ediyor 🎉",
+  "@streakFreezeDoneBodyBoth": {
+    "description": "Streak Freeze sonrası gövde — seri + hedefler"
+  },
+  "streakFreezeDoneBodyGoals": "Hedeflerin kaldığı yerden devam ediyor 🎉",
+  "@streakFreezeDoneBodyGoals": {
+    "description": "Streak Freeze sonrası gövde — hedefler"
+  },
+  "streakFreezeDoneButton": "Harika!",
+  "@streakFreezeDoneButton": {
+    "description": "Streak Freeze sonrası kapatma butonu"
   }
 }

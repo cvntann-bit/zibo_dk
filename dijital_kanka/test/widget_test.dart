@@ -275,6 +275,13 @@ Future<void> _dismissInfoDialogIfShown(WidgetTester tester) async {
   }
 }
 
+/// Streak Freeze kullanıldıktan sonra aynı pencerenin "Harika!" onayını kapatır.
+Future<void> _tapFreezeDone(WidgetTester tester) async {
+  await tester.pumpAndSettle();
+  await tester.tap(find.byKey(const Key('streakFreezeDoneButton')));
+  await tester.pumpAndSettle();
+}
+
 /// Alt gezinme çubuğundaki Z butonuna basıp ek modüller menüsünü açar (bkz.
 /// main_bottom_bar.dart/modules_menu_sheet.dart) — bar tamamen görsel
 /// tabanlı olduğu için (ikon/etiketler PNG'nin içinde, gerçek Text widget'ı
@@ -624,7 +631,9 @@ void main() {
       expect(find.textContaining('Kitap oku'), findsWidgets);
       await tester.tap(find.byKey(const Key('streakFreezeUseOwnedButton')));
       await tester.pumpAndSettle();
-      await _dismissInfoDialogIfShown(tester);
+      expect(find.text('Dün donduruldu!'), findsOneWidget);
+      expect(find.text('Serin ve hedeflerin kaldığı yerden devam ediyor 🎉'), findsOneWidget);
+      await _tapFreezeDone(tester);
 
       final goal = goalsProvider.goals.single;
       expect(goal.statusForDay(2, goalsProvider.today), GoalDayStatus.frozen);
@@ -662,7 +671,8 @@ void main() {
       tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
       await tester.pumpAndSettle();
 
-      expect(find.text('Serini Kaybetme!'), findsOneWidget);
+      expect(find.text('Serin tehlikede!'), findsOneWidget);
+      expect(find.text('Seri sıfırlanır'), findsOneWidget);
 
       await tester.tap(find.text('Vazgeç'));
       await tester.pumpAndSettle();
@@ -693,7 +703,7 @@ void main() {
       expect(find.text('200 ZC ile Kullan'), findsOneWidget);
       await tester.tap(find.text('200 ZC ile Kullan'));
       await tester.pumpAndSettle();
-      await _dismissInfoDialogIfShown(tester);
+      await _tapFreezeDone(tester);
 
       expect(streakProvider.currentStreak, 2); // 1'den KIRILMADAN 2'ye çıktı
       expect(coinProvider.balance, 50); // 250 - 200
@@ -723,11 +733,12 @@ void main() {
       tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
       await tester.pumpAndSettle();
 
-      expect(find.text('Stoktan Kullan (1 adet var)'), findsOneWidget);
+      expect(find.text('❄️ Stoğunda 1 adet'), findsOneWidget);
+      expect(find.byKey(const Key('streakFreezeUseOwnedButton')), findsOneWidget);
       expect(find.text('200 ZC ile Kullan'), findsNothing);
-      await tester.tap(find.text('Stoktan Kullan (1 adet var)'));
+      await tester.tap(find.byKey(const Key('streakFreezeUseOwnedButton')));
       await tester.pumpAndSettle();
-      await _dismissInfoDialogIfShown(tester);
+      await _tapFreezeDone(tester);
 
       expect(streakProvider.currentStreak, 2);
       expect(streakProvider.ownedStreakFreezes, 0);
