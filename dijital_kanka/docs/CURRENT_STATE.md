@@ -58,6 +58,7 @@ Ana Sayfa (zaman/ruh-hali ağırlıklı motivasyon sözü sistemi + olay-tetikle
 
 | Konu | Durum |
 |---|---|
+| **Seri (streak) + Streak Freeze — HÂLÂ SORUNLU (öncelikli)** | 2026-09-26 düzeltmesi (açılış yarışı, hedeflerde freeze, yeni pencere — sürüm 1.13.1+48) sonrasında kullanıcı 2026-09-27'de "halen sıkıntı var" dedi; belirtiler henüz alınmadı. Bir sonraki oturumda Oyun Salonu'ndan ÖNCE/birlikte ele alınacak: önce kullanıcıdan somut belirtileri (hangi ekran, beklenen/görülen, cihaz sürümü) al, sonra yeniden üret. Bkz. `docs/subscribe_model.md` B3 satırı |
 | Google Sign-In gerçek kullanıcılarda | Firebase'e App Signing SHA-1 eklendi; yeni sürüm yayınlanınca doğrulanmalı |
 | IAP makbuz doğrulaması | Sunucu tarafı YOK — launch öncesi Cloud Functions gerekir (Blaze) |
 | Coin ekonomisi | Client-authoritative — `firestore.rules` yalnızca "hız engelleyici". Sürdürülen scripted saldırıya açık. Tam çözüm Blaze |
