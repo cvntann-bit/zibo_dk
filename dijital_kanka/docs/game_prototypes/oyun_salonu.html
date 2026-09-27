@@ -167,6 +167,9 @@
   .legend .g2chain { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 4px; width: 100%; border: 0; background: none; padding: 0; box-shadow: none; }
   .legend .g2chain span { display: grid; min-width: 0; justify-items: center; border: 2px solid var(--outline); border-radius: 8px; background: #FFFDF7; padding: 2px 1px; font: 800 9px/1.1 'Nunito', sans-serif; }
   .legend .g2chain img { height: 30px; max-width: 100%; object-fit: contain; }
+  .legend .g2chain .mys { background: #F3E4C0; color: #6E5B40; }
+  .legend .g2chain .mys b { font: 800 22px/30px 'Baloo 2', sans-serif; color: #14110C; }
+  .legend .tease { margin: 0; text-align: center; font: 800 12px 'Nunito', sans-serif; color: #6E5B40; border: 0; }
   .g2stuck { position: absolute; inset: 0; z-index: 4; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgba(255, 244, 222, .82); backdrop-filter: blur(2px); }
   .g2stuck[hidden] { display: none !important; }
 
@@ -749,7 +752,9 @@
     }
     if (g === 'z2048') {
       var chain = document.createElement('div'); chain.className = 'g2chain';
-      G2_ORDER.forEach(function (v) { chain.innerHTML += '<span><img src="../../assets/images/' + G2_LADDER[v][0] + '.webp" alt="">' + v + '</span>'; });
+      chain.innerHTML = '<span><img src="' + '../../assets/images/' + 'zibo_yeni.webp" alt="">Klasik</span>' + new Array(6).join('<span class="mys"><b>?</b>???</span>');
+      var tease = document.createElement('p'); tease.className = 'tease'; tease.textContent = 'Birleştirdikçe yeni kostümler açılır. Hepsini keşfedebilecek misin?';
+      $('inLegend').appendChild(tease);
       $('inLegend').appendChild(chain);
     }
     if (g === 'hafiza') {

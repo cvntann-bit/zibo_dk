@@ -121,7 +121,8 @@ Not: Hafıza ve 2048 şu an diğerlerinden daha çok puan veriyor olabilir — k
   3★ eşikleri ≤8 / ≤10 / ≤12 hamle, 2★ ≤10 / ≤12 / ≤14.
 - **Coin Yakala:** bomba oranı %20 → %40 (zamanla), düşüş hızı 210 → 450, erken zikzak,
   dar yakalama alanı, ağır Zibo, mıknatıs 3 sn (kullanıcı "çok kolay" dedi, zorlaştırıldı).
-- **2048 kostüm sırası:** 2 Klasik (`zibo_yeni`), 4 Hippi, 8 Sporcu, 16 Asker, 32 Hoca, 64 Punk,
+- **2048 başla penceresi GİZEMLİ (kullanıcı kararı 2026-09-27):** kostüm sırası gösterilmez; yalnızca Klasik + 5 adet "?" kart ve "Birleştirdikçe yeni kostümler açılır. Hepsini keşfedebilecek misin?". Hedef olarak Altın Zibo görünmeye devam ediyor.
+- **2048 kostüm sırası (oyuncuya önceden gösterilmez):** 2 Klasik (`zibo_yeni`), 4 Hippi, 8 Sporcu, 16 Asker, 32 Hoca, 64 Punk,
   128 Rapçi, 256 Samuray, 512 Korsan, 1024 Kral, 2048 Altın, 4096 Elmas.
 - **Tren:** 15×24 ızgara, her 6 coinde bir kaya, buz küpü 4 sn yavaşlatır, coin topladıkça hızlanır.
 - **Tuğla:** 7 sütun, her tur yeni sıra (hp = tur, %22 ihtimalle 2×tur), atış 4 sn'yi geçerse ×2 hız.
