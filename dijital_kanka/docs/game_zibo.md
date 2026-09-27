@@ -60,6 +60,24 @@ Oyun → Flutter (`JavaScriptChannel` adı `ZiboBridge`, JSON mesaj):
 - Hile notu: HTML de Dart kadar değiştirilebilir; güvenlik Flutter tarafındaki tavan/hak
   kontrollerindedir.
 
+### Değişiklik / bakım modeli (kullanıcıyla kararlaştırıldı 2026-09-27)
+
+| Ne değişecek | Nasıl | Güncelleme gerekir mi |
+|---|---|---|
+| Oyun görünümü, mekaniği, yeni özellik | `assets/games/<oyun>/index.html` düzenlenir → önce tarayıcıda oynanabilir link olarak kullanıcıya gösterilir → onay → yeni AAB | Evet (yeni sürüm) |
+| Puan oranı, tur tavanı, günlük hak, reklam hakkı, takas kuru/tavanı | **Firebase'de tutulan ayar** (Remote Config ya da tek bir Firestore config dokümanı) → Flutter okur → `ziboInit` ile oyuna iletir | **Hayır, anında** (uygulamanın bir sonraki açılışında) |
+| Yeni oyun | Yeni HTML dosyası + Oyun Salonu'na kart + ayar kaydı | Evet |
+
+Kurallar:
+- **Rakamlar HTML'e GÖMÜLMEZ.** Oyunlar puan/tavan/hak değerlerini `ziboInit` config'inden okur; varsayılanlar
+  Dart'ta tek bir ayar dosyasında durur (Firebase'e ulaşılamazsa bunlar kullanılır). Kullanıcı ekonomiyle sık
+  oynuyor (2026-09-27'de 3 oyunun puanı bir günde değişti) → uzaktan ayar ilk sürümde kurulmalı.
+- **Oyun HTML'leri APK içinde kalır**, internetten yüklenmez (internetsiz çalışsın, açılış hızlı olsun, hatalı bir
+  değişiklik Play incelemesi olmadan herkese gitmesin).
+- **Tek kaynak:** uygulamaya girince `assets/games/` asıl dosyalar olur; `docs/game_prototypes/` ayrı kopya olarak
+  tutulmaz (ya kaldırılır ya da `assets/games/`'e yönlendirilir).
+- Flutter tarafı yine de tavanı kendisi doğrular (oyundan gelen puan, config'teki tavanı aşamaz).
+
 ## 3. Ekonomi
 
 ### Ölçülen mevcut kazanç (2026-09-27, koddan)
