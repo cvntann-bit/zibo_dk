@@ -64,6 +64,7 @@ Flutter mobil uygulaması: "Zibo" adlı maskot karakterin eşlik ettiği bir ki�
 | Tekrarlanan prosedür (release AAB, yeni rozet, yeni dil, görsel işleme) | `.claude/skills/` |
 | **Devam eden görsel kimlik değişikliği** (Zibo'nun "Çizgi Roman Çıkartması" temasına geçişi — onaylanan/reddedilen yönler, renk/tipografi kararları, sayfa onay durumu) | `docs/theme_new.md` |
 | **Abonelik modeli** (Zibo Pro/Pro+ ürün/plan ID'leri, fiyatlar, perk listeleri + uygulama durumu, paywall giriş noktaları, yükseltme mekanizması) | `docs/subscribe_model.md` |
+| **Oyun Salonu / mini oyunlar** (7 oyun, Oyun Puanı ★ + Takas Gişesi ekonomisi, hibrit WebView planı, taslaklar, bekleyen kararlar) — henüz kodda YOK | `docs/game_zibo.md` |
 
 **`docs/history/` dosyalarını görevin AÇIKÇA geçmiş bağlam gerektirmediği sürece OKUMA** —
 regression araştırması, "bu neden değişti", "eski implementasyon neydi", ya da kullanıcı doğrudan

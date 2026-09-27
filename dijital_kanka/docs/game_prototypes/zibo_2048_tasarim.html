@@ -1,0 +1,430 @@
+<title>Zibo 2048 Tasarımı</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@600;700;800&display=swap">
+<style>
+  :root {
+    --outline: #14110C; --gold: #F3B23C; --gold-soft: #F6D488; --gold-deep: #DC8F1E; --cream: #FFF8E8; --chip: #FFFDF7;
+    --ice: #8FD3FF; --ice-pale: #DDF2FF; --ice-ink: #0E3A5C; --silver: #C9CED6;
+    --page-bg: #FBF4E4; --page-dot: rgba(20,17,12,.07); --ink: #2A2115; --ink-soft: #6E5B40; --panel: #FFFBF1; --track: #F3E4C0;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { color-scheme: dark; --page-bg: #1C1812; --page-dot: rgba(255,240,210,.05); --ink: #F6EBD6; --ink-soft: #C4B091; --panel: #262017; --track: #3A2F1E; }
+  }
+  :root[data-theme="dark"] { color-scheme: dark; --page-bg: #1C1812; --page-dot: rgba(255,240,210,.05); --ink: #F6EBD6; --ink-soft: #C4B091; --panel: #262017; --track: #3A2F1E; }
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 28px 16px 48px; background: var(--page-bg); background-image: radial-gradient(var(--page-dot) 1.2px, transparent 1.3px); background-size: 14px 14px; color: var(--ink); font-family: 'Nunito', system-ui, sans-serif; }
+  button { font: inherit; }
+  button:focus-visible { outline: 3px solid var(--gold-deep); outline-offset: 2px; }
+  .page { max-width: 1120px; margin: 0 auto; display: grid; gap: 34px; }
+  header h1 { margin: 0; font: 800 36px/1.05 'Baloo 2', sans-serif; text-wrap: balance; }
+  header p { margin: 8px 0 0; color: var(--ink-soft); font-weight: 700; max-width: 62ch; line-height: 1.45; }
+  h2.sec { margin: 0 0 14px; font: 800 24px/1.1 'Baloo 2', sans-serif; }
+  .live { display: grid; grid-template-columns: 380px 1fr; gap: 32px; align-items: start; }
+  @media (max-width: 880px) { .live { grid-template-columns: minmax(0, 380px); justify-content: center; } }
+  .frames { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 24px; align-items: start; }
+  .frame figcaption { margin-top: 10px; font: 800 15px 'Baloo 2', sans-serif; }
+  .frame figcaption span { display: block; font: 700 12.5px/1.4 'Nunito', sans-serif; color: var(--ink-soft); }
+  figure { margin: 0; }
+  .panel { background: var(--panel); border: 3px solid var(--outline); border-radius: 20px; box-shadow: 4px 4px 0 var(--outline); padding: 16px 18px; }
+  .panel h3 { margin: 0 0 10px; font: 800 19px 'Baloo 2', sans-serif; }
+  .notes { display: grid; gap: 18px; }
+  .rules { margin: 0; padding: 0; list-style: none; display: grid; gap: 9px; }
+  .rules li { display: grid; grid-template-columns: 116px 1fr; gap: 10px; font-size: 14px; line-height: 1.45; }
+  .rules b { font: 700 15px 'Baloo 2', sans-serif; }
+  .rules span { color: var(--ink-soft); font-weight: 600; }
+  .rules strong { color: var(--ink); }
+  @media (max-width: 460px) { .rules li { grid-template-columns: 1fr; gap: 0; } }
+  .demo { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+  .pc { border: 2.5px solid var(--outline); background: var(--panel); color: var(--ink); border-radius: 999px; padding: 5px 12px; font: 800 12.5px 'Nunito', sans-serif; cursor: pointer; box-shadow: 2px 2px 0 var(--outline); }
+  .pc[aria-pressed="true"] { background: var(--gold); color: var(--outline); }
+  .q { margin: 0; padding-left: 20px; display: grid; gap: 8px; font-weight: 600; line-height: 1.45; font-size: 14px; }
+  .ladder { display: grid; grid-template-columns: repeat(auto-fill, minmax(76px, 1fr)); gap: 8px; }
+
+  /* ---------- Telefon bileşeni (her zaman açık sticker dünyası) ---------- */
+  .phone { position: relative; width: 100%; border: 3px solid var(--outline); border-radius: 30px; box-shadow: 6px 6px 0 var(--outline); overflow: hidden; color: #2A2115; background: radial-gradient(rgba(20,17,12,.07) 1.2px, transparent 1.3px) 0 0 / 14px 14px, linear-gradient(#FFF1D2, #FFE3A6); }
+  .topbar { height: 50px; display: flex; align-items: center; gap: 8px; padding: 0 12px; background: #FFF8E8; border-bottom: 3px solid var(--outline); }
+  .topbar .bk { width: 32px; height: 32px; border-radius: 10px; border: 2.5px solid var(--outline); background: var(--chip); box-shadow: 2px 2px 0 var(--outline); display: flex; align-items: center; justify-content: center; font-weight: 800; }
+  .topbar b { font: 800 19px/1 'Baloo 2', sans-serif; margin-right: auto; }
+  .chip { display: inline-flex; align-items: center; gap: 4px; border: 2.5px solid var(--outline); border-radius: 999px; padding: 1px 9px 1px 3px; font: 800 12.5px 'Nunito', sans-serif; background: var(--chip); white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .pt { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; border-radius: 50%; background: var(--ice); border: 2px solid var(--outline); color: var(--ice-ink); font: 800 10px/1 'Nunito', sans-serif; font-style: normal; flex: none; }
+  .scr { padding: 12px 12px 14px; display: grid; gap: 10px; }
+
+  .path { display: grid; gap: 4px; }
+  .path .row { display: grid; grid-template-columns: repeat(12, 1fr); gap: 3px; }
+  .pd { aspect-ratio: 1; border-radius: 50%; border: 2px solid var(--outline); background: var(--chip); overflow: hidden; display: flex; align-items: center; justify-content: center; position: relative; }
+  .pd img { width: 88%; height: 88%; object-fit: contain; filter: brightness(0) opacity(.22); }
+  .pd.got { background: var(--gold-soft); }
+  .pd.got img { filter: none; }
+  .pd.next { border-style: dashed; border-color: var(--ice-ink); background: var(--ice-pale); animation: nudge 1.4s ease-in-out infinite; }
+  @keyframes nudge { 50% { transform: scale(1.12); } }
+  .path .lbl { display: flex; justify-content: space-between; font: 800 10.5px 'Nunito', sans-serif; letter-spacing: .04em; text-transform: uppercase; color: #6E5B40; }
+  .path .lbl em { font-style: normal; color: var(--ice-ink); }
+
+  .hud { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+  .hud > div { position: relative; background: var(--chip); border: 2.5px solid var(--outline); border-radius: 12px; box-shadow: 2px 2px 0 var(--outline); padding: 3px 4px; text-align: center; }
+  .hud b { display: flex; align-items: center; justify-content: center; gap: 4px; font: 800 19px/1.1 'Baloo 2', sans-serif; font-variant-numeric: tabular-nums; }
+  .hud span { font: 800 9.5px 'Nunito', sans-serif; letter-spacing: .05em; text-transform: uppercase; color: #6E5B40; }
+  .hud .pts { background: var(--ice-pale); }
+  .plus { position: absolute; left: 50%; top: -6px; transform: translateX(-50%); font: 800 16px 'Baloo 2', sans-serif; color: var(--gold); -webkit-text-stroke: 1.5px var(--outline); paint-order: stroke fill; pointer-events: none; animation: rise 800ms ease-out forwards; }
+  @keyframes rise { to { transform: translate(-50%, -26px); opacity: 0; } }
+
+  .board { position: relative; aspect-ratio: 1; background: #C9A46B; border: 3px solid var(--outline); border-radius: 18px; box-shadow: 4px 4px 0 var(--outline); touch-action: none; user-select: none; }
+  .cells, .layer { position: absolute; inset: 7px; }
+  .cells { display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(4, 1fr); gap: 7px; }
+  .cells i { background: rgba(255, 248, 232, .42); border: 2px dashed rgba(20, 17, 12, .22); border-radius: 11px; }
+  .tile { position: absolute; left: 0; top: 0; width: calc((100% - 21px) / 4); height: calc((100% - 21px) / 4); transform: translate(calc(var(--c) * (100% + 7px)), calc(var(--r) * (100% + 7px))); transition: transform 110ms ease-out; }
+  .t { position: absolute; inset: 0; border: 2.5px solid var(--outline); border-radius: 11px; box-shadow: 2px 2px 0 var(--outline); overflow: hidden; background: var(--bg); }
+  .t img { position: absolute; left: 6%; top: 4%; width: 88%; height: 76%; object-fit: contain; filter: drop-shadow(1.5px 1.5px 0 rgba(20,17,12,.25)); }
+  .t b { position: absolute; top: 3px; left: 3px; color: #2A2115; font: 800 10.5px/1 'Baloo 2', sans-serif; background: #FFFDF7; border: 1.5px solid var(--outline); border-radius: 6px; padding: 2px 3px 1px; font-variant-numeric: tabular-nums; }
+  .t small { position: absolute; left: 0; right: 0; bottom: 2px; text-align: center; font: 800 8.5px/1 'Nunito', sans-serif; color: #2A2115; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 2px; }
+  .t.silver { box-shadow: 2px 2px 0 var(--outline), inset 0 0 0 3px var(--silver); }
+  .t.goldring { box-shadow: 2px 2px 0 var(--outline), inset 0 0 0 3px #FFE08A; }
+  .t.shine::after { content: ""; position: absolute; inset: -40%; background: linear-gradient(115deg, transparent 40%, rgba(255,255,255,.75) 50%, transparent 60%); animation: shine 2.4s ease-in-out infinite; }
+  @keyframes shine { 0% { transform: translateX(-60%); } 60%, 100% { transform: translateX(60%); } }
+  .t.ice { box-shadow: 2px 2px 0 var(--outline), inset 0 0 0 3px #FFFFFF; }
+  .tile.new .t { animation: appear 170ms ease-out; }
+  .tile.merged .t { animation: merge 220ms ease-out; }
+  @keyframes appear { from { transform: scale(0); } to { transform: scale(1); } }
+  @keyframes merge { 50% { transform: scale(1.2); } 100% { transform: scale(1); } }
+  .banner { position: absolute; left: 50%; top: 10px; z-index: 3; transform: translateX(-50%); display: flex; align-items: center; gap: 8px; background: var(--cream); border: 3px solid var(--outline); border-radius: 16px; box-shadow: 3px 3px 0 var(--outline); padding: 4px 12px 4px 4px; white-space: nowrap; animation: drop 260ms cubic-bezier(.3,1.5,.5,1); }
+  .banner[hidden] { display: none; }
+  .banner img { width: 40px; height: 40px; object-fit: contain; background: var(--gold-soft); border: 2px solid var(--outline); border-radius: 10px; }
+  .banner b { display: block; font: 800 15px/1.05 'Baloo 2', sans-serif; }
+  .banner span { font: 800 11px 'Nunito', sans-serif; color: #6E5B40; }
+  .banner span.bonus { color: var(--ice-ink); }
+  @keyframes drop { from { transform: translate(-50%, -30px); opacity: 0; } }
+  .acts { display: grid; grid-template-columns: 1fr 1.25fr; gap: 8px; }
+  .btn { width: 100%; white-space: nowrap; border: 3px solid var(--outline); border-radius: 14px; padding: 8px 8px; font: 700 14.5px 'Baloo 2', sans-serif; cursor: pointer; box-shadow: 3px 3px 0 var(--outline); background: var(--gold); color: var(--outline); display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+  .btn.ice { background: var(--ice); }
+  .btn.ghost { background: var(--chip); }
+  .btn em { font-style: normal; font: 800 11px 'Nunito', sans-serif; border: 2px solid var(--outline); border-radius: 999px; padding: 0 6px; background: var(--chip); }
+  .btn:active:not(:disabled) { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--outline); }
+  .btn:disabled { opacity: .5; cursor: not-allowed; }
+  .hint { text-align: center; font: 800 10.5px 'Nunito', sans-serif; letter-spacing: .05em; text-transform: uppercase; color: #6E5B40; }
+
+  .ov { position: absolute; inset: 50px 0 0; z-index: 5; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgba(255, 244, 222, .82); backdrop-filter: blur(2px); }
+  .ov[hidden] { display: none; }
+  .sheet { position: relative; width: 100%; max-width: 300px; background: var(--cream); border: 3px solid var(--outline); border-radius: 22px; box-shadow: 5px 5px 0 var(--outline); padding: 14px; display: grid; gap: 9px; justify-items: center; text-align: center; }
+  .sheet .logo { font: 800 30px/1 'Baloo 2', sans-serif; color: var(--gold); -webkit-text-stroke: 2.5px var(--outline); paint-order: stroke fill; text-shadow: 3px 3px 0 var(--outline); }
+  .sheet h3 { margin: 0; font: 800 22px/1.1 'Baloo 2', sans-serif; }
+  .sheet p { margin: 0; font-weight: 700; font-size: 12.5px; color: #6E5B40; line-height: 1.4; }
+  .sheet > img { width: 80px; filter: drop-shadow(3px 3px 0 rgba(20,17,12,.3)); }
+  .goal { display: flex; align-items: center; gap: 10px; border: 2.5px dashed var(--outline); border-radius: 14px; background: #FFF1CC; padding: 6px 10px; width: 100%; text-align: left; }
+  .goal img { width: 44px; }
+  .goal b { font: 800 15px/1.1 'Baloo 2', sans-serif; display: block; }
+  .goal span { font: 700 11.5px 'Nunito', sans-serif; color: #6E5B40; }
+  .reward { width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; border: 2.5px dashed var(--outline); border-radius: 14px; padding: 7px; background: var(--ice-pale); font: 800 18px 'Baloo 2', sans-serif; }
+  .reward small { display: block; font: 700 11px 'Nunito', sans-serif; color: #6E5B40; }
+  .pt.lg { width: 28px; height: 28px; font-size: 15px; border-width: 2.5px; }
+  .chips { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; }
+  .chip.gold { background: var(--gold); padding: 1px 10px; }
+  .rays { position: relative; width: 150px; height: 150px; display: flex; align-items: center; justify-content: center; }
+  .rays::before { content: ""; position: absolute; inset: 0; border-radius: 50%; background: repeating-conic-gradient(#F6D488 0 12deg, #FFF8E8 12deg 24deg); border: 3px solid var(--outline); animation: spin 8s linear infinite; }
+  .rays img { position: relative; width: 108px; filter: drop-shadow(3px 3px 0 rgba(20,17,12,.35)); }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .toast { position: absolute; left: 50%; bottom: 14px; transform: translate(-50%, 10px); z-index: 9; background: var(--outline); color: #FFF8E8; border-radius: 999px; padding: 6px 14px; font: 800 12.5px 'Nunito', sans-serif; opacity: 0; transition: opacity 200ms, transform 200ms; pointer-events: none; white-space: nowrap; }
+  .toast.on { opacity: 1; transform: translate(-50%, 0); }
+
+  .static .tile { transition: none; }
+  @media (prefers-reduced-motion: reduce) { .tile { transition: none; } .pd.next, .rays::before, .t.shine::after, .tile.new .t, .tile.merged .t, .banner { animation: none; } }
+</style>
+
+<div class="page">
+  <header>
+    <h1>Zibo 2048 tasarımı</h1>
+    <p>Kostümler birleşerek bir üst kostüme dönüşür; hedef Altın Zibo. Soldaki telefon oynanabilir, aşağıda oyunun dört ana ekranı var. Bu sayfa sadece tasarım önizlemesi: onaylarsan Oyun Salonu'na ve sonra uygulamaya bu hâliyle işlenir.</p>
+  </header>
+
+  <section>
+    <h2 class="sec">Oynanabilir önizleme</h2>
+    <div class="live">
+      <div id="livePhone"></div>
+      <div class="notes">
+        <div class="panel">
+          <h3>Ekranda neler var?</h3>
+          <ul class="rules">
+            <li><b>Kostüm Yolu</b><span>12 kostümlük şerit. Ulaştıkların renkli, sıradaki buz mavisi kesikli çerçevede hafifçe büyüyüp küçülüyor, kalanlar siluet. Altında <strong>"Sıradaki: Samuray · 256"</strong> yazıyor.</span></li>
+            <li><b>Skor kutuları</b><span>Skor, rekor ve bu turda kazanılacak <strong>★ puan</strong>. Her birleşmede skor kutusunun üstünden "+N" uçuyor.</span></li>
+            <li><b>Karolar</b><span>Kostüm görseli büyük, sol üstte sayı, altta kostüm adı. Renk kremden turuncuya koyulaşıyor; yüksek seviyelerde kenar halkası: Samuray–Korsan gümüş, Kral altın, Altın parıldıyor, Elmas buz.</span></li>
+            <li><b>Yeni kostüm anı</b><span>Turda ilk kez yeni bir kostüme ulaşınca tahtanın üstüne şerit iniyor: <strong>"Yeni: Samuray Zibo! +50 ★ bonus"</strong>.</span></li>
+            <li><b>Geri al</b><span>Ücretsizde 🎬 ikonlu (reklamla), Pro'da reklamsız. Kalan hak butonun içinde. Oyun başına en fazla 3.</span></li>
+            <li><b>Bitir</b><span>Buton kaç puan alacağını hep gösteriyor: <strong>"Bitir · +84 ★"</strong>.</span></li>
+          </ul>
+          <div class="demo" role="group" aria-label="Demo kısayolları">
+            <button class="pc" id="dNew">Yeni oyun</button>
+            <button class="pc" id="dNear">Altın'a bir adım</button>
+            <button class="pc" id="dStuck">Hamle kalmadı</button>
+            <button class="pc" id="dTier" aria-pressed="false">Pro gibi göster</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="sec">Ekran durumları</h2>
+    <div class="frames">
+      <figure class="frame"><div id="fIntro"></div><figcaption>1 · Başlangıç<span>Hedef kartı (Altın Zibo), kostüm sırası ve kalan hak. Arkada tahta hazır bekliyor.</span></figcaption></figure>
+      <figure class="frame"><div id="fBanner"></div><figcaption>2 · Yeni kostüm anı<span>Samuray'a ilk ulaşıldığında şerit iner, bonus puan hemen ★ kutusuna eklenir.</span></figcaption></figure>
+      <figure class="frame"><div id="fStuck"></div><figcaption>3 · Hamle kalmadı<span>Geri alma hakkı varsa önce o sunulur; yoksa sadece "Bitir".</span></figcaption></figure>
+      <figure class="frame"><div id="fWin"></div><figcaption>4 · Altın Zibo<span>Dönen ışınlı kutlama. Elmas için devam edilebilir ya da puan alınıp bitirilir.</span></figcaption></figure>
+    </div>
+  </section>
+
+  <section class="notes">
+    <div class="panel">
+      <h3>Kostüm sırası ve karo renkleri</h3>
+      <div class="ladder" id="ladder"></div>
+    </div>
+    <div class="panel">
+      <h3>Onayına sunulanlar</h3>
+      <ol class="q">
+        <li>Karo renkleri tek bir krem → turuncu skalada kalsın, yüksek seviyeler sadece kenar halkasıyla ayrışsın mı? (Uygulamanın "tek vurgu rengi" kuralına uyuyor.)</li>
+        <li>"Yeni kostüm" şeridi her yeni seviyede mi çıksın, yoksa sadece bonus veren seviyelerde mi (Samuray, Kral, Altın)?</li>
+        <li>Oyun ekranı da uygulamanın koyu temasına uysun mu, yoksa diğer oyunlar gibi hep açık "sticker" dünyasında mı kalsın?</li>
+      </ol>
+    </div>
+  </section>
+</div>
+
+<script>
+(function () {
+  'use strict';
+  var L = {
+    2: ['zibo_yeni', 'Klasik', '#FFFDF7', ''], 4: ['zibo_hippi', 'Hippi', '#FFF3DC', ''], 8: ['zibo_sporcu', 'Sporcu', '#FDE7C0', ''],
+    16: ['zibo_asker', 'Asker', '#FAD99C', ''], 32: ['zibo_hoca', 'Hoca', '#F6C977', ''], 64: ['zibo_punk', 'Punk', '#F3B85A', ''],
+    128: ['zibo_rapci', 'Rapçi', '#F0A548', ''], 256: ['zibo_samurai', 'Samuray', '#EC9443', 'silver'], 512: ['zibo_korsan', 'Korsan', '#E6843F', 'silver'],
+    1024: ['zibo_king', 'Kral', '#F3B23C', 'goldring'], 2048: ['zibo_altin', 'Altın', '#FFC83D', 'goldring shine'], 4096: ['zibo_elmas', 'Elmas', '#BFE6FF', 'ice shine']
+  };
+  var ORDER = [2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096];
+  var BONUS = { 256: 50, 1024: 100, 2048: 200 };
+  var MAX_UNDO = 3;
+  var pro = false;
+
+  function fmt(n) { return n.toLocaleString('tr-TR'); }
+  function tileInner(v) {
+    var d = L[v] || L[4096];
+    return '<div class="t ' + d[3] + '" style="--bg:' + d[2] + '"><img src="../../assets/images/' + d[0] + '.webp" alt=""><b>' + v + '</b><small>' + d[1] + '</small></div>';
+  }
+
+  function phoneHTML() {
+    var dots = ORDER.map(function (v) { return '<span class="pd" data-v="' + v + '"><img src="../../assets/images/' + L[v][0] + '.webp" alt=""></span>'; }).join('');
+    return '<div class="phone">' +
+      '<div class="topbar"><span class="bk" aria-hidden="true">←</span><b>Zibo 2048</b><span class="chip"><i class="pt">★</i>1.250</span></div>' +
+      '<div class="scr">' +
+        '<div class="path"><div class="row">' + dots + '</div><div class="lbl"><span>Kostüm yolu</span><em class="nextLbl">Sıradaki: Hippi · 4</em></div></div>' +
+        '<div class="hud"><div class="sBox"><b class="score">0</b><span>Skor</span></div><div><b class="best">0</b><span>Rekor</span></div><div class="pts"><b><i class="pt">★</i><span class="ptsv">0</span></b><span>Bu tur</span></div></div>' +
+        '<div class="board" aria-label="Oyun tahtası. Kaydır ya da ok tuşlarını kullan."><div class="cells" aria-hidden="true">' + new Array(17).join('<i></i>') + '</div><div class="layer"></div>' +
+          '<div class="banner" hidden><img alt=""><div><b></b><span></span></div></div></div>' +
+        '<div class="acts"><button class="btn ice undo">↶ Geri al <em>3</em></button><button class="btn end">Bitir · +0 ★</button></div>' +
+        '<div class="hint">Kaydır ya da ok tuşlarını kullan</div>' +
+      '</div>' +
+      '<div class="ov intro" hidden><div class="sheet"><div class="logo">Zibo 2048</div><p>Kaydır; aynı kostümlü iki Zibo birleşince bir üst kostüme dönüşür.</p>' +
+        '<div class="goal"><img src="../../assets/images/zibo_altin.webp" alt=""><div><b>Hedef: Altın Zibo</b><span>2048 · +200 ★ bonus. Elmas gizli hedef.</span></div></div>' +
+        '<div class="chips"><span class="chip gold">3 hak kaldı</span><span class="chip"><i class="pt">★</i>Rekor 18.240</span></div>' +
+        '<button class="btn">Başla</button></div></div>' +
+      '<div class="ov stuck" hidden><div class="sheet"><h3>Hamle kalmadı!</h3><img src="../../assets/images/zibo_df_pose1.webp" alt="">' +
+        '<p class="stuckTxt">Son hamleyi geri alıp devam edebilir ya da puanını alıp bitirebilirsin.</p>' +
+        '<button class="btn ice sUndo">🎬 Reklam izle, geri al <em>2</em></button><button class="btn sEnd">Bitir · +0 ★</button></div></div>' +
+      '<div class="ov win" hidden><div class="sheet"><div class="rays"><img src="../../assets/images/zibo_altin.webp" alt=""></div><h3>Altın Zibo yaptın!</h3>' +
+        '<div class="reward"><i class="pt lg">★</i><div><span class="winPts">+0 ★</span><small>Altın bonusu 200 ★ dahil</small></div></div>' +
+        '<button class="btn wGo">Elmas için devam et</button><button class="btn ghost wEnd">Bitir, puanı al</button></div></div>' +
+      '<div class="ov done" hidden><div class="sheet"><h3>Tur bitti!</h3><img class="doneImg" src="../../assets/images/zibo_df_pose3.webp" alt="">' +
+        '<div class="reward"><i class="pt lg">★</i><div><span class="donePts">+0 ★</span><small class="doneNote"></small></div></div>' +
+        '<button class="btn dNew">Yeni oyun (demo)</button></div></div>' +
+      '<div class="toast"></div>' +
+    '</div>';
+  }
+
+  // Tek bir telefonun oyun motoru. live=false iken sadece çizer.
+  function Game(host, live) {
+    host.innerHTML = phoneHTML();
+    var root = host.firstChild, q = function (s) { return root.querySelector(s); };
+    var tiles = [], idc = 0, score = 0, best = 18240, prev = null, lock = false, undos = 0, top = 2, won = false, seen = {};
+
+    function bonusFor(t) { return t >= 2048 ? 200 : t >= 1024 ? 100 : t >= 256 ? 50 : 0; }
+    function points() { return Math.min(600, Math.floor(score / 20) + bonusFor(top)); }
+    function paint(t) {
+      t.el.style.setProperty('--r', t.r); t.el.style.setProperty('--c', t.c);
+      if (t.shown !== t.v) { t.el.innerHTML = tileInner(t.v); t.el.setAttribute('aria-label', L[t.v][1] + ' Zibo, ' + t.v); t.shown = t.v; }
+    }
+    function add(v, r, c, isNew) {
+      var el = document.createElement('div'); el.className = 'tile' + (isNew ? ' new' : '');
+      var t = { v: v, r: r, c: c, el: el, id: ++idc }; paint(t); q('.layer').appendChild(el); tiles.push(t); return t;
+    }
+    function grid() { var g = [[], [], [], []]; for (var r = 0; r < 4; r++) for (var c = 0; c < 4; c++) g[r][c] = null; tiles.forEach(function (t) { if (!t.dead) g[t.r][t.c] = t; }); return g; }
+    function spawn() {
+      var g = grid(), e = [];
+      for (var r = 0; r < 4; r++) for (var c = 0; c < 4; c++) if (!g[r][c]) e.push([r, c]);
+      if (e.length) { var p = e[Math.floor(Math.random() * e.length)]; add(Math.random() < 0.9 ? 2 : 4, p[0], p[1], true); }
+    }
+    function canMove() {
+      var g = grid();
+      for (var r = 0; r < 4; r++) for (var c = 0; c < 4; c++) { var t = g[r][c]; if (!t) return true; if (c < 3 && g[r][c + 1] && g[r][c + 1].v === t.v) return true; if (r < 3 && g[r + 1][c] && g[r + 1][c].v === t.v) return true; }
+      return false;
+    }
+    function hud() {
+      q('.score').textContent = fmt(score);
+      q('.best').textContent = fmt(Math.max(best, score));
+      q('.ptsv').textContent = points();
+      var left = MAX_UNDO - undos;
+      q('.undo').innerHTML = (pro ? '↶' : '🎬') + ' Geri al <em>' + left + '</em>';
+      q('.undo').disabled = left <= 0 || !prev || lock;
+      q('.end').textContent = 'Bitir · +' + points() + ' ★';
+      root.querySelectorAll('.pd').forEach(function (d) {
+        var v = +d.dataset.v;
+        d.className = 'pd' + (v <= top ? ' got' : '') + (v === top * 2 ? ' next' : '');
+      });
+      var nx = top * 2;
+      q('.nextLbl').textContent = L[nx] ? 'Sıradaki: ' + L[nx][1] + ' · ' + nx : 'Tüm kostümler tamam!';
+    }
+    function toast(t) { var el = q('.toast'); el.textContent = t; el.classList.add('on'); clearTimeout(toast.h); toast.h = setTimeout(function () { el.classList.remove('on'); }, 1700); }
+    function banner(v, keep) {
+      var b = q('.banner'), d = L[v];
+      b.querySelector('img').src = '../../assets/images/' + d[0] + '.webp';
+      b.querySelector('b').textContent = 'Yeni: ' + d[1] + ' Zibo!';
+      var sp = b.querySelector('span');
+      sp.textContent = BONUS[v] ? '+' + BONUS[v] + ' ★ bonus' : 'Kostüm yolunda ' + (ORDER.indexOf(v) + 1) + '/12';
+      sp.className = BONUS[v] ? 'bonus' : '';
+      b.hidden = false; b.style.animation = 'none'; void b.offsetWidth; b.style.animation = '';
+      clearTimeout(banner.h); if (!keep) banner.h = setTimeout(function () { b.hidden = true; }, 1700);
+    }
+    function plus(n) {
+      var p = document.createElement('span'); p.className = 'plus'; p.textContent = '+' + n;
+      q('.sBox').appendChild(p); setTimeout(function () { p.remove(); }, 820);
+    }
+    function setBoard(m, s, opts) {
+      tiles = []; q('.layer').innerHTML = ''; top = 2;
+      m.forEach(function (row, r) { row.forEach(function (v, c) { if (v) { add(v, r, c, false); if (v > top) top = v; } }); });
+      score = s || 0; prev = opts && opts.prev ? { tiles: [], score: score, top: top } : null; undos = opts && opts.undos || 0; won = top >= 2048; lock = false;
+      seen = {}; ORDER.forEach(function (v) { if (v <= top) seen[v] = true; });
+      ['intro', 'stuck', 'win', 'done'].forEach(function (k) { q('.ov.' + k).hidden = true; });
+      q('.banner').hidden = true;
+      hud();
+    }
+    function move(dir) {
+      if (lock) return;
+      var v = { left: [0, -1], right: [0, 1], up: [-1, 0], down: [1, 0] }[dir], g = grid();
+      var snap = { tiles: tiles.map(function (t) { return [t.v, t.r, t.c]; }), score: score, top: top };
+      var rows = [0, 1, 2, 3], cols = [0, 1, 2, 3];
+      if (v[0] === 1) rows.reverse(); if (v[1] === 1) cols.reverse();
+      var moved = false, gained = 0;
+      rows.forEach(function (r) {
+        cols.forEach(function (c) {
+          var t = g[r][c]; if (!t) return;
+          var nr = r, nc = c;
+          for (;;) {
+            var r2 = nr + v[0], c2 = nc + v[1];
+            if (r2 < 0 || r2 > 3 || c2 < 0 || c2 > 3) break;
+            var o = g[r2][c2];
+            if (!o) { nr = r2; nc = c2; continue; }
+            if (o.v === t.v && !o.merged) { g[r][c] = null; t.dead = true; t.r = r2; t.c = c2; o.v *= 2; o.merged = true; gained += o.v; moved = true; if (o.v > top) top = o.v; return; }
+            break;
+          }
+          if (nr !== r || nc !== c) { g[r][c] = null; g[nr][nc] = t; t.r = nr; t.c = nc; moved = true; }
+        });
+      });
+      if (!moved) return;
+      prev = snap; score += gained; lock = true;
+      tiles.forEach(function (t) { t.el.classList.remove('new', 'merged'); t.el.style.setProperty('--r', t.r); t.el.style.setProperty('--c', t.c); });
+      setTimeout(function () {
+        tiles = tiles.filter(function (t) { if (t.dead) { t.el.remove(); return false; } return true; });
+        tiles.forEach(function (t) { if (t.merged) { paint(t); void t.el.offsetWidth; t.el.classList.add('merged'); t.merged = false; } });
+        spawn(); lock = false;
+        if (gained) plus(gained);
+        if (!seen[top]) { seen[top] = true; if (top >= 8) banner(top); }
+        hud();
+        if (top >= 2048 && !won) { won = true; showWin(); }
+        else if (!canMove()) showStuck();
+      }, 115);
+      hud();
+    }
+    function undo() {
+      if (!prev || undos >= MAX_UNDO) return;
+      var s = prev;
+      var doIt = function () {
+        tiles = []; q('.layer').innerHTML = '';
+        s.tiles.forEach(function (x) { add(x[0], x[1], x[2], false); });
+        score = s.score; top = s.top; prev = null; undos += 1; lock = false;
+        q('.ov.stuck').hidden = true; hud(); toast('Son hamle geri alındı');
+      };
+      if (pro) doIt(); else { toast('Demo: burada ödüllü reklam oynar'); lock = true; setTimeout(doIt, 900); }
+    }
+    function showStuck() {
+      lock = true;
+      var left = MAX_UNDO - undos;
+      q('.sUndo').hidden = left <= 0 || !prev;
+      q('.sUndo').innerHTML = (pro ? '↶ Geri al' : '🎬 Reklamla geri al') + ' <em>' + left + '</em>';
+      q('.stuckTxt').textContent = left > 0 && prev ? 'Son hamleyi geri alıp devam edebilir ya da puanını alıp bitirebilirsin.' : 'Geri alma hakkın bitti. Puanını alıp bitir.';
+      q('.sEnd').textContent = 'Bitir · +' + points() + ' ★';
+      q('.ov.stuck').hidden = false;
+    }
+    function showWin() { lock = true; q('.winPts').textContent = '+' + points() + ' ★'; q('.ov.win').hidden = false; }
+    function finish() {
+      lock = true;
+      ['stuck', 'win'].forEach(function (k) { q('.ov.' + k).hidden = true; });
+      q('.doneImg').src = '../../assets/images/' + L[top][0] + '.webp';
+      q('.donePts').textContent = '+' + points() + ' ★';
+      var b = bonusFor(top);
+      q('.doneNote').textContent = 'Skor ÷ 20 = ' + Math.floor(score / 20) + (b ? ' + kostüm bonusu ' + b : '') + (points() >= 600 ? ' (tur tavanı 600)' : '');
+      q('.ov.done').hidden = false;
+    }
+    function newGame() { setBoard([[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]], 0); spawn(); spawn(); hud(); }
+
+    if (live) {
+      q('.undo').addEventListener('click', undo);
+      q('.sUndo').addEventListener('click', undo);
+      q('.end').addEventListener('click', finish);
+      q('.sEnd').addEventListener('click', finish);
+      q('.wEnd').addEventListener('click', finish);
+      q('.wGo').addEventListener('click', function () { q('.ov.win').hidden = true; lock = false; toast('Sıradaki hedef: Elmas Zibo'); });
+      q('.dNew').addEventListener('click', newGame);
+      q('.ov.intro .btn').addEventListener('click', function () { q('.ov.intro').hidden = true; newGame(); });
+      var b = q('.board'), sx = 0, sy = 0, on = false;
+      b.addEventListener('pointerdown', function (e) { on = true; sx = e.clientX; sy = e.clientY; b.setPointerCapture(e.pointerId); });
+      b.addEventListener('pointerup', function (e) {
+        if (!on) return; on = false;
+        var dx = e.clientX - sx, dy = e.clientY - sy;
+        if (Math.max(Math.abs(dx), Math.abs(dy)) < 24) return;
+        move(Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : (dy > 0 ? 'down' : 'up'));
+      });
+      b.addEventListener('pointercancel', function () { on = false; });
+    } else {
+      root.classList.add('static');
+      root.querySelectorAll('button').forEach(function (x) { x.tabIndex = -1; });
+    }
+    return { root: root, q: q, setBoard: setBoard, move: move, newGame: newGame, hud: hud, banner: banner, showStuck: showStuck, showWin: showWin, plus: plus, get top() { return top; } };
+  }
+
+  // ---------- canlı telefon ----------
+  var live = Game(document.getElementById('livePhone'), true);
+  live.setBoard([[2, 4, 8, 2], [0, 16, 32, 4], [0, 2, 64, 128], [0, 0, 4, 128]], 1860);
+  window.addEventListener('keydown', function (e) {
+    var k = { ArrowLeft: 'left', ArrowRight: 'right', ArrowUp: 'up', ArrowDown: 'down' }[e.code];
+    if (!k) return;
+    var r = live.root.getBoundingClientRect();
+    if (r.bottom < 0 || r.top > window.innerHeight) return;
+    e.preventDefault(); live.move(k);
+  });
+  document.getElementById('dNew').addEventListener('click', function () { live.newGame(); });
+  document.getElementById('dNear').addEventListener('click', function () { live.setBoard([[1024, 1024, 8, 2], [512, 256, 16, 4], [4, 64, 32, 2], [2, 0, 4, 0]], 16420); });
+  document.getElementById('dStuck').addEventListener('click', function () { live.setBoard([[128, 64, 32, 16], [2, 8, 16, 32], [8, 2, 4, 2], [2, 4, 2, 8]], 2210, { prev: true, undos: 1 }); live.showStuck(); });
+  document.getElementById('dTier').addEventListener('click', function () { pro = !pro; this.setAttribute('aria-pressed', String(pro)); this.textContent = pro ? 'Ücretsiz gibi göster' : 'Pro gibi göster'; live.hud(); });
+
+  // ---------- durum kareleri ----------
+  var f1 = Game(document.getElementById('fIntro'), false);
+  f1.setBoard([[0, 0, 0, 0], [0, 2, 0, 0], [0, 0, 4, 0], [0, 0, 0, 0]], 0); f1.q('.ov.intro').hidden = false;
+  var f2 = Game(document.getElementById('fBanner'), false);
+  f2.setBoard([[2, 4, 16, 2], [4, 8, 32, 4], [2, 64, 128, 8], [4, 2, 256, 16]], 3120); f2.banner(256, true); f2.plus(256);
+  var f3 = Game(document.getElementById('fStuck'), false);
+  f3.setBoard([[128, 64, 32, 16], [2, 8, 16, 32], [8, 2, 4, 2], [2, 4, 2, 8]], 2210, { prev: true, undos: 1 }); f3.showStuck();
+  var f4 = Game(document.getElementById('fWin'), false);
+  f4.setBoard([[2048, 512, 64, 8], [256, 128, 32, 4], [16, 8, 4, 2], [2, 4, 2, 0]], 20960); f4.showWin();
+
+  // ---------- kostüm sırası ----------
+  document.getElementById('ladder').innerHTML = ORDER.map(function (v) {
+    return '<div style="position:relative; aspect-ratio:1; max-width:92px">' + '<div class="tile" style="--r:0; --c:0; width:100%; height:100%; transform:none">' + tileInner(v) + '</div></div>';
+  }).join('');
+})();
+</script>
