@@ -10,6 +10,7 @@ import '../providers/costume_provider.dart';
 import '../providers/game_points_provider.dart';
 import '../providers/games_config_provider.dart';
 import '../providers/subscription_provider.dart';
+import '../services/game_analytics.dart';
 import '../utils/tab_navigation.dart';
 import '../widgets/sticker_style.dart';
 import 'paywall_screen.dart';
@@ -31,6 +32,7 @@ class GameExchangeScreen extends StatefulWidget {
 
 class _GameExchangeScreenState extends State<GameExchangeScreen> {
   int _amount = 0;
+  bool _capLogged = false;
 
   String _tierOf(SubscriptionProvider sub) => sub.isProPlus ? 'plus' : (sub.isPro ? 'pro' : 'free');
 
@@ -40,6 +42,7 @@ class _GameExchangeScreenState extends State<GameExchangeScreen> {
     final cost = points.exchange(zc, tier, config);
     if (cost == null) return;
     context.read<CoinProvider>().earnGameExchange(zc);
+    GameAnalytics.log('points_exchanged', {'zc': zc, 'cost': cost, 'week_total': points.weekExchanged, 'tier': tier});
     setState(() => _amount = 0);
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
@@ -58,6 +61,10 @@ class _GameExchangeScreenState extends State<GameExchangeScreen> {
 
     final maxN = points.maxAffordable(tier, config);
     final capped = points.weeklyRoom(tier, config) == 0;
+    if (capped && !_capLogged) {
+      _capLogged = true;
+      GameAnalytics.log('exchange_cap_hit', {'tier': tier});
+    }
     if (_amount > maxN) _amount = maxN;
     if (_amount == 0 && maxN > 0) _amount = maxN < 5 ? maxN : 5;
     final cost = points.costFor(_amount, tier, config) ?? 0;
@@ -237,6 +244,7 @@ class _GameExchangeScreenState extends State<GameExchangeScreen> {
                         key: const Key('exchangeUpsellButton'),
                         style: stickerFilledButtonStyle(context, radius: 14, fontSize: 15),
                         onPressed: () {
+                          GameAnalytics.log('game_upsell_tap', {'costume': target.id, 'missing': target.price - coins.balance});
                           Navigator.of(context).popUntil((r) => r.isFirst);
                           storeTabRequest.value++;
                         },
@@ -254,9 +262,12 @@ class _GameExchangeScreenState extends State<GameExchangeScreen> {
           if (tier == 'free') ...[
             const SizedBox(height: 6),
             TextButton(
-              onPressed: () => Navigator.of(context).push(
-                MaterialPageRoute<void>(builder: (_) => const PaywallScreen()),
-              ),
+              onPressed: () {
+                GameAnalytics.log('game_pro_tap');
+                Navigator.of(context).push(
+                  MaterialPageRoute<void>(builder: (_) => const PaywallScreen()),
+                );
+              },
               child: Text(
                 l10n.exchangeProLine(points.weeklyCap('pro', config)),
                 style: const TextStyle(fontWeight: FontWeight.w800, decoration: TextDecoration.underline),

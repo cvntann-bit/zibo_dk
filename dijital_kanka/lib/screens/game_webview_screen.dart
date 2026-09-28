@@ -8,6 +8,7 @@ import '../providers/coin_provider.dart';
 import '../providers/game_points_provider.dart';
 import '../providers/games_config_provider.dart';
 import '../providers/subscription_provider.dart';
+import '../services/game_analytics.dart';
 import '../widgets/sticker_style.dart';
 
 /// Oyun Salonu'ndaki bir HTML oyununu (APK içindeki `assets/games/<id>/`)
@@ -53,6 +54,7 @@ class _GameWebViewScreenState extends State<GameWebViewScreen> {
       ..addJavaScriptChannel('ZiboBridge', onMessageReceived: _onMessage)
       ..setOnConsoleMessage((m) => debugPrint('ZIBO_GAME console: ${m.message}'))
       ..loadFlutterAsset('assets/games/${widget.gameId}/index.html');
+    GameAnalytics.log('game_open', {'game': widget.gameId});
   }
 
   String get _tier {
@@ -83,7 +85,9 @@ class _GameWebViewScreenState extends State<GameWebViewScreen> {
         debugPrint('ZIBO_GAME $game ready in ${_openTimer.elapsedMilliseconds} ms');
         await _sendInit();
       case 'start':
-        final ok = _points.consumePlay(game, _tier, config);
+        final tier = _tier;
+        final ok = _points.consumePlay(game, tier, config);
+        GameAnalytics.log(ok ? 'game_start' : 'game_no_plays', {'game': game, 'tier': tier});
         if (ok) _roundOpen = true;
         await _call('ziboStartResult', _playState(ok: ok));
       case 'finish':
@@ -99,6 +103,15 @@ class _GameWebViewScreenState extends State<GameWebViewScreen> {
               )
             : 0;
         debugPrint('ZIBO_GAME finish $game: claimed=$claimed accepted=$points balance=${_points.points}');
+        if (accepted) {
+          GameAnalytics.log('game_finish', {
+            'game': game,
+            'tier': _tier,
+            'points': points,
+            'claimed': claimed,
+            'score': (msg['score'] as num?)?.toInt() ?? 0,
+          });
+        }
         await _call('ziboFinishResult', {..._playState(), 'accepted': accepted, 'points': points, 'balance': _points.points});
       case 'requestAd':
         final reason = msg['reason'] as String? ?? '';
@@ -109,6 +122,7 @@ class _GameWebViewScreenState extends State<GameWebViewScreen> {
           if (ok && reason == 'extraPlay') ok = _points.grantAdPlay(game, tier, config);
         }
         if (!mounted) return;
+        GameAnalytics.log('game_ad', {'game': game, 'reason': reason, 'ok': ok ? 1 : 0});
         await _call('ziboAdResult', _playState(ok: ok, reason: reason));
       case 'exit':
         if (mounted) Navigator.of(context).pop();
