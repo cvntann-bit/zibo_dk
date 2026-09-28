@@ -391,3 +391,10 @@ Kullanıcı Kule, Hafıza, 2048, Coin Yakala ve Tren'i telefonda denedi: "çalı
   sınırı 10.000 → 10.500 (7 Eylül'den beri bekliyordu — en büyük paket 10.000+500), `subscriptionState` şekil doğrulaması
   (yayından önce düzeltildi: bitiş tarihi ISO metin, `is timestamp` değil — commit a4bd201). Yayından sonra telefonda
   açılışta izin hatası görülmedi. Konsol geçmişinde 2 Eylül sürümü duruyor (geri dönüş gerekirse).
+- **Boyut / DEX ölçümü (2026-09-29, release AAB, 1.14.0 adayı):** AAB 92.710.391 B (88,4 MB) — 1.13.1'e göre
+  **+0,84 MB** (webview_flutter + 7 oyun HTML'i + kart görselleri). R8 `mapping.txt`: 17.950 sınıf, 11.500'ü
+  karartılmamış (%64,1). WebView ile ilgili (`webviewflutter` / `androidx.webkit`) 190 sınıf, 133'ü karartılmamış —
+  karartılmamış kodun yalnızca %1,2'si; oran etkisi ~0,1 puan. Play'in %25 "DEX optimizasyonu" puanı bayt bazlı
+  kendi yöntemiyle ölçülür → kesin sonuç yüklemeden sonra Play Console app bundle explorer'da doğrulanmalı.
+- **Analitik doğrulandı (2026-09-29):** cihaz FA log'unda `game_open`/`game_start`/`game_finish`/`points_exchanged`
+  gönderildi (`lib/services/game_analytics.dart`).
