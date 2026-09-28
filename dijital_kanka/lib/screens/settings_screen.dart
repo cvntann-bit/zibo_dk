@@ -14,7 +14,6 @@ import '../providers/locale_provider.dart';
 import '../providers/notification_provider.dart';
 import '../providers/push_notification_provider.dart';
 import '../providers/sound_effects_provider.dart';
-import '../providers/subscription_provider.dart';
 import '../providers/theme_provider.dart';
 import '../utils/google_link_action.dart';
 import '../utils/info_dialog.dart';
@@ -24,7 +23,6 @@ import '../widgets/language_flag_circle.dart';
 import '../widgets/rate_us_sheet.dart';
 import '../widgets/sticker_style.dart';
 import 'legal_placeholder_screen.dart';
-import 'paywall_screen.dart';
 import 'widgets_screen.dart';
 
 /// Destek e-postası — Ayarlar > Destek > "Bize Ulaşın" satırında hem
@@ -202,7 +200,6 @@ class SettingsScreen extends StatelessWidget {
     final currentLanguageCode = context.watch<LocaleProvider>().locale.languageCode;
     final authLink = context.watch<AuthLinkProvider>();
     // Faz 5 (E2) — Pro+'a özel bildirim sesi satırı.
-    final isProPlus = context.watch<SubscriptionProvider>().isProPlus;
     final proPlusSoundChoice = context.watch<PushNotificationProvider>().proPlusSoundChoice;
 
     return Scaffold(
@@ -250,21 +247,15 @@ class SettingsScreen extends StatelessWidget {
                   // görünür+yönlendirici" felsefesi): Pro+ ise mevcut
                   // seçimi gösterip seçim sheet'ini açar, değilse küçük bir
                   // kilit rozeti gösterip paywall'a yönlendirir.
+                  // 2026-09-29: bildirim sesi seçimi TÜM kullanıcılara açık
+                  // (Play yorumunda verilen söz — "zib zibo" sesi korkutucu
+                  // bulundu). Sunucu (notification-scripts sendToUser)
+                  // abonelik kontrol etmediği için ek iş gerekmiyor.
                   _SettingsRow(
-                    iconContent: Text(
-                      isProPlus ? '🎵' : '🔒',
-                      style: const TextStyle(fontSize: 15, height: 1),
-                    ),
+                    iconContent: const Text('🎵', style: TextStyle(fontSize: 15, height: 1)),
                     title: l10n.settingsProPlusSoundTitle,
-                    subtitle: isProPlus ? null : l10n.settingsProPlusSoundLockedSubtitle,
-                    trailingValue: isProPlus
-                        ? _proPlusSoundLabel(l10n, proPlusSoundChoice)
-                        : null,
-                    onTap: () => isProPlus
-                        ? _showProPlusSoundPicker(context)
-                        : Navigator.of(context).push(
-                            MaterialPageRoute<void>(builder: (_) => const PaywallScreen()),
-                          ),
+                    trailingValue: _proPlusSoundLabel(l10n, proPlusSoundChoice),
+                    onTap: () => _showProPlusSoundPicker(context),
                   ),
                   _groupDivider(context),
                   // Dil satırı: seçili dilin küçük yuvarlak bayrağı + adı
