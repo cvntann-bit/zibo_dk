@@ -78,6 +78,31 @@ Kurallar:
   tutulmaz (ya kaldırılır ya da `assets/games/`'e yönlendirilir).
 - Flutter tarafı yine de tavanı kendisi doğrular (oyundan gelen puan, config'teki tavanı aşamaz).
 
+## 2b. Navigasyon kararı (kullanıcı, 2026-09-28)
+
+- Alt barın 2. sekmesi **🚩 Hedefler → 🎮 Oyun Salonu** olur. Kullanıcı oyunlara buradan ulaşır.
+- **Hedefler**, Z butonunun açtığı modül menüsüne (`modules_menu_sheet.dart`) taşınır, listenin **EN BAŞINA**.
+- Alt bar tamamen kod-tabanlı (`lib/widgets/main_bottom_bar.dart`, emoji + l10n etiketi) → yeni görsel GEREKMEZ.
+
+Koddan ölçülen etki (2026-09-28) — Faz 3'te hepsi ele alınacak:
+| Yer | Şu an | Yapılacak |
+|---|---|---|
+| `root_screen.dart` `_goalTrackingTabIndex = 1`, `IndexedStack`'teki `GoalTrackingScreen(isActive: ...)` | Hedefler 2. sekme | Sekme Oyun Salonu olur; Hedefler `Navigator.push` ile açılan ekran olur (`isActive` hep true) |
+| `root_screen.dart` `_onGoalsTabRequested()` | Bir sinyal gelince Hedefler sekmesine geçiyor | Sinyal kaynağını bul; sekmeye geçmek yerine Hedefler ekranını push etmeli |
+| `root_screen.dart` AppBar'daki 🏆 "tamamlanan hedefler" butonu | Yalnızca Hedefler sekmesindeyken görünüyor | Hedefler ekranının kendi AppBar'ına taşınır |
+| `main_bottom_bar.dart` `onGoalsTap`, `tabGoalTracking` / `bottomBarGoalsLabel` | 🚩 Hedefler | 🎮 + yeni l10n etiketi (TR/EN/ES); eski ARB anahtarları silinmez (proje kuralı) |
+| `test/widget_test.dart` | 10 yerde `find.bySemanticsLabel('Hedef Takibi')` ile sekmeye geçiliyor | Modül menüsünden açılacak şekilde güncellenir |
+| `IndexedStack` | Tüm sekmeler hemen kurulur | Oyun Salonu sekmesi hafif olmalı; WebView yalnızca oyuna dokununca açılır |
+
+## Geliştirme / deneme akışı (kullanıcı, 2026-09-28)
+
+- Oyun Salonu geliştirmesi boyunca her adım **debug APK** olarak kullanıcının telefonuna (`adb`, cihaz
+  `R9AT507F27M`) kurulup denenir. **Her adımda AAB alınıp paylaşılmaz**; AAB yalnızca kullanıcı "yayınlayalım"
+  deyince (release-aab skill'i).
+- Kurmadan önce APK zaman damgası kontrol edilir (eski APK kurma hatası yaşandı) ve cihazdaki kurulumun Play'den
+  gelmediği doğrulanır (`installerPackageName`).
+- **Başlama zamanını kullanıcı söyler.** O zamana kadar bu işe kod yazılmaz.
+
 ## 3. Ekonomi
 
 ### Ölçülen mevcut kazanç (2026-09-27, koddan)
@@ -246,7 +271,8 @@ cihazda gerçek gün beklenmeli.
 - Mockup → onay → kod (tema workflow'u): **Oyun Salonu** (oyun kartları `game_*_thumb.webp`, ★ bakiyesi,
   haftalık takas çubuğu) ve **Takas Gişesi** (basamaklar, −/+ miktar, "Alabildiğim kadar", tavan mesajı,
   kostüm + paket önerisi, Pro satırı, puanla açılanlar). Taslak zaten var: `docs/game_prototypes/oyun_salonu.html`.
-- Modül menüsüne (`modules_menu_sheet.dart`) "Oyun Salonu" girişi.
+- **Navigasyon değişikliği (bölüm 2b):** alt barın 2. sekmesi 🚩 Hedefler → 🎮 Oyun Salonu; Hedefler, Z butonunun
+  modül menüsünün EN BAŞINA taşınır. Aşağıdaki etki listesinin hepsi bu fazda yapılır.
 - Sonuç ekranı ve "hak bitti / reklam izle" akışı Flutter tarafında (dil ve tema tutarlılığı için) —
   bölüm 9'daki karara bağlı.
 - TR/EN/ES ARB anahtarları.
