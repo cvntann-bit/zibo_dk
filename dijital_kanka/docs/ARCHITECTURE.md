@@ -34,7 +34,7 @@ geçmişi / bug hikayeleri için `docs/history/`, karar gerekçeleri için `docs
 ## 3. Navigasyon
 
 - **`RootScreen`**: sabit `AppBar` (coin bakiyesi + sekmeye-özel koşullu ikonlar) + `IndexedStack` (4 sabit sekme) + kod-tabanlı alt bar (`MainBottomBar` — `BottomAppBar` + ortada dock'lu `ZFloatingButton`, `NavigationBar` DEĞİL).
-- **4 sekme:** Ana Sayfa / Hedefler / **Profil** / Mağaza. (Para ve Birikim eskiden sekmeydi, Profil'le yer değiştirdi.)
+- **4 sekme:** Ana Sayfa / **Oyun Salonu** / Profil / Mağaza. (Para ve Birikim eskiden sekmeydi; Hedefler 2026-09-29'da Z menüsünün başına taşındı, `GoalTrackingPage` — bkz. `docs/game_zibo.md` bölüm 2b.)
 - **Ayarlar** sekme DEĞİL — AppBar dişli ikonundan `Navigator.push`.
 - **Modül ekranları** (Rüya/Şükran/Ruh Hali/Su/Manifest Günlükleri + Para ve Birikim + Odak Sayacı): alt bardaki Z butonunun `showModulesMenuSheet`'inden `Navigator.push`. Her biri kendi `Scaffold`/`AppBar`/geri butonu taşır.
 - **Ana Sayfa'ya özel overlay'ler** (sadece `_selectedIndex == 0` iken): sol kenarda `WheelTriggerButton` (Şans Çarkı), sağ kenarda `DailyRewardsTriggerButton` + `BadgesTriggerButton`.

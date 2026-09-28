@@ -20,7 +20,7 @@ Flutter mobil uygulaması: "Zibo" adlı maskot karakterin eşlik ettiği bir ki�
 - **Katman bazlı klasörler** (`lib/data|models|providers|screens|services|utils|widgets`) — feature klasörü YOK.
 - Her kullanıcı-verisi provider'ı `CloudStateStore` üzerinden hem `SharedPreferences` hem Firestore'a senkron. Firestore yolu: `users/{uid}/state/{prefsKey}`.
 - Servisler soyut arayüz + gerçek implementasyon (üretim varsayılanı) + fake/mock (yalnızca testte enjekte edilir): `AdService`, `PurchaseService`, `NotificationService`, `ShareService`, `GoogleAuthService`, `SoundEffectsService`, `PhotoPickerService`, `HomeWidgetService`.
-- `RootScreen` = sabit AppBar + kod-tabanlı alt bar + `IndexedStack` (4 sekme: Ana Sayfa / Hedefler / Profil / Mağaza). **`IndexedStack` TÜM sekmeleri hemen kurar** — her sekmenin provider'ı uygulama genelinde mevcut olmalı, `Timer`'lı ekranlar `isActive` koruması taşımalı.
+- `RootScreen` = sabit AppBar + kod-tabanlı alt bar + `IndexedStack` (4 sekme: Ana Sayfa / Oyun Salonu / Profil / Mağaza — Hedefler 2026-09-29'dan beri Z menüsünün başından açılan `GoalTrackingPage`). **`IndexedStack` TÜM sekmeleri hemen kurar** — her sekmenin provider'ı uygulama genelinde mevcut olmalı, `Timer`'lı ekranlar `isActive` koruması taşımalı.
 - Diğer modüller (Rüya/Şükran/Ruh Hali/Su/Manifest/Para/Odak) alt bardaki Z butonunun açtığı modül menüsünden `Navigator.push` ile açılır.
 - Detaylar → **`docs/ARCHITECTURE.md`**
 
