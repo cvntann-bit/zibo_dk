@@ -321,3 +321,21 @@ cihazda gerçek gün beklenmeli.
 7. Oyun sonu ekranı ve "hak bitti" akışı HTML'de mi kalsın, Flutter'a mı taşınsın (öneri: Flutter — dil/tema tutarlılığı)?
 8. Puanla açılan süsler ilk sürümde (Faz 4) mi, sonra mı (Faz 7)?
 9. Uzaktan ayar: Firestore `config/games` dokümanı (öneri) mı, Firebase Remote Config mi?
+
+### Verilen kararlar (Faz 0, 2026-09-29)
+- **Sıra:** önce Oyun Salonu; bildirim sesi düzeltmesi (Play yorumu sözü, bkz. `CURRENT_STATE.md`) sonra.
+- **İlk sürüm oyunları:** Hafıza + 2048 (madde 4 kapandı).
+- **Uzaktan ayar:** Firestore `config/games` dokümanı (madde 9 kapandı).
+- **Sonuç ekranı + "hak bitti / reklam" akışı:** oyunun İÇİNDE (HTML) kalır (madde 7 kapandı) → her oyun
+  kendi TR/EN/ES metinlerini taşır; Flutter yine puanı doğrular (`finish` → `ziboFinishResult`).
+- Açık kalanlar: 2, 3, 5, 6, 8 (ilgili faza gelince sorulacak).
+
+### Faz 1 ilerleme (2026-09-29)
+- `webview_flutter ^4.14.1` eklendi. `assets/games/kule/index.html` (tek başına oyun: TR/EN/ES, yerel fontlar
+  `../../fonts/`, görseller `../../images/`, köprü yoksa tarayıcıda DEMO modu).
+- `lib/screens/game_webview_screen.dart` — genel oyun ekranı; köprü mesajları `ready/start/finish/requestAd/exit`,
+  puan `cap` ile doğrulanıyor, açılış süresi `ZIBO_GAME ... ready in N ms` olarak loglanıyor.
+  Haklar/puanlar Faz 1'de BELLEKTE (ekran kapanınca sıfırlanır) — Faz 2'de `GamePointsProvider`.
+- `CoinProvider.showGameRewardedAd()` — oyunlar için ödüllü reklam (coin vermez, Pro'da reklamsız true).
+- Z menüsünde YALNIZCA debug derlemede "Zibo Kule (deneme)" girişi (`kDebugMode`).
+- Cihazda deneme kontrol listesi: bölüm 8 Faz 1.

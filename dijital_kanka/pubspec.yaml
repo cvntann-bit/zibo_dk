@@ -70,6 +70,7 @@ dependencies:
   flutter_timezone: ^5.1.0
   home_widget: ^0.9.0
   gal: ^2.3.3
+  webview_flutter: ^4.14.1
 
 dev_dependencies:
   flutter_test:
@@ -104,6 +105,8 @@ flutter:
   assets:
     - assets/images/
     - assets/sounds/
+    # Oyun Salonu oyunları — WebView içinde açılır (bkz. docs/game_zibo.md).
+    - assets/games/kule/
 
   # "Çizgi Roman Çıkartması" tipografisi (bkz. docs/theme_new.md, main.dart
   # `_buildTextTheme`) — DEĞİŞKEN (variable) font dosyaları olarak gömülü,

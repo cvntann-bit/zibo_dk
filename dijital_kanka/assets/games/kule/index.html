@@ -1,0 +1,343 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Zibo Kule</title>
+<!--
+  Zibo Kule — Oyun Salonu oyunu (WebView, bkz. docs/game_zibo.md).
+  Uygulamada: Flutter `GameWebViewScreen` bu dosyayı APK içinden açar, `ZiboBridge`
+  kanalıyla konuşur. Tarayıcıda: köprü yoksa DEMO modunda çalışır (tasarım önizlemesi).
+  Rakamlar (puan/tavan) Flutter'dan `ziboInit` config'iyle gelir; burada yalnızca varsayılan.
+-->
+<style>
+  @font-face { font-family: 'Baloo2'; src: url('../../fonts/Baloo2-Variable.ttf') format('truetype'); font-weight: 400 800; }
+  @font-face { font-family: 'Nunito'; src: url('../../fonts/Nunito-Variable.ttf') format('truetype'); font-weight: 200 1000; }
+  :root { --outline: #14110C; --gold: #F3B23C; --cream: #FFF8E8; --chip: #FFFDF7; --ice: #8FD3FF; --ice-pale: #DDF2FF; --ice-ink: #0E3A5C; }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #FFE9B8; color: #2A2115; font-family: 'Nunito', system-ui, sans-serif; user-select: none; -webkit-user-select: none; }
+  #stage { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
+  canvas { display: block; touch-action: none; }
+  .overlay { position: absolute; inset: 0; z-index: 5; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgba(255, 244, 222, .82); }
+  .overlay[hidden] { display: none; }
+  .sheet { width: 100%; max-width: 320px; background: var(--cream); border: 3px solid var(--outline); border-radius: 22px; box-shadow: 5px 5px 0 var(--outline); padding: 16px; display: grid; gap: 10px; justify-items: center; text-align: center; }
+  .logo { font: 800 34px/1 'Baloo2', sans-serif; color: var(--gold); -webkit-text-stroke: 2.5px var(--outline); paint-order: stroke fill; text-shadow: 3px 3px 0 var(--outline); }
+  .sheet img { width: 88px; filter: drop-shadow(3px 3px 0 rgba(20,17,12,.3)); }
+  .sheet h2 { margin: 0; font: 800 23px/1.1 'Baloo2', sans-serif; }
+  .sheet p { margin: 0; font-weight: 700; font-size: 13.5px; color: #6E5B40; line-height: 1.4; }
+  .chips { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; }
+  .chip { display: inline-flex; align-items: center; gap: 4px; border: 2.5px solid var(--outline); border-radius: 999px; padding: 1px 10px; font: 800 12.5px 'Nunito', sans-serif; background: var(--chip); }
+  .chip.gold { background: var(--gold); }
+  .pt { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; border-radius: 50%; background: var(--ice); border: 2px solid var(--outline); color: var(--ice-ink); font: 800 10px/1 'Nunito', sans-serif; font-style: normal; flex: none; }
+  .pt.lg { width: 30px; height: 30px; font-size: 16px; border-width: 2.5px; }
+  .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; }
+  .stat { border: 2.5px solid var(--outline); border-radius: 14px; padding: 6px 4px; background: var(--chip); }
+  .stat b { display: block; font: 800 24px/1 'Baloo2', sans-serif; }
+  .stat span { font: 800 10px 'Nunito', sans-serif; letter-spacing: .06em; text-transform: uppercase; color: #6E5B40; }
+  .reward { width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; border: 2.5px dashed var(--outline); border-radius: 14px; padding: 8px; background: var(--ice-pale); font: 800 20px 'Baloo2', sans-serif; }
+  .reward small { display: block; font: 700 11.5px 'Nunito', sans-serif; color: #6E5B40; }
+  .btn { width: 100%; border: 3px solid var(--outline); border-radius: 14px; padding: 10px 12px; font: 700 17px 'Baloo2', sans-serif; cursor: pointer; box-shadow: 3px 3px 0 var(--outline); background: var(--gold); color: var(--outline); }
+  .btn.ice { background: var(--ice); }
+  .btn.ghost { background: var(--chip); }
+  .btn:active:not(:disabled) { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--outline); }
+  .btn:disabled { opacity: .5; }
+  .btn[hidden] { display: none; }
+  .wait { font: 800 13px 'Nunito', sans-serif; color: #6E5B40; }
+</style>
+</head>
+<body>
+<div id="stage"><canvas id="c"></canvas></div>
+
+<div class="overlay" id="intro" hidden>
+  <div class="sheet">
+    <div class="logo">Zibo Kule</div>
+    <img src="../../images/zibo_df_pose4.webp" alt="">
+    <p id="introText"></p>
+    <div class="chips"><span class="chip gold" id="introPlays"></span><span class="chip" id="introBest"></span></div>
+    <button class="btn" id="startBtn"></button>
+    <button class="btn ice" id="playAdBtn" hidden></button>
+  </div>
+</div>
+
+<div class="overlay" id="cont" hidden>
+  <div class="sheet">
+    <h2 id="contTitle"></h2>
+    <img src="../../images/zibo_df_pose1.webp" alt="">
+    <p id="contText"></p>
+    <button class="btn ice" id="contBtn"></button>
+    <button class="btn" id="contEnd"></button>
+  </div>
+</div>
+
+<div class="overlay" id="result" hidden>
+  <div class="sheet">
+    <h2 id="resTitle"></h2>
+    <img id="resImg" src="../../images/zibo_df_pose3.webp" alt="">
+    <div class="stats">
+      <div class="stat"><b id="resFloors">0</b><span id="resFloorsL"></span></div>
+      <div class="stat"><b id="resPerfects">0</b><span id="resPerfectsL"></span></div>
+    </div>
+    <div class="reward"><i class="pt lg">★</i><div><span id="resPts"></span><small id="resNote"></small></div></div>
+    <button class="btn" id="againBtn"></button>
+    <button class="btn ghost" id="exitBtn"></button>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  // ---------- metinler (TR / EN / ES) ----------
+  var TEXT = {
+    tr: {
+      intro: 'Kayan bloğu tam zamanında bırak, taşan kısım kesilir. Tam üstüne oturtursan Mükemmel! Kule ne kadar yükselebilir?',
+      playsLeft: '{n} hak kaldı', noPlays: 'Bugünlük hakların bitti', best: 'Rekor {n} kat',
+      start: 'Başla', waiting: 'Bekleniyor…', adPlay: '🎬 Reklam izle, +1 hak',
+      contTitle: 'Blok düştü!', contText: '{f} kat çıktın. Son bloğu bir kez daha bırakabilir ya da {p} ★ alıp bitirebilirsin.',
+      contAd: '🎬 Reklam izle, tekrar dene', contPro: '↶ Tekrar dene (1 hak)', finish: 'Bitir, puanı al',
+      newBest: 'Yeni rekor!', done: 'Kule tamam!', floors: 'Kat', perfects: 'Mükemmel',
+      pts: '+{n} puan', note: '{f} kat × {a} + {m} mükemmel × {b}', capNote: ' (tur tavanı {c})',
+      again: 'Tekrar oyna ({n} hak)', againNo: 'Hak kalmadı', exit: 'Oyun Salonu\'na dön',
+      hudFloor: '{n} kat', hint: 'Dokun: bloğu bırak', perfect: 'Mükemmel!', combo: 'Kombo ×{n}', retry: 'Bir şans daha!', adFail: 'Reklam şu an yok, sonra tekrar dene'
+    },
+    en: {
+      intro: 'Drop the sliding block at the right moment — the overhang gets cut off. Land it perfectly for a Perfect! How high can your tower go?',
+      playsLeft: '{n} plays left', noPlays: 'No plays left today', best: 'Best {n} floors',
+      start: 'Start', waiting: 'Please wait…', adPlay: '🎬 Watch an ad, +1 play',
+      contTitle: 'The block fell!', contText: 'You climbed {f} floors. Drop the last block once more, or finish and take {p} ★.',
+      contAd: '🎬 Watch an ad, try again', contPro: '↶ Try again (1 left)', finish: 'Finish, take points',
+      newBest: 'New record!', done: 'Tower done!', floors: 'Floors', perfects: 'Perfect',
+      pts: '+{n} points', note: '{f} floors × {a} + {m} perfect × {b}', capNote: ' (round cap {c})',
+      again: 'Play again ({n} left)', againNo: 'No plays left', exit: 'Back to Game Hall',
+      hudFloor: '{n} floors', hint: 'Tap: drop the block', perfect: 'Perfect!', combo: 'Combo ×{n}', retry: 'One more chance!', adFail: 'No ad right now, try again later'
+    },
+    es: {
+      intro: 'Suelta el bloque en el momento justo: lo que sobresale se corta. ¡Si encaja exacto es Perfecto! ¿Qué tan alta será tu torre?',
+      playsLeft: 'Te quedan {n} partidas', noPlays: 'No te quedan partidas hoy', best: 'Récord {n} pisos',
+      start: 'Empezar', waiting: 'Espera…', adPlay: '🎬 Mira un anuncio, +1 partida',
+      contTitle: '¡Se cayó el bloque!', contText: 'Subiste {f} pisos. Suelta el último bloque otra vez o termina y llévate {p} ★.',
+      contAd: '🎬 Mira un anuncio, reintenta', contPro: '↶ Reintentar (1 vez)', finish: 'Terminar, cobrar puntos',
+      newBest: '¡Nuevo récord!', done: '¡Torre lista!', floors: 'Pisos', perfects: 'Perfectos',
+      pts: '+{n} puntos', note: '{f} pisos × {a} + {m} perfectos × {b}', capNote: ' (tope {c})',
+      again: 'Jugar de nuevo (quedan {n})', againNo: 'No quedan partidas', exit: 'Volver a la Sala de Juegos',
+      hudFloor: '{n} pisos', hint: 'Toca: suelta el bloque', perfect: '¡Perfecto!', combo: 'Combo ×{n}', retry: '¡Otra oportunidad!', adFail: 'No hay anuncio ahora, inténtalo luego'
+    }
+  };
+  var lang = 'tr';
+  function t(key, vars) {
+    var s = (TEXT[lang] && TEXT[lang][key]) || TEXT.tr[key] || key;
+    if (vars) Object.keys(vars).forEach(function (k) { s = s.split('{' + k + '}').join(vars[k]); });
+    return s;
+  }
+
+  // ---------- köprü (Flutter ZiboBridge) ----------
+  var CFG = { locale: 'tr', tier: 'free', playsLeft: 3, best: 0, perFloor: 2, perfectBonus: 1, cap: 250 };
+  var hasHost = !!(window.ZiboBridge && window.ZiboBridge.postMessage);
+  function send(msg) {
+    msg.game = 'kule';
+    if (hasHost) { window.ZiboBridge.postMessage(JSON.stringify(msg)); return; }
+    // DEMO (tarayıcı): Flutter'ın cevaplarını taklit et.
+    setTimeout(function () {
+      if (msg.type === 'start') window.ziboStartResult({ ok: CFG.playsLeft > 0, playsLeft: Math.max(0, CFG.playsLeft - 1) });
+      if (msg.type === 'finish') window.ziboFinishResult({ accepted: true, points: Math.min(CFG.cap, msg.points) });
+      if (msg.type === 'requestAd') window.ziboAdResult({ ok: true, reason: msg.reason, playsLeft: CFG.playsLeft + (msg.reason === 'extraPlay' ? 1 : 0) });
+      if (msg.type === 'exit') location.reload();
+    }, msg.type === 'requestAd' ? 900 : 60);
+  }
+  function $(id) { return document.getElementById(id); }
+
+  window.ziboInit = function (cfg) {
+    Object.keys(cfg || {}).forEach(function (k) { CFG[k] = cfg[k]; });
+    lang = TEXT[CFG.locale] ? CFG.locale : 'tr';
+    document.documentElement.lang = lang;
+    showIntro();
+  };
+  window.ziboStartResult = function (r) {
+    CFG.playsLeft = r.playsLeft;
+    if (r.ok) { $('intro').hidden = true; $('result').hidden = true; startGame(); } else showIntro();
+  };
+  window.ziboFinishResult = function (r) { showResult(r.accepted ? r.points : 0); };
+  window.ziboAdResult = function (r) {
+    if (typeof r.playsLeft === 'number') CFG.playsLeft = r.playsLeft;
+    if (!r.ok) { toast(t('adFail')); if (r.reason === 'continue') $('cont').hidden = false; else showIntro(); return; }
+    if (r.reason === 'continue') { conts += 1; fall = []; nextBlock(); state = 'play'; toast(t('retry')); }
+    if (r.reason === 'extraPlay') showIntro();
+  };
+
+  // ---------- tuval ----------
+  var W = 360, H = 640, OUT = '#14110C';
+  var canvas = $('c'), ctx = canvas.getContext('2d');
+  function fit() {
+    var vw = window.innerWidth, vh = window.innerHeight, s = Math.min(vw / W, vh / H), dpr = window.devicePixelRatio || 1;
+    canvas.style.width = (W * s) + 'px'; canvas.style.height = (H * s) + 'px';
+    canvas.width = Math.round(W * s * dpr); canvas.height = Math.round(H * s * dpr);
+    ctx.setTransform(s * dpr, 0, 0, s * dpr, 0, 0);
+  }
+  fit(); window.addEventListener('resize', fit);
+  function img(src) { var i = new Image(); i.src = src; return i; }
+  function ready(i) { return i.complete && i.naturalWidth; }
+  var ziboUp = img('../../images/zibo_df_pose4.webp'), ziboHurt = img('../../images/zibo_df_pose1.webp');
+  function rr(x, y, w, h, r) { ctx.beginPath(); ctx.roundRect(x, y, w, h, r); }
+  function outlined(txt, x, y, size, fill) {
+    ctx.font = '800 ' + size + 'px Baloo2, Nunito, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.lineJoin = 'round';
+    ctx.lineWidth = size / 6; ctx.strokeStyle = OUT; ctx.fillStyle = OUT; ctx.fillText(txt, x + 2.5, y + 2.5); ctx.strokeText(txt, x, y); ctx.fillStyle = fill; ctx.fillText(txt, x, y);
+  }
+  function pill(x, y, w, h) { ctx.fillStyle = OUT; rr(x + 3, y + 3, w, h, h / 2); ctx.fill(); ctx.fillStyle = '#FFFDF7'; ctx.strokeStyle = OUT; ctx.lineWidth = 3; rr(x, y, w, h, h / 2); ctx.fill(); ctx.stroke(); }
+  function ptIcon(x, y, r) { ctx.fillStyle = '#8FD3FF'; ctx.strokeStyle = OUT; ctx.lineWidth = 2.2; ctx.beginPath(); ctx.arc(x, y, r, 0, 6.283); ctx.fill(); ctx.stroke(); ctx.fillStyle = '#0E3A5C'; ctx.font = '800 ' + (r * 1.2) + 'px Nunito, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('★', x, y + 1); }
+  var clouds = [];
+  for (var ci = 0; ci < 4; ci++) clouds.push({ x: Math.random() * W, y: 60 + Math.random() * 240, s: 0.6 + Math.random() * 0.6 });
+  var toastMsg = '', toastT = 0;
+  function toast(m) { toastMsg = m; toastT = 1.8; }
+
+  // ---------- oyun ----------
+  var BH = 26, BASE_Y = 540, BASE_W = 200, PERFECT = 5;
+  var COLORS = ['#FFF3DC', '#FAD99C', '#F3B23C', '#EE9A45', '#F6D488', '#DDF2FF'];
+  var state = 'idle', tt = 0, stack, cur, fall, cam, perfects, combo, conts, pops, jump, flash;
+  function reset() { stack = [{ x: (W - BASE_W) / 2, w: BASE_W }]; fall = []; cam = 0; perfects = 0; combo = 0; conts = 0; pops = []; jump = 0; flash = 0; cur = null; }
+  reset();
+  function floors() { return stack.length - 1; }
+  function points() { return Math.min(CFG.cap, floors() * CFG.perFloor + perfects * CFG.perfectBonus); }
+  function speed() { return Math.min(380, 150 + stack.length * 6); }
+  function nextBlock() { var top = stack[stack.length - 1], fromLeft = stack.length % 2 === 0; cur = { x: fromLeft ? -top.w * 0.5 : W - top.w * 0.5, w: top.w, dir: fromLeft ? 1 : -1 }; }
+  function levelY(i) { return BASE_Y - i * BH + cam; }
+  function startGame() { reset(); nextBlock(); state = 'play'; }
+  function drop() {
+    if (state !== 'play' || !cur) return;
+    var top = stack[stack.length - 1], lvl = stack.length;
+    var left = Math.max(cur.x, top.x), right = Math.min(cur.x + cur.w, top.x + top.w), ov = right - left;
+    if (ov <= 0) { fall.push({ x: cur.x, w: cur.w, y: levelY(lvl), vy: 0, rot: 0, vr: cur.dir * 1.5, lvl: lvl }); cur = null; fail(); return; }
+    var py = levelY(lvl) - 20;
+    if (Math.abs(cur.x - top.x) <= PERFECT) {
+      combo += 1; perfects += 1;
+      var nw = combo >= 3 ? Math.min(BASE_W, top.w + 8) : top.w;
+      stack.push({ x: top.x - (nw - top.w) / 2, w: nw }); jump = 0.35;
+      pops.push({ x: W / 2, y: py, t: 0, txt: combo >= 2 ? t('combo', { n: combo }) : t('perfect'), gold: true });
+    } else {
+      combo = 0;
+      fall.push({ x: cur.x < top.x ? cur.x : right, w: cur.w - ov, y: levelY(lvl), vy: 0, rot: 0, vr: (cur.x < top.x ? -1 : 1) * 1.8, lvl: lvl });
+      stack.push({ x: left, w: ov });
+      pops.push({ x: left + ov / 2, y: py, t: 0, txt: '+' + CFG.perFloor + ' ★' });
+    }
+    nextBlock();
+  }
+  function fail() {
+    state = 'fall'; flash = 0.35;
+    setTimeout(function () {
+      if (state !== 'fall') return;
+      if (conts < 1) {
+        $('contTitle').textContent = t('contTitle');
+        $('contText').textContent = t('contText', { f: floors(), p: points() });
+        $('contBtn').textContent = CFG.tier === 'free' ? t('contAd') : t('contPro');
+        $('contEnd').textContent = t('finish');
+        $('cont').hidden = false;
+      } else finish();
+    }, 750);
+  }
+  function finish() {
+    if (state === 'end' || state === 'waitResult') return;
+    state = 'waitResult'; $('cont').hidden = true;
+    send({ type: 'finish', points: points(), stats: { floors: floors(), perfects: perfects } });
+  }
+  function showIntro() {
+    $('introText').textContent = t('intro');
+    var left = CFG.playsLeft;
+    $('introPlays').textContent = left > 0 ? t('playsLeft', { n: left }) : t('noPlays');
+    $('introBest').innerHTML = '<i class="pt">★</i>' + t('best', { n: CFG.best || 0 });
+    $('startBtn').textContent = t('start'); $('startBtn').disabled = left <= 0; $('startBtn').hidden = left <= 0;
+    $('playAdBtn').textContent = t('adPlay'); $('playAdBtn').hidden = !(left <= 0 && CFG.canAdForPlay);
+    $('result').hidden = true; $('cont').hidden = true; $('intro').hidden = false;
+    state = 'idle';
+  }
+  function showResult(pts) {
+    state = 'end';
+    var nb = floors() > (CFG.best || 0);
+    if (nb) CFG.best = floors();
+    $('resTitle').textContent = nb ? t('newBest') : t('done');
+    $('resImg').src = '../../images/' + (nb ? 'zibo_df_pose3' : 'zibo_df_pose1') + '.webp';
+    $('resFloors').textContent = floors(); $('resFloorsL').textContent = t('floors');
+    $('resPerfects').textContent = perfects; $('resPerfectsL').textContent = t('perfects');
+    $('resPts').textContent = t('pts', { n: pts });
+    $('resNote').textContent = t('note', { f: floors(), a: CFG.perFloor, m: perfects, b: CFG.perfectBonus }) + (pts >= CFG.cap ? t('capNote', { c: CFG.cap }) : '');
+    var left = CFG.playsLeft;
+    $('againBtn').textContent = left > 0 ? t('again', { n: left }) : t('againNo'); $('againBtn').disabled = left <= 0;
+    $('exitBtn').textContent = t('exit');
+    $('result').hidden = false;
+  }
+  $('startBtn').addEventListener('click', function () { this.disabled = true; this.textContent = t('waiting'); send({ type: 'start' }); });
+  $('playAdBtn').addEventListener('click', function () { this.disabled = true; send({ type: 'requestAd', reason: 'extraPlay' }); });
+  $('contBtn').addEventListener('click', function () { $('cont').hidden = true; send({ type: 'requestAd', reason: 'continue' }); });
+  $('contEnd').addEventListener('click', finish);
+  $('againBtn').addEventListener('click', function () { this.disabled = true; send({ type: 'start' }); });
+  $('exitBtn').addEventListener('click', function () { send({ type: 'exit' }); });
+  canvas.addEventListener('pointerdown', function (e) { e.preventDefault(); drop(); });
+  window.addEventListener('keydown', function (e) { if (e.code === 'Space' || e.code === 'ArrowDown') { e.preventDefault(); drop(); } });
+
+  function update(dt) {
+    tt += dt;
+    pops = pops.filter(function (p) { p.t += dt; return p.t < 0.9; });
+    jump = Math.max(0, jump - dt); flash = Math.max(0, flash - dt); toastT = Math.max(0, toastT - dt);
+    cam += (Math.max(0, (stack.length - 11) * BH) - cam) * Math.min(1, dt * 5);
+    fall.forEach(function (f) { f.vy += 1400 * dt; f.y += f.vy * dt; f.rot += f.vr * dt; });
+    fall = fall.filter(function (f) { return f.y < H + 80; });
+    if (state === 'play' && cur) {
+      cur.x += cur.dir * speed() * dt;
+      var lo = -cur.w * 0.5, hi = W - cur.w * 0.5;
+      if (cur.x < lo) { cur.x = lo; cur.dir = 1; }
+      if (cur.x > hi) { cur.x = hi; cur.dir = -1; }
+    }
+  }
+  function block(x, y, w, lvl) {
+    ctx.fillStyle = OUT; rr(x + 3, y + 3, w, BH, 6); ctx.fill();
+    ctx.fillStyle = COLORS[lvl % COLORS.length]; ctx.strokeStyle = OUT; ctx.lineWidth = 2.5; rr(x, y, w, BH, 6); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = 'rgba(255,255,255,.4)'; rr(x + 5, y + 4, Math.max(0, w - 10), 4, 2); ctx.fill();
+  }
+  function draw() {
+    var sky = ctx.createLinearGradient(0, 0, 0, H);
+    sky.addColorStop(0, cam > 700 ? '#CFE9FF' : '#FFF1D2'); sky.addColorStop(1, '#FFE3A6');
+    ctx.fillStyle = sky; ctx.fillRect(0, 0, W, H);
+    clouds.forEach(function (cl, i) {
+      var y = ((cl.y + cam * (0.3 + i * 0.1)) % (H + 80)) - 40;
+      ctx.save(); ctx.translate(cl.x, y); ctx.scale(cl.s, cl.s);
+      ctx.fillStyle = '#FFFDF7'; ctx.strokeStyle = OUT; ctx.lineWidth = 3 / cl.s;
+      ctx.beginPath(); ctx.arc(0, 0, 20, Math.PI * 0.5, Math.PI * 1.5); ctx.arc(22, -12, 22, Math.PI, Math.PI * 1.85); ctx.arc(48, -4, 18, Math.PI * 1.3, Math.PI * 0.5); ctx.closePath(); ctx.fill(); ctx.stroke();
+      ctx.restore();
+    });
+    var groundY = BASE_Y + BH + cam;
+    if (groundY < H) {
+      ctx.fillStyle = '#C9A46B'; ctx.fillRect(0, groundY, W, H - groundY);
+      ctx.strokeStyle = OUT; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(0, groundY); ctx.lineTo(W, groundY); ctx.stroke();
+      var im = state === 'fall' || state === 'end' || state === 'waitResult' ? ziboHurt : ziboUp;
+      if (ready(im)) { var jy = jump > 0 ? Math.sin((0.35 - jump) / 0.35 * Math.PI) * 26 : 0; ctx.drawImage(im, 12, groundY - 70 - jy, 54, 70); }
+    }
+    stack.forEach(function (b, i) { var y = levelY(i); if (y > -BH && y < H) block(b.x, y, b.w, i); });
+    fall.forEach(function (f) { ctx.save(); ctx.translate(f.x + f.w / 2, f.y + BH / 2); ctx.rotate(f.rot); block(-f.w / 2, -BH / 2, f.w, f.lvl); ctx.restore(); });
+    if (cur && state === 'play') {
+      var cy = levelY(stack.length), top = stack[stack.length - 1];
+      block(cur.x, cy, cur.w, stack.length);
+      ctx.save(); ctx.setLineDash([4, 5]); ctx.strokeStyle = 'rgba(20,17,12,.35)'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(top.x, cy - 6); ctx.lineTo(top.x, cy + BH * 2); ctx.moveTo(top.x + top.w, cy - 6); ctx.lineTo(top.x + top.w, cy + BH * 2); ctx.stroke(); ctx.restore();
+    }
+    if (state !== 'idle') {
+      pill(14, 16, 104, 34); ptIcon(33, 33, 11);
+      ctx.font = '800 19px Baloo2, Nunito, sans-serif'; ctx.textAlign = 'left'; ctx.textBaseline = 'middle'; ctx.fillStyle = OUT; ctx.fillText(String(points()), 48, 34);
+      outlined(t('hudFloor', { n: floors() }), W / 2 + 30, 34, 22, '#FFFDF7');
+      ctx.font = '800 11px Nunito, sans-serif'; ctx.textAlign = 'center'; ctx.fillStyle = '#6E5B40'; ctx.fillText(t('hint'), W / 2, 72);
+    }
+    pops.forEach(function (p) { ctx.globalAlpha = 1 - p.t / 0.9; outlined(p.txt, p.x, p.y - p.t * 40, p.gold ? 18 : 16, p.gold ? '#F3B23C' : '#8FD3FF'); ctx.globalAlpha = 1; });
+    if (toastT > 0) {
+      ctx.globalAlpha = Math.min(1, toastT * 3); ctx.font = '800 13px Nunito, sans-serif';
+      var tw = ctx.measureText(toastMsg).width + 28; ctx.fillStyle = OUT; rr(W / 2 - tw / 2, H - 60, tw, 30, 15); ctx.fill();
+      ctx.fillStyle = '#FFF8E8'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(toastMsg, W / 2, H - 45); ctx.globalAlpha = 1;
+    }
+    if (flash > 0) { ctx.fillStyle = 'rgba(228,85,59,' + (flash * 1.2) + ')'; ctx.fillRect(0, 0, W, H); }
+  }
+  var last = performance.now();
+  function loop(now) { var dt = Math.min(0.033, (now - last) / 1000); last = now; update(dt); draw(); requestAnimationFrame(loop); }
+  requestAnimationFrame(loop);
+
+  // Hazırız: Flutter'a haber ver (o da ziboInit ile cevap verir). Köprü yoksa DEMO.
+  if (hasHost) send({ type: 'ready' }); else window.ziboInit({ locale: (navigator.language || 'tr').slice(0, 2), canAdForPlay: true });
+})();
+</script>
+</body>
+</html>

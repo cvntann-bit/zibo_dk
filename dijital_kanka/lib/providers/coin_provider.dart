@@ -661,6 +661,15 @@ class CoinProvider extends ChangeNotifier {
     return _adService.showInterstitialAd();
   }
 
+  /// Oyun Salonu'ndaki "reklam izle, +1 hak / tekrar dene / geri al"
+  /// akışları (bkz. docs/game_zibo.md). Coin VERMEZ — yalnızca reklamın
+  /// sonuna kadar izlenip izlenmediğini döner; ödülü oyun ekranı uygular.
+  /// Pro/Pro+ reklamsız geçer (çark ile aynı kural, [watchAdAndSpinWheel]).
+  Future<bool> showGameRewardedAd() {
+    if (_isPro()) return Future.value(true);
+    return _adService.showRewardedAd();
+  }
+
   @override
   void dispose() {
     _orphanedPurchaseSub.cancel();

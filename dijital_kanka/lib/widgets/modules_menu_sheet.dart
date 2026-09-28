@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
 import '../screens/dream_journal_screen.dart';
 import '../screens/focus_timer_screen.dart';
+import '../screens/game_webview_screen.dart';
 import '../screens/gratitude_journal_screen.dart';
 import '../screens/manifest_journal_screen.dart';
 import '../screens/money_screen.dart';
@@ -53,6 +54,29 @@ Future<void> showModulesMenuSheet(BuildContext context) {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Faz 1 teknik denemesi (docs/game_zibo.md) — YALNIZCA debug
+                  // derlemede görünür, release'e sızmaz. Faz 3'te gerçek
+                  // Oyun Salonu sekmesiyle değiştirilecek.
+                  if (gameHallDebugEntryEnabled) ...[
+                    _ModuleCard(
+                      emoji: '🎮',
+                      title: 'Zibo Kule (deneme)',
+                      description: 'Oyun Salonu WebView denemesi — yalnızca debug',
+                      onTap: () {
+                        Navigator.of(sheetContext).pop();
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const GameWebViewScreen(
+                              gameId: 'kule',
+                              title: 'Zibo Kule',
+                              config: kuleGameConfig,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 10),
+                  ],
                   _ModuleCard(
                     emoji: '🌙',
                     title: l10n.dreamJournalTooltip,
