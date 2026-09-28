@@ -60,6 +60,7 @@ Ana Sayfa (zaman/ruh-hali ağırlıklı motivasyon sözü sistemi + olay-tetikle
 |---|---|
 | **Bildirim sesi — kullanıcı şikâyeti (KISMEN YAPILDI)** | Play yorumu (3★, 1.13.1): "zib zibo" bildirim sesi korkutucu. 2026-09-29: **ses seçimi tüm kullanıcılara açıldı** (söz yerine geldi; Pro+ perk'inden çıkarıldı, bkz. `docs/subscribe_model.md`). Kalan (isteğe bağlı): varsayılan sesi daha yumuşak bir sesle değiştirmek / "sessiz" veya "sistem sesi" seçeneği — Android kanal sesi değiştirilemez, yeni kanal ID'leri gerekir (`notification_service.dart` + `notification-scripts/src/common.js`). Yorumdaki fikir: "Zibo ile mesajlaşma". |
 | Google Sign-In gerçek kullanıcılarda | Firebase'e App Signing SHA-1 eklendi; yeni sürüm yayınlanınca doğrulanmalı |
+| **firestore.rules konsolla senkron** | 2026-09-29'da repodaki dosya birebir yayınlandı (öncesinde konsol 2 Eylül'de kalmıştı). **Kural:** `firestore.rules` her değiştiğinde konsola da yapıştır — aksi halde repo ile canlı ayrışıyor (bu kez coin sınırı ve abonelik kuralı 3 hafta yayınlanmadan kaldı). |
 | IAP makbuz doğrulaması | Sunucu tarafı YOK — launch öncesi Cloud Functions gerekir (Blaze) |
 | Coin ekonomisi | Client-authoritative — `firestore.rules` yalnızca "hız engelleyici". Sürdürülen scripted saldırıya açık. Tam çözüm Blaze |
 | Kostüm/tema `ownedIds` | Firestore'da korumasız (istemci ödemeden ID ekleyebilir) — bilinçli kabul |

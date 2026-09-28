@@ -386,3 +386,8 @@ Kullanıcı Kule, Hafıza, 2048, Coin Yakala ve Tren'i telefonda denedi: "çalı
   `exchange`, `daysUntilWeekReset`. ZC ekleme: `CoinProvider.earnGameExchange` (işlem adı "Takas Gişesi").
 - Puanla açılan süsler (Gece Gökyüzü, Buz Kartlar) henüz YOK (karar 8 açık). Haftalık sıralama YOK (Faz 8).
 - Testler: Takas Gişesi grubu (4 test).
+- **2026-09-29 02:41 — `firestore.rules` Firebase konsolunda YAYINLANDI** (kullanıcı onayıyla). Konsoldaki kural 2 Eylül'den
+  beri güncellenmemişti; yayınla birlikte canlıya giden 3 değişiklik: `config/games` salt-okunur kuralı, coin tek-yazım
+  sınırı 10.000 → 10.500 (7 Eylül'den beri bekliyordu — en büyük paket 10.000+500), `subscriptionState` şekil doğrulaması
+  (yayından önce düzeltildi: bitiş tarihi ISO metin, `is timestamp` değil — commit a4bd201). Yayından sonra telefonda
+  açılışta izin hatası görülmedi. Konsol geçmişinde 2 Eylül sürümü duruyor (geri dönüş gerekirse).
