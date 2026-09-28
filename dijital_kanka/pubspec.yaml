@@ -109,6 +109,8 @@ flutter:
     - assets/games/kule/
     - assets/games/hafiza/
     - assets/games/2048/
+    - assets/games/yakala/
+    - assets/games/tren/
 
   # "Çizgi Roman Çıkartması" tipografisi (bkz. docs/theme_new.md, main.dart
   # `_buildTextTheme`) — DEĞİŞKEN (variable) font dosyaları olarak gömülü,
