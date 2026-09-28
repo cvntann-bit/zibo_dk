@@ -58,6 +58,7 @@ Ana Sayfa (zaman/ruh-hali ağırlıklı motivasyon sözü sistemi + olay-tetikle
 
 | Konu | Durum |
 |---|---|
+| **Bildirim sesi — kullanıcı şikâyeti (YAPILACAK)** | Play yorumu (Elif sena, 3★, 1.13.1, 2026-09-26): bildirimdeki "zib zibo" sesi korkutucu, "izlendiğimden şüphe ediyorum". Geliştirici yanıtında (2026-09-27) **bildirim sesi seçiminin TÜM kullanıcılara açılacağı** söz verildi. Yapılacak: şu an Pro+'a özel olan ses seçicisini (bkz. `docs/subscribe_model.md` E2) herkese aç; varsayılan sesi daha yumuşak bir sesle değiştirmeyi / "sistem sesi" ve "sessiz" seçeneğini değerlendir. Android kanal sesi değiştirilemez (immutable) → yeni kanal ID'leri gerekir. Pro+ perk listesi + paywall metni güncellenmeli. Aynı yorumda fikir: "Zibo ile mesajlaşabilseydin" (sohbet özelliği isteği). |
 | Google Sign-In gerçek kullanıcılarda | Firebase'e App Signing SHA-1 eklendi; yeni sürüm yayınlanınca doğrulanmalı |
 | IAP makbuz doğrulaması | Sunucu tarafı YOK — launch öncesi Cloud Functions gerekir (Blaze) |
 | Coin ekonomisi | Client-authoritative — `firestore.rules` yalnızca "hız engelleyici". Sürdürülen scripted saldırıya açık. Tam çözüm Blaze |
