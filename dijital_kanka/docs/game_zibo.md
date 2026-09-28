@@ -1,6 +1,6 @@
 # Zibo Oyun Salonu — mini oyunlar + Oyun Puanı ekonomisi
 
-> **Durum (2026-09-27):** Tasarım ve ekonomi kararları VERİLDİ, oynanabilir HTML taslakları HAZIR,
+> **Durum (2026-09-28): yol haritası hazır (bölüm 8), kodlamaya başlanmadı.** Önceki durum (2026-09-27): Tasarım ve ekonomi kararları VERİLDİ, oynanabilir HTML taslakları HAZIR,
 > kart görselleri repoda. **Uygulamaya henüz tek satır kod eklenmedi.** Kodlamaya, kullanıcının
 > Claude haftalık limiti sıfırlandıktan sonra başlanacak (2026-09-29 Salı 20:00 TR).
 > Bu dosya tek kaynak: bir karar değişince burası güncellenir.
@@ -182,28 +182,116 @@ Yayınlanmış hâlleri (kullanıcının claude.ai hesabında, özel):
 - (Eski, tek oyunluk ilk taslaklar — artık Oyun Salonu'nun içinde, kuralları ESKİ:
   Zıpla `CJRjuzMhifCHajha7bmdy4`, Hafıza `DYc6VaAPac1HBxthn4uqEo`, Coin Yakala `1G457Cy6PEbPhEDaZGxiS3`)
 
-## 8. Uygulama planı (limit sıfırlanınca)
+## 8. Yol haritası (2026-09-28)
 
-**Aşama 0 — deneme (tek oyun):** `webview_flutter` ekle, Zibo Hafıza'yı (ya da Kule'yi) köprüsüyle
-telefonda aç; açılış süresi, dokunma, ses, geri tuşu, Appodeal rewarded akışı gerçek cihazda doğrulanır.
-Kullanıcı onaylarsa hibrit yol kesinleşir.
+> Her faz kendi başına tamamlanır, test edilir, commit + push edilir. Bir faz bitmeden sonrakine geçilmez.
+> "Limit" sütunu kullanıcının Claude haftalık limitinden **kaba tahmin** — ölçülmüş değer değil.
+> Karar kapıları (🚦) kullanıcı onayı olmadan geçilmez.
 
-**Aşama 1 — ilk sürüm:**
-- `GamePointsProvider` (yeni, `CloudStateStore` → `users/{uid}/state/gamePointsState`): puan bakiyesi,
-  haftalık takas (`weekEx`), oyun başına günlük hak/reklam sayaçları, rekorlar, açılan süsler.
-- Takas Gişesi ekranı + Oyun Salonu ekranı + modül menüsüne giriş.
-- İlk oyunlar: **Hafıza + 2048** (bulmaca).
-- TR/EN/ES ARB anahtarları (Flutter tarafı) + oyun içi sözlükler.
-- Testler: provider (kur hesabı, tavan, hafta/gün sıfırlama, tur tavanı doğrulaması), köprü mesaj işleme.
-- `docs/subscribe_model.md`'ye Pro/Pro+ takas tavanı perk'i, `docs/theme_new.md`'ye onaylı ekranlar.
+### Özet tablo
 
-**Aşama 2:** Coin Yakala + Zibo Tren. **Aşama 3:** Zıpla, Tuğla, Kule.
-Her aşama ayrı sürüm → her güncellemede "yeni oyun geldi" haberi.
+| Faz | Ne | Kullanıcıya görünen | Sürüm | Tahmini limit |
+|---|---|---|---|---|
+| **0** | Seri / Streak Freeze düzeltmesi + bekleyen kararlar | Seri hataları biter | 1.13.2 | %5-10 |
+| **1** | Teknik deneme: tek oyun (Kule) WebView'da | Hiçbir şey (sadece debug APK) | — | %5-8 |
+| **2** | Altyapı: ayarlar, puan cüzdanı, köprü | Hiçbir şey (arka plan) | — | %8-12 |
+| **3** | Ekranlar: Oyun Salonu + Takas Gişesi | — (Faz 4 ile birlikte çıkar) | — | %8-12 |
+| **4** | İlk oyunlar: Hafıza + 2048 | **Oyun Salonu açılır** | **1.14.0** | %8-12 |
+| **5** | İzleme ve denge (1-2 hafta) | Rakamlar güncellemesiz ayarlanır | — | %2-4 |
+| **6** | Coin Yakala + Zibo Tren | "2 yeni oyun" | 1.15.0 | %5-8 |
+| **7** | Zıpla + Tuğla + Kule | "3 yeni oyun" | 1.16.0 | %6-10 |
+| **8** | İsteğe bağlı: gerçek sıralama, yeni süsler, eski coin kaynaklarının dengesi | — | sonra | ayrıca |
+
+Sürüm numaraları öneri; versionCode her Play yüklemesinde +1 (şu an 48 → sıradaki 49).
+
+---
+
+### Faz 0 — Önce seri sorunu + kararlar
+**Neden önce:** kullanıcı 1.13.1'den sonra da seri/Streak Freeze sorunu bildirdi (bkz. `CURRENT_STATE.md`).
+Oyun Salonu da bir "gün/hafta" sistemi (günlük hak, haftalık takas) kuracak; aynı tarih mantığı sorunlarını
+yeniden yaşamamak için önce mevcut sorunun kökü bulunmalı.
+- Kullanıcıdan somut belirtiler: hangi ekran, beklenen / görülen, telefondaki sürüm (1.13.1 kurulu mu?).
+- Sorunu önce testle yeniden üret, sonra düzelt (tahminle kod değiştirme).
+- Bölüm 9'daki bekleyen kararları kullanıcıyla netleştir.
+- **Çıktı:** düzeltme + testler, 1.13.2 AAB.
+
+### Faz 1 — Teknik deneme (tek oyun) 🚦
+**Amaç:** hibrit yolun gerçek telefonda işe yaradığını kanıtlamak, büyük işe girmeden.
+- `webview_flutter` ekle. Önce/sonra ölç: APK/AAB boyutu, DEX (bkz. memory `project_ad_network_dex_cleanup`).
+- Deneme oyunu **Zibo Kule** (kısa tur, dokunma yoğun, kolay port). `assets/games/kule/index.html`.
+- Asgari köprü: `ziboInit` (dil, üyelik) → oyun; `finish` + `requestAd` → Flutter. Reklam gerçek Appodeal rewarded.
+- Fontlar yerel (`@font-face` ile Baloo 2 / Nunito), internet kapalıyken dene.
+- Gerçek cihazda kontrol listesi: açılış süresi, akıcılık (FPS), dokunma gecikmesi, Android geri tuşu,
+  uygulamayı arka plana alıp dönme, ekran döndürme kilidi, koyu tema, eski/zayıf cihaz (varsa).
+- **🚦 Karar kapısı:** kullanıcı telefonda oynar → "hibrit yol tamam" ya da "Flutter'da yazalım".
+- **Çıktı:** debug APK + ölçüm notu (boyut farkı, açılış süresi). Yayın yok.
+
+### Faz 2 — Altyapı (arka plan, görünmez)
+- **Ayarlar (config):** tüm rakamlar tek yerde. Dart varsayılanları `lib/data/games_config.dart` +
+  uzaktan ayar. Öneri: **Firestore `config/games` dokümanı** (yeni SDK yok, DEX artmaz; Remote Config
+  alternatifi). `firestore.rules`'a herkese açık OKUMA kuralı eklenir (Console'a elle yapıştırılır).
+  Ulaşılamazsa Dart varsayılanları. Kapsam: oyun başı puan oranı + tur tavanı, günlük hak (free/pro/plus),
+  reklam hakkı, takas basamakları + haftalık tavanlar, süs fiyatları, oyun açık/kapalı anahtarı.
+- **`GamePointsProvider`** (`CloudStateStore` → `users/{uid}/state/gamePointsState`): ★ bakiyesi, haftalık
+  takas (`weekEx`, hafta anahtarı), oyun başına günlük hak/reklam/bonus, rekorlar, açılan süsler.
+  Gün/hafta sınırı `TrustedTimeProvider` ile. `ready` deseni (Faz 0'daki yarış dersine uy).
+- **Takas:** kur hesabı (basamaklar arası), ZC ekleme mevcut `CoinProvider` earn yolundan, analitik olayı.
+- **`GameWebViewScreen`** (tüm oyunlar için tek genel ekran) + köprü mesaj işleyici: `start` (hak düş),
+  `finish` (puanı config tavanına göre DOĞRULA, tura tek finish), `requestAd`, `exit`.
+- **Testler:** kur hesabı, tavanlar, gün/hafta sıfırlama, tur tavanı doğrulama, çift finish reddi,
+  köprü mesajları (WebView'sız, mesaj işleyiciyle).
+- **Çıktı:** testleri geçen altyapı, commit. Kullanıcıya görünen değişiklik yok.
+
+### Faz 3 — Ekranlar 🚦
+- Mockup → onay → kod (tema workflow'u): **Oyun Salonu** (oyun kartları `game_*_thumb.webp`, ★ bakiyesi,
+  haftalık takas çubuğu) ve **Takas Gişesi** (basamaklar, −/+ miktar, "Alabildiğim kadar", tavan mesajı,
+  kostüm + paket önerisi, Pro satırı, puanla açılanlar). Taslak zaten var: `docs/game_prototypes/oyun_salonu.html`.
+- Modül menüsüne (`modules_menu_sheet.dart`) "Oyun Salonu" girişi.
+- Sonuç ekranı ve "hak bitti / reklam izle" akışı Flutter tarafında (dil ve tema tutarlılığı için) —
+  bölüm 9'daki karara bağlı.
+- TR/EN/ES ARB anahtarları.
+- `docs/theme_new.md` (onaylı ekranlar) + `docs/subscribe_model.md` (Pro/Pro+ takas tavanı perk'i, paywall satırı).
+- **Çıktı:** ekranlar + widget testleri. Henüz yayın yok (oyunsuz salon çıkmaz).
+
+### Faz 4 — İlk oyunlar: Hafıza + 2048 → **1.14.0 yayını**
+- Taslaktan port: `localStorage` cüzdanı, üyelik düğmeleri ve sahte reklam sayacı çıkar; rakamlar `ziboInit`
+  config'inden; TR/EN/ES sözlük; yerel fontlar; `docs/game_prototypes/` → `assets/games/` (tek kaynak).
+- 2048: ayrıntılı tasarım (Kostüm Yolu şeridi, karo halkaları, "Yeni kostüm" şeridi, Altın kutlaması) —
+  bölüm 5'teki 3 soru cevaplandıktan sonra. Başla penceresi gizemli (onaylı).
+- Analitik olaylar: `game_start`, `game_finish` (oyun, puan, süre), `game_ad_used`, `points_exchanged`,
+  `exchange_cap_hit`, `game_upsell_tap` — Faz 5'teki denge için şart.
+- Gerçek cihazda tam tur testi, Crashlytics kontrolü, sürüm notları (TR/EN/ES), AAB.
+- **Çıktı:** 1.14.0 AAB → kullanıcı dahili teste → üretime.
+
+### Faz 5 — İzleme ve denge (yayından 1-2 hafta sonra)
+- Analytics'ten ölç: tur başına ortalama ★, günde kaç tur, takas oranı, haftalık tavana ulaşan kullanıcı oranı,
+  reklamla ek hak kullanımı, paket önerisine tıklama / satın alma.
+- Rakamları `config/games`'ten ayarla (güncellemesiz). Kural: kullanıcı düşük oranları tercih ediyor, cimri başla.
+- Bu dosyaya "ölçülen değerler" bölümü ekle.
+
+### Faz 6 — Coin Yakala + Zibo Tren → 1.15.0
+- Aynı port kalıbı (Faz 4). Tren için kaydırma hassasiyeti ve geri dönme akışı gerçek cihazda ayarlanır.
+- Hareketli oyunlarda eski/zayıf cihaz performansı ayrıca kontrol edilir.
+
+### Faz 7 — Zıpla + Tuğla + Kule → 1.16.0
+- Kule Faz 1'de denendiği için hazır sayılır; Zıpla ve Tuğla port edilir.
+- Puanla açılan süsler (Gece Gökyüzü, Buz Kartlar) bu fazda ya da Faz 4'te — kullanıcı kararı.
+
+### Faz 8 — İsteğe bağlı / sonra
+- **Gerçek haftalık sıralama:** Blaze'siz mümkün — `notification-scripts/` gibi GitHub Actions betiği saatlik
+  `leaderboards/weekly` dokümanı üretir. Gizlilik: takma ad, sadece ilk N.
+- Yeni süsler (her oyuna bir arka plan / kart arkası).
+- Mevcut coin kaynaklarının dengesi (bölüm 3: günde ~145 ZC, çark ortalama ~51) — ayrı iş, ayrı karar.
+- Yeni oyun adayları: Günlük Kelime, Üçlü Eşleştirme, Köstebek Zibo.
 
 ## 9. Bekleyen kararlar
 
-1. Hibrit (WebView) yolun son onayı — Aşama 0 denemesinden sonra.
+1. Hibrit (WebView) yolun son onayı — Faz 1 denemesinden sonra.
 2. Hafıza ve 2048 puanları diğer oyunlarla aynı seviyeye çekilsin mi?
 3. Zibo 2048 tasarımındaki 3 soru (bölüm 5).
 4. İlk sürümde hangi oyunlar (öneri: Hafıza + 2048).
-5. Haftalık puan sıralaması gerçek mi olacak (backend gerekir) yoksa ilk sürümde çıkarılsın mı?
+5. Haftalık puan sıralaması gerçek mi olacak (Faz 8, GitHub Actions ile Blaze'siz mümkün) yoksa ilk sürümde çıkarılsın mı?
+6. 2048 başla penceresinde Altın Zibo hedefi de gizlensin mi (siluet + "Hedef: ??? Zibo")?
+7. Oyun sonu ekranı ve "hak bitti" akışı HTML'de mi kalsın, Flutter'a mı taşınsın (öneri: Flutter — dil/tema tutarlılığı)?
+8. Puanla açılan süsler ilk sürümde (Faz 4) mi, sonra mı (Faz 7)?
+9. Uzaktan ayar: Firestore `config/games` dokümanı (öneri) mı, Firebase Remote Config mi?
