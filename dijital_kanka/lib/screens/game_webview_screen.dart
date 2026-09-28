@@ -178,3 +178,9 @@ const Map<String, Object> yakalaGameConfig = {'perScore': 1, 'cap': 400};
 
 /// Zibo Tren: coin başına 5 ★ (kullanıcı kararı 2026-09-27).
 const Map<String, Object> trenGameConfig = {'perCoin': 5, 'cap': 600};
+
+/// Zibo Zıpla: yalnızca coin puan verir, coin × 5 (kullanıcı kararı 2026-09-27).
+const Map<String, Object> ziplaGameConfig = {'perCoin': 5, 'cap': 600};
+
+/// Zibo Tuğla: kırılan tuğla × 1 (kullanıcı kararı 2026-09-27).
+const Map<String, Object> tuglaGameConfig = {'perBrick': 1, 'cap': 400};

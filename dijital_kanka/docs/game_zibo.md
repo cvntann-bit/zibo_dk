@@ -353,3 +353,11 @@ Kullanıcı Zibo Kule'yi telefonda WebView'da denedi: "tamamdır" → **hibrit (
 - Geçici debug "Zibo Kule (deneme)" girişi kaldırıldı.
 - Testler: `_openGoalsPage` yardımcısı (Z menüsü → Hedef Takibi), gizlenen `RootScreen` için `skipOffstage: false`,
   Hedefler sonrası Ana Sayfa'ya dönüş `Geri` ile. Tam suite yeşil (+ bilinen ses flake'i).
+
+### 7 oyunun hepsi uygulamada (2026-09-29, debug APK ile telefonda)
+`assets/games/{kule,hafiza,2048,yakala,tren,zipla,tugla}/index.html` — hepsi aynı kalıp: tek başına HTML, TR/EN/ES,
+yerel fontlar, `ZiboBridge` (`ready/start/finish/requestAd/exit`), sonuç ekranı oyun içinde, rakamlar `ziboInit`
+config'inden (`lib/screens/game_webview_screen.dart` sonundaki `*GameConfig` sabitleri — Faz 2'de `config/games`'e taşınacak).
+Oyun başına devam/geri alma: 2048 `requestAd('undo')`, Tren/Tuğla/Kule `requestAd('continue')`; Pro'da reklamsız.
+Kullanıcı Kule, Hafıza, 2048, Coin Yakala ve Tren'i telefonda denedi: "çalışıyor". Zıpla ve Tuğla denenmeyi bekliyor.
+**Hâlâ geçici:** haklar/puanlar/rekorlar ekran kapanınca sıfırlanıyor → Faz 2 (`GamePointsProvider`), Takas Gişesi → Faz 3.

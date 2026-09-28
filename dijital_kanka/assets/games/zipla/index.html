@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Zibo Zıpla</title>
+<!--
+  Zibo Zıpla — Oyun Salonu oyunu (WebView, bkz. docs/game_zibo.md).
+  Uygulamada Flutter `GameWebViewScreen` açar, `ZiboBridge` ile konuşur; tarayıcıda DEMO modu.
+  Puan: yalnızca coin (varsayılan coin × 5, tavan 600); sütunlar rekor içindir.
+-->
+<style>
+  @font-face { font-family: 'Baloo2'; src: url('../../fonts/Baloo2-Variable.ttf') format('truetype'); font-weight: 400 800; }
+  @font-face { font-family: 'Nunito'; src: url('../../fonts/Nunito-Variable.ttf') format('truetype'); font-weight: 200 1000; }
+  :root { --outline: #14110C; --gold: #F3B23C; --cream: #FFF8E8; --chip: #FFFDF7; --ice: #8FD3FF; --ice-pale: #DDF2FF; --ice-ink: #0E3A5C; }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #FFE9B8; color: #2A2115; font-family: 'Nunito', system-ui, sans-serif; user-select: none; -webkit-user-select: none; }
+  #stage { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
+  canvas { display: block; touch-action: none; }
+  .overlay { position: absolute; inset: 0; z-index: 5; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgba(255, 244, 222, .84); overflow-y: auto; }
+  .overlay[hidden], .btn[hidden] { display: none; }
+  .sheet { width: 100%; max-width: 320px; margin: auto; background: var(--cream); border: 3px solid var(--outline); border-radius: 22px; box-shadow: 5px 5px 0 var(--outline); padding: 16px; display: grid; gap: 10px; justify-items: center; text-align: center; }
+  .logo { font: 800 32px/1 'Baloo2', sans-serif; color: var(--gold); -webkit-text-stroke: 2.5px var(--outline); paint-order: stroke fill; text-shadow: 3px 3px 0 var(--outline); }
+  .sheet > img { width: 84px; filter: drop-shadow(3px 3px 0 rgba(20,17,12,.3)); }
+  .sheet h2 { margin: 0; font: 800 23px/1.1 'Baloo2', sans-serif; }
+  .sheet p { margin: 0; font-weight: 700; font-size: 13.5px; color: #6E5B40; line-height: 1.4; }
+  .chips { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; }
+  .chip { display: inline-flex; align-items: center; gap: 4px; border: 2.5px solid var(--outline); border-radius: 999px; padding: 1px 10px; font: 800 12.5px 'Nunito', sans-serif; background: var(--chip); }
+  .chip.gold { background: var(--gold); }
+  .pt { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; border-radius: 50%; background: var(--ice); border: 2px solid var(--outline); color: var(--ice-ink); font: 800 10px/1 'Nunito', sans-serif; font-style: normal; flex: none; }
+  .pt.lg { width: 30px; height: 30px; font-size: 16px; border-width: 2.5px; }
+  .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; }
+  .stat { border: 2.5px solid var(--outline); border-radius: 14px; padding: 6px 4px; background: var(--chip); }
+  .stat b { display: block; font: 800 22px/1 'Baloo2', sans-serif; }
+  .stat span { font: 800 10px 'Nunito', sans-serif; letter-spacing: .06em; text-transform: uppercase; color: #6E5B40; }
+  .reward { width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; border: 2.5px dashed var(--outline); border-radius: 14px; padding: 8px; background: var(--ice-pale); font: 800 20px 'Baloo2', sans-serif; }
+  .reward small { display: block; font: 700 11.5px 'Nunito', sans-serif; color: #6E5B40; }
+  .btn { width: 100%; border: 3px solid var(--outline); border-radius: 14px; padding: 10px 12px; font: 700 17px 'Baloo2', sans-serif; cursor: pointer; box-shadow: 3px 3px 0 var(--outline); background: var(--gold); color: var(--outline); }
+  .btn.ice { background: var(--ice); }
+  .btn.ghost { background: var(--chip); }
+  .btn:active:not(:disabled) { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--outline); }
+  .btn:disabled { opacity: .5; }
+</style>
+</head>
+<body>
+<div id="stage"><canvas id="c"></canvas></div>
+
+<div class="overlay" id="intro" hidden>
+  <div class="sheet">
+    <div class="logo">Zibo Zıpla</div>
+    <img src="../../images/zibo_df_pose3.webp" alt="">
+    <p id="introText"></p>
+    <div class="chips"><span class="chip gold" id="introPlays"></span><span class="chip" id="introBest"></span></div>
+    <button class="btn" id="startBtn"></button>
+    <button class="btn ice" id="playAdBtn" hidden></button>
+  </div>
+</div>
+
+<div class="overlay" id="result" hidden>
+  <div class="sheet">
+    <h2 id="resTitle"></h2>
+    <img id="resImg" src="../../images/zibo_df_pose1.webp" alt="">
+    <div class="stats">
+      <div class="stat"><b id="resA">0</b><span id="resAL"></span></div>
+      <div class="stat"><b id="resB">0</b><span id="resBL"></span></div>
+    </div>
+    <div class="reward"><i class="pt lg">★</i><div><span id="resPts"></span><small id="resNote"></small></div></div>
+    <button class="btn" id="againBtn"></button>
+    <button class="btn ghost" id="exitBtn"></button>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+  var TEXT = {
+    tr: {
+      intro: 'Dokun, Zibo zıplasın. Sütunlara çarpmadan geç, coinleri topla. Puanı yalnızca coinler verir!',
+      playsLeft: '{n} hak kaldı', noPlays: 'Bugünlük hakların bitti', best: 'Rekor {n} sütun', start: 'Başla', waiting: 'Bekleniyor…', adPlay: '🎬 Reklam izle, +1 hak',
+      newBest: 'Yeni rekor!', over: 'Oyun bitti!', pillars: 'Sütun', coins: 'Coin',
+      pts: '+{n} puan', note: '{c} coin × {m} ({p} sütun rekor için)', capNote: ' (tur tavanı {k})',
+      again: 'Tekrar oyna ({n} hak)', againNo: 'Hak kalmadı', exit: 'Oyun Salonu\'na dön', adFail: 'Reklam şu an yok, sonra tekrar dene'
+    },
+    en: {
+      intro: 'Tap to make Zibo jump. Pass the pillars without hitting them and grab coins. Only coins give points!',
+      playsLeft: '{n} plays left', noPlays: 'No plays left today', best: 'Best {n} pillars', start: 'Start', waiting: 'Please wait…', adPlay: '🎬 Watch an ad, +1 play',
+      newBest: 'New record!', over: 'Game over!', pillars: 'Pillars', coins: 'Coins',
+      pts: '+{n} points', note: '{c} coins × {m} ({p} pillars for the record)', capNote: ' (round cap {k})',
+      again: 'Play again ({n} left)', againNo: 'No plays left', exit: 'Back to Game Hall', adFail: 'No ad right now, try again later'
+    },
+    es: {
+      intro: 'Toca para que Zibo salte. Pasa entre las columnas sin chocar y atrapa monedas. ¡Solo las monedas dan puntos!',
+      playsLeft: 'Te quedan {n} partidas', noPlays: 'No te quedan partidas hoy', best: 'Récord {n} columnas', start: 'Empezar', waiting: 'Espera…', adPlay: '🎬 Mira un anuncio, +1 partida',
+      newBest: '¡Nuevo récord!', over: '¡Fin del juego!', pillars: 'Columnas', coins: 'Monedas',
+      pts: '+{n} puntos', note: '{c} monedas × {m} ({p} columnas para el récord)', capNote: ' (tope {k})',
+      again: 'Jugar de nuevo (quedan {n})', againNo: 'No quedan partidas', exit: 'Volver a la Sala de Juegos', adFail: 'No hay anuncio ahora, inténtalo luego'
+    }
+  };
+  var lang = 'tr';
+  function t(key, vars) {
+    var s = (TEXT[lang] && TEXT[lang][key]) || TEXT.tr[key] || key;
+    if (vars) Object.keys(vars).forEach(function (k) { s = s.split('{' + k + '}').join(vars[k]); });
+    return s;
+  }
+
+  // ---------- köprü ----------
+  var CFG = { locale: 'tr', tier: 'free', playsLeft: 3, best: 0, perCoin: 5, cap: 600, nightBg: false };
+  var hasHost = !!(window.ZiboBridge && window.ZiboBridge.postMessage);
+  function send(msg) {
+    msg.game = 'zipla';
+    if (hasHost) { window.ZiboBridge.postMessage(JSON.stringify(msg)); return; }
+    setTimeout(function () {
+      if (msg.type === 'start') window.ziboStartResult({ ok: CFG.playsLeft > 0, playsLeft: Math.max(0, CFG.playsLeft - 1) });
+      if (msg.type === 'finish') window.ziboFinishResult({ accepted: true, points: Math.min(CFG.cap, msg.points) });
+      if (msg.type === 'requestAd') window.ziboAdResult({ ok: true, reason: msg.reason, playsLeft: CFG.playsLeft + 1 });
+      if (msg.type === 'exit') location.reload();
+    }, msg.type === 'requestAd' ? 900 : 60);
+  }
+  function $(id) { return document.getElementById(id); }
+  window.ziboInit = function (cfg) {
+    Object.keys(cfg || {}).forEach(function (k) { CFG[k] = cfg[k]; });
+    lang = TEXT[CFG.locale] ? CFG.locale : 'tr';
+    document.documentElement.lang = lang;
+    showIntro();
+  };
+  window.ziboStartResult = function (r) {
+    CFG.playsLeft = r.playsLeft;
+    if (r.ok) { $('intro').hidden = true; $('result').hidden = true; startGame(); } else showIntro();
+  };
+  window.ziboFinishResult = function (r) { showResult(r.accepted ? r.points : 0); };
+  window.ziboAdResult = function (r) { if (typeof r.playsLeft === 'number') CFG.playsLeft = r.playsLeft; showIntro(); };
+
+  // ---------- tuval ----------
+  var W = 360, H = 640, OUT = '#14110C', ZG = 74;
+  var canvas = $('c'), ctx = canvas.getContext('2d');
+  function fit() {
+    var s = Math.min(window.innerWidth / W, window.innerHeight / H), dpr = window.devicePixelRatio || 1;
+    canvas.style.width = (W * s) + 'px'; canvas.style.height = (H * s) + 'px';
+    canvas.width = Math.round(W * s * dpr); canvas.height = Math.round(H * s * dpr);
+    ctx.setTransform(s * dpr, 0, 0, s * dpr, 0, 0);
+  }
+  fit(); window.addEventListener('resize', fit);
+  function img(src) { var i = new Image(); i.src = src; return i; }
+  function ready(i) { return i.complete && i.naturalWidth; }
+  var coinImg = img('../../images/zibo_coin.webp'), ziboUp = img('../../images/zibo_df_pose4.webp');
+  function rr(x, y, w, h, r) { ctx.beginPath(); ctx.roundRect(x, y, w, h, r); }
+  function outlined(txt, x, y, size, fill) {
+    ctx.font = '800 ' + size + 'px Baloo2, Nunito, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.lineJoin = 'round';
+    ctx.lineWidth = size / 6; ctx.strokeStyle = OUT; ctx.fillStyle = OUT; ctx.fillText(txt, x + 2.5, y + 2.5); ctx.strokeText(txt, x, y); ctx.fillStyle = fill; ctx.fillText(txt, x, y);
+  }
+  function pill(x, y, w, h) { ctx.fillStyle = OUT; rr(x + 3, y + 3, w, h, h / 2); ctx.fill(); ctx.fillStyle = '#FFFDF7'; ctx.strokeStyle = OUT; ctx.lineWidth = 3; rr(x, y, w, h, h / 2); ctx.fill(); ctx.stroke(); }
+  function ptIcon(x, y, r) { ctx.fillStyle = '#8FD3FF'; ctx.strokeStyle = OUT; ctx.lineWidth = 2.2; ctx.beginPath(); ctx.arc(x, y, r, 0, 6.283); ctx.fill(); ctx.stroke(); ctx.fillStyle = '#0E3A5C'; ctx.font = '800 ' + (r * 1.2) + 'px Nunito, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('★', x, y + 1); }
+  function drawCoin(x, y, r, sq) { ctx.save(); ctx.translate(x, y); ctx.scale(sq || 1, 1); if (ready(coinImg)) ctx.drawImage(coinImg, -r, -r, r * 2, r * 2); else { ctx.fillStyle = '#F3B23C'; ctx.beginPath(); ctx.arc(0, 0, r, 0, 6.283); ctx.fill(); } ctx.restore(); }
+  var clouds = [];
+  for (var ci = 0; ci < 4; ci++) clouds.push({ x: Math.random() * W, y: 60 + Math.random() * 240, s: 0.6 + Math.random() * 0.6 });
+
+  // ---------- oyun ----------
+  var state = 'idle', tt = 0, z, pipes, coins, pops, pillars, collected, speed, gx, flapT;
+  function reset() { z = { x: 96, y: H * 0.42, vy: 0, r: 19 }; pipes = []; coins = []; pops = []; pillars = 0; collected = 0; speed = 150; gx = 0; flapT = 0; }
+  reset();
+  function points() { return Math.min(CFG.cap, collected * CFG.perCoin); }
+  function spawnPipe(x) {
+    var g = Math.max(138, 176 - pillars * 1.6), min = 90 + g / 2, max = H - ZG - 70 - g / 2, gy = min + Math.random() * (max - min);
+    pipes.push({ x: x, gy: gy, g: g, passed: false });
+    if (Math.random() < 0.8) coins.push({ x: x + 32, y: gy, spin: Math.random() * 6 });
+    if (Math.random() < 0.35) coins.push({ x: x + 137, y: gy + (Math.random() * 80 - 40), spin: Math.random() * 6 });
+  }
+  function flap() { if (state === 'play') { z.vy = -420; flapT = 0.16; } }
+  function startGame() { reset(); spawnPipe(W + 40); state = 'play'; flap(); }
+  function die() {
+    if (state !== 'play') return;
+    state = 'dead';
+    setTimeout(function () { send({ type: 'finish', points: points(), score: pillars, stats: { pillars: pillars, coins: collected } }); }, 650);
+  }
+  function showResult(pts) {
+    var nb = pillars > (CFG.best || 0);
+    if (nb) CFG.best = pillars;
+    state = 'end';
+    $('resTitle').textContent = nb ? t('newBest') : t('over');
+    $('resImg').src = '../../images/' + (nb ? 'zibo_df_pose3' : 'zibo_df_pose1') + '.webp';
+    $('resA').textContent = pillars; $('resAL').textContent = t('pillars');
+    $('resB').textContent = collected; $('resBL').textContent = t('coins');
+    $('resPts').textContent = t('pts', { n: pts });
+    $('resNote').textContent = t('note', { c: collected, m: CFG.perCoin, p: pillars }) + (pts >= CFG.cap ? t('capNote', { k: CFG.cap }) : '');
+    var left = CFG.playsLeft;
+    $('againBtn').textContent = left > 0 ? t('again', { n: left }) : t('againNo'); $('againBtn').disabled = left <= 0;
+    $('exitBtn').textContent = t('exit');
+    $('result').hidden = false;
+  }
+  function showIntro() {
+    state = 'idle'; reset();
+    $('introText').textContent = t('intro');
+    var left = CFG.playsLeft;
+    $('introPlays').textContent = left > 0 ? t('playsLeft', { n: left }) : t('noPlays');
+    $('introBest').innerHTML = '<i class="pt">★</i>' + t('best', { n: CFG.best || 0 });
+    $('startBtn').textContent = t('start'); $('startBtn').disabled = false; $('startBtn').hidden = left <= 0;
+    $('playAdBtn').textContent = t('adPlay'); $('playAdBtn').disabled = false; $('playAdBtn').hidden = !(left <= 0 && CFG.canAdForPlay);
+    $('result').hidden = true; $('intro').hidden = false;
+  }
+  $('startBtn').addEventListener('click', function () { this.disabled = true; this.textContent = t('waiting'); send({ type: 'start' }); });
+  $('playAdBtn').addEventListener('click', function () { this.disabled = true; send({ type: 'requestAd', reason: 'extraPlay' }); });
+  $('againBtn').addEventListener('click', function () { this.disabled = true; send({ type: 'start' }); });
+  $('exitBtn').addEventListener('click', function () { send({ type: 'exit' }); });
+  canvas.addEventListener('pointerdown', function (e) { e.preventDefault(); flap(); });
+  window.addEventListener('keydown', function (e) { if (e.code === 'Space' || e.code === 'ArrowUp') { e.preventDefault(); flap(); } });
+
+  function hit(cx, cy, r, x, y, w, h) { var nx = Math.max(x, Math.min(cx, x + w)), ny = Math.max(y, Math.min(cy, y + h)), dx = cx - nx, dy = cy - ny; return dx * dx + dy * dy < r * r; }
+  function update(dt) {
+    tt += dt;
+    clouds.forEach(function (c) { c.x -= (state === 'play' ? 18 : 8) * c.s * dt; if (c.x < -80) { c.x = W + 60; c.y = 60 + Math.random() * 240; } });
+    pops = pops.filter(function (p) { p.t += dt; return p.t < 0.8; });
+    if (state === 'idle') { z.y = H * 0.42 + Math.sin(tt * 3) * 10; gx = (gx - 60 * dt) % 24; return; }
+    if (state !== 'play') { if (z.y < H - ZG - 26) { z.vy += 1500 * dt; z.y += z.vy * dt; } return; }
+    speed = Math.min(235, 150 + pillars * 3.2); flapT = Math.max(0, flapT - dt);
+    z.vy = Math.min(z.vy + 1450 * dt, 620); z.y += z.vy * dt;
+    if (z.y < z.r) { z.y = z.r; z.vy = 0; }
+    gx = (gx - speed * dt) % 24;
+    pipes.forEach(function (p) { p.x -= speed * dt; });
+    coins.forEach(function (c) { c.x -= speed * dt; c.spin += dt * 5; });
+    var last = pipes[pipes.length - 1];
+    if (last && last.x < W - 210) spawnPipe(last.x + 210);
+    pipes = pipes.filter(function (p) { return p.x > -80; });
+    coins = coins.filter(function (c) { return c.x > -30 && !c.done; });
+    pipes.forEach(function (p) {
+      if (!p.passed && p.x + 64 < z.x) { p.passed = true; pillars += 1; }
+      var top = p.gy - p.g / 2, bot = p.gy + p.g / 2;
+      if (hit(z.x, z.y, z.r, p.x, -20, 64, top + 20) || hit(z.x, z.y, z.r, p.x, bot, 64, H - ZG - bot)) die();
+    });
+    coins.forEach(function (c) { var dx = c.x - z.x, dy = c.y - z.y; if (!c.done && dx * dx + dy * dy < 34 * 34) { c.done = true; collected += 1; pops.push({ x: c.x, y: c.y, t: 0, txt: '+' + CFG.perCoin + ' ★' }); } });
+    if (z.y + z.r > H - ZG) { z.y = H - ZG - z.r; die(); }
+  }
+  function draw() {
+    var night = !!CFG.nightBg;
+    var g = ctx.createLinearGradient(0, 0, 0, H);
+    if (night) { g.addColorStop(0, '#1E2A44'); g.addColorStop(1, '#3B3F66'); } else { g.addColorStop(0, '#FFF1D2'); g.addColorStop(1, '#FFE3A6'); }
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = night ? 'rgba(255,248,232,.5)' : 'rgba(20,17,12,.07)';
+    for (var y = 7; y < H - ZG; y += 14) for (var x = 7; x < W; x += 14) { if (night && (x * 7 + y * 3) % 5) continue; ctx.beginPath(); ctx.arc(x, y, night ? 1 : 1.2, 0, 6.283); ctx.fill(); }
+    ctx.strokeStyle = OUT; ctx.lineWidth = 3;
+    if (night) { ctx.fillStyle = '#FFF1CC'; ctx.beginPath(); ctx.arc(292, 86, 28, 0, 6.283); ctx.fill(); ctx.stroke(); ctx.fillStyle = '#1E2A44'; ctx.beginPath(); ctx.arc(306, 78, 24, 0, 6.283); ctx.fill(); }
+    else { ctx.fillStyle = '#F3B23C'; ctx.beginPath(); ctx.arc(292, 86, 30, 0, 6.283); ctx.fill(); ctx.stroke(); }
+    clouds.forEach(function (cl) {
+      ctx.save(); ctx.translate(cl.x, cl.y); ctx.scale(cl.s, cl.s);
+      ctx.fillStyle = night ? '#4A5078' : '#FFFDF7'; ctx.strokeStyle = OUT; ctx.lineWidth = 3 / cl.s;
+      ctx.beginPath(); ctx.arc(0, 0, 20, Math.PI * 0.5, Math.PI * 1.5); ctx.arc(22, -12, 22, Math.PI, Math.PI * 1.85); ctx.arc(48, -4, 18, Math.PI * 1.3, Math.PI * 0.5); ctx.closePath(); ctx.fill(); ctx.stroke();
+      ctx.restore();
+    });
+    pipes.forEach(function (p) {
+      var top = p.gy - p.g / 2, bot = p.gy + p.g / 2, w = 64;
+      [[-10, top], [bot, H - ZG - bot + 10]].forEach(function (seg, i) {
+        var yy = seg[0], hh = seg[1];
+        ctx.fillStyle = OUT; rr(p.x + 4, yy + 4, w, hh, 10); ctx.fill();
+        ctx.fillStyle = '#FFF8E8'; ctx.strokeStyle = OUT; ctx.lineWidth = 3; rr(p.x, yy, w, hh, 10); ctx.fill(); ctx.stroke();
+        ctx.save(); rr(p.x, yy, w, hh, 10); ctx.clip(); ctx.fillStyle = 'rgba(243,178,60,.28)';
+        for (var sx = -hh; sx < w; sx += 18) { ctx.beginPath(); ctx.moveTo(p.x + sx, yy); ctx.lineTo(p.x + sx + 8, yy); ctx.lineTo(p.x + sx + 8 + hh, yy + hh); ctx.lineTo(p.x + sx + hh, yy + hh); ctx.fill(); }
+        ctx.restore();
+        var capY = i === 0 ? top - 22 : bot;
+        ctx.fillStyle = OUT; rr(p.x - 3, capY + 3, w + 12, 22, 8); ctx.fill();
+        ctx.fillStyle = '#F3B23C'; rr(p.x - 6, capY, w + 12, 22, 8); ctx.fill(); ctx.stroke();
+      });
+    });
+    coins.forEach(function (k) { if (!k.done) drawCoin(k.x, k.y + Math.sin(tt * 4 + k.spin) * 3, 15, Math.abs(Math.cos(k.spin * 0.6)) * 0.75 + 0.25); });
+    var gy = H - ZG;
+    ctx.fillStyle = '#C9A46B'; ctx.fillRect(0, gy, W, ZG);
+    for (var xx = gx - 24; xx < W + 24; xx += 24) { ctx.fillStyle = '#F3B23C'; ctx.fillRect(xx, gy, 12, 17); ctx.fillStyle = '#F6D488'; ctx.fillRect(xx + 12, gy, 12, 17); }
+    ctx.strokeStyle = OUT; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(W, gy); ctx.moveTo(0, gy + 17); ctx.lineTo(W, gy + 17); ctx.stroke();
+    var ang = state === 'idle' ? Math.sin(tt * 3) * 0.06 : Math.max(-0.45, Math.min(1.1, z.vy / 700));
+    ctx.save(); ctx.translate(z.x, z.y); ctx.rotate(ang); ctx.scale(1 + flapT * 0.9, 1 - flapT * 0.7);
+    if (ready(ziboUp)) ctx.drawImage(ziboUp, -29, -38, 58, 75);
+    ctx.restore();
+    if (state !== 'idle') {
+      outlined(String(pillars), W / 2, 60, 52, '#FFFDF7');
+      pill(W - 118, 16, 104, 34); ptIcon(W - 99, 33, 11);
+      ctx.font = '800 19px Baloo2, Nunito, sans-serif'; ctx.textAlign = 'left'; ctx.textBaseline = 'middle'; ctx.fillStyle = OUT; ctx.fillText(String(points()), W - 84, 34);
+    }
+    pops.forEach(function (p) { ctx.globalAlpha = 1 - p.t / 0.8; outlined(p.txt, p.x, p.y - 20 - p.t * 50, 18, '#8FD3FF'); ctx.globalAlpha = 1; });
+  }
+  var lastT = performance.now();
+  function loop(now) { var dt = Math.min(0.033, (now - lastT) / 1000); lastT = now; update(dt); draw(); requestAnimationFrame(loop); }
+  requestAnimationFrame(loop);
+
+  if (hasHost) send({ type: 'ready' }); else window.ziboInit({ locale: (navigator.language || 'tr').slice(0, 2), canAdForPlay: true });
+})();
+</script>
+</body>
+</html>

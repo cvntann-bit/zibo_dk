@@ -12,7 +12,7 @@ import 'game_webview_screen.dart';
 /// sayfa HAFİF: yalnızca küçük kart görselleri; WebView yalnızca bir oyuna
 /// dokununca [GameWebViewScreen] ile açılır.
 ///
-/// Şimdilik Kule, Hafıza, 2048, Coin Yakala ve Tren oynanabilir; diğerleri
+/// 7 oyunun hepsi oynanabilir; config'i olmayan bir oyun
 /// "Yakında". Oyun Puanı bakiyesi ve Takas Gişesi Faz 2-3'te eklenecek.
 class GameHallScreen extends StatelessWidget {
   const GameHallScreen({super.key});
@@ -28,8 +28,8 @@ class GameHallScreen extends StatelessWidget {
       _GameEntry('2048', l10n.gameName2048, l10n.gameDesc2048, config: game2048Config),
       _GameEntry('yakala', l10n.gameNameYakala, l10n.gameDescYakala, config: yakalaGameConfig),
       _GameEntry('tren', l10n.gameNameTren, l10n.gameDescTren, config: trenGameConfig),
-      _GameEntry('tugla', l10n.gameNameTugla, l10n.gameDescTugla),
-      _GameEntry('zipla', l10n.gameNameZipla, l10n.gameDescZipla),
+      _GameEntry('tugla', l10n.gameNameTugla, l10n.gameDescTugla, config: tuglaGameConfig),
+      _GameEntry('zipla', l10n.gameNameZipla, l10n.gameDescZipla, config: ziplaGameConfig),
     ];
 
     return ListView(
