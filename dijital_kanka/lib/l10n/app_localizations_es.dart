@@ -2711,4 +2711,12 @@ class AppLocalizationsEs extends AppLocalizations {
   String exchangeProLine(int cap) {
     return 'Límite semanal de $cap ZC con Pro';
   }
+
+  @override
+  String get paywallProPerkGames =>
+      'Sala de Juegos: 5 partidas al día, 80 ZC de canje por semana';
+
+  @override
+  String get paywallProPlusPerkGames =>
+      'Sala de Juegos: 8 partidas al día, 100 ZC de canje por semana';
 }

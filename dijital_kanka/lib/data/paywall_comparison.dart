@@ -65,12 +65,6 @@ const paywallComparisonRowsTr = [
     pro: '✗',
     proPlus: '✓',
   ),
-  PaywallComparisonRow(
-    label: 'Özel bildirim sesleri',
-    free: '✗',
-    pro: '✗',
-    proPlus: '✓',
-  ),
 ];
 
 const paywallComparisonRowsEn = [
@@ -116,12 +110,6 @@ const paywallComparisonRowsEn = [
     pro: '✗',
     proPlus: '✓',
   ),
-  PaywallComparisonRow(
-    label: 'Exclusive notification sounds',
-    free: '✗',
-    pro: '✗',
-    proPlus: '✓',
-  ),
 ];
 
 const paywallComparisonRowsEs = [
@@ -163,12 +151,6 @@ const paywallComparisonRowsEs = [
   ),
   PaywallComparisonRow(
     label: 'Análisis avanzado de Ánimo y Dinero',
-    free: '✗',
-    pro: '✗',
-    proPlus: '✓',
-  ),
-  PaywallComparisonRow(
-    label: 'Sonidos de notificación exclusivos',
     free: '✗',
     pro: '✗',
     proPlus: '✓',

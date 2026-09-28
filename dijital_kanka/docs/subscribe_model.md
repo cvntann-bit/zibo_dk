@@ -252,3 +252,9 @@ Pro→Pro+ katman yükseltmesi var.
   çevriliyor; haftalık tavan **Ücretsiz 60 / Pro 80 / Pro+ 100 ZC** (Pro'ya +20 ZC @250★, Pro+'a ek +20 ZC @300★).
   Ayrıca oyun başına günlük hak Ücretsiz 3 / Pro 5 / Pro+ 8; reklamla ek hak / geri alma / devam Pro'da reklamsız.
   Paywall perk listesine henüz EKLENMEDİ (Oyun Salonu yayına çıkarken eklenmeli). Bkz. docs/game_zibo.md.
+- **2026-09-29 — Bildirim sesi seçimi herkese açıldı (E2 artık Pro+ perk'i DEĞİL)**: Play yorumunda "zib zibo" sesi
+  korkutucu bulundu, yanıtta söz verildi. Ayarlar'daki ses seçici kilitsiz; Pro+ kartındaki "Özel bildirim sesleri"
+  avantajı ve paywall karşılaştırma satırı kaldırıldı. Yerine Pro ve Pro+ kartlarına Oyun Salonu avantajı eklendi
+  (`paywallProPerkGames` "günde 5 hak, haftada 80 ZC takas" / `paywallProPlusPerkGames` "günde 8 hak, haftada 100 ZC").
+  Sunucu (`sendToUser`) zaten abonelik kontrol etmiyordu. Eski `settingsProPlusSoundLockedSubtitle` /
+  `paywallProPlusPerkNotificationSounds` anahtarları proje kuralı gereği silinmedi.

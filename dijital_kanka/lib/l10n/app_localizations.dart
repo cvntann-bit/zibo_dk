@@ -4779,6 +4779,18 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'Pro ile haftalık takas limiti {cap} ZC'**
   String exchangeProLine(int cap);
+
+  /// Paywall Pro kartı Oyun Salonu avantajı
+  ///
+  /// In tr, this message translates to:
+  /// **'Oyun Salonu: günde 5 hak, haftada 80 ZC takas'**
+  String get paywallProPerkGames;
+
+  /// Paywall Pro+ kartı Oyun Salonu avantajı
+  ///
+  /// In tr, this message translates to:
+  /// **'Oyun Salonu: günde 8 hak, haftada 100 ZC takas'**
+  String get paywallProPlusPerkGames;
 }
 
 class _AppLocalizationsDelegate

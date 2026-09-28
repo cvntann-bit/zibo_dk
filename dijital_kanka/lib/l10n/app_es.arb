@@ -786,5 +786,7 @@
   "exchangeUpsellTitle": "Te faltan {missing} ZC para {costume}",
   "exchangeUpsellBody": "Unas {weeks} semanas solo con juegos",
   "exchangeUpsellButton": "Consigue monedas en la Tienda",
-  "exchangeProLine": "Límite semanal de {cap} ZC con Pro"
+  "exchangeProLine": "Límite semanal de {cap} ZC con Pro",
+  "paywallProPerkGames": "Sala de Juegos: 5 partidas al día, 80 ZC de canje por semana",
+  "paywallProPlusPerkGames": "Sala de Juegos: 8 partidas al día, 100 ZC de canje por semana"
 }

@@ -296,6 +296,7 @@ class _PaywallContentState extends State<PaywallContent>
                     l10n.paywallProPerkCoinBonus,
                     l10n.paywallProPerkStreakFreeze,
                     l10n.paywallProPerkWheelNoAds,
+                    l10n.paywallProPerkGames,
                   ],
                   priceLabel: _subscriptionPriceLabel(proOffer, l10n, languageCode),
                   badgeText: subscription.isProPlus
@@ -320,7 +321,7 @@ class _PaywallContentState extends State<PaywallContent>
                     l10n.paywallProPlusPerkCoinBonus,
                     l10n.paywallProPlusPerkStreakFreeze,
                     l10n.paywallProPlusPerkMoneyAnalysis,
-                    l10n.paywallProPlusPerkNotificationSounds,
+                    l10n.paywallProPlusPerkGames,
                   ],
                   priceLabel: _subscriptionPriceLabel(proPlusOffer, l10n, languageCode),
                   badgeText: subscription.isProPlus ? l10n.paywallAlreadyProPlusBadge : null,

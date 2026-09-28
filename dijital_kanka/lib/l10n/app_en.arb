@@ -786,5 +786,7 @@
   "exchangeUpsellTitle": "{missing} ZC to go for {costume}",
   "exchangeUpsellBody": "About {weeks} weeks with games alone",
   "exchangeUpsellButton": "Get coins in the Store",
-  "exchangeProLine": "Weekly exchange limit {cap} ZC with Pro"
+  "exchangeProLine": "Weekly exchange limit {cap} ZC with Pro",
+  "paywallProPerkGames": "Game Hall: 5 plays a day, 80 ZC exchange a week",
+  "paywallProPlusPerkGames": "Game Hall: 8 plays a day, 100 ZC exchange a week"
 }

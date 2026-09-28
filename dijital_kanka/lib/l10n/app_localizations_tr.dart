@@ -2682,4 +2682,12 @@ class AppLocalizationsTr extends AppLocalizations {
   String exchangeProLine(int cap) {
     return 'Pro ile haftalık takas limiti $cap ZC';
   }
+
+  @override
+  String get paywallProPerkGames =>
+      'Oyun Salonu: günde 5 hak, haftada 80 ZC takas';
+
+  @override
+  String get paywallProPlusPerkGames =>
+      'Oyun Salonu: günde 8 hak, haftada 100 ZC takas';
 }

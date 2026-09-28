@@ -2696,4 +2696,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String exchangeProLine(int cap) {
     return 'Weekly exchange limit $cap ZC with Pro';
   }
+
+  @override
+  String get paywallProPerkGames =>
+      'Game Hall: 5 plays a day, 80 ZC exchange a week';
+
+  @override
+  String get paywallProPlusPerkGames =>
+      'Game Hall: 8 plays a day, 100 ZC exchange a week';
 }

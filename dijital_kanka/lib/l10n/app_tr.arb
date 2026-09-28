@@ -3664,5 +3664,13 @@
         "type": "int"
       }
     }
+  },
+  "paywallProPerkGames": "Oyun Salonu: günde 5 hak, haftada 80 ZC takas",
+  "@paywallProPerkGames": {
+    "description": "Paywall Pro kartı Oyun Salonu avantajı"
+  },
+  "paywallProPlusPerkGames": "Oyun Salonu: günde 8 hak, haftada 100 ZC takas",
+  "@paywallProPlusPerkGames": {
+    "description": "Paywall Pro+ kartı Oyun Salonu avantajı"
   }
 }
