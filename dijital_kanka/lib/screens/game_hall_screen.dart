@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../l10n/app_localizations.dart';
+import '../providers/games_config_provider.dart';
 import '../widgets/sticker_style.dart';
 import 'game_webview_screen.dart';
 
@@ -12,8 +14,9 @@ import 'game_webview_screen.dart';
 /// sayfa HAFİF: yalnızca küçük kart görselleri; WebView yalnızca bir oyuna
 /// dokununca [GameWebViewScreen] ile açılır.
 ///
-/// 7 oyunun hepsi oynanabilir; config'i olmayan bir oyun
-/// "Yakında". Oyun Puanı bakiyesi ve Takas Gişesi Faz 2-3'te eklenecek.
+/// Hangi oyunun oynanabilir olduğu [GamesConfigProvider]'dan gelir:
+/// Firestore `config/games`'te `"enabled": false` olan oyun "Yakında"
+/// görünür (acil kapatma). Oyun Puanı bakiyesi ve Takas Gişesi Faz 3'te.
 class GameHallScreen extends StatelessWidget {
   const GameHallScreen({super.key});
 
@@ -22,14 +25,15 @@ class GameHallScreen extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final colorScheme = Theme.of(context).colorScheme;
 
+    final config = context.watch<GamesConfigProvider>().config;
     final games = <_GameEntry>[
-      _GameEntry('kule', l10n.gameNameKule, l10n.gameDescKule, config: kuleGameConfig),
-      _GameEntry('hafiza', l10n.gameNameHafiza, l10n.gameDescHafiza, config: hafizaGameConfig),
-      _GameEntry('2048', l10n.gameName2048, l10n.gameDesc2048, config: game2048Config),
-      _GameEntry('yakala', l10n.gameNameYakala, l10n.gameDescYakala, config: yakalaGameConfig),
-      _GameEntry('tren', l10n.gameNameTren, l10n.gameDescTren, config: trenGameConfig),
-      _GameEntry('tugla', l10n.gameNameTugla, l10n.gameDescTugla, config: tuglaGameConfig),
-      _GameEntry('zipla', l10n.gameNameZipla, l10n.gameDescZipla, config: ziplaGameConfig),
+      _GameEntry('kule', l10n.gameNameKule, l10n.gameDescKule, playable: config.isEnabled('kule')),
+      _GameEntry('hafiza', l10n.gameNameHafiza, l10n.gameDescHafiza, playable: config.isEnabled('hafiza')),
+      _GameEntry('2048', l10n.gameName2048, l10n.gameDesc2048, playable: config.isEnabled('2048')),
+      _GameEntry('yakala', l10n.gameNameYakala, l10n.gameDescYakala, playable: config.isEnabled('yakala')),
+      _GameEntry('tren', l10n.gameNameTren, l10n.gameDescTren, playable: config.isEnabled('tren')),
+      _GameEntry('tugla', l10n.gameNameTugla, l10n.gameDescTugla, playable: config.isEnabled('tugla')),
+      _GameEntry('zipla', l10n.gameNameZipla, l10n.gameDescZipla, playable: config.isEnabled('zipla')),
     ];
 
     return ListView(
@@ -80,16 +84,14 @@ class GameHallScreen extends StatelessWidget {
 }
 
 class _GameEntry {
-  const _GameEntry(this.id, this.name, this.description, {this.config});
+  const _GameEntry(this.id, this.name, this.description, {required this.playable});
 
   final String id;
   final String name;
   final String description;
 
-  /// `null` = henüz uygulamaya eklenmedi ("Yakında").
-  final Map<String, Object>? config;
-
-  bool get playable => config != null;
+  /// `false` = uzaktan kapatılmış ("Yakında").
+  final bool playable;
 }
 
 class _GameCard extends StatelessWidget {
@@ -100,7 +102,7 @@ class _GameCard extends StatelessWidget {
   void _open(BuildContext context) {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) => GameWebViewScreen(gameId: game.id, title: game.name, config: game.config!),
+        builder: (_) => GameWebViewScreen(gameId: game.id, title: game.name),
       ),
     );
   }

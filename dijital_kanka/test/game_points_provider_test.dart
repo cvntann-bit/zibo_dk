@@ -1,0 +1,118 @@
+// Oyun Salonu Faz 2 (docs/game_zibo.md): kalıcı ★ cüzdanı + uzaktan ayar.
+
+import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import 'package:dijital_kanka/data/games_config.dart';
+import 'package:dijital_kanka/providers/game_points_provider.dart';
+
+void main() {
+  const config = GamesConfig.defaults;
+
+  setUp(() => SharedPreferences.setMockInitialValues({}));
+
+  Future<GamePointsProvider> make(DateTime Function() now) async {
+    final p = GamePointsProvider(now: now);
+    await p.ready;
+    return p;
+  }
+
+  test('ücretsizde oyun başına günde 3 hak; Pro 5, Pro+ 8', () async {
+    final p = await make(() => DateTime(2026, 9, 29, 10));
+    expect(p.playsLeft('kule', 'free', config), 3);
+    expect(p.playsLeft('kule', 'pro', config), 5);
+    expect(p.playsLeft('kule', 'plus', config), 8);
+    for (var i = 0; i < 3; i++) {
+      expect(p.consumePlay('kule', 'free', config), isTrue);
+    }
+    expect(p.consumePlay('kule', 'free', config), isFalse);
+    // Haklar oyun başına ayrı.
+    expect(p.playsLeft('tren', 'free', config), 3);
+  });
+
+  test('reklamla ek hak yalnızca ücretsizde ve oyun başına günde en fazla 2', () async {
+    final p = await make(() => DateTime(2026, 9, 29, 10));
+    expect(p.canAdForPlay('kule', 'pro', config), isFalse);
+    expect(p.grantAdPlay('kule', 'free', config), isTrue);
+    expect(p.grantAdPlay('kule', 'free', config), isTrue);
+    expect(p.grantAdPlay('kule', 'free', config), isFalse);
+    expect(p.playsLeft('kule', 'free', config), 5);
+  });
+
+  test('gün değişince haklar yenilenir', () async {
+    var now = DateTime(2026, 9, 29, 23, 50);
+    final p = await make(() => now);
+    for (var i = 0; i < 3; i++) {
+      p.consumePlay('kule', 'free', config);
+    }
+    expect(p.playsLeft('kule', 'free', config), 0);
+    now = DateTime(2026, 9, 30, 0, 5);
+    expect(p.playsLeft('kule', 'free', config), 3);
+  });
+
+  test('puan tur tavanını aşamaz, negatif olamaz; bakiye ve haftalık puan artar', () async {
+    final p = await make(() => DateTime(2026, 9, 29, 10));
+    expect(p.recordFinish('kule', claimedPoints: 9999, config: config), 250);
+    expect(p.recordFinish('tren', claimedPoints: -5, config: config), 0);
+    expect(p.recordFinish('tren', claimedPoints: 40, config: config), 40);
+    expect(p.points, 290);
+    expect(p.weekPoints, 290);
+  });
+
+  test('rekor yalnızca daha yüksek skorla güncellenir', () async {
+    final p = await make(() => DateTime(2026, 9, 29, 10));
+    p.recordFinish('kule', claimedPoints: 10, score: 12, config: config);
+    p.recordFinish('kule', claimedPoints: 10, score: 8, config: config);
+    expect(p.best('kule'), 12);
+  });
+
+  test('pazartesi haftalık puan sıfırlanır, bakiye kalır', () async {
+    var now = DateTime(2026, 10, 4, 22); // Pazar
+    final p = await make(() => now);
+    p.recordFinish('tren', claimedPoints: 100, config: config);
+    expect(p.weekPoints, 100);
+    now = DateTime(2026, 10, 5, 9); // Pazartesi
+    expect(p.weekPoints, 0);
+    expect(p.points, 100);
+  });
+
+  test('durum kalıcıdır (yeniden açılınca yüklenir)', () async {
+    final now = DateTime(2026, 9, 29, 10);
+    final first = await make(() => now);
+    first.recordFinish('2048', claimedPoints: 120, score: 3400, config: config);
+    first.consumePlay('2048', 'free', config);
+    await Future<void>.delayed(Duration.zero);
+
+    final second = await make(() => now);
+    expect(second.points, 120);
+    expect(second.best('2048'), 3400);
+    expect(second.playsLeft('2048', 'free', config), 2);
+  });
+
+  group('GamesConfig.fromJson', () {
+    test('Firestore alanları varsayılanların üstüne yazılır, bozuklar yok sayılır', () {
+      final c = GamesConfig.fromJson({
+        'dailyPlays': {'free': 2, 'pro': 'çok'},
+        'maxAdPlaysPerGame': 1,
+        'games': {
+          'tren': {'perCoin': 3, 'cap': 300, 'label': 'yok say'},
+          'kule': {'enabled': false},
+        },
+      });
+      expect(c.playsFor('free'), 2);
+      expect(c.playsFor('pro'), 5);
+      expect(c.maxAdPlaysPerGame, 1);
+      expect(c.gameConfig('tren'), {'perCoin': 3, 'cap': 300});
+      expect(c.capOf('tren'), 300);
+      expect(c.isEnabled('kule'), isFalse);
+      expect(c.gameConfig('kule'), {'perFloor': 2, 'perfectBonus': 1, 'cap': 250});
+      expect(c.isEnabled('hafiza'), isTrue);
+    });
+
+    test('doküman yoksa varsayılanlar', () {
+      final c = GamesConfig.fromJson(null);
+      expect(c.capOf('yakala'), 400);
+      expect(c.playsFor('plus'), 8);
+    });
+  });
+}

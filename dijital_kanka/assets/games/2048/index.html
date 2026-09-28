@@ -212,11 +212,15 @@
     reset(); showIntro();
   };
   window.ziboStartResult = function (r) {
+    if (typeof r.canAdForPlay === 'boolean') CFG.canAdForPlay = r.canAdForPlay;
     CFG.playsLeft = r.playsLeft;
     if (r.ok) { $('intro').hidden = true; $('result').hidden = true; startGame(); } else showIntro();
   };
-  window.ziboFinishResult = function (r) { showResult(r.accepted ? r.points : 0); };
+  window.ziboFinishResult = function (r) {
+    if (typeof r.canAdForPlay === 'boolean') CFG.canAdForPlay = r.canAdForPlay;
+    if (typeof r.playsLeft === 'number') CFG.playsLeft = r.playsLeft; showResult(r.accepted ? r.points : 0); };
   window.ziboAdResult = function (r) {
+    if (typeof r.canAdForPlay === 'boolean') CFG.canAdForPlay = r.canAdForPlay;
     if (typeof r.playsLeft === 'number') CFG.playsLeft = r.playsLeft;
     if (r.reason === 'undo') { if (r.ok) doUndo(); else { toast(t('adFail')); lock = false; if (!canMove()) stuck(); } hud(); return; }
     if (!r.ok) toast(t('adFail'));

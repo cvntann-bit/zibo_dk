@@ -124,11 +124,15 @@
     showIntro();
   };
   window.ziboStartResult = function (r) {
+    if (typeof r.canAdForPlay === 'boolean') CFG.canAdForPlay = r.canAdForPlay;
     CFG.playsLeft = r.playsLeft;
     if (r.ok) { $('intro').hidden = true; $('result').hidden = true; startGame(); } else showIntro();
   };
-  window.ziboFinishResult = function (r) { showResult(r.accepted ? r.points : 0); };
-  window.ziboAdResult = function (r) { if (typeof r.playsLeft === 'number') CFG.playsLeft = r.playsLeft; showIntro(); };
+  window.ziboFinishResult = function (r) {
+    if (typeof r.canAdForPlay === 'boolean') CFG.canAdForPlay = r.canAdForPlay;
+    if (typeof r.playsLeft === 'number') CFG.playsLeft = r.playsLeft; showResult(r.accepted ? r.points : 0); };
+  window.ziboAdResult = function (r) {
+    if (typeof r.canAdForPlay === 'boolean') CFG.canAdForPlay = r.canAdForPlay; if (typeof r.playsLeft === 'number') CFG.playsLeft = r.playsLeft; showIntro(); };
 
   // ---------- tuval ----------
   var W = 360, H = 640, OUT = '#14110C', ZG = 74;

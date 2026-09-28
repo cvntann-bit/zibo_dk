@@ -361,3 +361,16 @@ config'inden (`lib/screens/game_webview_screen.dart` sonundaki `*GameConfig` sab
 Oyun başına devam/geri alma: 2048 `requestAd('undo')`, Tren/Tuğla/Kule `requestAd('continue')`; Pro'da reklamsız.
 Kullanıcı Kule, Hafıza, 2048, Coin Yakala ve Tren'i telefonda denedi: "çalışıyor". Zıpla ve Tuğla denenmeyi bekliyor.
 **Hâlâ geçici:** haklar/puanlar/rekorlar ekran kapanınca sıfırlanıyor → Faz 2 (`GamePointsProvider`), Takas Gişesi → Faz 3.
+
+### Faz 2 YAPILDI (2026-09-29)
+- `lib/data/games_config.dart` — `GamesConfig`: tüm rakamlar + `defaults`; `fromJson` Firestore `config/games`'i
+  varsayılanların üstüne yazar (yalnızca sayı/bool; bozuk alan yok sayılır). `enabled: false` = oyunu "Yakında"ya çevirir.
+- `lib/providers/games_config_provider.dart` — açılışta `config/games`'i bir kez okur (yoksa/hata → varsayılan).
+- `lib/providers/game_points_provider.dart` — `gamePointsState` (CloudStateStore): ★ `points`, `totalEarned`,
+  `weekPoints`, `weekExchanged` (Faz 3 için), oyun başına günlük `used/bonus/ads`, `best`. Gün/hafta (pazartesi)
+  `TrustedTimeProvider` saatinden. `consumePlay`, `grantAdPlay` (yalnızca free, oyun başına günde `maxAdPlaysPerGame`),
+  `recordFinish` (tur tavanına kısar, rekor günceller). `ready` future'ı.
+- `GameWebViewScreen` artık bu ikisini kullanıyor; oyunlara her cevapta `playsLeft` + `canAdForPlay` gidiyor.
+- `firestore.rules`: `config/games` → giriş yapmış herkes OKUR, yazma kapalı. **Console'a elle yapıştırılmalı.**
+  Doküman oluşturulmazsa uygulama varsayılanlarla çalışır.
+- Test: `test/game_points_provider_test.dart` (9 test).

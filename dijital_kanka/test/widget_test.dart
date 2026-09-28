@@ -34,6 +34,8 @@ import 'package:dijital_kanka/providers/dream_journal_provider.dart';
 import 'package:dijital_kanka/providers/favorite_quotes_provider.dart';
 import 'package:dijital_kanka/providers/focus_provider.dart';
 import 'package:dijital_kanka/providers/founder_badge_provider.dart';
+import 'package:dijital_kanka/providers/game_points_provider.dart';
+import 'package:dijital_kanka/providers/games_config_provider.dart';
 import 'package:dijital_kanka/providers/goals_provider.dart';
 import 'package:dijital_kanka/providers/gratitude_provider.dart';
 import 'package:dijital_kanka/providers/hidden_badge_provider.dart';
@@ -190,6 +192,8 @@ Widget _buildAppWithClock(DateTime Function() now) {
       ChangeNotifierProvider(create: (_) => SubscriptionProvider(now: now)),
       ChangeNotifierProvider(create: (_) => ThemeProvider()),
       ChangeNotifierProvider(create: (_) => WaterProvider(now: now)),
+      ChangeNotifierProvider(create: (_) => GamesConfigProvider()),
+      ChangeNotifierProvider(create: (_) => GamePointsProvider(now: now)),
       ChangeNotifierProvider(create: (_) => XpProvider()),
       ChangeNotifierProvider(create: (_) => ZiboPoseProvider()),
     ],

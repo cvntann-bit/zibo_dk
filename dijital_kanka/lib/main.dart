@@ -29,6 +29,8 @@ import 'providers/dream_journal_provider.dart';
 import 'providers/favorite_quotes_provider.dart';
 import 'providers/focus_provider.dart';
 import 'providers/founder_badge_provider.dart';
+import 'providers/game_points_provider.dart';
+import 'providers/games_config_provider.dart';
 import 'providers/goals_provider.dart';
 import 'providers/gratitude_provider.dart';
 import 'providers/hidden_badge_provider.dart';
@@ -823,6 +825,11 @@ class DijitalKankaApp extends StatelessWidget {
         // veriliyor (bkz. FounderBadgeProvider dokümantasyonu). Diğer
         // provider'lardan bağımsız, yalnızca kendi `uid`'ini alıyor.
         ChangeNotifierProvider(create: (_) => FounderBadgeProvider(uid: uid)),
+        // Oyun Salonu (docs/game_zibo.md Faz 2): rakamlar + kalıcı ★ cüzdanı.
+        ChangeNotifierProvider(create: (_) => GamesConfigProvider(uid: uid)),
+        ChangeNotifierProvider(
+          create: (context) => GamePointsProvider(now: _trustedNow(context), uid: uid),
+        ),
         ChangeNotifierProvider(
           create: (_) => CustomMessagesProvider(uid: uid),
         ),
