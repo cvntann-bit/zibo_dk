@@ -104,13 +104,15 @@ service cloud.firestore {
           return d.subscriptionTier in ['free', 'pro', 'proplus']
             && (d.subscriptionProductId == null
                 || d.subscriptionProductId is string)
+            // DİKKAT (2026-09-29 düzeltmesi): SubscriptionProvider._save bitiş
+            // tarihini ISO-8601 METİN olarak yazıyor (toIso8601String), Firestore
+            // Timestamp DEĞİL. Eski hâli (`is timestamp` + 400 gün sınırı) hiç
+            // yayınlanmadan fark edildi; yayınlansaydı Pro/Pro+ kullanıcıların
+            // abonelik senkronu reddedilirdi. Rules ISO metnini tarihe çeviremediği
+            // için yalnızca şekil kontrolü yapılıyor (istemci-yetkili mimari).
             && (d.subscriptionExpiryDate == null
-                || (d.subscriptionExpiryDate is timestamp
-                    // Bariz bir sahte tarihi ("2099" gibi) engelleyen gevşek
-                    // üst sınır — en uzun gerçek plan (yıllık) + kayan
-                    // pencere toleransı (bkz. SubscriptionProvider).
-                    && d.subscriptionExpiryDate
-                       < request.time + duration.value(400, 'd')));
+                || (d.subscriptionExpiryDate is string
+                    && d.subscriptionExpiryDate.size() <= 40));
         }
 
         allow read: if isOwner();
