@@ -107,6 +107,8 @@ flutter:
     - assets/sounds/
     # Oyun Salonu oyunları — WebView içinde açılır (bkz. docs/game_zibo.md).
     - assets/games/kule/
+    - assets/games/hafiza/
+    - assets/games/2048/
 
   # "Çizgi Roman Çıkartması" tipografisi (bkz. docs/theme_new.md, main.dart
   # `_buildTextTheme`) — DEĞİŞKEN (variable) font dosyaları olarak gömülü,

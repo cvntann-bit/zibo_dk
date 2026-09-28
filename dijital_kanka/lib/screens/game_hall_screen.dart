@@ -12,7 +12,7 @@ import 'game_webview_screen.dart';
 /// sayfa HAFİF: yalnızca küçük kart görselleri; WebView yalnızca bir oyuna
 /// dokununca [GameWebViewScreen] ile açılır.
 ///
-/// Şimdilik yalnızca Zibo Kule oynanabilir (Faz 1 denemesi); diğerleri
+/// Şimdilik Kule, Hafıza ve 2048 oynanabilir; diğerleri
 /// "Yakında". Oyun Puanı bakiyesi ve Takas Gişesi Faz 2-3'te eklenecek.
 class GameHallScreen extends StatelessWidget {
   const GameHallScreen({super.key});
@@ -24,8 +24,8 @@ class GameHallScreen extends StatelessWidget {
 
     final games = <_GameEntry>[
       _GameEntry('kule', l10n.gameNameKule, l10n.gameDescKule, config: kuleGameConfig),
-      _GameEntry('hafiza', l10n.gameNameHafiza, l10n.gameDescHafiza),
-      _GameEntry('2048', l10n.gameName2048, l10n.gameDesc2048),
+      _GameEntry('hafiza', l10n.gameNameHafiza, l10n.gameDescHafiza, config: hafizaGameConfig),
+      _GameEntry('2048', l10n.gameName2048, l10n.gameDesc2048, config: game2048Config),
       _GameEntry('yakala', l10n.gameNameYakala, l10n.gameDescYakala),
       _GameEntry('tren', l10n.gameNameTren, l10n.gameDescTren),
       _GameEntry('tugla', l10n.gameNameTugla, l10n.gameDescTugla),

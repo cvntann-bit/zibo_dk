@@ -236,7 +236,7 @@
   function finish() {
     if (state === 'end' || state === 'waitResult') return;
     state = 'waitResult'; $('cont').hidden = true;
-    send({ type: 'finish', points: points(), stats: { floors: floors(), perfects: perfects } });
+    send({ type: 'finish', points: points(), score: floors(), stats: { floors: floors(), perfects: perfects } });
   }
   function showIntro() {
     $('introText').textContent = t('intro');

@@ -1,0 +1,378 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Zibo 2048</title>
+<!--
+  Zibo 2048 — Oyun Salonu oyunu (WebView, bkz. docs/game_zibo.md).
+  Uygulamada Flutter `GameWebViewScreen` açar, `ZiboBridge` ile konuşur; tarayıcıda DEMO modu.
+  Puan rakamları Flutter'dan `ziboInit` config'iyle gelir. Başla penceresi GİZEMLİ (kullanıcı kararı).
+-->
+<style>
+  @font-face { font-family: 'Baloo2'; src: url('../../fonts/Baloo2-Variable.ttf') format('truetype'); font-weight: 400 800; }
+  @font-face { font-family: 'Nunito'; src: url('../../fonts/Nunito-Variable.ttf') format('truetype'); font-weight: 200 1000; }
+  :root { --outline: #14110C; --gold: #F3B23C; --cream: #FFF8E8; --chip: #FFFDF7; --ice: #8FD3FF; --ice-pale: #DDF2FF; --ice-ink: #0E3A5C; }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; height: 100%; overflow: hidden; color: #2A2115; font-family: 'Nunito', system-ui, sans-serif; user-select: none; -webkit-user-select: none;
+    background: radial-gradient(rgba(20,17,12,.07) 1.2px, transparent 1.3px) 0 0 / 14px 14px, linear-gradient(#FFF1D2, #FFE3A6); }
+  #app { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 12px; gap: 12px; }
+  .col { width: 100%; display: grid; gap: 12px; }
+  .hud { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .hud div { position: relative; background: var(--chip); border: 2.5px solid var(--outline); border-radius: 12px; box-shadow: 2px 2px 0 var(--outline); padding: 3px 4px; text-align: center; display: grid; justify-items: center; }
+  .hud b { font: 800 20px/1.1 'Baloo2', sans-serif; font-variant-numeric: tabular-nums; }
+  .hud span { font: 800 9.5px 'Nunito', sans-serif; letter-spacing: .05em; text-transform: uppercase; color: #6E5B40; }
+  .hud img { height: 24px; }
+  .plus { position: absolute; left: 50%; top: -6px; transform: translateX(-50%); font: 800 16px 'Baloo2', sans-serif; color: var(--gold); -webkit-text-stroke: 1.5px var(--outline); paint-order: stroke fill; pointer-events: none; animation: rise 800ms ease-out forwards; }
+  @keyframes rise { to { transform: translate(-50%, -26px); opacity: 0; } }
+  .board { position: relative; aspect-ratio: 1; background: #C9A46B; border: 3px solid var(--outline); border-radius: 16px; box-shadow: 4px 4px 0 var(--outline); touch-action: none; }
+  .cells, .layer { position: absolute; inset: 7px; }
+  .cells { display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(4, 1fr); gap: 7px; }
+  .cells i { background: rgba(255, 248, 232, .42); border: 2px dashed rgba(20, 17, 12, .22); border-radius: 11px; }
+  .tile { position: absolute; left: 0; top: 0; width: calc((100% - 21px) / 4); height: calc((100% - 21px) / 4); transform: translate(calc(var(--c) * (100% + 7px)), calc(var(--r) * (100% + 7px))); transition: transform 110ms ease-out; }
+  .t { position: absolute; inset: 0; border: 2.5px solid var(--outline); border-radius: 11px; box-shadow: 2px 2px 0 var(--outline); overflow: hidden; background: var(--bg); }
+  .t img { position: absolute; left: 6%; top: 4%; width: 88%; height: 76%; object-fit: contain; }
+  .t b { position: absolute; top: 3px; left: 3px; color: #2A2115; font: 800 11px/1 'Baloo2', sans-serif; background: #FFFDF7; border: 1.5px solid var(--outline); border-radius: 6px; padding: 2px 3px 1px; }
+  .t small { position: absolute; left: 0; right: 0; bottom: 2px; text-align: center; font: 800 9px/1 'Nunito', sans-serif; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 2px; }
+  .t.silver { box-shadow: 2px 2px 0 var(--outline), inset 0 0 0 3px #C9CED6; }
+  .t.goldring { box-shadow: 2px 2px 0 var(--outline), inset 0 0 0 3px #FFE08A; }
+  .tile.new .t { animation: appear 170ms ease-out; }
+  .tile.merged .t { animation: merge 220ms ease-out; }
+  @keyframes appear { from { transform: scale(0); } to { transform: scale(1); } }
+  @keyframes merge { 50% { transform: scale(1.2); } 100% { transform: scale(1); } }
+  .acts { display: grid; grid-template-columns: 1fr 1.25fr; gap: 8px; }
+  .btn { width: 100%; white-space: nowrap; border: 3px solid var(--outline); border-radius: 14px; padding: 9px 8px; font: 700 15px 'Baloo2', sans-serif; cursor: pointer; box-shadow: 3px 3px 0 var(--outline); background: var(--gold); color: var(--outline); }
+  .btn.ice { background: var(--ice); }
+  .btn.ghost { background: var(--chip); }
+  .btn:active:not(:disabled) { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--outline); }
+  .btn:disabled { opacity: .5; }
+  .btn[hidden], .overlay[hidden] { display: none; }
+  .hint { text-align: center; font: 800 10.5px 'Nunito', sans-serif; letter-spacing: .05em; text-transform: uppercase; color: #6E5B40; }
+  .toast { position: absolute; left: 50%; bottom: 18px; transform: translateX(-50%); z-index: 4; background: var(--outline); color: #FFF8E8; border-radius: 999px; padding: 6px 14px; font: 800 13px 'Nunito', sans-serif; opacity: 0; transition: opacity 200ms; pointer-events: none; white-space: nowrap; }
+  .toast.on { opacity: 1; }
+  .overlay { position: absolute; inset: 0; z-index: 5; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgba(255, 244, 222, .84); overflow-y: auto; }
+  .sheet { width: 100%; max-width: 320px; margin: auto; background: var(--cream); border: 3px solid var(--outline); border-radius: 22px; box-shadow: 5px 5px 0 var(--outline); padding: 16px; display: grid; gap: 10px; justify-items: center; text-align: center; }
+  .logo { font: 800 32px/1 'Baloo2', sans-serif; color: var(--gold); -webkit-text-stroke: 2.5px var(--outline); paint-order: stroke fill; text-shadow: 3px 3px 0 var(--outline); }
+  .sheet > img { width: 84px; filter: drop-shadow(3px 3px 0 rgba(20,17,12,.3)); }
+  .sheet h2 { margin: 0; font: 800 23px/1.1 'Baloo2', sans-serif; }
+  .sheet p { margin: 0; font-weight: 700; font-size: 13.5px; color: #6E5B40; line-height: 1.4; }
+  .mys { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 4px; width: 100%; }
+  .mys span { display: grid; justify-items: center; border: 2px solid var(--outline); border-radius: 8px; background: var(--chip); padding: 2px 1px; font: 800 9px/1.1 'Nunito', sans-serif; min-width: 0; }
+  .mys span.q { background: #F3E4C0; color: #6E5B40; }
+  .mys img { height: 30px; max-width: 100%; object-fit: contain; }
+  .mys b { font: 800 22px/30px 'Baloo2', sans-serif; }
+  .chip { display: inline-flex; align-items: center; gap: 4px; border: 2.5px solid var(--outline); border-radius: 999px; padding: 1px 10px; font: 800 12.5px 'Nunito', sans-serif; background: var(--chip); }
+  .chip.gold { background: var(--gold); }
+  .chips { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; }
+  .pt { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; border-radius: 50%; background: var(--ice); border: 2px solid var(--outline); color: var(--ice-ink); font: 800 10px/1 'Nunito', sans-serif; font-style: normal; flex: none; }
+  .pt.lg { width: 30px; height: 30px; font-size: 16px; border-width: 2.5px; }
+  .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; }
+  .stat { border: 2.5px solid var(--outline); border-radius: 14px; padding: 6px 4px; background: var(--chip); }
+  .stat b { display: block; font: 800 20px/1 'Baloo2', sans-serif; }
+  .stat span { font: 800 10px 'Nunito', sans-serif; letter-spacing: .06em; text-transform: uppercase; color: #6E5B40; }
+  .reward { width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; border: 2.5px dashed var(--outline); border-radius: 14px; padding: 8px; background: var(--ice-pale); font: 800 20px 'Baloo2', sans-serif; }
+  .reward small { display: block; font: 700 11.5px 'Nunito', sans-serif; color: #6E5B40; }
+  @media (prefers-reduced-motion: reduce) { .tile { transition: none; } .tile.new .t, .tile.merged .t { animation: none; } }
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="col" id="col">
+    <div class="hud">
+      <div id="scoreBox"><b id="hScore">0</b><span id="hScoreL"></span></div>
+      <div><b id="hBest">0</b><span id="hBestL"></span></div>
+      <div><img id="hTopImg" src="../../images/zibo_yeni.webp" alt=""><span id="hTopName"></span></div>
+    </div>
+    <div class="board" id="board"><div class="cells" id="cells"></div><div class="layer" id="layer"></div></div>
+    <div class="acts">
+      <button class="btn ice" id="undoBtn"></button>
+      <button class="btn ghost" id="endBtn"></button>
+    </div>
+    <div class="hint" id="hint"></div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<div class="overlay" id="intro" hidden>
+  <div class="sheet">
+    <div class="logo">Zibo 2048</div>
+    <img src="../../images/zibo_altin.webp" alt="">
+    <p id="introText"></p>
+    <p id="teaseText" style="font-size:12px"></p>
+    <div class="mys" id="mys"></div>
+    <div class="chips"><span class="chip gold" id="introPlays"></span><span class="chip" id="introBest"></span></div>
+    <button class="btn" id="startBtn"></button>
+    <button class="btn ice" id="playAdBtn" hidden></button>
+  </div>
+</div>
+
+<div class="overlay" id="stuck" hidden>
+  <div class="sheet">
+    <h2 id="stuckTitle"></h2>
+    <img src="../../images/zibo_df_pose1.webp" alt="">
+    <p id="stuckText"></p>
+    <button class="btn ice" id="stuckUndo"></button>
+    <button class="btn" id="stuckEnd"></button>
+  </div>
+</div>
+
+<div class="overlay" id="result" hidden>
+  <div class="sheet">
+    <h2 id="resTitle"></h2>
+    <img id="resImg" src="../../images/zibo_yeni.webp" alt="">
+    <div class="stats">
+      <div class="stat"><b id="resScore">0</b><span id="resScoreL"></span></div>
+      <div class="stat"><b id="resTop">-</b><span id="resTopL"></span></div>
+    </div>
+    <div class="reward"><i class="pt lg">★</i><div><span id="resPts"></span><small id="resNote"></small></div></div>
+    <button class="btn" id="againBtn"></button>
+    <button class="btn ghost" id="exitBtn"></button>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+  var TEXT = {
+    tr: {
+      intro: 'Kaydır; aynı kostümlü iki Zibo birleşince bir üst kostüme dönüşür. Hedef: Altın Zibo!',
+      tease: 'Birleştirdikçe yeni kostümler açılır. Hepsini keşfedebilecek misin?', classic: 'Klasik',
+      playsLeft: '{n} hak kaldı', noPlays: 'Bugünlük hakların bitti', best: 'Rekor {n}', start: 'Başla', waiting: 'Bekleniyor…', adPlay: '🎬 Reklam izle, +1 hak',
+      score: 'Skor', bestL: 'Rekor', undo: '↶ Geri al ({n})', undoAd: '🎬 Geri al ({n})', undoNone: 'Geri alma bitti', end: 'Bitir · +{n} ★', hint: 'Kaydır ya da ok tuşlarını kullan',
+      stuckTitle: 'Hamle kalmadı!', stuckText: 'Son hamleyi geri alıp devam edebilir ya da {p} ★ alıp bitirebilirsin.', stuckNoUndo: 'Geri alma hakkın bitti. {p} ★ alıp bitir.',
+      stuckUndo: '↶ Geri al ({n} hak)', stuckUndoAd: '🎬 Reklam izle, geri al ({n})', finish: 'Bitir, puanı al',
+      undone: 'Son hamle geri alındı', gold: 'Altın Zibo yaptın! 🏆 Devam edip daha da ileri git', unlocked: '{name} Zibo açıldı!',
+      resGold: 'Altın Zibo yaptın!', resBest: 'Yeni rekor!', resDone: 'Oyun bitti!', highest: 'En yüksek',
+      pts: '+{n} puan', note: 'Skor ÷ {d} = {s} ★', noteBonus: ' + {name} bonusu {b} ★', capNote: ' (tur tavanı {c})',
+      again: 'Tekrar oyna ({n} hak)', againNo: 'Hak kalmadı', exit: 'Oyun Salonu\'na dön', adFail: 'Reklam şu an yok, sonra tekrar dene'
+    },
+    en: {
+      intro: 'Swipe; two Zibos in the same costume merge into the next costume. Goal: Golden Zibo!',
+      tease: 'New costumes unlock as you merge. Can you discover them all?', classic: 'Classic',
+      playsLeft: '{n} plays left', noPlays: 'No plays left today', best: 'Best {n}', start: 'Start', waiting: 'Please wait…', adPlay: '🎬 Watch an ad, +1 play',
+      score: 'Score', bestL: 'Best', undo: '↶ Undo ({n})', undoAd: '🎬 Undo ({n})', undoNone: 'No undos left', end: 'Finish · +{n} ★', hint: 'Swipe or use the arrow keys',
+      stuckTitle: 'No moves left!', stuckText: 'Undo your last move and keep going, or finish and take {p} ★.', stuckNoUndo: 'No undos left. Finish and take {p} ★.',
+      stuckUndo: '↶ Undo ({n} left)', stuckUndoAd: '🎬 Watch an ad, undo ({n})', finish: 'Finish, take points',
+      undone: 'Last move undone', gold: 'You made Golden Zibo! 🏆 Keep going even further', unlocked: '{name} Zibo unlocked!',
+      resGold: 'You made Golden Zibo!', resBest: 'New record!', resDone: 'Game over!', highest: 'Highest',
+      pts: '+{n} points', note: 'Score ÷ {d} = {s} ★', noteBonus: ' + {name} bonus {b} ★', capNote: ' (round cap {c})',
+      again: 'Play again ({n} left)', againNo: 'No plays left', exit: 'Back to Game Hall', adFail: 'No ad right now, try again later'
+    },
+    es: {
+      intro: 'Desliza; dos Zibos con el mismo disfraz se combinan en el siguiente. Meta: ¡el Zibo Dorado!',
+      tease: 'Al combinar se desbloquean nuevos disfraces. ¿Podrás descubrirlos todos?', classic: 'Clásico',
+      playsLeft: 'Te quedan {n} partidas', noPlays: 'No te quedan partidas hoy', best: 'Récord {n}', start: 'Empezar', waiting: 'Espera…', adPlay: '🎬 Mira un anuncio, +1 partida',
+      score: 'Puntos', bestL: 'Récord', undo: '↶ Deshacer ({n})', undoAd: '🎬 Deshacer ({n})', undoNone: 'Sin deshacer', end: 'Terminar · +{n} ★', hint: 'Desliza o usa las flechas',
+      stuckTitle: '¡Sin movimientos!', stuckText: 'Deshaz tu último movimiento y sigue, o termina y llévate {p} ★.', stuckNoUndo: 'No te quedan deshacer. Termina y llévate {p} ★.',
+      stuckUndo: '↶ Deshacer (quedan {n})', stuckUndoAd: '🎬 Mira un anuncio, deshacer ({n})', finish: 'Terminar, cobrar puntos',
+      undone: 'Último movimiento deshecho', gold: '¡Hiciste el Zibo Dorado! 🏆 Sigue aún más lejos', unlocked: '¡Zibo {name} desbloqueado!',
+      resGold: '¡Hiciste el Zibo Dorado!', resBest: '¡Nuevo récord!', resDone: '¡Fin del juego!', highest: 'Más alto',
+      pts: '+{n} puntos', note: 'Puntos ÷ {d} = {s} ★', noteBonus: ' + bonus {name} {b} ★', capNote: ' (tope {c})',
+      again: 'Jugar de nuevo (quedan {n})', againNo: 'No quedan partidas', exit: 'Volver a la Sala de Juegos', adFail: 'No hay anuncio ahora, inténtalo luego'
+    }
+  };
+  // değer → [görsel, [TR, EN, ES], karo rengi, halka]
+  var LADDER = {
+    2: ['zibo_yeni', ['Klasik', 'Classic', 'Clásico'], '#FFFDF7', ''], 4: ['zibo_hippi', ['Hippi', 'Hippie', 'Hippie'], '#FFF3DC', ''],
+    8: ['zibo_sporcu', ['Sporcu', 'Athlete', 'Deportista'], '#FDE7C0', ''], 16: ['zibo_asker', ['Asker', 'Soldier', 'Soldado'], '#FAD99C', ''],
+    32: ['zibo_hoca', ['Hoca', 'Teacher', 'Maestro'], '#F6C977', ''], 64: ['zibo_punk', ['Punk', 'Punk', 'Punk'], '#F3B85A', ''],
+    128: ['zibo_rapci', ['Rapçi', 'Rapper', 'Rapero'], '#F0A548', ''], 256: ['zibo_samurai', ['Samuray', 'Samurai', 'Samurái'], '#EC9443', 'silver'],
+    512: ['zibo_korsan', ['Korsan', 'Pirate', 'Pirata'], '#E6843F', 'silver'], 1024: ['zibo_king', ['Kral', 'King', 'Rey'], '#F3B23C', 'goldring'],
+    2048: ['zibo_altin', ['Altın', 'Golden', 'Dorado'], '#FFC83D', 'goldring'], 4096: ['zibo_elmas', ['Elmas', 'Diamond', 'Diamante'], '#BFE6FF', 'goldring']
+  };
+  var lang = 'tr';
+  function t(key, vars) {
+    var s = (TEXT[lang] && TEXT[lang][key]) || TEXT.tr[key] || key;
+    if (vars) Object.keys(vars).forEach(function (k) { s = s.split('{' + k + '}').join(vars[k]); });
+    return s;
+  }
+  function L(v) { return LADDER[v] || LADDER[4096]; }
+  function nameOf(v) { return L(v)[1][{ tr: 0, en: 1, es: 2 }[lang] || 0]; }
+
+  // ---------- köprü ----------
+  var CFG = { locale: 'tr', tier: 'free', playsLeft: 3, best: 0, scoreDiv: 20, bonus256: 50, bonus1024: 100, bonus2048: 200, cap: 600, maxUndo: 3 };
+  var hasHost = !!(window.ZiboBridge && window.ZiboBridge.postMessage);
+  function send(msg) {
+    msg.game = '2048';
+    if (hasHost) { window.ZiboBridge.postMessage(JSON.stringify(msg)); return; }
+    setTimeout(function () {
+      if (msg.type === 'start') window.ziboStartResult({ ok: CFG.playsLeft > 0, playsLeft: Math.max(0, CFG.playsLeft - 1) });
+      if (msg.type === 'finish') window.ziboFinishResult({ accepted: true, points: Math.min(CFG.cap, msg.points) });
+      if (msg.type === 'requestAd') window.ziboAdResult({ ok: true, reason: msg.reason, playsLeft: CFG.playsLeft + (msg.reason === 'extraPlay' ? 1 : 0) });
+      if (msg.type === 'exit') location.reload();
+    }, msg.type === 'requestAd' ? 900 : 60);
+  }
+  function $(id) { return document.getElementById(id); }
+
+  window.ziboInit = function (cfg) {
+    Object.keys(cfg || {}).forEach(function (k) { CFG[k] = cfg[k]; });
+    lang = TEXT[CFG.locale] ? CFG.locale : 'tr';
+    document.documentElement.lang = lang;
+    $('hScoreL').textContent = t('score'); $('hBestL').textContent = t('bestL'); $('hint').textContent = t('hint');
+    reset(); showIntro();
+  };
+  window.ziboStartResult = function (r) {
+    CFG.playsLeft = r.playsLeft;
+    if (r.ok) { $('intro').hidden = true; $('result').hidden = true; startGame(); } else showIntro();
+  };
+  window.ziboFinishResult = function (r) { showResult(r.accepted ? r.points : 0); };
+  window.ziboAdResult = function (r) {
+    if (typeof r.playsLeft === 'number') CFG.playsLeft = r.playsLeft;
+    if (r.reason === 'undo') { if (r.ok) doUndo(); else { toast(t('adFail')); lock = false; if (!canMove()) stuck(); } hud(); return; }
+    if (!r.ok) toast(t('adFail'));
+    showIntro();
+  };
+
+  // ---------- oyun ----------
+  var tiles = [], idc = 0, score = 0, prev = null, lock = true, undos = 0, top = 2, won = false, seen = {}, playing = false;
+  function bonusFor(v) { return v >= 2048 ? CFG.bonus2048 : v >= 1024 ? CFG.bonus1024 : v >= 256 ? CFG.bonus256 : 0; }
+  function points() { return Math.min(CFG.cap, Math.floor(score / CFG.scoreDiv) + bonusFor(top)); }
+  function toast(m) { var el = $('toast'); el.textContent = m; el.classList.add('on'); clearTimeout(toast.h); toast.h = setTimeout(function () { el.classList.remove('on'); }, 1700); }
+  function paint(tl) {
+    var d = L(tl.v);
+    tl.el.style.setProperty('--r', tl.r); tl.el.style.setProperty('--c', tl.c);
+    if (tl.shown !== tl.v) { tl.el.innerHTML = '<div class="t ' + d[3] + '" style="--bg:' + d[2] + '"><img src="../../images/' + d[0] + '.webp" alt=""><b>' + tl.v + '</b><small>' + nameOf(tl.v) + '</small></div>'; tl.shown = tl.v; }
+  }
+  function add(v, r, c, isNew) { var el = document.createElement('div'); el.className = 'tile' + (isNew ? ' new' : ''); var tl = { v: v, r: r, c: c, el: el, id: ++idc }; paint(tl); $('layer').appendChild(el); tiles.push(tl); return tl; }
+  function grid() { var g = [[], [], [], []]; for (var r = 0; r < 4; r++) for (var c = 0; c < 4; c++) g[r][c] = null; tiles.forEach(function (tl) { if (!tl.dead) g[tl.r][tl.c] = tl; }); return g; }
+  function spawn() { var g = grid(), e = []; for (var r = 0; r < 4; r++) for (var c = 0; c < 4; c++) if (!g[r][c]) e.push([r, c]); if (e.length) { var p = e[Math.floor(Math.random() * e.length)]; add(Math.random() < 0.9 ? 2 : 4, p[0], p[1], true); } }
+  function canMove() { var g = grid(); for (var r = 0; r < 4; r++) for (var c = 0; c < 4; c++) { var x = g[r][c]; if (!x) return true; if (c < 3 && g[r][c + 1] && g[r][c + 1].v === x.v) return true; if (r < 3 && g[r + 1][c] && g[r + 1][c].v === x.v) return true; } return false; }
+  function hud() {
+    $('hScore').textContent = score.toLocaleString(lang);
+    $('hBest').textContent = Math.max(CFG.best || 0, score).toLocaleString(lang);
+    $('hTopImg').src = '../../images/' + L(top)[0] + '.webp'; $('hTopName').textContent = nameOf(top);
+    var left = CFG.maxUndo - undos, free = CFG.tier !== 'free';
+    $('undoBtn').textContent = left <= 0 ? t('undoNone') : (free ? t('undo', { n: left }) : t('undoAd', { n: left }));
+    $('undoBtn').disabled = left <= 0 || !prev || lock || !playing;
+    $('endBtn').textContent = t('end', { n: points() }); $('endBtn').disabled = !playing;
+  }
+  function fitBoard() {
+    var w = Math.min(window.innerWidth - 24, 440, window.innerHeight - 24 - 56 - 48 - 24 - 36);
+    $('col').style.width = Math.max(240, w) + 'px';
+  }
+  function reset() {
+    tiles = []; $('layer').innerHTML = ''; score = 0; prev = null; undos = 0; top = 2; won = false; lock = true; playing = false; seen = { 2: true };
+    var cells = $('cells'); if (!cells.children.length) for (var i = 0; i < 16; i++) cells.appendChild(document.createElement('i'));
+    add(2, 1, 1, false); add(4, 2, 2, false); hud(); fitBoard();
+  }
+  function startGame() { tiles = []; $('layer').innerHTML = ''; score = 0; prev = null; undos = 0; top = 2; won = false; seen = { 2: true }; spawn(); spawn(); lock = false; playing = true; hud(); }
+  function plus(n) { var p = document.createElement('span'); p.className = 'plus'; p.textContent = '+' + n; $('scoreBox').appendChild(p); setTimeout(function () { p.remove(); }, 820); }
+  function move(dir) {
+    if (lock || !playing) return;
+    var v = { left: [0, -1], right: [0, 1], up: [-1, 0], down: [1, 0] }[dir], g = grid();
+    var snap = { tiles: tiles.map(function (x) { return [x.v, x.r, x.c]; }), score: score, top: top };
+    var rows = [0, 1, 2, 3], cols = [0, 1, 2, 3];
+    if (v[0] === 1) rows.reverse(); if (v[1] === 1) cols.reverse();
+    var moved = false, gained = 0;
+    rows.forEach(function (r) {
+      cols.forEach(function (c) {
+        var x = g[r][c]; if (!x) return;
+        var nr = r, nc = c;
+        for (;;) {
+          var r2 = nr + v[0], c2 = nc + v[1];
+          if (r2 < 0 || r2 > 3 || c2 < 0 || c2 > 3) break;
+          var o = g[r2][c2];
+          if (!o) { nr = r2; nc = c2; continue; }
+          if (o.v === x.v && !o.merged) { g[r][c] = null; x.dead = true; x.r = r2; x.c = c2; o.v *= 2; o.merged = true; gained += o.v; moved = true; if (o.v > top) top = o.v; return; }
+          break;
+        }
+        if (nr !== r || nc !== c) { g[r][c] = null; g[nr][nc] = x; x.r = nr; x.c = nc; moved = true; }
+      });
+    });
+    if (!moved) return;
+    prev = snap; score += gained; lock = true;
+    tiles.forEach(function (x) { x.el.classList.remove('new', 'merged'); x.el.style.setProperty('--r', x.r); x.el.style.setProperty('--c', x.c); });
+    setTimeout(function () {
+      tiles = tiles.filter(function (x) { if (x.dead) { x.el.remove(); return false; } return true; });
+      tiles.forEach(function (x) { if (x.merged) { paint(x); void x.el.offsetWidth; x.el.classList.add('merged'); x.merged = false; } });
+      spawn(); lock = false;
+      if (gained) plus(gained);
+      if (!seen[top]) { seen[top] = true; if (top >= 2048 && !won) { won = true; toast(t('gold')); } else if (top >= 8) toast(t('unlocked', { name: nameOf(top) })); }
+      hud();
+      if (!canMove()) stuck();
+    }, 115);
+    hud();
+  }
+  function doUndo() {
+    if (!prev) return;
+    var s = prev;
+    tiles = []; $('layer').innerHTML = '';
+    s.tiles.forEach(function (x) { add(x[0], x[1], x[2], false); });
+    score = s.score; top = s.top; prev = null; undos += 1; lock = false;
+    $('stuck').hidden = true; hud(); toast(t('undone'));
+  }
+  function tryUndo() {
+    if (!prev || undos >= CFG.maxUndo || !playing) return;
+    lock = true; hud();
+    send({ type: 'requestAd', reason: 'undo' });
+  }
+  function stuck() {
+    lock = true;
+    var left = CFG.maxUndo - undos, free = CFG.tier !== 'free';
+    $('stuckTitle').textContent = t('stuckTitle');
+    $('stuckUndo').hidden = left <= 0 || !prev;
+    $('stuckUndo').textContent = free ? t('stuckUndo', { n: left }) : t('stuckUndoAd', { n: left });
+    $('stuckText').textContent = left > 0 && prev ? t('stuckText', { p: points() }) : t('stuckNoUndo', { p: points() });
+    $('stuckEnd').textContent = t('finish');
+    $('stuck').hidden = false;
+  }
+  function finish() {
+    if (!playing) return;
+    playing = false; lock = true; $('stuck').hidden = true; hud();
+    send({ type: 'finish', points: points(), score: score, stats: { score: score, top: top, undos: undos } });
+  }
+  function showResult(pts) {
+    var nb = score > (CFG.best || 0);
+    if (nb) CFG.best = score;
+    $('resTitle').textContent = top >= 2048 ? t('resGold') : nb ? t('resBest') : t('resDone');
+    $('resImg').src = '../../images/' + L(top)[0] + '.webp';
+    $('resScore').textContent = score.toLocaleString(lang); $('resScoreL').textContent = t('score');
+    $('resTop').textContent = nameOf(top); $('resTopL').textContent = t('highest');
+    $('resPts').textContent = t('pts', { n: pts });
+    var b = bonusFor(top);
+    $('resNote').textContent = t('note', { d: CFG.scoreDiv, s: Math.floor(score / CFG.scoreDiv) }) + (b ? t('noteBonus', { name: nameOf(top), b: b }) : '') + (pts >= CFG.cap ? t('capNote', { c: CFG.cap }) : '');
+    var left = CFG.playsLeft;
+    $('againBtn').textContent = left > 0 ? t('again', { n: left }) : t('againNo'); $('againBtn').disabled = left <= 0;
+    $('exitBtn').textContent = t('exit');
+    $('result').hidden = false;
+  }
+  function showIntro() {
+    $('introText').textContent = t('intro'); $('teaseText').textContent = t('tease');
+    $('mys').innerHTML = '<span><img src="../../images/zibo_yeni.webp" alt="">' + t('classic') + '</span>' + new Array(6).join('<span class="q"><b>?</b>???</span>');
+    var left = CFG.playsLeft;
+    $('introPlays').textContent = left > 0 ? t('playsLeft', { n: left }) : t('noPlays');
+    $('introBest').innerHTML = '<i class="pt">★</i>' + t('best', { n: (CFG.best || 0).toLocaleString(lang) });
+    $('startBtn').textContent = t('start'); $('startBtn').disabled = false; $('startBtn').hidden = left <= 0;
+    $('playAdBtn').textContent = t('adPlay'); $('playAdBtn').disabled = false; $('playAdBtn').hidden = !(left <= 0 && CFG.canAdForPlay);
+    $('result').hidden = true; $('stuck').hidden = true; $('intro').hidden = false;
+  }
+  $('startBtn').addEventListener('click', function () { this.disabled = true; this.textContent = t('waiting'); send({ type: 'start' }); });
+  $('playAdBtn').addEventListener('click', function () { this.disabled = true; send({ type: 'requestAd', reason: 'extraPlay' }); });
+  $('undoBtn').addEventListener('click', tryUndo);
+  $('stuckUndo').addEventListener('click', function () { $('stuck').hidden = true; tryUndo(); });
+  $('endBtn').addEventListener('click', finish);
+  $('stuckEnd').addEventListener('click', finish);
+  $('againBtn').addEventListener('click', function () { reset(); showIntro(); });
+  $('exitBtn').addEventListener('click', function () { send({ type: 'exit' }); });
+  (function () {
+    var b = $('board'), sx = 0, sy = 0, on = false;
+    b.addEventListener('pointerdown', function (e) { on = true; sx = e.clientX; sy = e.clientY; b.setPointerCapture(e.pointerId); });
+    b.addEventListener('pointerup', function (e) {
+      if (!on) return; on = false;
+      var dx = e.clientX - sx, dy = e.clientY - sy;
+      if (Math.max(Math.abs(dx), Math.abs(dy)) < 24) return;
+      move(Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : (dy > 0 ? 'down' : 'up'));
+    });
+    b.addEventListener('pointercancel', function () { on = false; });
+  })();
+  window.addEventListener('keydown', function (e) {
+    var k = { ArrowLeft: 'left', ArrowRight: 'right', ArrowUp: 'up', ArrowDown: 'down' }[e.code];
+    if (k) { e.preventDefault(); move(k); }
+  });
+  window.addEventListener('resize', fitBoard);
+
+  if (hasHost) send({ type: 'ready' }); else window.ziboInit({ locale: (navigator.language || 'tr').slice(0, 2), canAdForPlay: true });
+})();
+</script>
+</body>
+</html>

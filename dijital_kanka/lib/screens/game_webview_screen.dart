@@ -102,8 +102,9 @@ class _GameWebViewScreenState extends State<GameWebViewScreen> {
         final points = accepted ? claimed.clamp(0, _cap) : 0;
         _roundOpen = false;
         _sessionPoints += points;
-        final floors = (msg['stats'] as Map?)?['floors'] as int?;
-        if (floors != null && floors > _best) _best = floors;
+        // Rekor: oyunun 'score' alanı (büyük olan iyi); yoksa tutulmaz.
+        final score = (msg['score'] as num?)?.toInt();
+        if (score != null && score > _best) _best = score;
         debugPrint('ZIBO_GAME finish ${widget.gameId}: claimed=$claimed accepted=$points session=$_sessionPoints');
         await _call('ziboFinishResult', {'accepted': accepted, 'points': points});
       case 'requestAd':
@@ -151,3 +152,23 @@ class _GameWebViewScreenState extends State<GameWebViewScreen> {
 /// Faz 2'de uzaktan ayara (`config/games`) taşınacak.
 const Map<String, Object> kuleGameConfig = {'perFloor': 2, 'perfectBonus': 1, 'cap': 250};
 
+
+/// Zibo Hafıza puanları: seviye başı taban × yıldız çarpanı (docs/game_zibo.md).
+const Map<String, Object> hafizaGameConfig = {
+  'ptsEasy': 100,
+  'ptsMid': 180,
+  'ptsHard': 300,
+  'mult2': 0.6,
+  'mult1': 0.3,
+  'cap': 300,
+};
+
+/// Zibo 2048 puanları: skor ÷ scoreDiv + en yüksek kostüm bonusu; geri alma sınırı.
+const Map<String, Object> game2048Config = {
+  'scoreDiv': 20,
+  'bonus256': 50,
+  'bonus1024': 100,
+  'bonus2048': 200,
+  'cap': 600,
+  'maxUndo': 3,
+};

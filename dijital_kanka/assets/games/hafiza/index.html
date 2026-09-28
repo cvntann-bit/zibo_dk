@@ -1,0 +1,333 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Zibo Hafıza</title>
+<!--
+  Zibo Hafıza — Oyun Salonu oyunu (WebView, bkz. docs/game_zibo.md).
+  Uygulamada Flutter `GameWebViewScreen` açar, `ZiboBridge` ile konuşur; tarayıcıda DEMO modu.
+  Puan rakamları Flutter'dan `ziboInit` config'iyle gelir.
+-->
+<style>
+  @font-face { font-family: 'Baloo2'; src: url('../../fonts/Baloo2-Variable.ttf') format('truetype'); font-weight: 400 800; }
+  @font-face { font-family: 'Nunito'; src: url('../../fonts/Nunito-Variable.ttf') format('truetype'); font-weight: 200 1000; }
+  :root { --outline: #14110C; --gold: #F3B23C; --cream: #FFF8E8; --chip: #FFFDF7; --ice: #8FD3FF; --ice-pale: #DDF2FF; --ice-ink: #0E3A5C; }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; height: 100%; overflow: hidden; color: #2A2115; font-family: 'Nunito', system-ui, sans-serif; user-select: none; -webkit-user-select: none;
+    background: radial-gradient(rgba(20,17,12,.07) 1.2px, transparent 1.3px) 0 0 / 14px 14px, linear-gradient(#FFF1D2, #FFE3A6); }
+  #app { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; padding: 12px 12px 16px; gap: 10px; }
+  .hud { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; width: 100%; max-width: 420px; }
+  .hud div { background: var(--chip); border: 2.5px solid var(--outline); border-radius: 12px; box-shadow: 2px 2px 0 var(--outline); padding: 3px 4px; text-align: center; }
+  .hud div.warn { background: #FFD9C7; animation: warn 900ms ease-in-out infinite; }
+  @keyframes warn { 50% { transform: scale(1.06); } }
+  .hud b { display: block; font: 800 20px/1.1 'Baloo2', sans-serif; font-variant-numeric: tabular-nums; }
+  .hud span { font: 800 9.5px 'Nunito', sans-serif; letter-spacing: .05em; text-transform: uppercase; color: #6E5B40; }
+  .grid { display: grid; gap: 6px; grid-template-columns: repeat(4, 1fr); }
+  .card { position: relative; aspect-ratio: 78 / 100; perspective: 700px; border: 0; padding: 0; background: none; cursor: pointer; }
+  .card:disabled { cursor: default; }
+  .inner { position: absolute; inset: 0; transform-style: preserve-3d; transition: transform 380ms cubic-bezier(.3,1.4,.5,1); }
+  .card.up .inner, .card.done .inner { transform: rotateY(180deg); }
+  .face { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; border: 2.5px solid var(--outline); border-radius: 11px; box-shadow: 2px 2px 0 var(--outline); overflow: hidden; }
+  .back { background: var(--gold); background-image: radial-gradient(rgba(20,17,12,.14) 1.4px, transparent 1.5px); background-size: 9px 9px; display: flex; align-items: center; justify-content: center; }
+  .back img { width: 58%; filter: drop-shadow(2px 2px 0 rgba(20,17,12,.35)); }
+  .front { transform: rotateY(180deg); background: #FFFDF7; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; padding: 3px; }
+  .front img { width: 100%; height: 0; flex: 1; object-fit: contain; }
+  .front small { font: 800 9px/1.1 'Nunito', sans-serif; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+  .card.done .front { background: #FFF1CC; }
+  .card.pop .inner { animation: pop 420ms ease; }
+  .card.shake .inner { animation: shake 360ms ease; }
+  @keyframes pop { 45% { transform: rotateY(180deg) scale(1.12); } 100% { transform: rotateY(180deg) scale(1); } }
+  @keyframes shake { 25% { transform: rotateY(180deg) translateX(-5px); } 75% { transform: rotateY(180deg) translateX(5px); } 100% { transform: rotateY(180deg); } }
+  .peek { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 3; pointer-events: none; font: 800 34px 'Baloo2', sans-serif; color: #FFFDF7; -webkit-text-stroke: 2.5px var(--outline); paint-order: stroke fill; text-shadow: 3px 3px 0 var(--outline); }
+  .peek[hidden], .overlay[hidden], .btn[hidden] { display: none; }
+  .toast { position: absolute; left: 50%; bottom: 18px; transform: translateX(-50%); z-index: 4; background: var(--outline); color: #FFF8E8; border-radius: 999px; padding: 6px 14px; font: 800 13px 'Nunito', sans-serif; opacity: 0; transition: opacity 200ms; pointer-events: none; white-space: nowrap; }
+  .toast.on { opacity: 1; }
+  .overlay { position: absolute; inset: 0; z-index: 5; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgba(255, 244, 222, .84); overflow-y: auto; }
+  .sheet { width: 100%; max-width: 320px; margin: auto; background: var(--cream); border: 3px solid var(--outline); border-radius: 22px; box-shadow: 5px 5px 0 var(--outline); padding: 16px; display: grid; gap: 10px; justify-items: center; text-align: center; }
+  .logo { font: 800 32px/1 'Baloo2', sans-serif; color: var(--gold); -webkit-text-stroke: 2.5px var(--outline); paint-order: stroke fill; text-shadow: 3px 3px 0 var(--outline); }
+  .sheet > img { width: 84px; filter: drop-shadow(3px 3px 0 rgba(20,17,12,.3)); }
+  .sheet h2 { margin: 0; font: 800 23px/1.1 'Baloo2', sans-serif; }
+  .sheet p { margin: 0; font-weight: 700; font-size: 13.5px; color: #6E5B40; line-height: 1.4; }
+  .levels { width: 100%; display: grid; gap: 8px; }
+  .lvl { width: 100%; display: flex; align-items: center; gap: 10px; border: 3px solid var(--outline); border-radius: 14px; background: var(--chip); box-shadow: 3px 3px 0 var(--outline); padding: 8px 12px; cursor: pointer; color: #2A2115; text-align: left; font-family: inherit; }
+  .lvl b { font: 800 17px/1 'Baloo2', sans-serif; }
+  .lvl span { font-weight: 700; font-size: 12px; color: #6E5B40; }
+  .lvl .rw { margin-left: auto; display: inline-flex; align-items: center; gap: 4px; font: 800 15px 'Baloo2', sans-serif; color: #2A2115; }
+  .lvl:disabled { opacity: .5; }
+  .lvl:active:not(:disabled), .btn:active:not(:disabled) { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--outline); }
+  .chip { display: inline-flex; align-items: center; gap: 4px; border: 2.5px solid var(--outline); border-radius: 999px; padding: 1px 10px; font: 800 12.5px 'Nunito', sans-serif; background: var(--gold); }
+  .pt { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; border-radius: 50%; background: var(--ice); border: 2px solid var(--outline); color: var(--ice-ink); font: 800 10px/1 'Nunito', sans-serif; font-style: normal; flex: none; }
+  .pt.lg { width: 30px; height: 30px; font-size: 16px; border-width: 2.5px; }
+  .stars { display: flex; gap: 6px; font-size: 32px; line-height: 1; }
+  .stars[hidden] { display: none; }
+  .stars i { font-style: normal; color: #E7D6AE; -webkit-text-stroke: 2px var(--outline); }
+  .stars i.on { color: var(--gold); }
+  .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; }
+  .stat { border: 2.5px solid var(--outline); border-radius: 14px; padding: 6px 4px; background: var(--chip); }
+  .stat b { display: block; font: 800 22px/1 'Baloo2', sans-serif; }
+  .stat span { font: 800 10px 'Nunito', sans-serif; letter-spacing: .06em; text-transform: uppercase; color: #6E5B40; }
+  .reward { width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; border: 2.5px dashed var(--outline); border-radius: 14px; padding: 8px; background: var(--ice-pale); font: 800 20px 'Baloo2', sans-serif; }
+  .reward small { display: block; font: 700 11.5px 'Nunito', sans-serif; color: #6E5B40; }
+  .btn { width: 100%; border: 3px solid var(--outline); border-radius: 14px; padding: 10px 12px; font: 700 17px 'Baloo2', sans-serif; cursor: pointer; box-shadow: 3px 3px 0 var(--outline); background: var(--gold); color: var(--outline); }
+  .btn.ice { background: var(--ice); }
+  .btn.ghost { background: var(--chip); }
+  .btn:disabled { opacity: .5; }
+  @media (prefers-reduced-motion: reduce) { .inner { transition: none; } .card.pop .inner, .card.shake .inner, .hud div.warn { animation: none; } }
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="hud">
+    <div><b id="hTime">0:00</b><span id="hTimeL"></span></div>
+    <div id="hMovesBox"><b id="hMoves">0</b><span id="hMovesL"></span></div>
+    <div><b id="hPairs">0/8</b><span id="hPairsL"></span></div>
+  </div>
+  <div class="grid" id="grid"></div>
+</div>
+<div class="peek" id="peek" hidden></div>
+<div class="toast" id="toast"></div>
+
+<div class="overlay" id="intro" hidden>
+  <div class="sheet">
+    <div class="logo">Zibo Hafıza</div>
+    <img src="../../images/zibo_df_pose3.webp" alt="">
+    <p id="introText"></p>
+    <div class="levels" id="levels"></div>
+    <span class="chip" id="introPlays"></span>
+    <button class="btn ice" id="playAdBtn" hidden></button>
+  </div>
+</div>
+
+<div class="overlay" id="result" hidden>
+  <div class="sheet">
+    <h2 id="resTitle"></h2>
+    <img id="resImg" src="../../images/zibo_df_pose1.webp" alt="" hidden>
+    <div class="stars" id="stars"><i>★</i><i>★</i><i>★</i></div>
+    <div class="stats">
+      <div class="stat"><b id="resA">0</b><span id="resAL"></span></div>
+      <div class="stat"><b id="resB">0</b><span id="resBL"></span></div>
+    </div>
+    <div class="reward"><i class="pt lg">★</i><div><span id="resPts"></span><small id="resNote"></small></div></div>
+    <button class="btn" id="againBtn"></button>
+    <button class="btn ghost" id="exitBtn"></button>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+  var TEXT = {
+    tr: {
+      intro: 'Kartları çevir, aynı kostümlü iki Zibo\'yu eşleştir. Başta kısa bir ezberleme süren var. Hamlen sınırlı: bitiremezsen puan yok!',
+      easy: 'Kolay', mid: 'Orta', hard: 'Zor', lvlInfo: '{c} kart · {m} hamle',
+      playsLeft: '{n} hak kaldı', noPlays: 'Bugünlük hakların bitti', adPlay: '🎬 Reklam izle, +1 hak', waiting: 'Bekleniyor…',
+      time: 'Süre', movesLeft: 'Kalan hamle', pairs: 'Eşleşme', peek: 'Ezberle!', matched: '{name} Zibo eşleşti!', last3: 'Son 3 hamle!',
+      super: 'Süper hafıza!', good: 'Çok iyi!', close: 'Kıl payı bitirdin!', lost: 'Hamlelerin bitti!',
+      moves: 'Hamle', pts: '+{n} puan', winNote: '{lvl} · {s} yıldız', lostNote: '{m} hamlede bitiremedin, bu turda puan yok',
+      again: 'Tekrar oyna ({n} hak)', againNo: 'Hak kalmadı', exit: 'Oyun Salonu\'na dön', adFail: 'Reklam şu an yok, sonra tekrar dene'
+    },
+    en: {
+      intro: 'Flip the cards and match two Zibos in the same costume. You get a short look at the start. Moves are limited: no finish, no points!',
+      easy: 'Easy', mid: 'Medium', hard: 'Hard', lvlInfo: '{c} cards · {m} moves',
+      playsLeft: '{n} plays left', noPlays: 'No plays left today', adPlay: '🎬 Watch an ad, +1 play', waiting: 'Please wait…',
+      time: 'Time', movesLeft: 'Moves left', pairs: 'Pairs', peek: 'Memorize!', matched: '{name} Zibo matched!', last3: 'Last 3 moves!',
+      super: 'Super memory!', good: 'Great job!', close: 'Just made it!', lost: 'Out of moves!',
+      moves: 'Moves', pts: '+{n} points', winNote: '{lvl} · {s} stars', lostNote: 'Not finished in {m} moves, no points this round',
+      again: 'Play again ({n} left)', againNo: 'No plays left', exit: 'Back to Game Hall', adFail: 'No ad right now, try again later'
+    },
+    es: {
+      intro: 'Voltea las cartas y empareja dos Zibos con el mismo disfraz. Al principio tienes un momento para memorizar. Movimientos limitados: si no terminas, ¡sin puntos!',
+      easy: 'Fácil', mid: 'Medio', hard: 'Difícil', lvlInfo: '{c} cartas · {m} movimientos',
+      playsLeft: 'Te quedan {n} partidas', noPlays: 'No te quedan partidas hoy', adPlay: '🎬 Mira un anuncio, +1 partida', waiting: 'Espera…',
+      time: 'Tiempo', movesLeft: 'Movimientos', pairs: 'Parejas', peek: '¡Memoriza!', matched: '¡Zibo {name} emparejado!', last3: '¡Últimos 3 movimientos!',
+      super: '¡Memoria de oro!', good: '¡Muy bien!', close: '¡Por los pelos!', lost: '¡Sin movimientos!',
+      moves: 'Movimientos', pts: '+{n} puntos', winNote: '{lvl} · {s} estrellas', lostNote: 'No terminaste en {m} movimientos, sin puntos esta vez',
+      again: 'Jugar de nuevo (quedan {n})', againNo: 'No quedan partidas', exit: 'Volver a la Sala de Juegos', adFail: 'No hay anuncio ahora, inténtalo luego'
+    }
+  };
+  var NAMES = {
+    hippi: ['Hippi', 'Hippie', 'Hippie'], sporcu: ['Sporcu', 'Athlete', 'Deportista'], asker: ['Asker', 'Soldier', 'Soldado'],
+    hoca: ['Hoca', 'Teacher', 'Maestro'], punk: ['Punk', 'Punk', 'Punk'], rapci: ['Rapçi', 'Rapper', 'Rapero'],
+    gentleman: ['Centilmen', 'Gentleman', 'Caballero'], samurai: ['Samuray', 'Samurai', 'Samurái'], gladyator: ['Gladyatör', 'Gladiator', 'Gladiador'],
+    korsan: ['Korsan', 'Pirate', 'Pirata'], cyborg: ['Siborg', 'Cyborg', 'Cíborg'], astronot: ['Astronot', 'Astronaut', 'Astronauta'],
+    king: ['Kral', 'King', 'Rey'], zombi: ['Zombi', 'Zombie', 'Zombi'], altin: ['Altın', 'Golden', 'Dorado'], elmas: ['Elmas', 'Diamond', 'Diamante']
+  };
+  var COSTUMES = Object.keys(NAMES);
+  var lang = 'tr';
+  function t(key, vars) {
+    var s = (TEXT[lang] && TEXT[lang][key]) || TEXT.tr[key] || key;
+    if (vars) Object.keys(vars).forEach(function (k) { s = s.split('{' + k + '}').join(vars[k]); });
+    return s;
+  }
+  function costumeName(id) { return NAMES[id][{ tr: 0, en: 1, es: 2 }[lang] || 0]; }
+
+  // Oyun mekaniği (sabit); puanlar CFG'den.
+  var LEVELS = {
+    easy: { pairs: 6, limit: 11, three: 8, two: 10, peek: 3000, cfg: 'ptsEasy' },
+    mid: { pairs: 8, limit: 14, three: 10, two: 12, peek: 2000, cfg: 'ptsMid' },
+    hard: { pairs: 10, limit: 16, three: 12, two: 14, peek: 1500, cfg: 'ptsHard' }
+  };
+
+  // ---------- köprü ----------
+  var CFG = { locale: 'tr', tier: 'free', playsLeft: 3, ptsEasy: 100, ptsMid: 180, ptsHard: 300, mult2: 0.6, mult1: 0.3, cap: 300 };
+  var hasHost = !!(window.ZiboBridge && window.ZiboBridge.postMessage);
+  function send(msg) {
+    msg.game = 'hafiza';
+    if (hasHost) { window.ZiboBridge.postMessage(JSON.stringify(msg)); return; }
+    setTimeout(function () {
+      if (msg.type === 'start') window.ziboStartResult({ ok: CFG.playsLeft > 0, playsLeft: Math.max(0, CFG.playsLeft - 1) });
+      if (msg.type === 'finish') window.ziboFinishResult({ accepted: true, points: Math.min(CFG.cap, msg.points) });
+      if (msg.type === 'requestAd') window.ziboAdResult({ ok: true, reason: msg.reason, playsLeft: CFG.playsLeft + 1 });
+      if (msg.type === 'exit') location.reload();
+    }, msg.type === 'requestAd' ? 900 : 60);
+  }
+  function $(id) { return document.getElementById(id); }
+
+  var pendingLevel = 'mid';
+  window.ziboInit = function (cfg) {
+    Object.keys(cfg || {}).forEach(function (k) { CFG[k] = cfg[k]; });
+    lang = TEXT[CFG.locale] ? CFG.locale : 'tr';
+    document.documentElement.lang = lang;
+    $('hTimeL').textContent = t('time'); $('hMovesL').textContent = t('movesLeft'); $('hPairsL').textContent = t('pairs');
+    build(false); hud(); showIntro();
+  };
+  window.ziboStartResult = function (r) {
+    CFG.playsLeft = r.playsLeft;
+    if (r.ok) { $('intro').hidden = true; $('result').hidden = true; start(pendingLevel); } else showIntro();
+  };
+  window.ziboFinishResult = function (r) { showResult(r.accepted ? r.points : 0); };
+  window.ziboAdResult = function (r) {
+    if (typeof r.playsLeft === 'number') CFG.playsLeft = r.playsLeft;
+    if (!r.ok) toast(t('adFail'));
+    showIntro();
+  };
+
+  // ---------- oyun ----------
+  var level = 'mid', cards = [], open = [], lock = true, moves = 0, found = 0, timer = null, elapsed = 0, t0 = 0, outcome = null;
+  function shuffle(a) { for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var x = a[i]; a[i] = a[j]; a[j] = x; } return a; }
+  function clock(s) { return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); }
+  function toast(m) { var el = $('toast'); el.textContent = m; el.classList.add('on'); clearTimeout(toast.h); toast.h = setTimeout(function () { el.classList.remove('on'); }, 1500); }
+  function hud() {
+    var L = LEVELS[level], left = Math.max(0, L.limit - moves);
+    $('hTime').textContent = clock(elapsed); $('hMoves').textContent = left; $('hPairs').textContent = found + '/' + L.pairs;
+    $('hMovesBox').classList.toggle('warn', left <= 3 && !lock);
+  }
+  function fitGrid() {
+    var L = LEVELS[level], rows = Math.ceil(L.pairs * 2 / 4);
+    var availH = window.innerHeight - 12 - 16 - 56 - 10, availW = Math.min(window.innerWidth - 24, 420);
+    var cardH = (availH - (rows - 1) * 6) / rows, cardW = Math.min((availW - 18) / 4, cardH * 0.78);
+    $('grid').style.width = (cardW * 4 + 18) + 'px';
+  }
+  function build(faceUp) {
+    var L = LEVELS[level];
+    var picks = shuffle(COSTUMES.slice()).slice(0, L.pairs), deck = shuffle(picks.concat(picks));
+    var grid = $('grid'); grid.innerHTML = '';
+    cards = deck.map(function (id, i) {
+      var b = document.createElement('button');
+      b.className = 'card' + (faceUp ? ' up' : '');
+      b.innerHTML = '<div class="inner"><div class="face back"><img src="../../images/zibo_coin.webp" alt=""></div><div class="face front"><img src="../../images/zibo_' + id + '.webp" alt=""><small>' + costumeName(id) + '</small></div></div>';
+      var card = { el: b, id: id, done: false, up: !!faceUp };
+      b.addEventListener('click', function () { flip(card); });
+      grid.appendChild(b);
+      return card;
+    });
+    fitGrid();
+  }
+  function start(lvl) {
+    level = lvl; moves = 0; found = 0; elapsed = 0; open = []; lock = true; outcome = null;
+    build(true); hud();
+    $('peek').textContent = t('peek'); $('peek').hidden = false;
+    setTimeout(function () {
+      $('peek').hidden = true;
+      cards.forEach(function (c) { c.up = false; c.el.classList.remove('up'); });
+      lock = false; t0 = Date.now(); clearInterval(timer);
+      timer = setInterval(function () { elapsed = Math.floor((Date.now() - t0) / 1000); hud(); }, 250);
+    }, LEVELS[level].peek);
+  }
+  function flip(card) {
+    if (lock || card.done || card.up) return;
+    card.up = true; card.el.classList.add('up');
+    open.push(card);
+    if (open.length < 2) return;
+    moves += 1; lock = true;
+    var a = open[0], b = open[1], L = LEVELS[level];
+    if (a.id === b.id) {
+      setTimeout(function () {
+        [a, b].forEach(function (c) { c.done = true; c.el.classList.add('done', 'pop'); c.el.disabled = true; });
+        found += 1; open = []; lock = false; hud(); toast(t('matched', { name: costumeName(a.id) }));
+        if (found === L.pairs) win(); else if (moves >= L.limit) lose();
+      }, 380);
+    } else {
+      setTimeout(function () { a.el.classList.add('shake'); b.el.classList.add('shake'); }, 400);
+      setTimeout(function () {
+        [a, b].forEach(function (c) { c.up = false; c.el.classList.remove('up', 'shake'); });
+        open = []; lock = false; hud();
+        if (moves >= L.limit) lose(); else if (L.limit - moves === 3) toast(t('last3'));
+      }, 950);
+    }
+    hud();
+  }
+  function starsNow() { var L = LEVELS[level]; return moves <= L.three ? 3 : moves <= L.two ? 2 : 1; }
+  function pointsFor(s) { var base = CFG[LEVELS[level].cfg]; return Math.round(base * (s === 3 ? 1 : s === 2 ? CFG.mult2 : CFG.mult1)); }
+  function win() {
+    clearInterval(timer); lock = true;
+    var s = starsNow(); outcome = { win: true, stars: s };
+    setTimeout(function () { send({ type: 'finish', points: Math.min(CFG.cap, pointsFor(s)), stats: { level: level, moves: moves, stars: s, seconds: elapsed } }); }, 500);
+  }
+  function lose() {
+    clearInterval(timer); lock = true; hud(); outcome = { win: false };
+    cards.forEach(function (c) { if (!c.done) { c.up = true; c.el.classList.add('up'); c.el.disabled = true; } });
+    setTimeout(function () { send({ type: 'finish', points: 0, stats: { level: level, moves: moves, stars: 0, seconds: elapsed } }); }, 900);
+  }
+  function showResult(pts) {
+    var L = LEVELS[level];
+    var st = $('stars').children, s = outcome && outcome.win ? outcome.stars : 0;
+    for (var i = 0; i < 3; i++) st[i].className = i < s ? 'on' : '';
+    $('stars').hidden = !(outcome && outcome.win);
+    $('resImg').hidden = !!(outcome && outcome.win);
+    if (outcome && outcome.win) {
+      $('resTitle').textContent = s === 3 ? t('super') : s === 2 ? t('good') : t('close');
+      $('resA').textContent = clock(elapsed); $('resAL').textContent = t('time');
+      $('resB').textContent = moves; $('resBL').textContent = t('moves');
+      $('resNote').textContent = t('winNote', { lvl: t(level), s: s });
+    } else {
+      $('resTitle').textContent = t('lost');
+      $('resA').textContent = found + '/' + L.pairs; $('resAL').textContent = t('pairs');
+      $('resB').textContent = clock(elapsed); $('resBL').textContent = t('time');
+      $('resNote').textContent = t('lostNote', { m: L.limit });
+    }
+    $('resPts').textContent = t('pts', { n: pts });
+    var left = CFG.playsLeft;
+    $('againBtn').textContent = left > 0 ? t('again', { n: left }) : t('againNo'); $('againBtn').disabled = left <= 0;
+    $('exitBtn').textContent = t('exit');
+    $('result').hidden = false;
+  }
+  function showIntro() {
+    $('introText').textContent = t('intro');
+    var box = $('levels'); box.innerHTML = '';
+    var left = CFG.playsLeft;
+    Object.keys(LEVELS).forEach(function (k) {
+      var L = LEVELS[k], b = document.createElement('button');
+      b.className = 'lvl'; b.disabled = left <= 0;
+      b.innerHTML = '<div><b>' + t(k) + '</b><br><span>' + t('lvlInfo', { c: L.pairs * 2, m: L.limit }) + '</span></div><span class="rw"><i class="pt">★</i>' + CFG[L.cfg] + '</span>';
+      b.addEventListener('click', function () {
+        box.querySelectorAll('.lvl').forEach(function (x) { x.disabled = true; });
+        pendingLevel = k; send({ type: 'start', level: k });
+      });
+      box.appendChild(b);
+    });
+    $('introPlays').textContent = left > 0 ? t('playsLeft', { n: left }) : t('noPlays');
+    $('playAdBtn').textContent = t('adPlay'); $('playAdBtn').disabled = false; $('playAdBtn').hidden = !(left <= 0 && CFG.canAdForPlay);
+    $('result').hidden = true; $('intro').hidden = false;
+  }
+  $('playAdBtn').addEventListener('click', function () { this.disabled = true; send({ type: 'requestAd', reason: 'extraPlay' }); });
+  $('againBtn').addEventListener('click', function () { showIntro(); });
+  $('exitBtn').addEventListener('click', function () { send({ type: 'exit' }); });
+  window.addEventListener('resize', fitGrid);
+
+  if (hasHost) send({ type: 'ready' }); else window.ziboInit({ locale: (navigator.language || 'tr').slice(0, 2), canAdForPlay: true });
+})();
+</script>
+</body>
+</html>
