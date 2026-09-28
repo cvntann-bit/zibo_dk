@@ -192,7 +192,7 @@ Yayınlanmış hâlleri (kullanıcının claude.ai hesabında, özel):
 
 | Faz | Ne | Kullanıcıya görünen | Sürüm | Tahmini limit |
 |---|---|---|---|---|
-| **0** | Seri / Streak Freeze düzeltmesi + bekleyen kararlar | Seri hataları biter | 1.13.2 | %5-10 |
+| **0** | Bekleyen kararları netleştir (seri sorunu kapandı) | — | — | %1-2 |
 | **1** | Teknik deneme: tek oyun (Kule) WebView'da | Hiçbir şey (sadece debug APK) | — | %5-8 |
 | **2** | Altyapı: ayarlar, puan cüzdanı, köprü | Hiçbir şey (arka plan) | — | %8-12 |
 | **3** | Ekranlar: Oyun Salonu + Takas Gişesi | — (Faz 4 ile birlikte çıkar) | — | %8-12 |
@@ -206,14 +206,14 @@ Sürüm numaraları öneri; versionCode her Play yüklemesinde +1 (şu an 48 →
 
 ---
 
-### Faz 0 — Önce seri sorunu + kararlar
-**Neden önce:** kullanıcı 1.13.1'den sonra da seri/Streak Freeze sorunu bildirdi (bkz. `CURRENT_STATE.md`).
-Oyun Salonu da bir "gün/hafta" sistemi (günlük hak, haftalık takas) kuracak; aynı tarih mantığı sorunlarını
-yeniden yaşamamak için önce mevcut sorunun kökü bulunmalı.
-- Kullanıcıdan somut belirtiler: hangi ekran, beklenen / görülen, telefondaki sürüm (1.13.1 kurulu mu?).
-- Sorunu önce testle yeniden üret, sonra düzelt (tahminle kod değiştirme).
+### Faz 0 — Kararlar
+~~Seri / Streak Freeze sorunu~~ **KAPANDI (2026-09-28):** kullanıcı cihaz tarihini elle ileri almadan gerçek
+günleri bekleyerek denedi, seri ve Streak Freeze doğru çalıştı. Önceki "sorun" büyük ihtimalle elle tarih
+değiştirmekten (uygulama `TrustedTimeProvider` ile cihaz saatine güvenmiyor). **Ders (Oyun Salonu için de):**
+günlük hak / haftalık takas testleri elle tarih değiştirerek değil, enjekte edilen saatle (unit test) yapılmalı;
+cihazda gerçek gün beklenmeli.
 - Bölüm 9'daki bekleyen kararları kullanıcıyla netleştir.
-- **Çıktı:** düzeltme + testler, 1.13.2 AAB.
+- **Çıktı:** kararlar bu dosyaya işlenir. Kod yok, sürüm yok.
 
 ### Faz 1 — Teknik deneme (tek oyun) 🚦
 **Amaç:** hibrit yolun gerçek telefonda işe yaradığını kanıtlamak, büyük işe girmeden.
