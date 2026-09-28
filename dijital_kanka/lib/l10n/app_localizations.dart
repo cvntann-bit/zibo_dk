@@ -4515,6 +4515,126 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'Harika!'**
   String get streakFreezeDoneButton;
+
+  /// Alt bardaki Oyun Salonu sekmesinin erişilebilirlik etiketi ve sayfa başlığı
+  ///
+  /// In tr, this message translates to:
+  /// **'Oyun Salonu'**
+  String get tabGameHall;
+
+  /// Alt bardaki Oyun Salonu sekmesinin KISA görünen etiketi
+  ///
+  /// In tr, this message translates to:
+  /// **'Oyunlar'**
+  String get bottomBarGamesLabel;
+
+  /// Z modül menüsündeki Hedef Takibi kartının açıklaması
+  ///
+  /// In tr, this message translates to:
+  /// **'7 günlük hedeflerini işaretle, serini koru'**
+  String get goalsModuleDescription;
+
+  /// Oyun Salonu başlığının altındaki açıklama
+  ///
+  /// In tr, this message translates to:
+  /// **'Oyna, Oyun Puanı topla. Takas Gişesi yakında!'**
+  String get gameHallSubtitle;
+
+  /// Oyun Salonu kartındaki oyna düğmesi
+  ///
+  /// In tr, this message translates to:
+  /// **'Oyna'**
+  String get gameHallPlay;
+
+  /// Henüz açılmamış oyun kartındaki etiket
+  ///
+  /// In tr, this message translates to:
+  /// **'Yakında'**
+  String get gameHallComingSoon;
+
+  /// Oyun adı
+  ///
+  /// In tr, this message translates to:
+  /// **'Zibo Zıpla'**
+  String get gameNameZipla;
+
+  /// Oyun adı
+  ///
+  /// In tr, this message translates to:
+  /// **'Zibo Hafıza'**
+  String get gameNameHafiza;
+
+  /// Oyun adı
+  ///
+  /// In tr, this message translates to:
+  /// **'Coin Yakala'**
+  String get gameNameYakala;
+
+  /// Oyun adı
+  ///
+  /// In tr, this message translates to:
+  /// **'Zibo 2048'**
+  String get gameName2048;
+
+  /// Oyun adı
+  ///
+  /// In tr, this message translates to:
+  /// **'Zibo Tren'**
+  String get gameNameTren;
+
+  /// Oyun adı
+  ///
+  /// In tr, this message translates to:
+  /// **'Zibo Tuğla'**
+  String get gameNameTugla;
+
+  /// Oyun adı
+  ///
+  /// In tr, this message translates to:
+  /// **'Zibo Kule'**
+  String get gameNameKule;
+
+  /// Oyun kartı açıklaması
+  ///
+  /// In tr, this message translates to:
+  /// **'Zıpla, sütunlardan geç, coin topla'**
+  String get gameDescZipla;
+
+  /// Oyun kartı açıklaması
+  ///
+  /// In tr, this message translates to:
+  /// **'Kostümlü Zibo\'ları eşleştir'**
+  String get gameDescHafiza;
+
+  /// Oyun kartı açıklaması
+  ///
+  /// In tr, this message translates to:
+  /// **'Coinleri yakala, bombalardan kaç'**
+  String get gameDescYakala;
+
+  /// Oyun kartı açıklaması
+  ///
+  /// In tr, this message translates to:
+  /// **'Kostümleri birleştir, gizemi çöz'**
+  String get gameDesc2048;
+
+  /// Oyun kartı açıklaması
+  ///
+  /// In tr, this message translates to:
+  /// **'Coin trenini büyüt, çarpma!'**
+  String get gameDescTren;
+
+  /// Oyun kartı açıklaması
+  ///
+  /// In tr, this message translates to:
+  /// **'Nişan al, tuğlaları kır'**
+  String get gameDescTugla;
+
+  /// Oyun kartı açıklaması
+  ///
+  /// In tr, this message translates to:
+  /// **'Blokları üst üste diz, kuleyi yükselt'**
+  String get gameDescKule;
 }
 
 class _AppLocalizationsDelegate

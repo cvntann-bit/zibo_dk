@@ -16,8 +16,11 @@ import '../providers/profile_provider.dart';
 import '../providers/sound_effects_provider.dart';
 import '../providers/zibo_pose_provider.dart';
 import '../services/sound_effects_service.dart';
+import 'completed_goals_screen.dart';
 import '../utils/address_term.dart';
+import '../utils/tab_navigation.dart';
 import '../widgets/banner_ad_slot.dart';
+import '../widgets/coin_balance_widget.dart';
 import '../widgets/goal_card.dart';
 import '../widgets/goal_confetti_burst.dart';
 import '../widgets/rate_prompt_dialog.dart';
@@ -343,4 +346,79 @@ class _GoalTrackingScreenState extends State<GoalTrackingScreen>
       ],
     );
   }
+}
+
+/// Hedef Takibi'nin kendi üst barıyla AYRI sayfa hâli — 2026-09-29'dan beri
+/// Hedefler alt barda bir sekme DEĞİL; Z butonunun modül menüsünün en
+/// başından, Ana Sayfa'daki hedef kartından ve seri hatırlatma bildiriminden
+/// açılıyor (bkz. `docs/game_zibo.md` bölüm 2b). Eskiden RootScreen'in
+/// AppBar'ında yalnızca bu sekmedeyken görünen 🏆 "tamamlanan hedefler"
+/// butonu artık bu sayfanın kendi AppBar'ında.
+class GoalTrackingPage extends StatefulWidget {
+  const GoalTrackingPage({super.key});
+
+  @override
+  State<GoalTrackingPage> createState() => _GoalTrackingPageState();
+}
+
+class _GoalTrackingPageState extends State<GoalTrackingPage> {
+  bool? _previousHomeTabActive;
+
+  // Hedefler sekmeyken Ana Sayfa'nın hareketli tema katmanı ve banner'ı
+  // burada görünmüyordu; sayfa Ana Sayfa'nın ÜSTÜNE açıldığı için aynı
+  // davranışı korumak üzere `isHomeTabActive` bu sayfa açıkken kapatılır
+  // (FocusTimerScreen ile aynı desen).
+  // Değer build sırasında DEĞİŞTİRİLMEZ (dinleyen ValueListenableBuilder'lar
+  // "setState() called during build" verir) — bir microtask sonrasına
+  // ertelenir.
+  @override
+  void initState() {
+    super.initState();
+    _previousHomeTabActive = isHomeTabActive.value;
+    Future.microtask(() => isHomeTabActive.value = false);
+  }
+
+  @override
+  void dispose() {
+    final restore = _previousHomeTabActive ?? true;
+    Future.microtask(() => isHomeTabActive.value = restore);
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final colorScheme = Theme.of(context).colorScheme;
+    return Scaffold(
+      appBar: plainStickerAppBar(
+        context,
+        title: l10n.tabGoalTracking,
+        actions: [
+          const CoinBalanceWidget(),
+          const SizedBox(width: 8),
+          StickerIconButton(
+            emoji: '🏆',
+            tooltip: l10n.completedGoalsButtonTooltip,
+            backgroundColor: colorScheme.surfaceContainerLowest,
+            iconColor: colorScheme.onSurface,
+            size: 30,
+            iconSize: 16,
+            borderRadius: 9,
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const CompletedGoalsScreen()),
+            ),
+          ),
+          const SizedBox(width: 12),
+        ],
+      ),
+      body: const GoalTrackingScreen(isActive: true),
+    );
+  }
+}
+
+/// Hedefler sayfasını açar — tüm giriş noktalarının ortak yolu.
+Future<void> openGoalTrackingPage(BuildContext context) {
+  return Navigator.of(context).push(
+    MaterialPageRoute<void>(builder: (_) => const GoalTrackingPage()),
+  );
 }

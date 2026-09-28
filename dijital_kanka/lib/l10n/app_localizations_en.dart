@@ -2532,4 +2532,66 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get streakFreezeDoneButton => 'Awesome!';
+
+  @override
+  String get tabGameHall => 'Game Hall';
+
+  @override
+  String get bottomBarGamesLabel => 'Games';
+
+  @override
+  String get goalsModuleDescription =>
+      'Check off your 7-day goals and keep your streak';
+
+  @override
+  String get gameHallSubtitle =>
+      'Play and collect Game Points. The Exchange opens soon!';
+
+  @override
+  String get gameHallPlay => 'Play';
+
+  @override
+  String get gameHallComingSoon => 'Soon';
+
+  @override
+  String get gameNameZipla => 'Zibo Jump';
+
+  @override
+  String get gameNameHafiza => 'Zibo Memory';
+
+  @override
+  String get gameNameYakala => 'Coin Catch';
+
+  @override
+  String get gameName2048 => 'Zibo 2048';
+
+  @override
+  String get gameNameTren => 'Zibo Train';
+
+  @override
+  String get gameNameTugla => 'Zibo Bricks';
+
+  @override
+  String get gameNameKule => 'Zibo Tower';
+
+  @override
+  String get gameDescZipla => 'Jump through pillars, grab coins';
+
+  @override
+  String get gameDescHafiza => 'Match the costumed Zibos';
+
+  @override
+  String get gameDescYakala => 'Catch coins, dodge bombs';
+
+  @override
+  String get gameDesc2048 => 'Merge costumes, uncover the mystery';
+
+  @override
+  String get gameDescTren => 'Grow your coin train, don\'t crash!';
+
+  @override
+  String get gameDescTugla => 'Aim and smash the bricks';
+
+  @override
+  String get gameDescKule => 'Stack blocks, build the tower high';
 }

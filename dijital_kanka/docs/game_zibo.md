@@ -339,3 +339,17 @@ cihazda gerçek gün beklenmeli.
 - `CoinProvider.showGameRewardedAd()` — oyunlar için ödüllü reklam (coin vermez, Pro'da reklamsız true).
 - Z menüsünde YALNIZCA debug derlemede "Zibo Kule (deneme)" girişi (`kDebugMode`).
 - Cihazda deneme kontrol listesi: bölüm 8 Faz 1.
+
+### 🚦 Faz 1 karar kapısı GEÇİLDİ (2026-09-29)
+Kullanıcı Zibo Kule'yi telefonda WebView'da denedi: "tamamdır" → **hibrit (WebView) yol kesin** (madde 1 kapandı).
+
+### Navigasyon değişikliği YAPILDI (2026-09-29, bölüm 2b)
+- Alt bar 2. sekme: 🎮 **Oyun Salonu** (`lib/screens/game_hall_screen.dart`, etiket `bottomBarGamesLabel`,
+  erişilebilirlik `tabGameHall`). Kartlar `game_*_thumb.webp`; şimdilik yalnızca Kule oynanabilir, diğerleri "Yakında".
+- **Hedefler** artık `GoalTrackingPage` (kendi AppBar'ı: coin bakiyesi + 🏆 tamamlanan hedefler). Girişler:
+  Z menüsünün EN BAŞI, Ana Sayfa hedef kartı ve seri hatırlatma bildirimi (`goalsTabRequest` → `openGoalTrackingPage`).
+- Sayfa Ana Sayfa'nın üstüne açıldığı için `isHomeTabActive` sayfa açıkken kapatılıyor (tema parçacıkları/banner
+  Hedefler'de görünmesin — eski sekme davranışı; değer microtask ile değiştiriliyor, build sırasında değil).
+- Geçici debug "Zibo Kule (deneme)" girişi kaldırıldı.
+- Testler: `_openGoalsPage` yardımcısı (Z menüsü → Hedef Takibi), gizlenen `RootScreen` için `skipOffstage: false`,
+  Hedefler sonrası Ana Sayfa'ya dönüş `Geri` ile. Tam suite yeşil (+ bilinen ses flake'i).

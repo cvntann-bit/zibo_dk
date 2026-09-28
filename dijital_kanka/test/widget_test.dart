@@ -292,6 +292,14 @@ Future<void> _openModulesMenu(WidgetTester tester) async {
   await tester.pumpAndSettle();
 }
 
+/// Hedef Takibi sayfasını açar — 2026-09-29'dan beri Hedefler alt barda
+/// değil, Z menüsünün EN BAŞINDA (alt bardaki yeri Oyun Salonu'na geçti).
+/// Çağıran taraf ardından kendi `pumpAndSettle()`'ını yapar.
+Future<void> _openGoalsPage(WidgetTester tester) async {
+  await _openModulesMenu(tester);
+  await tester.tap(find.text('Hedef Takibi'));
+}
+
 /// Ana Sayfa'nın konuşma balonunda o an gösterilen sözü okur — Zibo'nun
 /// başlangıç sözü artık RASTGELE seçildiği için (bkz. `home_screen.dart`'taki
 /// `_messageIndex` başlatıcısı, kullanıcı raporu: "hep aynı söz ile
@@ -451,7 +459,7 @@ void main() {
     (WidgetTester tester) async {
       await _pumpPastOnboarding(tester, const DijitalKankaApp());
 
-      await tester.tap(find.bySemanticsLabel('Hedef Takibi'));
+      await _openGoalsPage(tester);
       await tester.pumpAndSettle();
 
       expect(find.text(goalQuotesTr.first), findsOneWidget);
@@ -482,7 +490,7 @@ void main() {
     (WidgetTester tester) async {
       await _pumpPastOnboarding(tester, const DijitalKankaApp());
 
-      await tester.tap(find.bySemanticsLabel('Hedef Takibi'));
+      await _openGoalsPage(tester);
       await tester.pumpAndSettle();
 
       expect(find.text(goalQuotesTr.first), findsOneWidget);
@@ -497,7 +505,7 @@ void main() {
 
       expect(find.text(goalQuotesTr.first), findsNothing);
 
-      await tester.tap(find.bySemanticsLabel('Ana Sayfa'));
+      await tester.tap(find.byTooltip('Geri')); // Hedefler sayfasını kapat → Ana Sayfa
       await tester.pumpAndSettle();
     },
   );
@@ -509,10 +517,10 @@ void main() {
       await tester.pumpWidget(_buildAppWithClock(() => currentDate));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.bySemanticsLabel('Hedef Takibi'));
+      await _openGoalsPage(tester);
       await tester.pumpAndSettle();
 
-      final goalsElement = tester.element(find.byType(RootScreen));
+      final goalsElement = tester.element(find.byType(RootScreen, skipOffstage: false));
       final goalsProvider = Provider.of<GoalsProvider>(
         goalsElement,
         listen: false,
@@ -570,12 +578,12 @@ void main() {
       await tester.pumpWidget(_buildAppWithClock(() => currentDate));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.bySemanticsLabel('Hedef Takibi'));
+      await _openGoalsPage(tester);
       await tester.pumpAndSettle();
       // 2026 güncellemesi: GoalsProvider artık otomatik bir örnek hedef
       // EKLEMİYOR — test kendi hedefini açıkça ekliyor.
       final goalsProvider = Provider.of<GoalsProvider>(
-        tester.element(find.byType(RootScreen)),
+        tester.element(find.byType(RootScreen, skipOffstage: false)),
         listen: false,
       );
       goalsProvider.addGoal('Günde 30 dakika kitap oku');
@@ -609,7 +617,7 @@ void main() {
       await tester.pumpWidget(_buildAppWithClock(() => currentDate));
       await tester.pumpAndSettle();
 
-      final rootElement = tester.element(find.byType(RootScreen));
+      final rootElement = tester.element(find.byType(RootScreen, skipOffstage: false));
       final goalsProvider = Provider.of<GoalsProvider>(rootElement, listen: false);
       final streak = Provider.of<AppStreakProvider>(rootElement, listen: false);
       goalsProvider.addGoal('Kitap oku');
@@ -639,7 +647,7 @@ void main() {
       expect(goal.statusForDay(2, goalsProvider.today), GoalDayStatus.frozen);
       expect(goal.statusForDay(3, goalsProvider.today), GoalDayStatus.today);
 
-      await tester.tap(find.bySemanticsLabel('Hedef Takibi'));
+      await _openGoalsPage(tester);
       await tester.pumpAndSettle();
 
       expect(find.bySemanticsLabel(RegExp('Gün 3, Streak Freeze ile donduruldu')), findsOneWidget);
@@ -661,7 +669,7 @@ void main() {
       await tester.pumpAndSettle();
 
       final streakProvider = Provider.of<AppStreakProvider>(
-        tester.element(find.byType(RootScreen)),
+        tester.element(find.byType(RootScreen, skipOffstage: false)),
         listen: false,
       );
       expect(streakProvider.currentStreak, 1); // soğuk başlangıçta kaydedildi
@@ -688,7 +696,7 @@ void main() {
       await tester.pumpWidget(_buildAppWithClock(() => currentDate));
       await tester.pumpAndSettle();
 
-      final rootElement = tester.element(find.byType(RootScreen));
+      final rootElement = tester.element(find.byType(RootScreen, skipOffstage: false));
       final streakProvider = Provider.of<AppStreakProvider>(
         rootElement,
         listen: false,
@@ -718,7 +726,7 @@ void main() {
       await tester.pumpWidget(_buildAppWithClock(() => currentDate));
       await tester.pumpAndSettle();
 
-      final rootElement = tester.element(find.byType(RootScreen));
+      final rootElement = tester.element(find.byType(RootScreen, skipOffstage: false));
       final streakProvider = Provider.of<AppStreakProvider>(
         rootElement,
         listen: false,
@@ -749,7 +757,7 @@ void main() {
   testWidgets('Yeni hedef eklenebilir', (WidgetTester tester) async {
     await _pumpPastOnboarding(tester, const DijitalKankaApp());
 
-    await tester.tap(find.bySemanticsLabel('Hedef Takibi'));
+    await _openGoalsPage(tester);
     await tester.pumpAndSettle();
 
     await tester.tap(find.text('Yeni Hedef Ekle'));
@@ -1473,7 +1481,7 @@ void main() {
       // Birikim'in yeri, bkz. CLAUDE.md "Alt Gezinme Çubuğu" — Profil↔
       // Birikim yer değiştirme notu).
       expect(find.text('Home'), findsOneWidget);
-      expect(find.text('Goals'), findsOneWidget);
+      expect(find.text('Games'), findsOneWidget);
       expect(find.text('Profile'), findsOneWidget);
       expect(_currentHomeMessage(tester), isNotEmpty);
     },
@@ -1590,7 +1598,7 @@ void main() {
       await _pumpPastOnboarding(tester, const DijitalKankaApp());
 
       expect(
-        Theme.of(tester.element(find.byType(RootScreen))).brightness,
+        Theme.of(tester.element(find.byType(RootScreen, skipOffstage: false))).brightness,
         Brightness.light,
       );
 
@@ -1636,7 +1644,7 @@ void main() {
     // Geçici Coin Test Paneli kaldırıldığı için (kullanıcı isteği) kazanma
     // akışı doğrudan CoinProvider üzerinden tetikleniyor — GoalsProvider'ı
     // `_buildAppWithClock` testlerinde doğrudan manipüle etme deseniyle aynı.
-    final coinsElement = tester.element(find.byType(RootScreen));
+    final coinsElement = tester.element(find.byType(RootScreen, skipOffstage: false));
     Provider.of<CoinProvider>(coinsElement, listen: false).earnDailyCheckIn();
     await tester.pumpAndSettle();
 
@@ -1683,7 +1691,7 @@ void main() {
       // 440 ZC için yeterli bakiyeyi kazan (5 × Arkadaş daveti = 500).
       // Geçici Coin Test Paneli kaldırıldığı için (kullanıcı isteği) doğrudan
       // CoinProvider üzerinden tetikleniyor.
-      final coinsElement = tester.element(find.byType(RootScreen));
+      final coinsElement = tester.element(find.byType(RootScreen, skipOffstage: false));
       final coinProvider = Provider.of<CoinProvider>(
         coinsElement,
         listen: false,
@@ -1727,7 +1735,7 @@ void main() {
       // Aynı kostüm Hedef Takibi sekmesindeki VE Para ve Birikim'deki
       // (artık Z butonu modül menüsünden push edilen bir ekran, bkz.
       // CLAUDE.md "Alt Gezinme Çubuğu") Zibo görselinde de yansımalı.
-      await tester.tap(find.bySemanticsLabel('Hedef Takibi'));
+      await _openGoalsPage(tester);
       await tester.pumpAndSettle();
       expect(
         (tester
@@ -1738,7 +1746,7 @@ void main() {
         'assets/images/zibo_hippi_pose1.webp',
       );
 
-      await tester.tap(find.bySemanticsLabel('Ana Sayfa'));
+      await tester.tap(find.byTooltip('Geri')); // Hedefler sayfasını kapat → Ana Sayfa
       await tester.pumpAndSettle();
       await _openModulesMenu(tester);
       await tester.scrollUntilVisible(
@@ -1808,7 +1816,7 @@ void main() {
         find.descendant(of: kingCard, matching: find.byType(FilledButton)),
       );
 
-      final coinsElement = tester.element(find.byType(RootScreen));
+      final coinsElement = tester.element(find.byType(RootScreen, skipOffstage: false));
       final coinProvider = Provider.of<CoinProvider>(
         coinsElement,
         listen: false,
@@ -1877,7 +1885,7 @@ void main() {
         find.descendant(of: sunsetCard, matching: find.byType(FilledButton)),
       );
 
-      final coinsElement = tester.element(find.byType(RootScreen));
+      final coinsElement = tester.element(find.byType(RootScreen, skipOffstage: false));
       final coinProvider = Provider.of<CoinProvider>(
         coinsElement,
         listen: false,
@@ -1984,7 +1992,7 @@ void main() {
         find.descendant(of: winterCard, matching: find.byType(FilledButton)),
       );
 
-      final coinsElement = tester.element(find.byType(RootScreen));
+      final coinsElement = tester.element(find.byType(RootScreen, skipOffstage: false));
       final coinProvider = Provider.of<CoinProvider>(
         coinsElement,
         listen: false,
@@ -2030,12 +2038,12 @@ void main() {
 
       // Başka bir sekmede (Hedefler) katman GÖRÜNMEZ — yalnızca Ana Sayfa'ya
       // özel.
-      await tester.tap(find.bySemanticsLabel('Hedef Takibi'));
+      await _openGoalsPage(tester);
       await tester.pumpAndSettle();
       expect(find.byKey(const Key('themeParticleEffect')), findsNothing);
 
       // Ana Sayfa'ya geri dönünce katman tekrar görünür.
-      await tester.tap(find.bySemanticsLabel('Ana Sayfa'));
+      await tester.tap(find.byTooltip('Geri')); // Hedefler sayfasını kapat → Ana Sayfa
       await tester.pumpAndSettle();
       expect(find.byKey(const Key('themeParticleEffect')), findsOneWidget);
 
@@ -2090,7 +2098,7 @@ void main() {
       expect(wheelPrizes.map((p) => p.amount), contains(wonAmount));
 
       final coinProvider = Provider.of<CoinProvider>(
-        tester.element(find.byType(RootScreen)),
+        tester.element(find.byType(RootScreen, skipOffstage: false)),
         listen: false,
       );
       expect(coinProvider.balance, wonAmount);
@@ -2111,11 +2119,11 @@ void main() {
 
       expect(find.byTooltip('Şans Çarkı'), findsOneWidget);
 
-      await tester.tap(find.bySemanticsLabel('Hedef Takibi'));
+      await _openGoalsPage(tester);
       await tester.pumpAndSettle();
       expect(find.byTooltip('Şans Çarkı'), findsNothing);
 
-      await tester.tap(find.bySemanticsLabel('Ana Sayfa'));
+      await tester.tap(find.byTooltip('Geri')); // Hedefler sayfasını kapat → Ana Sayfa
       await tester.pumpAndSettle();
       expect(find.byTooltip('Şans Çarkı'), findsOneWidget);
     },
@@ -2150,7 +2158,7 @@ void main() {
       expect(find.textContaining('Bugün 5 Zibo Coin aldın'), findsOneWidget);
 
       final coinProvider = Provider.of<CoinProvider>(
-        tester.element(find.byType(RootScreen)),
+        tester.element(find.byType(RootScreen, skipOffstage: false)),
         listen: false,
       );
       expect(coinProvider.balance, 5);
@@ -2169,11 +2177,11 @@ void main() {
 
       expect(find.byTooltip('Günlük Ödüller'), findsOneWidget);
 
-      await tester.tap(find.bySemanticsLabel('Hedef Takibi'));
+      await _openGoalsPage(tester);
       await tester.pumpAndSettle();
       expect(find.byTooltip('Günlük Ödüller'), findsNothing);
 
-      await tester.tap(find.bySemanticsLabel('Ana Sayfa'));
+      await tester.tap(find.byTooltip('Geri')); // Hedefler sayfasını kapat → Ana Sayfa
       await tester.pumpAndSettle();
       expect(find.byTooltip('Günlük Ödüller'), findsOneWidget);
     },

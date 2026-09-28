@@ -3398,5 +3398,85 @@
   "streakFreezeDoneButton": "Harika!",
   "@streakFreezeDoneButton": {
     "description": "Streak Freeze sonrası kapatma butonu"
+  },
+  "tabGameHall": "Oyun Salonu",
+  "@tabGameHall": {
+    "description": "Alt bardaki Oyun Salonu sekmesinin erişilebilirlik etiketi ve sayfa başlığı"
+  },
+  "bottomBarGamesLabel": "Oyunlar",
+  "@bottomBarGamesLabel": {
+    "description": "Alt bardaki Oyun Salonu sekmesinin KISA görünen etiketi"
+  },
+  "goalsModuleDescription": "7 günlük hedeflerini işaretle, serini koru",
+  "@goalsModuleDescription": {
+    "description": "Z modül menüsündeki Hedef Takibi kartının açıklaması"
+  },
+  "gameHallSubtitle": "Oyna, Oyun Puanı topla. Takas Gişesi yakında!",
+  "@gameHallSubtitle": {
+    "description": "Oyun Salonu başlığının altındaki açıklama"
+  },
+  "gameHallPlay": "Oyna",
+  "@gameHallPlay": {
+    "description": "Oyun Salonu kartındaki oyna düğmesi"
+  },
+  "gameHallComingSoon": "Yakında",
+  "@gameHallComingSoon": {
+    "description": "Henüz açılmamış oyun kartındaki etiket"
+  },
+  "gameNameZipla": "Zibo Zıpla",
+  "@gameNameZipla": {
+    "description": "Oyun adı"
+  },
+  "gameNameHafiza": "Zibo Hafıza",
+  "@gameNameHafiza": {
+    "description": "Oyun adı"
+  },
+  "gameNameYakala": "Coin Yakala",
+  "@gameNameYakala": {
+    "description": "Oyun adı"
+  },
+  "gameName2048": "Zibo 2048",
+  "@gameName2048": {
+    "description": "Oyun adı"
+  },
+  "gameNameTren": "Zibo Tren",
+  "@gameNameTren": {
+    "description": "Oyun adı"
+  },
+  "gameNameTugla": "Zibo Tuğla",
+  "@gameNameTugla": {
+    "description": "Oyun adı"
+  },
+  "gameNameKule": "Zibo Kule",
+  "@gameNameKule": {
+    "description": "Oyun adı"
+  },
+  "gameDescZipla": "Zıpla, sütunlardan geç, coin topla",
+  "@gameDescZipla": {
+    "description": "Oyun kartı açıklaması"
+  },
+  "gameDescHafiza": "Kostümlü Zibo'ları eşleştir",
+  "@gameDescHafiza": {
+    "description": "Oyun kartı açıklaması"
+  },
+  "gameDescYakala": "Coinleri yakala, bombalardan kaç",
+  "@gameDescYakala": {
+    "description": "Oyun kartı açıklaması"
+  },
+  "gameDesc2048": "Kostümleri birleştir, gizemi çöz",
+  "@gameDesc2048": {
+    "description": "Oyun kartı açıklaması"
+  },
+  "gameDescTren": "Coin trenini büyüt, çarpma!",
+  "@gameDescTren": {
+    "description": "Oyun kartı açıklaması"
+  },
+  "gameDescTugla": "Nişan al, tuğlaları kır",
+  "@gameDescTugla": {
+    "description": "Oyun kartı açıklaması"
+  },
+  "gameDescKule": "Blokları üst üste diz, kuleyi yükselt",
+  "@gameDescKule": {
+    "description": "Oyun kartı açıklaması"
   }
 }

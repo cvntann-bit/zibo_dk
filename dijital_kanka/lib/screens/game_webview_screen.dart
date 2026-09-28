@@ -1,6 +1,5 @@
 import 'dart:convert';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:webview_flutter/webview_flutter.dart';
@@ -152,5 +151,3 @@ class _GameWebViewScreenState extends State<GameWebViewScreen> {
 /// Faz 2'de uzaktan ayara (`config/games`) taşınacak.
 const Map<String, Object> kuleGameConfig = {'perFloor': 2, 'perfectBonus': 1, 'cap': 250};
 
-/// Yalnızca debug derlemede görünen deneme girişi için.
-bool get gameHallDebugEntryEnabled => kDebugMode;

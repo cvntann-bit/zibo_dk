@@ -25,18 +25,19 @@ class MainBottomBar extends StatelessWidget {
     super.key,
     required this.selectedIndex,
     required this.onHomeTap,
-    required this.onGoalsTap,
+    required this.onGamesTap,
     required this.onProfileTap,
     required this.onStoreTap,
   });
 
   /// RootScreen'in kendi sekme indeksiyle BİREBİR aynı: 0=Ana Sayfa,
-  /// 1=Hedefler, 2=Profil, 3=Mağaza. (Birikim artık burada değil — Z
+  /// 1=Oyun Salonu, 2=Profil, 3=Mağaza. (Hedefler 2026-09-29'dan, Birikim
+  /// daha önceden beri burada değil — Z
   /// butonunun modül menüsüne taşındı, bkz. CLAUDE.md "Alt Gezinme Çubuğu"
   /// bölümündeki güncelleme notu.)
   final int selectedIndex;
   final VoidCallback onHomeTap;
-  final VoidCallback onGoalsTap;
+  final VoidCallback onGamesTap;
   final VoidCallback onProfileTap;
   final VoidCallback onStoreTap;
 
@@ -73,11 +74,11 @@ class MainBottomBar extends StatelessWidget {
               onTap: onHomeTap,
             ),
             _NavItem(
-              emoji: '🚩',
-              visibleLabel: l10n.bottomBarGoalsLabel,
-              semanticLabel: l10n.tabGoalTracking,
+              emoji: '🎮',
+              visibleLabel: l10n.bottomBarGamesLabel,
+              semanticLabel: l10n.tabGameHall,
               selected: selectedIndex == 1,
-              onTap: onGoalsTap,
+              onTap: onGamesTap,
             ),
             // Z butonu için boşluk — mockup'ta `.nav-gap{width:64px;flex:
             // none;}` SABİT genişlikte (diğer 4 öğe gibi esnek DEĞİL).

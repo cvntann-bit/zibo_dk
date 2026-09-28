@@ -2518,4 +2518,66 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get streakFreezeDoneButton => 'Harika!';
+
+  @override
+  String get tabGameHall => 'Oyun Salonu';
+
+  @override
+  String get bottomBarGamesLabel => 'Oyunlar';
+
+  @override
+  String get goalsModuleDescription =>
+      '7 günlük hedeflerini işaretle, serini koru';
+
+  @override
+  String get gameHallSubtitle =>
+      'Oyna, Oyun Puanı topla. Takas Gişesi yakında!';
+
+  @override
+  String get gameHallPlay => 'Oyna';
+
+  @override
+  String get gameHallComingSoon => 'Yakında';
+
+  @override
+  String get gameNameZipla => 'Zibo Zıpla';
+
+  @override
+  String get gameNameHafiza => 'Zibo Hafıza';
+
+  @override
+  String get gameNameYakala => 'Coin Yakala';
+
+  @override
+  String get gameName2048 => 'Zibo 2048';
+
+  @override
+  String get gameNameTren => 'Zibo Tren';
+
+  @override
+  String get gameNameTugla => 'Zibo Tuğla';
+
+  @override
+  String get gameNameKule => 'Zibo Kule';
+
+  @override
+  String get gameDescZipla => 'Zıpla, sütunlardan geç, coin topla';
+
+  @override
+  String get gameDescHafiza => 'Kostümlü Zibo\'ları eşleştir';
+
+  @override
+  String get gameDescYakala => 'Coinleri yakala, bombalardan kaç';
+
+  @override
+  String get gameDesc2048 => 'Kostümleri birleştir, gizemi çöz';
+
+  @override
+  String get gameDescTren => 'Coin trenini büyüt, çarpma!';
+
+  @override
+  String get gameDescTugla => 'Nişan al, tuğlaları kır';
+
+  @override
+  String get gameDescKule => 'Blokları üst üste diz, kuleyi yükselt';
 }

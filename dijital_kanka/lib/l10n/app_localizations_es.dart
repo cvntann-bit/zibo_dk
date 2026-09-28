@@ -2547,4 +2547,66 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get streakFreezeDoneButton => '¡Genial!';
+
+  @override
+  String get tabGameHall => 'Sala de Juegos';
+
+  @override
+  String get bottomBarGamesLabel => 'Juegos';
+
+  @override
+  String get goalsModuleDescription =>
+      'Marca tus metas de 7 días y mantén tu racha';
+
+  @override
+  String get gameHallSubtitle =>
+      'Juega y reúne Puntos de Juego. ¡El canje llega pronto!';
+
+  @override
+  String get gameHallPlay => 'Jugar';
+
+  @override
+  String get gameHallComingSoon => 'Pronto';
+
+  @override
+  String get gameNameZipla => 'Zibo Salta';
+
+  @override
+  String get gameNameHafiza => 'Zibo Memoria';
+
+  @override
+  String get gameNameYakala => 'Atrapa Monedas';
+
+  @override
+  String get gameName2048 => 'Zibo 2048';
+
+  @override
+  String get gameNameTren => 'Zibo Tren';
+
+  @override
+  String get gameNameTugla => 'Zibo Ladrillos';
+
+  @override
+  String get gameNameKule => 'Zibo Torre';
+
+  @override
+  String get gameDescZipla => 'Salta entre columnas, atrapa monedas';
+
+  @override
+  String get gameDescHafiza => 'Empareja a los Zibos disfrazados';
+
+  @override
+  String get gameDescYakala => 'Atrapa monedas, esquiva bombas';
+
+  @override
+  String get gameDesc2048 => 'Combina disfraces, descubre el misterio';
+
+  @override
+  String get gameDescTren => '¡Haz crecer tu tren de monedas sin chocar!';
+
+  @override
+  String get gameDescTugla => 'Apunta y rompe los ladrillos';
+
+  @override
+  String get gameDescKule => 'Apila bloques, sube la torre';
 }

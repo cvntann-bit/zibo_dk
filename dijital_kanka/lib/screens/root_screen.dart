@@ -50,8 +50,8 @@ import '../widgets/streak_freeze_offer_dialog.dart';
 import '../widgets/wheel_trigger_button.dart';
 import '../widgets/z_floating_button.dart';
 import '../widgets/zibo_share_sheet.dart';
-import 'completed_goals_screen.dart';
 import 'daily_rewards_screen.dart';
+import 'game_hall_screen.dart';
 import 'goal_tracking_screen.dart';
 import 'home_screen.dart';
 import 'money_screen.dart';
@@ -86,7 +86,9 @@ class RootScreen extends StatefulWidget {
 }
 
 class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
-  static const _goalTrackingTabIndex = 1;
+  /// 2026-09-29'a kadar burası Hedefler sekmesiydi; Hedefler artık Z
+  /// menüsünden açılan ayrı bir sayfa (`openGoalTrackingPage`).
+  static const _gameHallTabIndex = 1;
   static const _profileTabIndex = 2;
   static const _storeTabIndex = 3;
 
@@ -444,8 +446,10 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
     if (mounted) _setSelectedIndex(0);
   }
 
+  /// Ana Sayfa'daki hedef kartı ve seri hatırlatma bildirimi bu sinyali
+  /// gönderir. Hedefler artık sekme olmadığı için sayfa açılır.
   void _onGoalsTabRequested() {
-    if (mounted) _setSelectedIndex(_goalTrackingTabIndex);
+    if (mounted) openGoalTrackingPage(context);
   }
 
   void _onDailyRewardsPopupRequested() {
@@ -582,13 +586,13 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
     // `_ziboLogoAsset`).
     final subscription = context.watch<SubscriptionProvider>();
 
-    // GoalTrackingScreen, yalnızca gerçekten görünen sekme olduğunda
-    // otomatik söz döndürme zamanlayıcısını çalıştırabilmek için hangi
-    // sekmenin aktif olduğunu bilmek zorunda; bu yüzden _tabs statik değil,
-    // her build'de güncel _selectedIndex ile kuruluyor.
+    // Profil/Mağaza, yalnızca gerçekten görünen sekme olduklarında
+    // zamanlayıcı/reklam çalıştırabilmek için hangi sekmenin aktif olduğunu
+    // bilmek zorunda; bu yüzden _tabs statik değil, her build'de güncel
+    // _selectedIndex ile kuruluyor.
     final tabs = [
       const HomeScreen(),
-      GoalTrackingScreen(isActive: _selectedIndex == _goalTrackingTabIndex),
+      const GameHallScreen(),
       ProfileScreen(isActive: _selectedIndex == _profileTabIndex),
       StoreScreen(isActive: _selectedIndex == _storeTabIndex),
     ];
@@ -602,24 +606,6 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
         centerTitle: false,
         actions: [
           const CoinBalanceWidget(),
-          // Yalnızca Hedefler sekmesindeyken görünür — diğer üç sekmenin
-          // AppBar'ı değişmez (bkz. WheelTriggerButton'ın yalnızca Ana
-          // Sayfa'da görünmesiyle aynı koşullu-görünürlük deseni).
-          if (_selectedIndex == _goalTrackingTabIndex) ...[
-            StickerIconButton(
-              emoji: '🏆',
-              tooltip: l10n.completedGoalsButtonTooltip,
-              backgroundColor: Theme.of(context).colorScheme.surfaceContainerLowest,
-              iconColor: Theme.of(context).colorScheme.onSurface,
-              size: 30,
-              iconSize: 16,
-              borderRadius: 9,
-              onPressed: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const CompletedGoalsScreen()),
-              ),
-            ),
-            const SizedBox(width: 8),
-          ],
           StickerIconButton(
             emoji: '➕',
             tooltip: l10n.storeButtonTooltip,
@@ -699,7 +685,7 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
       bottomNavigationBar: MainBottomBar(
         selectedIndex: _selectedIndex,
         onHomeTap: () => _setSelectedIndex(0),
-        onGoalsTap: () => _setSelectedIndex(_goalTrackingTabIndex),
+        onGamesTap: () => _setSelectedIndex(_gameHallTabIndex),
         onProfileTap: () => _setSelectedIndex(_profileTabIndex),
         onStoreTap: () => _setSelectedIndex(_storeTabIndex),
       ),
