@@ -153,6 +153,7 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
     });
     homeTabRequest.addListener(_onHomeTabRequested);
     goalsTabRequest.addListener(_onGoalsTabRequested);
+    storeTabRequest.addListener(_onStoreTabRequested);
     dailyRewardsPopupRequest.addListener(_onDailyRewardsPopupRequested);
     waterModuleRequest.addListener(_onWaterModuleRequested);
     moneyModuleRequest.addListener(_onMoneyModuleRequested);
@@ -375,6 +376,7 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
     WidgetsBinding.instance.removeObserver(this);
     homeTabRequest.removeListener(_onHomeTabRequested);
     goalsTabRequest.removeListener(_onGoalsTabRequested);
+    storeTabRequest.removeListener(_onStoreTabRequested);
     dailyRewardsPopupRequest.removeListener(_onDailyRewardsPopupRequested);
     waterModuleRequest.removeListener(_onWaterModuleRequested);
     moneyModuleRequest.removeListener(_onMoneyModuleRequested);
@@ -448,6 +450,10 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
 
   /// Ana Sayfa'daki hedef kartı ve seri hatırlatma bildirimi bu sinyali
   /// gönderir. Hedefler artık sekme olmadığı için sayfa açılır.
+  void _onStoreTabRequested() {
+    if (mounted) _setSelectedIndex(_storeTabIndex);
+  }
+
   void _onGoalsTabRequested() {
     if (mounted) openGoalTrackingPage(context);
   }

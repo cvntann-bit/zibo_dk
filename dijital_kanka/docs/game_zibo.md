@@ -374,3 +374,15 @@ Kullanıcı Kule, Hafıza, 2048, Coin Yakala ve Tren'i telefonda denedi: "çalı
 - `firestore.rules`: `config/games` → giriş yapmış herkes OKUR, yazma kapalı. **Console'a elle yapıştırılmalı.**
   Doküman oluşturulmazsa uygulama varsayılanlarla çalışır.
 - Test: `test/game_points_provider_test.dart` (9 test).
+
+### Faz 3 YAPILDI (2026-09-29)
+- **Oyun Salonu** üstünde ★ kutusu: bakiye, "Bu hafta X / cap ZC takas edildi" çubuğu, **Takas Gişesi** düğmesi.
+- **`lib/screens/game_exchange_screen.dart`** (taslaktaki düzen): kur basamakları (✓ dolan / buz mavisi mevcut + ilerleme /
+  🔒 Pro-Pro+), −/+ miktar, "Alabildiğim kadar", bedel, "X ★ → N ZC takas et"; tavan dolunca bilgi kutusu; bakiyenin
+  yetmediği en ucuz sahip olunmayan kostüm + "Sadece oyunlarla ~N hafta" + "Mağazada coin al" (`storeTabRequest` →
+  Mağaza sekmesi); ücretsizde "Pro ile haftalık takas limiti 80 ZC" → Paywall.
+- `GamesConfig.exchangeLadder` (varsayılan 20@50, 20@100, 20@200, +20@250 Pro, +20@300 Pro+; Firestore'dan
+  değiştirilebilir). `GamePointsProvider`: `costFor`, `maxAffordable`, `weeklyCap`, `weeklyRoom`, `currentRate`,
+  `exchange`, `daysUntilWeekReset`. ZC ekleme: `CoinProvider.earnGameExchange` (işlem adı "Takas Gişesi").
+- Puanla açılan süsler (Gece Gökyüzü, Buz Kartlar) henüz YOK (karar 8 açık). Haftalık sıralama YOK (Faz 8).
+- Testler: Takas Gişesi grubu (4 test).

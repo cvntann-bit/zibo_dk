@@ -687,6 +687,17 @@ penceresiyle aynı sticker diyalog dili (freeze görseli kartın üstüne taşar
 
 **Onaylandı** — [mockup](https://claude.ai/artifact/1keevubiqgQexouMtYb5tZ).
 
+## Onaylanan: Oyun Salonu + Takas Gişesi + oyun ekranları (2026-09-29)
+
+Kullanıcı taslakları (`docs/game_prototypes/oyun_salonu.html`) onayladı ve oyunları telefonda denedi.
+- **Oyun Salonu** (alt barın 2. sekmesi 🎮): Zibo başlığı, ★ kutusu (bakiye + haftalık takas çubuğu + buz mavisi
+  "Takas Gişesi" düğmesi), 7 oyun kartı (64px `game_*_thumb.webp`, "Oyna" / "Yakında" hapı).
+- **Takas Gişesi**: kur basamakları (dolan krem-altın ✓, mevcut buz mavisi + ilerleme, kilitli 🔒 + Pro/Pro+ etiketi),
+  −/+ kare düğmeler, sonraki kostüm önerisi kartı.
+- **Oyun Puanı ★** her yerde buz mavisi daire içinde yıldız (`#8FD3FF` / mürekkep `#0E3A5C`) — ZC'nin altınından ayrışır.
+- **Oyun ekranları** (WebView HTML): hep açık "sticker" dünyası (krem-bal zemin, kalın kontur); koyu temaya uymuyor
+  (açık soru 2048 tasarımında bekliyor).
+
 ## Kapsam dışı — kesinlikle DEĞİŞMEYECEK
 
 Kullanıcı açıkça belirtti, bu redesign'a DAHİL DEĞİL:

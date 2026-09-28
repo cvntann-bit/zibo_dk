@@ -4635,6 +4635,150 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'Blokları üst üste diz, kuleyi yükselt'**
   String get gameDescKule;
+
+  /// Oyun Salonu ★ bakiyesinin etiketi
+  ///
+  /// In tr, this message translates to:
+  /// **'Oyun Puanı'**
+  String get gameHallPointsLabel;
+
+  /// Oyun Salonu haftalık takas özeti
+  ///
+  /// In tr, this message translates to:
+  /// **'Bu hafta {done} / {cap} ZC takas edildi'**
+  String gameHallWeekProgress(int done, int cap);
+
+  /// Takas Gişesi başlığı
+  ///
+  /// In tr, this message translates to:
+  /// **'Takas Gişesi'**
+  String get exchangeTitle;
+
+  /// Takas Gişesi alt başlığı
+  ///
+  /// In tr, this message translates to:
+  /// **'Kur pazartesi sıfırlanır · {days} gün kaldı'**
+  String exchangeResetIn(int days);
+
+  /// Takas Gişesi bakiye etiketi
+  ///
+  /// In tr, this message translates to:
+  /// **'Takas edilebilir puan'**
+  String get exchangeBalanceLabel;
+
+  /// Takas basamakları başlığı
+  ///
+  /// In tr, this message translates to:
+  /// **'Bu haftanın kur basamakları'**
+  String get exchangeLadderLabel;
+
+  /// İlk basamak adı
+  ///
+  /// In tr, this message translates to:
+  /// **'İlk {zc} ZC'**
+  String exchangeStepFirst(int zc);
+
+  /// Sonraki basamak adı
+  ///
+  /// In tr, this message translates to:
+  /// **'+{zc} ZC'**
+  String exchangeStep(int zc);
+
+  /// Basamak ilerlemesi
+  ///
+  /// In tr, this message translates to:
+  /// **'{got} / {zc} ZC alındı'**
+  String exchangeStepProgress(int got, int zc);
+
+  /// Kilitli basamak açıklaması
+  ///
+  /// In tr, this message translates to:
+  /// **'Üyelikle açılır'**
+  String get exchangeStepLocked;
+
+  /// Basamak kuru
+  ///
+  /// In tr, this message translates to:
+  /// **'{rate} ★ = 1 ZC'**
+  String exchangeRate(int rate);
+
+  /// Seçilen miktarın bedeli
+  ///
+  /// In tr, this message translates to:
+  /// **'Bedeli {points} ★'**
+  String exchangeCost(int points);
+
+  /// En fazla miktarı seçen düğme
+  ///
+  /// In tr, this message translates to:
+  /// **'Alabildiğim kadar'**
+  String get exchangeMaxButton;
+
+  /// Alınabilecek en fazla miktar
+  ///
+  /// In tr, this message translates to:
+  /// **'En fazla {zc} ZC'**
+  String exchangeMaxHint(int zc);
+
+  /// Puan yetmezken gösterilen kur
+  ///
+  /// In tr, this message translates to:
+  /// **'Şu an kur: {rate} ★ = 1 ZC'**
+  String exchangeCurrentRate(int rate);
+
+  /// Takas düğmesi
+  ///
+  /// In tr, this message translates to:
+  /// **'{points} ★ → {zc} ZC takas et'**
+  String exchangeButton(int points, int zc);
+
+  /// Puan yetersizken düğme metni
+  ///
+  /// In tr, this message translates to:
+  /// **'Puanın yetmiyor'**
+  String get exchangeNotEnough;
+
+  /// Takas başarılı mesajı
+  ///
+  /// In tr, this message translates to:
+  /// **'{points} ★ → {zc} Zibo Coin cüzdanına eklendi'**
+  String exchangeDone(int points, int zc);
+
+  /// Haftalık tavan doldu başlığı
+  ///
+  /// In tr, this message translates to:
+  /// **'Bu haftalık takas limitin doldu'**
+  String get exchangeCapTitle;
+
+  /// Haftalık tavan doldu açıklaması
+  ///
+  /// In tr, this message translates to:
+  /// **'Pazartesi yenilenir · {days} gün kaldı. Puan toplamaya devam edebilirsin, birikir.'**
+  String exchangeCapBody(int days);
+
+  /// Bir sonraki kostüme kalan ZC
+  ///
+  /// In tr, this message translates to:
+  /// **'{costume} için {missing} ZC kaldı'**
+  String exchangeUpsellTitle(String costume, int missing);
+
+  /// Oyunlarla kaç hafta süreceği
+  ///
+  /// In tr, this message translates to:
+  /// **'Sadece oyunlarla yaklaşık {weeks} hafta sürer'**
+  String exchangeUpsellBody(int weeks);
+
+  /// Mağaza coin sekmesine götüren düğme
+  ///
+  /// In tr, this message translates to:
+  /// **'Mağazada coin al'**
+  String get exchangeUpsellButton;
+
+  /// Ücretsiz kullanıcıya Pro önerisi
+  ///
+  /// In tr, this message translates to:
+  /// **'Pro ile haftalık takas limiti {cap} ZC'**
+  String exchangeProLine(int cap);
 }
 
 class _AppLocalizationsDelegate

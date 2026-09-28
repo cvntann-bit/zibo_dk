@@ -50,3 +50,8 @@ final ValueNotifier<int> moneyModuleRequest = ValueNotifier<int>(0);
 /// bildirimlerinin hiçbirinin ihtiyaç duymadığı, bu yüzden önceden hiç
 /// olmayan YENİ bir sinyal — bkz. `RootScreen._profileTabIndex`).
 final ValueNotifier<int> profileTabRequest = ValueNotifier<int>(0);
+
+/// Bir alt sayfadan (ör. Takas Gişesi'nin "Mağazada coin al" butonu)
+/// Mağaza sekmesine geçmek için — [goalsTabRequest] ile AYNI "değeri artır"
+/// deseni. Dinleyen: `RootScreen`.
+final ValueNotifier<int> storeTabRequest = ValueNotifier<int>(0);

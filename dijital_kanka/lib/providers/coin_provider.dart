@@ -435,6 +435,13 @@ class CoinProvider extends ChangeNotifier {
 
   void earnReferral() => _earn(CoinEconomy.referral, 'Arkadaş daveti');
 
+  /// Oyun Salonu Takas Gişesi: ★ → ZC (bkz. `GamePointsProvider.exchange`,
+  /// docs/game_zibo.md). Miktar ve haftalık tavan orada doğrulanır.
+  void earnGameExchange(int amount) {
+    if (amount <= 0) return;
+    _earn(amount, 'Takas Gişesi');
+  }
+
   /// Instagram Takip Kartı: kullanıcı Instagram'ı açıp uygulamaya döndüğünde (bkz.
   /// `InstagramFollowProvider.markClaimed()` — tek seferlik, kalıcı bir
   /// bayrakla korunuyor, bu yüzden burada ayrıca bir tekrar-önleme

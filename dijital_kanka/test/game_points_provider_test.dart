@@ -89,6 +89,60 @@ void main() {
     expect(second.playsLeft('2048', 'free', config), 2);
   });
 
+  group('Takas Gişesi', () {
+    test('kademeli kur: ilk 20 ZC 50★, sonraki 20 ZC 100★', () async {
+      final p = await make(() => DateTime(2026, 9, 29, 10));
+      expect(p.costFor(20, 'free', config), 1000);
+      expect(p.costFor(25, 'free', config), 1500);
+      expect(p.weeklyCap('free', config), 60);
+      expect(p.weeklyCap('pro', config), 80);
+      expect(p.weeklyCap('plus', config), 100);
+      expect(p.costFor(61, 'free', config), isNull);
+    });
+
+    test('takas ★ düşer, haftalık sayaç artar, kur ilerler; puan yetmezse olmaz', () async {
+      final p = await make(() => DateTime(2026, 9, 29, 10));
+      p.recordFinish('2048', claimedPoints: 600, config: config);
+      p.recordFinish('tren', claimedPoints: 600, config: config); // 1200 ★
+      expect(p.maxAffordable('free', config), 22); // 20×50 + 2×100
+      expect(p.exchange(22, 'free', config), 1200);
+      expect(p.points, 0);
+      expect(p.weekExchanged, 22);
+      expect(p.currentRate('free', config), 100);
+      expect(p.exchange(1, 'free', config), isNull);
+    });
+
+    test('haftalık tavan dolunca daha fazla takas yok; pazartesi sıfırlanır', () async {
+      var now = DateTime(2026, 10, 4, 10); // Pazar
+      final p = await make(() => now);
+      for (var i = 0; i < 20; i++) {
+        p.recordFinish('2048', claimedPoints: 600, config: config); // 12.000 ★
+      }
+      expect(p.exchange(60, 'free', config), 7000);
+      expect(p.weeklyRoom('free', config), 0);
+      expect(p.maxAffordable('free', config), 0);
+      expect(p.exchange(1, 'free', config), isNull);
+      // Pro basamakları hâlâ açık.
+      expect(p.weeklyRoom('pro', config), 20);
+      now = DateTime(2026, 10, 5, 9); // Pazartesi
+      expect(p.weekExchanged, 0);
+      expect(p.maxAffordable('free', config), 50); // kalan 5.000 ★ = 20×50 + 20×100 + 10×200
+    });
+
+    test('bozuk exchangeLadder yok sayılır, geçerlisi uygulanır', () {
+      expect(GamesConfig.fromJson({'exchangeLadder': [{'zc': 'x'}]}).exchangeLadder.length, 5);
+      final c = GamesConfig.fromJson({
+        'exchangeLadder': [
+          {'zc': 10, 'rate': 80},
+          {'zc': 10, 'rate': 150, 'minTier': 'pro'},
+        ],
+      });
+      expect(c.exchangeLadder.length, 2);
+      expect(c.exchangeLadder[1].openFor('free'), isFalse);
+      expect(c.exchangeLadder[1].openFor('plus'), isTrue);
+    });
+  });
+
   group('GamesConfig.fromJson', () {
     test('Firestore alanları varsayılanların üstüne yazılır, bozuklar yok sayılır', () {
       final c = GamesConfig.fromJson({

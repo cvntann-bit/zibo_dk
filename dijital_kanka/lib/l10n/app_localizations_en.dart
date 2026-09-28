@@ -2594,4 +2594,106 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get gameDescKule => 'Stack blocks, build the tower high';
+
+  @override
+  String get gameHallPointsLabel => 'Game Points';
+
+  @override
+  String gameHallWeekProgress(int done, int cap) {
+    return '$done / $cap ZC exchanged this week';
+  }
+
+  @override
+  String get exchangeTitle => 'Exchange';
+
+  @override
+  String exchangeResetIn(int days) {
+    return 'Rates reset on Monday · $days days left';
+  }
+
+  @override
+  String get exchangeBalanceLabel => 'Points to exchange';
+
+  @override
+  String get exchangeLadderLabel => 'This week\'s rate steps';
+
+  @override
+  String exchangeStepFirst(int zc) {
+    return 'First $zc ZC';
+  }
+
+  @override
+  String exchangeStep(int zc) {
+    return '+$zc ZC';
+  }
+
+  @override
+  String exchangeStepProgress(int got, int zc) {
+    return '$got / $zc ZC taken';
+  }
+
+  @override
+  String get exchangeStepLocked => 'Unlocks with membership';
+
+  @override
+  String exchangeRate(int rate) {
+    return '$rate ★ = 1 ZC';
+  }
+
+  @override
+  String exchangeCost(int points) {
+    return 'Costs $points ★';
+  }
+
+  @override
+  String get exchangeMaxButton => 'As much as I can';
+
+  @override
+  String exchangeMaxHint(int zc) {
+    return 'Up to $zc ZC';
+  }
+
+  @override
+  String exchangeCurrentRate(int rate) {
+    return 'Current rate: $rate ★ = 1 ZC';
+  }
+
+  @override
+  String exchangeButton(int points, int zc) {
+    return 'Exchange $points ★ → $zc ZC';
+  }
+
+  @override
+  String get exchangeNotEnough => 'Not enough points';
+
+  @override
+  String exchangeDone(int points, int zc) {
+    return '$points ★ → $zc Zibo Coins added to your wallet';
+  }
+
+  @override
+  String get exchangeCapTitle => 'Your weekly exchange limit is full';
+
+  @override
+  String exchangeCapBody(int days) {
+    return 'Resets on Monday · $days days left. Keep collecting points — they add up.';
+  }
+
+  @override
+  String exchangeUpsellTitle(String costume, int missing) {
+    return '$missing ZC to go for $costume';
+  }
+
+  @override
+  String exchangeUpsellBody(int weeks) {
+    return 'About $weeks weeks with games alone';
+  }
+
+  @override
+  String get exchangeUpsellButton => 'Get coins in the Store';
+
+  @override
+  String exchangeProLine(int cap) {
+    return 'Weekly exchange limit $cap ZC with Pro';
+  }
 }

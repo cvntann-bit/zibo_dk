@@ -2580,4 +2580,106 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get gameDescKule => 'Blokları üst üste diz, kuleyi yükselt';
+
+  @override
+  String get gameHallPointsLabel => 'Oyun Puanı';
+
+  @override
+  String gameHallWeekProgress(int done, int cap) {
+    return 'Bu hafta $done / $cap ZC takas edildi';
+  }
+
+  @override
+  String get exchangeTitle => 'Takas Gişesi';
+
+  @override
+  String exchangeResetIn(int days) {
+    return 'Kur pazartesi sıfırlanır · $days gün kaldı';
+  }
+
+  @override
+  String get exchangeBalanceLabel => 'Takas edilebilir puan';
+
+  @override
+  String get exchangeLadderLabel => 'Bu haftanın kur basamakları';
+
+  @override
+  String exchangeStepFirst(int zc) {
+    return 'İlk $zc ZC';
+  }
+
+  @override
+  String exchangeStep(int zc) {
+    return '+$zc ZC';
+  }
+
+  @override
+  String exchangeStepProgress(int got, int zc) {
+    return '$got / $zc ZC alındı';
+  }
+
+  @override
+  String get exchangeStepLocked => 'Üyelikle açılır';
+
+  @override
+  String exchangeRate(int rate) {
+    return '$rate ★ = 1 ZC';
+  }
+
+  @override
+  String exchangeCost(int points) {
+    return 'Bedeli $points ★';
+  }
+
+  @override
+  String get exchangeMaxButton => 'Alabildiğim kadar';
+
+  @override
+  String exchangeMaxHint(int zc) {
+    return 'En fazla $zc ZC';
+  }
+
+  @override
+  String exchangeCurrentRate(int rate) {
+    return 'Şu an kur: $rate ★ = 1 ZC';
+  }
+
+  @override
+  String exchangeButton(int points, int zc) {
+    return '$points ★ → $zc ZC takas et';
+  }
+
+  @override
+  String get exchangeNotEnough => 'Puanın yetmiyor';
+
+  @override
+  String exchangeDone(int points, int zc) {
+    return '$points ★ → $zc Zibo Coin cüzdanına eklendi';
+  }
+
+  @override
+  String get exchangeCapTitle => 'Bu haftalık takas limitin doldu';
+
+  @override
+  String exchangeCapBody(int days) {
+    return 'Pazartesi yenilenir · $days gün kaldı. Puan toplamaya devam edebilirsin, birikir.';
+  }
+
+  @override
+  String exchangeUpsellTitle(String costume, int missing) {
+    return '$costume için $missing ZC kaldı';
+  }
+
+  @override
+  String exchangeUpsellBody(int weeks) {
+    return 'Sadece oyunlarla yaklaşık $weeks hafta sürer';
+  }
+
+  @override
+  String get exchangeUpsellButton => 'Mağazada coin al';
+
+  @override
+  String exchangeProLine(int cap) {
+    return 'Pro ile haftalık takas limiti $cap ZC';
+  }
 }

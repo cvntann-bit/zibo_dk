@@ -24,6 +24,7 @@ class GamesConfig {
     required this.dailyPlays,
     required this.maxAdPlaysPerGame,
     required this.games,
+    required this.exchangeLadder,
   });
 
   /// Üyelik seviyesine göre oyun BAŞINA günlük hak ('free' / 'pro' / 'plus').
@@ -35,12 +36,24 @@ class GamesConfig {
   /// Oyun kimliği → oyuna `ziboInit` ile giden rakamlar (her birinde `cap`).
   final Map<String, Map<String, Object>> games;
 
+  /// Takas Gişesi basamakları (sırayla doldurulur).
+  final List<ExchangeStep> exchangeLadder;
+
   /// Oyun Salonu'ndaki sıra da budur.
   static const gameIds = ['kule', 'hafiza', '2048', 'yakala', 'tren', 'tugla', 'zipla'];
 
   static const defaults = GamesConfig(
     dailyPlays: {'free': 3, 'pro': 5, 'plus': 8},
     maxAdPlaysPerGame: 2,
+    // Takas Gişesi (Faz 3): haftalık, giderek pahalılaşan kur. Ücretsiz 60,
+    // Pro 80, Pro+ 100 ZC/hafta (docs/game_zibo.md bölüm 3).
+    exchangeLadder: [
+      ExchangeStep(zc: 20, rate: 50, minTier: 'free'),
+      ExchangeStep(zc: 20, rate: 100, minTier: 'free'),
+      ExchangeStep(zc: 20, rate: 200, minTier: 'free'),
+      ExchangeStep(zc: 20, rate: 250, minTier: 'pro'),
+      ExchangeStep(zc: 20, rate: 300, minTier: 'plus'),
+    ],
     games: {
       // Kat × 2 + mükemmel × 1 (kullanıcı kararı 2026-09-27).
       'kule': {'perFloor': 2, 'perfectBonus': 1, 'cap': 250},
@@ -104,6 +117,36 @@ class GamesConfig {
       dailyPlays: plays,
       maxAdPlaysPerGame: maxAd is num && maxAd >= 0 ? maxAd.toInt() : base.maxAdPlaysPerGame,
       games: games,
+      exchangeLadder: _parseLadder(json['exchangeLadder']) ?? base.exchangeLadder,
     );
   }
+}
+
+/// Takas Gişesi'nin bir basamağı: [zc] kadar Zibo Coin, her biri [rate] ★
+/// karşılığında; [minTier] üyeliği olanlar kullanabilir ('free' / 'pro' / 'plus').
+class ExchangeStep {
+  const ExchangeStep({required this.zc, required this.rate, required this.minTier});
+
+  final int zc;
+  final int rate;
+  final String minTier;
+
+  static const _rank = {'free': 0, 'pro': 1, 'plus': 2};
+
+  /// Bu basamak [tier] üyeliğine açık mı?
+  bool openFor(String tier) => (_rank[tier] ?? 0) >= (_rank[minTier] ?? 0);
+}
+
+/// `exchangeLadder` alanı geçerliyse listeyi döner, değilse `null`
+/// (varsayılan kullanılır). Tek bir bozuk basamak bile listeyi geçersiz kılar.
+List<ExchangeStep>? _parseLadder(Object? raw) {
+  if (raw is! List || raw.isEmpty) return null;
+  final steps = <ExchangeStep>[];
+  for (final item in raw) {
+    if (item is! Map) return null;
+    final zc = item['zc'], rate = item['rate'], tier = item['minTier'] ?? 'free';
+    if (zc is! num || rate is! num || zc <= 0 || rate <= 0 || tier is! String) return null;
+    steps.add(ExchangeStep(zc: zc.toInt(), rate: rate.toInt(), minTier: tier));
+  }
+  return steps;
 }

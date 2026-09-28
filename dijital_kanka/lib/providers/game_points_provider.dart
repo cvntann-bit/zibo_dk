@@ -138,6 +138,78 @@ class GamePointsProvider extends ChangeNotifier {
     return accepted;
   }
 
+  // --- Takas Gişesi (Faz 3) -------------------------------------------
+
+  /// [tier] üyeliğine açık basamaklar (sırayla).
+  List<ExchangeStep> ladderFor(String tier, GamesConfig config) =>
+      config.exchangeLadder.where((s) => s.openFor(tier)).toList();
+
+  /// Bu üyelikle haftada alınabilecek en fazla ZC.
+  int weeklyCap(String tier, GamesConfig config) =>
+      ladderFor(tier, config).fold(0, (sum, s) => sum + s.zc);
+
+  /// Bu hafta daha kaç ZC alınabilir (puandan bağımsız).
+  int weeklyRoom(String tier, GamesConfig config) {
+    final room = weeklyCap(tier, config) - weekExchanged;
+    return room < 0 ? 0 : room;
+  }
+
+  /// [zc] kadar ZC almanın ★ bedeli (bu haftanın basamaklarından devam
+  /// ederek). Haftalık tavanı aşıyorsa `null`.
+  int? costFor(int zc, String tier, GamesConfig config) {
+    if (zc <= 0) return 0;
+    var cost = 0, pos = weekExchanged, left = zc, base = 0;
+    for (final step in ladderFor(tier, config)) {
+      final end = base + step.zc;
+      if (left > 0 && pos < end) {
+        final take = (end - pos) < left ? end - pos : left;
+        cost += take * step.rate;
+        pos += take;
+        left -= take;
+      }
+      base = end;
+    }
+    return left > 0 ? null : cost;
+  }
+
+  /// Mevcut ★ ile bu hafta alınabilecek en fazla ZC.
+  int maxAffordable(String tier, GamesConfig config) {
+    var n = 0;
+    final room = weeklyRoom(tier, config);
+    while (n < room) {
+      final c = costFor(n + 1, tier, config);
+      if (c == null || c > _points) break;
+      n++;
+    }
+    return n;
+  }
+
+  /// Şu anki basamağın kuru (1 ZC kaç ★). Tavan dolduysa `null`.
+  int? currentRate(String tier, GamesConfig config) {
+    var base = 0;
+    for (final step in ladderFor(tier, config)) {
+      if (weekExchanged < base + step.zc) return step.rate;
+      base += step.zc;
+    }
+    return null;
+  }
+
+  /// Takası uygular: bedel ★'dan düşülür, haftalık sayaç artar. Başarılıysa
+  /// ödenen ★ bedelini, değilse `null` döner. ZC'yi çağıran taraf
+  /// (`CoinProvider.earnGameExchange`) ekler.
+  int? exchange(int zc, String tier, GamesConfig config) {
+    _roll();
+    final cost = costFor(zc, tier, config);
+    if (zc <= 0 || cost == null || cost > _points) return null;
+    _points -= cost;
+    _weekExchanged += zc;
+    _changed();
+    return cost;
+  }
+
+  /// Takas kurunun sıfırlanmasına kalan gün (pazartesi 00:00'a; 1-7).
+  int get daysUntilWeekReset => 8 - _today.weekday;
+
   void _changed() {
     notifyListeners();
     _save();

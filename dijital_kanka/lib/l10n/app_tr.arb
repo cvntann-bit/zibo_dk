@@ -3478,5 +3478,191 @@
   "gameDescKule": "Blokları üst üste diz, kuleyi yükselt",
   "@gameDescKule": {
     "description": "Oyun kartı açıklaması"
+  },
+  "gameHallPointsLabel": "Oyun Puanı",
+  "@gameHallPointsLabel": {
+    "description": "Oyun Salonu ★ bakiyesinin etiketi"
+  },
+  "gameHallWeekProgress": "Bu hafta {done} / {cap} ZC takas edildi",
+  "@gameHallWeekProgress": {
+    "description": "Oyun Salonu haftalık takas özeti",
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "cap": {
+        "type": "int"
+      }
+    }
+  },
+  "exchangeTitle": "Takas Gişesi",
+  "@exchangeTitle": {
+    "description": "Takas Gişesi başlığı"
+  },
+  "exchangeResetIn": "Kur pazartesi sıfırlanır · {days} gün kaldı",
+  "@exchangeResetIn": {
+    "description": "Takas Gişesi alt başlığı",
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "exchangeBalanceLabel": "Takas edilebilir puan",
+  "@exchangeBalanceLabel": {
+    "description": "Takas Gişesi bakiye etiketi"
+  },
+  "exchangeLadderLabel": "Bu haftanın kur basamakları",
+  "@exchangeLadderLabel": {
+    "description": "Takas basamakları başlığı"
+  },
+  "exchangeStepFirst": "İlk {zc} ZC",
+  "@exchangeStepFirst": {
+    "description": "İlk basamak adı",
+    "placeholders": {
+      "zc": {
+        "type": "int"
+      }
+    }
+  },
+  "exchangeStep": "+{zc} ZC",
+  "@exchangeStep": {
+    "description": "Sonraki basamak adı",
+    "placeholders": {
+      "zc": {
+        "type": "int"
+      }
+    }
+  },
+  "exchangeStepProgress": "{got} / {zc} ZC alındı",
+  "@exchangeStepProgress": {
+    "description": "Basamak ilerlemesi",
+    "placeholders": {
+      "got": {
+        "type": "int"
+      },
+      "zc": {
+        "type": "int"
+      }
+    }
+  },
+  "exchangeStepLocked": "Üyelikle açılır",
+  "@exchangeStepLocked": {
+    "description": "Kilitli basamak açıklaması"
+  },
+  "exchangeRate": "{rate} ★ = 1 ZC",
+  "@exchangeRate": {
+    "description": "Basamak kuru",
+    "placeholders": {
+      "rate": {
+        "type": "int"
+      }
+    }
+  },
+  "exchangeCost": "Bedeli {points} ★",
+  "@exchangeCost": {
+    "description": "Seçilen miktarın bedeli",
+    "placeholders": {
+      "points": {
+        "type": "int"
+      }
+    }
+  },
+  "exchangeMaxButton": "Alabildiğim kadar",
+  "@exchangeMaxButton": {
+    "description": "En fazla miktarı seçen düğme"
+  },
+  "exchangeMaxHint": "En fazla {zc} ZC",
+  "@exchangeMaxHint": {
+    "description": "Alınabilecek en fazla miktar",
+    "placeholders": {
+      "zc": {
+        "type": "int"
+      }
+    }
+  },
+  "exchangeCurrentRate": "Şu an kur: {rate} ★ = 1 ZC",
+  "@exchangeCurrentRate": {
+    "description": "Puan yetmezken gösterilen kur",
+    "placeholders": {
+      "rate": {
+        "type": "int"
+      }
+    }
+  },
+  "exchangeButton": "{points} ★ → {zc} ZC takas et",
+  "@exchangeButton": {
+    "description": "Takas düğmesi",
+    "placeholders": {
+      "points": {
+        "type": "int"
+      },
+      "zc": {
+        "type": "int"
+      }
+    }
+  },
+  "exchangeNotEnough": "Puanın yetmiyor",
+  "@exchangeNotEnough": {
+    "description": "Puan yetersizken düğme metni"
+  },
+  "exchangeDone": "{points} ★ → {zc} Zibo Coin cüzdanına eklendi",
+  "@exchangeDone": {
+    "description": "Takas başarılı mesajı",
+    "placeholders": {
+      "points": {
+        "type": "int"
+      },
+      "zc": {
+        "type": "int"
+      }
+    }
+  },
+  "exchangeCapTitle": "Bu haftalık takas limitin doldu",
+  "@exchangeCapTitle": {
+    "description": "Haftalık tavan doldu başlığı"
+  },
+  "exchangeCapBody": "Pazartesi yenilenir · {days} gün kaldı. Puan toplamaya devam edebilirsin, birikir.",
+  "@exchangeCapBody": {
+    "description": "Haftalık tavan doldu açıklaması",
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "exchangeUpsellTitle": "{costume} için {missing} ZC kaldı",
+  "@exchangeUpsellTitle": {
+    "description": "Bir sonraki kostüme kalan ZC",
+    "placeholders": {
+      "costume": {
+        "type": "String"
+      },
+      "missing": {
+        "type": "int"
+      }
+    }
+  },
+  "exchangeUpsellBody": "Sadece oyunlarla yaklaşık {weeks} hafta sürer",
+  "@exchangeUpsellBody": {
+    "description": "Oyunlarla kaç hafta süreceği",
+    "placeholders": {
+      "weeks": {
+        "type": "int"
+      }
+    }
+  },
+  "exchangeUpsellButton": "Mağazada coin al",
+  "@exchangeUpsellButton": {
+    "description": "Mağaza coin sekmesine götüren düğme"
+  },
+  "exchangeProLine": "Pro ile haftalık takas limiti {cap} ZC",
+  "@exchangeProLine": {
+    "description": "Ücretsiz kullanıcıya Pro önerisi",
+    "placeholders": {
+      "cap": {
+        "type": "int"
+      }
+    }
   }
 }
