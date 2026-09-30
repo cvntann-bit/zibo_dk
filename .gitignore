@@ -2,3 +2,4 @@
 # Tanıtım videosu çıktıları (MP4) — kaynak (index.html + render.py) repoda, çıktı değil
 promo_video/*/out/
 __pycache__/
+promo_video/*/clips/

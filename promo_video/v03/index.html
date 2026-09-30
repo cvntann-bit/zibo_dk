@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>Oyun Salonu fragmanı (v03)</title>
+<!--
+  v03 — Oyun Salonu fragmanı: 7 oyunun GERÇEK oynanışı (capture_games.py'nin yakaladığı kareler,
+  bot oynuyor), her oyun bir ölçü. Müzik: Pixel Dash, 144,46 bpm → ölçü 1,6614 sn, 12 ölçü = 19,94 sn.
+  Ölçüler: 0 giriş | 1–7 oyunlar | 8 takas | 9 "hangisi senin oyunun?" | 10–11 kapanış.
+  Ortak yardımcılar: ../kit.js, ../kit.css. Ses kurgusu: sound.py (zamanlar buradakiyle aynı).
+-->
+<link rel="stylesheet" href="../kit.css">
+<style>
+.rays{position:absolute;left:50%;top:50%;width:3000px;height:3000px;margin:-1500px 0 0 -1500px;
+  background:repeating-conic-gradient(from 0deg,var(--ray,rgba(255,255,255,.26)) 0 9deg,transparent 9deg 18deg)}
+.dots{position:absolute;inset:0;background-image:radial-gradient(rgba(20,17,12,.07) 24%,transparent 26%);background-size:30px 30px}
+.phone{border:10px solid var(--outline);border-radius:60px;box-shadow:14px 14px 0 var(--outline);overflow:hidden;
+  box-sizing:border-box;background:#FFF4DE}
+.phone canvas{width:100%;height:100%;display:block}
+.pip{width:28px;height:28px;border-radius:50%;border:5px solid var(--outline);box-sizing:border-box;background:#fff}
+.chip{width:130px;height:130px;border-radius:50%;background:#8FD3FF;border:7px solid var(--outline);box-sizing:border-box;
+  display:flex;align-items:center;justify-content:center;font-size:76px;color:#0E3A5C;line-height:1;padding-bottom:6px}
+.conf{border:3px solid var(--outline);box-sizing:border-box}
+.icon{border:7px solid var(--outline);border-radius:23%;box-shadow:10px 10px 0 var(--outline);box-sizing:border-box}
+</style>
+</head>
+<body>
+<div id="stage"></div>
+<script src="../kit.js"></script>
+<script>
+const BAR=240/144.46,NB=12,END=NB*BAR;
+const S=Array.from({length:NB+1},(_,i)=>i*BAR);
+const GAMES=['kule','yakala','hafiza','tren','2048','tugla','zipla'];
+const TX={
+ tr:{badge:'YENİ',bs:50,title:'Oyun *Salonu*',sub:'7 mini oyun, tek yerde!',
+  g:{kule:['Zibo Kule','Blokları üst üste diz, kuleyi yükselt'],yakala:['Coin Yakala','Coinleri yakala, bombalardan kaç'],
+     hafiza:['Zibo Hafıza',"Kostümlü Zibo'ları eşleştir"],tren:['Zibo Tren','Coin trenini büyüt, çarpma!'],
+     '2048':['Zibo 2048','Kostümleri birleştir, gizemi çöz'],tugla:['Zibo Tuğla','Nişan al, tuğlaları kır'],
+     zipla:['Zibo Zıpla','Zıpla, sütunlardan geç, coin topla']},
+  ex:['★ topla,','*Zibo* *Coin* kazan!'],exS:'★ → ZC',which:['Hangisi','*senin* oyunun?'],
+  tag:'Dijital Kanka',btn:'ÜCRETSİZ İNDİR',play:"Google Play'de"},
+ es:{badge:'NUEVO',bs:38,title:'Sala de *Juegos*',sub:'¡7 minijuegos en un solo lugar!',
+  g:{kule:['Zibo Torre','Apila bloques, sube la torre'],yakala:['Atrapa Monedas','Atrapa monedas, esquiva bombas'],
+     hafiza:['Zibo Memoria','Empareja a los Zibos disfrazados'],tren:['Zibo Tren','¡Haz crecer tu tren de monedas sin chocar!'],
+     '2048':['Zibo 2048','Combina disfraces, descubre el misterio'],tugla:['Zibo Ladrillos','Apunta y rompe los ladrillos'],
+     zipla:['Zibo Salta','Salta entre columnas, atrapa monedas']},
+  ex:['Junta ★,','gana *Zibo* *Coins!*'],exS:'★ → ZC',which:['¿Cuál es','*tu* *juego?*'],
+  tag:'Tu amigo digital',btn:'DESCARGA GRATIS',play:'en Google Play'},
+ en:{badge:'NEW',bs:54,title:'Game *Hall*',sub:'7 mini games, one place!',
+  g:{kule:['Zibo Tower','Stack blocks, build the tower high'],yakala:['Coin Catch','Catch coins, dodge bombs'],
+     hafiza:['Zibo Memory','Match the costumed Zibos'],tren:['Zibo Train',"Grow your coin train, don't crash!"],
+     '2048':['Zibo 2048','Merge costumes, uncover the mystery'],tugla:['Zibo Bricks','Aim and smash the bricks'],
+     zipla:['Zibo Jump','Jump through pillars, grab coins']},
+  ex:['Collect ★,','earn *Zibo* *Coins!*'],exS:'★ → ZC',which:['Which one','is *yours?*'],
+  tag:'Your digital buddy',btn:'FREE DOWNLOAD',play:'on Google Play'}};
+const X=TX[LANG]||TX.tr;
+
+// ---------- yerleşim ----------
+const L=V?{card:[540,1125,1300],nameP:[540,215,118],descP:[540,395,46],dots:[540,88,54],
+    iz:[540,1450,760],ih:[540,520,150],isub:[540,720,56],ib:[190,300,250],it:[[165,930],[395,930],[625,930],[855,930]],its:215,
+    coin:[540,900,500],exh:[540,300,118],exs:[540,1290,90],exz:[540,1620,520],
+    wh:[540,330,124],ws:[540,1700,56],
+    ci:[540,440,330],cl:[540,770,560],ct:[540,965,66],cb:[540,1180,76],cp:[540,1325,42],cz:[540,1650,560]}
+  :{card:[600,540,960],nameP:[1370,380,112],descP:[1370,560,46],dots:[1370,760,54],
+    iz:[420,610,900],ih:[1340,320,150],isub:[1340,500,54],ib:[1760,150,230],it:[[1040,800],[1265,800],[1490,800],[1715,800]],its:200,
+    coin:[1350,600,380],exh:[1350,250,100],exs:[1350,880,80],exz:[420,640,820],
+    wh:[960,230,130],ws:[960,930,58],
+    ci:[1290,225,240],cl:[1290,470,520],ct:[1290,640,60],cb:[1290,810,72],cp:[1290,935,40],cz:[520,585,830]};
+const CW=L.card[2]*720/1280;
+
+// ---------- zemin ----------
+//        [üst, alt, ışın rengi]
+const CREAM=['#FFF4DE','#FFE3A6','rgba(243,178,60,.22)'];
+const PAL=[CREAM,
+ ['#3FA9F5','#9ADBFF'],['#8E5BE6','#C3A4FF'],['#FF6F91','#FFB3C6'],['#2FBF71','#9BE7B5'],
+ ['#F3B23C','#FFE08A'],['#FF7A45','#FFC09A'],['#3B63C9','#7C9BE8'],
+ ['#23408E','#3F6FD8'],['#8FD3FF','#DDF2FF'],CREAM,CREAM].map(p=>[p[0],p[1],p[2]||'rgba(255,255,255,.26)']);
+const bg=mk(stage,'div','full'),rays=mk(stage,'div','rays');mk(stage,'div','dots');
+const seg=t=>Math.min(NB-1,Math.max(0,Math.floor(t/BAR)));
+function world(t){const i=seg(t),lt=t-S[i],p=i>0?eInOut(prog(lt,0,.3)):1,A=PAL[Math.max(0,i-1)],B=PAL[i];
+  bg.style.background=`linear-gradient(${mix(A[0],B[0],p)},${mix(A[1],B[1],p)})`;
+  rays.style.setProperty('--ray',B[2]);rays.style.transform=`rotate(${t*(i%2?6:-6)}deg)`}
+
+// ---------- 0) giriş ----------
+const I=[0,0];
+const izsh=mk(stage,'div','o shadow');izsh.style.width=L.iz[2]*.6+'px';izsh.style.height='60px';
+const iz=img(stage,'zibo_df_pose3.webp',L.iz[2]);
+const ih=headline(stage,[X.title],L.ih[2]);fit(ih.el,V?980:900);
+const isub=fit(mk(stage,'div','o stk',X.sub),V?980:900);isub.style.fontSize=L.isub[2]+'px';
+const badge=mk(stage,'div','o',`<svg width="${L.ib[2]}" height="${L.ib[2]}" viewBox="-110 -110 220 220"><polygon points="${
+  Array.from({length:28},(_,i)=>{const a=i*Math.PI/14,r=i%2?72:100;return (Math.cos(a)*r).toFixed(1)+','+(Math.sin(a)*r).toFixed(1)}).join(' ')
+  }" fill="#F3B23C" stroke="#14110C" stroke-width="7" stroke-linejoin="round"/><text y="${X.bs*.34}" text-anchor="middle" font-family="Baloo2" font-weight="800" font-size="${X.bs}" fill="#14110C">${X.badge}</text></svg>`);
+const ithumbs=['kule','2048','yakala','zipla'].map(g=>{const t=mk(stage,'div','o thumb');t.style.width=t.style.height=L.its+'px';
+  mk(t,'img').src=IMG+'game_'+g+'_thumb.webp';return t});
+function s0(t){const lt=t,d=BAR;
+  const drop=eBounce(prog(lt,.12,.7)),ex=prog(lt,d-.3,.3);
+  put(iz,L.iz[0],lerp(-L.iz[2],L.iz[1],drop)+Math.sin(t*3)*6,1-ex*ex,Math.sin(t*2)*1.5);
+  put(izsh,L.iz[0],L.iz[1]+L.iz[2]/2-16,lerp(.3,1,drop)*(1-ex*ex),0,prog(lt,.12,.4));
+  put(ih.el,L.ih[0],L.ih[1],io(lt,.25,d),-2);popWords(ih,lt,.3,.15);
+  put(isub,L.isub[0],L.isub[1],io(lt,.75,d),2);
+  put(badge,L.ib[0],L.ib[1],io(lt,.55,d)*(1+Math.sin(t*7)*.05),-14+Math.sin(t*3)*4);
+  ithumbs.forEach((e,i)=>put(e,L.it[i][0],L.it[i][1]+Math.sin(t*3+i)*7,io(lt,.6+i*.1,d),(i%2?4:-4)))}
+
+// ---------- 1–7) oyunlar ----------
+const FR={},CV={},CX={},loads=[];
+const pips=GAMES.map(()=>mk(stage,'div','o pip'));
+const games=GAMES.map((g,k)=>{
+  FR[g]=[];for(let n=0;n<72;n++){const im=new Image();loads.push(new Promise(r=>{im.onload=im.onerror=r}));
+    im.src=`./clips/${LANG}/${g}/${String(n).padStart(3,'0')}.jpg`;FR[g].push(im)}
+  const card=mk(stage,'div','o phone');card.style.width=CW+'px';card.style.height=L.card[2]+'px';
+  const cv=mk(card,'canvas');cv.width=720;cv.height=1280;CX[g]=cv.getContext('2d');
+  const w=X.g[g][0].split(' '),nm=w.map((x,i)=>i===w.length-1?'*'+x+'*':x).join(' ');
+  const h=headline(stage,[nm],L.nameP[2]);fit(h.el,V?980:860);
+  const d=fit(mk(stage,'div','o stk',X.g[g][1]),V?1000:900);d.style.fontSize=L.descP[2]+'px';
+  return{g,card,h,d}});
+function sG(t,k){const i=k+1,lt=t-S[i],d=BAR,o=games[k],on=lt>=0&&lt<d;
+  if(!on){put(o.card,-3000,-3000,1,0,0);put(o.h.el,-3000,-3000,0);put(o.d,-3000,-3000,0);return}
+  const pin=prog(lt,0,.5),q=prog(lt,d-.28,.28);
+  put(o.card,L.card[0],lerp(L.card[1]+1150,L.card[1],eBack(pin))-1500*q*q,1,lerp(-4,0,eOut(pin)));
+  const n=Math.min(71,8+Math.floor(lt*30)),im=FR[o.g][n];
+  if(im&&im.complete&&im.naturalWidth)CX[o.g].drawImage(im,0,0,720,1280);
+  put(o.h.el,L.nameP[0],L.nameP[1],io(lt,.15,d),-2);popWords(o.h,lt,.2,.12);
+  put(o.d,L.descP[0],L.descP[1],io(lt,.45,d),2)}
+function drawPips(t){const i=seg(t),on=i>=1&&i<=7;
+  pips.forEach((p,k)=>{const act=on&&i-1===k,lt=t-S[i];
+    p.style.background=act?'#F3B23C':'#fff';
+    put(p,L.dots[0]+(k-3)*(V?L.dots[2]:62),L.dots[1]+(V?0:0),on?(act?1.45:1):0,0,on?1:0)})}
+
+// ---------- 8) takas: ★ puanları Zibo Coin'e akar ----------
+const coin=img(stage,'zibo_coin.webp',L.coin[2]);
+const exh=headline(stage,X.ex,L.exh[2]);fit(exh.el,V?980:900);
+const exs=mk(stage,'div','o stk',X.exS);exs.style.fontSize=L.exs[2]+'px';exs.style.background='#fff';
+const exz=img(stage,'zibo_df_pose4.webp',L.exz[2]);
+const chips=[200,-20,160,20,250,290].map(a=>{const e=mk(stage,'div','o chip','★'),r=a*Math.PI/180;
+  return{e,sx:L.coin[0]+Math.cos(r)*(V?850:1100),sy:L.coin[1]+Math.sin(r)*(V?850:700),r}});
+const ARR=i=>.45+i*.15;
+function s8(t){const lt=t-S[8],d=BAR;
+  let pulse=0;chips.forEach((c,i)=>{const a=ARR(i);if(lt>a&&lt<a+.18)pulse=Math.max(pulse,1-(lt-a)/.18)});
+  put(coin,L.coin[0],L.coin[1]+Math.sin(t*3)*8,io(lt,.05,d)*(1+pulse*.14),Math.sin(t*2)*3);
+  chips.forEach((c,i)=>{const p=prog(lt,ARR(i)-.45,.45),k=eInOut(p),arc=Math.sin(Math.PI*p)*(V?130:100);
+    const x=lerp(c.sx,L.coin[0],k)+Math.cos(c.r+Math.PI/2)*arc,y=lerp(c.sy,L.coin[1],k)+Math.sin(c.r+Math.PI/2)*arc;
+    put(c.e,x,y,p>=1||lt<0?0:lerp(1.1,.35,k),lt*260*(i%2?-1:1),lt>=0?1:0)});
+  put(exh.el,L.exh[0],L.exh[1],io(lt,.12,d),-2);popWords(exh,lt,.2,.14);
+  put(exs,L.exs[0],L.exs[1],io(lt,.6,d),-3);
+  const ez=prog(lt,.1,.5);put(exz,L.exz[0],lerp(L.exz[1]+800,L.exz[1],eBack(ez))+Math.sin(t*3.2)*6,lt<d-.3?1:1-prog(lt,d-.3,.3),Math.sin(t*2)*1.5)}
+
+// ---------- 9) hangisi senin oyunun? ----------
+const wh=headline(stage,X.which,L.wh[2]);fit(wh.el,V?980:1100);
+const wsub=fit(mk(stage,'div','o stk',X.sub),V?980:1100);wsub.style.fontSize=L.ws[2]+'px';wsub.style.background='#fff';
+const wth=GAMES.map(g=>{const t=mk(stage,'div','o thumb');t.style.width=t.style.height=(V?300:250)+'px';
+  mk(t,'img').src=IMG+'game_'+g+'_thumb.webp';return t});
+const WPOS=V?[[210,800],[540,800],[870,800],[210,1130],[540,1130],[870,1130],[540,1460]]:GAMES.map((g,k)=>[195+k*265,640]);
+function s9(t){const lt=t-S[9],d=BAR;
+  put(wh.el,L.wh[0],L.wh[1],io(lt,.05,d),-2);popWords(wh,lt,.15,.14);
+  wth.forEach((e,k)=>put(e,WPOS[k][0],WPOS[k][1]+Math.sin(t*3+k)*8,io(lt,.12+k*.1,d),(k%2?3:-3)));
+  put(wsub,L.ws[0],L.ws[1],io(lt,.85,d),-2)}
+
+// ---------- 10–11) kapanış ----------
+const R=rng(99),cols=['#F3B23C','#23408E','#8FD3FF','#E8553D','#fff','#F6D488'],conf=[];
+for(let i=0;i<80;i++){const e=mk(stage,'div','o conf'),w=18+R()*26;
+  e.style.width=w+'px';e.style.height=(i%3?w*.5:w)+'px';e.style.background=cols[i%cols.length];if(i%4==0)e.style.borderRadius='50%';
+  const a=-Math.PI/2+(R()-.5)*2.4,v=900+R()*1500;conf.push({e,vx:Math.cos(a)*v,vy:Math.sin(a)*v,r:R()*360,rv:(R()-.5)*900})}
+const csh=mk(stage,'div','o shadow');csh.style.width=L.cz[2]*.62+'px';csh.style.height='60px';
+const cz=img(stage,'zibo_df_pose4.webp',L.cz[2]);
+const cic=img(stage,'zibo_app_icon.png',L.ci[2]);cic.classList.add('icon');
+const clg=img(stage,'zibo_logo_new.webp',null,V?560:520);
+const ctg=fit(mk(stage,'div','o sub',X.tag),V?980:700);ctg.style.fontSize=L.ct[2]+'px';ctg.style.fontWeight=800;
+const cbt=fit(mk(stage,'div','o stk',X.btn),900);cbt.style.fontSize=L.cb[2]+'px';
+const cpl=mk(stage,'div','o sub',X.play);cpl.style.cssText+=`font-size:${L.cp[2]}px;font-family:Nunito;font-weight:900`;
+function s10(t){const lt=t-S[10],d=2*BAR;
+  conf.forEach(c=>{const tc=lt-.15;put(c.e,L.ci[0]+c.vx*tc*.9,L.ci[1]+c.vy*tc+1400*tc*tc,1,c.r+c.rv*tc,tc<0?0:clamp(2.6-tc))});
+  put(cic,L.ci[0],L.ci[1],io(lt,.1,d+9),lerp(-18,-4,eOut(prog(lt,.1,.5))));
+  put(clg,L.cl[0],L.cl[1],io(lt,.35,d+9),-2);
+  put(ctg,L.ct[0],L.ct[1],io(lt,.6,d+9));
+  const pb=io(lt,.83,d+9);put(cbt,L.cb[0],L.cb[1],pb*(1+Math.sin(lt*6.5)*.035),-2);
+  put(cpl,L.cp[0],L.cp[1],1,0,lt<0?0:eOut(prog(lt,1.25,.4)));
+  const pz=prog(lt,.05,.6);
+  put(cz,L.cz[0],lerp(L.cz[1]+900,L.cz[1],eBack(pz))+Math.sin(lt*3.2)*8,lt<0?0:1,Math.sin(lt*2)*1.5,lt<0?0:1);
+  put(csh,L.cz[0],L.cz[1]+L.cz[2]/2-14,1,0,V?0:(lt<0?0:eOut(pz)))}
+
+boot(END,t=>{world(t);s0(t);drawPips(t);GAMES.forEach((g,k)=>sG(t,k));
+  if(t>=S[8])s8(t);else{put(coin,-3000,-3000,1,0,0);put(exh.el,-3000,-3000,0);put(exs,-3000,-3000,0);put(exz,-3000,-3000,0,0,0);
+    chips.forEach(c=>put(c.e,-3000,-3000,0,0,0))}
+  s9(t);s10(t)},loads);
+</script>
+</body>
+</html>

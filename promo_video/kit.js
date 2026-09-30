@@ -44,10 +44,11 @@ function popWords(h,lt,t0,step=.15){h.words.forEach((w,i)=>{const p=prog(lt,t0+i
 // Çeviri uzun gelirse yazıyı kutusuna sığdır (fontlar yüklendikten sonra ölçülür).
 const FITS=[];const fit=(el,maxW)=>(FITS.push([el,maxW]),el);
 
-function boot(duration,seekFn){
+// `extra`: DOM'da olmayan kaynakların (ör. tuvale çizilecek kare dizileri) yüklenme söz(promise)leri
+function boot(duration,seekFn,extra=[]){
   window.DURATION=duration;window.seek=seekFn;
   Promise.all([document.fonts.load('800 40px Baloo2'),document.fonts.load('900 40px Nunito'),
-    ...[...document.images].map(im=>im.decode().catch(()=>{}))]).then(()=>{
+    ...[...document.images].map(im=>im.decode().catch(()=>{})),...extra]).then(()=>{
     FITS.forEach(([el,maxW])=>{const w=el.offsetWidth;
       if(w>maxW)el.style.fontSize=parseFloat(getComputedStyle(el).fontSize)*maxW/w+'px'});
     seekFn(0);window.READY=true;
