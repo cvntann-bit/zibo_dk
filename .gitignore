@@ -3,3 +3,4 @@
 promo_video/*/out/
 __pycache__/
 promo_video/*/clips/
+promo_video/reels/*.zip

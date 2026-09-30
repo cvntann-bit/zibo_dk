@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Zibo Reels factory</title>
+<!--
+  Reels fabrikası — tek sayfa, 5 şablon (quote, reveal, satisfy, tip, pov), hepsi 1080x1920 (9:16), İngilizce.
+  Sayfa ?spec=<URL-kodlu JSON> alır (build.py üretir): {type, variant, bpm, bars, pal, costume, text...}.
+  Animasyon YALNIZCA seek(t)'nin çıktısıdır (bkz. render.py sözleşmesi); t=0 müziğin bir ölçü başıdır, bu yüzden
+  vuruşlar tam t = k·b (b = 60/bpm). Sayfa ayrıca `window.EVENTS` üretir: [{t, s:'pop', g:gain, a:{...}}] —
+  build.py bu listeyi okuyup sfx.py ile sesi kurar → görüntü ve ses tek kaynaktan, kaymaz.
+  Güvenli alan (Instagram arayüzü): içerik y≈230–1560 arasında tutulur.
+-->
+<link rel="stylesheet" href="../kit.css">
+<style>
+.dots{position:absolute;inset:0;background-image:radial-gradient(rgba(20,17,12,.07) 24%,transparent 26%);background-size:30px 30px}
+.rays{position:absolute;left:50%;top:50%;width:3200px;height:3200px;margin:-1600px 0 0 -1600px;
+  background:repeating-conic-gradient(from 0deg,rgba(255,255,255,.26) 0 9deg,transparent 9deg 18deg)}
+.conf{border:3px solid var(--outline);box-sizing:border-box}
+.icon{border:7px solid var(--outline);border-radius:23%;box-shadow:10px 10px 0 var(--outline);box-sizing:border-box}
+.qt{width:920px;text-align:center;font-weight:800;color:#fff;-webkit-text-stroke:14px var(--outline);paint-order:stroke fill;
+  text-shadow:0 8px 0 var(--outline);line-height:1.12}
+.qt span{display:inline-block;transform-origin:50% 85%;margin:0 .13em}
+.card{background:#fff;border:7px solid var(--outline);border-radius:38px;box-shadow:10px 10px 0 var(--outline);box-sizing:border-box}
+.tipc{width:860px;height:190px;display:flex;align-items:center;gap:28px;padding:0 34px}
+.tipc b{font-size:50px;font-weight:800;line-height:1.05;text-align:left}
+.tbox{width:70px;height:70px;border:6px solid var(--outline);border-radius:18px;box-sizing:border-box;flex:none;background:#fff;
+  display:flex;align-items:center;justify-content:center}
+.glass{width:330px;height:470px;border:9px solid var(--outline);border-radius:20px 20px 64px 64px;background:rgba(255,255,255,.62);
+  overflow:hidden;box-shadow:12px 12px 0 var(--outline);box-sizing:border-box}
+.water{position:absolute;left:0;right:0;bottom:0;background:#4FB3FF;border-top:9px solid #C9EBFF}
+.shelf{width:900px;height:26px;background:#14110C;border-radius:13px}
+</style>
+</head>
+<body>
+<div id="stage"></div>
+<script src="../kit.js"></script>
+<script>
+const SPEC=JSON.parse(Q.get('spec')||JSON.stringify({type:'quote',bpm:100,bars:6,pal:0,costume:'zibo_yeni',text:'Tiny steps, big change.',variant:0}));
+const b=60/SPEC.bpm,bar=4*b,END=SPEC.bars*bar,NBAR=SPEC.bars;
+const EVENTS=[];window.EVENTS=EVENTS;
+const ev=(t,s,g=1,a={})=>EVENTS.push({t,s,g,a});
+const PENT=[523.3,587.3,659.3,784.0,880.0,1046.5,1174.7];
+const PAL=[['#F3B23C','#FFE08A'],['#3FA9F5','#9ADBFF'],['#8E5BE6','#C3A4FF'],['#FF6F91','#FFB3C6'],['#2FBF71','#9BE7B5'],
+  ['#FF7A45','#FFC09A'],['#3B63C9','#7C9BE8'],['#FFF4DE','#FFE3A6'],['#14B8A6','#99F6E4'],['#F97362','#FECACA']];
+const P=PAL[SPEC.pal%PAL.length];
+const CX=540;   // yatay merkez
+
+// ---------- ortak zemin ----------
+const bg=mk(stage,'div','full');bg.style.background=`linear-gradient(${P[0]},${P[1]})`;
+const rays=mk(stage,'div','rays');mk(stage,'div','dots');
+const bgTick=t=>{rays.style.transform=`rotate(${t*7}deg)`};
+
+// ---------- ortak kapanış kartı: son ölçü ----------
+const endT=END-bar;           // kapanış kartı başlangıcı
+const ec={ic:img(stage,'zibo_app_icon.png',300),lg:img(stage,'zibo_logo_new.webp',null,520),
+  tx:mk(stage,'div','o sub','Free on Google Play'),bt:mk(stage,'div','o stk','LINK IN BIO')};
+ec.ic.classList.add('icon');ec.tx.style.cssText+='font-size:54px;font-family:Nunito;font-weight:900';ec.bt.style.fontSize='74px';
+if(SPEC.type==='trailer')ec.tx.style.color='#F1E9D8';
+const R1=rng(SPEC.variant*7+3),cols=['#F3B23C','#23408E','#8FD3FF','#E8553D','#fff','#F6D488'],conf=[];
+for(let i=0;i<60;i++){const e=mk(stage,'div','o conf'),w=18+R1()*26;
+  e.style.width=w+'px';e.style.height=(i%3?w*.5:w)+'px';e.style.background=cols[i%cols.length];if(i%4==0)e.style.borderRadius='50%';
+  const a=-Math.PI/2+(R1()-.5)*2.4,v=900+R1()*1400;conf.push({e,vx:Math.cos(a)*v,vy:Math.sin(a)*v,r:R1()*360,rv:(R1()-.5)*900})}
+ev(endT+.1,'blop',.9,{p:340});ev(endT+.15,'party',.7);ev(endT+.45,'blop',.7,{p:460});ev(endT+b*2,'blop',.8,{p:560});
+ev(endT+b*3,'chime',.4);
+function endCard(t){const l=t-endT,d=bar;
+  conf.forEach(c=>{const tc=l-.15;put(c.e,CX+c.vx*tc*.9,560+c.vy*tc+1400*tc*tc,1,c.r+c.rv*tc,tc<0?0:clamp(2.6-tc))});
+  put(ec.ic,CX,520,io(l,.1,d+9),lerp(-18,-4,eOut(prog(l,.1,.5))));
+  put(ec.lg,CX,850,io(l,.4,d+9),-2);
+  put(ec.tx,CX,1040,1,0,l<0?0:eOut(prog(l,b*1.5,.4)));
+  put(ec.bt,CX,1180,io(l,b*2,d+9)*(1+Math.sin(l*6.5)*.03),-2)}
+
+// ---------- Zibo yardımcıları ----------
+const zibo=(f,h)=>img(stage,f.includes('.')?f:f+'.webp',h);
+const splitLines=t=>{if(t.length<=20)return[t];const m=t.length/2;let best=-1;
+  for(let i=0;i<t.length;i++)if(t[i]===' '&&(best<0||Math.abs(i-m)<Math.abs(best-m)))best=i;return[t.slice(0,best),t.slice(best+1)]};
+const zsh=()=>{const e=mk(stage,'div','o shadow');e.style.width='340px';e.style.height='50px';return e};
+const words=(el,text,size,parent=stage)=>{el.innerHTML='';el.style.fontSize=size+'px';
+  return text.split(' ').map(w=>mk(el,'span','',w))};
+
+const TYPES={};
+
+// =====================================================================
+// 1) QUOTE — günün sözü: Zibo düşer, söz kelime kelime belirir, son ölçü kapanış
+// =====================================================================
+TYPES.quote=()=>{
+  const qt=mk(stage,'div','o qt'),ws=words(qt,SPEC.text,SPEC.text.length>62?72:SPEC.text.length>44?82:92);
+  fit(qt,1000);
+  const lab=mk(stage,'div','o stk',SPEC.label||'Daily Zibo');lab.style.fontSize='54px';lab.style.background='#fff';
+  const sgn=mk(stage,'div','o stk','— Zibo');sgn.style.fontSize='58px';
+  const z=zibo(SPEC.costume,600),sh=zsh();
+  const t0=bar*.5+b*.5,n=ws.length,step=Math.min(b*.9,(bar*(NBAR-2.3))/n);
+  ev(b*.4,'thud',.9);ev(b*.4,'boing',.5);ev(b*1.0,'blop',.7,{p:420});
+  ws.forEach((w,i)=>ev(t0+i*step,'pop',.45,{p:600+(i%5)*80}));
+  const tEnd=t0+n*step;ev(tEnd+.15,'blop',.8,{p:520});ev(tEnd+.25,'sparkle',.35);
+  return t=>{
+    const drop=eBounce(prog(t,.1,.7)),ex=prog(t,endT-.3,.3);
+    put(z,CX,lerp(-600,1290,drop)+Math.sin(t*3)*7,(1-ex*ex),Math.sin(t*2)*1.5);
+    put(sh,CX,1290+300-16,lerp(.3,1,drop)*(1-ex*ex),0,prog(t,.1,.4));
+    put(lab,CX,300,io(t,b,endT),-3);
+    put(qt,CX,760,t<t0-.2||t>endT-.3?0:1,0,1);
+    ws.forEach((w,i)=>{const p=prog(t,t0+i*step,.35);w.style.transform=`scale(${p<=0?0:eBack(p)}) rotate(${lerp(-7,0,eOut(p))}deg)`});
+    put(sgn,CX,1130,io(t,tEnd+b*.5,endT)*(t<tEnd?0:1),2);
+    endCard(t)}};
+
+// =====================================================================
+// 2) REVEAL — kostüm açılışı: kutu düşer, vuruşlarda sallanır, patlar, kostüm belirir
+// =====================================================================
+TYPES.reveal=()=>{
+  const box=mk(stage,'div','o',`<svg width="470" height="470" viewBox="0 0 200 200"><rect x="22" y="78" width="156" height="102" rx="10" fill="${SPEC.box||'#E8553D'}" stroke="#14110C" stroke-width="7"/>
+   <rect x="14" y="56" width="172" height="36" rx="10" fill="${SPEC.lid||'#F26A52'}" stroke="#14110C" stroke-width="7"/>
+   <rect x="86" y="56" width="28" height="124" fill="#F3B23C" stroke="#14110C" stroke-width="6"/>
+   <path d="M100 56 C70 14 38 30 56 52 C66 62 92 58 100 56 C108 58 134 62 144 52 C162 30 130 14 100 56Z" fill="#F3B23C" stroke="#14110C" stroke-width="6" stroke-linejoin="round"/></svg>`);
+  const z=zibo(SPEC.costume,760),sh=zsh(),flash=mk(stage,'div','full');flash.style.background='#fff';flash.style.opacity=0;
+  const q=mk(stage,'div','o stk',"What's inside?");q.style.fontSize='70px';q.style.background='#fff';
+  const nu=mk(stage,'div','o stk','NEW LOOK UNLOCKED!');nu.style.fontSize='64px';
+  const nm=mk(stage,'div','o stk',SPEC.name);nm.style.fontSize='74px';nm.style.background='#fff';fit(nm,900);
+  const ask=mk(stage,'div','o sub',"Which look is your favorite?");ask.style.cssText+='font-size:54px;font-weight:800;color:#14110C';
+  const BR=bar*2;            // patlama anı: 3. ölçü başı
+  ev(b*.3,'thud',.9);ev(b*.3,'boing',.4);ev(b*1.5,'blop',.7,{p:380});
+  for(let k=0;k<4;k++){ev(bar+k*b,'tick',.6+k*.12,{p:700+k*160});ev(bar+k*b+.02,'thud',.5+k*.15,{d:.12,p:150-k*8})}
+  ev(BR-b*1.6,'whoosh',.9,{d:b*1.5,lo:200,hi:5000});
+  ev(BR,'thud',1,{d:.3,p:90});ev(BR,'sparkle',.6);ev(BR,'chime',.35);ev(BR+.02,'boing',.5);
+  ev(BR+b,'pop',.7,{p:760});ev(BR+b*2,'blop',.8,{p:540});ev(BR+bar+b,'pop',.6,{p:700});
+  for(let k=0;k<4;k++)ev(BR+b*(k+.0),'bell',.22,{f:PENT[k]*2});
+  return t=>{
+    const drop=eBounce(prog(t,.05,.6)),sh0=t>=bar&&t<BR?1:0;
+    let shake=0;if(t>=bar&&t<BR){const k=Math.floor((t-bar)/b),ph=(t-bar)/b-k;shake=Math.sin(ph*Math.PI*6)*(1-ph)*(6+k*7)*(t>=BR-b?1.4:1)}
+    const burst=t>=BR,bx=CX+shake,by=lerp(-500,1040,drop);
+    put(box,bx,by-(burst?0:0),burst?Math.max(0,1-prog(t,BR,.25)):1,shake*.5);
+    put(sh,CX,1040+235,(burst?0:1)*lerp(.3,1,drop),0,prog(t,.05,.4)*(burst?0:1));
+    put(q,CX,520,io(t,b*1.4,BR-.05),-3);
+    const zp=prog(t,BR,.55);
+    put(z,CX,lerp(1150,880,eBack(zp))+(burst?Math.sin((t-BR)*3.2)*8:0),burst?Math.min(1,eBack(zp)):0,Math.sin(t*2)*1.5,burst?1:0);
+    put(nu,CX,430,io(t-BR,b,endT-BR),-3);
+    put(nm,CX,1385,io(t-BR,b*2,endT-BR),2);
+    put(ask,CX,1510,io(t-BR,bar+b,endT-BR));
+    flash.style.opacity=t>=BR?Math.max(0,1-(t-BR)/.28)*.85:0;
+    if(t>=endT-.3){const x=1-prog(t,endT-.3,.3);z.style.opacity=x*(burst?1:0)}
+    endCard(t)}};
+
+// =====================================================================
+// 3) SATISFY — sözsüz "tatmin edici" döngüler (6 varyant)
+// =====================================================================
+const SAT={};
+SAT.water=()=>{                        // bardak dolar, baloncuklar, hedef tamam
+  const glass=mk(stage,'div','o glass'),water=mk(glass,'div','water');
+  const ml=mk(stage,'div','o stk','');ml.style.fontSize='96px';ml.style.background='#fff';
+  const bd=img(stage,'su_kahramani_rozet.webp',300),done=mk(stage,'div','o stk','GOAL REACHED!');done.style.fontSize='70px';
+  const fillT=b*2,fillD=bar*(NBAR-2)-b*2;
+  for(let i=0;i<Math.floor(fillD/b/.5);i++)ev(fillT+i*b*.5,'blop',.45,{p:300+i*14,d:.1});
+  ev(fillT+fillD,'bell',.6,{f:PENT[4]});ev(fillT+fillD,'sparkle',.4);ev(fillT+fillD+b,'coin',.9);
+  return t=>{const lv=eInOut(prog(t,fillT,fillD));water.style.height=(lv*88+Math.sin(t*8)*1.2*(lv<1?1:0))+'%';
+    ml.textContent=Math.round(lv*2000/50)*50+' ml';
+    put(glass,CX-130,900,io(t,.1,endT),-2);put(ml,CX+280,620,io(t,b,endT)+Math.sin(Math.PI*prog(t,fillT+fillD,.25))*.1,3);
+    put(bd,CX+290,900,io(t,fillT+fillD,endT),lerp(-30,0,eOut(prog(t,fillT+fillD,.5))));
+    put(done,CX,1330,io(t,fillT+fillD+b*.5,endT),-3)}};
+SAT.coins=()=>{                        // coinler tek tek düşüp bir yığın oluşturur, sayaç artar
+  const ct=mk(stage,'div','o stk','0 ZC');ct.style.fontSize='120px';ct.style.background='#fff';
+  const base=mk(stage,'div','o shadow');base.style.width='720px';base.style.height='70px';
+  const N=Math.floor(((endT-b*2)/(b*.5))),arr=[];
+  for(let i=0;i<N;i++){const t0=b*2+i*b*.5,col=i%9,row=Math.floor(i/9);
+    arr.push({t0,x:CX+(col-4)*66+((i*37)%13-6),ty:1290-row*52,e:img(stage,'zibo_coin.webp',118)});ev(t0+.4,'coin',.5)}
+  return t=>{let n=0;arr.forEach((c,i)=>{const p=prog(t,c.t0,.4),y=lerp(-150,c.ty,eBounce(p));
+      put(c.e,c.x,y,t<c.t0||t>endT-.3?0:1,(i*47)%360);if(t>=c.t0+.4)n++});
+    ct.textContent='+'+n*5+' ZC';
+    const pulse=arr.some(c=>t>c.t0+.4&&t<c.t0+.58)?.05:0;
+    put(base,CX,1345,io(t,.05,endT));put(ct,CX,600,io(t,b,endT)+pulse,-3)}};
+SAT.checks=()=>{                       // 8 görev her vuruşta ✓
+  const rows=[];const names=['Drink water','Read 10 pages','Walk 20 min','Stretch','Gratitude note','Tidy desk','Plan tomorrow','Sleep early'];
+  const card=mk(stage,'div','o card');card.style.cssText+='width:880px;height:980px;padding:30px 44px;display:flex;flex-direction:column;justify-content:space-between';
+  names.forEach((n,i)=>{const r=mk(card,'div','tipc');r.style.cssText='display:flex;align-items:center;gap:28px;height:100px;width:100%';
+    const bx=mk(r,'div','tbox','<svg viewBox="0 0 24 24" width="50"><path d="M4 12.5l5.5 5.5L20 6.5" fill="none" stroke="#14110C" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/></svg>');
+    const lb=mk(r,'b',null,n);lb.style.cssText='font-size:50px;font-weight:800';rows.push({bx,ck:bx.firstChild,lb});
+    ev(b*2+i*b,'pop',.7,{p:800});ev(b*2+i*b+.02,'bell',.3,{f:PENT[i%7]*2})});
+  const cnt=mk(stage,'div','o stk','');cnt.style.fontSize='84px';cnt.style.background='#fff';
+  ev(b*2+8*b+.1,'coin',.9);ev(b*2+8*b+.1,'sparkle',.4);
+  return t=>{put(card,CX,900,io(t,.05,endT),-1);
+    let done=0;rows.forEach((r,i)=>{const p=prog(t,b*2+i*b,.22);if(p>0)done++;r.bx.style.background=p>0?'#F3B23C':'#fff';
+      r.ck.style.transform=`scale(${p<=0?0:eBack(p)})`;r.lb.style.opacity=lerp(1,.5,p)});
+    cnt.textContent=done+' / 8';put(cnt,CX,1450,io(t,b,endT)+(done===8?Math.sin(Math.PI*prog(t,b*10,.3))*.12:0),-2)}};
+SAT.streak=()=>{                       // seri sayacı 1→30, rozetler açılır
+  const big=mk(stage,'div','o hl','');big.style.fontSize='340px';
+  const lab=mk(stage,'div','o stk','DAY STREAK');lab.style.fontSize='80px';
+  const bdg=[['bir_hafta_seri_rozet.webp',7],['demir_irade_rozet.webp',14],['su_kahramani_rozet.webp',21],['birikim_ustasi_rozet.webp',30]]
+    .map((x,i)=>({e:img(stage,x[0],230),day:x[1],x:140+i*267}));
+  const T0=b*2,DUR=endT-b*3-T0,dayAt=t=>Math.max(1,Math.min(30,Math.round(1+29*Math.pow(prog(t,T0,DUR),1.35))));
+  for(let d=2;d<=30;d++){const p=Math.pow((d-1.5)/29,1/1.35);ev(T0+DUR*p,'tick',.4,{p:1000+d*35})}
+  bdg.forEach((x,i)=>{const p=Math.pow((x.day-1)/29,1/1.35);x.t=T0+DUR*p;ev(x.t,'bell',.6,{f:PENT[i+2]});ev(x.t,'pop',.7,{p:800})});
+  ev(T0+DUR+.1,'sparkle',.5);ev(T0+DUR+.1,'chime',.3);
+  return t=>{big.textContent=dayAt(t);put(big,CX,760,io(t,.1,endT)*(1+Math.sin(t*5)*.015),-3);
+    put(lab,CX,1000,io(t,b,endT),2);
+    bdg.forEach(x=>put(x.e,x.x+10,1240+Math.sin(t*3+x.day)*8,io(t,x.t,endT),lerp(-25,0,eOut(prog(t,x.t,.5)))))}};
+SAT.shelf=()=>{                        // rozetler raflara tek tek dizilir
+  const files=['su_kahramani_rozet','sükran_rozeti','ruh_hali_rozet','ruya_yorumcusu_rozet','birikim_ustasi_rozet','bir_hafta_seri_rozet','demir_irade_rozet','ilk_adim_rozet','denge_ustasi_rozet'];
+  const sh=[0,1,2].map(()=>mk(stage,'div','o shelf')),bd=files.map((f,i)=>({e:img(stage,f+'.webp',250),t:b*2+i*b,
+    x:CX-290+(i%3)*290,y:560+Math.floor(i/3)*370}));
+  bd.forEach((x,i)=>{ev(x.t,'pop',.7,{p:700+i*40});ev(x.t+.05,'bell',.3,{f:PENT[i%7]*2})});
+  ev(b*2+9*b,'sparkle',.5);ev(b*2+9*b,'chime',.35);
+  return t=>{sh.forEach((s,i)=>put(s,CX,560+i*370+135,io(t,.1+i*.1,endT)));
+    bd.forEach(x=>{const p=prog(t,x.t,.4),y=lerp(x.y-300,x.y,eBounce(p));put(x.e,x.x,y,t<x.t||t>endT-.3?0:1,0)})}};
+SAT.costumes=()=>{                     // moda geçidi: her vuruşta yeni kostüm
+  const list=['zibo_king','zibo_astronot','zibo_korsan','zibo_samurai','zibo_punk','zibo_hippi','zibo_gladyator','zibo_cyborg','zibo_altin','zibo_elmas','zibo_gentleman','zibo_rapci','zibo_sporcu','zibo_hoca','zibo_asker','zibo_zombi']
+    .map(f=>img(stage,f+'.webp',900));
+  const spot=mk(stage,'div','o');spot.style.cssText+='width:1100px;height:1100px;border-radius:50%;background:radial-gradient(closest-side,rgba(255,255,255,.65),rgba(255,255,255,0))';
+  const n=Math.floor((endT-b*1.5)/b);
+  for(let k=0;k<n;k++){ev(b*1.5+k*b,'pop',.6,{p:600+(k%4)*110});if(k%4===3)ev(b*1.5+k*b+.05,'sparkle',.3)}
+  return t=>{put(spot,CX,880,io(t,.05,endT));
+    const k=Math.max(0,Math.floor((t-b*1.5)/b));
+    list.forEach((e,i)=>{const on=(i===k%list.length)&&t>=b*1.5&&t<endT-.3,a=t-(b*1.5+k*b);
+      put(e,CX,900+Math.sin(t*4)*8,on?eBack(prog(a,0,.22)):0,Math.sin(t*3)*2)})}};
+TYPES.satisfy=()=>{const f=SAT[SPEC.kind]();return t=>{f(t);endCard(t)}};
+
+// =====================================================================
+// 4) TIP — "3 tiny habits": üç kart sırayla gelir ve ✓ olur
+// =====================================================================
+TYPES.tip=()=>{
+  const h=headline(stage,[SPEC.title],SPEC.title.length>20?100:120);fit(h.el,960);
+  const cards=SPEC.tips.map((t,i)=>{const c=mk(stage,'div','o card tipc');
+    c.style.height='210px';const ic=mk(c,'img');ic.src=IMG+SPEC.icons[i];ic.style.cssText='width:150px;height:150px;flex:none';
+    const tb=mk(c,'b',null,t);tb.style.cssText='font-size:46px;font-weight:800;line-height:1.05;text-align:left;width:520px';
+    const bx=mk(c,'div','tbox','<svg viewBox="0 0 24 24" width="50"><path d="M4 12.5l5.5 5.5L20 6.5" fill="none" stroke="#14110C" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/></svg>');
+    bx.style.marginLeft='auto';return{c,bx,ck:bx.firstChild}});
+  const span=(endT-bar)/3,T0=bar;
+  const z=zibo(SPEC.costume,440),sh=zsh();
+  ev(b*.4,'thud',.8);ev(b*.4,'boing',.4);ev(b*.8,'pop',.6,{p:700});ev(b*1.2,'pop',.6,{p:790});ev(b*1.6,'pop',.6,{p:880});
+  cards.forEach((c,i)=>{const ti=T0+i*span;ev(ti,'whoosh',.5,{d:.4,lo:300,hi:2800});ev(ti+.15,'blop',.7,{p:400+i*60});
+    ev(ti+b*2,'pop',.8,{p:800});ev(ti+b*2+.02,'bell',.4,{f:PENT[i*2]*2})});
+  ev(endT-b*.6,'sparkle',.4);
+  return t=>{const drop=eBounce(prog(t,.1,.6));
+    put(h.el,CX,420,io(t,.05,endT),-2);popWords(h,t,b*.4,.16);
+    cards.forEach((c,i)=>{const ti=T0+i*span,p=prog(t,ti,.45),q=prog(t,ti+b*2,.22);
+      put(c.c,CX,lerp(1800,600+i*232,eOut(p)),t<ti||t>endT-.3?0:1,i%2?1.2:-1.2);
+      c.bx.style.background=q>0?'#F3B23C':'#fff';c.ck.style.transform=`scale(${q<=0?0:eBack(q)})`});
+    put(z,CX,lerp(-500,1400,drop)+Math.sin(t*3)*6,1-Math.pow(prog(t,endT-.3,.3),2),Math.sin(t*2)*1.5);
+    put(sh,CX,1400+220-14,lerp(.3,1,drop)*(1-prog(t,endT-.3,.3)),0,prog(t,.1,.4));
+    endCard(t)}};
+
+// =====================================================================
+// 5) POV — komik: panel panel, Zibo'nun tepkileri, son panelde çözüm
+// =====================================================================
+TYPES.pov=()=>{
+  const panels=SPEC.panels,n=panels.length,span=(endT-b)/n;   // ilk vuruş boş kalır
+  const els=panels.map((p,i)=>{const ln=splitLines(p.t),h=headline(stage,ln,ln.length>1?104:124);fit(h.el,960);
+    const z=zibo(p.z,640);let sub=null;if(p.s){sub=mk(stage,'div','o stk',p.s);sub.style.fontSize='56px';sub.style.background='#fff';fit(sub,900)}
+    return{h,z,sub,t0:b+i*span}});
+  els.forEach((e,i)=>{ev(e.t0,'whoosh',.5,{d:.3,lo:400,hi:3000});ev(e.t0+.12,'pop',.8,{p:560+i*70});
+    if(panels[i].fx)ev(e.t0+b,panels[i].fx,.8,panels[i].fxa||{});ev(e.t0+.3,'thud',.5,{d:.12,p:140})});
+  return t=>{els.forEach((e,i)=>{const lt=t-e.t0,d=span,on=lt>=0&&lt<d,q=prog(lt,d-.2,.2),pz=eBack(prog(lt,0,.3));
+      put(e.h.el,CX,460,on?pz*(1-q*q):0,i%2?2:-2);popWords(e.h,lt,.05,.1);
+      put(e.z,CX,1130+Math.sin(t*3+i)*7+(on?0:0),on?pz*(1-q*q):0,Math.sin(t*2+i)*2);
+      if(e.sub)put(e.sub,CX,1520,on?io(lt,.25,d):0,-2)});
+    endCard(t)}};
+
+
+// =====================================================================
+// 6) TRAILER — sinematik fragman parodisi: koyu ton, vuruşlarda gelen yazı kartları, karakter sürprizi
+// =====================================================================
+TYPES.trailer=()=>{
+  bg.style.background='linear-gradient(#05070F,#161C3C)';rays.style.opacity=.1;
+  const vig=mk(stage,'div','full');vig.style.background='radial-gradient(closest-side at 50% 46%,rgba(0,0,0,0) 45%,rgba(0,0,0,.78))';
+  const barT=mk(stage,'div','o');barT.style.cssText+='width:1080px;height:170px;background:#000;left:0;top:0;z-index:40';
+  const barB=mk(stage,'div','o');barB.style.cssText+='width:1080px;height:250px;background:#000;left:0;top:1670px;z-index:40';
+  const flash=mk(stage,'div','full');flash.style.cssText+='background:#fff;opacity:0;z-index:30;pointer-events:none';
+  const flare=mk(stage,'div','o');flare.style.cssText+='width:260px;height:2600px;background:linear-gradient(90deg,rgba(255,255,255,0),rgba(255,236,190,.55),rgba(255,255,255,0));mix-blend-mode:screen;z-index:31';
+  const grain=Array.from({length:90},()=>{const e=mk(stage,'div','o');e.style.cssText+='width:4px;height:4px;background:rgba(255,255,255,.35);z-index:32';return e});
+  const cards=[];let beat=2,revealT=null;
+  SPEC.cards.forEach(c=>{const t0=beat*b,d=c.len*b;let el;
+    if(c.z){el=zibo(c.z,840);const sp=mk(stage,'div','o');sp.style.cssText+='width:1000px;height:1000px;border-radius:50%;background:radial-gradient(closest-side,rgba(255,214,120,.55),rgba(255,214,120,0))';
+      c.sp=sp;const sh=zsh();c.sh=sh;if(revealT===null){revealT=t0;ev(t0,'mark',0)}
+      ev(t0-.35,'whoosh',.6,{d:.35,lo:200,hi:4200});ev(t0,'thud',1,{d:.45,p:60});ev(t0+.03,'sparkle',.55);ev(t0+.05,'chime',.45)}
+    else{el=mk(stage,'div','o');const mx=Math.max(...c.t.map(x=>x.length)),size=Math.min(104,Math.floor(900/(mx*.66)));
+      el.style.cssText+=`width:980px;text-align:center;font-family:Nunito;font-weight:900;letter-spacing:.07em;color:#F1E9D8;line-height:1.14;font-size:${size}px;text-shadow:0 0 34px rgba(243,178,60,.55),0 4px 0 rgba(0,0,0,.6);z-index:20`;
+      el.innerHTML=c.t.join('<br>');
+      ev(t0-.3,'whoosh',.45,{d:.3,lo:150,hi:2600});ev(t0,'thud',.95,{d:.4,p:70});if(c.t.length>1)ev(t0+b*1.5,'tick',.35,{p:900})}
+    cards.push({el,t0,d,c});beat+=c.len});
+  ev(0,'whoosh',.5,{d:b*2,lo:80,hi:500});
+  const fl=endT;ev(fl-.25,'whoosh',.7,{d:.25,lo:300,hi:5000});
+  let gi=0;
+  return t=>{
+    const seed=Math.floor(t*18),r=rng(seed*977+5);grain.forEach(g=>put(g,r()*1080,r()*1920,1,0,.25+r()*.4));
+    let fa=0;
+    cards.forEach(k=>{const lt=t-k.t0,on=lt>=0&&lt<k.d,p=prog(lt,0,.32),q=prog(lt,k.d-.25,.25),op=on?p*(1-q):0;
+      const shake=on?Math.sin(lt*70)*12*Math.max(0,1-lt/.25):0;
+      if(k.c.z){const zm=.94+.1*prog(lt,0,k.d);put(k.el,CX+shake,880+Math.sin(t*2)*4,on?zm*lerp(1.08,1,eOut(p)):0,0,op);
+        put(k.c.sp,CX,860,on?1:0,0,op*.9);put(k.c.sh,CX,880+420-10,on?zm:0,0,op)}
+      else put(k.el,CX+shake,800,on?lerp(1.12,1,eOut(p)):0,0,op);
+      if(on)fa=Math.max(fa,.24*Math.max(0,1-lt/.16))});
+    flash.style.opacity=fa;
+    // kapanışta ışık süpürmesi
+    const fp=prog(t,endT-.1,.9);put(flare,lerp(-300,1400,fp),960,1,18,fp>0&&fp<1?1:0);
+    rays.style.opacity=t>=endT?.22:.1;
+    endCard(t)}};
+
+const frame=TYPES[SPEC.type]();
+boot(END,t=>{bgTick(t);frame(t);
+  // kapanış kartı dışında sabit: kart öğelerini önceden gizle
+  if(t<endT-.05){put(ec.ic,-3000,-3000,0,0,0);put(ec.lg,-3000,-3000,0,0,0);put(ec.tx,-3000,-3000,0,0,0);put(ec.bt,-3000,-3000,0,0,0);
+    conf.forEach(c=>put(c.e,-3000,-3000,0,0,0))}});
+</script>
+</body>
+</html>
