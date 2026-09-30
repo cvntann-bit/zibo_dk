@@ -84,6 +84,24 @@ function scene(bg,ray,dot){const s=mk(stage,'div','scene');s.style.background=bg
   const dots=mk(s,'div','dots');if(dot)dots.style.setProperty('--dot',dot);return{s,burst}}
 const spin=(sc,lt,speed=5)=>sc.burst.style.transform=`rotate(${lt*speed}deg)`;
 
+// ---------- metinler (?l=tr|es) ----------
+const TX={
+ tr:{tag:'Dijital kankan cebinde!',h2:['Küçük adımlar,','*büyük* *değişim*'],
+  feats:['Su Takibi','Şükran','Ruh Hali','Rüya Günlüğü','Birikim','Seri &amp; Hedef'],
+  h3:['Görevini yap,','*Zibo* *Coin* kazan!'],h4:['*40+* kostüm','Tarzını seç!'],
+  cos:['Kral','Astronot','Korsan','Samuray','Gladyatör','Altın','Elmas'],sub4:"Zibo'yu dilediğin gibi giydir",
+  isNew:'YENİ',newSize:50,h5:['Oyun Salonu'],sub5:"Oyna · ★ topla · Zibo Coin'e çevir",
+  s6:'Dijital Kanka',btn:'ÜCRETSİZ İNDİR',play:"Google Play'de"},
+ es:{tag:'¡Tu amigo digital de bolsillo!',h2:['Pequeños pasos,','*grandes* *cambios*'],
+  feats:['Agua','Gratitud','Ánimo','Sueños','Ahorro','Racha y metas'],
+  h3:['¡Cumple y gana','*Zibo* *Coins!*'],h4:['*40+* disfraces','¡Elige tu estilo!'],
+  cos:['Rey','Astronauta','Pirata','Samurái','Gladiador','Dorado','Diamante'],sub4:'Viste a Zibo como quieras',
+  isNew:'NUEVO',newSize:38,h5:['Sala de Juegos'],sub5:'Juega · gana ★ · cámbialas por Zibo Coins',
+  s6:'Tu amigo digital',btn:'DESCARGA GRATIS',play:'en Google Play'}};
+const X=TX[Q.get('l')]||TX.tr;
+// Çeviri uzun gelirse yazıyı kutusuna sığdır (fontlar yüklendikten sonra ölçülür).
+const FITS=[];const fit=(el,maxW)=>(FITS.push([el,maxW]),el);
+
 const SCENES=[];
 
 // ---------- 1) Giriş ----------
@@ -93,7 +111,7 @@ const SCENES=[];
   const sh=mk(sc.s,'div','o shadow');sh.style.width=L.z[2]*.62+'px';sh.style.height='70px';
   const z=img(sc.s,'zibo_yeni.webp',L.z[2]);
   const logo=img(sc.s,'zibo_logo_new.webp',null,L.logo[2]);
-  const tag=mk(sc.s,'div','o stk','Dijital kankan cebinde!');tag.style.fontSize=L.tag[2]+'px';
+  const tag=fit(mk(sc.s,'div','o stk',X.tag),V?960:860);tag.style.fontSize=L.tag[2]+'px';
   const R=rng(7),stars=[];
   const spots=V?[[150,640],[930,700],[120,1350],[960,1420],[860,210],[200,180]]
                :[[1050,200],[1760,230],[1030,900],[1800,860],[180,170],[260,900]];
@@ -109,14 +127,14 @@ const SCENES=[];
 
 // ---------- 2) Özellikler ----------
 (()=>{const sc=scene('#F6D488','rgba(255,255,255,.30)');
-  const feats=[['su_kahramani_rozet.webp','Su Takibi'],['sükran_rozeti.webp','Şükran'],['ruh_hali_rozet.webp','Ruh Hali'],
-    ['ruya_yorumcusu_rozet.webp','Rüya Günlüğü'],['birikim_ustasi_rozet.webp','Birikim'],['bir_hafta_seri_rozet.webp','Seri &amp; Hedef']];
+  const feats=['su_kahramani_rozet.webp','sükran_rozeti.webp','ruh_hali_rozet.webp','ruya_yorumcusu_rozet.webp',
+    'birikim_ustasi_rozet.webp','bir_hafta_seri_rozet.webp'].map((f,i)=>[f,X.feats[i]]);
   const L=V?{h:[540,260,112],xs:[200,540,880],ys:[730,1080],cw:300,ch:310,z:[540,1620,580]}
            :{h:[510,215,96],xs:[1030,1350,1670],ys:[350,710],cw:290,ch:310,z:[460,740,610]};
   const z=img(sc.s,'zibo_df_pose2.webp',L.z[2]);
-  const h=headline(sc.s,['Küçük adımlar,','*büyük* *değişim*'],L.h[2]);
+  const h=headline(sc.s,X.h2,L.h[2]);fit(h.el,V?980:700);
   const cards=feats.map(f=>{const c=mk(sc.s,'div','o card');c.style.width=L.cw+'px';c.style.height=L.ch+'px';
-    mk(c,'img').src=IMG+encodeURI(f[0]);mk(c,'b',null,f[1]);return c});
+    mk(c,'img').src=IMG+encodeURI(f[0]);const b=fit(mk(c,'b',null,f[1]),L.cw-44);b.style.whiteSpace='nowrap';return c});
   SCENES.push({dur:4.8,el:sc.s,draw(lt){spin(sc,lt,-4);
     put(h.el,L.h[0],L.h[1]);popWords(h,lt,.3,.15);
     const pz=prog(lt,.35,.6);put(z,L.z[0],lerp(L.z[1]+800,L.z[1],eBack(pz))+Math.sin(lt*3)*7,1,Math.sin(lt*1.8)*1.5);
@@ -132,7 +150,7 @@ const SCENES=[];
   for(let i=0;i<30;i++){const s=56+R()*86;rain.push({e:img(sc.s,'zibo_coin.webp',s),x:R()*W,d:R()*1.6,v:620+R()*520,r:R()*360,rv:(R()-.5)*260})}
   const z=img(sc.s,'zibo_df_pose4.webp',L.z[2]);
   const coin=img(sc.s,'zibo_coin.webp',L.c[2]);
-  const h=headline(sc.s,['Görevini yap,','*Zibo* *Coin* kazan!'],L.h[2]);
+  const h=headline(sc.s,X.h3,L.h[2]);fit(h.el,960);
   const n=mk(sc.s,'div','o stk','');n.style.fontSize=L.n[2]+'px';
   SCENES.push({dur:4.8,el:sc.s,draw(lt){spin(sc,lt,6);
     rain.forEach(c=>{const span=H+400,y=-200-c.d*c.v+Math.max(0,lt-.25)*c.v;
@@ -147,17 +165,16 @@ const SCENES=[];
 
 // ---------- 4) Kostümler ----------
 (()=>{const sc=scene('#14110C','rgba(243,178,60,.10)','rgba(255,255,255,.04)');
-  const cos=[['zibo_king.webp','Kral'],['zibo_astronot.webp','Astronot'],['zibo_korsan.webp','Korsan'],['zibo_samurai.webp','Samuray'],
-    ['zibo_gladyator.webp','Gladyatör'],
-    ['zibo_altin.webp','Altın'],['zibo_elmas.webp','Elmas']];
+  const cos=['zibo_king.webp','zibo_astronot.webp','zibo_korsan.webp','zibo_samurai.webp','zibo_gladyator.webp',
+    'zibo_altin.webp','zibo_elmas.webp'].map((f,i)=>[f,X.cos[i]]);
   const L=V?{h:[540,270,124],c:[540,1010,800],sp:420,pl:1420,n:[540,1590,84],s:[540,1760,52]}
            :{h:[480,390,112],c:[1300,500,700],sp:390,pl:860,n:[1300,975,76],s:[480,660,48]};
   const spot=mk(sc.s,'div','o');spot.style.cssText+=`width:${L.c[2]*1.7}px;height:${L.c[2]*1.7}px;border-radius:50%;background:radial-gradient(closest-side,rgba(243,178,60,.62),rgba(243,178,60,0))`;
   const plat=mk(sc.s,'div','o');plat.style.cssText+=`width:${L.c[2]*.78}px;height:90px;border-radius:50%;background:#F3B23C;border:6px solid #000;box-sizing:border-box`;
   const ims=cos.map(c=>img(sc.s,c[0],L.c[2]));
-  const h=headline(sc.s,V?['*40+* kostüm','Tarzını seç!']:['*40+* kostüm','Tarzını seç!'],L.h[2]);
+  const h=headline(sc.s,X.h4,L.h[2]);fit(h.el,V?980:760);
   const name=mk(sc.s,'div','o stk','');name.style.fontSize=L.n[2]+'px';
-  const sub=mk(sc.s,'div','o sub',"Zibo'yu dilediğin gibi giydir");sub.style.fontSize=L.s[2]+'px';sub.style.color='#FFF4DE';
+  const sub=fit(mk(sc.s,'div','o sub',X.sub4),V?980:840);sub.style.fontSize=L.s[2]+'px';sub.style.color='#FFF4DE';
   const STEP=.6;
   SCENES.push({dur:4.8,el:sc.s,draw(lt){spin(sc,lt,8);
     put(h.el,L.h[0],L.h[1]);popWords(h,lt,.25);
@@ -178,13 +195,13 @@ const SCENES=[];
              pos:[[365,760],[715,760],[190,1100],[540,1100],[890,1100],[365,1440],[715,1440]],s:[540,1745,50]}
            :{b:[330,150,210],h:[960,200,128],sz:228,
              pos:games.map((g,i)=>[960+(i-3)*258,570+(i%2?30:-30)]),s:[960,905,50]};
-  const h=headline(sc.s,['Oyun Salonu'],L.h[2]);
+  const h=headline(sc.s,X.h5,L.h[2]);fit(h.el,V?900:1100);
   const bst=mk(sc.s,'div','o',`<svg width="${L.b[2]}" height="${L.b[2]}" viewBox="-110 -110 220 220"><polygon points="${
     Array.from({length:28},(_,i)=>{const a=i*Math.PI/14,r=i%2?72:100;return (Math.cos(a)*r).toFixed(1)+','+(Math.sin(a)*r).toFixed(1)}).join(' ')
-    }" fill="#F3B23C" stroke="#14110C" stroke-width="7" stroke-linejoin="round"/><text y="17" text-anchor="middle" font-family="Baloo2" font-weight="800" font-size="50" fill="#14110C">YENİ</text></svg>`);
+    }" fill="#F3B23C" stroke="#14110C" stroke-width="7" stroke-linejoin="round"/><text y="${X.newSize*.34}" text-anchor="middle" font-family="Baloo2" font-weight="800" font-size="${X.newSize}" fill="#14110C">${X.isNew}</text></svg>`);
   const th=games.map(g=>{const t=mk(sc.s,'div','o thumb');t.style.width=t.style.height=L.sz+'px';
     mk(t,'img').src=IMG+'game_'+g+'_thumb.webp';return t});
-  const sub=mk(sc.s,'div','o stk',"Oyna · ★ topla · Zibo Coin'e çevir");sub.style.fontSize=L.s[2]+'px';sub.style.background='#fff';
+  const sub=fit(mk(sc.s,'div','o stk',X.sub5),V?980:1500);sub.style.fontSize=L.s[2]+'px';sub.style.background='#fff';
   SCENES.push({dur:4.8,el:sc.s,draw(lt){spin(sc,lt,-6);
     put(h.el,L.h[0],L.h[1]);popWords(h,lt,.3,.16);
     const pb=prog(lt,.75,.4);put(bst,L.b[0],L.b[1],(pb<=0?0:eBack(pb))*(1+Math.sin(lt*7)*.05),-14+Math.sin(lt*3)*4);
@@ -204,9 +221,9 @@ const SCENES=[];
   const z=img(sc.s,'zibo_df_pose4.webp',L.z[2]);
   const icon=img(sc.s,'zibo_app_icon.png',L.i[2]);icon.classList.add('icon');
   const logo=img(sc.s,'zibo_logo_new.webp',null,L.logo[2]);
-  const s=mk(sc.s,'div','o sub','Dijital Kanka');s.style.fontSize=L.s[2]+'px';s.style.fontWeight=800;
-  const b=mk(sc.s,'div','o stk','ÜCRETSİZ İNDİR');b.style.fontSize=L.b[2]+'px';
-  const pt=mk(sc.s,'div','o sub',"Google Play'de");pt.style.fontSize=L.p[2]+'px';pt.style.fontFamily='Nunito';pt.style.fontWeight=900;
+  const s=mk(sc.s,'div','o sub',X.s6);s.style.fontSize=L.s[2]+'px';s.style.fontWeight=800;
+  const b=fit(mk(sc.s,'div','o stk',X.btn),900);b.style.fontSize=L.b[2]+'px';
+  const pt=mk(sc.s,'div','o sub',X.play);pt.style.fontSize=L.p[2]+'px';pt.style.fontFamily='Nunito';pt.style.fontWeight=900;
   SCENES.push({dur:4.8,el:sc.s,draw(lt){spin(sc,lt);
     const tc=lt-.55;conf.forEach(c=>{const o=tc<0?0:clamp(2.6-tc);
       put(c.e,L.i[0]+c.vx*tc*.9,L.i[1]+c.vy*tc+1400*tc*tc,1,c.r+c.rv*tc,o)});
@@ -237,6 +254,8 @@ window.seek=function(t){
 
 Promise.all([document.fonts.load('800 40px Baloo2'),document.fonts.load('900 40px Nunito'),
   ...[...document.images].map(im=>im.decode().catch(()=>{}))]).then(()=>{
+  SCENES.forEach(s=>s.el.style.display='block');
+  FITS.forEach(([el,maxW])=>{const w=el.offsetWidth;if(w>maxW)el.style.fontSize=parseFloat(getComputedStyle(el).fontSize)*maxW/w+'px'});
   seek(0);window.READY=true;
   if(!Q.has('cap')){ // canlı önizleme: pencereye sığdır + döngü
     const k=Math.min(innerWidth/W,innerHeight/H);stage.style.transformOrigin='0 0';stage.style.transform=`scale(${k})`;

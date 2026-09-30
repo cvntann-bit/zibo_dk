@@ -3,6 +3,7 @@
 Kullanım (repo kökünden):
     python promo_video/render.py v01              # 9:16 + 16:9 MP4 -> promo_video/v01/out/
     python promo_video/render.py v01 --stills 1,4,10   # yalnızca o saniyelerin PNG kareleri
+    python promo_video/render.py v01 --lang es         # İspanyolca metinler -> *_es.mp4
 
 Gereksinim: `pip install playwright imageio-ffmpeg` + kurulu Google Chrome.
 Video sayfası `window.seek(t)`, `window.DURATION` ve `window.READY` sağlamalı
@@ -25,6 +26,8 @@ def main():
     stills = None
     if "--stills" in sys.argv:
         stills = [float(x) for x in sys.argv[sys.argv.index("--stills") + 1].split(",")]
+    lang = sys.argv[sys.argv.index("--lang") + 1] if "--lang" in sys.argv else "tr"
+    suffix = "" if lang == "tr" else f"_{lang}"
     root = Path(__file__).parent / name
     out = root / "out"
     out.mkdir(exist_ok=True)
@@ -33,16 +36,16 @@ def main():
         browser = p.chromium.launch(channel="chrome", headless=True)
         for fmt, (w, h, label) in FORMATS.items():
             page = browser.new_page(viewport={"width": w, "height": h})
-            page.goto(f"{url}?f={fmt}&cap=1")
+            page.goto(f"{url}?f={fmt}&cap=1&l={lang}")
             page.wait_for_function("window.READY === true")
             duration = page.evaluate("window.DURATION")
             if stills is not None:
                 for t in stills:
                     page.evaluate(f"seek({t})")
-                    page.screenshot(path=str(out / f"still_{label}_{t:05.2f}.png"))
+                    page.screenshot(path=str(out / f"still{suffix}_{label}_{t:05.2f}.png"))
                 page.close()
                 continue
-            target = out / f"zibo_{name}_{label}.mp4"
+            target = out / f"zibo_{name}_{label}{suffix}.mp4"
             ff = subprocess.Popen(
                 [imageio_ffmpeg.get_ffmpeg_exe(), "-y", "-loglevel", "error",
                  "-f", "image2pipe", "-framerate", str(FPS), "-c:v", "png", "-i", "-",

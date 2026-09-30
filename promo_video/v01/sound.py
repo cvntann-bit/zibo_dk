@@ -1,6 +1,7 @@
 """v01 için ses kurgusu: müzik yatağı + kodla üretilen efektler.
 
-Çalıştır (repo kökünden):  python promo_video/v01/sound.py
+Çalıştır (repo kökünden):  python promo_video/v01/sound.py [es]
+(dil eki verilirse aynı ses o dilin MP4'lerine eklenir)
 Önce `python promo_video/render.py v01` ile sessiz MP4'ler üretilmiş olmalı.
 Çıktı: out/v01_mix.wav + out/zibo_v01_{9x16,16x9}_sesli.mp4
 
@@ -90,9 +91,10 @@ T.add(S[5] + 1.78, sfx.chime(), 0.35)
 
 wav = OUT / "v01_mix.wav"
 print("RMS", round(T.write(wav, music=music, sfx_gain=1.0), 3))
+SUFFIX = f"_{sys.argv[1]}" if len(sys.argv) > 1 else ""
 for label in ("9x16", "16x9"):
-    src = OUT / f"zibo_v01_{label}.mp4"
-    dst = OUT / f"zibo_v01_{label}_sesli.mp4"
+    src = OUT / f"zibo_v01_{label}{SUFFIX}.mp4"
+    dst = OUT / f"zibo_v01_{label}{SUFFIX}_sesli.mp4"
     subprocess.run([FF, "-y", "-loglevel", "error", "-i", str(src), "-i", str(wav),
                     "-c:v", "copy", "-c:a", "aac", "-b:a", "192k", "-t", str(DURATION),
                     "-movflags", "+faststart", str(dst)], check=True)
