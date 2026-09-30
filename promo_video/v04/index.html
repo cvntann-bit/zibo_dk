@@ -4,10 +4,12 @@
 <meta charset="utf-8">
 <title>Sorun çözüm reklamı (v04)</title>
 <!--
-  v04 — Sorun → çözüm reklamı. Müzik: From Sad to Bright — 109,98 bpm → ölçü 2,1822 sn, ilk ölçü başı 0,44 sn,
-  sakin→neşeli geçiş şarkının 9,17. sn'sinde (4. ölçü başı). Video şarkının 2. ölçüsünden (4,80 sn) başlar:
-  ölçü 0–1 = SORUN (gri, yağmur, Zibo üzgün) | ölçü 2 = DÜŞÜŞ (daire açılır, renk patlar) |
-  ölçü 3–5 = ÇÖZÜM (hedefler, seri/rozet, oyun+coin) | ölçü 6 = kapanış. 7 ölçü = 15,28 sn.
+  v04 — Sorun → çözüm reklamı, 30,6 sn. Müzik: From Sad to Bright — 109,98 bpm → ölçü 2,1822 sn, ilk ölçü başı
+  0,44 sn, sakin→neşeli geçiş şarkının 9,17. sn'sinde (4. ölçü başı). Video şarkının 1. ölçüsünden (2,62 sn) başlar:
+    ölçü 0–2   SORUN (gri, yağmur, Zibo üzgün: hedefler ✗, seri sıfırlandı)
+    ölçü 3     DÜŞÜŞ (daire açılır, renk patlar): "Çözüm: Zibo!"
+    ölçü 4–11  ÇÖZÜM: hedef | su | şükran+ruh hali | seri+rozet | kostüm | oyun | takas | hepsi tek uygulamada
+    ölçü 12–13 KAPANIŞ (şarkının gerçek bitişi ölçü 13'ün 1,63. sn'sinde). 14 ölçü = 30,55 sn.
   Ortak yardımcılar: ../kit.js, ../kit.css. Ses kurgusu: sound.py (zamanlar buradakiyle aynı).
 -->
 <link rel="stylesheet" href="../kit.css">
@@ -27,52 +29,84 @@
 .conf{border:3px solid var(--outline);box-sizing:border-box}
 .icon{border:7px solid var(--outline);border-radius:23%;box-shadow:10px 10px 0 var(--outline);box-sizing:border-box}
 .thumb img{width:100%;height:100%}
+.glass{width:280px;height:400px;border:8px solid var(--outline);border-radius:18px 18px 56px 56px;
+  background:rgba(255,255,255,.62);overflow:hidden;box-shadow:10px 10px 0 var(--outline);box-sizing:border-box}
+.water{position:absolute;left:0;right:0;bottom:0;background:#4FB3FF;border-top:8px solid #C9EBFF}
+.note{width:720px;height:400px;border:7px solid var(--outline);border-radius:34px;box-shadow:12px 12px 0 var(--outline);
+  box-sizing:border-box;padding:44px 44px 30px 150px;
+  background:repeating-linear-gradient(transparent 0 68px,rgba(20,17,12,.12) 68px 71px),#FFFDF6}
+.note b{display:block;font-size:40px;font-weight:800;line-height:1.1;margin-bottom:18px;white-space:nowrap}
+.note p{margin:0;font-family:Nunito;font-weight:800;font-size:50px;line-height:1.38}
 </style>
 </head>
 <body>
 <div id="stage"></div>
 <script src="../kit.js"></script>
 <script>
-const BAR=240/109.98,NB=7,END=NB*BAR;
+const BAR=240/109.98,BEAT=BAR/4,NB=14,END=NB*BAR;
 const S=Array.from({length:NB+1},(_,i)=>i*BAR);
 const TX={
  tr:{h0:['Hedeflerini hep','yarıda mı bırakıyorsun?'],h1:['“Yarın başlarım”','diyip duruyor musun?'],
-  goals:['Kitap oku','Yürüyüşe çık','Su iç'],h2:['Çözüm:','*Zibo!*'],tag:'Dijital kankan cebinde!',
-  h3:['Hedeflerini','*tek* *tek* bitir'],h4:['*Serini* büyüt,','rozetleri topla'],streak:n=>`Seri: ${n} gün`,
-  h5:['Oyna, *★* *topla,*','Zibo Coin kazan!'],exS:'★ → ZC',
+  h1b:['Serin bozuldu,','moralin de mi?'],goals:['Kitap oku','Yürüyüşe çık','Su iç'],streak0:'Seri: 0 gün',
+  h3:['Çözüm:','*Zibo!*'],tag:'Dijital kankan cebinde!',
+  h4:['Hedeflerini','*tek* *tek* bitir'],h5:['*Su* hedefini','tamamla'],waterDone:'Hedef tamam!',
+  h6:['Şükret, *yaz,*','ruh halini izle'],noteLabel:'Bugün şükrettiğim şey:',note:'Sıcak bir çay ve iyi dostlar.',mood:'Harika bir gün!',
+  h7:['*Serini* büyüt,','rozetleri topla'],streak:n=>`Seri: ${n} gün`,
+  h8:['*40+* kostüm,','tarzını seç!'],cos:['Kral','Astronot','Korsan','Samuray'],
+  h9:['Mini oyunlar,','*oyna,* ★ topla'],h10:['★ puanlarını','*Zibo* *Coin* yap!'],exS:'★ → ZC',
+  h11:['Hepsi','*tek* *uygulamada*'],
   ctag:'Dijital Kanka',btn:'ÜCRETSİZ İNDİR',play:"Google Play'de"},
  es:{h0:['¿Siempre dejas tus','metas a medias?'],h1:['¿“Mañana empiezo”','y nunca llega?'],
-  goals:['Leer','Salir a caminar','Beber agua'],h2:['La solución:','*¡Zibo!*'],tag:'¡Tu amigo digital de bolsillo!',
-  h3:['Cumple tus metas','*una* *a* *una*'],h4:['Sube tu *racha,*','colecciona insignias'],streak:n=>`Racha: ${n} días`,
-  h5:['Juega, *junta* *★,*','gana Zibo Coins'],exS:'★ → ZC',
+  h1b:['¿Se rompió tu racha','y tu ánimo?'],goals:['Leer','Salir a caminar','Beber agua'],streak0:'Racha: 0 días',
+  h3:['La solución:','*¡Zibo!*'],tag:'¡Tu amigo digital de bolsillo!',
+  h4:['Cumple tus metas','*una* *a* *una*'],h5:['Completa tu','meta de *agua*'],waterDone:'¡Meta cumplida!',
+  h6:['Agradece, *escribe,*','sigue tu ánimo'],noteLabel:'Hoy agradezco:',note:'Un té caliente y buenos amigos.',mood:'¡Un gran día!',
+  h7:['Sube tu *racha,*','colecciona insignias'],streak:n=>`Racha: ${n} días`,
+  h8:['*40+* disfraces,','¡elige tu estilo!'],cos:['Rey','Astronauta','Pirata','Samurái'],
+  h9:['Minijuegos,','*juega,* junta ★'],h10:['Cambia tus ★ por','*Zibo* *Coins*'],exS:'★ → ZC',
+  h11:['Todo en','*una* *sola* app'],
   ctag:'Tu amigo digital',btn:'DESCARGA GRATIS',play:'en Google Play'},
  en:{h0:['Always leaving your','goals half-done?'],h1:['“I’ll start tomorrow”','never happens?'],
-  goals:['Read','Go for a walk','Drink water'],h2:['The fix:','*Zibo!*'],tag:'Your pocket-sized digital buddy!',
-  h3:['Finish your goals','*one* *by* *one*'],h4:['Grow your *streak,*','collect badges'],streak:n=>`Streak: ${n} days`,
-  h5:['Play, *earn* *★,*','win Zibo Coins'],exS:'★ → ZC',
+  h1b:['Streak broken,','mood too?'],goals:['Read','Go for a walk','Drink water'],streak0:'Streak: 0 days',
+  h3:['The fix:','*Zibo!*'],tag:'Your pocket-sized digital buddy!',
+  h4:['Finish your goals','*one* *by* *one*'],h5:['Complete your','*water* goal'],waterDone:'Goal reached!',
+  h6:['Be grateful, *write,*','track your mood'],noteLabel:"Today I'm grateful for:",note:'A warm tea and good friends.',mood:'What a great day!',
+  h7:['Grow your *streak,*','collect badges'],streak:n=>`Streak: ${n} days`,
+  h8:['*40+* costumes,','pick your style!'],cos:['King','Astronaut','Pirate','Samurai'],
+  h9:['Mini games,','*play,* collect ★'],h10:['Trade ★ for','*Zibo* *Coins!*'],exS:'★ → ZC',
+  h11:['All in','*one* *app*'],
   ctag:'Your digital buddy',btn:'FREE DOWNLOAD',play:'on Google Play'}};
 const X=TX[LANG]||TX.tr;
 
 // ---------- yerleşim ----------
 const L=V?{
-  sz:[540,1540,640],cloud:[540,1170,1.7],sh:[540,300,104],sp:[540,860],
-  zt:{2:[540,1500,780],3:[540,1600,560],4:[540,1640,520],5:[540,1660,480],6:[540,1650,560]},
-  h2:[540,620,250],tag:[540,1000,60],hp:[540,320,118],
+  sz:[540,1540,640],cloud:[540,1170,1.7],sh:[540,300,104],sp:[540,860],gb:[540,740,380],gs:[540,990,80],
+  zs:[540,1600,560],zt:[540,1500,780],
+  h3:[540,620,250],tag:[540,1000,60],hp:[540,320,118],
   pan:[540,860],coin:[800,1170,210],zc:[540,1180,70],
+  gl:[330,930],ml:[770,790,84],wb:[770,985,210],wd:[770,1150,50],
+  nt:[540,900],nb1:[255,715,190],nb2:[830,1090,180],nch:[470,1150,50],
   bc:[540,900,420],bl:[230,1110,260],br:[850,1110,260],cnt:[540,1290,70],
-  th:[[230,860],[540,780],[850,860]],ths:290,c5:[540,1160,380],ex:[540,1420,80],
-  ci:[540,440,330],cl:[540,770,560],ct:[540,965,66],cb:[540,1180,76],cp:[540,1325,42]}
+  cs:[540,1010,820],cn:[540,1520,84],
+  th:[[230,860],[540,780],[850,860]],ths:290,c5:[540,1070,340],ex:[540,1300,80],
+  rg:[[230,760],[540,760],[850,760],[230,1090],[540,1090],[850,1090]],rs:290,
+  ci:[540,440,330],cl:[540,770,560],ct:[540,965,66],cb:[540,1180,76],cp:[540,1325,42],cz:[540,1650,560]}
  :{
-  sz:[420,660,820],cloud:[420,130,1.6],sh:[1310,250,88],sp:[1310,640],
-  zt:{2:[420,640,840],3:[420,640,840],4:[420,640,840],5:[420,640,840],6:[520,585,830]},
-  h2:[1310,380,230],tag:[1310,780,58],hp:[1310,200,96],
-  pan:[1310,600],coin:[1640,800,140],zc:[1310,860,64],
+  sz:[420,660,820],cloud:[420,130,1.6],sh:[1310,250,88],sp:[1310,640],gb:[1310,560,340],gs:[1310,850,70],
+  zs:[420,640,840],zt:[420,640,840],
+  h3:[1310,380,230],tag:[1310,780,58],hp:[1310,200,96],
+  pan:[1310,600],coin:[1640,800,170],zc:[1310,860,64],
+  gl:[1130,620],ml:[1500,470,72],wb:[1500,650,190],wd:[1500,815,46],
+  nt:[1310,610],nb1:[1020,430,170],nb2:[1590,800,160],nch:[1290,860,46],
   bc:[1310,610,360],bl:[1000,720,230],br:[1620,720,230],cnt:[1310,900,64],
+  cs:[1310,650,600],cn:[1310,985,76],
   th:[[1050,560],[1310,500],[1570,560]],ths:250,c5:[1310,790,250],ex:[1310,960,70],
-  ci:[1290,225,240],cl:[1290,470,520],ct:[1290,640,60],cb:[1290,810,72],cp:[1290,935,40]};
-const ZX=V?540:420,ZY=V?1500:640;   // dairesel açılışın merkezi = mutlu Zibo
+  rg:[[1050,480],[1310,480],[1570,480],[1050,770],[1310,770],[1570,770]],rs:240,
+  ci:[1290,225,240],cl:[1290,470,520],ct:[1290,640,60],cb:[1290,810,72],cp:[1290,935,40],cz:[520,585,830]};
+const ZX=L.zt[0],ZY=L.zt[1];   // dairesel açılışın merkezi = mutlu Zibo
+const FIT=V?980:1000;
 
-// ================= SORUN katmanı =================
+// ================= SORUN katmanı (ölçü 0–2) =================
 const sad=mk(stage,'div','full');
 const sbg=mk(sad,'div','full');sbg.style.background='linear-gradient(#7D8797,#BFC6D1)';mk(sad,'div','dots');
 const R0=rng(5),drops=Array.from({length:46},()=>{const e=mk(sad,'div','o drop');return{e,x:R0()*W,v:1000+R0()*500,ph:R0()*2000}});
@@ -80,14 +114,16 @@ const CLOUD='<svg width="300" height="150" viewBox="0 0 300 150"><path d="M60,13
 const cloud=mk(sad,'div','o',CLOUD);
 const szb=mk(sad,'div','o shadow');szb.style.width=L.sz[2]*.6+'px';szb.style.height='56px';
 const sz=img(sad,'zibo_df_pose1.webp',L.sz[2]);sz.style.filter='grayscale(.85) brightness(.9)';
-const sh0=headline(sad,X.h0,L.sh[2]);fit(sh0.el,V?930:1100);
-const sh1=headline(sad,X.h1,L.sh[2]);fit(sh1.el,V?930:1100);
+const mkHead=(p,lines,size,fitW)=>{const h=headline(p,lines,size);fit(h.el,fitW);return h};
+const sh0=mkHead(sad,X.h0,L.sh[2],V?930:1100),sh1=mkHead(sad,X.h1,L.sh[2],V?930:1100),sh2=mkHead(sad,X.h1b,L.sh[2],V?930:1100);
 const spn=mk(sad,'div','o panel sad');
 const srows=X.goals.map(g=>{const r=mk(spn,'div','row'),bx=mk(r,'div','box',
   '<svg viewBox="0 0 24 24" width="56"><path d="M5 5L19 19M19 5L5 19" stroke="#C0392B" stroke-width="4.5" stroke-linecap="round" fill="none"/></svg>');
   return{x:bx.firstChild,lab:fit(mk(r,'b',null,g),520)}});
+const gb=img(sad,'bir_hafta_seri_rozet.webp',L.gb[2]);gb.style.filter='grayscale(1) brightness(.82)';
+const gs=mk(sad,'div','o stk',X.streak0);gs.style.fontSize=L.gs[2]+'px';gs.style.background='#D5D9E0';gs.style.color='#5A6270';
 function sadFrame(t){
-  if(t>=S[2]+.6){sad.style.display='none';return}sad.style.display='block';
+  if(t>=S[3]+.6){sad.style.display='none';return}sad.style.display='block';
   drops.forEach(d=>put(d.e,d.x,((t*d.v+d.ph)%(H+120))-60,1,14,.9));
   put(cloud,L.cloud[0],L.cloud[1]+Math.sin(t*1.4)*8,L.cloud[2],0);
   put(szb,L.sz[0],L.sz[1]+L.sz[2]/2-14);
@@ -95,107 +131,176 @@ function sadFrame(t){
   const d=BAR;
   put(sh0.el,L.sh[0],L.sh[1],io(t,.2,d),-2);popWords(sh0,t,.3,.16);
   put(sh1.el,L.sh[0],L.sh[1],io(t-S[1],.1,d),2);popWords(sh1,t-S[1],.2,.16);
-  put(spn,L.sp[0],L.sp[1],io(t,.8,2*d+.6)*(t>S[2]-.3?1-prog(t,S[2]-.3,.3):1),-1.5);
-  srows.forEach((r,i)=>{const p=prog(t-S[1],.5456*(i+1),.25);r.x.style.transform=`scale(${p<=0?0:eBack(p)})`;r.lab.style.opacity=lerp(1,.55,p)})}
+  put(sh2.el,L.sh[0],L.sh[1],io(t-S[2],.1,d),-2);popWords(sh2,t-S[2],.2,.16);
+  put(spn,L.sp[0],L.sp[1],io(t,.8,2*d),-1.5);
+  srows.forEach((r,i)=>{const p=prog(t-S[1],BEAT*(i+1),.25);r.x.style.transform=`scale(${p<=0?0:eBack(p)})`;r.lab.style.opacity=lerp(1,.55,p)});
+  const l2=t-S[2],fall=eBounce(prog(l2,.25,.7));
+  put(gb,L.gb[0],lerp(L.gb[1]-520,L.gb[1],fall)+Math.sin(t*1.5)*4,io(l2,.2,d)>0?1:0,lerp(-14,4,eOut(prog(l2,.25,.7))),l2<.2?0:1);
+  put(gs,L.gs[0],L.gs[1],io(l2,.95,d),-2)}
 
-// ================= ÇÖZÜM katmanı =================
+// ================= ÇÖZÜM katmanı (ölçü 3–13) =================
 const happy=mk(stage,'div','full');
 const hbg=mk(happy,'div','full'),rays=mk(happy,'div','rays');mk(happy,'div','dots');
-const PALH={2:['#F3B23C','#FFE08A'],3:['#3FA9F5','#9ADBFF'],4:['#8E5BE6','#C3A4FF'],5:['#2FBF71','#9BE7B5'],6:['#FFF4DE','#FFE3A6']};
+const PALH={3:['#F3B23C','#FFE08A'],4:['#3FA9F5','#9ADBFF'],5:['#4FB3FF','#C9EBFF'],6:['#FF6F91','#FFB3C6'],7:['#8E5BE6','#C3A4FF'],
+  8:['#FF7A45','#FFC09A'],9:['#2FBF71','#9BE7B5'],10:['#23408E','#3F6FD8'],11:['#8FD3FF','#DDF2FF'],12:['#FFF4DE','#FFE3A6'],13:['#FFF4DE','#FFE3A6']};
 const hzb=mk(happy,'div','o shadow');hzb.style.width='500px';hzb.style.height='56px';
 const hz=img(happy,'zibo_df_pose3.webp',800),hz2=img(happy,'zibo_df_pose4.webp',800);
-// bar 2
-const h2=headline(happy,X.h2,L.h2[2]);fit(h2.el,V?980:1000);
+// 3: çözüm
+const h3=mkHead(happy,X.h3,L.h3[2],FIT);
 const tag=fit(mk(happy,'div','o stk',X.tag),V?980:860);tag.style.fontSize=L.tag[2]+'px';
 const STAR=c=>`<svg width="90" height="90" viewBox="-60 -60 120 120"><path d="M0,-50 C6,-16 16,-6 50,0 C16,6 6,16 0,50 C-6,16 -16,6 -50,0 C-16,-6 -6,-16 0,-50Z" fill="${c}" stroke="#14110C" stroke-width="7" stroke-linejoin="round"/></svg>`;
 const stars=(V?[[110,520],[960,560],[90,1000],[980,1020],[300,300],[780,330]]:[[1000,250],[1720,260],[980,760],[1750,760],[1150,120],[1600,100]])
   .map((p,i)=>({e:mk(happy,'div','o',STAR(i%2?'#F3B23C':'#fff')),p}));
-// bar 3
-const hh3=headline(happy,X.h3,L.hp[2]);fit(hh3.el,V?980:1000);
+// 4: hedefler
+const h4=mkHead(happy,X.h4,L.hp[2],FIT);
 const hpn=mk(happy,'div','o panel');
 const hrows=X.goals.map(g=>{const r=mk(hpn,'div','row'),bx=mk(r,'div','box',
   '<svg viewBox="0 0 24 24" width="56"><path d="M4 12.5l5.5 5.5L20 6.5" fill="none" stroke="#14110C" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/></svg>');
   return{bx,chk:bx.firstChild,lab:fit(mk(r,'b',null,g),520)}});
 const hcoin=img(happy,'zibo_coin.webp',L.coin[2]);
 const hzc=mk(happy,'div','o stk','+30 ZC');hzc.style.fontSize=L.zc[2]+'px';
-// bar 4
-const hh4=headline(happy,X.h4,L.hp[2]);fit(hh4.el,V?980:1000);
+// 5: su
+const h5=mkHead(happy,X.h5,L.hp[2],FIT);
+const glass=mk(happy,'div','o glass'),water=mk(glass,'div','water');
+const ml=mk(happy,'div','o stk','');ml.style.fontSize=L.ml[2]+'px';ml.style.background='#fff';
+const wbdg=img(happy,'su_kahramani_rozet.webp',L.wb[2]);
+const wdone=fit(mk(happy,'div','o stk',X.waterDone),400);wdone.style.fontSize=L.wd[2]+'px';
+// 6: şükran + ruh hali
+const h6=mkHead(happy,X.h6,L.hp[2],FIT);
+const note=mk(happy,'div','o note');fit(mk(note,'b',null,X.noteLabel),520);const notep=mk(note,'p');
+const nb1=img(happy,'sükran_rozeti.webp',L.nb1[2]),nb2=img(happy,'ruh_hali_rozet.webp',L.nb2[2]);
+const nch=fit(mk(happy,'div','o stk',X.mood),430);nch.style.fontSize=L.nch[2]+'px';
+// 7: seri + rozetler
+const h7=mkHead(happy,X.h7,L.hp[2],FIT);
 const bdg=[['bir_hafta_seri_rozet.webp',L.bc],['su_kahramani_rozet.webp',L.bl],['demir_irade_rozet.webp',L.br]].map(b=>({e:img(happy,b[0],b[1][2]),p:b[1]}));
 const cnt=mk(happy,'div','o stk','');cnt.style.fontSize=L.cnt[2]+'px';
-// bar 5
-const hh5=headline(happy,X.h5,L.hp[2]);fit(hh5.el,V?980:1000);
+// 8: kostümler
+const h8=mkHead(happy,X.h8,L.hp[2],FIT);
+const cosI=['zibo_king.webp','zibo_astronot.webp','zibo_korsan.webp','zibo_samurai.webp'].map(f=>img(happy,f,L.cs[2]));
+const cname=mk(happy,'div','o stk','');cname.style.fontSize=L.cn[2]+'px';
+// 9: oyunlar   10: takas
+const h9=mkHead(happy,X.h9,L.hp[2],FIT);
 const gth=['kule','yakala','2048'].map(g=>{const t=mk(happy,'div','o thumb');t.style.width=t.style.height=L.ths+'px';
   mk(t,'img').src=IMG+'game_'+g+'_thumb.webp';return t});
+const h10=mkHead(happy,X.h10,L.hp[2],FIT);
 const c5=img(happy,'zibo_coin.webp',L.c5[2]);
 const exs=mk(happy,'div','o stk',X.exS);exs.style.fontSize=L.ex[2]+'px';exs.style.background='#fff';
-// bar 6 kapanış
+const chips=[200,-20,160,20,250,290].map(a=>{const e=mk(happy,'div','o','★'),r=a*Math.PI/180;
+  e.style.cssText+='width:130px;height:130px;border-radius:50%;background:#8FD3FF;border:7px solid #14110C;box-sizing:border-box;display:flex;align-items:center;justify-content:center;font-size:76px;color:#0E3A5C;line-height:1;padding-bottom:6px';
+  return{e,sx:L.c5[0]+Math.cos(r)*(V?850:1100),sy:L.c5[1]+Math.sin(r)*(V?850:700),r}});
+const ARR=i=>.45+i*.15;
+// 11: hepsi tek uygulamada
+const h11=mkHead(happy,X.h11,L.hp[2],FIT);
+const rg=['su_kahramani_rozet.webp','sükran_rozeti.webp','ruh_hali_rozet.webp','ruya_yorumcusu_rozet.webp','birikim_ustasi_rozet.webp','bir_hafta_seri_rozet.webp']
+  .map(f=>img(happy,f,L.rs));
+// 12–13: kapanış
 const R1=rng(99),cols=['#F3B23C','#23408E','#8FD3FF','#E8553D','#fff','#F6D488'],conf=[];
-for(let i=0;i<80;i++){const e=mk(happy,'div','o conf'),w=18+R1()*26;
+for(let i=0;i<110;i++){const e=mk(happy,'div','o conf'),w=18+R1()*26;
   e.style.width=w+'px';e.style.height=(i%3?w*.5:w)+'px';e.style.background=cols[i%cols.length];if(i%4==0)e.style.borderRadius='50%';
-  const a=-Math.PI/2+(R1()-.5)*2.4,v=900+R1()*1500;conf.push({e,vx:Math.cos(a)*v,vy:Math.sin(a)*v,r:R1()*360,rv:(R1()-.5)*900})}
+  const a=-Math.PI/2+(R1()-.5)*2.4,v=900+R1()*1500;conf.push({e,vx:Math.cos(a)*v,vy:Math.sin(a)*v,r:R1()*360,rv:(R1()-.5)*900,late:i>=80})}
 const cic=img(happy,'zibo_app_icon.png',L.ci[2]);cic.classList.add('icon');
 const clg=img(happy,'zibo_logo_new.webp',null,V?560:520);
 const ctg=fit(mk(happy,'div','o sub',X.ctag),V?980:700);ctg.style.fontSize=L.ct[2]+'px';ctg.style.fontWeight=800;
 const cbt=fit(mk(happy,'div','o stk',X.btn),900);cbt.style.fontSize=L.cb[2]+'px';
 const cpl=mk(happy,'div','o sub',X.play);cpl.style.cssText+=`font-size:${L.cp[2]}px;font-family:Nunito;font-weight:900`;
 
-const ztarget=i=>L.zt[Math.min(6,Math.max(2,i))];
+const ZSM=V?[540,1600,560]:[420,640,840];
+const ztarget=i=>i<=3?L.zt.concat():(i>=12?[L.cz[0],L.cz[1],L.cz[2]]:ZSM);
+const hide=(el)=>put(el,-3000,-3000,0,0,0);
 function happyFrame(t){
   const i=Math.min(NB-1,Math.floor(t/BAR)),lt=t-S[i],d=BAR;
-  if(t<S[2]){happy.style.visibility='hidden';return}happy.style.visibility='visible';
+  if(t<S[3]){happy.style.visibility='hidden';return}happy.style.visibility='visible';
   // zemin
-  const p=i>2?eInOut(prog(lt,0,.3)):1,A=PALH[Math.max(2,i-1)],B=PALH[i];
+  const p=i>3?eInOut(prog(lt,0,.3)):1,A=PALH[Math.max(3,i-1)],B=PALH[i];
   hbg.style.background=`linear-gradient(${mix(A[0],B[0],p)},${mix(A[1],B[1],p)})`;rays.style.transform=`rotate(${t*(i%2?6:-6)}deg)`;
-  // Zibo: hedef konuma yumuşak geçiş, düşüşte "pat" diye büyür
-  const zp=i>2?eInOut(prog(lt,0,.4)):1,Za=ztarget(Math.max(2,i-1)),Zb=ztarget(i);
+  // Zibo: hedef konuma yumuşak geçiş; ölçü 8'de kostümlere yer açmak için kaybolur
+  const zp=i>3?eInOut(prog(lt,0,.4)):1,Za=ztarget(Math.max(3,i-1)),Zb=ztarget(i);
   const zx=lerp(Za[0],Zb[0],zp),zy=lerp(Za[1],Zb[1],zp),zh=lerp(Za[2],Zb[2],zp);
-  const pop=t<S[2]+.6?eBack(prog(t,S[2],.5))*.35+.65:1,sc=zh/800*pop;
-  const bob=Math.sin(t*3.2)*7,cta=i===6?prog(lt,0,.25):0;
-  put(hz,zx,zy+bob,sc,Math.sin(t*2)*1.5,1-cta);put(hz2,zx,zy+bob,sc,Math.sin(t*2)*1.5,cta);
-  put(hzb,zx,zy+zh/2-14,zh/800*pop*.95,0,i===6&&V?0:1);
-  // --- ölçü 2: çözüm! ---
-  const l2=t-S[2];
-  put(h2.el,L.h2[0],L.h2[1],io(l2,.15,d),-3);popWords(h2,l2,.25,.2);
-  put(tag,L.tag[0],L.tag[1],io(l2,.75,d),2);
-  stars.forEach((s,k)=>put(s.e,s.p[0],s.p[1],io(l2,.3+k*.08,d)*(1+Math.sin(t*6+k)*.16),t*40+k*30));
-  // --- ölçü 3: hedefler tek tek ---
+  const pop=t<S[3]+.6?eBack(prog(t,S[3],.5))*.35+.65:1,sc=zh/800*pop;
+  const bob=Math.sin(t*3.2)*7,cta=i>=12?prog(t-S[12],0,.25):0;
+  const za=i===8?1-prog(lt,0,.15)*1:(i===9?prog(lt,.1,.2):1);
+  const vis=za*(i===8?1:1);
+  put(hz,zx,zy+bob,sc,Math.sin(t*2)*1.5,(1-cta)*vis);put(hz2,zx,zy+bob,sc,Math.sin(t*2)*1.5,cta*vis);
+  put(hzb,zx,zy+zh/2-14,zh/800*pop*.95,0,(i>=12&&V?0:1)*vis);
+
+  // ---- 3: çözüm! ----
   const l3=t-S[3];
-  put(hh3.el,L.hp[0],L.hp[1],io(l3,.1,d),-2);popWords(hh3,l3,.2,.15);
-  put(hpn,L.pan[0],L.pan[1],io(l3,.35,d),-1.5);
-  hrows.forEach((r,k)=>{const q=prog(l3,.5456*(k+1),.25);r.bx.style.background=q>0?'#F3B23C':'#fff';
+  put(h3.el,L.h3[0],L.h3[1],io(l3,.15,d),-3);popWords(h3,l3,.25,.2);
+  put(tag,L.tag[0],L.tag[1],io(l3,.75,d),2);
+  stars.forEach((s,k)=>put(s.e,s.p[0],s.p[1],io(l3,.3+k*.08,d)*(1+Math.sin(t*6+k)*.16),t*40+k*30));
+  // ---- 4: hedefler tek tek ----
+  const l4=t-S[4];
+  put(h4.el,L.hp[0],L.hp[1],io(l4,.1,d),-2);popWords(h4,l4,.2,.15);
+  put(hpn,L.pan[0],L.pan[1],io(l4,.35,d),-1.5);
+  hrows.forEach((r,k)=>{const q=prog(l4,BEAT*(k+1),.25);r.bx.style.background=q>0?'#F3B23C':'#fff';
     r.chk.style.transform=`scale(${q<=0?0:eBack(q)})`});
-  put(hcoin,L.coin[0],L.coin[1],io(l3,1.75,d),lerp(-40,8,eOut(prog(l3,1.75,.5))));
-  put(hzc,L.zc[0],L.zc[1],io(l3,1.9,d),-4);
-  // --- ölçü 4: seri + rozetler ---
-  const l4=t-S[4],n=Math.max(1,Math.round(1+6*eOut(prog(l4,.5,1.5))));
-  put(hh4.el,L.hp[0],L.hp[1],io(l4,.1,d),-2);popWords(hh4,l4,.2,.15);
-  bdg.forEach((b,k)=>put(b.e,b.p[0],b.p[1]+Math.sin(t*2.6+k*2)*10,io(l4,.3+k*.17,d),lerp(-18,0,eOut(prog(l4,.3+k*.17,.5)))*(k?(k===1?-1:1):0)));
+  put(hcoin,L.coin[0],L.coin[1],io(l4,1.75,d),lerp(-40,8,eOut(prog(l4,1.75,.5))));
+  put(hzc,L.zc[0],L.zc[1],io(l4,1.9,d),-4);
+  // ---- 5: su bardağı dolar ----
+  const l5=t-S[5],lv=eInOut(prog(l5,.9,1.05));
+  put(h5.el,L.hp[0],L.hp[1],io(l5,.1,d),-2);popWords(h5,l5,.2,.15);
+  water.style.height=(lv*86+Math.sin(l5*7)*1.2*(lv<1?1:0))+'%';
+  ml.textContent=Math.round(lv*2000/50)*50+' ml';
+  put(glass,L.gl[0],L.gl[1],io(l5,.35,d),-3);
+  put(ml,L.ml[0],L.ml[1],io(l5,.6,d)+Math.sin(Math.PI*prog(l5,1.95,.25))*.1,3);
+  put(wbdg,L.wb[0],L.wb[1],io(l5,1.65,d),lerp(-30,0,eOut(prog(l5,1.65,.5))));
+  put(wdone,L.wd[0],L.wd[1],io(l5,1.8,d),-3);
+  // ---- 6: şükran notu + ruh hali ----
+  const l6=t-S[6],txt=X.note,k6=Math.floor(txt.length*prog(l6,.8,1.1));
+  put(h6.el,L.hp[0],L.hp[1],io(l6,.1,d),-2);popWords(h6,l6,.2,.15);
+  put(note,L.nt[0],L.nt[1],io(l6,.35,d),-2);
+  notep.textContent=txt.slice(0,k6)+(k6<txt.length&&l6>.7&&Math.sin(l6*14)>0?'|':'');
+  put(nb1,L.nb1[0],L.nb1[1],io(l6,.5,d),-10);
+  put(nb2,L.nb2[0],L.nb2[1],io(l6,1.75,d),lerp(30,6,eOut(prog(l6,1.75,.5))));
+  put(nch,L.nch[0],L.nch[1],io(l6,1.9,d),-3);
+  // ---- 7: seri sayacı + rozetler ----
+  const l7=t-S[7],n=Math.max(1,Math.round(1+6*eOut(prog(l7,.5,1.5))));
+  put(h7.el,L.hp[0],L.hp[1],io(l7,.1,d),-2);popWords(h7,l7,.2,.15);
+  bdg.forEach((b,k)=>put(b.e,b.p[0],b.p[1]+Math.sin(t*2.6+k*2)*10,io(l7,.3+k*.17,d),lerp(-18,0,eOut(prog(l7,.3+k*.17,.5)))*(k?(k===1?-1:1):0)));
   cnt.textContent=X.streak(n);
-  put(cnt,L.cnt[0],L.cnt[1],io(l4,.75,d)+Math.sin(Math.PI*prog(l4,1.95,.25))*.13,-2);
-  // --- ölçü 5: oyun + coin ---
-  const l5=t-S[5];
-  put(hh5.el,L.hp[0],L.hp[1],io(l5,.1,d),-2);popWords(hh5,l5,.2,.15);
-  gth.forEach((g,k)=>put(g,L.th[k][0],L.th[k][1]+Math.sin(t*3+k)*8,io(l5,.35+k*.13,d),(k-1)*7));
-  put(c5,L.c5[0],L.c5[1]+Math.sin(t*3)*8,io(l5,.7,d),Math.sin(t*2)*3,1,Math.cos(lerp(0,4*Math.PI,eOut(prog(l5,.7,1.1)))));
-  put(exs,L.ex[0],L.ex[1],io(l5,1.1,d),-3);
-  // --- ölçü 6: kapanış ---
-  const l6=t-S[6];
-  conf.forEach(c=>{const tc=l6-.15;put(c.e,L.ci[0]+c.vx*tc*.9,L.ci[1]+c.vy*tc+1400*tc*tc,1,c.r+c.rv*tc,tc<0?0:clamp(2.6-tc))});
-  put(cic,L.ci[0],L.ci[1],io(l6,.1,d+9),lerp(-18,-4,eOut(prog(l6,.1,.5))));
-  put(clg,L.cl[0],L.cl[1],io(l6,.35,d+9),-2);
-  put(ctg,L.ct[0],L.ct[1],io(l6,.7,d+9));
-  put(cbt,L.cb[0],L.cb[1],io(l6,1.09,d+9)*(1+Math.sin(l6*6.5)*.035)+Math.sin(Math.PI*prog(l6,1.63,.3))*.1,-2);
-  put(cpl,L.cp[0],L.cp[1],1,0,l6<0?0:eOut(prog(l6,1.4,.4)))}
+  put(cnt,L.cnt[0],L.cnt[1],io(l7,.75,d)+Math.sin(Math.PI*prog(l7,1.95,.25))*.13,-2);
+  // ---- 8: kostümler (her vuruşta biri) ----
+  const l8=t-S[8],q8=prog(l8,d-.3,.3),c8=Math.max(0,Math.min(3,Math.floor((l8-.3)/BEAT)));
+  put(h8.el,L.hp[0],L.hp[1],io(l8,.1,d),-2);popWords(h8,l8,.2,.15);
+  cosI.forEach((e,k)=>{const a=l8-(.3+k*BEAT),on=a>=0&&(k===3||a<BEAT);
+    put(e,L.cs[0],L.cs[1]+Math.sin(t*3.4)*8,on?eBack(prog(a,0,.28))*(1-q8*q8):0,Math.sin(t*2)*1.5)});
+  cname.textContent=X.cos[c8];
+  put(cname,L.cn[0],L.cn[1],io(l8,.3,d)+Math.sin(Math.PI*prog((l8-.3)%BEAT,0,.25))*.12*(l8>.3?1:0),-2);
+  // ---- 9: oyun vitrinleri ----
+  const l9=t-S[9];
+  put(h9.el,L.hp[0],L.hp[1],io(l9,.1,d),-2);popWords(h9,l9,.2,.15);
+  gth.forEach((g,k)=>put(g,L.th[k][0],L.th[k][1]+Math.sin(t*3+k)*8,io(l9,.4+k*.15,d),(k-1)*7));
+  // ---- 10: ★ jetonları coin'e akar ----
+  const l10=t-S[10];let pulse=0;
+  chips.forEach((c,k)=>{const a=ARR(k);if(l10>a&&l10<a+.18)pulse=Math.max(pulse,1-(l10-a)/.18)});
+  put(h10.el,L.hp[0],L.hp[1],io(l10,.12,d),-2);popWords(h10,l10,.2,.14);
+  put(c5,L.c5[0],L.c5[1]+Math.sin(t*3)*8,io(l10,.05,d)*(1+pulse*.14),Math.sin(t*2)*3);
+  chips.forEach((c,k)=>{const pp=prog(l10,ARR(k)-.45,.45),kk=eInOut(pp),arc=Math.sin(Math.PI*pp)*(V?130:100);
+    const x=lerp(c.sx,L.c5[0],kk)+Math.cos(c.r+Math.PI/2)*arc,y=lerp(c.sy,L.c5[1],kk)+Math.sin(c.r+Math.PI/2)*arc;
+    put(c.e,x,y,pp>=1||l10<0?0:lerp(1.1,.35,kk),l10*260*(k%2?-1:1),l10>=0?1:0)});
+  put(exs,L.ex[0],L.ex[1],io(l10,.6,d),-3);
+  // ---- 11: hepsi tek uygulamada ----
+  const l11=t-S[11];
+  put(h11.el,L.hp[0],L.hp[1],io(l11,.1,d),-2);popWords(h11,l11,.2,.15);
+  rg.forEach((e,k)=>put(e,L.rg[k][0],L.rg[k][1]+Math.sin(t*2.6+k)*8,io(l11,.25+k*.12,d),(k%2?5:-5)));
+  // ---- 12–13: kapanış ----
+  const l12=t-S[12],dd=2*d+9,fin=t-S[13]-1.63;
+  conf.forEach(c=>{const tc=c.late?fin:l12-.15;put(c.e,L.ci[0]+c.vx*tc*.9,L.ci[1]+c.vy*tc+1400*tc*tc,1,c.r+c.rv*tc,tc<0?0:clamp(2.6-tc))});
+  put(cic,L.ci[0],L.ci[1],io(l12,.1,dd),lerp(-18,-4,eOut(prog(l12,.1,.5))));
+  put(clg,L.cl[0],L.cl[1],io(l12,.35,dd),-2);
+  put(ctg,L.ct[0],L.ct[1],io(l12,.7,dd));
+  put(cbt,L.cb[0],L.cb[1],io(l12,1.09,dd)*(1+Math.sin(l12*6.5)*.035)+Math.sin(Math.PI*prog(fin,0,.3))*.1,-2);
+  put(cpl,L.cp[0],L.cp[1],1,0,l12<0?0:eOut(prog(l12,1.4,.4)))}
 
 // ================= düşüş: daire açılır + halka + beyaz parlama =================
 const ring=mk(stage,'div','o');ring.style.cssText+='border:16px solid #14110C;border-radius:50%;box-sizing:border-box;display:none';
 const flash=mk(stage,'div','full');flash.style.background='#fff';flash.style.opacity=0;flash.style.pointerEvents='none';
 const MAXR=Math.hypot(W,H)+60;
-function wipe(t){const p=prog(t,S[2],.45),r=eInOut(p)*MAXR;
-  happy.style.clipPath=t<S[2]?'circle(0px at 50% 50%)':(p>=1?'none':`circle(${r}px at ${ZX}px ${ZY}px)`);
+function wipe(t){const p=prog(t,S[3],.45),r=eInOut(p)*MAXR;
+  happy.style.clipPath=t<S[3]?'circle(0px at 50% 50%)':(p>=1?'none':`circle(${r}px at ${ZX}px ${ZY}px)`);
   if(p>0&&p<1){ring.style.display='block';ring.style.width=ring.style.height=(2*r+16)+'px';
     ring.style.transform=`translate(${ZX}px,${ZY}px) translate(-50%,-50%)`}else ring.style.display='none';
-  flash.style.opacity=t>=S[2]?Math.max(0,1-(t-S[2])/.28)*.85:0}
+  flash.style.opacity=t>=S[3]?Math.max(0,1-(t-S[3])/.28)*.85:0}
 
 boot(END,t=>{sadFrame(t);happyFrame(t);wipe(t)});
 </script>
