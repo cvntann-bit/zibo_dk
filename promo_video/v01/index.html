@@ -98,7 +98,7 @@ const SCENES=[];
   const spots=V?[[150,640],[930,700],[120,1350],[960,1420],[860,210],[200,180]]
                :[[1050,200],[1760,230],[1030,900],[1800,860],[180,170],[260,900]];
   spots.forEach((p,i)=>stars.push({e:star(sc.s,70+R()*60,i%2?'#F3B23C':'#fff'),p}));
-  SCENES.push({dur:3.2,el:sc.s,draw(lt){spin(sc,lt);
+  SCENES.push({dur:2.4,el:sc.s,draw(lt){spin(sc,lt);
     const p=prog(lt,.15,.8),b=eBounce(p),idle=lt>.95?Math.sin((lt-.95)*3.2)*9:0;
     put(z,L.z[0],lerp(-L.z[2],L.z[1],b)+idle,1,Math.sin(lt*2.2)*1.4);
     put(sh,L.z[0],L.z[1]+L.z[2]/2-18,lerp(.3,1,b),0,p);
@@ -117,11 +117,11 @@ const SCENES=[];
   const h=headline(sc.s,['Küçük adımlar,','*büyük* *değişim*'],L.h[2]);
   const cards=feats.map(f=>{const c=mk(sc.s,'div','o card');c.style.width=L.cw+'px';c.style.height=L.ch+'px';
     mk(c,'img').src=IMG+encodeURI(f[0]);mk(c,'b',null,f[1]);return c});
-  SCENES.push({dur:5,el:sc.s,draw(lt){spin(sc,lt,-4);
-    put(h.el,L.h[0],L.h[1]);popWords(h,lt,.25);
+  SCENES.push({dur:4.8,el:sc.s,draw(lt){spin(sc,lt,-4);
+    put(h.el,L.h[0],L.h[1]);popWords(h,lt,.3,.15);
     const pz=prog(lt,.35,.6);put(z,L.z[0],lerp(L.z[1]+800,L.z[1],eBack(pz))+Math.sin(lt*3)*7,1,Math.sin(lt*1.8)*1.5);
-    cards.forEach((c,i)=>{const p=prog(lt,.95+i*.13,.5),tilt=(i%2?2.5:-2.5);
-      const bump=Math.sin(Math.PI*prog(lt,2.55+i*.32,.34))*.11;
+    cards.forEach((c,i)=>{const p=prog(lt,.9+i*.15,.5),tilt=(i%2?2.5:-2.5);
+      const bump=Math.sin(Math.PI*prog(lt,2.4+i*.3,.34))*.11;
       put(c,L.xs[i%3],lerp(L.ys[i/3|0]+500,L.ys[i/3|0],eBack(p)),(p<=0?0:1)+bump,lerp(16,tilt,eOut(p)),p>0?1:0)})}})})();
 
 // ---------- 3) Zibo Coin ----------
@@ -134,21 +134,21 @@ const SCENES=[];
   const coin=img(sc.s,'zibo_coin.webp',L.c[2]);
   const h=headline(sc.s,['Görevini yap,','*Zibo* *Coin* kazan!'],L.h[2]);
   const n=mk(sc.s,'div','o stk','');n.style.fontSize=L.n[2]+'px';
-  SCENES.push({dur:3.8,el:sc.s,draw(lt){spin(sc,lt,6);
+  SCENES.push({dur:4.8,el:sc.s,draw(lt){spin(sc,lt,6);
     rain.forEach(c=>{const span=H+400,y=-200-c.d*c.v+Math.max(0,lt-.25)*c.v;
       put(c.e,c.x,y<H+200?y:((y+200)%span)-200,1,c.r+lt*c.rv)});
     put(h.el,L.h[0],L.h[1]);popWords(h,lt,.3);
     const pc=prog(lt,.4,.45),ang=lerp(0,4*Math.PI,eOut(prog(lt,.4,1.3)));
     put(coin,L.c[0],L.c[1]+Math.sin(lt*3)*10,pc<=0?0:eBack(pc),Math.sin(lt*2)*4,1,Math.cos(ang));
-    const pn=prog(lt,.95,.4),cnt=Math.round(250*eOut(prog(lt,1.05,1.5)));
+    const pn=prog(lt,.95,.4),cnt=Math.round(250*eOut(prog(lt,1.05,2.25)));
     n.textContent='+'+cnt+' ZC';
-    put(n,L.n[0],L.n[1],(pn<=0?0:eBack(pn))+Math.sin(Math.PI*prog(lt,2.55,.3))*.16,-3);
+    put(n,L.n[0],L.n[1],(pn<=0?0:eBack(pn))+Math.sin(Math.PI*prog(lt,3.3,.3))*.16,-3);
     const pz=prog(lt,.55,.6);put(z,L.z[0],lerp(L.z[1]+900,L.z[1],eBack(pz))+Math.sin(lt*3.2)*7,1,Math.sin(lt*2)*1.5)}})})();
 
 // ---------- 4) Kostümler ----------
 (()=>{const sc=scene('#14110C','rgba(243,178,60,.10)','rgba(255,255,255,.04)');
   const cos=[['zibo_king.webp','Kral'],['zibo_astronot.webp','Astronot'],['zibo_korsan.webp','Korsan'],['zibo_samurai.webp','Samuray'],
-    ['zibo_punk.webp','Punk'],['zibo_hippi.webp','Hippi'],['zibo_gladyator.webp','Gladyatör'],['zibo_cyborg.webp','Cyborg'],
+    ['zibo_gladyator.webp','Gladyatör'],
     ['zibo_altin.webp','Altın'],['zibo_elmas.webp','Elmas']];
   const L=V?{h:[540,270,124],c:[540,1010,800],sp:420,pl:1420,n:[540,1590,84],s:[540,1760,52]}
            :{h:[480,390,112],c:[1300,500,700],sp:390,pl:860,n:[1300,975,76],s:[480,660,48]};
@@ -158,17 +158,17 @@ const SCENES=[];
   const h=headline(sc.s,V?['*40+* kostüm','Tarzını seç!']:['*40+* kostüm','Tarzını seç!'],L.h[2]);
   const name=mk(sc.s,'div','o stk','');name.style.fontSize=L.n[2]+'px';
   const sub=mk(sc.s,'div','o sub',"Zibo'yu dilediğin gibi giydir");sub.style.fontSize=L.s[2]+'px';sub.style.color='#FFF4DE';
-  const STEP=.45;
-  SCENES.push({dur:5.2,el:sc.s,draw(lt){spin(sc,lt,8);
+  const STEP=.6;
+  SCENES.push({dur:4.8,el:sc.s,draw(lt){spin(sc,lt,8);
     put(h.el,L.h[0],L.h[1]);popWords(h,lt,.25);
     const pin=prog(lt,.3,.5),inS=pin<=0?0:eBack(pin);
-    const u=clamp((lt-.75)/STEP,0,cos.length-1),k=Math.floor(u),f=u-k,p=k+eInOut(clamp(f/.6));
+    const u=clamp((lt-.9)/STEP,0,cos.length-1),k=Math.floor(u),f=u-k,p=k+eInOut(clamp(f/.5));
     put(spot,L.c[0],L.c[1],inS*(1+Math.sin(lt*5)*.04));put(plat,L.c[0],L.pl,inS);
     ims.forEach((e,i)=>{const d=i-p,a=Math.abs(d);
       e.style.zIndex=20-Math.round(a*4);e.style.filter=a>.05?`brightness(${lerp(1,.4,clamp(a))})`:'none';
       put(e,L.c[0]+d*L.sp,L.c[1]+(a<.5?Math.sin(lt*4)*6:0)+clamp(a)*60,inS*lerp(1,.52,clamp(a)),d*4,a>1.7?0:lerp(1,.55,clamp(a)))});
     const cur=Math.round(p);name.textContent=cos[cur][1];name.style.zIndex=30;
-    const fb=((u+.5)%1);put(name,L.n[0],L.n[1],inS*(1+Math.sin(Math.PI*clamp(fb/.4))*.14*(u>0&&u<cos.length-1?1:0)),-2);
+    put(name,L.n[0],L.n[1],inS*(1+Math.sin(Math.PI*clamp((f-.25)/.4))*.14*(u>0&&u<cos.length-1?1:0)),-2);
     const ps=prog(lt,.9,.4);put(sub,L.s[0],L.s[1],1,0,eOut(ps))}})})();
 
 // ---------- 5) Oyun Salonu ----------
@@ -185,10 +185,10 @@ const SCENES=[];
   const th=games.map(g=>{const t=mk(sc.s,'div','o thumb');t.style.width=t.style.height=L.sz+'px';
     mk(t,'img').src=IMG+'game_'+g+'_thumb.webp';return t});
   const sub=mk(sc.s,'div','o stk',"Oyna · ★ topla · Zibo Coin'e çevir");sub.style.fontSize=L.s[2]+'px';sub.style.background='#fff';
-  SCENES.push({dur:4,el:sc.s,draw(lt){spin(sc,lt,-6);
+  SCENES.push({dur:4.8,el:sc.s,draw(lt){spin(sc,lt,-6);
     put(h.el,L.h[0],L.h[1]);popWords(h,lt,.3,.16);
     const pb=prog(lt,.75,.4);put(bst,L.b[0],L.b[1],(pb<=0?0:eBack(pb))*(1+Math.sin(lt*7)*.05),-14+Math.sin(lt*3)*4);
-    th.forEach((t,i)=>{const p=prog(lt,.7+i*.11,.45);
+    th.forEach((t,i)=>{const p=prog(lt,.6+i*.15,.45);
       put(t,L.pos[i][0],L.pos[i][1]+Math.sin(lt*3+i*.9)*10,p<=0?0:eBack(p),lerp(-20,i%2?3:-3,eOut(p)))});
     const ps=prog(lt,1.75,.45);put(sub,L.s[0],L.s[1],ps<=0?0:eBack(ps),-1.5)}})})();
 
@@ -207,14 +207,14 @@ const SCENES=[];
   const s=mk(sc.s,'div','o sub','Dijital Kanka');s.style.fontSize=L.s[2]+'px';s.style.fontWeight=800;
   const b=mk(sc.s,'div','o stk','ÜCRETSİZ İNDİR');b.style.fontSize=L.b[2]+'px';
   const pt=mk(sc.s,'div','o sub',"Google Play'de");pt.style.fontSize=L.p[2]+'px';pt.style.fontFamily='Nunito';pt.style.fontWeight=900;
-  SCENES.push({dur:4.3,el:sc.s,draw(lt){spin(sc,lt);
+  SCENES.push({dur:4.8,el:sc.s,draw(lt){spin(sc,lt);
     const tc=lt-.55;conf.forEach(c=>{const o=tc<0?0:clamp(2.6-tc);
       put(c.e,L.i[0]+c.vx*tc*.9,L.i[1]+c.vy*tc+1400*tc*tc,1,c.r+c.rv*tc,o)});
     const pi=prog(lt,.3,.5);put(icon,L.i[0],L.i[1],pi<=0?0:eBack(pi),lerp(-18,-4,eOut(pi)));
     const pl=prog(lt,.6,.45);put(logo,L.logo[0],L.logo[1],pl<=0?0:eBack(pl),-2);
     const p2=prog(lt,.9,.4);put(s,L.s[0],L.s[1],p2<=0?0:eBack(p2));
-    const pb=prog(lt,1.25,.45);put(b,L.b[0],L.b[1],(pb<=0?0:eBack(pb))*(1+Math.sin(lt*6.5)*.035),-2);
-    const pp=prog(lt,1.6,.4);put(pt,L.p[0],L.p[1],1,0,eOut(pp));
+    const pb=prog(lt,1.5,.45);put(b,L.b[0],L.b[1],(pb<=0?0:eBack(pb))*(1+Math.sin(lt*6.5)*.035),-2);
+    const pp=prog(lt,2.0,.4);put(pt,L.p[0],L.p[1],1,0,eOut(pp));
     const pz=prog(lt,.45,.6);
     put(z,L.z[0],lerp(L.z[1]+900,L.z[1],eBack(pz))+Math.sin(lt*3.2)*8,1,Math.sin(lt*2)*1.5);
     put(sh,L.z[0],L.z[1]+L.z[2]/2-14,1,0,V?0:eOut(pz))}})})();

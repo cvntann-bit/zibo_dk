@@ -102,14 +102,14 @@ def sparkle(dur=0.5, seed=3):
     rng = np.random.default_rng(seed)
     out = np.zeros(int(SR * dur))
     for i in range(7):
-        b = bell(rng.choice([2093, 2349, 2637, 3136, 3520, 4186]), 0.22) * 0.5
+        b = bell(rng.choice([1975.5, 2349.3, 2637, 3136, 3520, 3951]), 0.22) * 0.5
         at = int(SR * (i * dur / 9 + rng.random() * 0.02))
         out[at:at + len(b)] += b[:len(out) - at]
     return out
 
 
-def chime(notes=(523.3, 659.3, 784.0, 1046.5), step=0.09, dur=1.4):
-    """Kapanış — yukarı çıkan majör arpej."""
+def chime(notes=(392.0, 493.9, 587.3, 784.0), step=0.09, dur=1.4):
+    """Kapanış — yukarı çıkan majör arpej (varsayılan: Sol majör)."""
     out = np.zeros(int(SR * (dur + step * len(notes))))
     for i, f in enumerate(notes):
         b = bell(f, dur)
@@ -141,12 +141,51 @@ class Track:
         seg = sound[:len(self.buf) - i] * gain
         self.buf[i:i + len(seg)] += seg
 
-    def write(self, path, peak=0.85):
-        x = np.tanh(self.buf * 0.9)  # yumuşak sınırlayıcı
-        x = x / np.max(np.abs(x)) * peak
+    def write(self, path, music=None, sfx_gain=1.0, peak=0.89):
+        """WAV yazar. `music` verilirse (N,2) stereo yatak olarak efektlerin altına karıştırılır."""
+        n = len(self.buf)
+        mix = np.zeros((n, 2))
+        if music is not None:
+            m = music[:n]
+            mix[:len(m)] += m
+        mix += (self.buf * sfx_gain)[:, None]
+        mix = np.tanh(mix * 0.95)  # yumuşak sınırlayıcı
+        mix = mix / np.max(np.abs(mix)) * peak
         with wave.open(str(path), "wb") as w:
-            w.setnchannels(1)
+            w.setnchannels(2)
             w.setsampwidth(2)
             w.setframerate(SR)
-            w.writeframes((x * 32767).astype("<i2").tobytes())
-        return float(np.sqrt(np.mean(x ** 2)))
+            w.writeframes((mix * 32767).astype("<i2").tobytes())
+        return float(np.sqrt(np.mean(mix ** 2)))
+
+
+def load_music(path, ffmpeg):
+    """Herhangi bir ses dosyasını (mp3/wav) 44,1 kHz stereo float dizisine çevirir."""
+    import subprocess
+    raw = subprocess.run([ffmpeg, "-loglevel", "error", "-i", str(path), "-f", "s16le",
+                          "-ac", "2", "-ar", str(SR), "-"], capture_output=True, check=True).stdout
+    return np.frombuffer(raw, dtype="<i2").astype(float).reshape(-1, 2) / 32768
+
+
+def splice(song, parts, xfade=0.04):
+    """Şarkıdan [(video_başlangıcı, şarkı_başlangıcı), ...] parçalarını uç uca ekler.
+
+    Parçalar arası kısa çapraz geçiş yapılır; kesim noktaları ölçü başına denk getirilirse
+    ek yeri duyulmaz. Son parça şarkının sonuna kadar sürer.
+    """
+    total = int(SR * (parts[-1][0])) + max(0, len(song) - int(SR * parts[-1][1]))
+    out = np.zeros((total, 2))
+    nx = int(SR * xfade)
+    for j, (v0, s0) in enumerate(parts):
+        a = int(SR * v0)
+        b = int(SR * parts[j + 1][0]) if j + 1 < len(parts) else total
+        seg = song[int(SR * s0) - (nx if j else 0):int(SR * s0) + (b - a) + (nx if j + 1 < len(parts) else 0)].copy()
+        if j:
+            seg[:2 * nx] *= np.linspace(0, 1, 2 * nx)[:, None]
+        else:
+            seg[:int(SR * 0.01)] *= np.linspace(0, 1, int(SR * 0.01))[:, None]
+        if j + 1 < len(parts):
+            seg[-2 * nx:] *= np.linspace(1, 0, 2 * nx)[:, None]
+        at = a - (nx if j else 0)
+        out[at:at + len(seg)] += seg[:total - at]
+    return out
