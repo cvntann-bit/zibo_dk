@@ -84,7 +84,7 @@ function scene(bg,ray,dot){const s=mk(stage,'div','scene');s.style.background=bg
   const dots=mk(s,'div','dots');if(dot)dots.style.setProperty('--dot',dot);return{s,burst}}
 const spin=(sc,lt,speed=5)=>sc.burst.style.transform=`rotate(${lt*speed}deg)`;
 
-// ---------- metinler (?l=tr|es) ----------
+// ---------- metinler (?l=tr|es|en) ----------
 const TX={
  tr:{tag:'Dijital kankan cebinde!',h2:['Küçük adımlar,','*büyük* *değişim*'],
   feats:['Su Takibi','Şükran','Ruh Hali','Rüya Günlüğü','Birikim','Seri &amp; Hedef'],
@@ -97,7 +97,13 @@ const TX={
   h3:['¡Cumple y gana','*Zibo* *Coins!*'],h4:['*40+* disfraces','¡Elige tu estilo!'],
   cos:['Rey','Astronauta','Pirata','Samurái','Gladiador','Dorado','Diamante'],sub4:'Viste a Zibo como quieras',
   isNew:'NUEVO',newSize:38,h5:['Sala de Juegos'],sub5:'Juega · gana ★ · cámbialas por Zibo Coins',
-  s6:'Tu amigo digital',btn:'DESCARGA GRATIS',play:'en Google Play'}};
+  s6:'Tu amigo digital',btn:'DESCARGA GRATIS',play:'en Google Play'},
+ en:{tag:'Your pocket-sized digital buddy!',h2:['Small steps,','*big* *change*'],
+  feats:['Water','Gratitude','Mood','Dreams','Savings','Streaks &amp; Goals'],
+  h3:['Finish tasks,','earn *Zibo* *Coins!*'],h4:['*40+* costumes','Pick your style!'],
+  cos:['King','Astronaut','Pirate','Samurai','Gladiator','Golden','Diamond'],sub4:'Dress Zibo any way you like',
+  isNew:'NEW',newSize:54,h5:['Game Hall'],sub5:'Play · collect ★ · trade for Zibo Coins',
+  s6:'Your digital buddy',btn:'FREE DOWNLOAD',play:'on Google Play'}};
 const X=TX[Q.get('l')]||TX.tr;
 // Çeviri uzun gelirse yazıyı kutusuna sığdır (fontlar yüklendikten sonra ölçülür).
 const FITS=[];const fit=(el,maxW)=>(FITS.push([el,maxW]),el);
