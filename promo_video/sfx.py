@@ -80,6 +80,14 @@ def whoosh(dur=0.6, lo=300, hi=3800, seed=1):
     return _fade((band * 1.6 + low * 0.5) * env, 0.02, 0.05) * 0.9
 
 
+def womp(dur=0.55, f0=330, f1=170):
+    """Hüzünlü 'womp' — alçalan, hafif titreyen tını (sorun anları için)."""
+    t = _t(dur)
+    f = (f0 + (f1 - f0) * (t / dur) ** 0.8) * (1 + 0.03 * np.sin(2 * np.pi * 6 * t))
+    ph = 2 * np.pi * np.cumsum(f) / SR
+    return _fade((np.sin(ph) + 0.5 * np.sin(2 * ph) + 0.25 * np.sin(3 * ph)) * np.exp(-t * 3.2) * 0.6, 0.01, 0.05)
+
+
 def coin(dur=0.5):
     """Klasik iki notalı coin sesi (Si5 → Mi6)."""
     t = _t(dur)
