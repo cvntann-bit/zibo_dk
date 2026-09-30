@@ -1,0 +1,18 @@
+/* Zibo tanıtım videoları — ortak "çizgi roman çıkartması" stilleri (v02 ve sonrası). */
+@font-face{font-family:Baloo2;src:url(../dijital_kanka/assets/fonts/Baloo2-Variable.ttf);font-weight:400 800}
+@font-face{font-family:Nunito;src:url(../dijital_kanka/assets/fonts/Nunito-Variable.ttf);font-weight:200 1000}
+:root{--outline:#14110C;--gold:#F3B23C;--gold-soft:#F6D488;--cream:#FFF4DE;--blue:#23408E;--ice:#8FD3FF}
+html,body{margin:0;background:#000;overflow:hidden}
+#stage{position:relative;overflow:hidden;font-family:Baloo2,sans-serif;color:var(--outline)}
+.full{position:absolute;inset:0}
+.o{position:absolute;left:0;top:0}
+.hl{font-weight:800;line-height:1.02;text-align:center;white-space:nowrap;color:#fff;
+  -webkit-text-stroke:16px var(--outline);paint-order:stroke fill;text-shadow:0 9px 0 var(--outline)}
+.hl span{display:inline-block;transform-origin:50% 85%}
+.hl .g{color:var(--gold)}
+.stk{background:var(--gold);border:6px solid var(--outline);border-radius:999px;box-shadow:8px 8px 0 var(--outline);
+  font-weight:800;white-space:nowrap;padding:.12em .7em .02em;line-height:1.35}
+.sub{font-weight:700;white-space:nowrap}
+.shadow{background:rgba(20,17,12,.22);border-radius:50%}
+.thumb{border:7px solid var(--outline);border-radius:44px;box-shadow:10px 10px 0 var(--outline);overflow:hidden;box-sizing:border-box}
+.thumb img{width:100%;height:100%;display:block}

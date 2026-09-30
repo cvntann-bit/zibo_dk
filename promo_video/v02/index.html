@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>Zibo ile bir gün (v02)</title>
+<!--
+  v02 — "Zibo ile bir gün": tek plan, kesintisiz bir gün. Gökyüzü şafaktan geceye döner,
+  güneş yay çizip batar, ay doğar; Zibo tepede durur, her vakitte başka bir özellik gelir.
+  Süreler 100 bpm müziğin ölçülerine göre (ölçü 2,4 sn): 2,4 + 5×4,8 + 4,8 = 31,2 sn.
+  Ortak yardımcılar: ../kit.js, ../kit.css. Ses kurgusu: sound.py (zamanlar buradakiyle aynı).
+-->
+<link rel="stylesheet" href="../kit.css">
+<style>
+.dot{background:#fff;border-radius:50%}
+.sun{width:230px;height:230px;border-radius:50%;background:#FFD23F;border:8px solid var(--outline);box-sizing:border-box}
+.rays{width:460px;height:460px;border-radius:50%;
+  background:repeating-conic-gradient(rgba(255,210,63,.55) 0 12deg,transparent 12deg 30deg)}
+.moon{width:190px;height:190px;border-radius:50%;border:8px solid var(--outline);box-sizing:border-box;
+  background:radial-gradient(circle at 32% 34%,#E6D9B8 0 13%,transparent 14%),
+             radial-gradient(circle at 66% 60%,#E6D9B8 0 17%,transparent 18%),
+             radial-gradient(circle at 40% 76%,#E6D9B8 0 8%,transparent 9%),#FFF4DE}
+.hill{border-radius:50%;border:8px solid var(--outline);box-sizing:border-box}
+.glass{width:280px;height:400px;border:8px solid var(--outline);border-radius:18px 18px 56px 56px;
+  background:rgba(255,255,255,.62);overflow:hidden;box-shadow:10px 10px 0 var(--outline);box-sizing:border-box}
+.water{position:absolute;left:0;right:0;bottom:0;background:#4FB3FF;border-top:8px solid #C9EBFF}
+.panel{background:#fff;border:7px solid var(--outline);border-radius:40px;box-shadow:12px 12px 0 var(--outline);
+  padding:36px 40px;display:flex;flex-direction:column;gap:26px;box-sizing:border-box;width:720px}
+.row{display:flex;align-items:center;gap:26px}
+.box{width:76px;height:76px;border:6px solid var(--outline);border-radius:20px;box-sizing:border-box;flex:none;
+  display:flex;align-items:center;justify-content:center}
+.row b{font-size:52px;font-weight:800;white-space:nowrap;line-height:1}
+.note{width:720px;height:400px;border:7px solid var(--outline);border-radius:34px;box-shadow:12px 12px 0 var(--outline);
+  box-sizing:border-box;padding:44px 44px 30px 150px;
+  background:repeating-linear-gradient(transparent 0 68px,rgba(20,17,12,.12) 68px 71px),#FFFDF6}
+.note b{display:block;font-size:40px;font-weight:800;line-height:1.1;margin-bottom:18px;white-space:nowrap}
+.note p{margin:0;font-family:Nunito;font-weight:800;font-size:50px;line-height:1.38}
+.note.dark{background:repeating-linear-gradient(transparent 0 68px,rgba(255,255,255,.13) 68px 71px),#1B2250;color:#FFF4DE}
+</style>
+</head>
+<body>
+<div id="stage"></div>
+<script src="../kit.js"></script>
+<script>
+const TX={
+ tr:{title:['Zibo ile','*bir* *gün*'],
+  h:[['Güne *suyla* başla'],['Hedeflerini','*tek* *tek* bitir'],['Molada *oyna,*','★ topla'],
+     ['Günü *şükranla*','kapat'],['*Rüyanı* kaydet,','serini büyüt'],['Her gün','*Zibo* yanında!']],
+  periods:['Şafak','Sabah','Öğle','İkindi','Akşam','Gece','Yeni gün'],
+  waterDone:'Hedef tamam!',goals:['10 sayfa kitap oku','30 dk yürüyüş','Erken uyan'],
+  noteLabel:'Bugün şükrettiğim şey:',note:'Sıcak bir çay ve iyi dostlar.',mood:'Harika bir gün!',
+  dreamLabel:'Rüya Günlüğü',dream:'Uzayda süzülüyordum…',streak:'Seri: 7 gün',
+  btn:'ÜCRETSİZ İNDİR',play:"Google Play'de"},
+ es:{title:['Un día','*con* *Zibo*'],
+  h:[['Empieza con *agua*'],['Cumple tus metas','*una* *a* *una*'],['Juega un rato,','gana ★'],
+     ['Cierra el día','*con* *gratitud*'],['Anota tu *sueño,*','suma tu racha'],['Cada día,','*Zibo* contigo']],
+  periods:['Amanecer','Mañana','Mediodía','Tarde','Atardecer','Noche','Nuevo día'],
+  waterDone:'¡Meta cumplida!',goals:['Leer 10 páginas','Caminar 30 min','Madrugar'],
+  noteLabel:'Hoy agradezco:',note:'Un té caliente y buenos amigos.',mood:'¡Un gran día!',
+  dreamLabel:'Diario de Sueños',dream:'Flotaba por el espacio…',streak:'Racha: 7 días',
+  btn:'DESCARGA GRATIS',play:'en Google Play'},
+ en:{title:['A day','*with* *Zibo*'],
+  h:[['Start with *water*'],['Crush your goals','*one* *by* *one*'],['Take a break,','play &amp; earn ★'],
+     ['End the day','*with* *gratitude*'],['Log your *dream,*','grow your streak'],['Every day,','*Zibo* by your side']],
+  periods:['Dawn','Morning','Noon','Afternoon','Evening','Night','New day'],
+  waterDone:'Goal reached!',goals:['Read 10 pages','30 min walk','Wake up early'],
+  noteLabel:"Today I'm grateful for:",note:'A warm tea and good friends.',mood:'What a great day!',
+  dreamLabel:'Dream Journal',dream:'I was floating in space…',streak:'Streak: 7 days',
+  btn:'FREE DOWNLOAD',play:'on Google Play'}};
+const X=TX[LANG]||TX.tr;
+
+// Bölümler: 0 giriş, 1 sabah, 2 öğle, 3 ikindi, 4 akşam, 5 gece, 6 kapanış
+const S=[0,2.4,7.2,12,16.8,21.6,26.4],END=31.2;
+const DUR=S.map((s,i)=>(S[i+1]??END)-s);
+// Yerleşim: HZ ufuk, RX/RY gök yayı, Z Zibo [x,y,yükseklik], HP başlık, PP sahne nesnesi merkezi, CK saat
+const L=V?{HZ:1520,RX:560,RY:1240,Z:[540,1500,560],HP:[540,410,100],PP:[540,900],CK:[540,165],
+           hill:[540,1680,1900,900],hill2:[150,1600,1300,800],T:[540,690,150],clouds:[260,700,1230]}
+         :{HZ:900,RX:930,RY:770,Z:[420,705,600],HP:[1240,215,88],PP:[1240,650],CK:[420,120],
+           hill:[700,935,2600,700],hill2:[1550,885,1700,600],T:[1240,480,140],clouds:[130,330,540]};
+
+// ---------- dünya: gökyüzü, yıldızlar, güneş, ay, bulutlar, tepeler ----------
+//           [gök üst, gök alt, tepe, arka tepe, gece oranı]
+const PAL=[['#FF9E6B','#FFE3B3','#9AD37A','#B9E39A',0],   // şafak
+           ['#6FC3FF','#FFF1D6','#8ED16F','#B2E293',0],   // sabah
+           ['#3FA9F5','#C9EBFF','#7FCB5F','#A5DB85',0],   // öğle
+           ['#FFB347','#FFE9B8','#8CC765','#B4DC8C',0],   // ikindi
+           ['#5B3F93','#FF8E5E','#5E8F6B','#79A883',.35], // akşam
+           ['#0E1233','#2A3A80','#27456B','#35598A',1],   // gece
+           ['#FFC68A','#FFF4DE','#9AD37A','#B9E39A',0]];  // yeni gün
+const sky=mk(stage,'div','full');
+const R=rng(11),stars=[];
+for(let i=0;i<60;i++){const e=mk(stage,'div','o dot'),s=4+R()*7;e.style.width=e.style.height=s+'px';
+  stars.push({e,x:R()*W,y:R()*L.HZ*.9,ph:R()*6})}
+const rays=mk(stage,'div','o rays'),sun=mk(stage,'div','o sun'),moon=mk(stage,'div','o moon');
+const CLOUD='<svg width="300" height="150" viewBox="0 0 300 150"><path d="M60,130 C10,130 5,80 50,72 C45,30 110,12 135,48 C160,15 235,28 228,75 C285,72 292,130 240,130Z" fill="#fff" stroke="#14110C" stroke-width="8" stroke-linejoin="round"/></svg>';
+const clouds=L.clouds.map((y,i)=>({e:mk(stage,'div','o',CLOUD),y,sc:[1,.68,.85][i],sp:[26,-18,14][i],x0:[.2,.75,.5][i]*W}));
+const hill2=mk(stage,'div','o hill'),hill=mk(stage,'div','o hill');
+[[hill2,L.hill2],[hill,L.hill]].forEach(([e,h])=>{e.style.width=h[2]+'px';e.style.height=h[3]+'px'});
+const seg=t=>{let i=0;while(i<6&&t>=S[i+1])i++;return i};
+const pw=(pts,t)=>{if(t<=pts[0][0])return pts[0][1];
+  for(let i=1;i<pts.length;i++)if(t<=pts[i][0])return lerp(pts[i-1][1],pts[i][1],(t-pts[i-1][0])/(pts[i][0]-pts[i-1][0]));
+  return pts[pts.length-1][1]};
+const arc=a=>[W/2-L.RX*Math.cos(a*Math.PI),L.HZ-L.RY*Math.sin(a*Math.PI)];
+function world(t){
+  const i=seg(t),p=i>0?eInOut(prog(t,S[i],.9)):1,A=PAL[Math.max(0,i-1)],B=PAL[i];
+  sky.style.background=`linear-gradient(${mix(A[0],B[0],p)},${mix(A[1],B[1],p)})`;
+  hill.style.background=mix(A[2],B[2],p);hill2.style.background=mix(A[3],B[3],p);
+  put(hill2,L.hill2[0],L.hill2[1]+L.hill2[3]/2);put(hill,L.hill[0],L.hill[1]+L.hill[3]/2);
+  const night=lerp(A[4],B[4],p);
+  stars.forEach(s=>put(s.e,s.x,s.y,1,0,night*(.55+.45*Math.sin(t*3+s.ph))));
+  // güneş: gün boyunca soldan sağa yay çizer; kapanışta soldan yeniden doğar
+  const a=t<S[6]?pw([[0,-.02],[2.4,.2],[7.2,.4],[12,.6],[16.8,.84],[20.4,1],[21.6,1.13]],t)
+                :lerp(-.13,.19,eOut(prog(t,S[6],1.8)));
+  const [sx,sy]=arc(a);put(sun,sx,sy);put(rays,sx,sy,1+Math.sin(t*2)*.04,t*14);
+  const am=pw([[20.4,-.12],[21.6,.08],[26.4,.42],[27.6,.5]],t),[mx,my]=arc(am);
+  put(moon,mx,my,1,-12,1-prog(t,S[6],.9));
+  clouds.forEach(c=>{const x=((c.x0+t*c.sp)%(W+400)+W+400)%(W+400)-200;put(c.e,x,c.y,c.sc,0,.62*(1-night*.8))})}
+
+// ---------- Zibo: her vakitte başka poz (gece: astronot, havada süzülür) ----------
+const zsh=mk(stage,'div','o shadow');zsh.style.width=L.Z[2]*.6+'px';zsh.style.height='60px';
+const POSES=['zibo_yeni.webp','zibo_df_pose2.webp','zibo_df_pose4.webp','zibo_df_pose3.webp','zibo_df_pose1.webp','zibo_astronot.webp','zibo_df_pose4.webp'];
+const zib=POSES.map(p=>img(stage,p,L.Z[2]));
+function zibo(t){
+  const i=seg(t),lt=t-S[i];
+  const drop=i===0?eBounce(prog(t,.15,.8)):1;
+  const fl=i===5?eOut(prog(lt,.2,.9))*(1-prog(lt,DUR[5]-.4,.4)):0;  // gece: süzülme
+  const y=lerp(-L.Z[2],L.Z[1],drop)+Math.sin(t*3)*7-fl*(70+Math.sin(t*2.2)*16);
+  zib.forEach((e,k)=>{
+    if(k===i){const p=i===0?1:prog(lt,0,.35);put(e,L.Z[0],y,lerp(.8,1,eBack(p)),Math.sin(t*2)*1.5+fl*Math.sin(t*1.6)*4,clamp(p*4))}
+    else if(k===i-1){const p=prog(lt,0,.2);put(e,L.Z[0],y,1,0,1-p)}
+    else put(e,L.Z[0],y,1,0,0)});
+  put(zsh,L.Z[0],L.Z[1]+L.Z[2]/2-16,lerp(.3,1,drop)*(1-fl*.35),0,prog(t,.15,.5)*(1-fl*.4))}
+
+// ---------- saat etiketi ----------
+const clock=mk(stage,'div','o stk');clock.style.fontSize='54px';clock.style.background='#fff';
+const HRS=[[6.5,7],[7,8.5],[12,13],[16,17],[20,21],[23,23.9],[7,7]];
+function drawClock(t){
+  const i=seg(t),lt=t-S[i],h=lerp(HRS[i][0],HRS[i][1],lt/DUR[i]);
+  const mm=Math.floor(h*60/5)*5,hh=String(Math.floor(mm/60)).padStart(2,'0'),mi=String(mm%60).padStart(2,'0');
+  clock.textContent=`${hh}:${mi} · ${X.periods[i]}`;
+  put(clock,L.CK[0],L.CK[1],(t<.5?eBack(prog(t,.1,.4)):1)+Math.sin(Math.PI*prog(lt,0,.35))*(i?.16:0),-2)}
+
+// ---------- bölümler ----------
+const [PX,PY]=L.PP,HMAX=V?1000:1000;
+const heads=X.h.map(lines=>{const h=headline(stage,lines,L.HP[2]);fit(h.el,HMAX);return h});
+function head(i,lt){const h=heads[i-1],b=i===6?0:prog(lt,DUR[i]-.3,.3);
+  put(h.el,L.HP[0],L.HP[1],lt<0?0:1-b*b);popWords(h,lt,.3)}
+
+// 0) Giriş başlığı
+const title=headline(stage,X.title,L.T[2]);fit(title.el,V?1000:1000);
+function s0(lt){const b=prog(lt,DUR[0]-.3,.3);put(title.el,L.T[0],L.T[1],lt<0?0:1-b*b,-3);popWords(title,lt,.45,.18)}
+
+// 1) Sabah — su bardağı dolar
+const glass=mk(stage,'div','o glass'),water=mk(glass,'div','water');
+const ml=mk(stage,'div','o stk','');ml.style.fontSize='84px';ml.style.background='#fff';
+const wBadge=img(stage,'su_kahramani_rozet.webp',210);
+const wDone=fit(mk(stage,'div','o stk',X.waterDone),400);wDone.style.fontSize='50px';
+function s1(lt){const d=DUR[1];head(1,lt);
+  const lv=eInOut(prog(lt,.9,2.1));water.style.height=(lv*86+Math.sin(lt*7)*1.2*(lv<1?1:0))+'%';
+  ml.textContent=Math.round(lv*2000/50)*50+' ml';
+  put(glass,PX-200,PY+10,io(lt,.4,d),-3);
+  put(ml,PX+170,PY-130,io(lt,.7,d)+Math.sin(Math.PI*prog(lt,3,.3))*.12,3);
+  put(wBadge,PX+170,PY+65,io(lt,3,d),lerp(-30,0,eOut(prog(lt,3,.5))));
+  put(wDone,PX+170,PY+225,io(lt,3.2,d),-3)}
+
+// 2) Öğle — hedefler tek tek işaretlenir, ödül coin'i gelir
+const list=mk(stage,'div','o panel');
+const rows=X.goals.map(g=>{const r=mk(list,'div','row'),box=mk(r,'div','box',
+  '<svg viewBox="0 0 24 24" width="56"><path d="M4 12.5l5.5 5.5L20 6.5" fill="none" stroke="#14110C" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/></svg>');
+  return{box,chk:box.firstChild,lab:fit(mk(r,'b',null,g),520)}});
+const rCoin=img(stage,'zibo_coin.webp',150);
+const rTxt=mk(stage,'div','o stk','+30 ZC');rTxt.style.fontSize='64px';
+function s2(lt){const d=DUR[2];head(2,lt);
+  put(list,PX,PY+10,io(lt,.4,d),-2);
+  rows.forEach((r,i)=>{const p=prog(lt,1.2+i*.6,.3);
+    r.box.style.background=p>0?'#F3B23C':'#fff';r.chk.style.transform=`scale(${p<=0?0:eBack(p)})`;r.lab.style.opacity=lerp(1,.6,p)});
+  put(rCoin,PX+300,PY-230,io(lt,3,d),lerp(-40,8,eOut(prog(lt,3,.5))));
+  put(rTxt,PX+160,PY-225,io(lt,3.15,d),-6)}
+
+// 3) İkindi — Oyun Salonu molası
+const gms=[['kule',-250,15,250,-8],['2048',250,15,250,8],['yakala',0,-25,310,0]].map(g=>{
+  const t=mk(stage,'div','o thumb');t.style.width=t.style.height=g[3]+'px';mk(t,'img').src=IMG+'game_'+g[0]+'_thumb.webp';return{t,g}});
+const st=mk(stage,'div','o stk','');st.style.fontSize='80px';st.style.background='#8FD3FF';
+function s3(lt){const d=DUR[3];head(3,lt);
+  gms.forEach((o,i)=>put(o.t,PX+o.g[1],PY+o.g[2]+Math.sin(lt*3+i)*8,io(lt,.6+i*.15,d),lerp(o.g[4]-25,o.g[4],eOut(prog(lt,.6+i*.15,.5)))));
+  st.textContent='★ '+Math.round(120*eOut(prog(lt,1.5,1.5)));
+  put(st,PX,PY+240,io(lt,1.35,d)+Math.sin(Math.PI*prog(lt,3,.3))*.14,-2)}
+
+// 4) Akşam — şükran notu yazılır   5) Gece — rüya yazılır, seri büyür
+function note(dark,badge,label,text,badge2,chip){
+  const n=mk(stage,'div','o note'+(dark?' dark':''));fit(mk(n,'b',null,label),520);const p=mk(n,'p');
+  const b1=img(stage,badge,190),b2=img(stage,badge2,180);
+  const c=fit(mk(stage,'div','o stk',chip),430);c.style.fontSize='50px';
+  return(lt,d)=>{
+    put(n,PX,PY,io(lt,.4,d),dark?2:-2);put(b1,PX-300,PY-170,io(lt,.6,d),-10);
+    const k=Math.floor(text.length*prog(lt,1,2));
+    p.textContent=text.slice(0,k)+(k<text.length&&lt>.9&&Math.sin(lt*14)>0?'|':'');
+    put(b2,PX+270,PY+195,io(lt,3,d),lerp(30,6,eOut(prog(lt,3,.5))));
+    put(c,PX-40,PY+255,io(lt,3.15,d),-3)}}
+const n4=note(false,'sükran_rozeti.webp',X.noteLabel,X.note,'ruh_hali_rozet.webp',X.mood);
+const n5=note(true,'ruya_yorumcusu_rozet.webp',X.dreamLabel,X.dream,'bir_hafta_seri_rozet.webp',X.streak);
+function s4(lt){head(4,lt);n4(lt,DUR[4])}
+function s5(lt){head(5,lt);n5(lt,DUR[5])}
+
+// 6) Kapanış — yeni gün doğar
+const logo=img(stage,'zibo_logo_new.webp',null,V?600:540);
+const btn=fit(mk(stage,'div','o stk',X.btn),900);btn.style.fontSize=(V?76:72)+'px';
+const play=mk(stage,'div','o sub',X.play);play.style.cssText+=`font-size:${V?42:40}px;font-family:Nunito;font-weight:900`;
+function s6(lt){head(6,lt);
+  const pl=prog(lt,.6,.45);put(logo,PX,PY-220,lt<0||pl<=0?0:eBack(pl),-2);
+  const pb=prog(lt,1.5,.45);put(btn,PX,PY+20,(lt<0||pb<=0?0:eBack(pb))*(1+Math.sin(lt*6.5)*.035),-2);
+  put(play,PX,PY+165,1,0,lt<0?0:eOut(prog(lt,2,.4)))}
+
+const SEG=[s0,s1,s2,s3,s4,s5,s6];
+boot(END,t=>{world(t);zibo(t);drawClock(t);SEG.forEach((f,i)=>f(t-S[i]))});
+</script>
+</body>
+</html>
