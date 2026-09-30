@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>Zibo Tanıtım v01</title>
+<!--
+  Zibo tanıtım videosu v01 — "Çizgi Roman Çıkartması" tarzı, sessiz.
+  TÜM animasyon `seek(t)` fonksiyonunun saf bir çıktısı (CSS animasyonu/timer YOK) —
+  `promo_video/render.py` bunu kare kare çağırıp MP4'e çeviriyor.
+  ?f=v → 1080x1920 (9:16), ?f=h → 1920x1080 (16:9). `?cap` yoksa tarayıcıda canlı oynar.
+-->
+<style>
+@font-face{font-family:Baloo2;src:url(../../dijital_kanka/assets/fonts/Baloo2-Variable.ttf);font-weight:400 800}
+@font-face{font-family:Nunito;src:url(../../dijital_kanka/assets/fonts/Nunito-Variable.ttf);font-weight:200 1000}
+:root{--outline:#14110C;--gold:#F3B23C;--gold-soft:#F6D488;--cream:#FFF4DE;--blue:#23408E;--ice:#8FD3FF}
+html,body{margin:0;background:#000;overflow:hidden}
+#stage{position:relative;overflow:hidden;font-family:Baloo2,sans-serif;color:var(--outline)}
+.scene{position:absolute;inset:0;overflow:hidden;display:none}
+.burst{position:absolute;left:50%;top:50%;width:3000px;height:3000px;margin:-1500px 0 0 -1500px;
+  background:repeating-conic-gradient(from 0deg,var(--ray,rgba(255,255,255,.34)) 0 9deg,transparent 9deg 18deg)}
+.dots{position:absolute;inset:0;background-image:radial-gradient(var(--dot,rgba(20,17,12,.07)) 24%,transparent 26%);background-size:30px 30px}
+.o{position:absolute;left:0;top:0}
+.hl{font-weight:800;line-height:1.02;text-align:center;white-space:nowrap;color:#fff;
+  -webkit-text-stroke:16px var(--outline);paint-order:stroke fill;text-shadow:0 9px 0 var(--outline)}
+.hl span{display:inline-block;transform-origin:50% 85%}
+.hl .g{color:var(--gold)}
+.stk{background:var(--gold);border:6px solid var(--outline);border-radius:999px;box-shadow:8px 8px 0 var(--outline);
+  font-weight:800;white-space:nowrap;padding:.12em .7em .02em;line-height:1.35}
+.card{background:#fff;border:6px solid var(--outline);border-radius:38px;box-shadow:10px 10px 0 var(--outline);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;box-sizing:border-box}
+.card img{height:172px}
+.card b{font-weight:800;font-size:37px;line-height:1}
+.thumb{border:7px solid var(--outline);border-radius:44px;box-shadow:10px 10px 0 var(--outline);overflow:hidden;box-sizing:border-box}
+.thumb img{width:100%;height:100%;display:block}
+.shadow{background:rgba(20,17,12,.22);border-radius:50%}
+.ring{position:absolute;left:0;top:0;border:16px solid var(--outline);border-radius:50%;box-sizing:border-box;z-index:99;display:none}
+.icon{border:7px solid var(--outline);border-radius:23%;box-shadow:10px 10px 0 var(--outline);box-sizing:border-box}
+.conf{border:3px solid var(--outline);box-sizing:border-box}
+.sub{font-weight:700;white-space:nowrap}
+</style>
+</head>
+<body>
+<div id="stage"><div class="ring" id="ring"></div></div>
+<script>
+const Q=new URLSearchParams(location.search);
+const V=Q.get('f')!=='h';
+const W=V?1080:1920,H=V?1920:1080;
+const IMG='../../dijital_kanka/assets/images/';
+const stage=document.getElementById('stage'),ring=document.getElementById('ring');
+stage.style.width=W+'px';stage.style.height=H+'px';
+
+// ---------- yardımcılar ----------
+const clamp=(x,a=0,b=1)=>Math.min(b,Math.max(a,x));
+const prog=(t,a,d)=>clamp((t-a)/d);
+const lerp=(a,b,p)=>a+(b-a)*p;
+const eOut=x=>1-Math.pow(1-x,3);
+const eInOut=x=>x<.5?4*x*x*x:1-Math.pow(-2*x+2,3)/2;
+const eBack=x=>{const c1=1.70158,c3=c1+1;return 1+c3*Math.pow(x-1,3)+c1*Math.pow(x-1,2)};
+function eBounce(x){const n=7.5625,d=2.75;
+  if(x<1/d)return n*x*x;if(x<2/d)return n*(x-=1.5/d)*x+.75;
+  if(x<2.5/d)return n*(x-=2.25/d)*x+.9375;return n*(x-=2.625/d)*x+.984375}
+function rng(seed){let s=seed;return()=>{s=(s*1664525+1013904223)%4294967296;return s/4294967296}}
+function mk(parent,tag,cls,html){const e=document.createElement(tag);if(cls)e.className=cls;
+  if(html!=null)e.innerHTML=html;parent.appendChild(e);return e}
+function img(parent,name,h,w){const e=mk(parent,'img','o');e.src=IMG+encodeURI(name);
+  if(h)e.style.height=h+'px';if(w)e.style.width=w+'px';return e}
+function put(el,x,y,s=1,r=0,o=1,sx=1){
+  el.style.transform=`translate(${x}px,${y}px) translate(-50%,-50%) rotate(${r}deg) scale(${s*sx},${s})`;
+  el.style.opacity=o}
+// Başlık: satırlar dizisi; *kelime* → altın renk. Her kelime ayrı ayrı "pop" eder.
+function headline(parent,lines,size){
+  const el=mk(parent,'div','o hl');el.style.fontSize=size+'px';const words=[];
+  for(const line of lines){const row=mk(el,'div');
+    line.split(' ').forEach((w,i)=>{const g=w.startsWith('*');
+      const sp=mk(row,'span',g?'g':'',(i?'&nbsp;':'')+w.replace(/\*/g,''));words.push(sp)})}
+  return{el,words}}
+function popWords(h,lt,t0,step=.13){h.words.forEach((w,i)=>{const p=prog(lt,t0+i*step,.38);
+  w.style.transform=`scale(${p<=0?0:eBack(p)}) rotate(${lerp(-8,0,eOut(p))}deg)`})}
+function star(parent,size,fill='#fff'){const e=mk(parent,'div','o',
+  `<svg width="${size}" height="${size}" viewBox="-60 -60 120 120"><path d="M0,-50 C6,-16 16,-6 50,0 C16,6 6,16 0,50 C-6,16 -16,6 -50,0 C-16,-6 -6,-16 0,-50Z" fill="${fill}" stroke="#14110C" stroke-width="7" stroke-linejoin="round"/></svg>`);
+  return e}
+function scene(bg,ray,dot){const s=mk(stage,'div','scene');s.style.background=bg;
+  const burst=mk(s,'div','burst');if(ray)burst.style.setProperty('--ray',ray);
+  const dots=mk(s,'div','dots');if(dot)dots.style.setProperty('--dot',dot);return{s,burst}}
+const spin=(sc,lt,speed=5)=>sc.burst.style.transform=`rotate(${lt*speed}deg)`;
+
+const SCENES=[];
+
+// ---------- 1) Giriş ----------
+(()=>{const sc=scene('#FFF4DE','rgba(243,178,60,.20)');
+  const L=V?{z:[540,1090,840],logo:[540,390,720],tag:[540,1665,64]}
+           :{z:[1400,580,800],logo:[660,400,780],tag:[660,710,64]};
+  const sh=mk(sc.s,'div','o shadow');sh.style.width=L.z[2]*.62+'px';sh.style.height='70px';
+  const z=img(sc.s,'zibo_yeni.webp',L.z[2]);
+  const logo=img(sc.s,'zibo_logo_new.webp',null,L.logo[2]);
+  const tag=mk(sc.s,'div','o stk','Dijital kankan cebinde!');tag.style.fontSize=L.tag[2]+'px';
+  const R=rng(7),stars=[];
+  const spots=V?[[150,640],[930,700],[120,1350],[960,1420],[860,210],[200,180]]
+               :[[1050,200],[1760,230],[1030,900],[1800,860],[180,170],[260,900]];
+  spots.forEach((p,i)=>stars.push({e:star(sc.s,70+R()*60,i%2?'#F3B23C':'#fff'),p}));
+  SCENES.push({dur:3.2,el:sc.s,draw(lt){spin(sc,lt);
+    const p=prog(lt,.15,.8),b=eBounce(p),idle=lt>.95?Math.sin((lt-.95)*3.2)*9:0;
+    put(z,L.z[0],lerp(-L.z[2],L.z[1],b)+idle,1,Math.sin(lt*2.2)*1.4);
+    put(sh,L.z[0],L.z[1]+L.z[2]/2-18,lerp(.3,1,b),0,p);
+    const pl=prog(lt,.85,.5);put(logo,L.logo[0],L.logo[1],(pl<=0?0:eBack(pl))*(1+Math.sin(lt*4)*.012),lerp(-14,-3,eOut(pl)));
+    const pt=prog(lt,1.4,.45);put(tag,L.tag[0],L.tag[1],pt<=0?0:eBack(pt),3);
+    stars.forEach((s,i)=>{const ps=prog(lt,1+i*.14,.35);
+      put(s.e,s.p[0],s.p[1],(ps<=0?0:eBack(ps))*(1+Math.sin(lt*6+i)*.16),lt*40+i*30)})}})})();
+
+// ---------- 2) Özellikler ----------
+(()=>{const sc=scene('#F6D488','rgba(255,255,255,.30)');
+  const feats=[['su_kahramani_rozet.webp','Su Takibi'],['sükran_rozeti.webp','Şükran'],['ruh_hali_rozet.webp','Ruh Hali'],
+    ['ruya_yorumcusu_rozet.webp','Rüya Günlüğü'],['birikim_ustasi_rozet.webp','Birikim'],['bir_hafta_seri_rozet.webp','Seri &amp; Hedef']];
+  const L=V?{h:[540,260,112],xs:[200,540,880],ys:[730,1080],cw:300,ch:310,z:[540,1620,580]}
+           :{h:[510,215,96],xs:[1030,1350,1670],ys:[350,710],cw:290,ch:310,z:[460,740,610]};
+  const z=img(sc.s,'zibo_df_pose2.webp',L.z[2]);
+  const h=headline(sc.s,['Küçük adımlar,','*büyük* *değişim*'],L.h[2]);
+  const cards=feats.map(f=>{const c=mk(sc.s,'div','o card');c.style.width=L.cw+'px';c.style.height=L.ch+'px';
+    mk(c,'img').src=IMG+encodeURI(f[0]);mk(c,'b',null,f[1]);return c});
+  SCENES.push({dur:5,el:sc.s,draw(lt){spin(sc,lt,-4);
+    put(h.el,L.h[0],L.h[1]);popWords(h,lt,.25);
+    const pz=prog(lt,.35,.6);put(z,L.z[0],lerp(L.z[1]+800,L.z[1],eBack(pz))+Math.sin(lt*3)*7,1,Math.sin(lt*1.8)*1.5);
+    cards.forEach((c,i)=>{const p=prog(lt,.95+i*.13,.5),tilt=(i%2?2.5:-2.5);
+      const bump=Math.sin(Math.PI*prog(lt,2.55+i*.32,.34))*.11;
+      put(c,L.xs[i%3],lerp(L.ys[i/3|0]+500,L.ys[i/3|0],eBack(p)),(p<=0?0:1)+bump,lerp(16,tilt,eOut(p)),p>0?1:0)})}})})();
+
+// ---------- 3) Zibo Coin ----------
+(()=>{const sc=scene('#23408E','rgba(255,255,255,.07)','rgba(255,255,255,.06)');
+  const L=V?{h:[540,265,110],c:[540,830,450],n:[540,1170,96],z:[540,1580,600]}
+           :{h:[610,220,96],c:[610,590,370],n:[610,890,88],z:[1430,600,830]};
+  const R=rng(42),rain=[];
+  for(let i=0;i<30;i++){const s=56+R()*86;rain.push({e:img(sc.s,'zibo_coin.webp',s),x:R()*W,d:R()*1.6,v:620+R()*520,r:R()*360,rv:(R()-.5)*260})}
+  const z=img(sc.s,'zibo_df_pose4.webp',L.z[2]);
+  const coin=img(sc.s,'zibo_coin.webp',L.c[2]);
+  const h=headline(sc.s,['Görevini yap,','*Zibo* *Coin* kazan!'],L.h[2]);
+  const n=mk(sc.s,'div','o stk','');n.style.fontSize=L.n[2]+'px';
+  SCENES.push({dur:3.8,el:sc.s,draw(lt){spin(sc,lt,6);
+    rain.forEach(c=>{const span=H+400,y=-200-c.d*c.v+Math.max(0,lt-.25)*c.v;
+      put(c.e,c.x,y<H+200?y:((y+200)%span)-200,1,c.r+lt*c.rv)});
+    put(h.el,L.h[0],L.h[1]);popWords(h,lt,.3);
+    const pc=prog(lt,.4,.45),ang=lerp(0,4*Math.PI,eOut(prog(lt,.4,1.3)));
+    put(coin,L.c[0],L.c[1]+Math.sin(lt*3)*10,pc<=0?0:eBack(pc),Math.sin(lt*2)*4,1,Math.cos(ang));
+    const pn=prog(lt,.95,.4),cnt=Math.round(250*eOut(prog(lt,1.05,1.5)));
+    n.textContent='+'+cnt+' ZC';
+    put(n,L.n[0],L.n[1],(pn<=0?0:eBack(pn))+Math.sin(Math.PI*prog(lt,2.55,.3))*.16,-3);
+    const pz=prog(lt,.55,.6);put(z,L.z[0],lerp(L.z[1]+900,L.z[1],eBack(pz))+Math.sin(lt*3.2)*7,1,Math.sin(lt*2)*1.5)}})})();
+
+// ---------- 4) Kostümler ----------
+(()=>{const sc=scene('#14110C','rgba(243,178,60,.10)','rgba(255,255,255,.04)');
+  const cos=[['zibo_king.webp','Kral'],['zibo_astronot.webp','Astronot'],['zibo_korsan.webp','Korsan'],['zibo_samurai.webp','Samuray'],
+    ['zibo_punk.webp','Punk'],['zibo_hippi.webp','Hippi'],['zibo_gladyator.webp','Gladyatör'],['zibo_cyborg.webp','Cyborg'],
+    ['zibo_altin.webp','Altın'],['zibo_elmas.webp','Elmas']];
+  const L=V?{h:[540,270,124],c:[540,1010,800],sp:420,pl:1420,n:[540,1590,84],s:[540,1760,52]}
+           :{h:[480,390,112],c:[1300,500,700],sp:390,pl:860,n:[1300,975,76],s:[480,660,48]};
+  const spot=mk(sc.s,'div','o');spot.style.cssText+=`width:${L.c[2]*1.7}px;height:${L.c[2]*1.7}px;border-radius:50%;background:radial-gradient(closest-side,rgba(243,178,60,.62),rgba(243,178,60,0))`;
+  const plat=mk(sc.s,'div','o');plat.style.cssText+=`width:${L.c[2]*.78}px;height:90px;border-radius:50%;background:#F3B23C;border:6px solid #000;box-sizing:border-box`;
+  const ims=cos.map(c=>img(sc.s,c[0],L.c[2]));
+  const h=headline(sc.s,V?['*40+* kostüm','Tarzını seç!']:['*40+* kostüm','Tarzını seç!'],L.h[2]);
+  const name=mk(sc.s,'div','o stk','');name.style.fontSize=L.n[2]+'px';
+  const sub=mk(sc.s,'div','o sub',"Zibo'yu dilediğin gibi giydir");sub.style.fontSize=L.s[2]+'px';sub.style.color='#FFF4DE';
+  const STEP=.45;
+  SCENES.push({dur:5.2,el:sc.s,draw(lt){spin(sc,lt,8);
+    put(h.el,L.h[0],L.h[1]);popWords(h,lt,.25);
+    const pin=prog(lt,.3,.5),inS=pin<=0?0:eBack(pin);
+    const u=clamp((lt-.75)/STEP,0,cos.length-1),k=Math.floor(u),f=u-k,p=k+eInOut(clamp(f/.6));
+    put(spot,L.c[0],L.c[1],inS*(1+Math.sin(lt*5)*.04));put(plat,L.c[0],L.pl,inS);
+    ims.forEach((e,i)=>{const d=i-p,a=Math.abs(d);
+      e.style.zIndex=20-Math.round(a*4);e.style.filter=a>.05?`brightness(${lerp(1,.4,clamp(a))})`:'none';
+      put(e,L.c[0]+d*L.sp,L.c[1]+(a<.5?Math.sin(lt*4)*6:0)+clamp(a)*60,inS*lerp(1,.52,clamp(a)),d*4,a>1.7?0:lerp(1,.55,clamp(a)))});
+    const cur=Math.round(p);name.textContent=cos[cur][1];name.style.zIndex=30;
+    const fb=((u+.5)%1);put(name,L.n[0],L.n[1],inS*(1+Math.sin(Math.PI*clamp(fb/.4))*.14*(u>0&&u<cos.length-1?1:0)),-2);
+    const ps=prog(lt,.9,.4);put(sub,L.s[0],L.s[1],1,0,eOut(ps))}})})();
+
+// ---------- 5) Oyun Salonu ----------
+(()=>{const sc=scene('#8FD3FF','rgba(255,255,255,.30)','rgba(14,58,92,.08)');
+  const games=['kule','hafiza','2048','yakala','tren','zipla','tugla'];
+  const L=V?{b:[185,175,230],h:[560,360,136],sz:310,
+             pos:[[365,760],[715,760],[190,1100],[540,1100],[890,1100],[365,1440],[715,1440]],s:[540,1745,50]}
+           :{b:[330,150,210],h:[960,200,128],sz:228,
+             pos:games.map((g,i)=>[960+(i-3)*258,570+(i%2?30:-30)]),s:[960,905,50]};
+  const h=headline(sc.s,['Oyun Salonu'],L.h[2]);
+  const bst=mk(sc.s,'div','o',`<svg width="${L.b[2]}" height="${L.b[2]}" viewBox="-110 -110 220 220"><polygon points="${
+    Array.from({length:28},(_,i)=>{const a=i*Math.PI/14,r=i%2?72:100;return (Math.cos(a)*r).toFixed(1)+','+(Math.sin(a)*r).toFixed(1)}).join(' ')
+    }" fill="#F3B23C" stroke="#14110C" stroke-width="7" stroke-linejoin="round"/><text y="17" text-anchor="middle" font-family="Baloo2" font-weight="800" font-size="50" fill="#14110C">YENİ</text></svg>`);
+  const th=games.map(g=>{const t=mk(sc.s,'div','o thumb');t.style.width=t.style.height=L.sz+'px';
+    mk(t,'img').src=IMG+'game_'+g+'_thumb.webp';return t});
+  const sub=mk(sc.s,'div','o stk',"Oyna · ★ topla · Zibo Coin'e çevir");sub.style.fontSize=L.s[2]+'px';sub.style.background='#fff';
+  SCENES.push({dur:4,el:sc.s,draw(lt){spin(sc,lt,-6);
+    put(h.el,L.h[0],L.h[1]);popWords(h,lt,.3,.16);
+    const pb=prog(lt,.75,.4);put(bst,L.b[0],L.b[1],(pb<=0?0:eBack(pb))*(1+Math.sin(lt*7)*.05),-14+Math.sin(lt*3)*4);
+    th.forEach((t,i)=>{const p=prog(lt,.7+i*.11,.45);
+      put(t,L.pos[i][0],L.pos[i][1]+Math.sin(lt*3+i*.9)*10,p<=0?0:eBack(p),lerp(-20,i%2?3:-3,eOut(p)))});
+    const ps=prog(lt,1.75,.45);put(sub,L.s[0],L.s[1],ps<=0?0:eBack(ps),-1.5)}})})();
+
+// ---------- 6) Kapanış ----------
+(()=>{const sc=scene('#FFF4DE','rgba(243,178,60,.20)');
+  const L=V?{i:[540,440,330],logo:[540,770,560],s:[540,965,66],b:[540,1180,76],p:[540,1315,42],z:[540,1650,560]}
+           :{i:[1290,225,240],logo:[1290,470,520],s:[1290,640,60],b:[1290,810,72],p:[1290,935,40],z:[520,585,830]};
+  const R=rng(99),conf=[],cols=['#F3B23C','#23408E','#8FD3FF','#E8553D','#fff','#F6D488'];
+  for(let i=0;i<80;i++){const e=mk(sc.s,'div','o conf');const w=18+R()*26;
+    e.style.width=w+'px';e.style.height=(i%3?w*.5:w)+'px';e.style.background=cols[i%cols.length];if(i%4==0)e.style.borderRadius='50%';
+    const a=-Math.PI/2+(R()-.5)*2.4,v=900+R()*1500;conf.push({e,vx:Math.cos(a)*v,vy:Math.sin(a)*v,r:R()*360,rv:(R()-.5)*900})}
+  const sh=mk(sc.s,'div','o shadow');sh.style.width=L.z[2]*.62+'px';sh.style.height='60px';
+  const z=img(sc.s,'zibo_df_pose4.webp',L.z[2]);
+  const icon=img(sc.s,'zibo_app_icon.png',L.i[2]);icon.classList.add('icon');
+  const logo=img(sc.s,'zibo_logo_new.webp',null,L.logo[2]);
+  const s=mk(sc.s,'div','o sub','Dijital Kanka');s.style.fontSize=L.s[2]+'px';s.style.fontWeight=800;
+  const b=mk(sc.s,'div','o stk','ÜCRETSİZ İNDİR');b.style.fontSize=L.b[2]+'px';
+  const pt=mk(sc.s,'div','o sub',"Google Play'de");pt.style.fontSize=L.p[2]+'px';pt.style.fontFamily='Nunito';pt.style.fontWeight=900;
+  SCENES.push({dur:4.3,el:sc.s,draw(lt){spin(sc,lt);
+    const tc=lt-.55;conf.forEach(c=>{const o=tc<0?0:clamp(2.6-tc);
+      put(c.e,L.i[0]+c.vx*tc*.9,L.i[1]+c.vy*tc+1400*tc*tc,1,c.r+c.rv*tc,o)});
+    const pi=prog(lt,.3,.5);put(icon,L.i[0],L.i[1],pi<=0?0:eBack(pi),lerp(-18,-4,eOut(pi)));
+    const pl=prog(lt,.6,.45);put(logo,L.logo[0],L.logo[1],pl<=0?0:eBack(pl),-2);
+    const p2=prog(lt,.9,.4);put(s,L.s[0],L.s[1],p2<=0?0:eBack(p2));
+    const pb=prog(lt,1.25,.45);put(b,L.b[0],L.b[1],(pb<=0?0:eBack(pb))*(1+Math.sin(lt*6.5)*.035),-2);
+    const pp=prog(lt,1.6,.4);put(pt,L.p[0],L.p[1],1,0,eOut(pp));
+    const pz=prog(lt,.45,.6);
+    put(z,L.z[0],lerp(L.z[1]+900,L.z[1],eBack(pz))+Math.sin(lt*3.2)*8,1,Math.sin(lt*2)*1.5);
+    put(sh,L.z[0],L.z[1]+L.z[2]/2-14,1,0,V?0:eOut(pz))}})})();
+
+// ---------- zaman çizelgesi ----------
+let acc=0;SCENES.forEach((s,i)=>{s.start=acc;acc+=s.dur;s.el.style.zIndex=i+1});
+window.DURATION=acc;
+const TR=.6,MAXR=Math.hypot(W,H)/2+30;
+window.seek=function(t){
+  let ringOn=false;
+  SCENES.forEach((s,i)=>{const lt=t-s.start,next=SCENES[i+1];
+    if(lt<0||(next&&t>next.start+TR+.05)){s.el.style.display='none';return}
+    s.el.style.display='block';
+    if(i>0&&lt<TR){const r=eInOut(lt/TR)*MAXR;s.el.style.clipPath=`circle(${r}px at ${W/2}px ${H/2}px)`;
+      ringOn=true;ring.style.display='block';ring.style.width=ring.style.height=(2*r+16)+'px';
+      ring.style.transform=`translate(${W/2}px,${H/2}px) translate(-50%,-50%)`}
+    else s.el.style.clipPath='none';
+    s.draw(lt)});
+  if(!ringOn)ring.style.display='none'};
+
+Promise.all([document.fonts.load('800 40px Baloo2'),document.fonts.load('900 40px Nunito'),
+  ...[...document.images].map(im=>im.decode().catch(()=>{}))]).then(()=>{
+  seek(0);window.READY=true;
+  if(!Q.has('cap')){ // canlı önizleme: pencereye sığdır + döngü
+    const k=Math.min(innerWidth/W,innerHeight/H);stage.style.transformOrigin='0 0';stage.style.transform=`scale(${k})`;
+    const t0=performance.now();(function loop(){seek(((performance.now()-t0)/1000)%(DURATION+.8));requestAnimationFrame(loop)})()}});
+</script>
+</body>
+</html>
