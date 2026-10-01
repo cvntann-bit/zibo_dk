@@ -56,6 +56,7 @@ import 'providers/xp_provider.dart';
 import 'providers/zibo_pose_provider.dart';
 import 'utils/ad_free_promo_trigger.dart';
 import 'utils/rate_prompt_trigger.dart';
+import 'services/ad_analytics.dart';
 import 'utils/banner_ad_reload_signal.dart';
 import 'utils/auth_switch.dart';
 import 'utils/root_navigator_key.dart';
@@ -517,6 +518,10 @@ void _initializeAppodeal() {
       // loglanıyor (bir ağ adaptörü eksik/uyumsuzsa veya App Key yanlışsa
       // burada görünür).
       onInitializationFinished: (errors) {
+        AdAnalytics.log('appodeal_init', {
+          'ok': (errors == null || errors.isEmpty) ? 1 : 0,
+          'errors': errors?.length ?? 0,
+        });
         if (errors == null || errors.isEmpty) return;
         // **Bug düzeltmesi — Crashlytics'te 1.9.2'den beri her sürümde
         // tekrar eden bu non-fatal, TEŞHİS EDİLEMEZ haldeydi:** `errors`
@@ -561,9 +566,14 @@ void _initializeAppodeal() {
     // hâlâ AYNI gerekçeyle Crashlytics'e loglanıyor.
     Appodeal.setBannerCallbacks(
       onBannerLoaded: (isPrecache) {
+        AdAnalytics.log('banner_loaded', {'precache': isPrecache ? 1 : 0});
         bannerAdReloadSignal.value++;
       },
+      onBannerShown: () => AdAnalytics.log('banner_shown'),
+      onBannerClicked: () => AdAnalytics.log('banner_clicked'),
+      onBannerExpired: () => AdAnalytics.log('banner_expired'),
       onBannerFailedToLoad: () {
+        AdAnalytics.log('banner_failed');
         try {
           FirebaseCrashlytics.instance.recordError(
             'Appodeal banner failed to load',
@@ -574,6 +584,7 @@ void _initializeAppodeal() {
         } catch (_) {}
       },
       onBannerShowFailed: () {
+        AdAnalytics.log('banner_show_failed');
         try {
           FirebaseCrashlytics.instance.recordError(
             'Appodeal banner show failed',
