@@ -2560,7 +2560,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get gameHallSubtitle =>
-      'Juega y reúne Puntos de Juego. ¡El canje llega pronto!';
+      '¡Juega, reúne Puntos de Juego y cámbialos por Zibo Coins!';
 
   @override
   String get gameHallPlay => 'Jugar';

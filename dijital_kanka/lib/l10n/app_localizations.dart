@@ -4537,7 +4537,7 @@ abstract class AppLocalizations {
   /// Oyun Salonu başlığının altındaki açıklama
   ///
   /// In tr, this message translates to:
-  /// **'Oyna, Oyun Puanı topla. Takas Gişesi yakında!'**
+  /// **'Oyna, Oyun Puanı topla, Zibo Coin\'e çevir!'**
   String get gameHallSubtitle;
 
   /// Oyun Salonu kartındaki oyna düğmesi

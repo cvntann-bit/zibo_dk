@@ -2545,7 +2545,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get gameHallSubtitle =>
-      'Play and collect Game Points. The Exchange opens soon!';
+      'Play, collect Game Points, trade them for Zibo Coins!';
 
   @override
   String get gameHallPlay => 'Play';

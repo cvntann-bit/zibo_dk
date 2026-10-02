@@ -2530,8 +2530,7 @@ class AppLocalizationsTr extends AppLocalizations {
       '7 günlük hedeflerini işaretle, serini koru';
 
   @override
-  String get gameHallSubtitle =>
-      'Oyna, Oyun Puanı topla. Takas Gişesi yakında!';
+  String get gameHallSubtitle => 'Oyna, Oyun Puanı topla, Zibo Coin\'e çevir!';
 
   @override
   String get gameHallPlay => 'Oyna';

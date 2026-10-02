@@ -3411,7 +3411,7 @@
   "@goalsModuleDescription": {
     "description": "Z modül menüsündeki Hedef Takibi kartının açıklaması"
   },
-  "gameHallSubtitle": "Oyna, Oyun Puanı topla. Takas Gişesi yakında!",
+  "gameHallSubtitle": "Oyna, Oyun Puanı topla, Zibo Coin'e çevir!",
   "@gameHallSubtitle": {
     "description": "Oyun Salonu başlığının altındaki açıklama"
   },
