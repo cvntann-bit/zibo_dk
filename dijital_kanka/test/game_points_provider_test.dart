@@ -30,6 +30,30 @@ void main() {
     expect(p.playsLeft('tren', 'free', config), 3);
   });
 
+  test('sahibin verdiği "sınırsız hak" hediyesi: hak tükenmez, reklam teklif edilmez, kayıtta korunur', () async {
+    SharedPreferences.setMockInitialValues({
+      'gamePointsState': '{"points":0,"unlimitedPlays":true}',
+    });
+    final p = await make(() => DateTime(2026, 9, 29, 10));
+    expect(p.unlimitedPlays, isTrue);
+    for (var i = 0; i < 20; i++) {
+      expect(p.consumePlay('kule', 'free', config), isTrue);
+    }
+    expect(p.playsLeft('kule', 'free', config), GamePointsProvider.unlimitedPlaysDisplay);
+    expect(p.canAdForPlay('kule', 'free', config), isFalse);
+    // Bir sonraki kayıt hediyeyi SİLMEMELİ (`set` belgeyi bütünüyle yazar).
+    p.recordFinish('kule', claimedPoints: 10, config: config);
+    await Future<void>.delayed(Duration.zero);
+    final prefs = await SharedPreferences.getInstance();
+    expect(prefs.getString('gamePointsState'), contains('"unlimitedPlays":true'));
+    // Hediyesi olmayan kullanıcıda alan hiç yazılmaz.
+    SharedPreferences.setMockInitialValues({});
+    final q = await make(() => DateTime(2026, 9, 29, 10));
+    q.recordFinish('kule', claimedPoints: 10, config: config);
+    await Future<void>.delayed(Duration.zero);
+    expect((await SharedPreferences.getInstance()).getString('gamePointsState'), isNot(contains('unlimitedPlays')));
+  });
+
   test('reklamla ek hak yalnızca ücretsizde ve oyun başına günde en fazla 2', () async {
     final p = await make(() => DateTime(2026, 9, 29, 10));
     expect(p.canAdForPlay('kule', 'pro', config), isFalse);

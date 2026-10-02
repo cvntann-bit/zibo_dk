@@ -35,6 +35,18 @@ class GamePointsProvider extends ChangeNotifier {
   final Map<String, _DailyPlays> _plays = {};
   final Map<String, int> _best = {};
 
+  /// Sahibin elle verdiği "sınırsız oyun hakkı" hediyesi — yalnızca sunucu
+  /// tarafı yönetim betiği (`notification-scripts/src/grantGift.js`) bu alanı
+  /// `gamePointsState.unlimitedPlays = true` olarak yazar; uygulama içinden
+  /// hiçbir yol bunu AÇMAZ. Açıkken günlük hak sayacı tüketilmez, reklamla ek
+  /// hak teklif edilmez.
+  bool _unlimitedPlays = false;
+  bool get unlimitedPlays => _unlimitedPlays;
+
+  /// Sınırsız modda oyunun arayüzüne bildirilen sabit hak sayısı (HTML
+  /// oyunlar "N hak kaldı" yazıyor — ∞ yerine büyük, sabit bir sayı).
+  static const unlimitedPlaysDisplay = 99;
+
   /// Kayıtlı veri yüklenince tamamlanır (AppStreakProvider ile aynı desen).
   Future<void> get ready => _readyCompleter.future;
 
@@ -91,10 +103,12 @@ class GamePointsProvider extends ChangeNotifier {
   /// Bugün bu oyun için toplam hak (üyelik + reklamla alınanlar).
   int maxPlays(String gameId, String tier, GamesConfig config) {
     _roll();
+    if (_unlimitedPlays) return unlimitedPlaysDisplay;
     return config.playsFor(tier) + _playsOf(gameId).bonus;
   }
 
   int playsLeft(String gameId, String tier, GamesConfig config) {
+    if (_unlimitedPlays) return unlimitedPlaysDisplay;
     final left = maxPlays(gameId, tier, config) - _playsOf(gameId).used;
     return left < 0 ? 0 : left;
   }
@@ -103,11 +117,13 @@ class GamePointsProvider extends ChangeNotifier {
   /// zaten daha çok hak alıyor, reklam görmüyor) ve günlük sınır dolmadıysa.
   bool canAdForPlay(String gameId, String tier, GamesConfig config) {
     _roll();
+    if (_unlimitedPlays) return false;
     return tier == 'free' && _playsOf(gameId).ads < config.maxAdPlaysPerGame;
   }
 
   /// Bir tur başlatır; hak yoksa `false`.
   bool consumePlay(String gameId, String tier, GamesConfig config) {
+    if (_unlimitedPlays) return true;
     if (playsLeft(gameId, tier, config) <= 0) return false;
     _playsOf(gameId).used++;
     _changed();
@@ -223,6 +239,7 @@ class GamePointsProvider extends ChangeNotifier {
         _totalEarned = (data['totalEarned'] as num?)?.toInt() ?? _points;
         _weekPoints = (data['weekPoints'] as num?)?.toInt() ?? 0;
         _weekExchanged = (data['weekExchanged'] as num?)?.toInt() ?? 0;
+        _unlimitedPlays = data['unlimitedPlays'] == true;
         _dayKey = data['dayKey'] as String? ?? '';
         _weekKey = data['weekKey'] as String? ?? '';
         final plays = data['plays'];
@@ -256,6 +273,9 @@ class GamePointsProvider extends ChangeNotifier {
       'weekKey': _weekKey,
       'plays': {for (final e in _plays.entries) e.key: e.value.toJson()},
       'best': _best,
+      // Yalnızca açıkken yazılır — `set` belgeyi bütünüyle değiştirdiği için
+      // yazılmazsa sunucudan verilen hediye bir sonraki kayıtta SİLİNİRDİ.
+      if (_unlimitedPlays) 'unlimitedPlays': true,
     });
   }
 }

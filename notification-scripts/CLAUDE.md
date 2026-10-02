@@ -29,6 +29,7 @@ mantığı zaten hangi dakikada tetiklendiğinden bağımsız (bkz. altta "catch
 | `reEngagement.js` | `hourly-jobs.yml` | 11 | `users/{uid}.lastActiveAt` 2+ gün eski |
 | `processReferralRewards.js` | `hourly-jobs.yml` | (her çalıştırma) | `referralRedemptions` `pending` → her iki tarafa 100 ZC, `dry_run` varsayılan `false` |
 | `cleanupStaleAnonymousUsers.js` | kendi dosyası, yalnızca `workflow_dispatch` | — | 30+ gün terkedilmiş anonim kullanıcıları sil, `dry_run` varsayılan `true`, İKİ AŞAMALI onay |
+| `grantGift.js` | `grant-gift.yml`, yalnızca `workflow_dispatch` | — | Sahibin bir kullanıcıya HEDİYE vermesi: `coinState`'e ZC ekle (Admin SDK kuralları aşar, `GRANT_ID` ile çift-ekleme koruması), `subscriptionState` Pro/Pro+ (tier JSON'u `'proplus'` küçük harf, bitiş 2099), `gamePointsState.unlimitedPlays=true` (uygulama 1.14.1+ okur). `dry_run` varsayılan `true` — hesabı (uid/ad/sağlayıcı) loglar, yazmaz. Hesap sahibi uygulamayı tamamen kapatıp açmalı |
 | `initFounderBadgeCounter.js` | kendi dosyası, yalnızca `workflow_dispatch` | — | `founderBadgeStatus/status`'u GERÇEK sayıyla seed et, `dry_run` varsayılan `true`, `FORCE` guard'ı |
 
 `hourly-jobs.yml`'deki HER betik-step'i `if: ${{ !cancelled() }}` taşır — biri hata verirse

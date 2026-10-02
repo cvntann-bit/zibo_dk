@@ -1,0 +1,73 @@
+name: Kullanıcıya Hediye Ver (ZC / Pro+ / sınırsız oyun hakkı)
+
+# BİR KERELİK/ELLE yönetim işi — uygulama sahibi belirli bir kullanıcıya (ör. yakınına)
+# hediye vermek istediğinde. `schedule:` YOK, yalnızca elle (`workflow_dispatch`).
+# Ayrıntı ve güvenlik notları: notification-scripts/src/grantGift.js
+#
+# GÜVENLİK: `dry_run` VARSAYILAN `true` — önce hesabı doğrula, sonra `false` yap.
+# Aynı `grant_id` ZC'yi ikinci kez EKLEMEZ.
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_email:
+        description: 'Hedef kullanıcının Google e-postası'
+        required: true
+        type: string
+      coins:
+        description: 'Eklenecek ZC (0 = ekleme)'
+        required: true
+        default: '0'
+        type: string
+      tier:
+        description: 'Üyelik: none (dokunma) / pro / proplus'
+        required: true
+        default: 'none'
+        type: choice
+        options:
+          - 'none'
+          - 'pro'
+          - 'proplus'
+      unlimited_plays:
+        description: 'Sınırsız Oyun Salonu hakkı (uygulama 1.14.1+ gerekir)'
+        required: true
+        default: 'false'
+        type: choice
+        options:
+          - 'false'
+          - 'true'
+      grant_id:
+        description: 'ZC için tekrar-koruma anahtarı (coins > 0 ise zorunlu, ör. gift-2026-10)'
+        required: false
+        default: ''
+        type: string
+      dry_run:
+        description: 'true: yalnızca hesabı bul ve planı logla (varsayılan, güvenli). false: GERÇEKTEN yaz.'
+        required: true
+        default: 'true'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+
+jobs:
+  grant:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: notification-scripts
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm install
+      - run: npm run grant-gift
+        env:
+          FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
+          TARGET_EMAIL: ${{ inputs.target_email }}
+          COINS: ${{ inputs.coins }}
+          TIER: ${{ inputs.tier }}
+          UNLIMITED_PLAYS: ${{ inputs.unlimited_plays }}
+          GRANT_ID: ${{ inputs.grant_id }}
+          DRY_RUN: ${{ inputs.dry_run }}
