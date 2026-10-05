@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../data/badge_gift_rewards.dart';
 import '../data/costumes.dart';
+import '../data/rarity_colors.dart';
 import '../l10n/app_localizations.dart';
 import '../models/badge_definition.dart';
 import '../models/badge_gift_reward.dart';
@@ -244,7 +245,15 @@ class _BadgeClaimCard extends StatelessWidget {
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Image.asset(giftCostume.imageAsset, width: 28, height: 28),
+                      Container(
+                        padding: const EdgeInsets.all(2),
+                        decoration: BoxDecoration(
+                          border: Border.all(color: RarityStyle.of(giftCostume.rarity).color, width: 2),
+                          borderRadius: BorderRadius.circular(8),
+                          boxShadow: RarityStyle.of(giftCostume.rarity).glowShadows,
+                        ),
+                        child: Image.asset(giftCostume.imageAsset, width: 28, height: 28),
+                      ),
                       const SizedBox(width: 6),
                       Flexible(
                         child: Text(

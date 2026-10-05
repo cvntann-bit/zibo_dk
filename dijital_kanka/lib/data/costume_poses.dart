@@ -127,6 +127,26 @@ const costumePoses = <String, List<String>>{
     'assets/images/zibo_king_pose2.webp',
     'assets/images/zibo_king_pose3.webp',
   ],
+  // 2026-10 yeni kostümler — kaynakta iki görseli olanlar (ana + "1"). Tek görselli
+  // yeni kostümlerin (Öğrenci, Sanatçı, Büyücü, Ninja, Viking, Anime) poz seti YOK →
+  // `ZiboAnimatedImage` otomatik statik kapak görseline düşer. Pozlar 763px'e
+  // normalize (`tool/finalize_new_costumes.py`).
+  'zibo_chef': [
+    'assets/images/zibo_chef_pose1.webp',
+    'assets/images/zibo_chef_pose2.webp',
+  ],
+  'zibo_kovboy': [
+    'assets/images/zibo_kovboy_pose1.webp',
+    'assets/images/zibo_kovboy_pose2.webp',
+  ],
+  'zibo_firavun': [
+    'assets/images/zibo_firavun_pose1.webp',
+    'assets/images/zibo_firavun_pose2.webp',
+  ],
+  'zibo_ejder_ruhu': [
+    'assets/images/zibo_ejder_ruhu_pose1.webp',
+    'assets/images/zibo_ejder_ruhu_pose2.webp',
+  ],
 };
 
 /// [costumeId] için poz listesini döner: `null` (kostümsüz) ise

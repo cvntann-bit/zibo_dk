@@ -110,3 +110,5 @@ Resmi Flutter `gen-l10n`. 3 ARB (`app_tr.arb` template, `app_en.arb`, `app_es.ar
 ## 11. Görsel işleme
 
 `tool/` altında elle çalıştırılan tek-seferlik betikler (`image` paketi = `dev_dependency`). Arka plan temizleme (`remove_bg.dart` beyaz, `remove_black_bg.dart` siyah), kırpma, poz normalizasyonu, widget/önizleme asset üretimi. Bkz. `tool/CLAUDE.md`. PNG şeffaflık doğrulaması: önizleme aracına GÜVENME — pikselin HAM alfa değerini ölç.
+
+**Kostüm nadirliği:** `Costume.rarity` (`CostumeRarity`) + `Costume.acquisition` (`CostumeAcquisition`). Renkler yalnızca `data/rarity_colors.dart` (`RarityStyle.of`) içinde tanımlı; kart, grup başlığı, dolap önizlemesi, rozet ödül penceresi buradan okur. `costumes` listesi FİYATA göre sıralı tutulmalı (`pickRandomUnownedLowPricedCostume` "ucuz üçte bir" varsayar; test zorlar).

@@ -596,6 +596,65 @@ class AppLocalizationsEn extends AppLocalizations {
   String get costumeNameZiboKing => 'King Zibo';
 
   @override
+  String get costumeNameZiboChef => 'Chef Zibo';
+
+  @override
+  String get costumeNameZiboOgrenci => 'Student Zibo';
+
+  @override
+  String get costumeNameZiboArtist => 'Artist Zibo';
+
+  @override
+  String get costumeNameZiboKovboy => 'Cowboy Zibo';
+
+  @override
+  String get costumeNameZiboBuyucu => 'Wizard Zibo';
+
+  @override
+  String get costumeNameZiboNinja => 'Ninja Zibo';
+
+  @override
+  String get costumeNameZiboFiravun => 'Pharaoh Zibo';
+
+  @override
+  String get costumeNameZiboViking => 'Viking Zibo';
+
+  @override
+  String get costumeNameZiboAnime => 'Anime Zibo';
+
+  @override
+  String get costumeNameZiboEjderRuhu => 'Dragon Spirit Zibo';
+
+  @override
+  String get rarityCommon => 'Common';
+
+  @override
+  String get rarityRare => 'Rare';
+
+  @override
+  String get rarityEpic => 'Epic';
+
+  @override
+  String get rarityLegendary => 'Legendary';
+
+  @override
+  String get rarityMythic => 'Mythic';
+
+  @override
+  String get costumeAcquireBadge => 'Earn with a badge';
+
+  @override
+  String get costumeAcquirePro => 'Pro';
+
+  @override
+  String get costumeAcquireLimited => 'Limited time';
+
+  @override
+  String costumeGroupHeader(String rarity, int count) {
+    return '$rarity · $count';
+  }
+
+  @override
   String get costumeOwnedBadge => 'Owned';
 
   @override

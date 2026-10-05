@@ -823,6 +823,90 @@
   "@costumeNameZiboKing": {
     "description": "zibo_king kostümünün görünen adı"
   },
+  "costumeNameZiboChef": "Şef Zibo",
+  "@costumeNameZiboChef": {
+    "description": "zibo_chef kostümünün görünen adı"
+  },
+  "costumeNameZiboOgrenci": "Öğrenci Zibo",
+  "@costumeNameZiboOgrenci": {
+    "description": "zibo_ogrenci kostümünün görünen adı"
+  },
+  "costumeNameZiboArtist": "Sanatçı Zibo",
+  "@costumeNameZiboArtist": {
+    "description": "zibo_artist kostümünün görünen adı"
+  },
+  "costumeNameZiboKovboy": "Kovboy Zibo",
+  "@costumeNameZiboKovboy": {
+    "description": "zibo_kovboy kostümünün görünen adı"
+  },
+  "costumeNameZiboBuyucu": "Büyücü Zibo",
+  "@costumeNameZiboBuyucu": {
+    "description": "zibo_buyucu kostümünün görünen adı"
+  },
+  "costumeNameZiboNinja": "Ninja Zibo",
+  "@costumeNameZiboNinja": {
+    "description": "zibo_ninja kostümünün görünen adı"
+  },
+  "costumeNameZiboFiravun": "Firavun Zibo",
+  "@costumeNameZiboFiravun": {
+    "description": "zibo_firavun kostümünün görünen adı"
+  },
+  "costumeNameZiboViking": "Viking Zibo",
+  "@costumeNameZiboViking": {
+    "description": "zibo_viking kostümünün görünen adı"
+  },
+  "costumeNameZiboAnime": "Anime Zibo",
+  "@costumeNameZiboAnime": {
+    "description": "zibo_anime kostümünün görünen adı"
+  },
+  "costumeNameZiboEjderRuhu": "Ejder Ruhu Zibo",
+  "@costumeNameZiboEjderRuhu": {
+    "description": "zibo_ejder_ruhu kostümünün görünen adı"
+  },
+  "rarityCommon": "Yaygın",
+  "@rarityCommon": {
+    "description": "Kostüm nadirlik kademesi adı"
+  },
+  "rarityRare": "Nadir",
+  "@rarityRare": {
+    "description": "Kostüm nadirlik kademesi adı"
+  },
+  "rarityEpic": "Epik",
+  "@rarityEpic": {
+    "description": "Kostüm nadirlik kademesi adı"
+  },
+  "rarityLegendary": "Efsanevi",
+  "@rarityLegendary": {
+    "description": "Kostüm nadirlik kademesi adı"
+  },
+  "rarityMythic": "Mitik",
+  "@rarityMythic": {
+    "description": "Kostüm nadirlik kademesi adı"
+  },
+  "costumeAcquireBadge": "Rozetle kazan",
+  "@costumeAcquireBadge": {
+    "description": "Satın alınamayan kostüm kartı etiketi"
+  },
+  "costumeAcquirePro": "Pro",
+  "@costumeAcquirePro": {
+    "description": "Satın alınamayan kostüm kartı etiketi"
+  },
+  "costumeAcquireLimited": "Sınırlı süre",
+  "@costumeAcquireLimited": {
+    "description": "Satın alınamayan kostüm kartı etiketi"
+  },
+  "costumeGroupHeader": "{rarity} · {count}",
+  "@costumeGroupHeader": {
+    "description": "Mağaza kostüm grubu başlığı (ör. Efsanevi · 4)",
+    "placeholders": {
+      "rarity": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "costumeOwnedBadge": "Sahip olunan",
   "@costumeOwnedBadge": {
     "description": "Satın alınmış ama şu an giyili olmayan bir kostüm kartındaki rozet"

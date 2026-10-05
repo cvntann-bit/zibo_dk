@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../data/rarity_colors.dart';
 import '../l10n/app_localizations.dart';
 import '../models/costume.dart';
 import '../providers/coin_provider.dart';
@@ -14,6 +15,11 @@ import 'sticker_style.dart';
 /// kilitli (satın alınmamış — dim görsel + kilit rozeti + "Satın Al"),
 /// sahip olunan ama giyili değil ("Sahip olunan" rozeti, dokununca giyer),
 /// giyili (vurgulu kenarlık + "Giyili" rozeti, dokununca çıkarır).
+///
+/// **Çerçeve rengi nadirliğe göre** (bkz. `data/rarity_colors.dart`): hem kartın dış
+/// kenarlığı hem önizleme kutusu [Costume.rarity] rengini alır; Mitik'te ayrıca hafif
+/// parlama (glow) var. Köşede nadirlik etiketi görünür. [Costume.acquisition] `store`
+/// değilse (rozet/Pro/sınırlı süre) fiyat ve "Satın Al" ÇIKMAZ, yerine etiket gösterilir.
 class CostumeCard extends StatelessWidget {
   const CostumeCard({super.key, required this.costume});
 
@@ -45,6 +51,8 @@ class CostumeCard extends StatelessWidget {
     final costumeProvider = context.watch<CostumeProvider>();
     final owned = costumeProvider.isOwned(costume.id);
     final equipped = costumeProvider.isEquipped(costume.id);
+    final rarityStyle = RarityStyle.of(costume.rarity);
+    final acquisitionLabel = costume.acquisition.localizedLabel(l10n);
 
     final content = Padding(
       padding: const EdgeInsets.all(12),
@@ -65,7 +73,7 @@ class CostumeCard extends StatelessWidget {
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
                     color: const Color(0xFFF3E7CE),
-                    border: Border.all(color: kStickerOutline, width: 2),
+                    border: Border.all(color: rarityStyle.color, width: 2.5),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Opacity(
@@ -74,6 +82,30 @@ class CostumeCard extends StatelessWidget {
                       costume.imageAsset,
                       height: 68,
                       semanticLabel: localizedName,
+                    ),
+                  ),
+                ),
+                Positioned(
+                  left: 4,
+                  top: 4,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 5,
+                      vertical: 1.5,
+                    ),
+                    decoration: BoxDecoration(
+                      color: rarityStyle.color,
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(color: kStickerOutline, width: 1.2),
+                    ),
+                    child: Text(
+                      costume.rarity.localizedName(l10n),
+                      style: TextStyle(
+                        fontSize: 9,
+                        height: 1.1,
+                        fontWeight: FontWeight.w800,
+                        color: rarityStyle.onColor,
+                      ),
                     ),
                   ),
                 ),
@@ -90,7 +122,10 @@ class CostumeCard extends StatelessWidget {
                         shape: BoxShape.circle,
                         border: Border.all(color: kStickerOutline, width: 2),
                       ),
-                      child: const Text('🔒', style: TextStyle(fontSize: 11, height: 1)),
+                      child: const Text(
+                        '🔒',
+                        style: TextStyle(fontSize: 11, height: 1),
+                      ),
                     ),
                   ),
               ],
@@ -113,6 +148,8 @@ class CostumeCard extends StatelessWidget {
             StickerStatusPill(label: l10n.costumeEquippedBadge, filled: true)
           else if (owned)
             StickerStatusPill(label: l10n.costumeOwnedBadge)
+          else if (acquisitionLabel != null)
+            StickerStatusPill(label: acquisitionLabel)
           else ...[
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -145,18 +182,22 @@ class CostumeCard extends StatelessWidget {
       ),
     );
 
-    final decoration = stickerDecoration(
-      fill: colorScheme.surfaceContainerLowest,
-      borderRadius: BorderRadius.circular(16),
-      borderWidth: equipped ? 4 : 3,
-      outline: equipped ? colorScheme.primary : kStickerOutline,
-    ).copyWith(
-      // Mockup'ta giyili karttaki kalın altın kontur SIRASINDA gölge yine
-      // SABİT koyu renkte kalıyor (`stickerDecoration`'ın `outline` param'ı
-      // ikisini birden değiştirdiği için burada gölge ELLE koyu renge geri
-      // döndürülüyor).
-      boxShadow: const [BoxShadow(color: kStickerOutline, offset: Offset(4, 4))],
-    );
+    final decoration =
+        stickerDecoration(
+          fill: colorScheme.surfaceContainerLowest,
+          borderRadius: BorderRadius.circular(16),
+          borderWidth: equipped ? 4.5 : 3,
+          outline: rarityStyle.color,
+        ).copyWith(
+          // Mockup'ta giyili karttaki kalın altın kontur SIRASINDA gölge yine
+          // SABİT koyu renkte kalıyor (`stickerDecoration`'ın `outline` param'ı
+          // ikisini birden değiştirdiği için burada gölge ELLE koyu renge geri
+          // döndürülüyor).
+          boxShadow: [
+            const BoxShadow(color: kStickerOutline, offset: Offset(4, 4)),
+            ...rarityStyle.glowShadows,
+          ],
+        );
 
     final radius = BorderRadius.circular(16);
     // Dıştaki `Card` GÖRSEL OLARAK şeffaf (gerçek dolgu/kontur/gölge içteki
@@ -194,8 +235,9 @@ class CostumeCard extends StatelessWidget {
                     : l10n.costumeEquipSemanticLabel(localizedName),
                 child: InkWell(
                   borderRadius: radius,
-                  onTap: () =>
-                      context.read<CostumeProvider>().toggleEquipped(costume.id),
+                  onTap: () => context.read<CostumeProvider>().toggleEquipped(
+                    costume.id,
+                  ),
                 ),
               ),
             ),

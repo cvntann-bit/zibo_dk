@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../data/costumes.dart';
+import '../data/rarity_colors.dart';
 import '../l10n/app_localizations.dart';
 import '../models/costume.dart';
 import '../providers/costume_provider.dart';
@@ -122,7 +123,7 @@ class CostumeClosetPreview extends StatelessWidget {
                         padding: const EdgeInsets.all(5),
                         decoration: BoxDecoration(
                           color: colorScheme.surfaceContainerHigh,
-                          border: Border.all(color: kStickerOutline, width: 2.5),
+                          border: Border.all(color: RarityStyle.of(costume.rarity).color, width: 2.5),
                           borderRadius: BorderRadius.circular(14),
                         ),
                         child: Image.asset(

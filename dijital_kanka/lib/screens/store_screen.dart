@@ -6,10 +6,12 @@ import 'package:provider/provider.dart';
 import '../data/app_themes.dart';
 import '../data/coin_packages.dart';
 import '../data/costumes.dart';
+import '../data/rarity_colors.dart';
 import '../l10n/app_localizations.dart';
 import '../models/app_theme_option.dart';
 import '../models/coin_economy.dart';
 import '../models/coin_package.dart';
+import '../models/costume_rarity.dart';
 import '../providers/ad_free_provider.dart';
 import '../providers/app_streak_provider.dart';
 import '../providers/auth_link_provider.dart';
@@ -143,7 +145,10 @@ class _StoreScreenState extends State<StoreScreen> {
 /// `widget_test.dart`), bu yüzden `FilledButton` gibi bir tür kısıtı YOK —
 /// tamamen özel bir `Material`/`InkWell` üçlüsü.
 class _StoreSegmentedControl extends StatelessWidget {
-  const _StoreSegmentedControl({required this.selected, required this.onChanged});
+  const _StoreSegmentedControl({
+    required this.selected,
+    required this.onChanged,
+  });
 
   final StoreSection selected;
   final ValueChanged<StoreSection> onChanged;
@@ -158,11 +163,19 @@ class _StoreSegmentedControl extends StatelessWidget {
         ),
         const SizedBox(width: 6),
         Expanded(
-          child: _segment(context, StoreSection.costumes, l10n.storeCostumesTabLabel),
+          child: _segment(
+            context,
+            StoreSection.costumes,
+            l10n.storeCostumesTabLabel,
+          ),
         ),
         const SizedBox(width: 6),
         Expanded(
-          child: _segment(context, StoreSection.themes, l10n.storeThemesTabLabel),
+          child: _segment(
+            context,
+            StoreSection.themes,
+            l10n.storeThemesTabLabel,
+          ),
         ),
         const SizedBox(width: 6),
         Expanded(
@@ -187,11 +200,15 @@ class _StoreSegmentedControl extends StatelessWidget {
           // ÜSTÜNDE boyanıp segmenti tamamen koyu gösteriyordu (gerçekten
           // yaşandı — bkz. git geçmişi).
           decoration: BoxDecoration(
-            color: active ? colorScheme.primary : colorScheme.surfaceContainerLowest,
+            color: active
+                ? colorScheme.primary
+                : colorScheme.surfaceContainerLowest,
             border: Border.all(color: kStickerOutline, width: 2.5),
             borderRadius: radius,
             boxShadow: active
-                ? const [BoxShadow(color: kStickerOutline, offset: Offset(2, 2))]
+                ? const [
+                    BoxShadow(color: kStickerOutline, offset: Offset(2, 2)),
+                  ]
                 : null,
           ),
           // 4. segment (Zibo Pro) eklenince hücreler daraldı — `FittedBox`
@@ -207,7 +224,9 @@ class _StoreSegmentedControl extends StatelessWidget {
                 fontFamily: 'Baloo2',
                 fontVariations: const [FontVariation('wght', 700)],
                 fontSize: 12.5,
-                color: active ? colorScheme.onPrimary : colorScheme.onSurfaceVariant,
+                color: active
+                    ? colorScheme.onPrimary
+                    : colorScheme.onSurfaceVariant,
               ),
             ),
           ),
@@ -298,29 +317,135 @@ class _BuyCoinsSection extends StatelessWidget {
   }
 }
 
-class _CostumesSection extends StatelessWidget {
+/// Kostümler, nadirlik kademesine göre KATLANABİLİR gruplara ayrılır
+/// (Yaygın → Nadir → Epik → Efsanevi → Mitik). Katlanabilir dikey gruplar
+/// seçildi (yatay kaydırılan satır DEĞİL): mevcut 2 sütunlu kart ızgarası ve
+/// kartın "Satın Al" butonu korunuyor, 26+ kostümde uzun kaydırmayı başlığa
+/// dokunup katlayarak kısaltmak mümkün, ve yatay satır kartları gizleyip
+/// keşfedilebilirliği düşürürdü. Hepsi VARSAYILAN olarak AÇIK. Grup içi sıra
+/// ucuzdan pahalıya.
+class _CostumesSection extends StatefulWidget {
   const _CostumesSection();
 
   @override
+  State<_CostumesSection> createState() => _CostumesSectionState();
+}
+
+class _CostumesSectionState extends State<_CostumesSection> {
+  final Set<CostumeRarity> _collapsed = {};
+
+  @override
   Widget build(BuildContext context) {
-    return GridView.count(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      crossAxisCount: 2,
-      mainAxisSpacing: 12,
-      crossAxisSpacing: 12,
-      // Kilitli kartlar (görsel + isim + fiyat + "Satın Al" butonu) sahip
-      // olunan kartlardan (görsel + isim + rozet) daha uzun — en uzun durumu
-      // taşırmayacak kadar düşük bir oran seçildi. "Çizgi Roman Çıkartması"
-      // restyle'ında kart içeriği (görsel yüksekliği, dolgu, yazı boyutları)
-      // küçüldüğü için oran 0.56'dan 0.8'e ÇIKARILMIŞTI, ama gerçek cihazda
-      // (384dp genişlik, 2 sütun → ~166dp hücre) kilitli kart içeriği bu
-      // oranda ~14px taşıyordu (`_ThemesGrid`'in AYNI gerekçeyle 0.72'ye
-      // düşürülmesiyle AYNI kalıp) — 0.7'ye düşürüldü.
-      childAspectRatio: 0.7,
+    final l10n = AppLocalizations.of(context)!;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        for (final costume in costumes) CostumeCard(costume: costume),
+        for (final rarity in CostumeRarity.values)
+          if (costumes.any((c) => c.rarity == rarity))
+            _group(context, l10n, rarity),
       ],
+    );
+  }
+
+  Widget _group(
+    BuildContext context,
+    AppLocalizations l10n,
+    CostumeRarity rarity,
+  ) {
+    final style = RarityStyle.of(rarity);
+    final items = costumes.where((c) => c.rarity == rarity).toList()
+      ..sort((a, b) => a.price.compareTo(b.price));
+    final collapsed = _collapsed.contains(rarity);
+    final title = l10n.costumeGroupHeader(
+      rarity.localizedName(l10n),
+      items.length,
+    );
+    final radius = BorderRadius.circular(12);
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 18),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Semantics(
+            button: true,
+            expanded: !collapsed,
+            label: title,
+            child: Container(
+              key: ValueKey('costumeGroup_${rarity.name}'),
+              decoration: BoxDecoration(
+                color: style.color,
+                border: Border.all(color: kStickerOutline, width: 2.5),
+                borderRadius: radius,
+                boxShadow: [
+                  const BoxShadow(color: kStickerOutline, offset: Offset(3, 3)),
+                  ...style.glowShadows,
+                ],
+              ),
+              child: Material(
+                color: Colors.transparent,
+                borderRadius: radius,
+                clipBehavior: Clip.antiAlias,
+                child: InkWell(
+                  borderRadius: radius,
+                  onTap: () => setState(() {
+                    if (!_collapsed.remove(rarity)) _collapsed.add(rarity);
+                  }),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 10,
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            title,
+                            style: TextStyle(
+                              fontWeight: FontWeight.w900,
+                              fontSize: 15,
+                              color: style.onColor,
+                            ),
+                          ),
+                        ),
+                        Icon(
+                          collapsed
+                              ? Icons.expand_more_rounded
+                              : Icons.expand_less_rounded,
+                          color: style.onColor,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          AnimatedSize(
+            duration: const Duration(milliseconds: 180),
+            alignment: Alignment.topCenter,
+            child: collapsed
+                ? const SizedBox(width: double.infinity)
+                : Padding(
+                    padding: const EdgeInsets.only(top: 12),
+                    child: GridView.count(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      crossAxisCount: 2,
+                      mainAxisSpacing: 12,
+                      crossAxisSpacing: 12,
+                      // Kilitli kartlar (görsel + isim + fiyat + "Satın Al") sahip olunan
+                      // kartlardan uzun — en uzun durumu taşırmayacak oran (bkz. `_ThemesGrid`).
+                      childAspectRatio: 0.7,
+                      children: [
+                        for (final costume in items)
+                          CostumeCard(costume: costume),
+                      ],
+                    ),
+                  ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -528,7 +653,12 @@ class _StorePromoCard extends StatelessWidget {
                 child: SizedBox(
                   width: 38,
                   height: 38,
-                  child: Center(child: Text(emoji, style: const TextStyle(fontSize: 17, height: 1))),
+                  child: Center(
+                    child: Text(
+                      emoji,
+                      style: const TextStyle(fontSize: 17, height: 1),
+                    ),
+                  ),
                 ),
               ),
           const SizedBox(width: 12),
@@ -591,7 +721,9 @@ class _StorePromoCta extends StatelessWidget {
     final radius = BorderRadius.circular(10);
     return stickerButtonShadow(
       child: Material(
-        color: onTap == null ? colorScheme.primary.withValues(alpha: 0.5) : colorScheme.primary,
+        color: onTap == null
+            ? colorScheme.primary.withValues(alpha: 0.5)
+            : colorScheme.primary,
         borderRadius: radius,
         child: InkWell(
           borderRadius: radius,
@@ -756,10 +888,7 @@ class _PackageCardState extends State<_PackageCard> {
           SizedBox(
             width: 60 * widget.package.imageScale,
             height: 60 * widget.package.imageScale,
-            child: Image.asset(
-              widget.package.imageAsset,
-              fit: BoxFit.contain,
-            ),
+            child: Image.asset(widget.package.imageAsset, fit: BoxFit.contain),
           ),
           const SizedBox(height: 4),
           Text(

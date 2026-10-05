@@ -1132,6 +1132,120 @@ abstract class AppLocalizations {
   /// **'Kral Zibo'**
   String get costumeNameZiboKing;
 
+  /// zibo_chef kostümünün görünen adı
+  ///
+  /// In tr, this message translates to:
+  /// **'Şef Zibo'**
+  String get costumeNameZiboChef;
+
+  /// zibo_ogrenci kostümünün görünen adı
+  ///
+  /// In tr, this message translates to:
+  /// **'Öğrenci Zibo'**
+  String get costumeNameZiboOgrenci;
+
+  /// zibo_artist kostümünün görünen adı
+  ///
+  /// In tr, this message translates to:
+  /// **'Sanatçı Zibo'**
+  String get costumeNameZiboArtist;
+
+  /// zibo_kovboy kostümünün görünen adı
+  ///
+  /// In tr, this message translates to:
+  /// **'Kovboy Zibo'**
+  String get costumeNameZiboKovboy;
+
+  /// zibo_buyucu kostümünün görünen adı
+  ///
+  /// In tr, this message translates to:
+  /// **'Büyücü Zibo'**
+  String get costumeNameZiboBuyucu;
+
+  /// zibo_ninja kostümünün görünen adı
+  ///
+  /// In tr, this message translates to:
+  /// **'Ninja Zibo'**
+  String get costumeNameZiboNinja;
+
+  /// zibo_firavun kostümünün görünen adı
+  ///
+  /// In tr, this message translates to:
+  /// **'Firavun Zibo'**
+  String get costumeNameZiboFiravun;
+
+  /// zibo_viking kostümünün görünen adı
+  ///
+  /// In tr, this message translates to:
+  /// **'Viking Zibo'**
+  String get costumeNameZiboViking;
+
+  /// zibo_anime kostümünün görünen adı
+  ///
+  /// In tr, this message translates to:
+  /// **'Anime Zibo'**
+  String get costumeNameZiboAnime;
+
+  /// zibo_ejder_ruhu kostümünün görünen adı
+  ///
+  /// In tr, this message translates to:
+  /// **'Ejder Ruhu Zibo'**
+  String get costumeNameZiboEjderRuhu;
+
+  /// Kostüm nadirlik kademesi adı
+  ///
+  /// In tr, this message translates to:
+  /// **'Yaygın'**
+  String get rarityCommon;
+
+  /// Kostüm nadirlik kademesi adı
+  ///
+  /// In tr, this message translates to:
+  /// **'Nadir'**
+  String get rarityRare;
+
+  /// Kostüm nadirlik kademesi adı
+  ///
+  /// In tr, this message translates to:
+  /// **'Epik'**
+  String get rarityEpic;
+
+  /// Kostüm nadirlik kademesi adı
+  ///
+  /// In tr, this message translates to:
+  /// **'Efsanevi'**
+  String get rarityLegendary;
+
+  /// Kostüm nadirlik kademesi adı
+  ///
+  /// In tr, this message translates to:
+  /// **'Mitik'**
+  String get rarityMythic;
+
+  /// Satın alınamayan kostüm kartı etiketi
+  ///
+  /// In tr, this message translates to:
+  /// **'Rozetle kazan'**
+  String get costumeAcquireBadge;
+
+  /// Satın alınamayan kostüm kartı etiketi
+  ///
+  /// In tr, this message translates to:
+  /// **'Pro'**
+  String get costumeAcquirePro;
+
+  /// Satın alınamayan kostüm kartı etiketi
+  ///
+  /// In tr, this message translates to:
+  /// **'Sınırlı süre'**
+  String get costumeAcquireLimited;
+
+  /// Mağaza kostüm grubu başlığı (ör. Efsanevi · 4)
+  ///
+  /// In tr, this message translates to:
+  /// **'{rarity} · {count}'**
+  String costumeGroupHeader(String rarity, int count);
+
   /// Satın alınmış ama şu an giyili olmayan bir kostüm kartındaki rozet
   ///
   /// In tr, this message translates to:

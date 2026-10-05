@@ -66,3 +66,7 @@ SONRA) `dart run tool/convert_images_to_webp_lossy.dart` eklenmeli.
 üretmek için `lib/*_generator_main.dart` alternatif entry point'lerini `flutter build apk --debug -t
 lib/widget_preview_generator_main.dart` ile derle, cihazda aç, `adb exec-out run-as <pkg> cat <yol>`
 ile çek.
+
+## Yeni kostüm görselleri (JPG → şeffaf WebP) — Python
+
+`cutout_new_costumes.py`: JPG'den kenar flood-fill ile arka planı siler (siyah: `max<=9`; açık: chroma<=13 & min>=170; kutu desenli arka plan REDDEDİLİR), en büyük bileşeni tutar, 1 px aşındırıp σ=1.1 yumuşatır, PNG yazar. `finalize_new_costumes.py`: `ASSETS` eşlemesine göre kapak 1024 px / poz 763 px yüksekliğe getirir, `cwebp -q 85 -alpha_q 100 -m 6` ile `assets/images/zibo_<id>[_poseN].webp` üretir ve köşe alfasını doğrular. Eşleme: `x.jpg` = ana görsel, `x1.jpg` = ikinci poz. Çıktıyı gözle kontrol et (anime'de beyaz hale, ninja eteğinde pürüz görülebilir).

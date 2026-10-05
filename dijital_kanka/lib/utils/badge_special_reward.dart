@@ -48,7 +48,9 @@ Costume? pickRandomUnownedLowPricedCostume(
   Random? random,
 }) {
   final cutoff = (costumes.length / 3).ceil();
-  final candidates = costumes
+  // Liste sırasına DEĞİL fiyata güveniyoruz (kararlı sıralama: eşit fiyatta liste sırası korunur).
+  final byPrice = [...costumes]..sort((a, b) => a.price.compareTo(b.price));
+  final candidates = byPrice
       .take(cutoff)
       .where((c) => !ownedCostumeIds.contains(c.id))
       .toList();

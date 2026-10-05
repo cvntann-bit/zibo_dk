@@ -1,4 +1,5 @@
 import '../l10n/app_localizations.dart';
+import 'costume_rarity.dart';
 
 /// Zibo Coin ile satın alınabilen, Ana Sayfa'daki Zibo'ya "giydirilebilen"
 /// bir kostüm.
@@ -17,6 +18,8 @@ class Costume {
     required this.imageAsset,
     required this.name,
     required this.price,
+    required this.rarity,
+    this.acquisition = CostumeAcquisition.store,
   });
 
   /// Kalıcı depoda (SharedPreferences) sahiplik/giyili durumu bu id ile
@@ -29,6 +32,15 @@ class Costume {
   /// [localizedName] kullanın (bkz. o metodun dokümantasyonu).
   final String name;
   final int price;
+
+  /// Nadirlik kademesi — Mağaza gruplaması ve çerçeve rengi (bkz.
+  /// `data/rarity_colors.dart`). Mevcut kostüm ID'leri/sahiplik verisi bundan
+  /// ETKİLENMEZ (yalnızca görünüm alanı).
+  final CostumeRarity rarity;
+
+  /// Nasıl elde edilir — [CostumeAcquisition.store] dışında kartta satın alma
+  /// butonu çıkmaz (bkz. `CostumeCard`).
+  final CostumeAcquisition acquisition;
 
   /// [id]'ye göre kostümün o anki dildeki (TR/EN/ES) görünen adı — ARB'deki
   /// `costumeName<Id>` anahtarlarından okunur. `name` alanı yalnızca sabit/
@@ -68,6 +80,26 @@ class Costume {
         return l10n.costumeNameZiboAstronot;
       case 'zibo_king':
         return l10n.costumeNameZiboKing;
+      case 'zibo_chef':
+        return l10n.costumeNameZiboChef;
+      case 'zibo_ogrenci':
+        return l10n.costumeNameZiboOgrenci;
+      case 'zibo_artist':
+        return l10n.costumeNameZiboArtist;
+      case 'zibo_kovboy':
+        return l10n.costumeNameZiboKovboy;
+      case 'zibo_buyucu':
+        return l10n.costumeNameZiboBuyucu;
+      case 'zibo_ninja':
+        return l10n.costumeNameZiboNinja;
+      case 'zibo_firavun':
+        return l10n.costumeNameZiboFiravun;
+      case 'zibo_viking':
+        return l10n.costumeNameZiboViking;
+      case 'zibo_anime':
+        return l10n.costumeNameZiboAnime;
+      case 'zibo_ejder_ruhu':
+        return l10n.costumeNameZiboEjderRuhu;
       default:
         return name;
     }
