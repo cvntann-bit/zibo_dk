@@ -1796,7 +1796,7 @@ void main() {
   );
 
   testWidgets(
-    '2026 kostüm paketi (Kral Zibo) satın alınıp giyilebilir; poz seti '
+    '2026 kostüm paketi (Hippi Zibo) satın alınıp giyilebilir; poz seti '
     'Ana Sayfa\'da devreye girer',
     (WidgetTester tester) async {
       await _pumpPastOnboarding(tester, const DijitalKankaApp());
@@ -1806,18 +1806,18 @@ void main() {
       await tester.tap(find.text('Kostümler'));
       await tester.pumpAndSettle();
 
-      expect(find.text('Kral Zibo'), findsOneWidget);
-      final kingCard = find.ancestor(
-        of: find.text('Kral Zibo'),
+      expect(find.text('Hippi Zibo'), findsOneWidget);
+      final costumeCard = find.ancestor(
+        of: find.text('Hippi Zibo'),
         matching: find.byType(Card),
       );
       expect(
-        find.descendant(of: kingCard, matching: find.text('1045 ZC')),
+        find.descendant(of: costumeCard, matching: find.text('440 ZC')),
         findsOneWidget,
       );
 
       FilledButton buyButton() => tester.widget<FilledButton>(
-        find.descendant(of: kingCard, matching: find.byType(FilledButton)),
+        find.descendant(of: costumeCard, matching: find.byType(FilledButton)),
       );
 
       final coinsElement = tester.element(find.byType(RootScreen, skipOffstage: false));
@@ -1825,8 +1825,9 @@ void main() {
         coinsElement,
         listen: false,
       );
-      // 1045 ZC için yeterli bakiyeyi kazan (11 × Arkadaş daveti = 1100).
-      for (var i = 0; i < 11; i++) {
+      // 440 ZC için yeterli bakiyeyi kazan (5 × Arkadaş daveti = 500). Poz setli en ucuz kostüm
+      // (Kral artık Efsanevi/22000 ZC — referral döngüsüyle kazanmak gerçekçi değil).
+      for (var i = 0; i < 5; i++) {
         coinProvider.earnReferral();
       }
       // Bkz. `_dismissLevelUpIfShown` dokümantasyonu.
@@ -1834,13 +1835,13 @@ void main() {
 
       buyButton().onPressed!();
       await tester.pumpAndSettle();
-      expect(find.textContaining('Kral Zibo satın alındı'), findsOneWidget);
+      expect(find.textContaining('Hippi Zibo satın alındı'), findsOneWidget);
       await _dismissInfoDialogIfShown(tester);
 
-      InkWell kingInkWell() => tester.widget<InkWell>(
-        find.descendant(of: kingCard, matching: find.byType(InkWell)),
+      InkWell costumeInkWell() => tester.widget<InkWell>(
+        find.descendant(of: costumeCard, matching: find.byType(InkWell)),
       );
-      kingInkWell().onTap!();
+      costumeInkWell().onTap!();
       await tester.pumpAndSettle();
       expect(find.text('Giyili'), findsOneWidget);
 
@@ -1849,12 +1850,12 @@ void main() {
       final equippedImage = tester.widget<Image>(
         find.byKey(const Key('ziboCharacterImage')),
       );
-      // Kral Zibo'nun poz seti costume_poses.dart'a eklendi — kostüm
-      // giyilince Ana Sayfa artık statik `zibo_king.png` yerine poz
+      // Hippi Zibo'nun poz seti costume_poses.dart'a eklendi — kostüm
+      // giyilince Ana Sayfa artık statik `zibo_hippi.webp` yerine poz
       // setinin ilk karesini gösteriyor (poseStep=0).
       expect(
         (equippedImage.image as AssetImage).assetName,
-        'assets/images/zibo_king_pose1.webp',
+        'assets/images/zibo_hippi_pose1.webp',
       );
     },
   );
