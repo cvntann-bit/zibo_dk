@@ -97,13 +97,7 @@ List<String> manifestAffirmationsForLocale(Locale locale) {
 /// Kolaj kutusu — tuvale göre 0..1 kesirli dikdörtgen; [rotationDeg] yalnızca
 /// Polaroid Duvarı'nda.
 class CollageSlot {
-  const CollageSlot(
-    this.left,
-    this.top,
-    this.width,
-    this.height, {
-    this.rotationDeg = 0,
-  });
+  const CollageSlot(this.left, this.top, this.width, this.height, {this.rotationDeg = 0});
 
   final double left;
   final double top;
@@ -117,11 +111,7 @@ class CollageSlot {
 enum CollageTemplate {
   twoStacked([CollageSlot(0, 0, 1, 0.5), CollageSlot(0, 0.5, 1, 0.5)]),
   twoSide([CollageSlot(0, 0, 0.5, 1), CollageSlot(0.5, 0, 0.5, 1)]),
-  three([
-    CollageSlot(0, 0, 1, 0.56),
-    CollageSlot(0, 0.56, 0.5, 0.44),
-    CollageSlot(0.5, 0.56, 0.5, 0.44),
-  ]),
+  three([CollageSlot(0, 0, 1, 0.56), CollageSlot(0, 0.56, 0.5, 0.44), CollageSlot(0.5, 0.56, 0.5, 0.44)]),
   four([
     CollageSlot(0, 0, 0.5, 0.5),
     CollageSlot(0.5, 0, 0.5, 0.5),

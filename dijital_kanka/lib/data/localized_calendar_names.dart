@@ -6,144 +6,54 @@ import 'package:flutter/widgets.dart';
 /// listeleri. Her ekranın kendi başına taşıdığı `_turkishMonths`/`_formatDate`
 /// kopyalarının (yalnızca Türkçe, dil değişince yanlış kalan) YERİNİ alır.
 const List<String> monthNamesTr = [
-  'Ocak',
-  'Şubat',
-  'Mart',
-  'Nisan',
-  'Mayıs',
-  'Haziran',
-  'Temmuz',
-  'Ağustos',
-  'Eylül',
-  'Ekim',
-  'Kasım',
-  'Aralık',
+  'Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran',
+  'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık',
 ];
 
 const List<String> monthNamesEn = [
-  'January',
-  'February',
-  'March',
-  'April',
-  'May',
-  'June',
-  'July',
-  'August',
-  'September',
-  'October',
-  'November',
-  'December',
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December',
 ];
 
 const List<String> monthNamesEs = [
-  'enero',
-  'febrero',
-  'marzo',
-  'abril',
-  'mayo',
-  'junio',
-  'julio',
-  'agosto',
-  'septiembre',
-  'octubre',
-  'noviembre',
-  'diciembre',
+  'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
+  'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre',
 ];
 
 const List<String> monthNamesShortTr = [
-  'Oca',
-  'Şub',
-  'Mar',
-  'Nis',
-  'May',
-  'Haz',
-  'Tem',
-  'Ağu',
-  'Eyl',
-  'Eki',
-  'Kas',
-  'Ara',
+  'Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara',
 ];
 
 const List<String> monthNamesShortEn = [
-  'Jan',
-  'Feb',
-  'Mar',
-  'Apr',
-  'May',
-  'Jun',
-  'Jul',
-  'Aug',
-  'Sep',
-  'Oct',
-  'Nov',
-  'Dec',
+  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
 ];
 
 const List<String> monthNamesShortEs = [
-  'ene',
-  'feb',
-  'mar',
-  'abr',
-  'may',
-  'jun',
-  'jul',
-  'ago',
-  'sep',
-  'oct',
-  'nov',
-  'dic',
+  'ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic',
 ];
 
 /// Pazartesi'den (index 0, `DateTime.weekday == 1`) Pazar'a (index 6).
-const List<String> weekdayNamesShortTr = [
-  'Pzt',
-  'Sal',
-  'Çar',
-  'Per',
-  'Cum',
-  'Cmt',
-  'Paz',
-];
-const List<String> weekdayNamesShortEn = [
-  'Mon',
-  'Tue',
-  'Wed',
-  'Thu',
-  'Fri',
-  'Sat',
-  'Sun',
-];
-const List<String> weekdayNamesShortEs = [
-  'lun',
-  'mar',
-  'mié',
-  'jue',
-  'vie',
-  'sáb',
-  'dom',
-];
+const List<String> weekdayNamesShortTr = ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'];
+const List<String> weekdayNamesShortEn = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+const List<String> weekdayNamesShortEs = ['lun', 'mar', 'mié', 'jue', 'vie', 'sáb', 'dom'];
 
-List<String> monthNamesForLocale(Locale locale) =>
-    switch (locale.languageCode) {
-      'en' => monthNamesEn,
-      'es' => monthNamesEs,
-      _ => monthNamesTr,
-    };
+List<String> monthNamesForLocale(Locale locale) => switch (locale.languageCode) {
+  'en' => monthNamesEn,
+  'es' => monthNamesEs,
+  _ => monthNamesTr,
+};
 
-List<String> monthNamesShortForLocale(Locale locale) =>
-    switch (locale.languageCode) {
-      'en' => monthNamesShortEn,
-      'es' => monthNamesShortEs,
-      _ => monthNamesShortTr,
-    };
+List<String> monthNamesShortForLocale(Locale locale) => switch (locale.languageCode) {
+  'en' => monthNamesShortEn,
+  'es' => monthNamesShortEs,
+  _ => monthNamesShortTr,
+};
 
-List<String> weekdayNamesShortForLocale(Locale locale) =>
-    switch (locale.languageCode) {
-      'en' => weekdayNamesShortEn,
-      'es' => weekdayNamesShortEs,
-      _ => weekdayNamesShortTr,
-    };
+List<String> weekdayNamesShortForLocale(Locale locale) => switch (locale.languageCode) {
+  'en' => weekdayNamesShortEn,
+  'es' => weekdayNamesShortEs,
+  _ => weekdayNamesShortTr,
+};
 
 /// "5 Ocak 2026" / "5 January 2026" / "5 enero 2026" — proje genelinde
 /// geçmiş kayıt listelerinde kullanılan uzun tarih biçimi.

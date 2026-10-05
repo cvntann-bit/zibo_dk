@@ -864,9 +864,8 @@ const ziboMessagesEs = <String>[
 
 /// Kullanıcının seçtiği dile (bkz. `LocaleProvider`) göre söz havuzu —
 /// desteklenmeyen bir dil kodu gelirse Türkçe'ye düşer.
-List<String> ziboMessagesForLocale(Locale locale) =>
-    switch (locale.languageCode) {
-      'en' => ziboMessagesEn,
-      'es' => ziboMessagesEs,
-      _ => ziboMessagesTr,
-    };
+List<String> ziboMessagesForLocale(Locale locale) => switch (locale.languageCode) {
+  'en' => ziboMessagesEn,
+  'es' => ziboMessagesEs,
+  _ => ziboMessagesTr,
+};

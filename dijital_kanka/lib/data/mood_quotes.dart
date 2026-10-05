@@ -44,9 +44,8 @@ const moodQuotesEs = <String>[
 
 /// Kullanıcının seçtiği dile (bkz. `LocaleProvider`) göre söz havuzu —
 /// desteklenmeyen bir dil kodu gelirse Türkçe'ye düşer.
-List<String> moodQuotesForLocale(Locale locale) =>
-    switch (locale.languageCode) {
-      'en' => moodQuotesEn,
-      'es' => moodQuotesEs,
-      _ => moodQuotesTr,
-    };
+List<String> moodQuotesForLocale(Locale locale) => switch (locale.languageCode) {
+  'en' => moodQuotesEn,
+  'es' => moodQuotesEs,
+  _ => moodQuotesTr,
+};

@@ -153,9 +153,7 @@ class AppThemeOption {
   ColorScheme colorScheme(bool isDark) {
     final brightness = isDark ? Brightness.dark : Brightness.light;
     final primary = isDark ? darkPrimary : lightPrimary;
-    final primaryContainer = isDark
-        ? darkPrimaryContainer
-        : lightPrimaryContainer;
+    final primaryContainer = isDark ? darkPrimaryContainer : lightPrimaryContainer;
     final onPrimary = primary.computeLuminance() > 0.45
         ? Colors.black
         : Colors.white;

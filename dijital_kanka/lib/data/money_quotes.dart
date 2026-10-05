@@ -165,9 +165,8 @@ const moneyQuotesEs = <String>[
 
 /// Kullanıcının seçtiği dile (bkz. `LocaleProvider`) göre söz havuzu —
 /// desteklenmeyen bir dil kodu gelirse Türkçe'ye düşer.
-List<String> moneyQuotesForLocale(Locale locale) =>
-    switch (locale.languageCode) {
-      'en' => moneyQuotesEn,
-      'es' => moneyQuotesEs,
-      _ => moneyQuotesTr,
-    };
+List<String> moneyQuotesForLocale(Locale locale) => switch (locale.languageCode) {
+  'en' => moneyQuotesEn,
+  'es' => moneyQuotesEs,
+  _ => moneyQuotesTr,
+};

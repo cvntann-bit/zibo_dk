@@ -46,9 +46,8 @@ const dreamQuotesEs = <String>[
 
 /// Kullanıcının seçtiği dile (bkz. `LocaleProvider`) göre söz havuzu —
 /// desteklenmeyen bir dil kodu gelirse Türkçe'ye düşer.
-List<String> dreamQuotesForLocale(Locale locale) =>
-    switch (locale.languageCode) {
-      'en' => dreamQuotesEn,
-      'es' => dreamQuotesEs,
-      _ => dreamQuotesTr,
-    };
+List<String> dreamQuotesForLocale(Locale locale) => switch (locale.languageCode) {
+  'en' => dreamQuotesEn,
+  'es' => dreamQuotesEs,
+  _ => dreamQuotesTr,
+};

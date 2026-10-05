@@ -23,10 +23,13 @@ enum GoalDayStatus {
 /// tarihlerin kümesiyle temsil edilir; gün numaraları asla kendi başına bir
 /// sayaç değil, hep bir tarihe karşılık gelir.
 class Goal {
-  Goal({required this.id, required this.name, required DateTime cycleStartDate})
-    : cycleStartDate = dateOnly(cycleStartDate),
-      completedDates = <DateTime>{},
-      frozenDates = <DateTime>{};
+  Goal({
+    required this.id,
+    required this.name,
+    required DateTime cycleStartDate,
+  }) : cycleStartDate = dateOnly(cycleStartDate),
+       completedDates = <DateTime>{},
+       frozenDates = <DateTime>{};
 
   static const int daysPerCycle = 7;
 
@@ -64,6 +67,5 @@ class Goal {
   /// Döngü ilerlemesi: işaretlenen + dondurulan günler (7/7'ye bunlar sayılır).
   int get progressCount => completedDates.length + frozenDates.length;
 
-  bool isCovered(DateTime date) =>
-      completedDates.contains(date) || frozenDates.contains(date);
+  bool isCovered(DateTime date) => completedDates.contains(date) || frozenDates.contains(date);
 }
