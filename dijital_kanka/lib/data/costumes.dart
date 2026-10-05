@@ -29,13 +29,11 @@ import '../models/costume_rarity.dart';
 /// ucuzdan pahalıya sıralı tutuluyor (`pickRandomUnownedLowPricedCostume` ayrıca
 /// kendisi de fiyata göre sıralar — bu sıra ona bağımlı değil).
 ///
-/// **FİYAT DURUMU (onay bekliyor):** ilk 16 kostümün fiyatı DEĞİŞTİRİLMEDİ.
-/// 2026-10'da eklenen 10 yeni kostümün (Şef, Öğrenci, Sanatçı, Kovboy, Büyücü,
-/// Ninja, Firavun, Viking, Anime, Ejder Ruhu) fiyatı GEÇİCİ olarak önerilen
-/// kademe fiyatlarıyla girildi (Yaygın 450 · Nadir 700 · Epik 2000 ·
-/// Efsanevi 4500 · Mitik 8000); kullanıcı fiyat tablosunu onaylayınca TÜM
-/// fiyatlar bu dosyada tek seferde güncellenecek. Galaksi Zibo (Mitik)
-/// kaynak görselleri damalı-şeffaflık desenli olduğu için henüz eklenmedi.
+/// **FİYATLAR (2026-10):** Efsanevi'nin TÜMÜ Altın Zibo'nun fiyatında (22000),
+/// Mitik'in TÜMÜ Elmas Zibo'nun fiyatında (33000) — kullanıcı kararı. Altın Zibo
+/// bu yüzden Mitik'ten Efsanevi'ye alındı. Yaygın/Nadir/Epik fiyatları kademe
+/// içinde değişkendir. Galaksi Zibo (Mitik) kaynak görselleri damalı-şeffaflık
+/// desenli olduğu için henüz eklenmedi.
 const costumes = <Costume>[
   Costume(
     id: 'zibo_hippi',
@@ -150,20 +148,6 @@ const costumes = <Costume>[
     rarity: CostumeRarity.epic,
   ),
   Costume(
-    id: 'zibo_king',
-    imageAsset: 'assets/images/zibo_king.webp',
-    name: 'Kral Zibo',
-    price: 1045,
-    rarity: CostumeRarity.legendary,
-  ),
-  Costume(
-    id: 'zibo_zombi',
-    imageAsset: 'assets/images/zibo_zombi.webp',
-    name: 'Zombi Zibo',
-    price: 1100,
-    rarity: CostumeRarity.legendary,
-  ),
-  Costume(
     id: 'zibo_buyucu',
     imageAsset: 'assets/images/zibo_buyucu.webp',
     name: 'Büyücü Zibo',
@@ -178,38 +162,52 @@ const costumes = <Costume>[
     rarity: CostumeRarity.epic,
   ),
   Costume(
+    id: 'zibo_king',
+    imageAsset: 'assets/images/zibo_king.webp',
+    name: 'Kral Zibo',
+    price: 22000,
+    rarity: CostumeRarity.legendary,
+  ),
+  Costume(
+    id: 'zibo_zombi',
+    imageAsset: 'assets/images/zibo_zombi.webp',
+    name: 'Zombi Zibo',
+    price: 22000,
+    rarity: CostumeRarity.legendary,
+  ),
+  Costume(
     id: 'zibo_firavun',
     imageAsset: 'assets/images/zibo_firavun.webp',
     name: 'Firavun Zibo',
-    price: 4500,
+    price: 22000,
     rarity: CostumeRarity.legendary,
   ),
   Costume(
     id: 'zibo_viking',
     imageAsset: 'assets/images/zibo_viking.webp',
     name: 'Viking Zibo',
-    price: 4500,
+    price: 22000,
     rarity: CostumeRarity.legendary,
-  ),
-  Costume(
-    id: 'zibo_anime',
-    imageAsset: 'assets/images/zibo_anime.webp',
-    name: 'Anime Zibo',
-    price: 8000,
-    rarity: CostumeRarity.mythic,
-  ),
-  Costume(
-    id: 'zibo_ejder_ruhu',
-    imageAsset: 'assets/images/zibo_ejder_ruhu.webp',
-    name: 'Ejder Ruhu Zibo',
-    price: 8000,
-    rarity: CostumeRarity.mythic,
   ),
   Costume(
     id: 'zibo_altin',
     imageAsset: 'assets/images/zibo_altin.webp',
     name: 'Altın Zibo',
     price: 22000,
+    rarity: CostumeRarity.legendary,
+  ),
+  Costume(
+    id: 'zibo_anime',
+    imageAsset: 'assets/images/zibo_anime.webp',
+    name: 'Anime Zibo',
+    price: 33000,
+    rarity: CostumeRarity.mythic,
+  ),
+  Costume(
+    id: 'zibo_ejder_ruhu',
+    imageAsset: 'assets/images/zibo_ejder_ruhu.webp',
+    name: 'Ejder Ruhu Zibo',
+    price: 33000,
     rarity: CostumeRarity.mythic,
   ),
   Costume(
