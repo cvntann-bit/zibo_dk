@@ -104,8 +104,9 @@ const waterQuotesEs = <String>[
 
 /// Kullanıcının seçtiği dile (bkz. `LocaleProvider`) göre söz havuzu —
 /// desteklenmeyen bir dil kodu gelirse Türkçe'ye düşer.
-List<String> waterQuotesForLocale(Locale locale) => switch (locale.languageCode) {
-  'en' => waterQuotesEn,
-  'es' => waterQuotesEs,
-  _ => waterQuotesTr,
-};
+List<String> waterQuotesForLocale(Locale locale) =>
+    switch (locale.languageCode) {
+      'en' => waterQuotesEn,
+      'es' => waterQuotesEs,
+      _ => waterQuotesTr,
+    };

@@ -32,8 +32,8 @@ import '../models/costume_rarity.dart';
 /// **FİYATLAR (2026-10):** Efsanevi'nin TÜMÜ Altın Zibo'nun fiyatında (22000),
 /// Mitik'in TÜMÜ Elmas Zibo'nun fiyatında (33000) — kullanıcı kararı. Altın Zibo
 /// bu yüzden Mitik'ten Efsanevi'ye alındı. Yaygın/Nadir/Epik fiyatları kademe
-/// içinde değişkendir. Galaksi Zibo (Mitik) kaynak görselleri damalı-şeffaflık
-/// desenli olduğu için henüz eklenmedi.
+/// içinde değişkendir. Galaksi Zibo (Mitik, 33000) damalı zeminli kaynaktan
+/// `tool/cutout_checker_costumes.py` ile kesilip eklendi.
 const costumes = <Costume>[
   Costume(
     id: 'zibo_hippi',
@@ -207,6 +207,13 @@ const costumes = <Costume>[
     id: 'zibo_ejder_ruhu',
     imageAsset: 'assets/images/zibo_ejder_ruhu.webp',
     name: 'Ejder Ruhu Zibo',
+    price: 33000,
+    rarity: CostumeRarity.mythic,
+  ),
+  Costume(
+    id: 'zibo_galaksi',
+    imageAsset: 'assets/images/zibo_galaksi.webp',
+    name: 'Galaksi Zibo',
     price: 33000,
     rarity: CostumeRarity.mythic,
   ),

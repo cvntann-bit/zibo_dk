@@ -6,7 +6,11 @@
 /// [PackagePrice]/mağaza fiyatlarında olduğu gibi çevirmeme convansiyonuyla
 /// tutarlı) — yalnızca seçim listesinde tanınabilirlik için.
 class CurrencyOption {
-  const CurrencyOption({required this.code, required this.symbol, required this.name});
+  const CurrencyOption({
+    required this.code,
+    required this.symbol,
+    required this.name,
+  });
 
   final String code;
   final String symbol;

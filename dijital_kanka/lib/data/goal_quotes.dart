@@ -316,8 +316,9 @@ const goalQuotesEs = <String>[
 
 /// Kullanıcının seçtiği dile (bkz. `LocaleProvider`) göre söz havuzu —
 /// desteklenmeyen bir dil kodu gelirse Türkçe'ye düşer.
-List<String> goalQuotesForLocale(Locale locale) => switch (locale.languageCode) {
-  'en' => goalQuotesEn,
-  'es' => goalQuotesEs,
-  _ => goalQuotesTr,
-};
+List<String> goalQuotesForLocale(Locale locale) =>
+    switch (locale.languageCode) {
+      'en' => goalQuotesEn,
+      'es' => goalQuotesEs,
+      _ => goalQuotesTr,
+    };

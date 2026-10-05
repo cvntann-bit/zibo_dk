@@ -627,6 +627,9 @@ class AppLocalizationsTr extends AppLocalizations {
   String get costumeNameZiboEjderRuhu => 'Ejder Ruhu Zibo';
 
   @override
+  String get costumeNameZiboGalaksi => 'Galaksi Zibo';
+
+  @override
   String get rarityCommon => 'Yaygın';
 
   @override

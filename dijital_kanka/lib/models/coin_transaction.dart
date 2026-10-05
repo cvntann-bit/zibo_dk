@@ -18,6 +18,5 @@ class CoinTransaction {
   final DateTime timestamp;
 
   /// Bakiyeye etkisi: kazançta +amount, harcamada -amount.
-  int get signedAmount =>
-      type == CoinTransactionType.earn ? amount : -amount;
+  int get signedAmount => type == CoinTransactionType.earn ? amount : -amount;
 }

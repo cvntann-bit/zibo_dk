@@ -40,7 +40,15 @@ class GamesConfig {
   final List<ExchangeStep> exchangeLadder;
 
   /// Oyun Salonu'ndaki sıra da budur.
-  static const gameIds = ['kule', 'hafiza', '2048', 'yakala', 'tren', 'tugla', 'zipla'];
+  static const gameIds = [
+    'kule',
+    'hafiza',
+    '2048',
+    'yakala',
+    'tren',
+    'tugla',
+    'zipla',
+  ];
 
   static const defaults = GamesConfig(
     dailyPlays: {'free': 3, 'pro': 5, 'plus': 8},
@@ -58,9 +66,23 @@ class GamesConfig {
       // Kat × 2 + mükemmel × 1 (kullanıcı kararı 2026-09-27).
       'kule': {'perFloor': 2, 'perfectBonus': 1, 'cap': 250},
       // Seviye tabanı × yıldız çarpanı; hamle limiti dolarsa 0.
-      'hafiza': {'ptsEasy': 100, 'ptsMid': 180, 'ptsHard': 300, 'mult2': 0.6, 'mult1': 0.3, 'cap': 300},
+      'hafiza': {
+        'ptsEasy': 100,
+        'ptsMid': 180,
+        'ptsHard': 300,
+        'mult2': 0.6,
+        'mult1': 0.3,
+        'cap': 300,
+      },
       // Skor ÷ 20 + en yüksek kostüm bonusu; geri alma sınırı.
-      '2048': {'scoreDiv': 20, 'bonus256': 50, 'bonus1024': 100, 'bonus2048': 200, 'cap': 600, 'maxUndo': 3},
+      '2048': {
+        'scoreDiv': 20,
+        'bonus256': 50,
+        'bonus1024': 100,
+        'bonus2048': 200,
+        'cap': 600,
+        'maxUndo': 3,
+      },
       // 1 skor = 1 ★ (kullanıcı kararı 2026-09-27); can biterse 0.
       'yakala': {'perScore': 1, 'cap': 400},
       // Coin × 5 (kullanıcı kararı 2026-09-27).
@@ -81,7 +103,8 @@ class GamesConfig {
     };
   }
 
-  bool isEnabled(String gameId) => games.containsKey(gameId) && games[gameId]!['enabled'] != false;
+  bool isEnabled(String gameId) =>
+      games.containsKey(gameId) && games[gameId]!['enabled'] != false;
 
   /// Tur tavanı — oyundan gelen puan bunu ASLA aşamaz.
   int capOf(String gameId) => (games[gameId]?['cap'] as num?)?.toInt() ?? 0;
@@ -90,7 +113,10 @@ class GamesConfig {
 
   /// Firestore dokümanını varsayılanların üstüne uygular. Yalnızca sayı ve
   /// bool değerler kabul edilir; tanınmayan/bozuk alanlar yok sayılır.
-  factory GamesConfig.fromJson(Map<String, dynamic>? json, {GamesConfig base = defaults}) {
+  factory GamesConfig.fromJson(
+    Map<String, dynamic>? json, {
+    GamesConfig base = defaults,
+  }) {
     if (json == null) return base;
     final plays = Map<String, int>.of(base.dailyPlays);
     final rawPlays = json['dailyPlays'];
@@ -101,7 +127,8 @@ class GamesConfig {
     }
     final maxAd = json['maxAdPlaysPerGame'];
     final games = {
-      for (final e in base.games.entries) e.key: Map<String, Object>.of(e.value),
+      for (final e in base.games.entries)
+        e.key: Map<String, Object>.of(e.value),
     };
     final rawGames = json['games'];
     if (rawGames is Map) {
@@ -115,9 +142,12 @@ class GamesConfig {
     }
     return GamesConfig(
       dailyPlays: plays,
-      maxAdPlaysPerGame: maxAd is num && maxAd >= 0 ? maxAd.toInt() : base.maxAdPlaysPerGame,
+      maxAdPlaysPerGame: maxAd is num && maxAd >= 0
+          ? maxAd.toInt()
+          : base.maxAdPlaysPerGame,
       games: games,
-      exchangeLadder: _parseLadder(json['exchangeLadder']) ?? base.exchangeLadder,
+      exchangeLadder:
+          _parseLadder(json['exchangeLadder']) ?? base.exchangeLadder,
     );
   }
 }
@@ -125,7 +155,11 @@ class GamesConfig {
 /// Takas Gişesi'nin bir basamağı: [zc] kadar Zibo Coin, her biri [rate] ★
 /// karşılığında; [minTier] üyeliği olanlar kullanabilir ('free' / 'pro' / 'plus').
 class ExchangeStep {
-  const ExchangeStep({required this.zc, required this.rate, required this.minTier});
+  const ExchangeStep({
+    required this.zc,
+    required this.rate,
+    required this.minTier,
+  });
 
   final int zc;
   final int rate;
@@ -144,8 +178,11 @@ List<ExchangeStep>? _parseLadder(Object? raw) {
   final steps = <ExchangeStep>[];
   for (final item in raw) {
     if (item is! Map) return null;
-    final zc = item['zc'], rate = item['rate'], tier = item['minTier'] ?? 'free';
-    if (zc is! num || rate is! num || zc <= 0 || rate <= 0 || tier is! String) return null;
+    final zc = item['zc'],
+        rate = item['rate'],
+        tier = item['minTier'] ?? 'free';
+    if (zc is! num || rate is! num || zc <= 0 || rate <= 0 || tier is! String)
+      return null;
     steps.add(ExchangeStep(zc: zc.toInt(), rate: rate.toInt(), minTier: tier));
   }
   return steps;

@@ -12,7 +12,7 @@ Kurallar (mevcut kostümlerle AYNI düzen — bkz. lib/data/costume_poses.dart, 
     Tek görselli kostümde yalnızca kapak yazılır (poz seti yok → ZiboAnimatedImage statik kapağa düşer).
   * Kayıplı WebP (cwebp -q 85, alfa kalitesi 100). Son adımda ham alfa sayısal doğrulanır.
 Hangi kaynağın hangi kostüm/pozlara gittiği ASSETS tablosunda — bilerek elle seçildi (kaynak kalitesi:
-kusurlu kesimler [ninja1, buyucu1] ve damalı zeminli görseller [galaxy, ogrenci1] DIŞARIDA bırakıldı).
+kusurlu/damalı zeminli görseller `cutout_checker_costumes.py` ile ayrıca kesilip aynı klasöre konur).
 """
 import os
 import subprocess
@@ -33,15 +33,16 @@ COVER_H, POSE_H = 1024, 763
 # kostüm id → [ana kaynak, (isteğe bağlı) ikinci poz kaynağı]
 ASSETS = {
     "zibo_chef": ["chef_zibo", "chef_zibo1"],
-    "zibo_ogrenci": ["ogrenci_zibo"],
+    "zibo_ogrenci": ["ogrenci_zibo", "ogrenci_zibo1"],
     "zibo_artist": ["artist_zibo"],
     "zibo_kovboy": ["kovboy_zibo", "kovboy_zibo1"],
-    "zibo_buyucu": ["buyucu_zibo"],
-    "zibo_ninja": ["ninja_zibo"],
+    "zibo_buyucu": ["buyucu_zibo", "buyucu_zibo1"],
+    "zibo_ninja": ["ninja_zibo", "ninja_zibo1"],
     "zibo_firavun": ["firavun_zibo", "firavun_zibo1"],
     "zibo_viking": ["viking_zibo"],
     "zibo_anime": ["anime_zibo"],
     "zibo_ejder_ruhu": ["ejder_ruhu_zibo", "ejder_ruhu_zibo1"],
+    "zibo_galaksi": ["galaxy_zibo", "galaxy_zibo1"],
 }
 
 

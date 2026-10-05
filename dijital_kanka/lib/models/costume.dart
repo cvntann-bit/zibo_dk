@@ -100,6 +100,8 @@ class Costume {
         return l10n.costumeNameZiboAnime;
       case 'zibo_ejder_ruhu':
         return l10n.costumeNameZiboEjderRuhu;
+      case 'zibo_galaksi':
+        return l10n.costumeNameZiboGalaksi;
       default:
         return name;
     }

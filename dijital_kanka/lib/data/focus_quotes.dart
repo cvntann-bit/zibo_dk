@@ -75,8 +75,9 @@ const focusQuotesEs = <String>[
 
 /// Kullanıcının seçtiği dile (bkz. `LocaleProvider`) göre söz havuzu —
 /// desteklenmeyen bir dil kodu gelirse Türkçe'ye düşer.
-List<String> focusQuotesForLocale(Locale locale) => switch (locale.languageCode) {
-  'en' => focusQuotesEn,
-  'es' => focusQuotesEs,
-  _ => focusQuotesTr,
-};
+List<String> focusQuotesForLocale(Locale locale) =>
+    switch (locale.languageCode) {
+      'en' => focusQuotesEn,
+      'es' => focusQuotesEs,
+      _ => focusQuotesTr,
+    };

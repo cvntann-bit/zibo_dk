@@ -1192,6 +1192,12 @@ abstract class AppLocalizations {
   /// **'Ejder Ruhu Zibo'**
   String get costumeNameZiboEjderRuhu;
 
+  /// zibo_galaksi kostümünün görünen adı
+  ///
+  /// In tr, this message translates to:
+  /// **'Galaksi Zibo'**
+  String get costumeNameZiboGalaksi;
+
   /// Kostüm nadirlik kademesi adı
   ///
   /// In tr, this message translates to:

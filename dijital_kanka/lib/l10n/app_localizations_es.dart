@@ -631,6 +631,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get costumeNameZiboEjderRuhu => 'Zibo Espíritu de Dragón';
 
   @override
+  String get costumeNameZiboGalaksi => 'Zibo Galaxia';
+
+  @override
   String get rarityCommon => 'Común';
 
   @override

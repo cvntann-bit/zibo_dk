@@ -18,8 +18,7 @@ enum BadgeGiftType {
 /// Bir rozetin taşıdığı kostüm/tema hediyesi — bkz. `data/
 /// badge_gift_rewards.dart`'taki `badgeGiftRewards` eşlemesi.
 class BadgeGiftReward {
-  const BadgeGiftReward.costume(this.costumeId)
-    : type = BadgeGiftType.costume;
+  const BadgeGiftReward.costume(this.costumeId) : type = BadgeGiftType.costume;
 
   const BadgeGiftReward.theme() : type = BadgeGiftType.theme, costumeId = null;
 

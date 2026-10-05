@@ -147,6 +147,22 @@ const costumePoses = <String, List<String>>{
     'assets/images/zibo_ejder_ruhu_pose1.webp',
     'assets/images/zibo_ejder_ruhu_pose2.webp',
   ],
+  'zibo_ogrenci': [
+    'assets/images/zibo_ogrenci_pose1.webp',
+    'assets/images/zibo_ogrenci_pose2.webp',
+  ],
+  'zibo_ninja': [
+    'assets/images/zibo_ninja_pose1.webp',
+    'assets/images/zibo_ninja_pose2.webp',
+  ],
+  'zibo_buyucu': [
+    'assets/images/zibo_buyucu_pose1.webp',
+    'assets/images/zibo_buyucu_pose2.webp',
+  ],
+  'zibo_galaksi': [
+    'assets/images/zibo_galaksi_pose1.webp',
+    'assets/images/zibo_galaksi_pose2.webp',
+  ],
 };
 
 /// [costumeId] için poz listesini döner: `null` (kostümsüz) ise

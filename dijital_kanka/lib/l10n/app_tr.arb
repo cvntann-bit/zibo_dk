@@ -863,6 +863,10 @@
   "@costumeNameZiboEjderRuhu": {
     "description": "zibo_ejder_ruhu kostümünün görünen adı"
   },
+  "costumeNameZiboGalaksi": "Galaksi Zibo",
+  "@costumeNameZiboGalaksi": {
+    "description": "zibo_galaksi kostümünün görünen adı"
+  },
   "rarityCommon": "Yaygın",
   "@rarityCommon": {
     "description": "Kostüm nadirlik kademesi adı"

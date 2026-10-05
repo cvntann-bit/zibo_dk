@@ -4,7 +4,14 @@ import '../l10n/app_localizations.dart';
 /// Altısı da dolu: [consistency] + [moduleMastery] + [collection] +
 /// [loyalty] + [social] + [hidden] (Gizli/Eğlenceli — bkz. altta
 /// [ZiboBadgeDefinition.isHidden]).
-enum BadgeCategory { consistency, moduleMastery, collection, loyalty, social, hidden }
+enum BadgeCategory {
+  consistency,
+  moduleMastery,
+  collection,
+  loyalty,
+  social,
+  hidden,
+}
 
 /// Tek bir rozetin SABİT tanımı (id, kategori, görsel, ödül) — HANGİ
 /// KOŞULDA kazanıldığı BURADA DEĞİL, `BadgeProvider`'ın kategoriye özel
