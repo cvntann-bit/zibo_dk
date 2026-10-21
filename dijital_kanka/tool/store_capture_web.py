@@ -19,7 +19,7 @@ ALL = ["zibo_" + x for x in "hippi sporcu chef ogrenci asker hoca artist kovboy 
 
 
 # 9 sahipli kostüm: 10 ve üzeri "Moda İkonu/Tam Gardırop" rozet pencerelerini tetikler (her açılışta çıkar).
-OWNED = ["zibo_" + x for x in "hippi chef artist kovboy king firavun viking anime ejder_ruhu".split()]
+OWNED = ["zibo_" + x for x in "hippi sporcu chef ogrenci artist kovboy buyucu king firavun viking anime ejder_ruhu galaksi altin".split()]
 LANG = os.environ.get("LANG_CODE", "tr")
 BADGES = {b: {"earnedAt": "2026-10-01T10:00:00.000", "claimed": True} for b in ("collector", "fashion_icon")}
 
@@ -29,6 +29,8 @@ def init_script(equipped=None, keys=None):
         "onboardingState": {"completed": True},
         "profileState": {"name": "Zibo"},
         "adFreeState": {"isAdFree": True},
+        "languageCode": {"value": LANG},
+        "badgeState": {"earned": BADGES},
                 "coinState": {"balance": 1450, "totalEarned": 1450, "totalSpent": 0, "transactions": []},
         "costumeState": {"ownedIds": OWNED, "equippedId": equipped},
     }
@@ -89,19 +91,19 @@ def main():
                 print(" -", t)
             shot("_ilk")
         else:
-            # Çalışan akış (yalnızca TR etiketleri). EN/ES'te sayfa Kostümler sekmesinde yeniden yükleniyordu → Türkçe ekranlar tüm diller için kullanılır.
-            dismiss()
-            if any(t.startswith("Geri / Rozetler") or t == "Rozetler" for t in labels()):
-                shot("rozetler")
-                tap("Geri")
-                page.wait_for_timeout(800)
+            # Alt bar / Z / Rozetler kutusu konumları dil bağımsız (etiketler dile göre değişir → koordinat).
+            NAV = {"ana": (44, 888), "oyun": (130, 888), "profil": (281, 888), "magaza": (368, 888), "z": (206, 836)}
+            page.wait_for_timeout(2500)
             shot("ana_sayfa")
-            tap("Oyun Salonu"); shot("oyun_salonu")
-            tap("Profil"); shot("profil")
-            tap("Mağaza"); shot("magaza_coin")
-            tap_xy(160, 138)            # Kostümler (alt sekmeler tek a11y düğümü)
-            for g in ("Yaygın ·", "Nadir ·", "Epik ·"):
-                tap(g)
+            tap_xy(366, 242); shot("rozetler")       # Rozetler kutusu
+            tap_xy(26, 29)                           # Geri
+            tap_xy(*NAV["oyun"]); shot("oyun_salonu")
+            tap_xy(*NAV["profil"]); shot("profil")
+            tap_xy(*NAV["magaza"]); shot("magaza_coin")
+            tap_xy(160, 138)                         # Kostümler (alt sekmeler tek a11y düğümü)
+            names = {"tr": ("Yaygın", "Nadir", "Epik"), "en": ("Common", "Rare", "Epic"), "es": ("Común", "Raro", "Épico")}[LANG]
+            for g in names:
+                tap(g + " ·")
             page.mouse.move(206, 500)
             page.mouse.wheel(0, 300)
             page.wait_for_timeout(800)
@@ -110,8 +112,8 @@ def main():
             page.wait_for_timeout(700)
             tap_xy(253, 138); shot("magaza_temalar")
             tap_xy(347, 138); shot("magaza_pro")
-            tap("Ana Sayfa")
-            tap("Ek modülleri aç"); shot("modul_menusu")
+            tap_xy(*NAV["ana"])
+            tap_xy(*NAV["z"]); shot("modul_menusu")
         b.close()
 
 
