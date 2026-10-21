@@ -7,6 +7,8 @@ ciddiye almak, kararlılığı (crash) ve kitleyi tutmayı (retention) yükseltm
 > Dürüst not: aşağıdaki fazlar önceliklendirilmiş TASLAKTIR. "Doğrulanacak" işaretli yerler henüz
 > ölçülmedi/okunmadı; varsayım değil, ilk adımda kontrol edilecek.
 
+> **Zarar etmemek ana kuraldır:** her faz kararı `docs/unit_economics.md` (kullanıcı başı gelir/gider) ile kontrol edilir.
+
 ## Başlangıç gerçekleri (koddan okundu)
 
 - Reklam: Appodeal (`stack_appodeal_flutter ^4.2.0`), yalnızca rewarded + interstitial. Banner kodu var ama gerçek istek/doluluk yok (bkz. hafıza: banner 0 fill).
