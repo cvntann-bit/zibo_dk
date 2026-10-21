@@ -1774,6 +1774,52 @@ class AppLocalizationsTr extends AppLocalizations {
       'Zibo\'yla olan bağını ve ilerlemeni tek bakışta gör.';
 
   @override
+  String get onboardingStory1 => 'Eskiden düzensiz ve soluk bir hayatım vardı…';
+
+  @override
+  String get onboardingStory2 =>
+      'Ta ki… bir gün her şeyden sıkılıp, kendimin en iyi versiyonuna ulaşmaya karar verdiğim ana kadar.';
+
+  @override
+  String get onboardingStory3 => 'İşte o an her şey değişti.';
+
+  @override
+  String get onboardingStory4 =>
+      'Sonra kendime bir söz verdim: bu yolda kendinin en iyi versiyonuna ulaşmaya karar veren herkesin kankası olacağım.';
+
+  @override
+  String get onboardingStory5 => 'Demek buradasın. O zaman başlayalım!';
+
+  @override
+  String get onboardingStoryTapHint => 'Devam etmek için dokun';
+
+  @override
+  String onboardingMeetTitle(String name) {
+    return 'Tanıştığıma memnun oldum, $name!';
+  }
+
+  @override
+  String get onboardingNameBubble => 'Sana ne diye hitap edeyim?';
+
+  @override
+  String get onboardingNotifBody =>
+      'Seninle daha rahat konuşabilmem için bildirim izni verir misin? Sana küçük hatırlatmalar ve motivasyon sözleri göndereceğim.';
+
+  @override
+  String get onboardingNotifAllow => 'İzin Ver';
+
+  @override
+  String get onboardingNotifLater => 'Şimdi Değil';
+
+  @override
+  String get onboardingFinaleAllowed =>
+      'Harika! Artık sana daha kolay ulaşabilirim. Hadi başlayalım!';
+
+  @override
+  String get onboardingFinaleDeclined =>
+      'Sorun değil, istersen sonra Ayarlar\'dan açabilirsin. Hadi başlayalım!';
+
+  @override
   String get onboardingClosingTitle => 'Zibo ile Yolculuğun Başlıyor!';
 
   @override

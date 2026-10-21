@@ -1782,6 +1782,52 @@ class AppLocalizationsEs extends AppLocalizations {
       'Ve tu vínculo con Zibo y tu progreso de un vistazo.';
 
   @override
+  String get onboardingStory1 => 'Antes tenía una vida desordenada y apagada…';
+
+  @override
+  String get onboardingStory2 =>
+      'Hasta que… un día, cansado de todo, decidí alcanzar mi mejor versión.';
+
+  @override
+  String get onboardingStory3 => 'En ese momento todo cambió.';
+
+  @override
+  String get onboardingStory4 =>
+      'Entonces me hice una promesa: seré el amigo de todos los que deciden alcanzar su mejor versión.';
+
+  @override
+  String get onboardingStory5 => 'Así que estás aquí. ¡Entonces empecemos!';
+
+  @override
+  String get onboardingStoryTapHint => 'Toca para continuar';
+
+  @override
+  String onboardingMeetTitle(String name) {
+    return '¡Mucho gusto, $name!';
+  }
+
+  @override
+  String get onboardingNameBubble => '¿Cómo debo llamarte?';
+
+  @override
+  String get onboardingNotifBody =>
+      '¿Me das permiso para enviarte notificaciones y así hablar con más comodidad? Te mandaré pequeños recordatorios y frases de ánimo.';
+
+  @override
+  String get onboardingNotifAllow => 'Permitir';
+
+  @override
+  String get onboardingNotifLater => 'Ahora no';
+
+  @override
+  String get onboardingFinaleAllowed =>
+      '¡Genial! Ahora puedo avisarte con más facilidad. ¡Empecemos!';
+
+  @override
+  String get onboardingFinaleDeclined =>
+      'Sin problema, puedes activarlas luego en Ajustes. ¡Empecemos!';
+
+  @override
   String get onboardingClosingTitle => '¡Tu Viaje con Zibo Comienza!';
 
   @override

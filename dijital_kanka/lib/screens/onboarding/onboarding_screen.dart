@@ -76,22 +76,29 @@ const _moduleIntros = <_ModuleIntro>[
 ];
 
 String _goalsTitle(AppLocalizations l10n) => l10n.tabGoalTracking;
-String _goalsDescription(AppLocalizations l10n) => l10n.onboardingGoalsDescription;
+String _goalsDescription(AppLocalizations l10n) =>
+    l10n.onboardingGoalsDescription;
 String _waterTitle(AppLocalizations l10n) => l10n.waterScreenTitle;
-String _waterDescription(AppLocalizations l10n) => l10n.onboardingWaterDescription;
+String _waterDescription(AppLocalizations l10n) =>
+    l10n.onboardingWaterDescription;
 String _gratitudeTitle(AppLocalizations l10n) => l10n.gratitudeScreenTitle;
-String _gratitudeDescription(AppLocalizations l10n) => l10n.onboardingGratitudeDescription;
+String _gratitudeDescription(AppLocalizations l10n) =>
+    l10n.onboardingGratitudeDescription;
 String _moodTitle(AppLocalizations l10n) => l10n.moodScreenTitle;
-String _moodDescription(AppLocalizations l10n) => l10n.onboardingMoodDescription;
+String _moodDescription(AppLocalizations l10n) =>
+    l10n.onboardingMoodDescription;
 String _dreamJournalTitle(AppLocalizations l10n) => l10n.dreamJournalTitle;
 String _dreamJournalDescription(AppLocalizations l10n) =>
     l10n.onboardingDreamJournalDescription;
 String _manifestTitle(AppLocalizations l10n) => l10n.manifestScreenTitle;
-String _manifestDescription(AppLocalizations l10n) => l10n.onboardingManifestDescription;
+String _manifestDescription(AppLocalizations l10n) =>
+    l10n.onboardingManifestDescription;
 String _storeTitle(AppLocalizations l10n) => l10n.storeTitle;
-String _storeDescription(AppLocalizations l10n) => l10n.onboardingStoreDescription;
+String _storeDescription(AppLocalizations l10n) =>
+    l10n.onboardingStoreDescription;
 String _profileTitle(AppLocalizations l10n) => l10n.profileScreenTitle;
-String _profileDescription(AppLocalizations l10n) => l10n.onboardingProfileDescription;
+String _profileDescription(AppLocalizations l10n) =>
+    l10n.onboardingProfileDescription;
 
 /// Uygulamanın İLK açılışında gösterilen tanıtım akışı: (a) isim sorma,
 /// (b) isim otomatik olarak Profil'e VE hitap tercihine varsayılan olarak
@@ -189,7 +196,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 physics: const NeverScrollableScrollPhysics(),
                 onPageChanged: (index) => setState(() => _pageIndex = index),
                 children: [
-                  _LanguageStep(selected: _selectedLocale, onSelect: _selectLanguage),
+                  _LanguageStep(
+                    selected: _selectedLocale,
+                    onSelect: _selectLanguage,
+                  ),
                   _NameStep(controller: _nameController),
                   for (final module in _moduleIntros)
                     _ModuleIntroStep(module: module),
@@ -227,7 +237,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   valueListenable: _nameController,
                   builder: (context, value, _) {
                     final nameEmpty = _isNamePage && value.text.trim().isEmpty;
-                    final languageUnset = _isLanguagePage && _selectedLocale == null;
+                    final languageUnset =
+                        _isLanguagePage && _selectedLocale == null;
                     return FilledButton(
                       onPressed: (nameEmpty || languageUnset) ? null : _goNext,
                       child: Text(
@@ -278,9 +289,9 @@ class _LanguageStep extends StatelessWidget {
           Text(
             l10n.onboardingLanguageStepSubtitle,
             textAlign: TextAlign.center,
-            style: Theme.of(
-              context,
-            ).textTheme.bodyMedium?.copyWith(color: colorScheme.onSurfaceVariant),
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: colorScheme.onSurfaceVariant,
+            ),
           ),
           const SizedBox(height: 28),
           for (final code in supportedLanguageCodes) ...[
@@ -312,7 +323,9 @@ class _LanguageOptionCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     return Material(
-      color: isSelected ? colorScheme.primaryContainer : colorScheme.surfaceContainerHigh,
+      color: isSelected
+          ? colorScheme.primaryContainer
+          : colorScheme.surfaceContainerHigh,
       borderRadius: BorderRadius.circular(16),
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
@@ -370,9 +383,9 @@ class _NameStep extends StatelessWidget {
           Text(
             l10n.onboardingNameStepSubtitle,
             textAlign: TextAlign.center,
-            style: Theme.of(
-              context,
-            ).textTheme.bodyMedium?.copyWith(color: colorScheme.onSurfaceVariant),
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: colorScheme.onSurfaceVariant,
+            ),
           ),
           const SizedBox(height: 28),
           TextField(
@@ -425,9 +438,9 @@ class _ModuleIntroStep extends StatelessWidget {
           Text(
             module.description(l10n),
             textAlign: TextAlign.center,
-            style: Theme.of(
-              context,
-            ).textTheme.bodyLarge?.copyWith(color: colorScheme.onSurfaceVariant),
+            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+              color: colorScheme.onSurfaceVariant,
+            ),
           ),
         ],
       ),
@@ -462,9 +475,9 @@ class _ClosingStep extends StatelessWidget {
           Text(
             l10n.onboardingClosingMessage(name),
             textAlign: TextAlign.center,
-            style: Theme.of(
-              context,
-            ).textTheme.bodyLarge?.copyWith(color: colorScheme.onSurfaceVariant),
+            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+              color: colorScheme.onSurfaceVariant,
+            ),
           ),
         ],
       ),

@@ -2441,6 +2441,61 @@
   "@onboardingProfileDescription": {
     "description": "Onboarding'de Profil modülünü tanıtan, tek cümlelik 'bu ne işe yarar' açıklaması"
   },
+  "onboardingStory1": "Eskiden düzensiz ve soluk bir hayatım vardı…",
+  "@onboardingStory1": {
+    "description": "Intro hikâyesi 1. slayt (Zibo anlatıyor, dağınık odada)"
+  },
+  "onboardingStory2": "Ta ki… bir gün her şeyden sıkılıp, kendimin en iyi versiyonuna ulaşmaya karar verdiğim ana kadar.",
+  "@onboardingStory2": {
+    "description": "Intro hikâyesi 2. slayt (ara sahne)"
+  },
+  "onboardingStory3": "İşte o an her şey değişti.",
+  "@onboardingStory3": {
+    "description": "Intro hikâyesi 3. slayt (Zibo parlıyor)"
+  },
+  "onboardingStory4": "Sonra kendime bir söz verdim: bu yolda kendinin en iyi versiyonuna ulaşmaya karar veren herkesin kankası olacağım.",
+  "@onboardingStory4": {
+    "description": "Intro hikâyesi 4. slayt (güneşli, düzenli oda)"
+  },
+  "onboardingStory5": "Demek buradasın. O zaman başlayalım!",
+  "@onboardingStory5": {
+    "description": "Intro hikâyesi 5. (son) slayt, ardından isim adımı"
+  },
+  "onboardingStoryTapHint": "Devam etmek için dokun",
+  "@onboardingStoryTapHint": {
+    "description": "Intro hikâyesi ilk slaytındaki küçük ipucu"
+  },
+  "onboardingMeetTitle": "Tanıştığıma memnun oldum, {name}!",
+  "@onboardingMeetTitle": {
+    "description": "İsim girildikten sonra Zibo'nun karşılama başlığı",
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "onboardingNameBubble": "Sana ne diye hitap edeyim?",
+  "@onboardingNameBubble": {
+    "description": "Zibo intro akışı (isim / bildirim izni / final)"
+  },
+  "onboardingNotifBody": "Seninle daha rahat konuşabilmem için bildirim izni verir misin? Sana küçük hatırlatmalar ve motivasyon sözleri göndereceğim.",
+  "@onboardingNotifBody": {
+    "description": "Zibo intro akışı (isim / bildirim izni / final)"
+  },
+  "onboardingNotifAllow": "İzin Ver",
+  "@onboardingNotifAllow": {
+    "description": "Zibo intro akışı (isim / bildirim izni / final)"
+  },
+  "onboardingNotifLater": "Şimdi Değil",
+  "@onboardingNotifLater": {
+    "description": "Zibo intro akışı (isim / bildirim izni / final)"
+  },
+  "onboardingFinaleAllowed": "Harika! Artık sana daha kolay ulaşabilirim. Hadi başlayalım!",
+  "@onboardingFinaleAllowed": {
+    "description": "Zibo intro akışı (isim / bildirim izni / final)"
+  },
+  "onboardingFinaleDeclined": "Sorun değil, istersen sonra Ayarlar'dan açabilirsin. Hadi başlayalım!",
+  "@onboardingFinaleDeclined": {
+    "description": "Zibo intro akışı (isim / bildirim izni / final)"
+  },
   "onboardingClosingTitle": "Zibo ile Yolculuğun Başlıyor!",
   "@onboardingClosingTitle": {
     "description": "Onboarding akışının son (kapanış) adımının başlığı"
