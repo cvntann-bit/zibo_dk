@@ -150,13 +150,13 @@ def draft3(out, ham, assets):
     glow(c, 500, 1250, 520, (255, 205, 130), 120)
     for x, y, r in [(150, 520, 34), (930, 380, 26), (1010, 1480, 30), (1180, 1750, 22), (2050, 360, 30), (2380, 1790, 26), (3020, 520, 28), (2920, 1700, 34)]:
         sparkle(c, x, y, r)
-    zibo(c, assets / "zibo_galaksi.webp", 540, 1860, 1180)
+    zibo(c, assets / "zibo_df_pose4.webp", 540, 1850, 1100)
     # Kare 1 başlık
     headline(c, 0, ["Dijital kankan", "Zibo seninle"], "Günlük hedef, alışkanlık ve eğlence")
     # Kare 2: mağaza telefonu; sağ kenarı dikişi aşan rozet telefonu
-    phone(c, Image.open(ham / "magaza_kostumler.jpg"), 1080 + 500, 500, 600)
+    phone(c, Image.open(ham / "magaza_kostumler.jpg"), 1080 + 470, 500, 600)
     headline(c, 1, ["27 kostüm,", "5 nadirlik"], "Topla, giy, çerçeveni parlat")
-    phone(c, Image.open(ham / "rozetler.jpg"), 2160 + 10, 560, 600, tilt=0)
+    phone(c, Image.open(ham / "rozetler.jpg"), 2160 + 60, 560, 600, tilt=0)
     # Kare 3: rozet kutlaması + başlık
     popup(c, ham / "rozet_kutlama.jpg", (40, 180, 475, 668), 2160 + 640, 1130, 470, -6)
     headline(c, 2, ["Rozet topla,", "ödül kazan"], "Her seri yeni bir başarı", dark_text=True)
