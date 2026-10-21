@@ -125,6 +125,29 @@ sıklık yok. Reklam hazır değilse (`_waitUntilLoaded`) hiç gösterilmiyor.
   (DEX maliyetiyle, Faz 3).
 - 5.104 istek / 235 gösterim: gereksiz istek (pil/veri), ama fatura etkisi yok.
 
+## 2d. Reklam türü kırılımı (ekranda görünen 4 gün: 18–21 Eki; kalan 4 gün henüz görülmedi)
+
+| Gün | Tür | Gösterim | İstek | Fill | Display | CTR | Gelir | eCPM |
+|---|---|---|---|---|---|---|---|---|
+| 21 (kısmi) | Interstitial | 3 | 110 | %37,3 | %7,3 | %66,7 | 0 | 0 |
+| 21 (kısmi) | Rewarded | 6 | 67 | %86,6 | %10,3 | %83,3 | 0 | 0 |
+| 20 | Interstitial | 35 | 550 | %26,2 | %24,3 | %31,4 | 0,01 $ | 0,21 $ |
+| 20 | Rewarded | 16 | 266 | %75,2 | %8,0 | %56,3 | 0 | 0 |
+| 19 | Interstitial | 17 | 678 | %12,8 | %19,5 | %64,7 | 0,02 $ | 0,92 $ |
+| 19 | Rewarded | 15 | 283 | %61,1 | %8,7 | %66,7 | 0,02 $ | 1,04 $ |
+| 18 | Interstitial | 28 | 515 | %21,4 | %25,5 | %53,6 | 0,03 $ | 1,04 $ |
+| 18 | Rewarded | 7 | 247 | %66,8 | %4,2 | %57,1 | 0,01 $ | 1,11 $ |
+| Hepsi | **Banner** | **0** | **0** | — | — | — | 0 | 0 |
+
+Okuma:
+- **Banner: 0 istek, 0 gösterim** → gelir katkısı sıfır (bilinen durum; destek cevabı bekleniyor, adaptörlere dokunma).
+- **Rewarded:** fill çok iyi (%61–87), eCPM ~1,0–1,1 $ (interstitial'dan genelde yüksek), kullanıcıyı rahatsız etmiyor
+  (kendi isteğiyle izliyor) → ölçeklenecek ana kalem. Display rate düşük çünkü reklam önceden yükleniyor, kullanıcı butona basınca gösteriliyor.
+- **Interstitial:** fill düşük (%13–37), eCPM dalgalı (0,21–1,04 $). Aynı gün 16 rewarded + 35 interstitial gösterimi
+  ama 20 Eki gelir ≈ 0,01 $ → **bazı gösterimler 0 gelir getirmiş** (veri gecikmesi/rapor olgunlaşması olabilir —
+  son günlerin geliri sonradan güncellenir; kesin değil, 2–3 gün sonra tekrar bak).
+- Bu tabloda ağ kırılımı yok (hangi ağ ne kadar kazandırıyor?) → "Network (Monetization)" kutusu işaretlenip bakılacak.
+
 ## 3. Denge ilkeleri
 
 1. **Her yeni ücretsiz coin kaynağı reklam gelirini yemesin:** Coin ödülü (ör. reklam başı 20 ZC) ile
