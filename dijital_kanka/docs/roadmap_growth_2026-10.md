@@ -66,6 +66,23 @@ Kullanıcı 2026-10-21'de Blaze'e geçti. Blaze'de bütçe uyarısı harcamayı 
 4. Cloud Functions yazılırsa: `maxInstances` düşük, bölge sabit, yalnızca gerekli tetikleyiciler, sonsuz-döngü/yeniden-tetikleme korumaları.
 5. İsteğe bağlı sert kesme (Pub/Sub ile faturalamayı kapatma): çalışan servisleri komple durdurur → ancak gerçek bir kesme istenirse ve sonuçları anlatıldıktan sonra.
 
+## Faz D — DEX optimizasyonu (başlama emri bekleniyor — kullanıcı "müsait olunca başlayacağız" dedi, UNUTMA)
+
+Amaç: Play DEX optimizasyon skoru şu an **%27** (eşik %25, Şubat 2027'de zorunlu) → yeni SDK'lara (Yandex vb.) yer açmak için marj artırmak. Kullanıcı %40 istedi; ölçüme göre %40 gerçekçi değil, tahmin %30–34 (garanti yok).
+
+Ölçüm (1.15.0+52 `mapping.txt`, vekil skor; Play'in skoruyla aynı ölçek DEĞİL, yalnızca göreli):
+- Korunan (karartılmayan) ağırlık: gms.internal 10,3 · AppLovin 8,7 · **io.flutter.** (bizim kural) 6,7** · Firebase Analytics 2,8 · okhttp3 2,5 · recaptcha 2,0 · **androidx.work (bizim) 1,8** · Appodeal 1,6 · **androidx.credentials (bizim) 1,4** · **com.tiktok (bizim) 0,6**.
+- Bizim `proguard-rules.pro` kurallarının toplam payı ~10,5 vekil puan; gerisi SDK'ların kendi consumer `-keep` kuralları (projeden kaldırılamaz).
+- Geçmiş: BidMachine adaptörünü çıkarmak %24→%27 yapmıştı.
+
+Plan (sırayla, hepsi proguard-rules.pro; Dart'a dokunmaz):
+1. `-keep class io.flutter.** {*;}` ve alt kurallarını daralt (Flutter Gradle eklentisi çoğunu zaten ekliyor; yanlışsa AÇILIŞTA çökme riski).
+2. `androidx.work.**` keep'ini yalnızca `WorkDatabase_Impl`/Room `_Impl` sınıflarına daralt (geçmişte tüm keep kaldırılınca açılışta WorkDatabase çökmüştü — dikkat).
+3. `androidx.credentials.**` ve `com.tiktok.**` kurallarını daralt (küçük kazanç).
+4. recaptcha bağımlılığını dışlama: RİSKLİ (Firebase Auth), şimdilik YAPILMAYACAK.
+Doğrulama: derle → `mapping.txt` vekil skoru önce/sonra rakamla karşılaştır → release AAB'yi dahili teste yükle, telefonda AÇ + Google ile giriş + reklam + bildirim + çark dene (çökmeler yalnızca cihazda çıkıyor, derlemede değil) → çökme yoksa yayınla; Play skoru birkaç gün gecikmeli güncellenir.
+Kural: canlı sürümün üzerine debug build kurma. Bu iş AYRI sürüm olarak (1.15.0+52 ayrı tutulur), özellik değişiklikleriyle karışmaz.
+
 ## Faz 5 — Güvenlik/gelir sağlamlığı (zamanı gelince)
 
 - Satın alma makbuzu sunucu doğrulaması (Cloud Functions/Blaze kararı gerekir) — gerçek kullanıcı sayısı arttıkça önceliği yükselir.
@@ -87,5 +104,6 @@ Kullanıcı 2026-10-21'de Blaze'e geçti. Blaze'de bütçe uyarısı harcamayı 
 | 2 Appodeal SDK | başlamadı |
 | 3 Reklam ağları + Yandex | başlamadı (önce "Yandex boost" netleşecek) |
 | 4 Retention | başlamadı |
+| D DEX optimizasyonu (%27 → hedef daha yüksek) | kullanıcı onayı bekliyor, "müsait olunca" başlanacak |
 | B Blaze fatura koruması | sıradaki (Blaze'e geçildi, koruma henüz kurulmadı) |
 | 5 Güvenlik/iOS | beklemede (Blaze artık açık → makbuz doğrulaması yapılabilir) |
