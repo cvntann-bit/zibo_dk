@@ -148,6 +148,18 @@ Okuma:
   son günlerin geliri sonradan güncellenir; kesin değil, 2–3 gün sonra tekrar bak).
 - Bu tabloda ağ kırılımı yok (hangi ağ ne kadar kazandırıyor?) → "Network (Monetization)" kutusu işaretlenip bakılacak.
 
+## 2e. Ağ kırılımı (ekranda görünen 19–21 Eki satırları; toplam waterfall isteği ağ başına sayıldığı için 9.185)
+
+| Tür | AppLovin | Vungle |
+|---|---|---|
+| Rewarded | fill %61–87, gösterim 6/16/15 (21/20/19), eCPM ~1,04 $ (19 Eki) | gösterim 0, fill %0,9–11 |
+| Interstitial | fill %11–21, gösterim 3/18/13, eCPM ~1,08 $ (19 Eki) | fill %1,5–16, gösterim 0/17/4, eCPM ~0,39–0,44 $ |
+
+Okuma: **gelirin neredeyse tamamı AppLovin'den**; Vungle çok düşük dolduruyor ve eCPM'i ~yarısı. Görünen satırlarda başka
+ağ yok → tek ağa bağımlılık riski (AppLovin hesabı/politikası sorunu = gelirin tamamı gider). Fill'i ve rekabeti
+artırmanın yolu yeni ağ eklemek (Faz 3), ama her adaptör DEX maliyeti getirir (bkz. `project_ad_network_dex_cleanup`).
+Kalan 5 günün satırları ve Appodeal'in kendi talebi (varsa) bu ekranda görülmedi.
+
 ## 3. Denge ilkeleri
 
 1. **Her yeni ücretsiz coin kaynağı reklam gelirini yemesin:** Coin ödülü (ör. reklam başı 20 ZC) ile
