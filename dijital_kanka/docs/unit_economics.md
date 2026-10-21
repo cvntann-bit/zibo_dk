@@ -67,6 +67,30 @@ Girdi tablosu (şu an BOŞ — Faz 0'da Appodeal/Firebase'den doldurulacak):
 | Gün-1/7/30 retention | ÖLÇÜLECEK | Firebase/Play |
 | IAP + abonelik net gelir / kullanıcı | ÖLÇÜLECEK | Play Console |
 
+## 2b. İLK ÖLÇÜM — Appodeal Overview (12–19 Eki 2026, 8 gün, ekran görüntüsünden okundu)
+
+| Metrik | Değer |
+|---|---|
+| Toplam reklam geliri (8 gün) | **0,27 $** (günlük ~0,02–0,06 $, ort. ~0,034 $) |
+| Active Users (dönem) | 631 (günlük ~65–190, artan eğilim) |
+| ARPU (dönem) | 0,0004 $ |
+| New Installs | 581 (hepsi organik, 0 ücretli; günlük ~35 → ~115 artıyor) |
+| Appodeal bakiyesi (sağ üst) | 1,60 $ |
+
+Türetilen (tahmin): gelir ≈ **1 $/ay** (şu anki trafikle); aktif kullanıcı başı ≈ 0,0015 $/ay,
+DAU başı günlük ≈ 0,0002 $.
+
+**Okuma (dürüst):** reklam geliri şu an gider tahminiyle aynı büyüklükte ya da altında (gider
+tahmini 2.500 kullanıcıda ~2–4 $/ay; Firebase ücretsiz kota bir kısmını karşılıyor olabilir —
+gerçek fatura henüz ölçülmedi). Yani **reklam geliri tek başına bugün dengeyi KURMUYOR**; hâlâ
+çok düşük hacim ve düşük DAU başı gösterim/eCPM. Bu ekran gösterim sayısı, eCPM, fill rate,
+ağ ve reklam türü kırılımı vermiyor → sebep (az gösterim mi, düşük eCPM mi, düşük fill mi)
+henüz BİLİNMİYOR. Sonraki ölçüm: Appodeal > Analytics'te reklam türü + ağ + ülke kırılımı,
+impressions, eCPM, fill rate.
+
+Not: 8 günlük pencere, son günler gecikmeli olabilir; trend (yükselen yükleme/aktif kullanıcı,
+düşen ARPU) izlenmeli.
+
 ## 3. Denge ilkeleri
 
 1. **Her yeni ücretsiz coin kaynağı reklam gelirini yemesin:** Coin ödülü (ör. reklam başı 20 ZC) ile
