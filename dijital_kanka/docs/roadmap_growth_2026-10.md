@@ -83,6 +83,19 @@ Plan (sırayla, hepsi proguard-rules.pro; Dart'a dokunmaz):
 Doğrulama: derle → `mapping.txt` vekil skoru önce/sonra rakamla karşılaştır → release AAB'yi dahili teste yükle, telefonda AÇ + Google ile giriş + reklam + bildirim + çark dene (çökmeler yalnızca cihazda çıkıyor, derlemede değil) → çökme yoksa yayınla; Play skoru birkaç gün gecikmeli güncellenir.
 Kural: canlı sürümün üzerine debug build kurma. Bu iş AYRI sürüm olarak (1.15.0+52 ayrı tutulur), özellik değişiklikleriyle karışmaz.
 
+## Faz R — Intro/Onboarding yenileme (kullanıcı kararı 2026-10-21; "Özellik grafiği" listeden SİLİNDİ)
+
+Amaç: ilk açılışta Zibo'yu sevdirmek + uygulamanın ne işe yaradığını YORMADAN göstermek → retention (gün-1/7) artışı.
+Bugün (`lib/screens/onboarding/onboarding_screen.dart`, 12 sayfa): Dil → İsim → 8 modül tanıtımı (Hedef, Su, Şükran, Ruh Hali, Rüya, Manifest, Mağaza, Profil) → Kapanış. Hikâye yok, öğretici salt metin.
+Plan (taslak, kullanıcıyla netleşecek):
+1. Dil (aynen).
+2. **Zibo hikâyesi:** 3–5 slayt, kullanıcının ÜRETECEĞİ görseller + kısa metin (TR/EN/ES ARB), kaydırma/dokunma, "Geç".
+3. İsim ("Sana ne diyelim?" hikâyenin devamı gibi Zibo sorar).
+4. **Kısa öğretici (≤4 adım):** 8 modül sayfasının yerine; pasif metin yerine mümkünse "ilk küçük görev" (ör. Zibo'ya dokun, Z menüsünü aç, ilk hedef/su). Atlanabilir; Ayarlar'dan tekrar izlenebilir.
+5. Kapanış.
+Ölçüm: Firebase olayları (`onboarding_step_viewed`, `onboarding_skipped`, `onboarding_completed`) → hangi adımda kayıp var; eski akışla (varsa) kıyas.
+Girdi bekleyen: Zibo hikâyesi/lore (kullanıcı yazacak ya da taslak onaylayacak), görseller (adet/boyut aşağıda), öğretici adımları.
+
 ## Faz 5 — Güvenlik/gelir sağlamlığı (zamanı gelince)
 
 - Satın alma makbuzu sunucu doğrulaması (Cloud Functions/Blaze kararı gerekir) — gerçek kullanıcı sayısı arttıkça önceliği yükselir.
@@ -106,4 +119,5 @@ Kural: canlı sürümün üzerine debug build kurma. Bu iş AYRI sürüm olarak 
 | 4 Retention | başlamadı |
 | D DEX optimizasyonu (%27 → hedef daha yüksek) | kullanıcı onayı bekliyor, "müsait olunca" başlanacak |
 | B Blaze fatura koruması | sıradaki (Blaze'e geçildi, koruma henüz kurulmadı) |
+| R Intro/Onboarding yenileme | tasarım aşaması (hikâye + görseller bekleniyor) |
 | 5 Güvenlik/iOS | beklemede (Blaze artık açık → makbuz doğrulaması yapılabilir) |
