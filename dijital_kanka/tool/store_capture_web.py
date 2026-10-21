@@ -1,4 +1,4 @@
-"""Flutter web (flutter run -d web-server --web-port 8766 -t lib/web_capture_main.dart) uygulamasından YÜKSEK ÇÖZÜNÜRLÜKLÜ ekran görüntüleri alır
+"""Flutter web (flutter run -d web-server --web-port 8790 -t lib/web_capture_main.dart) uygulamasından YÜKSEK ÇÖZÜNÜRLÜKLÜ ekran görüntüleri alır
 (Playwright + yüklü Chrome, 412x915 görünüm, deviceScaleFactor=3 → 1236x2745 PNG). Telefon gerekmez.
 
 Test durumu localStorage'a yazılır (Flutter web shared_preferences = `flutter.<anahtar>` → JSON-string):
@@ -14,12 +14,14 @@ from pathlib import Path
 
 from playwright.sync_api import sync_playwright
 
-URL = "http://localhost:8766"
+URL = "http://localhost:8790"
 ALL = ["zibo_" + x for x in "hippi sporcu chef ogrenci asker hoca artist kovboy punk rapci gentleman samurai gladyator korsan cyborg astronot buyucu ninja king zombi firavun viking altin anime ejder_ruhu galaksi elmas".split()]
 
 
 # 9 sahipli kostüm: 10 ve üzeri "Moda İkonu/Tam Gardırop" rozet pencerelerini tetikler (her açılışta çıkar).
 OWNED = ["zibo_" + x for x in "hippi chef artist kovboy king firavun viking anime ejder_ruhu".split()]
+LANG = os.environ.get("LANG_CODE", "tr")
+BADGES = {b: {"earnedAt": "2026-10-01T10:00:00.000", "claimed": True} for b in ("collector", "fashion_icon")}
 
 
 def init_script(equipped=None, keys=None):
@@ -41,13 +43,15 @@ def main():
     mode = sys.argv[2] if len(sys.argv) > 2 else "liste"
     with sync_playwright() as p:
         b = p.chromium.launch(channel="chrome", headless=False, args=["--window-position=0,0"])
-        ctx = b.new_context(viewport={"width": 412, "height": 915}, device_scale_factor=int(os.environ.get("DSF","3")), locale="tr-TR")
+        ctx = b.new_context(viewport={"width": 412, "height": 915}, device_scale_factor=int(os.environ.get("DSF","3")), locale=LANG)
         ctx.add_init_script(init_script(keys=os.environ.get('KEYS','').split(',') if os.environ.get('KEYS') else None))
         page = ctx.new_page()
         page.on('console', lambda m: print('[console]', m.type, m.text[:1500]) if m.type in ('error','warning','log') else None)
+        page.on('framenavigated', lambda f: print('[NAV]', f.url))
+        page.on('crash', lambda: print('[CRASH]'))
         page.on('pageerror', lambda e: print('[pageerror]', str(e)[:300]))
         page.goto(URL)
-        page.wait_for_timeout(15000)
+        page.wait_for_timeout(int(os.environ.get("WAIT_MS", "25000")))
         page.evaluate("document.querySelector('flt-semantics-placeholder')?.click()")
         page.wait_for_timeout(1500)
         def labels():
@@ -71,12 +75,13 @@ def main():
             print("shot", name)
 
         def dismiss():
-            for _ in range(4):
+            page.wait_for_timeout(2500)   # kutlama pencereleri yüklemeden kısa süre sonra çıkar
+            for _ in range(6):
                 ls = labels()
                 if any("Ödülü Al" in t for t in ls):
                     tap("Ödülü Al")
-                elif any(t.strip() in ("Kapat", "Tamam") for t in ls):
-                    tap("Kapat" if any(t.strip() == "Kapat" for t in ls) else "Tamam")
+                else:
+                    break
 
         if mode == "liste":
             dismiss()
@@ -84,36 +89,29 @@ def main():
                 print(" -", t)
             shot("_ilk")
         else:
+            # Çalışan akış (yalnızca TR etiketleri). EN/ES'te sayfa Kostümler sekmesinde yeniden yükleniyordu → Türkçe ekranlar tüm diller için kullanılır.
             dismiss()
             if any(t.startswith("Geri / Rozetler") or t == "Rozetler" for t in labels()):
                 shot("rozetler")
                 tap("Geri")
                 page.wait_for_timeout(800)
             shot("ana_sayfa")
-            tap("Oyun Salonu")
-            shot("oyun_salonu")
-            tap("Profil")
-            shot("profil")
-            tap("Mağaza")
-            shot("magaza_coin")
-            print("MAG:", [t for t in labels() if "ostüm" in t or "Coin Al" in t or "Tema" in t or "Pro" in t][:8])
-            tap_xy(160, 138)  # Kostümler (alt sekmeler tek düğüm: Coin Al / Kostümler / Temalar / Zibo Pro)
+            tap("Oyun Salonu"); shot("oyun_salonu")
+            tap("Profil"); shot("profil")
+            tap("Mağaza"); shot("magaza_coin")
+            tap_xy(160, 138)            # Kostümler (alt sekmeler tek a11y düğümü)
             for g in ("Yaygın ·", "Nadir ·", "Epik ·"):
                 tap(g)
             page.mouse.move(206, 500)
             page.mouse.wheel(0, 300)
             page.wait_for_timeout(800)
             shot("magaza_kostumler")
-            page.mouse.move(206, 500)
             page.mouse.wheel(0, -1500)
             page.wait_for_timeout(700)
-            tap_xy(253, 138)  # Temalar
-            shot("magaza_temalar")
-            tap_xy(347, 138)  # Zibo Pro
-            shot("magaza_pro")
+            tap_xy(253, 138); shot("magaza_temalar")
+            tap_xy(347, 138); shot("magaza_pro")
             tap("Ana Sayfa")
-            tap("Ek modülleri aç")
-            shot("modul_menusu")
+            tap("Ek modülleri aç"); shot("modul_menusu")
         b.close()
 
 

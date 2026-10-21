@@ -15,9 +15,9 @@
       "runtimeExecutable": "cmd.exe",
       "runtimeArgs": [
         "/c",
-        "cd /d C:\\dev\\ZIBODK~1\\DIJITA~1 && C:\\flutter\\bin\\flutter.bat run -d web-server --web-port 8766 -t lib/web_capture_main.dart"
+        "cd /d C:\\dev\\ZIBODK~1\\DIJITA~1 && C:\\flutter\\bin\\flutter.bat run -d web-server --web-port 8790 -t lib/web_capture_main.dart"
       ],
-      "port": 8766
+      "port": 8790
     }
   ]
 }

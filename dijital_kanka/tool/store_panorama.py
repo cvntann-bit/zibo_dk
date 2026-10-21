@@ -163,16 +163,38 @@ def draft3(out, ham, assets):
     slice_frames(c, n, out)
 
 
-HEAD_TR = [
-    (["Dijital kankan", "Zibo seninle"], "Günlük hedef, alışkanlık ve eğlence"),
-    (["Her gün sana", "özel sözler"], "Zibo seni motive eder"),
-    (["Tüm alışkanlıkların", "tek yerde"], "Hedef, su, şükran, ruh hali ve dahası"),
-    (["Oyna, puan topla,", "takas et"], "Mini oyunlar, bol ödül"),
-    (["27 kostüm,", "5 nadirlik"], "Topla, giy, çerçeveni parlat"),
-    (["Rozet topla,", "ödül kazan"], "Her seri yeni bir başarı"),
-    (["Kendi stilini", "seç"], "Renkli temalarla Zibo'yu değiştir"),
-    (["Zibo Pro ile", "daha fazlası"], "Reklamsız deneyim ve ekstra ödüller"),
-]
+HEADS = {
+    "tr": [
+        (["Dijital kankan", "Zibo seninle"], "Günlük hedef, alışkanlık ve eğlence"),
+        (["Her gün sana", "özel sözler"], "Zibo seni motive eder"),
+        (["Tüm alışkanlıkların", "tek yerde"], "Hedef, su, şükran, ruh hali ve dahası"),
+        (["Oyna, puan topla,", "takas et"], "Mini oyunlar, bol ödül"),
+        (["27 kostüm,", "5 nadirlik"], "Topla, giy, çerçeveni parlat"),
+        (["Rozet topla,", "ödül kazan"], "Her seri yeni bir başarı"),
+        (["Kendi stilini", "seç"], "Renkli temalarla Zibo'yu değiştir"),
+        (["Zibo Pro ile", "daha fazlası"], "Reklamsız deneyim ve ekstra ödüller"),
+    ],
+    "en": [
+        (["Your digital buddy", "Zibo is with you"], "Daily goals, habits and fun"),
+        (["Fresh quotes", "every day"], "Zibo keeps you motivated"),
+        (["All your habits", "in one place"], "Goals, water, gratitude, mood and more"),
+        (["Play, earn points,", "swap for coins"], "Mini games, big rewards"),
+        (["27 costumes,", "5 rarities"], "Collect, wear, make your frame shine"),
+        (["Collect badges,", "earn rewards"], "Every streak is a new win"),
+        (["Pick your", "own style"], "Change Zibo with colorful themes"),
+        (["Go further", "with Zibo Pro"], "Ad-free experience and extra rewards"),
+    ],
+    "es": [
+        (["Tu amigo digital", "Zibo está contigo"], "Metas diarias, hábitos y diversión"),
+        (["Frases nuevas", "cada día"], "Zibo te motiva"),
+        (["Todos tus hábitos", "en un solo lugar"], "Metas, agua, gratitud, ánimo y más"),
+        (["Juega, suma puntos", "y canjéalos"], "Minijuegos, grandes premios"),
+        (["27 disfraces,", "5 rarezas"], "Colecciona, viste, haz brillar tu marco"),
+        (["Colecciona insignias,", "gana premios"], "Cada racha es un nuevo logro"),
+        (["Elige tu", "propio estilo"], "Cambia a Zibo con temas de colores"),
+        (["Más con", "Zibo Pro"], "Sin anuncios y premios extra"),
+    ],
+}
 
 
 def fit_headline(canvas, frame_idx, lines, sub, bg_rgb):
@@ -192,7 +214,7 @@ def fit_headline(canvas, frame_idx, lines, sub, bg_rgb):
     d.text((x0, y + 14), sub, font=ImageFont.truetype(FONT_R, 44), fill=col)
 
 
-def final8(out, web, assets):
+def final8(out, web, assets, lang="tr"):
     n = 8
     c = background(n)
     base = c.copy()
@@ -210,19 +232,40 @@ def final8(out, web, assets):
               ("rozetler", 5400), ("magaza_temalar", 6800), ("magaza_pro", 7560)]
     for name, cx in phones:
         phone(c, Image.open(web / f"{name}.png"), cx, 500, 600)
-    for i, (lines, sub) in enumerate(HEAD_TR):
+    for i, (lines, sub) in enumerate(HEADS[lang]):
         px = base.getpixel((i * FW + 300, 200))[:3]
         fit_headline(c, i, lines, sub, px)
     slice_frames(c, n, out)
+
+
+def relabel(tr_dir, out, lang):
+    """Hazır Türkçe karelerden (kare_01..08) yalnızca BAŞLIK bölgesini (y 100-470) yeniden çizerek başka dil üretir.
+    Arka plan deterministik (background(n)); ekran/telefon/Zibo pikselleri aynen korunur (yakalamayı tekrarlamaya gerek yok)."""
+    n = 8
+    canvas = Image.new("RGBA", (FW * n, FH))
+    for i in range(n):
+        canvas.paste(Image.open(tr_dir / f"kare_{i + 1:02d}.png").convert("RGBA"), (i * FW, 0))
+    bg = background(n)
+    y0, y1 = 100, 470
+    canvas.paste(bg.crop((0, y0, FW * n, y1)), (0, y0))
+    for x, y, r in [(930, 380, 26), (2050, 360, 30), (4170, 330, 26), (6330, 340, 28), (7420, 330, 26)]:
+        sparkle(canvas, x, y, r)
+    for i, (lines, sub) in enumerate(HEADS[lang]):
+        fit_headline(canvas, i, lines, sub, bg.getpixel((i * FW + 300, 200))[:3])
+    slice_frames(canvas, n, out)
 
 
 if __name__ == "__main__":
     out = Path(sys.argv[2])
     if sys.argv[1] == "taslak":
         draft3(out, Path(sys.argv[3]), Path(sys.argv[4]))
+    elif sys.argv[1] == "relabel":
+        relabel(Path(sys.argv[3]), out, sys.argv[4])
     elif sys.argv[1] == "final8":
-        final8(out, Path(sys.argv[3]), Path(sys.argv[4]))
+        final8(out, Path(sys.argv[3]), Path(sys.argv[4]), sys.argv[5] if len(sys.argv) > 5 else "tr")
     else:
         n = int(sys.argv[1])
         slice_frames(background(n), n, out)
     print("hazır:", out)
+
+
