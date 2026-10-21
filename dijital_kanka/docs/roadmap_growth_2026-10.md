@@ -119,5 +119,5 @@ Girdi bekleyen: Zibo hikâyesi/lore (kullanıcı yazacak ya da taslak onaylayaca
 | 4 Retention | başlamadı |
 | D DEX optimizasyonu (%27 → hedef daha yüksek) | kullanıcı onayı bekliyor, "müsait olunca" başlanacak |
 | B Blaze fatura koruması | sıradaki (Blaze'e geçildi, koruma henüz kurulmadı) |
-| R Intro/Onboarding yenileme | tasarım aşaması (hikâye + görseller bekleniyor) |
+| R Intro/Onboarding yenileme | **altyapı HAZIR** (`feature/intro-story` dalı, önizlemede çalışıyor); gerçek uygulamaya bağlama KULLANICI "başla" deyince — plan `docs/onboarding_story.md` |
 | 5 Güvenlik/iOS | beklemede (Blaze artık açık → makbuz doğrulaması yapılabilir) |

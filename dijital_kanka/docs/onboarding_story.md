@@ -50,3 +50,33 @@ Boyut: **9:16 dikey** (üretici ne verirse: 1080×1920 ya da 1152×2048). Uygula
 
 Midjourney: sonuna `--ar 9:16`. Diğer araçlarda "vertical 9:16 aspect ratio" yaz; yine yatay çıkarsa "portrait orientation, 1080x1920" ekle.
 Negatif: text, letters, watermark, extra fingers, different character or outfit, realistic human, horror look, horizontal composition, changed room layout between scenes.
+
+
+## DURUM — altyapı HAZIR, gerçek uygulamaya BAĞLANMADI (2026-10-21)
+
+Kullanıcı şu an meşgul; adım adım ilerlenecek, "ana dediği şeyler" bu dosyaya not edilir. **Kod `main`'de DEĞİL: `feature/intro-story` dalında** (uygulama davranışı değişmedi, eski onboarding aynen çalışıyor).
+
+### Hazır olanlar (dalda)
+- `lib/screens/onboarding/story_intro_screen.dart` — `StorySlides` (5 slayt, tam ekran, dokunarak ilerler, A→B→C çapraz solma, "Geç") + ince `StoryIntroScreen` sarmalayıcı.
+- `lib/screens/onboarding/intro_flow_screen.dart` — `IntroFlowScreen` (hikâye → isim → bildirim izni → final), `IntroResult{name, notificationsGranted}`. Bildirim izninin GERÇEK isteği dışarıdan `requestNotificationPermission` callback'iyle verilir.
+- `lib/widgets/zibo_bubble.dart` — çıkartma stilinde konuşma balonu (başlık/metin/ipucu).
+- `lib/services/onboarding_analytics.dart` — olaylar: `onboarding_story_step{step}`, `onboarding_story_skipped{step}`, `onboarding_story_done`, `onboarding_name_done`, `onboarding_notif_result{granted}`, (bağlayınca) `onboarding_completed`.
+- `lib/story_preview_main.dart` — YALNIZCA tarayıcı önizlemesi (`.claude/launch.json` → `zibo_story_preview`, port 8815; Android izin penceresini TAKLİT eder). Çalıştırma sonrası ilk yükleme yavaş: `curl .../main.dart.js` hazır olana kadar bekle; ekran görüntülerini proje DIŞINA yaz.
+- Görseller: `assets/images/onboarding/story_a|b|c.webp` (**572×1024 yer tutucu**; yüksek çözünürlüklü asıllar gelince AYNI dosya adlarıyla değiştir; pubspec'e `assets/images/onboarding/` eklendi).
+- ARB (TR/EN/ES): `onboardingStory1..5`, `onboardingStoryTapHint`, `onboardingMeetTitle(name)`, `onboardingNameBubble`, `onboardingNotifBody`, `onboardingNotifAllow/Later`, `onboardingFinaleAllowed/Declined`. (`onboardingNameStepTitle` DEĞİŞTİRİLMEDİ; yeni akış `onboardingNameBubble` kullanır.)
+- Testler: `test/onboarding_story_test.dart` (3), `test/intro_flow_test.dart` (4) — geçiyor.
+
+### Kullanıcının onayladığı kararlar
+Metinler (TR) onaylandı. Slayt geçişi DOKUNARAK (otomatik değil), "Geç" her slaytta. S2 ara sahne = yeni görsel YOK, A karartılmış + metin ortada. S5 = yalnızca Zibo + balon. Bildirim izni Zibo'nun konuşma balonuyla, hikâyenin İÇİNDE istenir (isimden sonra, "Tanıştığıma memnun oldum, {isim}!" ile). Intro yalnızca YENİ kurulumlarda; Ayarlar'dan "Hikâyeyi tekrar izle" eklenecek. Kısa öğretici = Ana Sayfa'da 3 küçük ipucu balonu (Zibo'ya dokun, Z menüsü, mağaza), atlanabilir.
+
+### Bağlama planı (sırayla; kullanıcı "başla" dediğinde)
+1. Dalı `main`'e al: `OnboardingScreen` akışını Dil → `IntroFlowScreen` → uygulama olarak değiştir; 8 modül sayfasını + `_moduleIntros` kodunu kaldır (ARB anahtarlarını SİLME — proje konvansiyonu). İsim `ProfileProvider.setName` + `setAddressTerm`; `OnboardingProvider.completeOnboarding()`.
+2. Gerçek izin: `NotificationService.requestPermission()` (Android 13+ POST_NOTIFICATIONS). **Açılışta bağlamsız yapılan FCM `requestPermission` (`push_notification_service.dart` ~79. satır) intro bitene kadar ERTELENMELİ** (çift soru olmasın); intro bildirimi reddettiyse tekrar tekrar sorma.
+3. `test/widget_test.dart` `_pumpPastOnboarding`: dil → `storySkip` → isim → "Devam Et" → izin adımı "Şimdi Değil" → final "Hadi Başlayalım!"; eski "8 modül tanıtılır" testini yeni akışa çevir.
+4. Mevcut kullanıcılar intro'yu GÖRMEMELİ (`onboardingState.completed` kontratı). Ayarlar'a "Hikâyeyi tekrar izle".
+5. Ana Sayfa 3 ipucu baloncuğu (öğretici) — ayrı adım.
+6. Yüksek çözünürlüklü görselleri koy; telefonda gerçek cihaz testi (balon/uzun ekran kırpması, klavye).
+7. Analytics olayları Firebase'de doğrula; retention (gün-1/7) öncesi/sonrası kıyası (roadmap Faz 0 verisiyle).
+
+### Açık / ince ayar
+Yüksek çözünürlüklü A/B/C; S5 arka planı (şu an düz krem); balon kuyruğu (Zibo'ya doğru); yazı boyutu/geçiş hızı kullanıcı geri bildirimi bekliyor; gerçek uygulama temasında buton renkleri (önizleme teması farklı).
