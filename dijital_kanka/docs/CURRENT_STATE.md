@@ -22,7 +22,7 @@ Son güncelleme bağlamı: sürüm `1.14.1+50` (2026-10-02, AAB alındı — ban
 
 ## Backend / veritabanı
 
-- **Firestore (Spark / ücretsiz plan).** Cloud Functions / Blaze **YOK** — bilinçli karar (`docs/decisions/`). Zamanlanmış işler GitHub Actions + `firebase-admin` ile.
+- **Firestore — Blaze planı (2026-10-21'de Spark'tan geçildi).** Henüz Cloud Functions deploy EDİLMEDİ; önce fatura koruması (Cloud Billing bütçe uyarıları) kurulacak. Eski "Blaze yok" kararı (`docs/decisions/`) güncelliğini yitirdi. Zamanlanmış işler hâlâ GitHub Actions + `firebase-admin` ile.
 - `firestore.rules` elle yönetilir — Console > Firestore > Rules'a TAM içerik yapıştırılır (üzerine EKLEME değil). Otomatik deploy yok.
 - Kullanıcının Console'da tamamlaması gereken (belki yapıldı, doğrulanmalı): Firestore DB oluşturma, Anonymous + Google auth açma, güncel rules yayınlama, `founderBadgeStatus/status` seed (`init-founder-badge-counter.yml`, `dry_run: false` — asistan bu production yazımını tetikleyemez, kullanıcı elle yapar).
 

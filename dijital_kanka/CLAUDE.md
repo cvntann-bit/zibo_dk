@@ -12,7 +12,7 @@ Flutter mobil uygulaması: "Zibo" adlı maskot karakterin eşlik ettiği bir ki�
 - **Firebase**: Analytics, Anonymous Auth (+ opsiyonel Google Sign-In linking), Firestore, Crashlytics, Cloud Messaging (FCM)
 - **Reklam**: Appodeal mediation (`stack_appodeal_flutter`) — yalnızca rewarded + interstitial
 - **IAP**: `in_app_purchase` (Google Play Billing) — 5 tüketilebilir coin paketi
-- **Sunucu tarafı**: Cloud Functions/Blaze YOK. Zamanlanmış işler = `notification-scripts/` (Node + `firebase-admin`) + `.github/workflows/` cron'ları (repo kökünde)
+- **Sunucu tarafı**: Firebase **Blaze planına geçildi (2026-10-21)** ama henüz Cloud Functions YOK; fatura koruması (bütçe uyarıları) kurulana kadar function deploy etme. Zamanlanmış işler = `notification-scripts/` (Node + `firebase-admin`) + `.github/workflows/` cron'ları (repo kökünde)
 - Yerel bildirim zamanlayıcı: `flutter_local_notifications` (şu an RAFTA — `notificationsFeatureEnabled = false`)
 
 ## Temel mimari yaklaşımı

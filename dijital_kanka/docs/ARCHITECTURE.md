@@ -83,7 +83,7 @@ Kaynak: `uid != null` iken `CompositeTrustedTimeService([FirestoreTrustedTimeSer
 
 ## 7. Firebase / backend
 
-- **Firestore** (Spark/ücretsiz plan — Blaze YOK): `users/{uid}/state/*` (per-provider), `users/{uid}` kök doc (`fcmToken`/`lastActiveAt`/`timeZone`), `_serverTime/ping`, `referralRedemptions/*` (create-only), `founderBadgeStatus/status` (paylaşılan sayaç). Kurallar → `firestore.rules` (elle Console'a yapıştırılır, otomatik deploy YOK).
+- **Firestore** (Blaze planı, 2026-10-21'den beri; Cloud Functions henüz yok): `users/{uid}/state/*` (per-provider), `users/{uid}` kök doc (`fcmToken`/`lastActiveAt`/`timeZone`), `_serverTime/ping`, `referralRedemptions/*` (create-only), `founderBadgeStatus/status` (paylaşılan sayaç). Kurallar → `firestore.rules` (elle Console'a yapıştırılır, otomatik deploy YOK).
 - **Auth**: Anonymous (varsayılan) + opsiyonel Google linking (`linkWithCredential` uid'i korur).
 - **FCM push** (bkz. `notification-scripts/CLAUDE.md`): 4 tür (daily motivation / streak / daily reward / re-engagement) + water reminder. Cron mantığı: `.github/workflows/*.yml` SAATLİK çalışır, her betik `pendingNotifyHours`/`markNotifyHoursSent` catch-up penceresiyle kullanıcının KENDİ saat dilimindeki hedef saate denk gelenlere gönderir. Dil: `content.js` (TR/EN/ES). Dedup: `messageId` + `dedupeByFcmToken`.
 - **Crashlytics**: `FlutterError.onError` + `PlatformDispatcher.instance.onError` (return true → uygulama çökmez, fatal olarak raporlanır). Mapping dosyası `isMinifyEnabled` sayesinde otomatik yüklenir.

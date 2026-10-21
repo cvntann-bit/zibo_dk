@@ -54,6 +54,15 @@ Faz 0 verisine göre belirlenir; aday fikirler (henüz seçilmedi, önce veri):
 - Yorum/puan isteme (mutlu anda tek seferlik).
 - Her değişiklik için: hipotez → ölçülecek metrik → sürüm sonrası karşılaştırma.
 
+## Faz B — Blaze fatura koruması (Faz 5'ten ÖNCE, hemen)
+
+Kullanıcı 2026-10-21'de Blaze'e geçti. Blaze'de bütçe uyarısı harcamayı DURDURMAZ, yalnızca e-posta atar; sert tavan yok.
+1. Google Cloud Console > Billing > Budgets & alerts: aylık bütçe (düşük tutulur) + %50/%90/%100 e-posta eşikleri (kullanıcı yapar; tutarı birlikte seçeriz).
+2. Fatura e-postası: doğru ve düzenli bakılan adrese gitmeli.
+3. Firestore kullanım takibi (okuma/yazma/gün) + beklenmedik sıçrama uyarısı; `notification-scripts` ve app tarafında sınırsız okuma döngüsü taraması.
+4. Cloud Functions yazılırsa: `maxInstances` düşük, bölge sabit, yalnızca gerekli tetikleyiciler, sonsuz-döngü/yeniden-tetikleme korumaları.
+5. İsteğe bağlı sert kesme (Pub/Sub ile faturalamayı kapatma): çalışan servisleri komple durdurur → ancak gerçek bir kesme istenirse ve sonuçları anlatıldıktan sonra.
+
 ## Faz 5 — Güvenlik/gelir sağlamlığı (zamanı gelince)
 
 - Satın alma makbuzu sunucu doğrulaması (Cloud Functions/Blaze kararı gerekir) — gerçek kullanıcı sayısı arttıkça önceliği yükselir.
@@ -75,4 +84,5 @@ Faz 0 verisine göre belirlenir; aday fikirler (henüz seçilmedi, önce veri):
 | 2 Appodeal SDK | başlamadı |
 | 3 Reklam ağları + Yandex | başlamadı (önce "Yandex boost" netleşecek) |
 | 4 Retention | başlamadı |
-| 5 Güvenlik/iOS | beklemede |
+| B Blaze fatura koruması | sıradaki (Blaze'e geçildi, koruma henüz kurulmadı) |
+| 5 Güvenlik/iOS | beklemede (Blaze artık açık → makbuz doğrulaması yapılabilir) |
