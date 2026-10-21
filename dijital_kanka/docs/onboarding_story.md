@@ -16,7 +16,7 @@ Akış: Dil → Hikâye (S1–S5) → İsim → Karşılama → Uygulama. Her sl
 Görsel gereksinimleri: A, B, C AYNI kadraj/kompozisyon (A→B→C çapraz geçiş için); dikey ~1080×1350, tam kadraj (arka planlı); D (S5) için yeni görsel gerekmez.
 Açık sorular: kısa öğretici nerede (hikâyeden sonra mı, uygulamaya girince ipucu baloncuklarıyla mı?), S2 görseli, geçiş hızı (otomatik/dokunma).
 
-## Görsel üretim prompt'ları (A, B, C — aynı kadraj)
+## Görsel üretim prompt'ları (A, B, C — aynı kadraj) — ESKİ 4:5 SÜRÜM, aşağıdaki 9:16 REVİZE geçerli
 
 Referans: `store_assets/zibo_referans.png` (Zibo'nun 3 pozu). Üretici araca REFERANS olarak ver. A'yı üret, beğenince A'yı referans vererek B ve C'yi "aynı oda, aynı kamera, aynı Zibo konumu" diye türet.
 Boyut: 4:5 dikey (1024×1280 üret → 1080×1350'ye ölçekle). Alt %28'i sakin bırak (uygulama konuşma balonunu/metni oraya çizer), önemli her şey üst %70'te.
@@ -31,3 +31,22 @@ Boyut: 4:5 dikey (1024×1280 üret → 1080×1350'ye ölçekle). Alt %28'i sakin
 
 **Negatif / kaçın:** text, letters, watermark, extra fingers, different character, different outfit, realistic human, horror/gloomy-scary look, wide-angle distortion, changed room layout between scenes.
 **Tutarlılık ipucu:** önce A; B ve C'yi "edit/variation" olarak A'dan türet (yalnızca ışık, renk ve düzen değişsin). Zibo'nun yüzü/kıyafeti kayarsa referansı her seferinde yeniden ver.
+
+
+## REVİZE — 9:16 DİKEY prompt'lar (telefon için, GEÇERLİ)
+
+Boyut: **9:16 dikey** (üretici ne verirse: 1080×1920 ya da 1152×2048). Uygulama görseli ekranı kaplayacak şekilde gösterir (BoxFit.cover); uzun telefonlarda (20:9) yanlar/üst-alt biraz kırpılabilir → **önemli her şeyi merkez %80 genişlikte ve dikeyde %8–%68 aralığında tut.** Üst %8 durum çubuğu payı, **alt %32 sakin zemin** (konuşma balonu + metin oraya biner).
+
+**Ortak sahne (A/B/C'de BİREBİR aynı):** tall vertical 9:16 composition. Front view of a small bedroom seen straight on from slightly above: back wall in the upper part with a tall window on the right of the wall and a desk with a lamp at the far left; the single bed pushed against the back wall in the middle of the frame; Zibo on the bed, centered, occupying about the middle third of the image; open floor space in the foreground filling the bottom third (calm, no important objects). Same camera, same furniture positions in every scene.
+
+**Prompt A (soluk, dağınık):**
+> Vertical 9:16. [Zibo karakter kilidi]. Tall composition, front view of a small bedroom from slightly above; bed against the back wall in the middle, tall window on the back wall at right, desk with lamp at far left. Zibo lying on the bed holding a phone, face lit by cold blue phone light, half-closed glazed hypnotised eyes, his honey skin faded and desaturated. Messy room: unmade bed, clothes and a pizza box on the floor, crumpled paper, tangled cables, curtains closed. Dull desaturated grey-blue palette, dim low-contrast lighting, gloomy but gentle. Bottom third of the frame is empty floor, calm and uncluttered. No text.
+
+**Prompt B (Zibo parlıyor):**
+> Same exact image as A (same room, mess, dull palette, camera, furniture and Zibo position), vertical 9:16. Zibo has just decided to change: warm golden glow radiates from him, skin vivid honey-orange again, eyes wide, bright and determined, phone lowered. Zibo and his golden light are the only saturated colours; the room stays dull and messy. Bottom third empty floor. No text.
+
+**Prompt C (her şey yerli yerinde):**
+> Same camera and layout as A, vertical 9:16, now a tidy bright morning: curtains open, strong warm sunlight through the tall window with soft light rays crossing the room, made bed, folded clothes, clean floor, plant on the desk, neat books, warm honey-and-blue palette. Zibo sitting happily on the bed in the same spot, big smile, relaxed and proud. Cheerful, cozy, vibrant. Bottom third clean empty floor. No text.
+
+Midjourney: sonuna `--ar 9:16`. Diğer araçlarda "vertical 9:16 aspect ratio" yaz; yine yatay çıkarsa "portrait orientation, 1080x1920" ekle.
+Negatif: text, letters, watermark, extra fingers, different character or outfit, realistic human, horror look, horizontal composition, changed room layout between scenes.
