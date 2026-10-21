@@ -91,6 +91,40 @@ impressions, eCPM, fill rate.
 Not: 8 günlük pencere, son günler gecikmeli olabilir; trend (yükselen yükleme/aktif kullanıcı,
 düşen ARPU) izlenmeli.
 
+## 2c. Appodeal Monetization Dashboard (14–21 Eki 2026, 8 gün; son gün kısmi)
+
+| Metrik | Değer |
+|---|---|
+| Gösterim (impressions) | **235** (günde ~21–51) |
+| Waterfall istekleri | 5.104 |
+| Fill rate | 32,5% (günlük %25–57) |
+| Display rate | **14,2%** (dolan reklamın yalnızca ~%14'ü gösteriliyor) |
+| CTR | 55,7% (anormal yüksek — aşağıya bak) |
+| eCPM | 0,77 $ (günlük 0,15–1,70 $) |
+| Reklam geliri | 0,18 $ |
+| Active users | 708 · Ad ARPU 0,0003 $ |
+
+Kontrol: 235 × 0,7662 / 1000 ≈ 0,18 $ ✓.
+
+**Darboğaz = gösterim sayısı** (eCPM değil): ~120 DAU ile günde ~30 gösterim ≈ DAU başı ~0,25 gösterim/gün.
+Aynı eCPM'de (0,77 $, tahmin) DAU başı 3 gösterim/gün ≈ 0,0023 $/DAU/gün ≈ 0,07 $/DAU/ay →
+3,5 bin DAU'da ~240 $/ay (10 bin kullanıcı varsayımı, ölçülmemiş) — gider tahmininin (15–50 $) üstünde.
+
+Koddan neden az gösterim (okundu): interstitial yalnızca (1) Zibo'ya art arda hızlı dokunma (rastgele: reklam VEYA
+Reklamsız tanıtımı), (2) Günlük Ödüller ekranı girişi, (3) Hedef Takibi 7 günlük döngü tamamlanışında (haftada ~1)
+tetikleniyor; rewarded günde en fazla 2 + çark. Yani gösterim kullanıcı davranışına bağlı, tasarlanmış bir
+sıklık yok. Reklam hazır değilse (`_waitUntilLoaded`) hiç gösterilmiyor.
+
+**Dikkat edilecekler:**
+- **CTR %55,7 çok yüksek** (tipik beklenti çok altında; küçük örneklem 235 gösterim). Kazara tıklama / tıklamaya
+  yol açan yerleşim olabilir; ad ağları geçersiz trafiği cezalandırır → reklamların tam ekran kapanış/geçiş anlarını
+  ve tıklama kaynağını incele. Henüz sebep BİLİNMİYOR, ölçüm gerek.
+- Display rate %14: dolan reklamların çoğu önceden yükleniyor ama gösterilmiyor (normal olabilir; asıl sorun
+  gösterim tetikleyicisinin azlığı).
+- Fill rate %32,5: istekler çoğu boş kalıyor; yalnızca AppLovin + Vungle adaptörü var → ağ eklemek fill'i artırır
+  (DEX maliyetiyle, Faz 3).
+- 5.104 istek / 235 gösterim: gereksiz istek (pil/veri), ama fatura etkisi yok.
+
 ## 3. Denge ilkeleri
 
 1. **Her yeni ücretsiz coin kaynağı reklam gelirini yemesin:** Coin ödülü (ör. reklam başı 20 ZC) ile
