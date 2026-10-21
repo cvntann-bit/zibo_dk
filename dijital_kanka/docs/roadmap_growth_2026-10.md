@@ -59,6 +59,7 @@ Faz 0 verisine göre belirlenir; aday fikirler (henüz seçilmedi, önce veri):
 Kullanıcı 2026-10-21'de Blaze'e geçti. Blaze'de bütçe uyarısı harcamayı DURDURMAZ, yalnızca e-posta atar; sert tavan yok.
 1. Google Cloud Console > Billing > Budgets & alerts: aylık bütçe (düşük tutulur) + %50/%90/%100 e-posta eşikleri (kullanıcı yapar; tutarı birlikte seçeriz).
 2. Fatura e-postası: doğru ve düzenli bakılan adrese gitmeli.
+3a. **BULGU (2026-10-21):** saatlik cron'daki 5 bildirim işinin HER BİRİ `fetchAllUsers()` ile TÜM `users` koleksiyonunu okuyor (`notification-scripts/src/common.js:156`) → günde ~120 tam tarama = kullanıcı sayısı × 120 okuma/gün (10k kullanıcıda ~1,2M/gün). En büyük maliyet kalemi; tek paylaşılan tarama ya da sorgu ile filtreleme (ör. yalnızca fcmToken'lı/aktif) ile büyük ölçüde kısılabilir.
 3. Firestore kullanım takibi (okuma/yazma/gün) + beklenmedik sıçrama uyarısı; `notification-scripts` ve app tarafında sınırsız okuma döngüsü taraması.
 4. Cloud Functions yazılırsa: `maxInstances` düşük, bölge sabit, yalnızca gerekli tetikleyiciler, sonsuz-döngü/yeniden-tetikleme korumaları.
 5. İsteğe bağlı sert kesme (Pub/Sub ile faturalamayı kapatma): çalışan servisleri komple durdurur → ancak gerçek bir kesme istenirse ve sonuçları anlatıldıktan sonra.
