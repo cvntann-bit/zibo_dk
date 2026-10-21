@@ -9,6 +9,15 @@
         "cd /d C:\\dev\\ZIBODK~1\\DIJITA~1 && C:\\flutter\\bin\\flutter.bat run -d web-server --web-port 8765"
       ],
       "port": 8765
+    },
+    {
+      "name": "dijital_kanka_web_capture",
+      "runtimeExecutable": "cmd.exe",
+      "runtimeArgs": [
+        "/c",
+        "cd /d C:\\dev\\ZIBODK~1\\DIJITA~1 && C:\\flutter\\bin\\flutter.bat run -d web-server --web-port 8766 -t lib/web_capture_main.dart"
+      ],
+      "port": 8766
     }
   ]
 }

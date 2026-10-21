@@ -163,10 +163,65 @@ def draft3(out, ham, assets):
     slice_frames(c, n, out)
 
 
+HEAD_TR = [
+    (["Dijital kankan", "Zibo seninle"], "Günlük hedef, alışkanlık ve eğlence"),
+    (["Her gün sana", "özel sözler"], "Zibo seni motive eder"),
+    (["Tüm alışkanlıkların", "tek yerde"], "Hedef, su, şükran, ruh hali ve dahası"),
+    (["Oyna, puan topla,", "takas et"], "Mini oyunlar, bol ödül"),
+    (["27 kostüm,", "5 nadirlik"], "Topla, giy, çerçeveni parlat"),
+    (["Rozet topla,", "ödül kazan"], "Her seri yeni bir başarı"),
+    (["Kendi stilini", "seç"], "Renkli temalarla Zibo'yu değiştir"),
+    (["Zibo Pro ile", "daha fazlası"], "Reklamsız deneyim ve ekstra ödüller"),
+]
+
+
+def fit_headline(canvas, frame_idx, lines, sub, bg_rgb):
+    """Başlık: kareye sığana kadar yazı boyutunu küçültür; arka plan parlaklığına göre koyu/beyaz yazı."""
+    lum = (0.2126 * bg_rgb[0] + 0.7152 * bg_rgb[1] + 0.0722 * bg_rgb[2]) / 255
+    col = (16, 24, 44) if lum > 0.55 else (255, 255, 255)
+    d = ImageDraw.Draw(canvas)
+    x0 = frame_idx * FW + 72
+    size = 96
+    while size > 56 and max(d.textlength(t, font=ImageFont.truetype(FONT_B, size)) for t in lines) > FW - 144:
+        size -= 2
+    f = ImageFont.truetype(FONT_B, size)
+    y = 120
+    for ln in lines:
+        d.text((x0, y), ln, font=f, fill=col)
+        y += round(size * 1.12)
+    d.text((x0, y + 14), sub, font=ImageFont.truetype(FONT_R, 44), fill=col)
+
+
+def final8(out, web, assets):
+    n = 8
+    c = background(n)
+    base = c.copy()
+    # sıcak ışık: son karelerde Zibo'ların arkası
+    for cx in (440, 3930, 6110, 8260):
+        glow(c, cx, 1250, 430, (255, 214, 150), 90)
+    for x, y, r in [(150, 520, 34), (930, 380, 26), (1010, 1480, 30), (2050, 360, 30), (2900, 1700, 28), (4170, 330, 26),
+                    (4400, 1700, 34), (6330, 340, 28), (6200, 1580, 30), (7420, 330, 26), (7700, 1750, 28), (8500, 520, 32)]:
+        sparkle(c, x, y, r)
+    zibo(c, assets / "zibo_df_pose4.webp", 440, 1850, 1150)
+    zibo(c, assets / "zibo_viking.webp", 3930, 1850, 760)
+    zibo(c, assets / "zibo_ejder_ruhu.webp", 6110, 1850, 760)
+    zibo(c, assets / "zibo_king.webp", 8260, 1850, 760)
+    phones = [("ana_sayfa", 1220), ("modul_menusu", 2400), ("oyun_salonu", 3240), ("magaza_kostumler", 4600),
+              ("rozetler", 5400), ("magaza_temalar", 6800), ("magaza_pro", 7560)]
+    for name, cx in phones:
+        phone(c, Image.open(web / f"{name}.png"), cx, 500, 600)
+    for i, (lines, sub) in enumerate(HEAD_TR):
+        px = base.getpixel((i * FW + 300, 200))[:3]
+        fit_headline(c, i, lines, sub, px)
+    slice_frames(c, n, out)
+
+
 if __name__ == "__main__":
     out = Path(sys.argv[2])
     if sys.argv[1] == "taslak":
         draft3(out, Path(sys.argv[3]), Path(sys.argv[4]))
+    elif sys.argv[1] == "final8":
+        final8(out, Path(sys.argv[3]), Path(sys.argv[4]))
     else:
         n = int(sys.argv[1])
         slice_frames(background(n), n, out)
