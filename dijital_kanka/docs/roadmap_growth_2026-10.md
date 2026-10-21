@@ -96,6 +96,22 @@ Plan (taslak, kullanıcıyla netleşecek):
 Ölçüm: Firebase olayları (`onboarding_step_viewed`, `onboarding_skipped`, `onboarding_completed`) → hangi adımda kayıp var; eski akışla (varsa) kıyas.
 Girdi bekleyen: Zibo hikâyesi/lore (kullanıcı yazacak ya da taslak onaylayacak), görseller (adet/boyut aşağıda), öğretici adımları.
 
+## Faz S — Yıldız/yorum teşviki (kullanıcı kararı 2026-10-21; HENÜZ BAŞLAMADI — not)
+
+Hedef: daha çok yıldız + yorum (mağaza sıralaması, ilk 100'e girildi — bkz. growth-milestone). Kullanıcı istekleri: **teşviki artır, daha SIK göster, mümkünse Google Play uygulama-içi yorum API'sini doğrudan uygulama içinden bağla.**
+
+Bugünkü sistem (koddan okundu):
+- `lib/utils/rate_prompt_trigger.dart`: mutlu anlarda (7 günlük hedef, para girişi, günlük kayıtlar, rozet…) `chance = 0.2`, `cooldown = 5 gün`, `minDaysOpened = 3`; `markCompleted()` sonrası ASLA sormaz. Pencere `rate_prompt_dialog.dart` + `rate_us_sheet.dart`.
+- Yorum sayfasına `launchUrl` ile gidiyor (`market://details?id=…` → `https://play.google.com/store/apps/details`), uygulama-içi API KULLANILMIYOR (`pubspec.yaml`'da `in_app_review` YOK).
+- Sorun: kullanıcı butona dokunur dokunmaz `markCompleted()` işaretleniyor — gerçekten puan vermemiş olsa bile bir daha sorulmuyor (Google puan verilip verilmediğini bildirmiyor).
+
+Plan (taslak, kullanıcı onayıyla):
+1. **Uygulama-içi yorum API'si:** Flutter `in_app_review` paketi (Google Play In-App Review API sarmalayıcısı; `isAvailable()` + `requestReview()`) — paket ve sürüm uyumu eklemeden önce DOĞRULANACAK. Zibo balonlu mevcut isteği tetikleyici olarak tut, onaylayınca API'yi çağır; kullanılamazsa/gösterilmezse eski Play sayfası bağlantısına düş. Ayarlar/Profil'e kalıcı "Bizi puanla" satırı.
+2. **Daha sık:** `chance`/`cooldown`/`minDaysOpened` değerlerini gevşet + yeni mutlu anlar (seviye atlama, seri kilometre taşları, günlük ödül, Oyun Salonu'nda yüksek skor, kostüm satın alma/giyme). Not: Google, uygulama-içi pencerenin gösterim sıklığına KOTA koyar (API çağrılsa bile pencere gösterilmeyebilir) — "daha sık" en çok bizim ön-pencereyi/tetikleyicileri artırmak demek; gerçek sınır Google'da.
+3. **`markCompleted` mantığı:** yalnızca API gerçekten çalıştırıldıysa/kullanıcı "Zaten puanladım" dediyse işaretle; sadece dokunmakla kalıcı kapatma.
+4. **UYARI — politika:** ZC/ödül karşılığı yıldız-yorum isteme YASAK olabilir (Google Play'in "Puan, Yorum ve Yükleme" politikası teşvikli/manipüle edilmiş yorumu yasaklar — yazmadan önce güncel politikayı DOĞRULA). Yalnızca mutlu anlarda sor; olumsuz kullanıcıyı filtreleme ("beğendin mi?" ön sorusu) riskini politikadan kontrol et.
+5. **Ölçüm:** `rate_prompt_shown / accepted / dismissed / api_available` Firebase olayları; puan ortalaması ve yorum sayısı Play Console'dan haftalık.
+
 ## Faz 5 — Güvenlik/gelir sağlamlığı (zamanı gelince)
 
 - Satın alma makbuzu sunucu doğrulaması (Cloud Functions/Blaze kararı gerekir) — gerçek kullanıcı sayısı arttıkça önceliği yükselir.
@@ -119,5 +135,6 @@ Girdi bekleyen: Zibo hikâyesi/lore (kullanıcı yazacak ya da taslak onaylayaca
 | 4 Retention | başlamadı |
 | D DEX optimizasyonu (%27 → hedef daha yüksek) | kullanıcı onayı bekliyor, "müsait olunca" başlanacak |
 | B Blaze fatura koruması | sıradaki (Blaze'e geçildi, koruma henüz kurulmadı) |
+| S Yıldız/yorum teşviki | not alındı, başlamadı (uygulama-içi yorum API'si + daha sık tetikleyici) |
 | R Intro/Onboarding yenileme | **altyapı HAZIR** (`feature/intro-story` dalı, önizlemede çalışıyor); gerçek uygulamaya bağlama KULLANICI "başla" deyince — plan `docs/onboarding_story.md` |
 | 5 Güvenlik/iOS | beklemede (Blaze artık açık → makbuz doğrulaması yapılabilir) |
