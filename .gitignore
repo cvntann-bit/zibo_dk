@@ -4,3 +4,6 @@ promo_video/*/out/
 __pycache__/
 promo_video/*/clips/
 promo_video/reels/*.zip
+
+# Play Store görsel çalışma dosyaları (üretilen çıktılar, repoya girmez; araçlar tool/ altında)
+dijital_kanka/store_assets/
