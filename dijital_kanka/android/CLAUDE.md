@@ -18,6 +18,14 @@
 - **Aynı uyarının "Bit eşlem resim optimizasyonu" kalemi**: `assets/images/`'daki büyük PNG'ler (kostüm/rozet/coin görselleri, toplam ~73MB) `tool/convert_images_to_webp.dart` ile kayıpsız WebP'ye çevrildi (~%25 küçülme, piksel-piksel doğrulandı) — bkz. `tool/CLAUDE.md` "Görsel varlıklar artık WebP" bölümü.
 - **2026-09-16 — asıl boyut kazancı görsellerden çıktı, DEX'ten değil**: `--analyze-size` ile ölçülünce DEX yalnızca 9MB'ken `assets/` 58MB'dı (101MB toplam AAB'nin baskın kısmı) — Play Console'un DEX yüzdesi zaten çözülmüş küçük bir yan konu. `image` pub paketinin `encodeWebP`'si YALNIZCA VP8L (lossless) yazabiliyor (kaynağı okunarak doğrulandı, lossy VP8 encoder YOK), bu yüzden gerçek kayıplı sıkıştırma için Google'ın `cwebp`'i (libwebp, `winget install Google.Libwebp`) kullanıldı — `tool/convert_images_to_webp_lossy.dart`, kalite 85. `assets/images` 56MB → 11MB, toplam AAB (tek-ABI arm64 `--analyze-size`) 101MB → 56MB. Piksel-piksel eşitlik artık mümkün değil (lossy) — doğrulama: saydam pikseller saydam kalmalı + ortalama RGB farkı eşik altında + elle görsel spot-check.
 
+## Eklenti/SDK sürümü değişince
+
+- `stack_appodeal_flutter` 4.2.0 → 4.3.1 sonrası ilk release derlemesi eklentinin KENDİ sınıflarını "Unresolved reference" diye
+  bulamadı (eski Kotlin önbelleği) — `flutter clean` + `flutter pub get` ile geçti. Eklenti sürümü değişince önce `flutter clean`.
+- Appodeal adaptör sürümleri eklentinin `example/android/app/build.gradle` setinden alınır. AppLovin 13.6.x ile R8 `com.amazon.privacypass`
+  "Missing class" der → `proguard-rules.pro`'daki `-dontwarn com.amazon.privacypass.**` bunun için (Vungle 7.7.x bunu kendi kuralıyla
+  örtüyordu AMA kilitli sınıfı 22 → 670 artırıyor; bu yüzden Vungle 7.6.1.0'da bırakıldı).
+
 ## `AndroidManifest.xml`
 
 - `<queries>` bloğu: `mailto:`/`https:`/`market:` intent'leri + agresif OEM (Xiaomi/Huawei/Oppo/Vivo/OnePlus) autostart paket adları — Android 11+ paket görünürlüğü için açıkça listelenmeli, yoksa `canLaunchUrl`/`canResolveActivity` hep `false`.

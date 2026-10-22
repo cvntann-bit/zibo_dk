@@ -144,9 +144,9 @@ dependencies {
     // protobuf, ~139.000 üye) o taşıyordu — AppLovin+Unity+Vungle toplamından
     // fazla. Console'da bu ağlardan biri tekrar açılırsa adaptörü BURAYA geri
     // eklemeden fill vermez (yukarıdaki not geçerli).
-    implementation("com.appodeal.ads.sdk.adapters:applovin:13.5.1.0")
+    implementation("com.appodeal.ads.sdk.adapters:applovin:13.6.3.0")
     implementation("com.appodeal.ads.sdk.adapters:vungle:7.6.1.0")
     // 2026-10-22 (Faz 3): banner fill için Yandex — Console'da Yandex banner/interstitial/rewarded
     // birimleri açık (docs/roadmap_growth_2026-10.md). DENEY: DEX etkisi ölçülene kadar AAB YOK.
-    implementation("com.appodeal.ads.sdk.adapters:yandex:7.18.2.0")
+    implementation("com.appodeal.ads.sdk.adapters:yandex:7.17.0.0")
 }

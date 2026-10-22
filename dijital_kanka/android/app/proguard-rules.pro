@@ -75,3 +75,7 @@
 -keepattributes Signature
 -keepattributes SourceFile,LineNumberTable
 -keepattributes InnerClasses,EnclosingMethod
+
+# AppLovin 13.6.x OMID kütüphanesi isteğe bağlı Amazon "PrivacyPass" sınıfına başvuruyor (APK'ya girmiyor);
+# Vungle 7.7.x'in kendi `-dontwarn`'ı bunu örtüyordu, Vungle 7.6.1 ile R8 "Missing class" ile derlemeyi durduruyor.
+-dontwarn com.amazon.privacypass.**
