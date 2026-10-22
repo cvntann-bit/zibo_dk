@@ -14,6 +14,8 @@ App: **Zibo Dijital Kanka** — package `com.dijitalkanka.dijital_kanka` (Androi
 
 **3) Warning in logcat:** `ATTENTION: Adapters are not registered in your app: bidmachine`. We intentionally removed the BidMachine adapter (APK/DEX size). I tested adding `adapters:bidmachine:3.7.1.0` back: the warning disappears but **`SdkConfigurationError` remains**, so it is not caused by the missing adapter.
 
+**4) Console state (read from your dashboard):** for Banner, AppLovin (Appodeal account, `applovin_banner` + `applovin_phone_banner_320x480_bid_*` units), BidMachine, Mintegral, Vungle and Yandex are ON; the app only ships the `applovin` and `vungle` adapters.
+
 **Questions**
 1. What exactly does `SdkConfigurationError` mean and what configuration is missing/invalid for this app?
 2. Which networks are enabled for **Banner** for this app in the waterfall, and why do we get no banner requests/impressions at all? Is an AppLovin banner ad unit required/configured?
