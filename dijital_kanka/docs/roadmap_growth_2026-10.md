@@ -176,3 +176,10 @@ Plan (taslak, kullanıcı onayıyla):
 
 ### Cihaz testi sonucu (2026-10-22, Samsung SM-A226BR, debug APK 1.15.0+52, `adb install -r`)
 Telefonda zaten DEBUG (`installer=null`, DEBUGGABLE) 1.13.1 vardı → aynı imzayla güncellendi, veri kaybı yok. Kullanıcı onayıyla `pm clear` yapıldı → **yeni intro gerçek cihazda çalıştı** (hikâye, isim, bildirim izni penceresi; kullanıcı "güzel oldu" dedi). Günlükte FATAL/çökme YOK. Henüz cihazda denenmeyenler: yorum penceresi, widget dokunuşu (çökme düzeltmesi), fotoğraf seçme, paywall, "Şimdi Değil" yolu (açılışta ikinci izin penceresi çıkmamalı).
+
+**Cihaz testi — otomatik adb turu (2026-10-22, SM-A226BR, debug 1.15.0+52) — SONUÇLAR:**
+- Widget Intent (`es.antonborri.home_widget.action.LAUNCH` + `zibowidget://open/<modül>`): uygulama AÇIKKEN (`water`) VE soğuk başlangıçta (`money`) çökme YOK, doğru modül açıldı → Faz 1 bilinmeyen-rota düzeltmesi cihazda ✓.
+- "Şimdi Değil" yolu: dil → hikâye(5 dokunuş) → isim("Ayse") → bildirim adımı kendi adıyla selamlıyor → "Şimdi Değil" → final metni doğru → Ana Sayfa; logcat'te **izin penceresi (GrantPermissions) YOK**, `POST_NOTIFICATIONS granted=false` (seçim saygı gördü); Zibo adıyla hitap ediyor ✓. İsim adımı klavye açıkken taşmıyor (Zibo küçülüyor) ✓.
+- Ayarlar > "Bizi Puanlayın" → yıldız sayfası → 5. yıldız → Play Store'da Zibo sayfası açıldı ✓ (sayfada 1.15.0 sürüm notları görünüyor).
+- Denenemeyen: uygulama-içi yorum API'si (YALNIZCA Play'den kurulu sürümde çalışır; sideload/debug'da gösterilmez → fallback beklenir) → dahili test kanalıyla denenmeli; rastgele "mutlu an" yorum penceresi; fotoğraf seçme; paywall aç-kapa.
+- **UYARI:** Bu telefonun Play hesabı Zule Lozada'ya ait görünüyor (Zibo sayfasında onun 5★ yorumu). Telefonda iki kez `pm clear` yapıldı (kullanıcı onayıyla, "test cihazı" varsayımıyla). Hesap Google ile bağlıysa Ayarlar > "Google ile Bağlan" ile verisi geri gelir; bağlı değilse yerel anonim veri kayıp. Kullanıcı bilgilendirilecek.
