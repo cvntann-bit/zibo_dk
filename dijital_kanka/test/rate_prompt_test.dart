@@ -14,6 +14,7 @@ import 'package:dijital_kanka/providers/app_streak_provider.dart';
 import 'package:dijital_kanka/services/review_service.dart';
 import 'package:dijital_kanka/utils/rate_prompt_trigger.dart';
 import 'package:dijital_kanka/widgets/rate_prompt_dialog.dart';
+import 'package:dijital_kanka/widgets/rate_us_sheet.dart';
 
 class _FakeReviewService extends ReviewService {
   _FakeReviewService({this.shown = true});
@@ -286,7 +287,8 @@ void main() {
         await openWith(tester, fake);
 
         await tester.tap(find.byKey(const ValueKey('ratePromptStar5')));
-        await tester.pump(); // yıldız animasyonu: Future.delayed(450 ms) açıkça ilerletilir
+        await tester
+            .pump(); // yıldız animasyonu: Future.delayed(450 ms) açıkça ilerletilir
         await tester.pump(const Duration(milliseconds: 600));
         await tester.pumpAndSettle();
 
@@ -315,12 +317,58 @@ void main() {
         await openWith(tester, fake);
 
         await tester.tap(find.byKey(const ValueKey('ratePromptStar4')));
-        await tester.pump(); // yıldız animasyonu: Future.delayed(450 ms) açıkça ilerletilir
+        await tester
+            .pump(); // yıldız animasyonu: Future.delayed(450 ms) açıkça ilerletilir
         await tester.pump(const Duration(milliseconds: 600));
         await tester.pumpAndSettle();
 
         expect(fake.calls, 1);
         expect(tester.takeException(), isNull);
+      },
+    );
+
+    testWidgets(
+      'Ayarlar "Bizi Puanlayın" yıldızı UYGULAMA-İÇİ yorumu çağırır, 45 gün bekleme başlar',
+      (tester) async {
+        RatePromptTrigger.resetForTest(
+          loaded: true,
+          random: () => 0,
+          now: () => now,
+        );
+        final fake = _FakeReviewService(shown: true);
+        await tester.pumpWidget(
+          MaterialApp(
+            locale: const Locale('tr'),
+            localizationsDelegates: const [
+              AppLocalizations.delegate,
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: Builder(
+              builder: (context) => Scaffold(
+                body: Center(
+                  child: TextButton(
+                    onPressed: () =>
+                        showRateUsSheet(context, reviewService: fake),
+                    child: const Text('aç'),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+        await tester.tap(find.text('aç'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.byTooltip('5'));
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 600));
+        await tester.pumpAndSettle();
+
+        expect(fake.calls, 1);
+        expect(RatePromptTrigger.isCompleted, isFalse);
+        expect(RatePromptTrigger.shouldShow(daysOpened: () => 50), isFalse);
       },
     );
 

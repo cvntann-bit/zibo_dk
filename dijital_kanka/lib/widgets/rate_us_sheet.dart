@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../l10n/app_localizations.dart';
+import '../services/review_service.dart';
 import '../utils/rate_prompt_trigger.dart';
 
 /// Uygulamanın Play Console paket adı — `notification_service.dart`'taki
@@ -21,17 +22,25 @@ const _packageName = 'com.dijitalkanka.dijital_kanka';
 /// Store'un KENDİ puanlama arayüzüne yönlendirmek. Hangi yıldıza (1-5)
 /// dokunulursa dokunulsun SONUÇ AYNI — gerçek puanı Play Store'un kendisi
 /// topluyor, burada sahte bir "puanı kaydet" mantığı İCAT EDİLMEDİ.
-Future<void> showRateUsSheet(BuildContext context) {
+///
+/// **2026-10 (Faz S):** artık önce Google Play UYGULAMA-İÇİ yorum penceresi açılır (Play Store'a gitmeden);
+/// Google pencereyi göstermezse (kota / sideload / API yok) Play Store sayfasına DÜŞER. [reviewService] test içindir.
+Future<void> showRateUsSheet(
+  BuildContext context, {
+  ReviewService reviewService = const InAppReviewService(),
+}) {
   return showModalBottomSheet<void>(
     context: context,
     showDragHandle: true,
     isScrollControlled: true,
-    builder: (_) => const _RateUsSheetContent(),
+    builder: (_) => _RateUsSheetContent(reviewService: reviewService),
   );
 }
 
 class _RateUsSheetContent extends StatefulWidget {
-  const _RateUsSheetContent();
+  const _RateUsSheetContent({required this.reviewService});
+
+  final ReviewService reviewService;
 
   @override
   State<_RateUsSheetContent> createState() => _RateUsSheetContentState();
@@ -56,9 +65,16 @@ class _RateUsSheetContentState extends State<_RateUsSheetContent> {
     // reddediyor) — bunu `await` etmek sheet'in KAPANMASINI sonsuza kadar
     // engellerdi. Sheet, kullanıcının Play Store'a GERÇEKTEN gittiğini
     // beklemeden hemen kapanıyor — yönlendirme arka planda devam ediyor.
-    RatePromptTrigger.markCompleted();
-    unawaited(openPlayStoreListing());
+    // Kalıcı kapanış DEĞİL (dokunmak puan vermek demek değil): 45 gün bekleme.
+    RatePromptTrigger.markRateTapped();
+    final reviewService = widget.reviewService;
     if (mounted) Navigator.of(context).pop();
+    // Önce uygulama-içi yorum; gösterilmediyse Play Store sayfası (`await` EDİLMİYOR — bkz. yukarıdaki not).
+    unawaited(
+      reviewService.requestReview().then((shown) {
+        if (!shown) unawaited(openPlayStoreListing());
+      }),
+    );
   }
 
   @override
@@ -85,9 +101,9 @@ class _RateUsSheetContentState extends State<_RateUsSheetContent> {
             const SizedBox(height: 6),
             Text(
               l10n.rateUsSheetSubtitle,
-              style: Theme.of(
-                context,
-              ).textTheme.bodyMedium?.copyWith(color: colorScheme.onSurfaceVariant),
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 20),
@@ -100,7 +116,9 @@ class _RateUsSheetContentState extends State<_RateUsSheetContent> {
                     padding: const EdgeInsets.symmetric(horizontal: 2),
                     constraints: const BoxConstraints(),
                     icon: Icon(
-                      star <= _selectedStars ? Icons.star_rounded : Icons.star_border_rounded,
+                      star <= _selectedStars
+                          ? Icons.star_rounded
+                          : Icons.star_border_rounded,
                       // Zibo'nun altın tonu — bkz. `ZiboShareCard`'daki AYNI
                       // marka rengi.
                       color: const Color(0xFFF0C868),
