@@ -105,7 +105,7 @@ void main() {
   );
 
   testWidgets(
-    'Şimdi Değil → izin İSTENMEZ, "sonra Ayarlar" metni, sonuç izin=false',
+    'Şimdi Değil → izin İSTENMEZ, "sonra telefon ayarları" metni, sonuç izin=false',
     (tester) async {
       var asked = 0;
       await _toName(tester, () async {
@@ -124,7 +124,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(asked, 0);
-      expect(find.textContaining('Ayarlar'), findsOneWidget);
+      expect(find.textContaining('ayarlarından'), findsOneWidget);
       await tester.tap(find.byKey(const Key('introFinish')));
       await tester.pumpAndSettle();
       expect(_result?.name, 'Mehmet'); // baştaki/sondaki boşluk kırpılır
@@ -133,7 +133,7 @@ void main() {
   );
 
   testWidgets(
-    'sistem izni reddedilirse (callback false) final "sonra Ayarlar" metnine düşer',
+    'sistem izni reddedilirse (callback false) final "sonra telefon ayarları" metnine düşer',
     (tester) async {
       await _toName(tester, () async => false);
       await tester.enterText(find.byKey(const Key('introNameField')), 'Ece');
@@ -142,7 +142,7 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.byKey(const Key('introNotifAllow')));
       await tester.pumpAndSettle();
-      expect(find.textContaining('Ayarlar'), findsOneWidget);
+      expect(find.textContaining('ayarlarından'), findsOneWidget);
       await tester.tap(find.byKey(const Key('introFinish')));
       await tester.pumpAndSettle();
       expect(_result?.notificationsGranted, isFalse);

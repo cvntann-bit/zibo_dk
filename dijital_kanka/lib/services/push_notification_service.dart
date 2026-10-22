@@ -3,6 +3,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
 
 import '../models/push_notification_type.dart';
+import 'push_permission_preference.dart';
 import 'notification_service.dart';
 
 /// **2026 yeni özellik.** FCM (Firebase Cloud Messaging) push bildirimlerinin
@@ -76,7 +77,9 @@ class FirebaseMessagingPushNotificationService extends PushNotificationService {
       await localNotificationService.initialize(onNotificationTap: () {});
 
       final messaging = FirebaseMessaging.instance;
-      await messaging.requestPermission();
+      // Intro'da "Şimdi Değil" denildiyse sistem penceresini tekrar GÖSTERME (token yine alınır).
+      if (!await PushPermissionPreference.isDeclined())
+        await messaging.requestPermission();
 
       final token = await messaging.getToken();
       if (token != null) await _saveToken(uid, token);

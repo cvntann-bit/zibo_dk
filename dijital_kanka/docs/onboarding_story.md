@@ -80,3 +80,12 @@ Metinler (TR) onaylandı. Slayt geçişi DOKUNARAK (otomatik değil), "Geç" her
 
 ### Açık / ince ayar
 Yüksek çözünürlüklü A/B/C; S5 arka planı (şu an düz krem); balon kuyruğu (Zibo'ya doğru); yazı boyutu/geçiş hızı kullanıcı geri bildirimi bekliyor; gerçek uygulama temasında buton renkleri (önizleme teması farklı).
+
+
+## BAĞLANDI (2026-10-22, main) — durum güncellemesi
+
+Kullanıcı onayıyla (AAB yerine telefona APK kurup deneyecek) intro `main`'e BAĞLANDI: `OnboardingScreen` artık yalnızca **dil seçimi → `IntroFlowScreen`** (hikâye → isim → bildirim izni → final). 8 modül sayfası kaldırıldı (ARB anahtarları silinmedi). İsim → `ProfileProvider.setName` + `setAddressTerm`; `OnboardingProvider.completeOnboarding()`. Mevcut kullanıcılar (`onboardingState.completed`) görmez.
+- Bildirim izni: `LocalNotificationService().requestPermission()` (Android 13+ sistem penceresi), intro'nun içinde Zibo balonuyla istenir. **"Şimdi Değil" ya da reddedilirse** `PushPermissionPreference.setDeclined(true)` (`introNotifDeclined`) yazılır ve açılıştaki FCM `requestPermission` (`PushNotificationService.initialize`) bu durumda ATLANIR (çift soru/seçimi yok sayma yok); anahtar yoksa (mevcut kullanıcılar) davranış değişmedi.
+- Final metni "telefonunun ayarlarından açabilirsin" (Ayarlar'da genel bildirim anahtarı olmadığı için).
+- Testler: `onboarding_story_test` (3), `intro_flow_test` (4), `push_permission_preference_test` (2), `widget_test` Onboarding + `_pumpPastOnboarding` yeni akışa uyarlandı.
+- **Cihazda DENENECEK** (kullanıcı APK kuracak): hikâye geçişleri/uzun ekran kırpması, klavye, gerçek izin penceresi (İzin Ver / Reddet / Şimdi Değil), onboarding sonrası Ana Sayfa; mevcut kullanıcıda intro çıkmaması. Görseller hâlâ 572×1024 yer tutucu.

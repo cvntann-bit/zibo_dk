@@ -1817,7 +1817,7 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get onboardingFinaleDeclined =>
-      'Sorun değil, istersen sonra Ayarlar\'dan açabilirsin. Hadi başlayalım!';
+      'Sorun değil, istersen sonra telefonunun ayarlarından açabilirsin. Hadi başlayalım!';
 
   @override
   String get onboardingClosingTitle => 'Zibo ile Yolculuğun Başlıyor!';

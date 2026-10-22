@@ -1825,7 +1825,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get onboardingFinaleDeclined =>
-      'Sin problema, puedes activarlas luego en Ajustes. ¡Empecemos!';
+      'Sin problema, puedes activarlas luego en los ajustes del teléfono. ¡Empecemos!';
 
   @override
   String get onboardingClosingTitle => '¡Tu Viaje con Zibo Comienza!';

@@ -157,5 +157,5 @@ Plan (taslak, kullanıcı onayıyla):
 | D DEX optimizasyonu (%27 → hedef daha yüksek) | kullanıcı onayı bekliyor, "müsait olunca" başlanacak |
 | B Blaze fatura koruması | **bütçe KURULDU** (₺300/ay, %50/90/100). Kalan: cron tam tarama düzeltmesi (acil değil: günlük okuma 69K) |
 | S Yıldız/yorum teşviki | not alındı, başlamadı (uygulama-içi yorum API'si + daha sık tetikleyici) |
-| R Intro/Onboarding yenileme | **altyapı HAZIR** (`feature/intro-story` dalı, önizlemede çalışıyor); gerçek uygulamaya bağlama KULLANICI "başla" deyince — plan `docs/onboarding_story.md` |
+| R Intro/Onboarding yenileme | **main'e BAĞLANDI** (dil → hikâye → isim → bildirim izni → final); cihazda APK ile denenecek, yüksek çözünürlüklü görseller bekleniyor — `docs/onboarding_story.md` |
 | 5 Güvenlik/iOS | beklemede (Blaze artık açık → makbuz doğrulaması yapılabilir) |

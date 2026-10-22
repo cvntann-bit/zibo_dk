@@ -2492,7 +2492,7 @@
   "@onboardingFinaleAllowed": {
     "description": "Zibo intro akışı (isim / bildirim izni / final)"
   },
-  "onboardingFinaleDeclined": "Sorun değil, istersen sonra Ayarlar'dan açabilirsin. Hadi başlayalım!",
+  "onboardingFinaleDeclined": "Sorun değil, istersen sonra telefonunun ayarlarından açabilirsin. Hadi başlayalım!",
   "@onboardingFinaleDeclined": {
     "description": "Zibo intro akışı (isim / bildirim izni / final)"
   },

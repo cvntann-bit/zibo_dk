@@ -537,7 +537,7 @@
   "onboardingNotifAllow": "Permitir",
   "onboardingNotifLater": "Ahora no",
   "onboardingFinaleAllowed": "¡Genial! Ahora puedo avisarte con más facilidad. ¡Empecemos!",
-  "onboardingFinaleDeclined": "Sin problema, puedes activarlas luego en Ajustes. ¡Empecemos!",
+  "onboardingFinaleDeclined": "Sin problema, puedes activarlas luego en los ajustes del teléfono. ¡Empecemos!",
   "onboardingClosingTitle": "¡Tu Viaje con Zibo Comienza!",
   "onboardingClosingMessage": "¡Ya estás listo, {name}! Haremos grandes cambios con pequeños pasos — sigue tus metas, cuídate, siempre estoy contigo. ¡Empecemos, amigo!",
   "googleLinkRowTitleUnlinked": "Vincular con Google",

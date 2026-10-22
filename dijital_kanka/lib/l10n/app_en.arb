@@ -537,7 +537,7 @@
   "onboardingNotifAllow": "Allow",
   "onboardingNotifLater": "Not Now",
   "onboardingFinaleAllowed": "Great! Now I can reach you more easily. Let's get started!",
-  "onboardingFinaleDeclined": "No problem, you can turn them on later in Settings. Let's get started!",
+  "onboardingFinaleDeclined": "No problem, you can turn them on later in your phone's settings. Let's get started!",
   "onboardingClosingTitle": "Your Journey with Zibo Begins!",
   "onboardingClosingMessage": "You're all set, {name}! We'll make big changes with small steps — track your goals, take care of yourself, I've got your back. Let's get started, buddy!",
   "googleLinkRowTitleUnlinked": "Link Google Account",

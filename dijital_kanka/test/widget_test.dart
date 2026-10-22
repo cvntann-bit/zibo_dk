@@ -217,9 +217,8 @@ Widget _buildAppWithClock(DateTime Function() now) {
 
 /// Uygulama İLK açılışta HER ZAMAN onboarding akışını gösterdiği için
 /// (bkz. `OnboardingProvider`/`main.dart` `_AppStartupGate`), RootScreen
-/// içeriğini bekleyen HER test önce bunu atlatmalı: isim adımına bir test
-/// ismi yazıp "Devam Et"e basılır, ardından ilk modül tanıtım adımındaki
-/// "Geç" ile akış tamamlanır (`OnboardingProvider.completeOnboarding()`
+/// içeriğini bekleyen HER test önce bunu atlatmalı: dil → hikâye "Geç" → isim →
+/// bildirim izni "Şimdi Değil" → final "Hadi Başlayalım!" ile akış tamamlanır (`OnboardingProvider.completeOnboarding()`
 /// tetiklenir, `_AppStartupGate` doğrudan `RootScreen`'e geçer).
 Future<void> _pumpPastOnboarding(WidgetTester tester, Widget app) async {
   await tester.pumpWidget(app);
@@ -233,6 +232,10 @@ Future<void> _pumpPastOnboarding(WidgetTester tester, Widget app) async {
   await tester.tap(find.text('Devam Et'));
   await tester.pumpAndSettle();
 
+  // Zibo hikâyesi tam ekran açılır (bkz. story_intro_screen.dart) — "Geç" ile atla → isim adımı.
+  await tester.tap(find.byKey(const Key('storySkip')));
+  await tester.pumpAndSettle();
+
   await tester.enterText(find.byType(TextField), 'Test Kullanıcı');
   // `enterText` kendi başına bir frame pump'lamıyor — `ValueListenableBuilder`
   // ile izlenen "Devam Et" butonunun enabled durumu bu `pump()` olmadan
@@ -242,7 +245,11 @@ Future<void> _pumpPastOnboarding(WidgetTester tester, Widget app) async {
   await tester.tap(find.text('Devam Et'));
   await tester.pumpAndSettle();
 
-  await tester.tap(find.text('Geç'));
+  // Bildirim izni adımı: "Şimdi Değil" (gerçek sistem izni istenmez) → final → "Hadi Başlayalım!".
+  await tester.ensureVisible(find.byKey(const Key('introNotifLater')));
+  await tester.tap(find.byKey(const Key('introNotifLater')));
+  await tester.pumpAndSettle();
+  await tester.tap(find.byKey(const Key('introFinish')));
   await tester.pumpAndSettle();
 }
 
@@ -384,7 +391,7 @@ void main() {
   );
 
   testWidgets(
-    'Onboarding: isim girilir, 8 modül tanıtılır, kapanışta isim geçer, '
+    'Onboarding: dil → Zibo hikâyesi (5 slayt) → isim → bildirim izni → final, '
     'tamamlanınca isim Profil\'e ve hitap tercihine yazılmış olarak Ana '
     "Sayfa açılır",
     (WidgetTester tester) async {
@@ -403,8 +410,18 @@ void main() {
       await tester.tap(continueButton);
       await tester.pumpAndSettle();
 
-      // İsim adımı: alan boşken "Devam Et" (aynı buton, yeni bir sayfada)
-      // yine devre dışı.
+      // Tam ekran Zibo hikâyesi: 5 slayt dokunarak ilerler, 5. dokunuş kapatır.
+      expect(
+        find.text('Eskiden düzensiz ve soluk bir hayatım vardı…'),
+        findsOneWidget,
+      );
+      for (var i = 0; i < 5; i++) {
+        await tester.tap(find.byKey(const Key('storyStage')));
+        await tester.pumpAndSettle();
+      }
+
+      // İsim adımı: alan boşken "Devam Et" yine devre dışı.
+      expect(find.text('Sana ne diye hitap edeyim?'), findsOneWidget);
       expect(tester.widget<FilledButton>(continueButton).onPressed, isNull);
 
       await tester.enterText(find.byType(TextField), 'Ayşe');
@@ -414,21 +431,13 @@ void main() {
       await tester.tap(continueButton);
       await tester.pumpAndSettle();
 
-      // İlk modül tanıtımı: Hedef Takibi.
-      expect(find.text('Hedef Takibi'), findsOneWidget);
+      // Bildirim izni adımı kendi adıyla selamlar; "Şimdi Değil" → final.
+      expect(find.text('Tanıştığıma memnun oldum, Ayşe!'), findsOneWidget);
+      await tester.ensureVisible(find.byKey(const Key('introNotifLater')));
+      await tester.tap(find.byKey(const Key('introNotifLater')));
+      await tester.pumpAndSettle();
 
-      // Kalan 7 modülü + kapanış ekranına ulaşana kadar "İleri" ile ilerle
-      // (Hedef Takibi/Su Takibi/Şükran/Ruh Hali/Rüya Günlüğü/Manifest/
-      // Mağaza/Profil = 8 modül — 2026 güncellemesi: Rüya Günlüğü eklendi,
-      // eskiden 7'ydi; Hedef Takibi'ndeyiz, kapanışa ulaşmak için 8 "İleri"
-      // gerekir).
-      for (var i = 0; i < 8; i++) {
-        await tester.tap(find.text('İleri'));
-        await tester.pumpAndSettle();
-      }
-
-      // Kapanış ekranı: girilen isim mesajda geçiyor.
-      expect(find.textContaining('Ayşe'), findsWidgets);
+      // Final ekranı.
       final startButton = find.text('Hadi Başlayalım!');
       expect(startButton, findsOneWidget);
 

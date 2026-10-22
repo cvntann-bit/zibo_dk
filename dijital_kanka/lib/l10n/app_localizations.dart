@@ -3283,7 +3283,7 @@ abstract class AppLocalizations {
   /// Zibo intro akışı (isim / bildirim izni / final)
   ///
   /// In tr, this message translates to:
-  /// **'Sorun değil, istersen sonra Ayarlar\'dan açabilirsin. Hadi başlayalım!'**
+  /// **'Sorun değil, istersen sonra telefonunun ayarlarından açabilirsin. Hadi başlayalım!'**
   String get onboardingFinaleDeclined;
 
   /// Onboarding akışının son (kapanış) adımının başlığı
