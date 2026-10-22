@@ -25,39 +25,11 @@
 - Appodeal `com.google.android.gms.ads.APPLICATION_ID` meta-data'sı GEREKTİRMEZ (AdMob'un aksine — o kaldırıldı). Appodeal App Key doğrudan Dart'tan (`AppodealConfig.appKey`).
 - `MainActivity.kt` `onCreate()`'te `WindowCompat.setDecorFitsSystemWindows(window, true)` — Android 15 edge-to-edge zorlamasına karşı savunmacı. (`AdActivity` tema override'ı AdMob kaldırılınca gitti.)
 
-## TikTok Business SDK (kurulum/olay takibi — UA kampanyaları)
+## TikTok Business SDK — KALDIRILDI (2026-10-22)
 
-- 2026 — TikTok Ads Manager'da "App promotion" kampanyası için gerekli. Resmi Flutter paketi
-  (`tiktok_business_sdk`, pub.dev) 1 yıldır güncellenmemiş/deneysel (v0.0.1) — kullanılmadı. SDK
-  tamamen **native** tarafta: `TikTokConfig.kt` (App ID/TT App ID/Access Token — TikTok'un "App
-  Secret" dediği, ama Appodeal App Key'le AYNI sınıf: gerçek sunucu sırrı değil, APK'ya gömülen
-  istemci kimliği) + `MainActivity.onCreate()`'te `TikTokBusinessSdk.initializeSdk(...)`. Dart'a
-  HİÇ köprü YOK — SDK kurulum/açılış olaylarını `ProcessLifecycleOwner` ile kendisi otomatik izliyor.
-- Bağımlılık JitPack'ten (`com.github.tiktok:tiktok-business-android-sdk`) geliyor — Maven
-  Central/Google deposunda YOK, bu yüzden `android/build.gradle.kts`'e `maven { url =
-  uri("https://jitpack.io") }` eklendi. Sürüm yükseltirken resmi `tiktok/tiktok-business-android-sdk`
-  GitHub reposunun (ByteDance'in ARŞİVLENMİŞ `bytedance/...` fork'u DEĞİL) en güncel etiketini kullan.
-- TikTok Ads Manager'daki "Verify setup" adımı ancak SDK'lı bir build **gerçek cihazda açılınca**
-  olayları görür — bu yüzden kampanya kurulumu, yeni AAB Play'e yüklenip bir cihazda çalıştırılana
-  kadar tamamlanamaz.
-- **2026-09-12 — "No event data yet" teşhisi**: doğru build (1.10.0+29) cihazda kurulu/açık olsa ve
-  Events Manager'ın QR-kod "Test event" eşleşmesi ("Connected devices: 1") başarılı olsa bile hiç
-  event görünmedi. `initializeSdk(config)`'in callback'siz overload'u başarı/hatayı TAMAMEN sessiz
-  bırakıyor — teşhis için `TTInitCallback` + `setLogLevel(DEBUG)` eklendi, sonuç `MainActivity.kt` →
-  `MethodChannel("dijital_kanka/tiktok_sdk_diagnostic")` → `main.dart`'taki mevcut
-  `FirebaseCrashlytics.instance.recordError(..., fatal: false)` deseniyle (Appodeal init hatalarıyla
-  AYNI yol) Firebase Console'a taşınıyor — cihaza fiziksel erişim/adb GEREKMEDEN uzaktan okunabilir.
-- **1.10.1+30'da bu teşhis mesajının KENDİSİ de hiç gelmedi** (Crashlytics'te "tiktok-sdk-diagnostic"
-  diye bir kayıt hiç oluşmadı, ama AYNI sürümden diğer non-fatal'lar — Appodeal — normal şekilde
-  geliyordu, yani Crashlytics bağlantısının kendisi ÇALIŞIYORDU). Kök neden bir YARIŞ DURUMU: Dart
-  tarafındaki `_listenForTikTokDiagnostics()` çağrısı `main()`'de `Firebase.initializeApp()` +
-  `signInAnonymously()` + `logAppOpen()` `await`'lerinden SONRAYDI; native taraftaki
-  `TikTokBusinessSdk.initializeSdk(config, callback)` çağrısının callback'i bu zincir bitmeden
-  dönebiliyor — `MethodChannel.invokeMethod` Dart'ta HENÜZ hiçbir handler kayıtlı değilken gelirse
-  mesaj HİÇBİR YERDE hata vermeden kaybolur. 1.10.2+31'de dinleyici `main()`'in `Widgets
-  FlutterBinding.ensureInitialized()`'tan HEMEN sonraki ilk satırına taşındı; mesaj bir değişkende
-  bekletilip Firebase hazır olunca (`_firebaseReadyForTikTokDiagnostic = true`) gönderiliyor. Bu
-  desen (erken kayıt + "hazır olunca flush et") — native→Dart köprüsü kurarken bir daha akla gelsin.
+- Kullanıcı TikTok'ta artık reklam vermiyor → SDK, JitPack deposu, `TikTokConfig.kt`, `MainActivity` init/teşhis kodu,
+  `main.dart` teşhis köprüsü ve proguard `com.tiktok` kuralı silindi (DEX'te ~159 sınıf, hepsi karartılmamış).
+  Gerekirse eski hali git geçmişinde (ör. `git log -S TikTokBusinessSdk`).
 
 ## RemoteViews (Ana Ekran Widget'ları — `.../kotlin/.../widgets/`)
 

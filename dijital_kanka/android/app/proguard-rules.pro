@@ -31,13 +31,9 @@
 # bölümü, `res/raw/keep.xml`) AYNI risk sınıfında DEĞİL.
 -repackageclasses ''
 
-# Flutter'ın kendi embedding sınıfları.
--keep class io.flutter.app.** { *; }
--keep class io.flutter.plugin.** { *; }
--keep class io.flutter.util.** { *; }
--keep class io.flutter.view.** { *; }
--keep class io.flutter.** { *; }
--keep class io.flutter.plugins.** { *; }
+# Flutter embedding: 2026-10 (Faz D) elle yazılan `-keep class io.flutter.** { *; }` kuralları KALDIRILDI —
+# Flutter motoru (flutter.jar) JNI/yansıma sınıfları için kendi consumer kurallarını taşıyor; geniş keep
+# DEX'in en büyük karartılmayan bloklarından biriydi. Doğrulama: release APK + cihazda açılış/ana akışlar.
 
 # Play Core (Flutter'ın "deferred components" desteği bu sınıflara
 # derleme zamanında referans veriyor; kullanılmasalar bile eksik olmaları
@@ -47,7 +43,8 @@
 
 # google_sign_in / Credential Manager — Android 14+ Credential Manager
 # API'si reflection'a dayanan bazı sınıflar içeriyor.
--keep class androidx.credentials.** { *; }
+# 2026-10 (Faz D): yalnızca isimle yansımayla yüklenen Play Services sağlayıcı sınıfları korunuyor.
+-keep class androidx.credentials.playservices.** { *; }
 -dontwarn androidx.credentials.**
 
 # AndroidX WorkManager + Room — GERÇEK CİHAZDA yakalanan bir çökmenin
@@ -62,23 +59,14 @@
 # benzeri) TRANSİTİF bağımlılığı; bu yüzden HANGİ plugin'in tetiklediğini
 # izole etmek yerine WorkManager/Room'un TAMAMINI korumak en güvenli/kalıcı
 # çözüm.
--keep class androidx.work.** { *; }
--keep interface androidx.work.** { *; }
+# 2026-10 (Faz D): tüm `androidx.work.**` yerine yalnızca üretilen Room `_Impl` sınıfları (çökmenin asıl sebebi)
+# korunuyor; WorkManager'ın kendi consumer kuralları geri kalanı halleder.
+-keep class androidx.work.impl.**_Impl { *; }
 -dontwarn androidx.work.**
 -keep class * extends androidx.room.RoomDatabase
 -keep @androidx.room.Database class * { *; }
 -keep @androidx.room.Entity class * { *; }
 -dontwarn androidx.room.**
-
-# TikTok Business SDK (kurulum/olay takibi, bkz. CLAUDE.md "TikTok Business
-# SDK" bölümü) — SDK'nın kendi belgelediği kural, reflection/JSON
-# serileştirme kullanan olay gönderim koduna karşı. `consumer-rules.pro`
-# taşıyıp taşımadığını doğrulamadan (JitPack üzerinden geldiği için garanti
-# değil) elle ekliyoruz — eksik olsa bile ZARARSIZ (sadece bu paketi biraz
-# daha az küçültür), eksikliği ise SESSİZCE çöken/olay göndermeyen bir SDK'ya
-# yol açar.
--keep class com.tiktok.** { *; }
--dontwarn com.tiktok.**
 
 # Genel güvenlik ağı — reflection/serialization için sık gereken
 # meta-veriyi koru (Firebase'in kendi Firestore/Auth model dönüşümleri
