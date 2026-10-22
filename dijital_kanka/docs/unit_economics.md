@@ -160,6 +160,11 @@ ağ yok → tek ağa bağımlılık riski (AppLovin hesabı/politikası sorunu =
 artırmanın yolu yeni ağ eklemek (Faz 3), ama her adaptör DEX maliyeti getirir (bkz. `project_ad_network_dex_cleanup`).
 Kalan 5 günün satırları ve Appodeal'in kendi talebi (varsa) bu ekranda görülmedi.
 
+## 2f. Kullanıcı sayıları (Firebase Analytics, 21 Eki 2026) — gelir hesabı için doğru payda
+
+DAU **194** · WAU **724** · MAU **~1,4 bin**. Appodeal'in "Active Users 631/708" (8 günlük pencere) bununla tutarlı.
+Güncel gelir ≈ 0,18–0,27 $ / 8 gün → **DAU başı günlük ≈ 0,0001–0,0002 $**. Firestore (24 sa): 69 bin okuma + 23 bin yazma → Blaze ücretsiz kotası aşımı çok küçük (ihmal edilebilir); gider tahminindeki 2.500 kullanıcı varsayımı yerine **gerçek MAU ~1,4 bin** kullanılmalı.
+
 ## 3. Denge ilkeleri
 
 1. **Her yeni ücretsiz coin kaynağı reklam gelirini yemesin:** Coin ödülü (ör. reklam başı 20 ZC) ile

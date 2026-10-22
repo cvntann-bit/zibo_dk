@@ -25,6 +25,21 @@ ciddiye almak, kararlılığı (crash) ve kitleyi tutmayı (retention) yükseltm
 
 Çıktı: tek tablo "bugünkü rakamlar". Sonraki fazların başarısı bununla kıyaslanır.
 
+### Faz 0 SONUÇLARI (2026-10-22, Firebase Console'dan Chrome ile okundu — ölçülmüş veri)
+
+| Kaynak | Ölçüm |
+|---|---|
+| Crashlytics (7 gün, 16–22 Eki) | Çökmesiz kullanıcı **%98,86**, çökmesiz oturum **%99,16**; **25 çökme, 11 kullanıcı** etkilenmiş. Yayındaki sürüm **1.15.0 (52)** (son saatte 36 aktif kullanıcı) |
+| Analytics — aktif kullanıcı | **DAU 194 · WAU 724 · MAU ~1,4 bin** (21 Eki); yapışkanlık DAU/MAU ≈ %14. Tamamı Türkiye. Artış ağırlıkla 1.15.0'da |
+| Analytics — katılım | Aktif kullanıcı başı ortalama **7 dk 04 sn**, kullanıcı başı **1,7 etkileşimli oturum** |
+| Analytics — kohort tutma (hafta) | Hafta 1 **%14,6** · Hafta 2 **%6,3** · Hafta 3 **%3,7** · Hafta 4 **%1,7** · Hafta 5 %3,8 (tüm kullanıcılar) |
+| Firestore (son 24 sa) | **69 bin okuma, 23 bin yazma**, silme yok; saatlik tepe 20,7 bin okuma (cron). Blaze'de ücretsiz günlük kotanın (50 bin okuma/20 bin yazma) küçük bir aşımı → maliyet şu an ihmal edilebilir |
+| Fatura | Plan **Blaze (pay as you go)** ✓ · fatura hesabı "My Billing Account 1" · para birimi **TRY** · **bütçe TANIMLI DEĞİL** (Faz B'nin ilk işi) · Firestore için hizmet-bazlı harcama tavanı sunulmuyor (yalnızca Gemini/Cloud Run/Functions) |
+
+Yorum: (a) kararlılık kötü değil ama tek bir çökme türü baskın (aşağıda); (b) **asıl sorun tutma: ilk haftadan sonra kullanıcıların ~%85'i dönmüyor** → Faz R (intro) ve Faz 4 (retention) doğrulandı; (c) Firestore okumasının büyük kısmı saatlik cron taraması olmalı (kullanıcı belgesi sayısı × 120 tarama/gün ≈ günlük okumanın çoğu) — cron düzeltmesi hâlâ mantıklı ama acil değil.
+
+Bu sayfa açılışta henüz bakılmadı: Play Console Android vitals; Analytics "Gün 1" tutma; ANR/non-fatal (Crashlytics filtresi yalnızca "Crashes").
+
 ## Faz 1 — Kararlılık (crash) — önce
 
 - Faz 0 verisinden en sık çökmeleri sırala, kök nedeni oku (tahmin yok), düzelt, test ekle.
