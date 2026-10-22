@@ -1,3 +1,4 @@
+import 'rate_prompt_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -40,7 +41,12 @@ class CostumeCard extends StatelessWidget {
     // havuzundan bir söz gösterecek — bkz. `zibo_event_signal.dart`.
     pendingZiboEvent.value = ZiboEventType.costumeOrThemeUnlocked;
 
-    showInfoDialog(context, l10n.costumePurchasedMessage(localizedName));
+    // Mutlu an: bilgi penceresi kapandıktan sonra (kurallar izin verirse) yorum isteği.
+    showInfoDialog(context, l10n.costumePurchasedMessage(localizedName)).then((
+      _,
+    ) {
+      if (context.mounted) maybeShowRatePrompt(context);
+    });
   }
 
   @override

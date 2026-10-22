@@ -156,6 +156,10 @@ Plan (taslak, kullanıcı onayıyla):
 | 4 Retention | başlamadı (veri: hafta-1 tutma %14,6; intro hikâyesi hazır, bağlama bekliyor) |
 | D DEX optimizasyonu (%27 → hedef daha yüksek) | kullanıcı onayı bekliyor, "müsait olunca" başlanacak |
 | B Blaze fatura koruması | **bütçe KURULDU** (₺300/ay, %50/90/100). Kalan: cron tam tarama düzeltmesi (acil değil: günlük okuma 69K) |
-| S Yıldız/yorum teşviki | not alındı, başlamadı (uygulama-içi yorum API'si + daha sık tetikleyici) |
+| S Yıldız/yorum teşviki | **KODLANDI** (main): uygulama-içi Google Play yorum API'si (`in_app_review`) + Play Store yedeği, daha sık tetikleyici (%35 / 3 gün / 2. gün), dokununca 45 gün bekleme (kalıcı kapanış yok), yaşam boyu en fazla 8, kostüm alımında yeni tetikleyici. Cihazda DENENECEK |
 | R Intro/Onboarding yenileme | **main'e BAĞLANDI** (dil → hikâye → isim → bildirim izni → final); cihazda APK ile denenecek, yüksek çözünürlüklü görseller bekleniyor — `docs/onboarding_story.md` |
 | 5 Güvenlik/iOS | beklemede (Blaze artık açık → makbuz doğrulaması yapılabilir) |
+
+
+### Faz S uygulama notları (2026-10-22)
+`lib/services/review_service.dart` (`InAppReviewService`: `isAvailable` → `requestReview`; **600 ms'den kısa dönen çağrı "gösterilmedi" sayılıp Play Store sayfasına düşülür** — Google kota yüzünden pencereyi göstermezse API sessizce döner, kullanıcı "hiçbir şey olmadı" demesin). `RatePromptTrigger`: chance 0.2→0.35, cooldown 5→3 gün, minDaysOpened 3→2; `markRateTapped()` (45 gün) ayrıldı, `markCompleted()` yalnızca "Zaten puanladım"/Ayarlar "Bizi puanla"; `maxShows = 8`. Ayarlardaki kalıcı "Bizi puanla" Play Store sayfasını açmaya devam eder (Google yönergesi). **Karşılığında ZC/ödül YOK** (teşvikli yorum politika riski). Bağımlılık `in_app_review ^2.0.12` (Play review kütüphanesi ekler → DEX etkisi küçük, Faz D'de ölç). Cihazda: yıldıza dokununca sistem yorum sayfası açılıyor mu, ikinci kez hemen çıkmıyor mu.

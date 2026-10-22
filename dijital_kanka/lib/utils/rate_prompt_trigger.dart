@@ -23,14 +23,23 @@ class RatePromptTrigger {
 
   static const _completedKey = 'ratePromptCompleted';
   static const _lastShownKey = 'ratePromptLastShownAtMillis';
+  static const _tappedKey = 'ratePromptTappedAtMillis';
+  static const _countKey = 'ratePromptShownCount';
 
-  static const double chance = 0.2;
-  static const Duration cooldown = Duration(days: 5);
-  static const int minDaysOpened = 3;
+  // 2026-10 (Faz S — daha sık göster): 0.2/5 gün/3 gün → 0.35/3 gün/2 gün. Kullanıcı yıldız/Puanla'ya
+  // dokunduysa [tappedCooldown] boyunca sorulmaz (artık kalıcı kapanış YOK: Google puan verilip verilmediğini
+  // bildirmiyor, dokunmak puan vermek demek değil); yaşam boyu en fazla [maxShows] gösterim.
+  static const double chance = 0.35;
+  static const Duration cooldown = Duration(days: 3);
+  static const Duration tappedCooldown = Duration(days: 45);
+  static const int minDaysOpened = 2;
+  static const int maxShows = 8;
 
   static bool _loaded = false;
   static bool _completed = false;
   static DateTime? _lastShownAt;
+  static DateTime? _tappedAt;
+  static int _shownCount = 0;
   static double Function() _random = Random().nextDouble;
   static DateTime Function() _now = DateTime.now;
 
@@ -42,6 +51,10 @@ class RatePromptTrigger {
       if (millis != null) {
         _lastShownAt = DateTime.fromMillisecondsSinceEpoch(millis);
       }
+      final tapped = prefs.getInt(_tappedKey);
+      if (tapped != null)
+        _tappedAt = DateTime.fromMillisecondsSinceEpoch(tapped);
+      _shownCount = prefs.getInt(_countKey) ?? 0;
     } catch (_) {
       // Okunamadı — varsayılanlarla devam (en kötü ihtimalle bir kez fazla
       // gösterilebilir, çökme yok).
@@ -54,15 +67,27 @@ class RatePromptTrigger {
   /// kontroller geçildikten sonra çağrılır.
   static bool shouldShow({required int Function() daysOpened}) {
     if (!_loaded || _completed) return false;
+    if (_shownCount >= maxShows) return false;
+    final tapped = _tappedAt;
+    if (tapped != null && _now().difference(tapped) < tappedCooldown)
+      return false;
     final last = _lastShownAt;
     if (last != null && _now().difference(last) < cooldown) return false;
     if (daysOpened() < minDaysOpened) return false;
     if (_random() >= chance) return false;
     _lastShownAt = _now();
+    _shownCount++;
     unawaited(_persist());
     return true;
   }
 
+  /// Kullanıcı "Puanla"/yıldıza dokundu: [tappedCooldown] boyunca bir daha sorma (KALICI kapanış değil).
+  static void markRateTapped() {
+    _tappedAt = _now();
+    unawaited(_persist());
+  }
+
+  /// "Zaten puanladım" / Ayarlar'daki kalıcı "Bizi puanla": bir daha ASLA sorma.
   static void markCompleted() {
     _completed = true;
     unawaited(_persist());
@@ -73,7 +98,12 @@ class RatePromptTrigger {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool(_completedKey, _completed);
       final last = _lastShownAt;
-      if (last != null) await prefs.setInt(_lastShownKey, last.millisecondsSinceEpoch);
+      if (last != null)
+        await prefs.setInt(_lastShownKey, last.millisecondsSinceEpoch);
+      final tapped = _tappedAt;
+      if (tapped != null)
+        await prefs.setInt(_tappedKey, tapped.millisecondsSinceEpoch);
+      await prefs.setInt(_countKey, _shownCount);
     } catch (_) {}
   }
 
@@ -82,12 +112,16 @@ class RatePromptTrigger {
     bool loaded = false,
     bool completed = false,
     DateTime? lastShownAt,
+    DateTime? tappedAt,
+    int shownCount = 0,
     double Function()? random,
     DateTime Function()? now,
   }) {
     _loaded = loaded;
     _completed = completed;
     _lastShownAt = lastShownAt;
+    _tappedAt = tappedAt;
+    _shownCount = shownCount;
     _random = random ?? Random().nextDouble;
     _now = now ?? DateTime.now;
   }

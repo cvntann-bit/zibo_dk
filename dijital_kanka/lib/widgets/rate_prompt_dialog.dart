@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 
 import '../l10n/app_localizations.dart';
 import '../providers/app_streak_provider.dart';
+import '../services/review_service.dart';
 import '../utils/rate_prompt_trigger.dart';
 import 'rate_us_sheet.dart' show openPlayStoreListing;
 import 'sticker_style.dart';
@@ -38,7 +39,13 @@ Future<void> showRatePromptDialog(BuildContext context) {
 /// kapanır (bekleme süresi gösterimde başladı); Zaten puanladım → kalıcı
 /// kapanış.
 class RatePromptDialog extends StatefulWidget {
-  const RatePromptDialog({super.key});
+  const RatePromptDialog({
+    super.key,
+    this.reviewService = const InAppReviewService(),
+  });
+
+  /// Test enjeksiyonu: gerçek Google Play uygulama-içi yorum API'si platform kanalına dokunur.
+  final ReviewService reviewService;
 
   @override
   State<RatePromptDialog> createState() => _RatePromptDialogState();
@@ -49,11 +56,17 @@ class _RatePromptDialogState extends State<RatePromptDialog> {
   bool _leaving = false;
 
   void _rate() {
-    RatePromptTrigger.markCompleted();
-    // `await` EDİLMİYOR — `launchUrl` test ortamında asılı kalabiliyor (bkz.
-    // `rate_us_sheet.dart`'taki AYNI gerekçe).
-    unawaited(openPlayStoreListing());
+    // Kalıcı kapanış DEĞİL (Google puan verilip verilmediğini bildirmiyor): 45 gün bekleme.
+    RatePromptTrigger.markRateTapped();
+    final reviewService = widget.reviewService;
     Navigator.of(context).pop();
+    // Önce UYGULAMA-İÇİ yorum penceresi (Play Store'a gitmeden); Google göstermezse (kota/yok) Play Store
+    // sayfasına düş. `await` EDİLMİYOR — `launchUrl` test ortamında asılı kalabiliyor (bkz. `rate_us_sheet.dart`).
+    unawaited(
+      reviewService.requestReview().then((shown) {
+        if (!shown) unawaited(openPlayStoreListing());
+      }),
+    );
   }
 
   Future<void> _onStar(int count) async {
@@ -150,7 +163,10 @@ class _RatePromptDialogState extends State<RatePromptDialog> {
                   borderRadius: BorderRadius.circular(14),
                   onTap: _leaving ? null : _rate,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 11, horizontal: 12),
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 11,
+                      horizontal: 12,
+                    ),
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
                       border: Border.all(color: kStickerOutline, width: 3),
@@ -175,7 +191,9 @@ class _RatePromptDialogState extends State<RatePromptDialog> {
           TextButton(
             key: const Key('ratePromptLaterButton'),
             onPressed: _later,
-            style: TextButton.styleFrom(foregroundColor: colorScheme.onSurfaceVariant),
+            style: TextButton.styleFrom(
+              foregroundColor: colorScheme.onSurfaceVariant,
+            ),
             child: Text(
               l10n.ratePromptLaterButton,
               style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13),
@@ -247,7 +265,11 @@ class _RatePromptDialogState extends State<RatePromptDialog> {
                       child: SizedBox(
                         width: 34,
                         height: 34,
-                        child: Icon(Icons.close_rounded, size: 18, color: colorScheme.onSurface),
+                        child: Icon(
+                          Icons.close_rounded,
+                          size: 18,
+                          color: colorScheme.onSurface,
+                        ),
                       ),
                     ),
                   ),
@@ -294,7 +316,9 @@ class _StarButton extends StatelessWidget {
             width: 44,
             height: 44,
             child: CustomPaint(
-              painter: _StickerStarPainter(fill: filled ? colorScheme.primary : empty),
+              painter: _StickerStarPainter(
+                fill: filled ? colorScheme.primary : empty,
+              ),
             ),
           ),
         ),
@@ -325,7 +349,8 @@ class _StickerStarPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final scale = size.width / 48;
-    final path = Path()..moveTo(_points.first.dx * scale, _points.first.dy * scale);
+    final path = Path()
+      ..moveTo(_points.first.dx * scale, _points.first.dy * scale);
     for (final p in _points.skip(1)) {
       path.lineTo(p.dx * scale, p.dy * scale);
     }
@@ -342,5 +367,6 @@ class _StickerStarPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_StickerStarPainter oldDelegate) => oldDelegate.fill != fill;
+  bool shouldRepaint(_StickerStarPainter oldDelegate) =>
+      oldDelegate.fill != fill;
 }
