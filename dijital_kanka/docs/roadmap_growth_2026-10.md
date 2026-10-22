@@ -163,3 +163,12 @@ Plan (taslak, kullanıcı onayıyla):
 
 ### Faz S uygulama notları (2026-10-22)
 `lib/services/review_service.dart` (`InAppReviewService`: `isAvailable` → `requestReview`; **600 ms'den kısa dönen çağrı "gösterilmedi" sayılıp Play Store sayfasına düşülür** — Google kota yüzünden pencereyi göstermezse API sessizce döner, kullanıcı "hiçbir şey olmadı" demesin). `RatePromptTrigger`: chance 0.2→0.35, cooldown 5→3 gün, minDaysOpened 3→2; `markRateTapped()` (45 gün) ayrıldı, `markCompleted()` yalnızca "Zaten puanladım"/Ayarlar "Bizi puanla"; `maxShows = 8`. Ayarlardaki kalıcı "Bizi puanla" Play Store sayfasını açmaya devam eder (Google yönergesi). **Karşılığında ZC/ödül YOK** (teşvikli yorum politika riski). Bağımlılık `in_app_review ^2.0.12` (Play review kütüphanesi ekler → DEX etkisi küçük, Faz D'de ölç). Cihazda: yıldıza dokununca sistem yorum sayfası açılıyor mu, ikinci kez hemen çıkmıyor mu.
+
+
+## CİHAZ TEST KONTROL LİSTESİ (kullanıcı telefonu bağlayınca, APK ile — AAB YOK)
+
+**Önce güvenlik:** `adb shell dumpsys package com.dijitalkanka.dijital_kanka | grep -E "installerPackageName|versionName"`. Telefonda Play'den kurulu CANLI sürüm varsa debug/yerel APK imza uyuşmazlığı verir → `uninstall` gerekir = yerel veri + anonim hesap (uid) KAYBI. Karar kullanıcıya sorulur; kullanıcı onaylamadan `uninstall` yapma. Seçenekler: (a) yedek/ikinci telefon, (b) kullanıcı kendi verisini feda eder, (c) emülatör (gerçek Firebase/reklam trafiği riski → reklamlar KAPALI olmalı).
+1. **Intro (Faz R):** temiz kurulumda dil → hikâye 5 slayt (geçişler, uzun ekran kırpması, "Geç") → isim (klavye, taşma) → bildirim izni (İzin Ver / Reddet / Şimdi Değil; Android 13+ sistem penceresi) → final → Ana Sayfa. "Şimdi Değil" sonrası açılışta ikinci izin penceresi ÇIKMAMALI. Mevcut kullanıcıda intro çıkmamalı.
+2. **Yorum (Faz S):** Profil/Ayarlar "Bizi puanla" Play sayfasını açar; mutlu anlarda pencere çıkar, yıldıza dokununca sistem yorum sayfası açılır (açılmazsa Play Store sayfası); dokundan sonra hemen tekrar çıkmaz; kostüm alımından sonra çıkabilir.
+3. **Çökme düzeltmeleri (Faz 1):** ana ekran widget'ına dokunmak (uygulama açıkken ve kapalıyken) çökmeden doğru modülü açar; profil/manifest'te fotoğraf seçme; paywall'ı hızlıca açıp kapatma.
+4. Genel: Google ile giriş, reklam (rewarded), coin akışları, bildirim.
