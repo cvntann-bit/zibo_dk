@@ -152,7 +152,7 @@ Plan (taslak, kullanıcı onayıyla):
 | 0 Ölçüm tabanı | **büyük ölçüde TAMAM** (Firebase + Appodeal ölçüldü; Chrome uzantısı bağlı). Eksik: Play Console vitals, Gün-1 tutma, ANR/non-fatal |
 | 1 Crash | **ilk 3 çökme düzeltildi** (`beb6275`, 3 regresyon testi; yeni AAB + canlı doğrulama bekliyor). Sıradaki: ANR/non-fatal bak, düzeltme sonrası Crashlytics'te 3 sorunun kapandığını doğrula |
 | 2 Appodeal SDK | başlamadı |
-| 3 Reklam ağları + Yandex | başlamadı (önce "Yandex boost" netleşecek) |
+| 3 Reklam ağları + Yandex | **banner teşhisi yapıldı** (aşağıda); destek mesajı hazır `docs/appodeal_support_ticket.md` (kullanıcı gönderecek). Yandex/yeni ağlar: başlamadı |
 | 4 Retention | başlamadı (veri: hafta-1 tutma %14,6; intro hikâyesi hazır, bağlama bekliyor) |
 | D DEX optimizasyonu (%27 → hedef daha yüksek) | kullanıcı onayı bekliyor, "müsait olunca" başlanacak |
 | B Blaze fatura koruması | **bütçe KURULDU** (₺300/ay, %50/90/100). Kalan: cron tam tarama düzeltmesi (acil değil: günlük okuma 69K) |
@@ -185,3 +185,9 @@ Telefonda zaten DEBUG (`installer=null`, DEBUGGABLE) 1.13.1 vardı → aynı imz
 - **UYARI:** Bu telefonun Play hesabı Zule Lozada'ya ait görünüyor (Zibo sayfasında onun 5★ yorumu). Telefonda iki kez `pm clear` yapıldı (kullanıcı onayıyla, "test cihazı" varsayımıyla). Hesap Google ile bağlıysa Ayarlar > "Google ile Bağlan" ile verisi geri gelir; bağlı değilse yerel anonim veri kayıp. Kullanıcı bilgilendirilecek.
 
 **Düzeltme (2026-10-22):** Ayarlar > "Bizi Puanlayın" yıldız sayfası eskiden DOĞRUDAN Play Store sayfasını açıyordu (yalnızca mutlu-an penceresi uygulama-içi API'ye bağlıydı). Şimdi o da önce uygulama-içi yorumu dener, Google göstermezse Play Store'a düşer (`showRateUsSheet(reviewService:)`); `markCompleted` yerine `markRateTapped` (45 gün). **NOT:** uygulama-içi pencere YALNIZCA Play'den kurulu sürümde görünür; sideload/debug APK'da API anında döner → Play Store sayfası açılması BEKLENEN davranıştır.
+
+
+### Faz 3 — banner/Appodeal teşhisi (2026-10-22, ölçülmüş)
+**Üretim:** `banner_failed` 26.078 olay/1.061 kullanıcı (28 gün), `banner_loaded`/`shown` = 0; Crashlytics non-fatal `_initializeAppodeal` sorunu 7 günde **6,5 bin olay / ~650 kullanıcı** (iki varyant: banner başarısızlığı ~5,9K olay/639 kullanıcı; init hatası ~620 olay/349 kullanıcı); 1.9.2'den beri. **Cihaz:** her açılışta `Appodeal init errors: InternalError: SdkConfigurationError null` (test modunda da). Native uyarı: `Adapters are not registered: bidmachine`.
+**Deney (debug, test modu, geçici — COMMİTLENMEDİ):** `debugImplementation(adapters:bidmachine:3.7.1.0)` eklenince uyarı kayboldu ama `SdkConfigurationError` DEVAM etti → sebep BidMachine eksikliği DEĞİL; **BidMachine'i geri eklemeye gerek yok (DEX korunur)**. Gerçek reklam birimleriyle kendi cihazımızdan test YASAK (AdMob ban dersi) → üretimi yeniden üretemeyiz; kök neden Appodeal tarafında (Console/ağ yapılandırması) olabilir.
+**Yapıldı:** `onBannerFailedToLoad` artık oturum başına yalnızca İLK başarısızlığı Analytics+Crashlytics'e yazar (gürültü ~12× azalır). **Sıradaki (kullanıcı):** `docs/appodeal_support_ticket.md` mesajını Appodeal desteğine gönder; cevaba göre Console düzeltmesi / SDK güncellemesi (Faz 2).

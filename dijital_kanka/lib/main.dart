@@ -508,6 +508,9 @@ void main() async {
   runApp(_AppRoot(initialUid: uid));
 }
 
+/// Bu oturumda banner başarısızlığı zaten loglandı mı (bkz. `onBannerFailedToLoad`).
+bool _bannerFailureLoggedThisSession = false;
+
 /// `Appodeal.initialize` çağrısı — consent formu tamamlandıktan sonra
 /// (`main()`'de) çağrılır. Ayrı bir fonksiyon çünkü İKİ yerden tetikleniyor:
 /// consent callback'i VE 10 sn'lik savunma zamanlayıcısı (bkz. `main()`).
@@ -582,6 +585,11 @@ void _initializeAppodeal() {
       onBannerClicked: () => AdAnalytics.log('banner_clicked'),
       onBannerExpired: () => AdAnalytics.log('banner_expired'),
       onBannerFailedToLoad: () {
+        // Üretimde banner HİÇ yüklenmiyor (28 günde 26 bin `banner_failed`, `banner_loaded` = 0) ve her deneme
+        // Crashlytics'e non-fatal yazılıyordu (7 günde ~5,9 bin kayıt, `_initializeAppodeal` sorunu gürültüyle doluydu).
+        // Sinyal kaybolmasın diye OTURUM BAŞINA yalnızca İLK başarısızlık loglanır.
+        if (_bannerFailureLoggedThisSession) return;
+        _bannerFailureLoggedThisSession = true;
         AdAnalytics.log('banner_failed');
         try {
           FirebaseCrashlytics.instance.recordError(
