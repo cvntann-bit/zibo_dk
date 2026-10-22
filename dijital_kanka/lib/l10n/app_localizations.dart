@@ -3208,6 +3208,84 @@ abstract class AppLocalizations {
   /// **'Zibo\'yla olan bağını ve ilerlemeni tek bakışta gör.'**
   String get onboardingProfileDescription;
 
+  /// Intro hikâyesi 1. slayt (Zibo anlatıyor, dağınık odada)
+  ///
+  /// In tr, this message translates to:
+  /// **'Eskiden düzensiz ve soluk bir hayatım vardı…'**
+  String get onboardingStory1;
+
+  /// Intro hikâyesi 2. slayt (ara sahne)
+  ///
+  /// In tr, this message translates to:
+  /// **'Ta ki… bir gün her şeyden sıkılıp, kendimin en iyi versiyonuna ulaşmaya karar verdiğim ana kadar.'**
+  String get onboardingStory2;
+
+  /// Intro hikâyesi 3. slayt (Zibo parlıyor)
+  ///
+  /// In tr, this message translates to:
+  /// **'İşte o an her şey değişti.'**
+  String get onboardingStory3;
+
+  /// Intro hikâyesi 4. slayt (güneşli, düzenli oda)
+  ///
+  /// In tr, this message translates to:
+  /// **'Sonra kendime bir söz verdim: bu yolda kendinin en iyi versiyonuna ulaşmaya karar veren herkesin kankası olacağım.'**
+  String get onboardingStory4;
+
+  /// Intro hikâyesi 5. (son) slayt, ardından isim adımı
+  ///
+  /// In tr, this message translates to:
+  /// **'Demek buradasın. O zaman başlayalım!'**
+  String get onboardingStory5;
+
+  /// Intro hikâyesi ilk slaytındaki küçük ipucu
+  ///
+  /// In tr, this message translates to:
+  /// **'Devam etmek için dokun'**
+  String get onboardingStoryTapHint;
+
+  /// İsim girildikten sonra Zibo'nun karşılama başlığı
+  ///
+  /// In tr, this message translates to:
+  /// **'Tanıştığıma memnun oldum, {name}!'**
+  String onboardingMeetTitle(String name);
+
+  /// Zibo intro akışı (isim / bildirim izni / final)
+  ///
+  /// In tr, this message translates to:
+  /// **'Sana ne diye hitap edeyim?'**
+  String get onboardingNameBubble;
+
+  /// Zibo intro akışı (isim / bildirim izni / final)
+  ///
+  /// In tr, this message translates to:
+  /// **'Seninle daha rahat konuşabilmem için bildirim izni verir misin? Sana küçük hatırlatmalar ve motivasyon sözleri göndereceğim.'**
+  String get onboardingNotifBody;
+
+  /// Zibo intro akışı (isim / bildirim izni / final)
+  ///
+  /// In tr, this message translates to:
+  /// **'İzin Ver'**
+  String get onboardingNotifAllow;
+
+  /// Zibo intro akışı (isim / bildirim izni / final)
+  ///
+  /// In tr, this message translates to:
+  /// **'Şimdi Değil'**
+  String get onboardingNotifLater;
+
+  /// Zibo intro akışı (isim / bildirim izni / final)
+  ///
+  /// In tr, this message translates to:
+  /// **'Harika! Artık sana daha kolay ulaşabilirim. Hadi başlayalım!'**
+  String get onboardingFinaleAllowed;
+
+  /// Zibo intro akışı (isim / bildirim izni / final)
+  ///
+  /// In tr, this message translates to:
+  /// **'Sorun değil, istersen sonra Ayarlar\'dan açabilirsin. Hadi başlayalım!'**
+  String get onboardingFinaleDeclined;
+
   /// Onboarding akışının son (kapanış) adımının başlığı
   ///
   /// In tr, this message translates to:
