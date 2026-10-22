@@ -165,6 +165,10 @@ Kalan 5 günün satırları ve Appodeal'in kendi talebi (varsa) bu ekranda gör�
 DAU **194** · WAU **724** · MAU **~1,4 bin**. Appodeal'in "Active Users 631/708" (8 günlük pencere) bununla tutarlı.
 Güncel gelir ≈ 0,18–0,27 $ / 8 gün → **DAU başı günlük ≈ 0,0001–0,0002 $**. Firestore (24 sa): 69 bin okuma + 23 bin yazma → Blaze ücretsiz kotası aşımı çok küçük (ihmal edilebilir); gider tahminindeki 2.500 kullanıcı varsayımı yerine **gerçek MAU ~1,4 bin** kullanılmalı.
 
+## 2g. Play Console gelir/puan (son 28 gün, 22 Eki 2026)
+
+**Google Play geliri: "–" → hiç IAP / abonelik satışı yok** (coin paketleri, Reklamsız, Pro/Pro+ dahil). Yani tüm gelir şu an ~1 $/ay reklam. Puan: 4,857 ★ (21 kullanıcı). Edinim 2,33 bin, aylık etkin cihaz 747. → Dönüşüm (satış) sıfır: paywall/mağaza fiyat-değer dengesi ve ilk-deneyim (onboarding) incelenmeli; "zarar etmemek" için en büyük kaldıraç gösterim sayısı + ilk satın alma dönüşümü.
+
 ## 3. Denge ilkeleri
 
 1. **Her yeni ücretsiz coin kaynağı reklam gelirini yemesin:** Coin ödülü (ör. reklam başı 20 ZC) ile

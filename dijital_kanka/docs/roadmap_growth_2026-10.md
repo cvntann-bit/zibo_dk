@@ -40,6 +40,10 @@ Yorum: (a) kararlılık kötü değil ama tek bir çökme türü baskın (aşağ
 
 **Faz 1 düzeltmeleri (2026-10-22, commit `beb6275`):** (1) `_WidgetsAppState._onUnknownRoute` — 17 olay/6 kullanıcı: uygulama çalışırken yeni Intent (büyük olasılıkla ana ekran widget dokunuşu) → motor `pushRouteInformation` → uygulamada `onUnknownRoute` yoktu → release'te Null check çökmesi. Çözüm: `main.dart`'ta kendini kapatan şeffaf yedek rota. (2) `ImagePickerPhotoService.saveToPermanentStorage` PathNotFoundException (cache/scaled_….jpg kaybolmuş) → `PhotoUnavailableException` + "fotoğraf okunamadı" uyarısı (profil + manifest). (3) `_PaywallContentState._loadLivePrices` — provider'lar `await` öncesi okunur + `mounted` kontrolü. Doğrulama: Crashlytics'te bu 3 sorun yeni sürümde (1.15.1+) görünmemeli. NOT: widget dokunuşunun gerçek cihazda hâlâ doğru modülü açtığı cihazda DENENMELİ (kullanıcı müsait olunca).
 
+**Play Console (aynı gün, hesap `cvntann@gmail.com` → "ZiboDk", uygulama id 4973229712138231125):** son 28 gün: **cihaz edinimi 2,33 bin (+%841)**, ilk açılış 652, **aylık etkin cihaz 747 (+%430)**, toplam yükleme 1,04 bin; **ANR oranı %0,27**; **ortalama puan 4,857 ★ (varsayılan Play puanı 4,714), puan veren yalnızca 21 kullanıcı** (≈ edinimin %1'i → Faz S doğrulandı); **Google Play geliri "–" (28 günde HİÇ IAP/abonelik geliri yok)**. En yeni üretim sürümü: 5 Eki 2026 (1.15.0+52), yayınlanmamış değişiklik yok.
+
+**Fatura bütçesi KURULDU (2026-10-22, kullanıcı onayıyla):** Google Cloud Billing → "Zibo aylik butce 300 TRY": aylık ₺300, yalnızca uyarı, eşikler %50 (₺150) / %90 (₺270) / %100 (₺300) fiili harcama, e-posta faturalama yöneticilerine/kullanıcılarına. Bu ay şu ana kadar ₺2,20. NOT: bütçe harcamayı DURDURMAZ, yalnızca uyarır; Firestore için hizmet-bazlı tavan yok.
+
 Bu sayfa açılışta henüz bakılmadı: Play Console Android vitals; Analytics "Gün 1" tutma; ANR/non-fatal (Crashlytics filtresi yalnızca "Crashes").
 
 ## Faz 1 — Kararlılık (crash) — önce
@@ -149,9 +153,9 @@ Plan (taslak, kullanıcı onayıyla):
 | 1 Crash | **ilk 3 çökme düzeltildi** (`beb6275`, 3 regresyon testi; yeni AAB + canlı doğrulama bekliyor). Sıradaki: ANR/non-fatal bak, düzeltme sonrası Crashlytics'te 3 sorunun kapandığını doğrula |
 | 2 Appodeal SDK | başlamadı |
 | 3 Reklam ağları + Yandex | başlamadı (önce "Yandex boost" netleşecek) |
-| 4 Retention | başlamadı |
+| 4 Retention | başlamadı (veri: hafta-1 tutma %14,6; intro hikâyesi hazır, bağlama bekliyor) |
 | D DEX optimizasyonu (%27 → hedef daha yüksek) | kullanıcı onayı bekliyor, "müsait olunca" başlanacak |
-| B Blaze fatura koruması | sıradaki (Blaze'e geçildi, koruma henüz kurulmadı) |
+| B Blaze fatura koruması | **bütçe KURULDU** (₺300/ay, %50/90/100). Kalan: cron tam tarama düzeltmesi (acil değil: günlük okuma 69K) |
 | S Yıldız/yorum teşviki | not alındı, başlamadı (uygulama-içi yorum API'si + daha sık tetikleyici) |
 | R Intro/Onboarding yenileme | **altyapı HAZIR** (`feature/intro-story` dalı, önizlemede çalışıyor); gerçek uygulamaya bağlama KULLANICI "başla" deyince — plan `docs/onboarding_story.md` |
 | 5 Güvenlik/iOS | beklemede (Blaze artık açık → makbuz doğrulaması yapılabilir) |
