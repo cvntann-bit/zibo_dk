@@ -128,10 +128,10 @@ class _PaywallContentState extends State<PaywallContent>
       parent: _entranceController,
       curve: Curves.easeOut,
     );
-    _entranceSlide = Tween<Offset>(
-      begin: const Offset(0, 0.06),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(parent: _entranceController, curve: Curves.easeOut));
+    _entranceSlide =
+        Tween<Offset>(begin: const Offset(0, 0.06), end: Offset.zero).animate(
+          CurvedAnimation(parent: _entranceController, curve: Curves.easeOut),
+        );
 
     _ambientPulseController = AnimationController(
       vsync: this,
@@ -170,16 +170,18 @@ class _PaywallContentState extends State<PaywallContent>
       '${offer.productId}-${offer.basePlanId}';
 
   Future<void> _loadLivePrices() async {
-    final adFreePrice = await context.read<AdFreeProvider>().queryLocalizedPrice();
-    if (mounted && adFreePrice != null) {
-      setState(() => _liveAdFreePrice = adFreePrice);
-    }
+    // Her iki provider da İLK `await`'ten ÖNCE okunur: ekran bu sırada kapanırsa `context.read` artık
+    // "Null check operator" ile çöküyordu (Crashlytics 1.15.0, paywall_screen.dart:177).
+    final adFree = context.read<AdFreeProvider>();
     final subscription = context.read<SubscriptionProvider>();
+    final adFreePrice = await adFree.queryLocalizedPrice();
+    if (!mounted) return;
+    if (adFreePrice != null) setState(() => _liveAdFreePrice = adFreePrice);
     for (final offer in subscriptionOffers) {
       final price = await subscription.queryLocalizedPrice(offer);
-      if (mounted && price != null) {
+      if (!mounted) return;
+      if (price != null)
         setState(() => _liveSubscriptionPrices[_offerKey(offer)] = price);
-      }
     }
   }
 
@@ -189,10 +191,16 @@ class _PaywallContentState extends State<PaywallContent>
     );
   }
 
-  String _subscriptionPriceLabel(SubscriptionOffer offer, AppLocalizations l10n, String languageCode) {
+  String _subscriptionPriceLabel(
+    SubscriptionOffer offer,
+    AppLocalizations l10n,
+    String languageCode,
+  ) {
     final live = _liveSubscriptionPrices[_offerKey(offer)];
     if (live != null) return live;
-    final suffix = offer.isYearly ? l10n.paywallPerYearSuffix : l10n.paywallPerMonthSuffix;
+    final suffix = offer.isYearly
+        ? l10n.paywallPerYearSuffix
+        : l10n.paywallPerMonthSuffix;
     return '${offer.fallbackPrice.formattedForLocale(languageCode)}$suffix';
   }
 
@@ -213,11 +221,16 @@ class _PaywallContentState extends State<PaywallContent>
 
   Future<void> _upgrade(SubscriptionOffer offer) async {
     setState(() => _purchasingProductId = offer.productId);
-    final success = await context.read<SubscriptionProvider>().upgradeToProPlus(offer);
+    final success = await context.read<SubscriptionProvider>().upgradeToProPlus(
+      offer,
+    );
     await _handlePurchaseResult(success, isUpgrade: true);
   }
 
-  Future<void> _handlePurchaseResult(bool success, {required bool isUpgrade}) async {
+  Future<void> _handlePurchaseResult(
+    bool success, {
+    required bool isUpgrade,
+  }) async {
     if (!mounted) return;
     final l10n = AppLocalizations.of(context)!;
     setState(() => _purchasingProductId = null);
@@ -232,7 +245,9 @@ class _PaywallContentState extends State<PaywallContent>
       final message = isUpgrade
           ? l10n.paywallUpgradeErrorMessage
           : l10n.paywallPurchaseErrorMessage;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(message)));
     }
   }
 
@@ -298,7 +313,11 @@ class _PaywallContentState extends State<PaywallContent>
                     l10n.paywallProPerkWheelNoAds,
                     l10n.paywallProPerkGames,
                   ],
-                  priceLabel: _subscriptionPriceLabel(proOffer, l10n, languageCode),
+                  priceLabel: _subscriptionPriceLabel(
+                    proOffer,
+                    l10n,
+                    languageCode,
+                  ),
                   badgeText: subscription.isProPlus
                       ? l10n.paywallAlreadyProPlusBadge
                       : subscription.isPro
@@ -323,8 +342,14 @@ class _PaywallContentState extends State<PaywallContent>
                     l10n.paywallProPlusPerkMoneyAnalysis,
                     l10n.paywallProPlusPerkGames,
                   ],
-                  priceLabel: _subscriptionPriceLabel(proPlusOffer, l10n, languageCode),
-                  badgeText: subscription.isProPlus ? l10n.paywallAlreadyProPlusBadge : null,
+                  priceLabel: _subscriptionPriceLabel(
+                    proPlusOffer,
+                    l10n,
+                    languageCode,
+                  ),
+                  badgeText: subscription.isProPlus
+                      ? l10n.paywallAlreadyProPlusBadge
+                      : null,
                   buttonLabel: subscription.isPro
                       ? l10n.paywallUpgradeButton
                       : l10n.paywallSubscribeButton,
@@ -368,7 +393,12 @@ class _PaywallContentState extends State<PaywallContent>
     );
 
     final paddedColumn = Padding(
-      padding: EdgeInsets.fromLTRB(16, embedded ? 16 : 4, 16, embedded ? 16 : 32),
+      padding: EdgeInsets.fromLTRB(
+        16,
+        embedded ? 16 : 4,
+        16,
+        embedded ? 16 : 32,
+      ),
       child: column,
     );
 
@@ -512,10 +542,20 @@ class _BillingToggle extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Flexible(
-              child: _segment(context, label: monthlyLabel, selected: !isYearly, onTap: () => onChanged(false)),
+              child: _segment(
+                context,
+                label: monthlyLabel,
+                selected: !isYearly,
+                onTap: () => onChanged(false),
+              ),
             ),
             Flexible(
-              child: _segment(context, label: yearlyLabel, selected: isYearly, onTap: () => onChanged(true)),
+              child: _segment(
+                context,
+                label: yearlyLabel,
+                selected: isYearly,
+                onTap: () => onChanged(true),
+              ),
             ),
           ],
         ),
@@ -548,7 +588,9 @@ class _BillingToggle extends StatelessWidget {
               fontFamily: 'Baloo2',
               fontVariations: const [FontVariation('wght', 700)],
               fontSize: 12.5,
-              color: selected ? colorScheme.onPrimary : colorScheme.onSurfaceVariant,
+              color: selected
+                  ? colorScheme.onPrimary
+                  : colorScheme.onSurfaceVariant,
             ),
           ),
         ),
@@ -602,10 +644,17 @@ class _PlanCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final showButton = badgeText == null;
-    final fill = emphasized ? colorScheme.primaryContainer : colorScheme.surfaceContainerLowest;
+    final fill = emphasized
+        ? colorScheme.primaryContainer
+        : colorScheme.surfaceContainerLowest;
 
     final card = Container(
-      padding: EdgeInsets.fromLTRB(12, highlightLabel != null ? 20 : 14, 12, 14),
+      padding: EdgeInsets.fromLTRB(
+        12,
+        highlightLabel != null ? 20 : 14,
+        12,
+        14,
+      ),
       decoration: stickerDecoration(
         fill: fill,
         borderRadius: BorderRadius.circular(18),
@@ -656,7 +705,10 @@ class _PlanCard extends StatelessWidget {
                   child: stickerButtonShadow(
                     child: FilledButton(
                       key: buttonKey,
-                      style: stickerFilledButtonStyle(context, fontSize: emphasized ? 13 : 12),
+                      style: stickerFilledButtonStyle(
+                        context,
+                        fontSize: emphasized ? 13 : 12,
+                      ),
                       onPressed: isLoading ? null : onTap,
                       child: isLoading
                           ? const SizedBox(
@@ -690,7 +742,10 @@ class _PlanCard extends StatelessWidget {
             right: 0,
             child: Center(
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
                   color: colorScheme.primary,
                   border: Border.all(color: kStickerOutline, width: 2),
@@ -729,7 +784,11 @@ class _PerkRow extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(Icons.check_circle, size: emphasized ? 14 : 13, color: colorScheme.primary),
+        Icon(
+          Icons.check_circle,
+          size: emphasized ? 14 : 13,
+          color: colorScheme.primary,
+        ),
         const SizedBox(width: 5),
         Expanded(
           child: Text(
@@ -802,7 +861,10 @@ class _OneTimeAdFreeRow extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text(
                   benefit,
-                  style: TextStyle(fontSize: 10.5, color: colorScheme.onSurfaceVariant),
+                  style: TextStyle(
+                    fontSize: 10.5,
+                    color: colorScheme.onSurfaceVariant,
+                  ),
                 ),
               ],
             ),
@@ -821,7 +883,11 @@ class _OneTimeAdFreeRow extends StatelessWidget {
           showButton
               ? FilledButton(
                   key: buttonKey,
-                  style: stickerFilledButtonStyle(context, radius: 8, fontSize: 11.5),
+                  style: stickerFilledButtonStyle(
+                    context,
+                    radius: 8,
+                    fontSize: 11.5,
+                  ),
                   onPressed: isLoading ? null : onTap,
                   child: isLoading
                       ? const SizedBox(
@@ -892,7 +958,11 @@ class _ComparisonTable extends StatelessWidget {
           for (var i = 0; i < rows.length; i++) ...[
             _ComparisonRowTile(row: rows[i]),
             if (i != rows.length - 1)
-              Divider(height: 14, thickness: 1, color: colorScheme.outlineVariant),
+              Divider(
+                height: 14,
+                thickness: 1,
+                color: colorScheme.outlineVariant,
+              ),
           ],
         ],
       ),

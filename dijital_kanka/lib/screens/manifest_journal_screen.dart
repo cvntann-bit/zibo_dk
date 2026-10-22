@@ -111,7 +111,10 @@ class _ManifestJournalScreenState extends State<ManifestJournalScreen> {
       final picked = await widget.photoService.pickFromGallery();
       if (!mounted) return;
       if (isEmptyPhotoFile(picked)) {
-        showInfoDialog(context, AppLocalizations.of(context)!.photoPickEmptyError);
+        showInfoDialog(
+          context,
+          AppLocalizations.of(context)!.photoPickEmptyError,
+        );
         return;
       }
       if (picked != null) setState(() => _photoPath = picked);
@@ -127,9 +130,23 @@ class _ManifestJournalScreenState extends State<ManifestJournalScreen> {
 
     setState(() => _isSaving = true);
     try {
-      final permanentPath = pickedPath == null
-          ? null
-          : await widget.photoService.saveToPermanentStorage(pickedPath);
+      String? permanentPath;
+      if (pickedPath != null) {
+        try {
+          permanentPath = await widget.photoService.saveToPermanentStorage(
+            pickedPath,
+          );
+        } on PhotoUnavailableException {
+          // Geçici fotoğraf dosyası kaybolmuş: yazılan metin KORUNUR, ölü fotoğraf referansı temizlenir.
+          if (!mounted) return;
+          setState(() => _photoPath = null);
+          showInfoDialog(
+            context,
+            AppLocalizations.of(context)!.photoPickEmptyError,
+          );
+          return;
+        }
+      }
 
       final justCompleted = provider.addEntry(
         photoPath: permanentPath,
@@ -205,7 +222,9 @@ class _ManifestJournalScreenState extends State<ManifestJournalScreen> {
     showDialog<void>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: Text(formatLongDate(entry.date, Localizations.localeOf(context))),
+        title: Text(
+          formatLongDate(entry.date, Localizations.localeOf(context)),
+        ),
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -215,7 +234,10 @@ class _ManifestJournalScreenState extends State<ManifestJournalScreen> {
                 borderRadius: BorderRadius.circular(16),
                 child: AspectRatio(
                   aspectRatio: 1,
-                  child: _SafeFileImage(path: entry.photoPath, fit: BoxFit.cover),
+                  child: _SafeFileImage(
+                    path: entry.photoPath,
+                    fit: BoxFit.cover,
+                  ),
                 ),
               ),
               const SizedBox(height: 12),
@@ -243,13 +265,18 @@ class _ManifestJournalScreenState extends State<ManifestJournalScreen> {
 
   void _openEditor(ManifestEntry entry) {
     Navigator.of(context).push(
-      MaterialPageRoute<void>(builder: (_) => ManifestEditorScreen(entry: entry)),
+      MaterialPageRoute<void>(
+        builder: (_) => ManifestEditorScreen(entry: entry),
+      ),
     );
   }
 
   /// Kayıt sonrası bilgi penceresi. Fotoğraflı kayıtta "Hemen Süsle"
   /// seçeneği de sunar; seçilirse `true` döner.
-  Future<bool> _showSavedDialog(String message, {required bool offerDecorate}) async {
+  Future<bool> _showSavedDialog(
+    String message, {
+    required bool offerDecorate,
+  }) async {
     final l10n = AppLocalizations.of(context)!;
     final decorate = await showDialog<bool>(
       context: context,
@@ -434,16 +461,24 @@ class _ManifestJournalScreenState extends State<ManifestJournalScreen> {
                               ),
                             ),
                             child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 6,
+                              ),
                               decoration: BoxDecoration(
-                                border: Border.all(color: kStickerOutline, width: 2.5),
+                                border: Border.all(
+                                  color: kStickerOutline,
+                                  width: 2.5,
+                                ),
                                 borderRadius: BorderRadius.circular(10),
                               ),
                               child: Text(
                                 l10n.manifestCollageButton,
                                 style: TextStyle(
                                   fontFamily: 'Baloo2',
-                                  fontVariations: const [FontVariation('wght', 700)],
+                                  fontVariations: const [
+                                    FontVariation('wght', 700),
+                                  ],
                                   fontSize: 13,
                                   color: colorScheme.onPrimary,
                                 ),
@@ -470,12 +505,13 @@ class _ManifestJournalScreenState extends State<ManifestJournalScreen> {
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
                     itemCount: visibleHistory.length,
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      crossAxisSpacing: 12,
-                      mainAxisSpacing: 12,
-                      childAspectRatio: 0.6,
-                    ),
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          crossAxisSpacing: 12,
+                          mainAxisSpacing: 12,
+                          childAspectRatio: 0.6,
+                        ),
                     itemBuilder: (context, index) {
                       final entry = visibleHistory[index];
                       return _HistoryCard(
@@ -581,7 +617,9 @@ class _PhotoPickerArea extends StatelessWidget {
                         if (isLoading)
                           Container(
                             color: Colors.black.withValues(alpha: 0.4),
-                            child: const Center(child: CircularProgressIndicator()),
+                            child: const Center(
+                              child: CircularProgressIndicator(),
+                            ),
                           ),
                       ],
                     ),
@@ -601,7 +639,12 @@ class _PhotoPickerArea extends StatelessWidget {
                   child: const SizedBox(
                     width: 34,
                     height: 34,
-                    child: Center(child: Text('✏️', style: TextStyle(fontSize: 14, height: 1))),
+                    child: Center(
+                      child: Text(
+                        '✏️',
+                        style: TextStyle(fontSize: 14, height: 1),
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -636,7 +679,9 @@ class _HistoryCard extends StatelessWidget {
       children: [
         DecoratedBox(
           decoration: const BoxDecoration(
-            border: Border(bottom: BorderSide(color: kStickerOutline, width: 2)),
+            border: Border(
+              bottom: BorderSide(color: kStickerOutline, width: 2),
+            ),
           ),
           child: AspectRatio(
             aspectRatio: 1,

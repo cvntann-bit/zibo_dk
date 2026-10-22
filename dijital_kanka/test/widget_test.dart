@@ -97,7 +97,8 @@ class _RecordingHomeWidgetService implements HomeWidgetService {
   /// Uygulama ZATEN AÇIKKEN bir widget tıklamasını simüle etmek için —
   /// teste `.add(ZiboWidgetModule.water)` gibi çağrılarla "sıcak tıklama"
   /// enjekte edilebiliyor.
-  final _moduleClickController = StreamController<ZiboWidgetModule?>.broadcast();
+  final _moduleClickController =
+      StreamController<ZiboWidgetModule?>.broadcast();
 
   @override
   Future<void> pushStatus(
@@ -123,7 +124,8 @@ class _RecordingHomeWidgetService implements HomeWidgetService {
   Future<bool> requestPin(ZiboWidgetModule module) async => true;
 
   @override
-  Future<ZiboWidgetModule?> initialLaunchModule() async => initialLaunchModuleValue;
+  Future<ZiboWidgetModule?> initialLaunchModule() async =>
+      initialLaunchModuleValue;
 
   @override
   Stream<ZiboWidgetModule?> get moduleClicked => _moduleClickController.stream;
@@ -182,8 +184,9 @@ Widget _buildAppWithClock(DateTime Function() now) {
       ChangeNotifierProvider(create: (_) => MoneyProvider(now: now)),
       ChangeNotifierProvider(create: (_) => MoodProvider(now: now)),
       ChangeNotifierProvider(
-        create: (_) =>
-            NotificationProvider(notificationService: const FakeNotificationService()),
+        create: (_) => NotificationProvider(
+          notificationService: const FakeNotificationService(),
+        ),
       ),
       ChangeNotifierProvider(create: (_) => ProfileProvider(now: now)),
       ChangeNotifierProvider(create: (_) => ProfileStatsArchiveProvider()),
@@ -312,7 +315,10 @@ Future<void> _openGoalsPage(WidgetTester tester) async {
 String _currentHomeMessage(WidgetTester tester) {
   return tester
       .widget<Text>(
-        find.descendant(of: find.byType(SpeechBubble), matching: find.byType(Text)),
+        find.descendant(
+          of: find.byType(SpeechBubble),
+          matching: find.byType(Text),
+        ),
       )
       .data!;
 }
@@ -361,6 +367,21 @@ void main() {
       }
     });
   });
+
+  testWidgets(
+    'Çalışırken gelen bilinmeyen rota (ana ekran widget Intent) ÇÖKMEZ, Ana Sayfa açık kalır',
+    (WidgetTester tester) async {
+      // Crashlytics 1.15.0: `_WidgetsAppState._onUnknownRoute` — Null check operator (17 olay / 6 kullanıcı).
+      await _pumpPastOnboarding(tester, const DijitalKankaApp());
+      expect(find.bySemanticsLabel('Ana Sayfa'), findsOneWidget);
+
+      await tester.binding.handlePushRoute('/open/water');
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
+      expect(find.bySemanticsLabel('Ana Sayfa'), findsOneWidget);
+    },
+  );
 
   testWidgets(
     'Onboarding: isim girilir, 8 modül tanıtılır, kapanışta isim geçer, '
@@ -509,7 +530,9 @@ void main() {
 
       expect(find.text(goalQuotesTr.first), findsNothing);
 
-      await tester.tap(find.byTooltip('Geri')); // Hedefler sayfasını kapat → Ana Sayfa
+      await tester.tap(
+        find.byTooltip('Geri'),
+      ); // Hedefler sayfasını kapat → Ana Sayfa
       await tester.pumpAndSettle();
     },
   );
@@ -524,7 +547,9 @@ void main() {
       await _openGoalsPage(tester);
       await tester.pumpAndSettle();
 
-      final goalsElement = tester.element(find.byType(RootScreen, skipOffstage: false));
+      final goalsElement = tester.element(
+        find.byType(RootScreen, skipOffstage: false),
+      );
       final goalsProvider = Provider.of<GoalsProvider>(
         goalsElement,
         listen: false,
@@ -557,10 +582,7 @@ void main() {
         await tester.pumpAndSettle();
       }
 
-      expect(
-        find.textContaining('7 günlük hedefi tamamladın'),
-        findsOneWidget,
-      );
+      expect(find.textContaining('7 günlük hedefi tamamladın'), findsOneWidget);
       await _dismissInfoDialogIfShown(tester);
       expect(find.text('50'), findsOneWidget); // AppBar'daki güncel bakiye
       expect(find.text('0/7 gün'), findsOneWidget); // yeni döngü hazır
@@ -621,8 +643,13 @@ void main() {
       await tester.pumpWidget(_buildAppWithClock(() => currentDate));
       await tester.pumpAndSettle();
 
-      final rootElement = tester.element(find.byType(RootScreen, skipOffstage: false));
-      final goalsProvider = Provider.of<GoalsProvider>(rootElement, listen: false);
+      final rootElement = tester.element(
+        find.byType(RootScreen, skipOffstage: false),
+      );
+      final goalsProvider = Provider.of<GoalsProvider>(
+        rootElement,
+        listen: false,
+      );
       final streak = Provider.of<AppStreakProvider>(rootElement, listen: false);
       goalsProvider.addGoal('Kitap oku');
       streak.addOwnedStreakFreeze();
@@ -644,7 +671,10 @@ void main() {
       await tester.tap(find.byKey(const Key('streakFreezeUseOwnedButton')));
       await tester.pumpAndSettle();
       expect(find.text('Dün donduruldu!'), findsOneWidget);
-      expect(find.text('Serin ve hedeflerin kaldığı yerden devam ediyor 🎉'), findsOneWidget);
+      expect(
+        find.text('Serin ve hedeflerin kaldığı yerden devam ediyor 🎉'),
+        findsOneWidget,
+      );
       await _tapFreezeDone(tester);
 
       final goal = goalsProvider.goals.single;
@@ -654,7 +684,10 @@ void main() {
       await _openGoalsPage(tester);
       await tester.pumpAndSettle();
 
-      expect(find.bySemanticsLabel(RegExp('Gün 3, Streak Freeze ile donduruldu')), findsOneWidget);
+      expect(
+        find.bySemanticsLabel(RegExp('Gün 3, Streak Freeze ile donduruldu')),
+        findsOneWidget,
+      );
       expect(find.byIcon(Icons.ac_unit_rounded), findsOneWidget);
       expect(find.text('3/7 gün'), findsOneWidget);
       expect(streak.ownedStreakFreezes, 0);
@@ -664,34 +697,36 @@ void main() {
     },
   );
 
-  testWidgets(
-    'Faz 4 (B3): TAM 1 gün kaçırılınca Streak Freeze teklifi çıkar; '
-    'reddedilirse seri normal şekilde 1e sıfırlanır',
-    (WidgetTester tester) async {
-      var currentDate = DateTime(2026, 1, 5);
-      await tester.pumpWidget(_buildAppWithClock(() => currentDate));
-      await tester.pumpAndSettle();
+  testWidgets('Faz 4 (B3): TAM 1 gün kaçırılınca Streak Freeze teklifi çıkar; '
+      'reddedilirse seri normal şekilde 1e sıfırlanır', (
+    WidgetTester tester,
+  ) async {
+    var currentDate = DateTime(2026, 1, 5);
+    await tester.pumpWidget(_buildAppWithClock(() => currentDate));
+    await tester.pumpAndSettle();
 
-      final streakProvider = Provider.of<AppStreakProvider>(
-        tester.element(find.byType(RootScreen, skipOffstage: false)),
-        listen: false,
-      );
-      expect(streakProvider.currentStreak, 1); // soğuk başlangıçta kaydedildi
+    final streakProvider = Provider.of<AppStreakProvider>(
+      tester.element(find.byType(RootScreen, skipOffstage: false)),
+      listen: false,
+    );
+    expect(streakProvider.currentStreak, 1); // soğuk başlangıçta kaydedildi
 
-      // 6 Ocak hiç açılmadı; uygulama 7 Ocak'ta öne geliyor.
-      currentDate = currentDate.add(const Duration(days: 2));
-      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
-      await tester.pumpAndSettle();
+    // 6 Ocak hiç açılmadı; uygulama 7 Ocak'ta öne geliyor.
+    currentDate = currentDate.add(const Duration(days: 2));
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+    await tester.pumpAndSettle();
 
-      expect(find.text('Serin tehlikede!'), findsOneWidget);
-      expect(find.text('Seri sıfırlanır'), findsOneWidget);
+    expect(find.text('Serin tehlikede!'), findsOneWidget);
+    expect(find.text('Seri sıfırlanır'), findsOneWidget);
 
-      await tester.tap(find.text('Vazgeç'));
-      await tester.pumpAndSettle();
+    await tester.tap(find.text('Vazgeç'));
+    await tester.pumpAndSettle();
 
-      expect(streakProvider.currentStreak, 1); // 1 gün kaçırıldığı için sıfırlandı
-    },
-  );
+    expect(
+      streakProvider.currentStreak,
+      1,
+    ); // 1 gün kaçırıldığı için sıfırlandı
+  });
 
   testWidgets(
     'Faz 4 (B3): stok yokken 200 ZC ile anında Streak Freeze kullanılırsa seri KIRILMADAN devam eder',
@@ -700,12 +735,17 @@ void main() {
       await tester.pumpWidget(_buildAppWithClock(() => currentDate));
       await tester.pumpAndSettle();
 
-      final rootElement = tester.element(find.byType(RootScreen, skipOffstage: false));
+      final rootElement = tester.element(
+        find.byType(RootScreen, skipOffstage: false),
+      );
       final streakProvider = Provider.of<AppStreakProvider>(
         rootElement,
         listen: false,
       );
-      final coinProvider = Provider.of<CoinProvider>(rootElement, listen: false);
+      final coinProvider = Provider.of<CoinProvider>(
+        rootElement,
+        listen: false,
+      );
       coinProvider.earnBadgeReward(250, 'test');
 
       currentDate = currentDate.add(const Duration(days: 2));
@@ -730,12 +770,17 @@ void main() {
       await tester.pumpWidget(_buildAppWithClock(() => currentDate));
       await tester.pumpAndSettle();
 
-      final rootElement = tester.element(find.byType(RootScreen, skipOffstage: false));
+      final rootElement = tester.element(
+        find.byType(RootScreen, skipOffstage: false),
+      );
       final streakProvider = Provider.of<AppStreakProvider>(
         rootElement,
         listen: false,
       );
-      final coinProvider = Provider.of<CoinProvider>(rootElement, listen: false);
+      final coinProvider = Provider.of<CoinProvider>(
+        rootElement,
+        listen: false,
+      );
       coinProvider.earnBadgeReward(160, 'test');
       expect(coinProvider.spendStreakFreezeStorePurchase(), isTrue);
       streakProvider.addOwnedStreakFreeze();
@@ -746,7 +791,10 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('❄️ Stoğunda 1 adet'), findsOneWidget);
-      expect(find.byKey(const Key('streakFreezeUseOwnedButton')), findsOneWidget);
+      expect(
+        find.byKey(const Key('streakFreezeUseOwnedButton')),
+        findsOneWidget,
+      );
       expect(find.text('200 ZC ile Kullan'), findsNothing);
       await tester.tap(find.byKey(const Key('streakFreezeUseOwnedButton')));
       await tester.pumpAndSettle();
@@ -866,64 +914,69 @@ void main() {
     },
   );
 
-  testWidgets(
-    'Bir kategoriye kayıt eklenince listede ve toplamda görünür',
-    (WidgetTester tester) async {
-      await _pumpPastOnboarding(tester, const DijitalKankaApp());
+  testWidgets('Bir kategoriye kayıt eklenince listede ve toplamda görünür', (
+    WidgetTester tester,
+  ) async {
+    await _pumpPastOnboarding(tester, const DijitalKankaApp());
 
-      await _openModulesMenu(tester);
-      await tester.scrollUntilVisible(
-        find.text('Harcamalar ve Birikimler'),
-        100,
-        scrollable: find.byType(Scrollable).last,
-      );
-      await tester.tap(find.text('Harcamalar ve Birikimler'));
-      await tester.pumpAndSettle();
+    await _openModulesMenu(tester);
+    await tester.scrollUntilVisible(
+      find.text('Harcamalar ve Birikimler'),
+      100,
+      scrollable: find.byType(Scrollable).last,
+    );
+    await tester.tap(find.text('Harcamalar ve Birikimler'));
+    await tester.pumpAndSettle();
 
-      final expenseCard = find.ancestor(
-        of: find.text('💸 Harcamalar'),
-        matching: find.byType(Card),
-      );
-      await tester.tap(
-        find.descendant(of: expenseCard, matching: find.text('Ekle')),
-      );
-      await tester.pumpAndSettle();
+    final expenseCard = find.ancestor(
+      of: find.text('💸 Harcamalar'),
+      matching: find.byType(Card),
+    );
+    await tester.tap(
+      find.descendant(of: expenseCard, matching: find.text('Ekle')),
+    );
+    await tester.pumpAndSettle();
 
-      final textFields = find.byType(TextField);
-      await tester.enterText(textFields.at(0), 'Market');
-      await tester.enterText(textFields.at(1), '150,50');
-      await tester.tap(find.text('Tamam'));
-      await tester.pumpAndSettle();
+    final textFields = find.byType(TextField);
+    await tester.enterText(textFields.at(0), 'Market');
+    await tester.enterText(textFields.at(1), '150,50');
+    await tester.tap(find.text('Tamam'));
+    await tester.pumpAndSettle();
 
-      expect(find.text('Market'), findsOneWidget);
-      // Harcamalar kırmızı renkte "-" işaretiyle gösteriliyor.
-      expect(find.text('-₺150.50'), findsOneWidget);
-      expect(find.text('Toplam: ₺150.50'), findsOneWidget);
+    expect(find.text('Market'), findsOneWidget);
+    // Harcamalar kırmızı renkte "-" işaretiyle gösteriliyor.
+    expect(find.text('-₺150.50'), findsOneWidget);
+    expect(find.text('Toplam: ₺150.50'), findsOneWidget);
 
-      // Kayda (silme ikonu DIŞINDaki bir noktaya) dokununca düzenleme
-      // diyaloğu, mevcut ad/tutarla ÖNCEDEN doldurulmuş olarak açılmalı.
-      await tester.tap(find.text('Market'));
-      await tester.pumpAndSettle();
+    // Kayda (silme ikonu DIŞINDaki bir noktaya) dokununca düzenleme
+    // diyaloğu, mevcut ad/tutarla ÖNCEDEN doldurulmuş olarak açılmalı.
+    await tester.tap(find.text('Market'));
+    await tester.pumpAndSettle();
 
-      expect(find.text('Kaydı Düzenle'), findsOneWidget);
-      final editFields = find.byType(TextField);
-      expect(tester.widget<TextField>(editFields.at(0)).controller!.text, 'Market');
-      expect(tester.widget<TextField>(editFields.at(1)).controller!.text, '150.50');
+    expect(find.text('Kaydı Düzenle'), findsOneWidget);
+    final editFields = find.byType(TextField);
+    expect(
+      tester.widget<TextField>(editFields.at(0)).controller!.text,
+      'Market',
+    );
+    expect(
+      tester.widget<TextField>(editFields.at(1)).controller!.text,
+      '150.50',
+    );
 
-      await tester.enterText(editFields.at(0), 'Süpermarket');
-      await tester.enterText(editFields.at(1), '200');
-      await tester.tap(find.text('Tamam'));
-      await tester.pumpAndSettle();
+    await tester.enterText(editFields.at(0), 'Süpermarket');
+    await tester.enterText(editFields.at(1), '200');
+    await tester.tap(find.text('Tamam'));
+    await tester.pumpAndSettle();
 
-      expect(find.text('Süpermarket'), findsOneWidget);
-      expect(find.text('Market'), findsNothing);
-      expect(find.text('-₺200.00'), findsOneWidget);
-      expect(find.text('Toplam: ₺200.00'), findsOneWidget);
+    expect(find.text('Süpermarket'), findsOneWidget);
+    expect(find.text('Market'), findsNothing);
+    expect(find.text('-₺200.00'), findsOneWidget);
+    expect(find.text('Toplam: ₺200.00'), findsOneWidget);
 
-      await tester.tap(find.byTooltip('Geri'));
-      await tester.pumpAndSettle();
-    },
-  );
+    await tester.tap(find.byTooltip('Geri'));
+    await tester.pumpAndSettle();
+  });
 
   testWidgets(
     'Para ve Birikim: para birimi değiştirilince modül genelinde yeni sembol kullanılır',
@@ -981,7 +1034,10 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.text('EUR €'));
       await tester.pumpAndSettle();
-      expect(find.text('€'), findsOneWidget); // Tutar alanının prefix'i artık €.
+      expect(
+        find.text('€'),
+        findsOneWidget,
+      ); // Tutar alanının prefix'i artık €.
       await tester.tap(find.text('Tamam'));
       await tester.pumpAndSettle();
 
@@ -1095,7 +1151,10 @@ void main() {
     await tester.pumpAndSettle();
 
     // 100 ZC paketi + 10 bonus = 110 (bkz. CoinPackage.totalCoins).
-    expect(find.textContaining('110 Zibo Coin hesabına eklendi'), findsOneWidget);
+    expect(
+      find.textContaining('110 Zibo Coin hesabına eklendi'),
+      findsOneWidget,
+    );
     // Mağaza artık bir sekme olduğu için başlık çubuğu (ve dolayısıyla
     // coin bakiyesi) sayfadan ayrılmadan hep görünür durumda.
     expect(find.text('110'), findsOneWidget); // AppBar'daki güncel bakiye
@@ -1167,10 +1226,7 @@ void main() {
       await tester.tap(find.byKey(const Key('paywallOneTimeButton')));
       await tester.pumpAndSettle();
       expect(find.byType(PaywallScreen), findsOneWidget);
-      expect(
-        find.textContaining('Satın alma tamamlanamadı'),
-        findsOneWidget,
-      );
+      expect(find.textContaining('Satın alma tamamlanamadı'), findsOneWidget);
     },
   );
 
@@ -1206,10 +1262,7 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 700));
       await tester.pumpAndSettle();
-      expect(
-        find.textContaining('Satın alma başarılı'),
-        findsOneWidget,
-      );
+      expect(find.textContaining('Satın alma başarılı'), findsOneWidget);
       // Başarı dialogunu "Tamam" ile kapat — bu ANCAK BUNDAN SONRA paywall
       // ekranını da kapatıyor (bkz. `PaywallScreen._handlePurchaseResult`).
       await tester.tap(find.byKey(const Key('infoDialogOkButton')));
@@ -1243,40 +1296,34 @@ void main() {
       await tester.tap(find.byTooltip('Kapat'));
       await tester.pumpAndSettle();
       expect(find.byType(PaywallScreen), findsNothing);
-      expect(
-        find.textContaining('Satın alma başarılı'),
-        findsNothing,
-      );
+      expect(find.textContaining('Satın alma başarılı'), findsNothing);
     },
   );
 
-  testWidgets(
-    'Paywall: cooldown süresi dolmadan aynı Mağaza ziyaret örüntüsü '
-    'paywall\'ı TEKRAR açmaz',
-    (WidgetTester tester) async {
-      // AdFreePromoTrigger.resetForTest ile "az önce gösterildi" durumu
-      // simüle ediliyor — 5. ziyarette eşik dolsa bile 3 günlük cooldown
-      // (bkz. ad_free_promo_trigger.dart) henüz geçmediği için paywall
-      // AÇILMAMALI.
-      AdFreePromoTrigger.resetForTest(lastShownAt: DateTime.now());
+  testWidgets('Paywall: cooldown süresi dolmadan aynı Mağaza ziyaret örüntüsü '
+      'paywall\'ı TEKRAR açmaz', (WidgetTester tester) async {
+    // AdFreePromoTrigger.resetForTest ile "az önce gösterildi" durumu
+    // simüle ediliyor — 5. ziyarette eşik dolsa bile 3 günlük cooldown
+    // (bkz. ad_free_promo_trigger.dart) henüz geçmediği için paywall
+    // AÇILMAMALI.
+    AdFreePromoTrigger.resetForTest(lastShownAt: DateTime.now());
 
-      await _pumpPastOnboarding(tester, const DijitalKankaApp());
+    await _pumpPastOnboarding(tester, const DijitalKankaApp());
 
-      Future<void> visitStoreThenLeave() async {
-        await tester.tap(find.byTooltip('Coin satın al'));
-        await tester.pumpAndSettle();
-        await tester.tap(find.bySemanticsLabel('Ana Sayfa'));
-        await tester.pumpAndSettle();
-      }
-
-      for (var i = 0; i < 4; i++) {
-        await visitStoreThenLeave();
-      }
+    Future<void> visitStoreThenLeave() async {
       await tester.tap(find.byTooltip('Coin satın al'));
       await tester.pumpAndSettle();
-      expect(find.byType(PaywallScreen), findsNothing);
-    },
-  );
+      await tester.tap(find.bySemanticsLabel('Ana Sayfa'));
+      await tester.pumpAndSettle();
+    }
+
+    for (var i = 0; i < 4; i++) {
+      await visitStoreThenLeave();
+    }
+    await tester.tap(find.byTooltip('Coin satın al'));
+    await tester.pumpAndSettle();
+    expect(find.byType(PaywallScreen), findsNothing);
+  });
 
   testWidgets('Ayarlar dişli ikonuyla açılır ve satırları gösterir', (
     WidgetTester tester,
@@ -1362,10 +1409,7 @@ void main() {
           )
           .onTap!();
       await tester.pumpAndSettle();
-      expect(
-        find.textContaining('Sanal Para Birimi'),
-        findsOneWidget,
-      );
+      expect(find.textContaining('Sanal Para Birimi'), findsOneWidget);
     },
   );
 
@@ -1505,7 +1549,8 @@ void main() {
         tester,
         DijitalKankaApp(homeWidgetService: recorder),
       );
-      recorder.titlesPushed.clear(); // yalnızca dil değişiminden SONRAKİ gönderimleri say
+      recorder.titlesPushed
+          .clear(); // yalnızca dil değişiminden SONRAKİ gönderimleri say
 
       await tester.tap(find.byTooltip('Ayarlar'));
       await tester.pumpAndSettle();
@@ -1602,7 +1647,9 @@ void main() {
       await _pumpPastOnboarding(tester, const DijitalKankaApp());
 
       expect(
-        Theme.of(tester.element(find.byType(RootScreen, skipOffstage: false))).brightness,
+        Theme.of(
+          tester.element(find.byType(RootScreen, skipOffstage: false)),
+        ).brightness,
         Brightness.light,
       );
 
@@ -1635,7 +1682,8 @@ void main() {
       expect(find.text('Koyu'), findsOneWidget);
 
       final prefs = await SharedPreferences.getInstance();
-      final saved = jsonDecode(prefs.getString('isDarkMode')!) as Map<String, dynamic>;
+      final saved =
+          jsonDecode(prefs.getString('isDarkMode')!) as Map<String, dynamic>;
       expect(saved['value'], 'dark');
     },
   );
@@ -1648,7 +1696,9 @@ void main() {
     // Geçici Coin Test Paneli kaldırıldığı için (kullanıcı isteği) kazanma
     // akışı doğrudan CoinProvider üzerinden tetikleniyor — GoalsProvider'ı
     // `_buildAppWithClock` testlerinde doğrudan manipüle etme deseniyle aynı.
-    final coinsElement = tester.element(find.byType(RootScreen, skipOffstage: false));
+    final coinsElement = tester.element(
+      find.byType(RootScreen, skipOffstage: false),
+    );
     Provider.of<CoinProvider>(coinsElement, listen: false).earnDailyCheckIn();
     await tester.pumpAndSettle();
 
@@ -1695,7 +1745,9 @@ void main() {
       // 440 ZC için yeterli bakiyeyi kazan (5 × Arkadaş daveti = 500).
       // Geçici Coin Test Paneli kaldırıldığı için (kullanıcı isteği) doğrudan
       // CoinProvider üzerinden tetikleniyor.
-      final coinsElement = tester.element(find.byType(RootScreen, skipOffstage: false));
+      final coinsElement = tester.element(
+        find.byType(RootScreen, skipOffstage: false),
+      );
       final coinProvider = Provider.of<CoinProvider>(
         coinsElement,
         listen: false,
@@ -1743,14 +1795,18 @@ void main() {
       await tester.pumpAndSettle();
       expect(
         (tester
-                    .widget<Image>(find.byKey(const Key('ziboGoalTrackingImage')))
+                    .widget<Image>(
+                      find.byKey(const Key('ziboGoalTrackingImage')),
+                    )
                     .image
                 as AssetImage)
             .assetName,
         'assets/images/zibo_hippi_pose1.webp',
       );
 
-      await tester.tap(find.byTooltip('Geri')); // Hedefler sayfasını kapat → Ana Sayfa
+      await tester.tap(
+        find.byTooltip('Geri'),
+      ); // Hedefler sayfasını kapat → Ana Sayfa
       await tester.pumpAndSettle();
       await _openModulesMenu(tester);
       await tester.scrollUntilVisible(
@@ -1795,70 +1851,66 @@ void main() {
     },
   );
 
-  testWidgets(
-    '2026 kostüm paketi (Hippi Zibo) satın alınıp giyilebilir; poz seti '
-    'Ana Sayfa\'da devreye girer',
-    (WidgetTester tester) async {
-      await _pumpPastOnboarding(tester, const DijitalKankaApp());
+  testWidgets('2026 kostüm paketi (Hippi Zibo) satın alınıp giyilebilir; poz seti '
+      'Ana Sayfa\'da devreye girer', (WidgetTester tester) async {
+    await _pumpPastOnboarding(tester, const DijitalKankaApp());
 
-      await tester.tap(find.byTooltip('Coin satın al'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Kostümler'));
-      await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('Coin satın al'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Kostümler'));
+    await tester.pumpAndSettle();
 
-      expect(find.text('Hippi Zibo'), findsOneWidget);
-      final costumeCard = find.ancestor(
-        of: find.text('Hippi Zibo'),
-        matching: find.byType(Card),
-      );
-      expect(
-        find.descendant(of: costumeCard, matching: find.text('440 ZC')),
-        findsOneWidget,
-      );
+    expect(find.text('Hippi Zibo'), findsOneWidget);
+    final costumeCard = find.ancestor(
+      of: find.text('Hippi Zibo'),
+      matching: find.byType(Card),
+    );
+    expect(
+      find.descendant(of: costumeCard, matching: find.text('440 ZC')),
+      findsOneWidget,
+    );
 
-      FilledButton buyButton() => tester.widget<FilledButton>(
-        find.descendant(of: costumeCard, matching: find.byType(FilledButton)),
-      );
+    FilledButton buyButton() => tester.widget<FilledButton>(
+      find.descendant(of: costumeCard, matching: find.byType(FilledButton)),
+    );
 
-      final coinsElement = tester.element(find.byType(RootScreen, skipOffstage: false));
-      final coinProvider = Provider.of<CoinProvider>(
-        coinsElement,
-        listen: false,
-      );
-      // 440 ZC için yeterli bakiyeyi kazan (5 × Arkadaş daveti = 500). Poz setli en ucuz kostüm
-      // (Kral artık Efsanevi/22000 ZC — referral döngüsüyle kazanmak gerçekçi değil).
-      for (var i = 0; i < 5; i++) {
-        coinProvider.earnReferral();
-      }
-      // Bkz. `_dismissLevelUpIfShown` dokümantasyonu.
-      await _dismissLevelUpIfShown(tester);
+    final coinsElement = tester.element(
+      find.byType(RootScreen, skipOffstage: false),
+    );
+    final coinProvider = Provider.of<CoinProvider>(coinsElement, listen: false);
+    // 440 ZC için yeterli bakiyeyi kazan (5 × Arkadaş daveti = 500). Poz setli en ucuz kostüm
+    // (Kral artık Efsanevi/22000 ZC — referral döngüsüyle kazanmak gerçekçi değil).
+    for (var i = 0; i < 5; i++) {
+      coinProvider.earnReferral();
+    }
+    // Bkz. `_dismissLevelUpIfShown` dokümantasyonu.
+    await _dismissLevelUpIfShown(tester);
 
-      buyButton().onPressed!();
-      await tester.pumpAndSettle();
-      expect(find.textContaining('Hippi Zibo satın alındı'), findsOneWidget);
-      await _dismissInfoDialogIfShown(tester);
+    buyButton().onPressed!();
+    await tester.pumpAndSettle();
+    expect(find.textContaining('Hippi Zibo satın alındı'), findsOneWidget);
+    await _dismissInfoDialogIfShown(tester);
 
-      InkWell costumeInkWell() => tester.widget<InkWell>(
-        find.descendant(of: costumeCard, matching: find.byType(InkWell)),
-      );
-      costumeInkWell().onTap!();
-      await tester.pumpAndSettle();
-      expect(find.text('Giyili'), findsOneWidget);
+    InkWell costumeInkWell() => tester.widget<InkWell>(
+      find.descendant(of: costumeCard, matching: find.byType(InkWell)),
+    );
+    costumeInkWell().onTap!();
+    await tester.pumpAndSettle();
+    expect(find.text('Giyili'), findsOneWidget);
 
-      await tester.tap(find.bySemanticsLabel('Ana Sayfa'));
-      await tester.pumpAndSettle();
-      final equippedImage = tester.widget<Image>(
-        find.byKey(const Key('ziboCharacterImage')),
-      );
-      // Hippi Zibo'nun poz seti costume_poses.dart'a eklendi — kostüm
-      // giyilince Ana Sayfa artık statik `zibo_hippi.webp` yerine poz
-      // setinin ilk karesini gösteriyor (poseStep=0).
-      expect(
-        (equippedImage.image as AssetImage).assetName,
-        'assets/images/zibo_hippi_pose1.webp',
-      );
-    },
-  );
+    await tester.tap(find.bySemanticsLabel('Ana Sayfa'));
+    await tester.pumpAndSettle();
+    final equippedImage = tester.widget<Image>(
+      find.byKey(const Key('ziboCharacterImage')),
+    );
+    // Hippi Zibo'nun poz seti costume_poses.dart'a eklendi — kostüm
+    // giyilince Ana Sayfa artık statik `zibo_hippi.webp` yerine poz
+    // setinin ilk karesini gösteriyor (poseStep=0).
+    expect(
+      (equippedImage.image as AssetImage).assetName,
+      'assets/images/zibo_hippi_pose1.webp',
+    );
+  });
 
   testWidgets(
     'Tema satın alınıp uygulanabilir; Ana Sayfa\'nın arka planı değişir',
@@ -1866,7 +1918,10 @@ void main() {
       await _pumpPastOnboarding(tester, const DijitalKankaApp());
 
       // Uygulama öncesi: arka plan gradyanı yok.
-      expect(find.byKey(const Key('homeThemeGradientBackground')), findsNothing);
+      expect(
+        find.byKey(const Key('homeThemeGradientBackground')),
+        findsNothing,
+      );
 
       await tester.tap(find.byTooltip('Coin satın al'));
       await tester.pumpAndSettle();
@@ -1890,7 +1945,9 @@ void main() {
         find.descendant(of: sunsetCard, matching: find.byType(FilledButton)),
       );
 
-      final coinsElement = tester.element(find.byType(RootScreen, skipOffstage: false));
+      final coinsElement = tester.element(
+        find.byType(RootScreen, skipOffstage: false),
+      );
       final coinProvider = Provider.of<CoinProvider>(
         coinsElement,
         listen: false,
@@ -1905,7 +1962,10 @@ void main() {
       buyButton().onPressed!();
       await tester.pumpAndSettle();
 
-      expect(find.textContaining('Gün Batımı teması satın alındı'), findsOneWidget);
+      expect(
+        find.textContaining('Gün Batımı teması satın alındı'),
+        findsOneWidget,
+      );
       await _dismissInfoDialogIfShown(tester);
       expect(find.text('Sahip olunan'), findsOneWidget);
 
@@ -1920,7 +1980,10 @@ void main() {
 
       await tester.tap(find.bySemanticsLabel('Ana Sayfa'));
       await tester.pumpAndSettle();
-      expect(find.byKey(const Key('homeThemeGradientBackground')), findsOneWidget);
+      expect(
+        find.byKey(const Key('homeThemeGradientBackground')),
+        findsOneWidget,
+      );
 
       // Tema yalnızca Ana Sayfa'nın gradyan arka planını DEĞİL, MaterialApp
       // seviyesindeki ColorScheme'i (dolayısıyla TÜM ekranları — sekmeler VE
@@ -1935,10 +1998,7 @@ void main() {
 
       await tester.tap(find.bySemanticsLabel('Profil'));
       await tester.pumpAndSettle();
-      expect(
-        primaryColorAt(find.byType(ProfileScreen)),
-        sunsetLightPrimary,
-      );
+      expect(primaryColorAt(find.byType(ProfileScreen)), sunsetLightPrimary);
 
       await _openModulesMenu(tester);
       await tester.scrollUntilVisible(
@@ -1948,10 +2008,7 @@ void main() {
       );
       await tester.tap(find.text('Su Takibi'));
       await tester.pumpAndSettle();
-      expect(
-        primaryColorAt(find.byType(Scaffold).first),
-        sunsetLightPrimary,
-      );
+      expect(primaryColorAt(find.byType(Scaffold).first), sunsetLightPrimary);
       await tester.tap(find.byTooltip('Geri'));
       await tester.pumpAndSettle();
 
@@ -1965,7 +2022,10 @@ void main() {
 
       await tester.tap(find.bySemanticsLabel('Ana Sayfa'));
       await tester.pumpAndSettle();
-      expect(find.byKey(const Key('homeThemeGradientBackground')), findsNothing);
+      expect(
+        find.byKey(const Key('homeThemeGradientBackground')),
+        findsNothing,
+      );
     },
   );
 
@@ -1997,7 +2057,9 @@ void main() {
         find.descendant(of: winterCard, matching: find.byType(FilledButton)),
       );
 
-      final coinsElement = tester.element(find.byType(RootScreen, skipOffstage: false));
+      final coinsElement = tester.element(
+        find.byType(RootScreen, skipOffstage: false),
+      );
       final coinProvider = Provider.of<CoinProvider>(
         coinsElement,
         listen: false,
@@ -2048,7 +2110,9 @@ void main() {
       expect(find.byKey(const Key('themeParticleEffect')), findsNothing);
 
       // Ana Sayfa'ya geri dönünce katman tekrar görünür.
-      await tester.tap(find.byTooltip('Geri')); // Hedefler sayfasını kapat → Ana Sayfa
+      await tester.tap(
+        find.byTooltip('Geri'),
+      ); // Hedefler sayfasını kapat → Ana Sayfa
       await tester.pumpAndSettle();
       expect(find.byKey(const Key('themeParticleEffect')), findsOneWidget);
 
@@ -2096,9 +2160,7 @@ void main() {
       expect(resultFinder, findsOneWidget);
       final resultText = tester.widget<Text>(resultFinder).data!;
       final wonAmount = int.parse(
-        RegExp(
-          r'(\d+) Zibo Coin kazandın!',
-        ).firstMatch(resultText)!.group(1)!,
+        RegExp(r'(\d+) Zibo Coin kazandın!').firstMatch(resultText)!.group(1)!,
       );
       expect(wheelPrizes.map((p) => p.amount), contains(wonAmount));
 
@@ -2128,7 +2190,9 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.byTooltip('Şans Çarkı'), findsNothing);
 
-      await tester.tap(find.byTooltip('Geri')); // Hedefler sayfasını kapat → Ana Sayfa
+      await tester.tap(
+        find.byTooltip('Geri'),
+      ); // Hedefler sayfasını kapat → Ana Sayfa
       await tester.pumpAndSettle();
       expect(find.byTooltip('Şans Çarkı'), findsOneWidget);
     },
@@ -2154,7 +2218,10 @@ void main() {
       await tester.tap(find.byTooltip('Günlük Ödüller'));
       await tester.pumpAndSettle();
 
-      expect(find.text('Günlük Giriş Ödülleri'), findsOneWidget); // popup başlığı
+      expect(
+        find.text('Günlük Giriş Ödülleri'),
+        findsOneWidget,
+      ); // popup başlığı
       expect(find.text('Gün 1'), findsOneWidget);
 
       await tester.tap(find.text('Gün 1'));
@@ -2186,7 +2253,9 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.byTooltip('Günlük Ödüller'), findsNothing);
 
-      await tester.tap(find.byTooltip('Geri')); // Hedefler sayfasını kapat → Ana Sayfa
+      await tester.tap(
+        find.byTooltip('Geri'),
+      ); // Hedefler sayfasını kapat → Ana Sayfa
       await tester.pumpAndSettle();
       expect(find.byTooltip('Günlük Ödüller'), findsOneWidget);
     },
@@ -2200,78 +2269,74 @@ void main() {
   // akışında (kilitli kostüm satın alma) gösterildiği ise yukarıdaki
   // "Kostüm satın alınıp giyilebilir" testinde doğrulanıyor.
 
-  testWidgets(
-    'Rüya Günlüğü: rüya eklenebilir, düzenlenebilir ve silinebilir',
-    (WidgetTester tester) async {
-      await _pumpPastOnboarding(tester, const DijitalKankaApp());
+  testWidgets('Rüya Günlüğü: rüya eklenebilir, düzenlenebilir ve silinebilir', (
+    WidgetTester tester,
+  ) async {
+    await _pumpPastOnboarding(tester, const DijitalKankaApp());
 
-      // Rüya Günlüğü artık AppBar'da değil, Z butonunun açtığı modül
-      // menüsünde (bkz. CLAUDE.md "Alt Gezinme Çubuğu" bölümü).
-      await _openModulesMenu(tester);
-      await tester.tap(find.text('Rüya Günlüğü'));
-      await tester.pumpAndSettle();
+    // Rüya Günlüğü artık AppBar'da değil, Z butonunun açtığı modül
+    // menüsünde (bkz. CLAUDE.md "Alt Gezinme Çubuğu" bölümü).
+    await _openModulesMenu(tester);
+    await tester.tap(find.text('Rüya Günlüğü'));
+    await tester.pumpAndSettle();
 
-      expect(find.text('Rüya Günlüğü'), findsOneWidget); // AppBar başlığı
-      expect(
-        find.text('Henüz bir rüya yazmadın. Bugün gördüğün bir rüya var mı?'),
-        findsOneWidget,
-      );
+    expect(find.text('Rüya Günlüğü'), findsOneWidget); // AppBar başlığı
+    expect(
+      find.text('Henüz bir rüya yazmadın. Bugün gördüğün bir rüya var mı?'),
+      findsOneWidget,
+    );
 
-      // Yeni rüya ekle.
-      await tester.tap(find.text('Yeni Rüya Ekle'));
-      await tester.pumpAndSettle();
+    // Yeni rüya ekle.
+    await tester.tap(find.text('Yeni Rüya Ekle'));
+    await tester.pumpAndSettle();
 
-      expect(find.text('Yeni Rüya'), findsOneWidget); // form AppBar başlığı
-      await tester.enterText(find.byType(TextField).at(0), 'Uçmak');
-      await tester.enterText(
-        find.byType(TextField).at(1),
-        'Gökyüzünde uçtuğumu gördüm.',
-      );
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Kaydet'));
-      await tester.pumpAndSettle();
+    expect(find.text('Yeni Rüya'), findsOneWidget); // form AppBar başlığı
+    await tester.enterText(find.byType(TextField).at(0), 'Uçmak');
+    await tester.enterText(
+      find.byType(TextField).at(1),
+      'Gökyüzünde uçtuğumu gördüm.',
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Kaydet'));
+    await tester.pumpAndSettle();
 
-      // Listeye dönüldü, yeni kayıt görünüyor.
-      expect(find.text('Uçmak'), findsOneWidget);
-      expect(
-        find.text('Henüz bir rüya yazmadın. Bugün gördüğün bir rüya var mı?'),
-        findsNothing,
-      );
+    // Listeye dönüldü, yeni kayıt görünüyor.
+    expect(find.text('Uçmak'), findsOneWidget);
+    expect(
+      find.text('Henüz bir rüya yazmadın. Bugün gördüğün bir rüya var mı?'),
+      findsNothing,
+    );
 
-      // Kayda dokununca düzenleme formu açılır, alanlar önceden dolu gelir.
-      await tester.tap(find.text('Uçmak'));
-      await tester.pumpAndSettle();
+    // Kayda dokununca düzenleme formu açılır, alanlar önceden dolu gelir.
+    await tester.tap(find.text('Uçmak'));
+    await tester.pumpAndSettle();
 
-      expect(find.text('Rüyayı Düzenle'), findsOneWidget);
-      expect(find.text('Uçmak'), findsOneWidget);
-      expect(find.text('Gökyüzünde uçtuğumu gördüm.'), findsOneWidget);
+    expect(find.text('Rüyayı Düzenle'), findsOneWidget);
+    expect(find.text('Uçmak'), findsOneWidget);
+    expect(find.text('Gökyüzünde uçtuğumu gördüm.'), findsOneWidget);
 
-      await tester.enterText(
-        find.byType(TextField).at(0),
-        'Uçmak (düzenlendi)',
-      );
-      await tester.tap(find.text('Kaydet'));
-      await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField).at(0), 'Uçmak (düzenlendi)');
+    await tester.tap(find.text('Kaydet'));
+    await tester.pumpAndSettle();
 
-      expect(find.text('Uçmak (düzenlendi)'), findsOneWidget);
+    expect(find.text('Uçmak (düzenlendi)'), findsOneWidget);
 
-      // Sil: kayda tekrar dokun, sil ikonuna bas, onay diyaloğunu onayla.
-      await tester.tap(find.text('Uçmak (düzenlendi)'));
-      await tester.pumpAndSettle();
+    // Sil: kayda tekrar dokun, sil ikonuna bas, onay diyaloğunu onayla.
+    await tester.tap(find.text('Uçmak (düzenlendi)'));
+    await tester.pumpAndSettle();
 
-      await tester.tap(find.byTooltip('Sil'));
-      await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('Sil'));
+    await tester.pumpAndSettle();
 
-      expect(find.text('Rüyayı sil?'), findsOneWidget);
-      await tester.tap(find.text('Sil'));
-      await tester.pumpAndSettle();
+    expect(find.text('Rüyayı sil?'), findsOneWidget);
+    await tester.tap(find.text('Sil'));
+    await tester.pumpAndSettle();
 
-      expect(
-        find.text('Henüz bir rüya yazmadın. Bugün gördüğün bir rüya var mı?'),
-        findsOneWidget,
-      );
-    },
-  );
+    expect(
+      find.text('Henüz bir rüya yazmadın. Bugün gördüğün bir rüya var mı?'),
+      findsOneWidget,
+    );
+  });
 
   testWidgets(
     'Rüya Günlüğü ↔ Ruh Hali Takibi korelasyonu: aynı tarihte olumsuz rüya + '
@@ -2362,7 +2427,10 @@ void main() {
       // kaydı GÜNCELLİYOR (yeni bir kayıt oluşturmuyor).
       await tester.tap(find.byTooltip('Düzenle'));
       await tester.pumpAndSettle();
-      await tester.enterText(find.byType(TextField).at(0), 'Sağlığım ve huzurum');
+      await tester.enterText(
+        find.byType(TextField).at(0),
+        'Sağlığım ve huzurum',
+      );
       await tester.tap(find.widgetWithText(FilledButton, 'Kaydet'));
       await tester.pumpAndSettle();
       expect(find.text('Sağlığım ve huzurum'), findsOneWidget);
@@ -2439,52 +2507,49 @@ void main() {
     },
   );
 
-  testWidgets(
-    'Faz 5 (D2), 2026-09-24: Ruh Hali trend grafiği Ruh Hali Takibi '
-    'ekranında HERKESE görünür, Pro+ değilken bulanık+kilitli önizleme '
-    'gösterip dokununca paywall\'a yönlendirir',
-    (WidgetTester tester) async {
-      await _pumpPastOnboarding(tester, const DijitalKankaApp());
+  testWidgets('Faz 5 (D2), 2026-09-24: Ruh Hali trend grafiği Ruh Hali Takibi '
+      'ekranında HERKESE görünür, Pro+ değilken bulanık+kilitli önizleme '
+      'gösterip dokununca paywall\'a yönlendirir', (WidgetTester tester) async {
+    await _pumpPastOnboarding(tester, const DijitalKankaApp());
 
-      await _openModulesMenu(tester);
-      await tester.tap(find.text('Günlük Ruh Hali Takibi'));
-      await tester.pumpAndSettle();
+    await _openModulesMenu(tester);
+    await tester.tap(find.text('Günlük Ruh Hali Takibi'));
+    await tester.pumpAndSettle();
 
-      // `.first` — grafik artık Pro+ olmayana da (kilitli/örnek veriyle)
-      // göründüğü için Y ekseni emoji etiketleri AYNI emoji'yi tekrar
-      // eşleştirebiliyor; seçim satırındaki gerçek buton ağaçta ÖNCE gelir.
-      await tester.tap(find.text('🙂').first);
-      await tester.pumpAndSettle();
+    // `.first` — grafik artık Pro+ olmayana da (kilitli/örnek veriyle)
+    // göründüğü için Y ekseni emoji etiketleri AYNI emoji'yi tekrar
+    // eşleştirebiliyor; seçim satırındaki gerçek buton ağaçta ÖNCE gelir.
+    await tester.tap(find.text('🙂').first);
+    await tester.pumpAndSettle();
 
-      // Başlık/granülarite toggle'ı HER ZAMAN görünür (kullanıcı isteği:
-      // "tüm grafikler gözüksün") — yalnızca çizim alanı bulanıklaştırılır.
-      expect(find.text('Ruh Hali Trendi'), findsOneWidget);
-      expect(find.text('Haftalık'), findsOneWidget);
-      expect(find.text('Aylık'), findsOneWidget);
-      // Pro+ değilken kilit rozetinin CTA'sı görünür.
-      expect(find.text('Zibo Pro+\'a Bugün Geç'), findsOneWidget);
+    // Başlık/granülarite toggle'ı HER ZAMAN görünür (kullanıcı isteği:
+    // "tüm grafikler gözüksün") — yalnızca çizim alanı bulanıklaştırılır.
+    expect(find.text('Ruh Hali Trendi'), findsOneWidget);
+    expect(find.text('Haftalık'), findsOneWidget);
+    expect(find.text('Aylık'), findsOneWidget);
+    // Pro+ değilken kilit rozetinin CTA'sı görünür.
+    expect(find.text('Zibo Pro+\'a Bugün Geç'), findsOneWidget);
 
-      await tester.ensureVisible(find.text('Zibo Pro+\'a Bugün Geç'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Zibo Pro+\'a Bugün Geç'));
-      await tester.pumpAndSettle();
-      expect(find.byType(PaywallScreen), findsOneWidget);
+    await tester.ensureVisible(find.text('Zibo Pro+\'a Bugün Geç'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Zibo Pro+\'a Bugün Geç'));
+    await tester.pumpAndSettle();
+    expect(find.byType(PaywallScreen), findsOneWidget);
 
-      await tester.tap(find.byTooltip('Kapat'));
-      await tester.pumpAndSettle();
-      expect(find.byType(PaywallScreen), findsNothing);
+    await tester.tap(find.byTooltip('Kapat'));
+    await tester.pumpAndSettle();
+    expect(find.byType(PaywallScreen), findsNothing);
 
-      final element = tester.element(find.text('Son 7 Gün'));
-      await Provider.of<SubscriptionProvider>(
-        element,
-        listen: false,
-      ).debugSetTier(SubscriptionTier.proPlus);
-      await tester.pumpAndSettle();
+    final element = tester.element(find.text('Son 7 Gün'));
+    await Provider.of<SubscriptionProvider>(
+      element,
+      listen: false,
+    ).debugSetTier(SubscriptionTier.proPlus);
+    await tester.pumpAndSettle();
 
-      // Pro+ olunca kilit kayboluyor, gerçek grafik erişilebilir kalıyor.
-      expect(find.text('Zibo Pro+\'a Bugün Geç'), findsNothing);
-    },
-  );
+    // Pro+ olunca kilit kayboluyor, gerçek grafik erişilebilir kalıyor.
+    expect(find.text('Zibo Pro+\'a Bugün Geç'), findsNothing);
+  });
 
   testWidgets(
     'Su Takibi: 8 bardak işaretlenince hedef tamamlanır ve 5 Zibo Coin kazanılır',
@@ -2512,7 +2577,10 @@ void main() {
         find.text('Günlük su hedefini tamamladın! +5 Zibo Coin kazandın!'),
         findsOneWidget,
       );
-      expect(find.text('Bugün su hedefini tamamladın, harikasın kanka!'), findsOneWidget);
+      expect(
+        find.text('Bugün su hedefini tamamladın, harikasın kanka!'),
+        findsOneWidget,
+      );
       await _dismissInfoDialogIfShown(tester);
 
       // Coin farming koruması: bir bardağı boşaltıp tekrar doldurmak
@@ -2578,7 +2646,10 @@ void main() {
         find.text('İstikrar'),
         200,
         scrollable: find
-            .descendant(of: find.byType(ProfileScreen), matching: find.byType(Scrollable))
+            .descendant(
+              of: find.byType(ProfileScreen),
+              matching: find.byType(Scrollable),
+            )
             .first,
       );
       expect(find.text('İstikrar'), findsOneWidget);
@@ -2599,7 +2670,10 @@ void main() {
       expect(find.text('⭐'), findsWidgets);
 
       Finder profileScrollable() => find
-          .descendant(of: find.byType(ProfileScreen), matching: find.byType(Scrollable))
+          .descendant(
+            of: find.byType(ProfileScreen),
+            matching: find.byType(Scrollable),
+          )
           .first;
 
       // IndexedStack içindeki iç içe kaydırılabilir listelerde koordinat
@@ -2611,7 +2685,10 @@ void main() {
       void tapRow(String rowTitle) {
         tester
             .widget<StickerRowCard>(
-              find.ancestor(of: find.text(rowTitle), matching: find.byType(StickerRowCard)),
+              find.ancestor(
+                of: find.text(rowTitle),
+                matching: find.byType(StickerRowCard),
+              ),
             )
             .onTap!();
       }
@@ -2672,7 +2749,10 @@ void main() {
       );
       tapRow('En Uzun Seri Rekoru');
       await tester.pumpAndSettle();
-      expect(find.text("Zibo'yu art arda en çok kaç gün açtığının rekoru"), findsOneWidget);
+      expect(
+        find.text("Zibo'yu art arda en çok kaç gün açtığının rekoru"),
+        findsOneWidget,
+      );
       await tester.tap(find.byTooltip('Geri'));
       await tester.pumpAndSettle();
 
@@ -2752,7 +2832,9 @@ void main() {
       tapRow('Arkadaşını Davet Et');
       await tester.pumpAndSettle();
       expect(
-        find.text('Davet sistemi şu an kullanılamıyor, daha sonra tekrar dene.'),
+        find.text(
+          'Davet sistemi şu an kullanılamıyor, daha sonra tekrar dene.',
+        ),
         findsOneWidget,
       );
       await tester.tap(find.byTooltip('Geri'));

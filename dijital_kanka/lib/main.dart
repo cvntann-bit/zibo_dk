@@ -7,7 +7,8 @@ import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart' show debugPrint, kDebugMode;
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart' show MethodChannel, MissingPluginException;
+import 'package:flutter/services.dart'
+    show MethodChannel, MissingPluginException;
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:stack_appodeal_flutter/stack_appodeal_flutter.dart';
@@ -83,7 +84,9 @@ import 'widgets/theme_fade_overlay.dart';
 // (açık tema) ve aynı ruhu koyu zeminde taşıyan bir koyu tema karşılığı.
 // Anahtar tonlar elle sabitleniyor ki ColorScheme.fromSeed'in otomatik
 // türetmesi soluk/pembemsi ya da tam parlak sarıya kaymasın.
-const _mustard = Color(0xFFA9711F); // koyu hardal/kahverengi — auto-türetilen tonlar için seed
+const _mustard = Color(
+  0xFFA9711F,
+); // koyu hardal/kahverengi — auto-türetilen tonlar için seed
 // "Çizgi Roman Çıkartması" mockup'ının `--gold` değişkeniyle BİREBİR aynı,
 // canlı/karikatürsü altın-sarı — kullanıcı "html'deki sarı daha canlı ve
 // cartoon, onu kullan" dedi. `_mustard` (koyu, donuk kahverengi-sarı) SADECE
@@ -106,61 +109,67 @@ const _terracottaContainer = Color(0xFFF6D9BE);
 const _darkBackground = Color(0xFF17140F); // çok koyu, hafif sıcak antrasit
 const _darkSurfaceContainer = Color(0xFF231F19); // koyu temada kart yüzeyi
 const _darkSurfaceContainerHigh = Color(0xFF2B261F); // biraz daha açık yüzey
-const _darkCream = Color(0xFFE3C179); // koyu temada metin: göz yormayan sarımtrak
+const _darkCream = Color(
+  0xFFE3C179,
+); // koyu temada metin: göz yormayan sarımtrak
 const _darkCreamSoft = Color(0xFFB89A5E); // koyu temada ikincil metin
 const _darkGold = Color(0xFFD9A94A); // koyu temada buton/vurgu rengi
-const _darkOnGold = Color(0xFF2A1E0A); // altın rengi buton üzerindeki koyu metin
+const _darkOnGold = Color(
+  0xFF2A1E0A,
+); // altın rengi buton üzerindeki koyu metin
 const _darkGoldContainer = Color(0xFF3A2F1C); // koyu temada tonal buton zemini
 const _darkOutline = Color(0xFF4A4033);
 const _darkTerracotta = Color(0xFFCC7A4A);
 const _darkTerracottaContainer = Color(0xFF3D2A1C);
 
-final _lightColorScheme = ColorScheme.fromSeed(
-  seedColor: _mustard,
-  brightness: Brightness.light,
-).copyWith(
-  primary: _vividGold,
-  // Canlı altın-sarı üzerinde beyaz metin/ikonun kontrastı ZAYIF (bkz.
-  // yukarıdaki `_vividGold` notu) — mockup da AYNI sebeple altın dolgular
-  // üzerinde hep sabit koyu `--outline` kullanıyor, beyaz DEĞİL.
-  onPrimary: kStickerOutline,
-  primaryContainer: _honey,
-  onPrimaryContainer: _espresso,
-  secondaryContainer: _honey,
-  onSecondaryContainer: _espresso,
-  surface: _cream,
-  onSurface: _espresso,
-  onSurfaceVariant: _espressoSoft,
-  surfaceContainer: _honeyCream,
-  surfaceContainerHigh: _honeyCreamHigh,
-  surfaceContainerHighest: _honeyCreamHigh,
-  outlineVariant: _sandOutline,
-  error: _terracotta,
-  errorContainer: _terracottaContainer,
-  onErrorContainer: _terracotta,
-);
+final _lightColorScheme =
+    ColorScheme.fromSeed(
+      seedColor: _mustard,
+      brightness: Brightness.light,
+    ).copyWith(
+      primary: _vividGold,
+      // Canlı altın-sarı üzerinde beyaz metin/ikonun kontrastı ZAYIF (bkz.
+      // yukarıdaki `_vividGold` notu) — mockup da AYNI sebeple altın dolgular
+      // üzerinde hep sabit koyu `--outline` kullanıyor, beyaz DEĞİL.
+      onPrimary: kStickerOutline,
+      primaryContainer: _honey,
+      onPrimaryContainer: _espresso,
+      secondaryContainer: _honey,
+      onSecondaryContainer: _espresso,
+      surface: _cream,
+      onSurface: _espresso,
+      onSurfaceVariant: _espressoSoft,
+      surfaceContainer: _honeyCream,
+      surfaceContainerHigh: _honeyCreamHigh,
+      surfaceContainerHighest: _honeyCreamHigh,
+      outlineVariant: _sandOutline,
+      error: _terracotta,
+      errorContainer: _terracottaContainer,
+      onErrorContainer: _terracotta,
+    );
 
-final _darkColorScheme = ColorScheme.fromSeed(
-  seedColor: _mustard,
-  brightness: Brightness.dark,
-).copyWith(
-  primary: _darkGold,
-  onPrimary: _darkOnGold,
-  primaryContainer: _darkGoldContainer,
-  onPrimaryContainer: _darkCream,
-  secondaryContainer: _darkGoldContainer,
-  onSecondaryContainer: _darkCream,
-  surface: _darkBackground,
-  onSurface: _darkCream,
-  onSurfaceVariant: _darkCreamSoft,
-  surfaceContainer: _darkSurfaceContainer,
-  surfaceContainerHigh: _darkSurfaceContainerHigh,
-  surfaceContainerHighest: _darkSurfaceContainerHigh,
-  outlineVariant: _darkOutline,
-  error: _darkTerracotta,
-  errorContainer: _darkTerracottaContainer,
-  onErrorContainer: _darkCream,
-);
+final _darkColorScheme =
+    ColorScheme.fromSeed(
+      seedColor: _mustard,
+      brightness: Brightness.dark,
+    ).copyWith(
+      primary: _darkGold,
+      onPrimary: _darkOnGold,
+      primaryContainer: _darkGoldContainer,
+      onPrimaryContainer: _darkCream,
+      secondaryContainer: _darkGoldContainer,
+      onSecondaryContainer: _darkCream,
+      surface: _darkBackground,
+      onSurface: _darkCream,
+      onSurfaceVariant: _darkCreamSoft,
+      surfaceContainer: _darkSurfaceContainer,
+      surfaceContainerHigh: _darkSurfaceContainerHigh,
+      surfaceContainerHighest: _darkSurfaceContainerHigh,
+      outlineVariant: _darkOutline,
+      error: _darkTerracotta,
+      errorContainer: _darkTerracottaContainer,
+      onErrorContainer: _darkCream,
+    );
 
 final _buttonShape = RoundedRectangleBorder(
   borderRadius: BorderRadius.circular(14),
@@ -231,9 +240,7 @@ ThemeData _buildTheme(ColorScheme colorScheme) {
       elevation: 1.5,
       shadowColor: colorScheme.primary.withValues(alpha: 0.18),
       margin: EdgeInsets.zero,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(18),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
     ),
     filledButtonTheme: FilledButtonThemeData(
       style: FilledButton.styleFrom(
@@ -392,7 +399,9 @@ void main() async {
     // telefonundaki debug build'lerden (yalnızca debug'da çalışan assert'ler,
     // 1.12.6 SM-A226BR) geldiği görüldü; gerçek kullanıcı verisini
     // gölgeliyordu.
-    await FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(!kDebugMode);
+    await FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(
+      !kDebugMode,
+    );
     // (1) Flutter FRAMEWORK'ünün kendi hata mekanizması (widget build/
     // layout/paint hataları) — varsayılan davranış (konsola yazdırıp devam
     // etmek) yerine ARTIK Crashlytics'e de FATAL olarak bildiriliyor.
@@ -839,11 +848,10 @@ class DijitalKankaApp extends StatelessWidget {
         // Oyun Salonu (docs/game_zibo.md Faz 2): rakamlar + kalıcı ★ cüzdanı.
         ChangeNotifierProvider(create: (_) => GamesConfigProvider(uid: uid)),
         ChangeNotifierProvider(
-          create: (context) => GamePointsProvider(now: _trustedNow(context), uid: uid),
+          create: (context) =>
+              GamePointsProvider(now: _trustedNow(context), uid: uid),
         ),
-        ChangeNotifierProvider(
-          create: (_) => CustomMessagesProvider(uid: uid),
-        ),
+        ChangeNotifierProvider(create: (_) => CustomMessagesProvider(uid: uid)),
         ChangeNotifierProvider(create: (_) => CurrencyProvider(uid: uid)),
         // Aşağıdaki altı provider "güne bağlı" mekanizmalar (günlük ödül/
         // streak/sıfırlanma) taşıyor — hepsi cihazın DOĞRUDAN `DateTime.
@@ -852,55 +860,41 @@ class DijitalKankaApp extends StatelessWidget {
         // tarihini elle ileri alarak bu ödülleri tekrar tekrar
         // tetikleyemesin diye).
         ChangeNotifierProvider(
-          create: (context) => DailyRewardsProvider(
-            now: _trustedNow(context),
-            uid: uid,
-          ),
+          create: (context) =>
+              DailyRewardsProvider(now: _trustedNow(context), uid: uid),
         ),
         ChangeNotifierProvider(create: (_) => DreamJournalProvider(uid: uid)),
-        ChangeNotifierProvider(
-          create: (_) => FavoriteQuotesProvider(uid: uid),
-        ),
+        ChangeNotifierProvider(create: (_) => FavoriteQuotesProvider(uid: uid)),
         // 2026 yeni özellik — Odak Sayacı modülü (bkz. CLAUDE.md).
         ChangeNotifierProvider(
-          create: (context) => FocusProvider(
-            now: _trustedNow(context),
-            uid: uid,
-          ),
+          create: (context) =>
+              FocusProvider(now: _trustedNow(context), uid: uid),
         ),
         // 2026 yeni özellik — Instagram Takip Kartı ve Ödülü (bkz. CLAUDE.md).
         ChangeNotifierProvider(
           create: (_) => InstagramFollowProvider(uid: uid),
         ),
+        ChangeNotifierProvider(create: (_) => ManifestDecorProvider(uid: uid)),
         ChangeNotifierProvider(
-          create: (_) => ManifestDecorProvider(uid: uid),
+          create: (context) =>
+              GoalsProvider(now: _trustedNow(context), uid: uid),
         ),
         ChangeNotifierProvider(
-          create: (context) => GoalsProvider(
-            now: _trustedNow(context),
-            uid: uid,
-          ),
+          create: (context) =>
+              GratitudeProvider(now: _trustedNow(context), uid: uid),
         ),
         ChangeNotifierProvider(
-          create: (context) => GratitudeProvider(
-            now: _trustedNow(context),
-            uid: uid,
-          ),
+          create: (_) => HomeQuickWidgetsProvider(uid: uid),
         ),
-        ChangeNotifierProvider(create: (_) => HomeQuickWidgetsProvider(uid: uid)),
         ChangeNotifierProvider(create: (_) => LocaleProvider(uid: uid)),
         ChangeNotifierProvider(
-          create: (context) => ManifestProvider(
-            now: _trustedNow(context),
-            uid: uid,
-          ),
+          create: (context) =>
+              ManifestProvider(now: _trustedNow(context), uid: uid),
         ),
         ChangeNotifierProvider(create: (_) => MoneyProvider(uid: uid)),
         ChangeNotifierProvider(
-          create: (context) => MoodProvider(
-            now: _trustedNow(context),
-            uid: uid,
-          ),
+          create: (context) =>
+              MoodProvider(now: _trustedNow(context), uid: uid),
         ),
         ChangeNotifierProvider(create: (_) => NotificationProvider(uid: uid)),
         ChangeNotifierProvider(
@@ -922,10 +916,8 @@ class DijitalKankaApp extends StatelessWidget {
         Provider<String?>.value(value: uid),
         ChangeNotifierProvider(create: (_) => OnboardingProvider(uid: uid)),
         ChangeNotifierProvider(
-          create: (context) => ProfileProvider(
-            now: _trustedNow(context),
-            uid: uid,
-          ),
+          create: (context) =>
+              ProfileProvider(now: _trustedNow(context), uid: uid),
         ),
         ChangeNotifierProvider(
           create: (_) => ProfileStatsArchiveProvider(uid: uid),
@@ -933,10 +925,8 @@ class DijitalKankaApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => ReferralProvider(uid: uid)),
         ChangeNotifierProvider(create: (_) => ThemeProvider(uid: uid)),
         ChangeNotifierProvider(
-          create: (context) => WaterProvider(
-            now: _trustedNow(context),
-            uid: uid,
-          ),
+          create: (context) =>
+              WaterProvider(now: _trustedNow(context), uid: uid),
         ),
         // Kalıcı DEĞİL, `uid` almıyor — saf görsel/UI durumu (bkz.
         // ZiboPoseProvider dokümantasyonu).
@@ -1012,11 +1002,48 @@ class DijitalKankaApp extends StatelessWidget {
             ],
             supportedLocales: AppLocalizations.supportedLocales,
             home: _AppStartupGate(homeWidgetService: homeWidgetService),
+            onUnknownRoute: _ignoreUnknownRoute,
           );
         },
       ),
     );
   }
+}
+
+/// Android'de uygulama ÇALIŞIRKEN yeni bir Intent (ör. ana ekran widget'ına dokunma) gelince Flutter motoru
+/// `pushRouteInformation` ile bir rota adı yollar. Uygulamada adlandırılmış rota YOK → `onUnknownRoute` null
+/// olduğundan release'te "Null check operator used on a null value" ile ÇÖKÜYORDU (Crashlytics: 17 olay /
+/// 6 kullanıcı, 1.15.0 — `_WidgetsAppState._onUnknownRoute`). Bilinmeyen rota artık sessizce yutulur: kendini
+/// hemen kapatan şeffaf bir rota. (Widget dokunuşunun asıl yönlendirmesi `HomeWidget.widgetClicked` ile
+/// yapılıyor, bu rotaya bağlı DEĞİL.)
+Route<dynamic> _ignoreUnknownRoute(RouteSettings settings) =>
+    PageRouteBuilder<void>(
+      settings: settings,
+      opaque: false,
+      transitionDuration: Duration.zero,
+      reverseTransitionDuration: Duration.zero,
+      pageBuilder: (context, animation, secondaryAnimation) => const _PopSelf(),
+    );
+
+class _PopSelf extends StatefulWidget {
+  const _PopSelf();
+
+  @override
+  State<_PopSelf> createState() => _PopSelfState();
+}
+
+class _PopSelfState extends State<_PopSelf> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && Navigator.of(context).canPop())
+        Navigator.of(context).pop();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) => const SizedBox.shrink();
 }
 
 /// `RootScreen`'i, açılışta kritik provider'ların (bkz. `AppLoadingScreen`

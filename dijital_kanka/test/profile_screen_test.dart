@@ -40,6 +40,7 @@ class _FakePhotoService extends PhotoPickerService {
   _FakePhotoService();
 
   String? nextPickedPath = '/fake/tmp/photo1.jpg';
+  bool sourceMissing = false;
   int saveCount = 0;
   final List<String> deletedPaths = [];
 
@@ -48,6 +49,7 @@ class _FakePhotoService extends PhotoPickerService {
 
   @override
   Future<String> saveToPermanentStorage(String sourcePath) async {
+    if (sourceMissing) throw const PhotoUnavailableException();
     saveCount++;
     return '/fake/permanent/photo_$saveCount.jpg';
   }
@@ -69,7 +71,8 @@ Widget _buildTestApp(PhotoPickerService photoService) {
   return MultiProvider(
     providers: [
       ChangeNotifierProvider(
-        create: (_) => TrustedTimeProvider(timeService: const _NeverSyncTimeService()),
+        create: (_) =>
+            TrustedTimeProvider(timeService: const _NeverSyncTimeService()),
       ),
       ChangeNotifierProvider(create: (_) => AuthLinkProvider()),
       ChangeNotifierProvider(create: (_) => FounderBadgeProvider()),
@@ -118,7 +121,8 @@ void main() {
     // `widget_test.dart`'taki aynı gerçekçi telefon viewport'u (bkz. o
     // dosyadaki gotcha notu) burada da kullanılıyor.
     final dispatcher =
-        TestWidgetsFlutterBinding.instance.platformDispatcher as TestPlatformDispatcher;
+        TestWidgetsFlutterBinding.instance.platformDispatcher
+            as TestPlatformDispatcher;
     for (final view in dispatcher.views) {
       view.physicalSize = const Size(412, 1400);
       view.devicePixelRatio = 1.0;
@@ -158,12 +162,16 @@ void main() {
     },
   );
 
-  testWidgets('Fotoğrafa dokununca galeri seçilip kalıcı hale getirilir', (tester) async {
+  testWidgets('Fotoğrafa dokununca galeri seçilip kalıcı hale getirilir', (
+    tester,
+  ) async {
     final photoService = _FakePhotoService();
     await tester.pumpWidget(_buildTestApp(photoService));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.bySemanticsLabel("Profil fotoğrafı, değiştirmek için dokun"));
+    await tester.tap(
+      find.bySemanticsLabel("Profil fotoğrafı, değiştirmek için dokun"),
+    );
     await tester.pumpAndSettle();
 
     expect(photoService.saveCount, 1);
@@ -173,7 +181,9 @@ void main() {
     expect(profile.photoPath, '/fake/permanent/photo_1.jpg');
   });
 
-  testWidgets('İsim yazılıp gönderilince ProfileProvider\'a kaydedilir', (tester) async {
+  testWidgets('İsim yazılıp gönderilince ProfileProvider\'a kaydedilir', (
+    tester,
+  ) async {
     await tester.pumpWidget(_buildTestApp(_FakePhotoService()));
     await tester.pumpAndSettle();
 

@@ -26,6 +26,7 @@ class _FakePhotoService extends PhotoPickerService {
   _FakePhotoService();
 
   String? nextPickedPath = '/fake/tmp/photo1.jpg';
+  bool sourceMissing = false;
   int pickCount = 0;
   int saveCount = 0;
   final List<String> deletedPaths = [];
@@ -38,6 +39,7 @@ class _FakePhotoService extends PhotoPickerService {
 
   @override
   Future<String> saveToPermanentStorage(String sourcePath) async {
+    if (sourceMissing) throw const PhotoUnavailableException();
     saveCount++;
     return '/fake/permanent/photo_$saveCount.jpg';
   }
@@ -101,6 +103,32 @@ void main() {
   });
 
   testWidgets(
+    'Geçici fotoğraf dosyası kaybolmuşsa çökmez: uyarı gösterilir, kayıt OLUŞMAZ, yazılan metin korunur',
+    (tester) async {
+      // Crashlytics 1.15.0: PathNotFoundException (cache/scaled_….jpg yok) → yakalanmadığı için ÇÖKÜYORDU.
+      final fakeService = _FakePhotoService()..sourceMissing = true;
+      await tester.pumpWidget(_buildTestApp(fakeService));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(const Key('manifestPhotoPickerArea')));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField), 'Bol bereket.');
+      await tester.pumpAndSettle();
+      tester
+          .widget<FilledButton>(find.byType(FilledButton, skipOffstage: false))
+          .onPressed!();
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
+      expect(find.textContaining('okunamadı'), findsOneWidget);
+      expect(fakeService.saveCount, 0);
+      await tester.tap(find.byKey(const Key('infoDialogOkButton')));
+      await tester.pumpAndSettle();
+      expect(find.text('Bol bereket.'), findsOneWidget); // metin korundu
+    },
+  );
+
+  testWidgets(
     'Fotoğraf seçilip niyet yazılınca kaydedilir, 5 Zibo Coin kazanılır ve '
     'form boş/açık kalır',
     (tester) async {
@@ -120,7 +148,11 @@ void main() {
       // görünürlüğü önemsemeden `skipOffstage: false` ile bulmak yeterli —
       // ayrıca kaydırmaya gerek yok.
       expect(
-        tester.widget<FilledButton>(find.byType(FilledButton, skipOffstage: false)).onPressed,
+        tester
+            .widget<FilledButton>(
+              find.byType(FilledButton, skipOffstage: false),
+            )
+            .onPressed,
         isNull,
       );
 
@@ -135,10 +167,16 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(
-        tester.widget<FilledButton>(find.byType(FilledButton, skipOffstage: false)).onPressed,
+        tester
+            .widget<FilledButton>(
+              find.byType(FilledButton, skipOffstage: false),
+            )
+            .onPressed,
         isNotNull,
       );
-      tester.widget<FilledButton>(find.byType(FilledButton, skipOffstage: false)).onPressed!();
+      tester
+          .widget<FilledButton>(find.byType(FilledButton, skipOffstage: false))
+          .onPressed!();
       await tester.pumpAndSettle();
 
       expect(fakeService.saveCount, 1);
@@ -161,7 +199,11 @@ void main() {
       // kartından gelir).
       expect(find.text('Bir fotoğraf seç'), findsOneWidget);
       expect(
-        tester.widget<FilledButton>(find.byType(FilledButton, skipOffstage: false)).onPressed,
+        tester
+            .widget<FilledButton>(
+              find.byType(FilledButton, skipOffstage: false),
+            )
+            .onPressed,
         isNull,
       );
 
@@ -188,7 +230,11 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(
-        tester.widget<FilledButton>(find.byType(FilledButton, skipOffstage: false)).onPressed,
+        tester
+            .widget<FilledButton>(
+              find.byType(FilledButton, skipOffstage: false),
+            )
+            .onPressed,
         isNull,
       );
 
@@ -200,10 +246,16 @@ void main() {
 
       // Hiç fotoğraf seçilmedi ama metin girildiği için Kaydet artık aktif.
       expect(
-        tester.widget<FilledButton>(find.byType(FilledButton, skipOffstage: false)).onPressed,
+        tester
+            .widget<FilledButton>(
+              find.byType(FilledButton, skipOffstage: false),
+            )
+            .onPressed,
         isNotNull,
       );
-      tester.widget<FilledButton>(find.byType(FilledButton, skipOffstage: false)).onPressed!();
+      tester
+          .widget<FilledButton>(find.byType(FilledButton, skipOffstage: false))
+          .onPressed!();
       await tester.pumpAndSettle();
 
       expect(fakeService.pickCount, 0);
@@ -232,7 +284,9 @@ void main() {
       await tester.pumpAndSettle();
       await tester.enterText(find.byType(TextField), 'İlk niyetim');
       await tester.pumpAndSettle();
-      tester.widget<FilledButton>(find.byType(FilledButton, skipOffstage: false)).onPressed!();
+      tester
+          .widget<FilledButton>(find.byType(FilledButton, skipOffstage: false))
+          .onPressed!();
       await tester.pumpAndSettle();
 
       final coinProvider = Provider.of<CoinProvider>(
@@ -253,7 +307,9 @@ void main() {
       await tester.pumpAndSettle();
       await tester.enterText(find.byType(TextField), 'İkinci niyetim');
       await tester.pumpAndSettle();
-      tester.widget<FilledButton>(find.byType(FilledButton, skipOffstage: false)).onPressed!();
+      tester
+          .widget<FilledButton>(find.byType(FilledButton, skipOffstage: false))
+          .onPressed!();
       await tester.pumpAndSettle();
 
       expect(fakeService.saveCount, 2);
@@ -384,7 +440,10 @@ void main() {
       void tapDeleteIcon() {
         tester
             .widget<InkWell>(
-              find.descendant(of: find.byTooltip('Sil'), matching: find.byType(InkWell)),
+              find.descendant(
+                of: find.byTooltip('Sil'),
+                matching: find.byType(InkWell),
+              ),
             )
             .onTap!();
       }

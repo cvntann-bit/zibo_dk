@@ -179,10 +179,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
       final picked = await widget.photoService.pickFromGallery();
       if (picked == null || !mounted) return;
       if (isEmptyPhotoFile(picked)) {
-        showInfoDialog(context, AppLocalizations.of(context)!.photoPickEmptyError);
+        showInfoDialog(
+          context,
+          AppLocalizations.of(context)!.photoPickEmptyError,
+        );
         return;
       }
-      final permanentPath = await widget.photoService.saveToPermanentStorage(picked);
+      final String permanentPath;
+      try {
+        permanentPath = await widget.photoService.saveToPermanentStorage(
+          picked,
+        );
+      } on PhotoUnavailableException {
+        if (mounted)
+          showInfoDialog(
+            context,
+            AppLocalizations.of(context)!.photoPickEmptyError,
+          );
+        return;
+      }
       if (!mounted) return;
       final profile = context.read<ProfileProvider>();
       final oldPath = profile.photoPath;
@@ -219,9 +234,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final favoriteQuotes = context.watch<FavoriteQuotesProvider>();
     final authLink = context.watch<AuthLinkProvider>();
     final referral = context.watch<ReferralProvider>();
-    final isFounder = context
-        .watch<CostumeProvider>()
-        .isOwned(founderBadgeCostumeId);
+    final isFounder = context.watch<CostumeProvider>().isOwned(
+      founderBadgeCostumeId,
+    );
     // Faz 5 (C2) — Zibo Pro/Pro+ rozeti, avatarın boş kalan tek köşesinde
     // (sol-üst Kurucu Üye'de, sağ-alt kamera/düzenle ikonunda dolu).
     final subscription = context.watch<SubscriptionProvider>();
@@ -260,290 +275,295 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 24, 20, 32),
       children: [
-            Center(
-              child: GestureDetector(
-                onTap: _isPicking ? null : _pickPhoto,
-                child: Semantics(
-                  label: l10n.profilePhotoSemanticLabel,
-                  button: true,
-                  excludeSemantics: true,
-                  child: SizedBox(
-                    width: avatarOuterSize,
-                    height: avatarOuterSize,
-                    child: Stack(
-                      children: [
-                        // Faz 5 (C2) — Zibo Pro/Pro+ çerçevesi: avatarın
-                        // TAMAMINI saran bir halka (`pro_profile_frame.webp`/
-                        // `proplus_profile_frame.webp`, Zibo Pro(+)
-                        // materyalleri). `Positioned.fill` ile dış kutuyu
-                        // (`frameDiameter`) TAM dolduruyor — kutu halkayı
-                        // içerecek büyüklükte hesaplandığı için taşma YOK.
-                        // `IgnorePointer` — halka fotoğraf değiştirme dokunma
-                        // alanını ENGELLEMESİN.
-                        if (subscription.isProPlus)
-                          Positioned.fill(
-                            child: IgnorePointer(
-                              child: Image.asset(
-                                'assets/images/proplus_profile_frame.webp',
-                                semanticLabel: l10n.subscriptionBadgeProPlusTooltip,
-                              ),
-                            ),
-                          )
-                        else if (subscription.isPro)
-                          Positioned.fill(
-                            child: IgnorePointer(
-                              child: Image.asset(
-                                'assets/images/pro_profile_frame.webp',
-                                semanticLabel: l10n.subscriptionBadgeProTooltip,
-                              ),
-                            ),
-                          ),
-                        Center(
-                          child: DecoratedBox(
-                            // Faz 6 düzeltmesi — Pro/Pro+ halkası zaten
-                            // kendi kalın konturunu taşıyor; avatarın KENDİ
-                            // ofsetli sticker gölgesi (varsayılan sağ-alta
-                            // kaymış düz silüet) dar halka boşluğunun İÇİNDE
-                            // asimetrik bir siyah hilal olarak taşıp
-                            // dairenin "yamuk" görünmesine sebep oluyordu —
-                            // çerçeve VARKEN gölge kaldırılıyor.
-                            decoration: stickerCircleDecoration(
-                              fill: colorScheme.surfaceContainerLowest,
-                              borderWidth: 3,
-                              shadowOffset: hasFrame ? Offset.zero : const Offset(4, 4),
-                            ),
-                            child: CircleAvatar(
-                              radius: avatarDiameter / 2,
-                              backgroundColor: Colors.transparent,
-                              // **2026 bug düzeltmesi — Crashlytics'teki EN
-                              // BÜYÜK tekrarlayan hata (bkz.
-                              // `manifest_journal_screen.dart`'taki
-                              // `_SafeFileImage` dokümantasyonu — AYNI kök
-                              // neden, AYNI çözüm). Burada `errorBuilder`
-                              // BİLE YOKTU (`backgroundImage` bir
-                              // `ImageProvider`, `Image.file` widget'ı
-                              // DEĞİL) — dosya var mı diye ÖNCEDEN
-                              // `existsSync()` ile kontrol edip yoksa "+"
-                              // ikonuna düşüyoruz, hiç `FileImage`
-                              // OLUŞTURMUYORUZ.
-                              backgroundImage: _hasReadablePhoto(profile.photoPath)
-                                  ? FileImage(File(profile.photoPath!))
-                                  : null,
-                              // Faz 6 düzeltmesi — ayrı bir köşe
-                              // kamera-rozeti YERİNE: fotoğraf yoksa
-                              // avatarın TAM ortasında büyük bir "+"
-                              // ikonu (kullanıcının isteği), fotoğraf
-                              // eklenince o alan fotoğrafla değişir.
-                              // Yükleniyor durumu AYNI merkezi konumda
-                              // küçük bir döner gösterge.
-                              child: _isPicking
-                                  ? SizedBox(
-                                      width: 22,
-                                      height: 22,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2.5,
-                                        color: colorScheme.onSurfaceVariant,
-                                      ),
-                                    )
-                                  : (_hasReadablePhoto(profile.photoPath)
-                                        ? null
-                                        : Icon(
-                                            Icons.add_rounded,
-                                            size: 40,
-                                            color: colorScheme.onSurfaceVariant,
-                                          )),
-                            ),
+        Center(
+          child: GestureDetector(
+            onTap: _isPicking ? null : _pickPhoto,
+            child: Semantics(
+              label: l10n.profilePhotoSemanticLabel,
+              button: true,
+              excludeSemantics: true,
+              child: SizedBox(
+                width: avatarOuterSize,
+                height: avatarOuterSize,
+                child: Stack(
+                  children: [
+                    // Faz 5 (C2) — Zibo Pro/Pro+ çerçevesi: avatarın
+                    // TAMAMINI saran bir halka (`pro_profile_frame.webp`/
+                    // `proplus_profile_frame.webp`, Zibo Pro(+)
+                    // materyalleri). `Positioned.fill` ile dış kutuyu
+                    // (`frameDiameter`) TAM dolduruyor — kutu halkayı
+                    // içerecek büyüklükte hesaplandığı için taşma YOK.
+                    // `IgnorePointer` — halka fotoğraf değiştirme dokunma
+                    // alanını ENGELLEMESİN.
+                    if (subscription.isProPlus)
+                      Positioned.fill(
+                        child: IgnorePointer(
+                          child: Image.asset(
+                            'assets/images/proplus_profile_frame.webp',
+                            semanticLabel: l10n.subscriptionBadgeProPlusTooltip,
                           ),
                         ),
-                      ],
+                      )
+                    else if (subscription.isPro)
+                      Positioned.fill(
+                        child: IgnorePointer(
+                          child: Image.asset(
+                            'assets/images/pro_profile_frame.webp',
+                            semanticLabel: l10n.subscriptionBadgeProTooltip,
+                          ),
+                        ),
+                      ),
+                    Center(
+                      child: DecoratedBox(
+                        // Faz 6 düzeltmesi — Pro/Pro+ halkası zaten
+                        // kendi kalın konturunu taşıyor; avatarın KENDİ
+                        // ofsetli sticker gölgesi (varsayılan sağ-alta
+                        // kaymış düz silüet) dar halka boşluğunun İÇİNDE
+                        // asimetrik bir siyah hilal olarak taşıp
+                        // dairenin "yamuk" görünmesine sebep oluyordu —
+                        // çerçeve VARKEN gölge kaldırılıyor.
+                        decoration: stickerCircleDecoration(
+                          fill: colorScheme.surfaceContainerLowest,
+                          borderWidth: 3,
+                          shadowOffset: hasFrame
+                              ? Offset.zero
+                              : const Offset(4, 4),
+                        ),
+                        child: CircleAvatar(
+                          radius: avatarDiameter / 2,
+                          backgroundColor: Colors.transparent,
+                          // **2026 bug düzeltmesi — Crashlytics'teki EN
+                          // BÜYÜK tekrarlayan hata (bkz.
+                          // `manifest_journal_screen.dart`'taki
+                          // `_SafeFileImage` dokümantasyonu — AYNI kök
+                          // neden, AYNI çözüm). Burada `errorBuilder`
+                          // BİLE YOKTU (`backgroundImage` bir
+                          // `ImageProvider`, `Image.file` widget'ı
+                          // DEĞİL) — dosya var mı diye ÖNCEDEN
+                          // `existsSync()` ile kontrol edip yoksa "+"
+                          // ikonuna düşüyoruz, hiç `FileImage`
+                          // OLUŞTURMUYORUZ.
+                          backgroundImage: _hasReadablePhoto(profile.photoPath)
+                              ? FileImage(File(profile.photoPath!))
+                              : null,
+                          // Faz 6 düzeltmesi — ayrı bir köşe
+                          // kamera-rozeti YERİNE: fotoğraf yoksa
+                          // avatarın TAM ortasında büyük bir "+"
+                          // ikonu (kullanıcının isteği), fotoğraf
+                          // eklenince o alan fotoğrafla değişir.
+                          // Yükleniyor durumu AYNI merkezi konumda
+                          // küçük bir döner gösterge.
+                          child: _isPicking
+                              ? SizedBox(
+                                  width: 22,
+                                  height: 22,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2.5,
+                                    color: colorScheme.onSurfaceVariant,
+                                  ),
+                                )
+                              : (_hasReadablePhoto(profile.photoPath)
+                                    ? null
+                                    : Icon(
+                                        Icons.add_rounded,
+                                        size: 40,
+                                        color: colorScheme.onSurfaceVariant,
+                                      )),
+                        ),
+                      ),
                     ),
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              child: DashedUnderline(
-                child: TextField(
-                  controller: _nameController,
-                  focusNode: _nameFocusNode,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontFamily: 'Baloo2',
-                    fontVariations: const [FontVariation('wght', 700)],
-                    fontSize: 19,
-                    color: colorScheme.onSurfaceVariant,
-                  ),
-                  decoration: InputDecoration(
-                    hintText: l10n.profileNameHint,
-                    border: InputBorder.none,
-                    // Global `InputDecorationTheme` (bkz. main.dart)
-                    // `filled:true, fillColor: colorScheme.surfaceContainer`
-                    // veriyor — dashed alt çizginin İÇİNDE sarımsı bir dolgu
-                    // olarak göründüğü için burada AÇIKÇA kapatılıyor.
-                    filled: false,
-                    isCollapsed: true,
-                    contentPadding: const EdgeInsets.only(bottom: 8),
-                  ),
-                  textInputAction: TextInputAction.done,
-                  onSubmitted: (value) => context.read<ProfileProvider>().setName(value),
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
-            if (isFounder) ...[
-              const _FounderBadgeBanner(),
-              const SizedBox(height: 12),
-            ],
-            // 2026 yeni özellik — Level/XP Sistemi. Mevcut seviye + bir
-            // sonraki seviyeye ne kadar kaldığını gösteren bir ilerleme
-            // çubuğu (bkz. CLAUDE.md "Level/XP Sistemi" bölümü).
-            _LevelProgressCard(progress: xpProgress),
-            const SizedBox(height: 12),
-            // 2026 yeni özellik — Instagram Takip Kartı ve Ödülü. Zaten
-            // takip ödülü alınmışsa kart kendini gizler (bkz. widget'ın
-            // kendi dokümantasyonu) — bu yüzden koşulsuz her build'de eklenir.
-            const InstagramFollowCard(),
-            const SizedBox(height: 20),
-            Text(
-              l10n.profileStatsSectionTitle,
-              style: Theme.of(
-                context,
-              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
-            ),
-            const SizedBox(height: 14),
-            KeyedSubtree(
-              key: ValueKey(_statsReplayKey),
-              child: Column(
-                children: [
-                  for (final stat in stats) ...[
-                    ProfileStatCard(stat: stat),
-                    const SizedBox(height: 12),
                   ],
-                ],
+                ),
               ),
             ),
-            StickerRowCard(
-              emoji: '📅',
-              title: l10n.monthlyStatsRowTitle,
-              subtitle: l10n.monthlyStatsRowSubtitle(statsArchive.snapshots.length),
-              onTap: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const MonthlyStatsHistoryScreen()),
+          ),
+        ),
+        const SizedBox(height: 16),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          child: DashedUnderline(
+            child: TextField(
+              controller: _nameController,
+              focusNode: _nameFocusNode,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontFamily: 'Baloo2',
+                fontVariations: const [FontVariation('wght', 700)],
+                fontSize: 19,
+                color: colorScheme.onSurfaceVariant,
               ),
-            ),
-            const SizedBox(height: 20),
-            Text(
-              l10n.profileBondSectionTitle,
-              style: Theme.of(
-                context,
-              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
-            ),
-            const SizedBox(height: 14),
-            StickerRowCard(
-              emoji: '💗',
-              title: l10n.bondLevelScreenTitle,
-              // Hitap tercihi BİLEREK uygulanmıyor (bkz. bond_level_screen.dart).
-              subtitle: l10n.profileBondLevelRowSubtitle(
-                profile.daysSinceFirstUsed(),
+              decoration: InputDecoration(
+                hintText: l10n.profileNameHint,
+                border: InputBorder.none,
+                // Global `InputDecorationTheme` (bkz. main.dart)
+                // `filled:true, fillColor: colorScheme.surfaceContainer`
+                // veriyor — dashed alt çizginin İÇİNDE sarımsı bir dolgu
+                // olarak göründüğü için burada AÇIKÇA kapatılıyor.
+                filled: false,
+                isCollapsed: true,
+                contentPadding: const EdgeInsets.only(bottom: 8),
               ),
-              onTap: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const BondLevelScreen()),
-              ),
+              textInputAction: TextInputAction.done,
+              onSubmitted: (value) =>
+                  context.read<ProfileProvider>().setName(value),
             ),
-            const SizedBox(height: 12),
-            StickerRowCard(
-              emoji: '🔥',
-              title: l10n.longestStreakScreenTitle,
-              subtitle: l10n.profileStreakRowSubtitle(appStreak.longestStreakEver),
-              onTap: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const LongestStreakScreen()),
-              ),
+          ),
+        ),
+        const SizedBox(height: 20),
+        if (isFounder) ...[
+          const _FounderBadgeBanner(),
+          const SizedBox(height: 12),
+        ],
+        // 2026 yeni özellik — Level/XP Sistemi. Mevcut seviye + bir
+        // sonraki seviyeye ne kadar kaldığını gösteren bir ilerleme
+        // çubuğu (bkz. CLAUDE.md "Level/XP Sistemi" bölümü).
+        _LevelProgressCard(progress: xpProgress),
+        const SizedBox(height: 12),
+        // 2026 yeni özellik — Instagram Takip Kartı ve Ödülü. Zaten
+        // takip ödülü alınmışsa kart kendini gizler (bkz. widget'ın
+        // kendi dokümantasyonu) — bu yüzden koşulsuz her build'de eklenir.
+        const InstagramFollowCard(),
+        const SizedBox(height: 20),
+        Text(
+          l10n.profileStatsSectionTitle,
+          style: Theme.of(
+            context,
+          ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
+        ),
+        const SizedBox(height: 14),
+        KeyedSubtree(
+          key: ValueKey(_statsReplayKey),
+          child: Column(
+            children: [
+              for (final stat in stats) ...[
+                ProfileStatCard(stat: stat),
+                const SizedBox(height: 12),
+              ],
+            ],
+          ),
+        ),
+        StickerRowCard(
+          emoji: '📅',
+          title: l10n.monthlyStatsRowTitle,
+          subtitle: l10n.monthlyStatsRowSubtitle(statsArchive.snapshots.length),
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => const MonthlyStatsHistoryScreen(),
             ),
-            const SizedBox(height: 12),
-            // 2026 yeni özellik — Odak Sayacı modülü. Mevcut 4 kategorili
-            // İstatistiklerim sistemine DAHİL EDİLMEDİ (bkz. CLAUDE.md
-            // "Odak Sayacı" bölümündeki kapsam kararı) — bunun yerine
-            // diğer basit istatistik satırlarıyla (Bağ Seviyesi/En Uzun
-            // Seri) AYNI görsel dilde, ayrı bir bilgi satırı. Bir sayfaya
-            // NAVİGE ETMİYOR (Odak Sayacı zaten Z-menüsünden erişiliyor),
-            // bu yüzden [StickerRowCard.onTap] BİLEREK `null` bırakılıyor —
-            // `onTap == null` iken sağdaki köşeli ok da otomatik gizleniyor.
-            StickerRowCard(
-              emoji: '⏱️',
-              title: l10n.profileFocusRowTitle,
-              subtitle: l10n.profileFocusRowSubtitle(
-                _formatFocusDuration(focus.totalFocusSeconds),
-              ),
-            ),
-            const SizedBox(height: 12),
-            const CostumeClosetPreview(),
-            const SizedBox(height: 12),
-            StickerRowCard(
-              emoji: '🐖',
-              title: l10n.coinSummaryScreenTitle,
-              subtitle: l10n.profileCoinSummaryRowSubtitle(
-                coin.totalEarned,
-                coin.totalSpent,
-              ),
-              onTap: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const CoinSummaryScreen()),
-              ),
-            ),
-            const SizedBox(height: 12),
-            StickerRowCard(
-              emoji: '💬',
-              title: l10n.addressTermScreenTitle,
-              subtitle: l10n.profileAddressTermRowSubtitle(profile.addressTerm),
-              onTap: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const AddressTermScreen()),
-              ),
-            ),
-            const SizedBox(height: 12),
-            StickerRowCard(
-              emoji: '🤍',
-              title: l10n.favoriteQuotesScreenTitle,
-              subtitle: l10n.profileFavoriteQuotesRowSubtitle(
-                favoriteQuotes.quotes.length,
-              ),
-              onTap: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const FavoriteQuotesScreen()),
-              ),
-            ),
-            const SizedBox(height: 12),
-            StickerRowCard(
-              emoji: '📤',
-              title: l10n.profileShareCardRowTitle,
-              subtitle: l10n.profileShareCardRowSubtitle,
-              onTap: () => _openShareCard(context, l10n, profile, stats),
-            ),
-            const SizedBox(height: 12),
-            StickerRowCard(
-              emoji: '➕',
-              title: l10n.referralRowTitle,
-              subtitle: referral.hasRedeemed
-                  ? l10n.referralAlreadyRedeemedStatus
-                  : l10n.referralRowSubtitle,
-              onTap: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const ReferralScreen()),
-              ),
-            ),
-            const SizedBox(height: 12),
-            const FounderBadgePromoCard(),
-            StickerRowCard(
-              emoji: authLink.isLinked ? '✅' : '🔗',
-              // Mockup'ta bu satırın ikon dairesi TEK istisna — diğer tüm
-              // satırlar altın dolgu, bu beyaz zemin (`.row-icon{background:
-              // #fff}`).
-              iconBackground: colorScheme.surfaceContainerLowest,
-              title: authLink.isLinked
-                  ? l10n.googleLinkRowTitleLinked
-                  : l10n.googleLinkRowTitleUnlinked,
-              subtitle: authLink.isLinked
-                  ? (authLink.linkedEmail ?? '')
-                  : l10n.googleLinkRowSubtitle,
-              onTap: () => handleGoogleLinkTap(context),
-            ),
+          ),
+        ),
+        const SizedBox(height: 20),
+        Text(
+          l10n.profileBondSectionTitle,
+          style: Theme.of(
+            context,
+          ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
+        ),
+        const SizedBox(height: 14),
+        StickerRowCard(
+          emoji: '💗',
+          title: l10n.bondLevelScreenTitle,
+          // Hitap tercihi BİLEREK uygulanmıyor (bkz. bond_level_screen.dart).
+          subtitle: l10n.profileBondLevelRowSubtitle(
+            profile.daysSinceFirstUsed(),
+          ),
+          onTap: () => Navigator.of(
+            context,
+          ).push(MaterialPageRoute(builder: (_) => const BondLevelScreen())),
+        ),
+        const SizedBox(height: 12),
+        StickerRowCard(
+          emoji: '🔥',
+          title: l10n.longestStreakScreenTitle,
+          subtitle: l10n.profileStreakRowSubtitle(appStreak.longestStreakEver),
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => const LongestStreakScreen()),
+          ),
+        ),
+        const SizedBox(height: 12),
+        // 2026 yeni özellik — Odak Sayacı modülü. Mevcut 4 kategorili
+        // İstatistiklerim sistemine DAHİL EDİLMEDİ (bkz. CLAUDE.md
+        // "Odak Sayacı" bölümündeki kapsam kararı) — bunun yerine
+        // diğer basit istatistik satırlarıyla (Bağ Seviyesi/En Uzun
+        // Seri) AYNI görsel dilde, ayrı bir bilgi satırı. Bir sayfaya
+        // NAVİGE ETMİYOR (Odak Sayacı zaten Z-menüsünden erişiliyor),
+        // bu yüzden [StickerRowCard.onTap] BİLEREK `null` bırakılıyor —
+        // `onTap == null` iken sağdaki köşeli ok da otomatik gizleniyor.
+        StickerRowCard(
+          emoji: '⏱️',
+          title: l10n.profileFocusRowTitle,
+          subtitle: l10n.profileFocusRowSubtitle(
+            _formatFocusDuration(focus.totalFocusSeconds),
+          ),
+        ),
+        const SizedBox(height: 12),
+        const CostumeClosetPreview(),
+        const SizedBox(height: 12),
+        StickerRowCard(
+          emoji: '🐖',
+          title: l10n.coinSummaryScreenTitle,
+          subtitle: l10n.profileCoinSummaryRowSubtitle(
+            coin.totalEarned,
+            coin.totalSpent,
+          ),
+          onTap: () => Navigator.of(
+            context,
+          ).push(MaterialPageRoute(builder: (_) => const CoinSummaryScreen())),
+        ),
+        const SizedBox(height: 12),
+        StickerRowCard(
+          emoji: '💬',
+          title: l10n.addressTermScreenTitle,
+          subtitle: l10n.profileAddressTermRowSubtitle(profile.addressTerm),
+          onTap: () => Navigator.of(
+            context,
+          ).push(MaterialPageRoute(builder: (_) => const AddressTermScreen())),
+        ),
+        const SizedBox(height: 12),
+        StickerRowCard(
+          emoji: '🤍',
+          title: l10n.favoriteQuotesScreenTitle,
+          subtitle: l10n.profileFavoriteQuotesRowSubtitle(
+            favoriteQuotes.quotes.length,
+          ),
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => const FavoriteQuotesScreen()),
+          ),
+        ),
+        const SizedBox(height: 12),
+        StickerRowCard(
+          emoji: '📤',
+          title: l10n.profileShareCardRowTitle,
+          subtitle: l10n.profileShareCardRowSubtitle,
+          onTap: () => _openShareCard(context, l10n, profile, stats),
+        ),
+        const SizedBox(height: 12),
+        StickerRowCard(
+          emoji: '➕',
+          title: l10n.referralRowTitle,
+          subtitle: referral.hasRedeemed
+              ? l10n.referralAlreadyRedeemedStatus
+              : l10n.referralRowSubtitle,
+          onTap: () => Navigator.of(
+            context,
+          ).push(MaterialPageRoute(builder: (_) => const ReferralScreen())),
+        ),
+        const SizedBox(height: 12),
+        const FounderBadgePromoCard(),
+        StickerRowCard(
+          emoji: authLink.isLinked ? '✅' : '🔗',
+          // Mockup'ta bu satırın ikon dairesi TEK istisna — diğer tüm
+          // satırlar altın dolgu, bu beyaz zemin (`.row-icon{background:
+          // #fff}`).
+          iconBackground: colorScheme.surfaceContainerLowest,
+          title: authLink.isLinked
+              ? l10n.googleLinkRowTitleLinked
+              : l10n.googleLinkRowTitleUnlinked,
+          subtitle: authLink.isLinked
+              ? (authLink.linkedEmail ?? '')
+              : l10n.googleLinkRowSubtitle,
+          onTap: () => handleGoogleLinkTap(context),
+        ),
       ],
     );
   }
@@ -584,7 +604,10 @@ class _LevelProgressCard extends StatelessWidget {
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 2,
+                ),
                 decoration: BoxDecoration(
                   color: colorScheme.primary,
                   border: Border.all(color: kStickerOutline, width: 2),
@@ -709,4 +732,3 @@ String _formatFocusDuration(int totalSeconds) {
   if (hours > 0) return '$hours sa $minutes dk';
   return '$minutes dk';
 }
-

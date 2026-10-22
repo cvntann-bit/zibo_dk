@@ -39,6 +39,17 @@ abstract class PhotoPickerService {
 /// ile uygulamanın belge dizini altında `app_photos/` klasörüne kalıcı
 /// kopyalama (Manifest günlüğü VE Profil fotoğrafı bu TEK klasörü paylaşır —
 /// dosya adları zaman damgalı olduğu için çakışma riski yok).
+/// Seçilen fotoğrafın geçici (cache) dosyası kopyalanamadı — Android cache'i temizlemiş ya da dosya hiç yok.
+/// Crashlytics 1.15.0: `PathNotFoundException: Cannot copy file … cache/scaled_….jpg` yakalanmayınca ÇÖKÜYORDU;
+/// artık çağıran ekran bunu yakalayıp "fotoğraf okunamadı, başka seç" uyarısı gösterir.
+class PhotoUnavailableException implements Exception {
+  const PhotoUnavailableException();
+
+  @override
+  String toString() =>
+      'PhotoUnavailableException: seçilen fotoğraf dosyası bulunamadı';
+}
+
 class ImagePickerPhotoService extends PhotoPickerService {
   const ImagePickerPhotoService();
 
@@ -62,7 +73,13 @@ class ImagePickerPhotoService extends PhotoPickerService {
     final extension = dotIndex == -1 ? '.jpg' : sourcePath.substring(dotIndex);
     final fileName = '${DateTime.now().microsecondsSinceEpoch}$extension';
     final destPath = '${photosDir.path}/$fileName';
-    await File(sourcePath).copy(destPath);
+    try {
+      final source = File(sourcePath);
+      if (!await source.exists()) throw const PhotoUnavailableException();
+      await source.copy(destPath);
+    } on FileSystemException {
+      throw const PhotoUnavailableException();
+    }
     return destPath;
   }
 
