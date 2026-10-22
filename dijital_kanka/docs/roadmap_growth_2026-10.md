@@ -38,6 +38,8 @@ ciddiye almak, kararlılığı (crash) ve kitleyi tutmayı (retention) yükseltm
 
 Yorum: (a) kararlılık kötü değil ama tek bir çökme türü baskın (aşağıda); (b) **asıl sorun tutma: ilk haftadan sonra kullanıcıların ~%85'i dönmüyor** → Faz R (intro) ve Faz 4 (retention) doğrulandı; (c) Firestore okumasının büyük kısmı saatlik cron taraması olmalı (kullanıcı belgesi sayısı × 120 tarama/gün ≈ günlük okumanın çoğu) — cron düzeltmesi hâlâ mantıklı ama acil değil.
 
+**Faz 1 düzeltmeleri (2026-10-22, commit `beb6275`):** (1) `_WidgetsAppState._onUnknownRoute` — 17 olay/6 kullanıcı: uygulama çalışırken yeni Intent (büyük olasılıkla ana ekran widget dokunuşu) → motor `pushRouteInformation` → uygulamada `onUnknownRoute` yoktu → release'te Null check çökmesi. Çözüm: `main.dart`'ta kendini kapatan şeffaf yedek rota. (2) `ImagePickerPhotoService.saveToPermanentStorage` PathNotFoundException (cache/scaled_….jpg kaybolmuş) → `PhotoUnavailableException` + "fotoğraf okunamadı" uyarısı (profil + manifest). (3) `_PaywallContentState._loadLivePrices` — provider'lar `await` öncesi okunur + `mounted` kontrolü. Doğrulama: Crashlytics'te bu 3 sorun yeni sürümde (1.15.1+) görünmemeli. NOT: widget dokunuşunun gerçek cihazda hâlâ doğru modülü açtığı cihazda DENENMELİ (kullanıcı müsait olunca).
+
 Bu sayfa açılışta henüz bakılmadı: Play Console Android vitals; Analytics "Gün 1" tutma; ANR/non-fatal (Crashlytics filtresi yalnızca "Crashes").
 
 ## Faz 1 — Kararlılık (crash) — önce
@@ -143,8 +145,8 @@ Plan (taslak, kullanıcı onayıyla):
 
 | Faz | Durum |
 |---|---|
-| 0 Ölçüm tabanı | başlamadı |
-| 1 Crash | başlamadı |
+| 0 Ölçüm tabanı | **büyük ölçüde TAMAM** (Firebase + Appodeal ölçüldü; Chrome uzantısı bağlı). Eksik: Play Console vitals, Gün-1 tutma, ANR/non-fatal |
+| 1 Crash | **ilk 3 çökme düzeltildi** (`beb6275`, 3 regresyon testi; yeni AAB + canlı doğrulama bekliyor). Sıradaki: ANR/non-fatal bak, düzeltme sonrası Crashlytics'te 3 sorunun kapandığını doğrula |
 | 2 Appodeal SDK | başlamadı |
 | 3 Reklam ağları + Yandex | başlamadı (önce "Yandex boost" netleşecek) |
 | 4 Retention | başlamadı |
