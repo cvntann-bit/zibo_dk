@@ -172,3 +172,7 @@ Plan (taslak, kullanıcı onayıyla):
 2. **Yorum (Faz S):** Profil/Ayarlar "Bizi puanla" Play sayfasını açar; mutlu anlarda pencere çıkar, yıldıza dokununca sistem yorum sayfası açılır (açılmazsa Play Store sayfası); dokundan sonra hemen tekrar çıkmaz; kostüm alımından sonra çıkabilir.
 3. **Çökme düzeltmeleri (Faz 1):** ana ekran widget'ına dokunmak (uygulama açıkken ve kapalıyken) çökmeden doğru modülü açar; profil/manifest'te fotoğraf seçme; paywall'ı hızlıca açıp kapatma.
 4. Genel: Google ile giriş, reklam (rewarded), coin akışları, bildirim.
+
+
+### Cihaz testi sonucu (2026-10-22, Samsung SM-A226BR, debug APK 1.15.0+52, `adb install -r`)
+Telefonda zaten DEBUG (`installer=null`, DEBUGGABLE) 1.13.1 vardı → aynı imzayla güncellendi, veri kaybı yok. Kullanıcı onayıyla `pm clear` yapıldı → **yeni intro gerçek cihazda çalıştı** (hikâye, isim, bildirim izni penceresi; kullanıcı "güzel oldu" dedi). Günlükte FATAL/çökme YOK. Henüz cihazda denenmeyenler: yorum penceresi, widget dokunuşu (çökme düzeltmesi), fotoğraf seçme, paywall, "Şimdi Değil" yolu (açılışta ikinci izin penceresi çıkmamalı).

@@ -169,6 +169,11 @@ Güncel gelir ≈ 0,18–0,27 $ / 8 gün → **DAU başı günlük ≈ 0,0001–
 
 **Google Play geliri: "–" → hiç IAP / abonelik satışı yok** (coin paketleri, Reklamsız, Pro/Pro+ dahil). Yani tüm gelir şu an ~1 $/ay reklam. Puan: 4,857 ★ (21 kullanıcı). Edinim 2,33 bin, aylık etkin cihaz 747. → Dönüşüm (satış) sıfır: paywall/mağaza fiyat-değer dengesi ve ilk-deneyim (onboarding) incelenmeli; "zarar etmemek" için en büyük kaldıraç gösterim sayısı + ilk satın alma dönüşümü.
 
+## 2h. Banner ÜRETİM verisi (Firebase Analytics olayları, 24 Eki-21 Eki, 28 gün)
+
+`banner_failed` **26.078 olay · 1.061 kullanıcı (kullanıcıların %77'si, kullanıcı başı ~25 deneme)** — en sık olay; 2 Eki'de (1.14.1 teşhis olayları) başlıyor. **`banner_loaded`, `banner_shown`, `banner_clicked`, `banner_show_failed` HİÇ YOK** → banner üretimde ASLA yüklenmiyor (docs'taki yorum tablosu: failed >> loaded = sorun TALEP/yapılandırma tarafı, bizim yerleşimimiz değil). `appodeal_init`: 2.180 olay, 1.073 kullanıcı (parametreleri `ok`/`errors` özel boyut olarak kayıtlı olmadığı için konsolda görünmüyor).
+**Cihaz bulgusu (2026-10-22, SM-A226BR, debug 1.15.0):** açılışta `Appodeal init errors: InternalError: SdkConfigurationError null` (consent "Presentation not required" normal). Bu hatanın banner başarısızlığıyla ilgili olup olmadığı BİLİNMİYOR → Faz 3'te: hata ayrıntısı, `appodeal_init` parametrelerini özel boyut yap veya BigQuery, Appodeal desteği. Banner başına ~25 başarısız deneme = gereksiz istek/pil; gelir katkısı SIFIR.
+
 ## 3. Denge ilkeleri
 
 1. **Her yeni ücretsiz coin kaynağı reklam gelirini yemesin:** Coin ödülü (ör. reklam başı 20 ZC) ile
