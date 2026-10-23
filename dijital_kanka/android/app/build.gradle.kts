@@ -145,7 +145,10 @@ dependencies {
     // fazla. Console'da bu ağlardan biri tekrar açılırsa adaptörü BURAYA geri
     // eklemeden fill vermez (yukarıdaki not geçerli).
     implementation("com.appodeal.ads.sdk.adapters:applovin:13.6.3.0")
-    implementation("com.appodeal.ads.sdk.adapters:vungle:7.6.1.0")
+    // 2026-10-24: **vungle ÇIKARILDI.** Geliri ≈ 0 (rewarded 0 gösterim, interstitial eCPM ~0,4 $, çok düşük hacim —
+    // bkz. docs/unit_economics.md 2e) ama beraberinde getirdiği bağımlılıklar kilitli (karartılamayan) kodu ~12 puan
+    // artırıyordu (kilitli sınıf oranı %65,2 → %53,2, bkz. docs/roadmap_growth_2026-10.md "DEX analizi").
+    // Appodeal Console'da Vungle'ı da KAPAT (adaptörsüz açık kalırsa boşa istek/uyarı).
     // 2026-10-22 (Faz 3): banner fill için Yandex — Console'da Yandex banner/interstitial/rewarded
     // birimleri açık (docs/roadmap_growth_2026-10.md). DENEY: DEX etkisi ölçülene kadar AAB YOK.
     implementation("com.appodeal.ads.sdk.adapters:yandex:7.17.0.0")
