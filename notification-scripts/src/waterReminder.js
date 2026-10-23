@@ -84,9 +84,15 @@ async function main() {
   );
 }
 
-main()
-  .then(() => process.exit(0))
-  .catch((error) => {
-    console.error(error);
-    process.exit(1);
-  });
+// Tek başına (`npm run ...`) çalıştırılınca eskisi gibi; `hourlyAll.js` içinden `require` edilince
+// yalnızca `main` export edilir (tek paylaşımlı kullanıcı taraması için).
+if (require.main === module) {
+  main()
+    .then(() => process.exit(0))
+    .catch((error) => {
+      console.error(error);
+      process.exit(1);
+    });
+}
+
+module.exports = { main };

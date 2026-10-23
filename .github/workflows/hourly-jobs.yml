@@ -59,33 +59,12 @@ jobs:
           key: notification-scripts-npm-${{ hashFiles('notification-scripts/package.json') }}
       - run: npm install
 
-      - name: Günlük Motivasyon (9/12/16/20 yerel saat)
+      # 2026-10-23 (maliyet): 5 bildirim işi TEK süreçte (`hourlyAll.js`) — `users` koleksiyonu saatte BİR kez
+      # okunur (eskiden 5 kez). Her iş kendi try/catch'inde, biri patlarsa diğerleri çalışır.
+      # Günlük Motivasyon (9/12/16/20) · Streak (21) · Günlük Ödül (18) · Su (14) · Geri Kazanma (11) — yerel saat.
+      - name: Bildirim işleri (tek tarama)
         if: ${{ !cancelled() }}
-        run: npm run daily-motivation
-        env:
-          FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
-
-      - name: Streak Hatırlatması (21 yerel saat)
-        if: ${{ !cancelled() }}
-        run: npm run streak-reminder
-        env:
-          FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
-
-      - name: Günlük Ödül Hatırlatması (18 yerel saat)
-        if: ${{ !cancelled() }}
-        run: npm run daily-reward-reminder
-        env:
-          FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
-
-      - name: Su Hatırlatması (14 yerel saat)
-        if: ${{ !cancelled() }}
-        run: npm run water-reminder
-        env:
-          FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
-
-      - name: Geri Kazanma (11 yerel saat, 2+ gün pasif)
-        if: ${{ !cancelled() }}
-        run: npm run re-engagement
+        run: npm run hourly-all
         env:
           FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
 

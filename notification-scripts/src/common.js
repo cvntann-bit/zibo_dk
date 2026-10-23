@@ -153,10 +153,26 @@ function dedupeByFcmToken(users) {
   return [...withoutToken, ...byToken.values()];
 }
 
+/** **2026-10-23 (maliyet):** eskiden 5 betiğin HER BİRİ saatte bir TÜM `users` koleksiyonunu okuyordu
+ * (kullanıcı sayısı × 120 okuma/gün; kullanıcı arttıkça Firestore faturasının ana kalemi). İki kısma:
+ *  1. Süreç içi önbellek — `hourlyAll.js` 5 işi TEK süreçte çalıştırır, tarama bir kez yapılır (5× az).
+ *  2. Yalnızca `fcmToken`'ı OLAN kullanıcılar okunur — token'ı olmayana zaten hiçbir bildirim gidemez
+ *     (`sendToUser` hemen döner) ve eskiden bu kullanıcılar için yine de her gün 5 `notifyState` YAZMASI
+ *     yapılıyordu (boşa okuma + yazma). Token alan kullanıcı bir sonraki saatlik çalıştırmada otomatik dahil olur. */
+let usersPromise = null;
 async function fetchAllUsers() {
-  const snap = await db.collection('users').get();
-  const users = snap.docs.map((doc) => ({ uid: doc.id, ...doc.data() }));
-  return dedupeByFcmToken(users);
+  if (!usersPromise) {
+    usersPromise = (async () => {
+      const snap = await db.collection('users').where('fcmToken', '!=', null).get();
+      const users = snap.docs.map((doc) => ({ uid: doc.id, ...doc.data() }));
+      return dedupeByFcmToken(users);
+    })();
+    // Hata olursa bir sonraki çağrı yeniden denesin (başarısız bir Promise'ı sonsuza dek önbelleğe alma).
+    usersPromise.catch(() => {
+      usersPromise = null;
+    });
+  }
+  return usersPromise;
 }
 
 /** 2026 GÜNCELLEMESİ — "catch-up" penceresi: eskiden her betik

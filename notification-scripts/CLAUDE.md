@@ -32,6 +32,12 @@ mantığı zaten hangi dakikada tetiklendiğinden bağımsız (bkz. altta "catch
 | `grantGift.js` | `grant-gift.yml`, yalnızca `workflow_dispatch` | — | Sahibin bir kullanıcıya HEDİYE vermesi: `coinState`'e ZC ekle (Admin SDK kuralları aşar, `GRANT_ID` ile çift-ekleme koruması), `subscriptionState` Pro/Pro+ (tier JSON'u `'proplus'` küçük harf, bitiş 2099), `gamePointsState.unlimitedPlays=true` (uygulama 1.14.1+ okur). `dry_run` varsayılan `true` — hesabı (uid/ad/sağlayıcı) loglar, yazmaz. Hesap sahibi uygulamayı tamamen kapatıp açmalı |
 | `initFounderBadgeCounter.js` | kendi dosyası, yalnızca `workflow_dispatch` | — | `founderBadgeStatus/status`'u GERÇEK sayıyla seed et, `dry_run` varsayılan `true`, `FORCE` guard'ı |
 
+**2026-10-23 (maliyet) — tek tarama:** 5 bildirim işi artık `src/hourlyAll.js` ile TEK süreçte (`npm run hourly-all`) çalışıyor;
+`fetchAllUsers()` süreç içinde önbelleklenir (saatte 1 tarama, eskiden 5) ve yalnızca `fcmToken`'ı olan kullanıcıları okur
+(`where('fcmToken','!=',null)`) — token'ı olmayana bildirim gidemezdi ama yine de her gün 5 `notifyState` yazması yapılıyordu.
+Betikler hâlâ tek başına çalışır (`require.main === module` koruması + `module.exports = { main }`). Yeni bir saatlik iş eklerken
+`hourlyAll.js`'teki `JOBS` listesine ekle. Node bu makinede yok → ilk cron çalışmasının Actions log'unu kontrol et.
+
 `hourly-jobs.yml`'deki HER betik-step'i `if: ${{ !cancelled() }}` taşır — biri hata verirse
 (eskiden ayrı workflow oldukları için zaten birbirini etkilemiyorlardı) diğerleri yine de çalışır.
 Yeni bir saatlik betik eklerken bu dosyaya YENİ bir step olarak ekle, YENİ bir workflow dosyası
