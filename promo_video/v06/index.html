@@ -1,0 +1,389 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>Zibo animasyon reklamı (v06)</title>
+<!--
+  v06 — "Yalnız değilsin", zengin sürüm (~31 sn). Brief: docs/ads_creative_brief.md. v05'in sade hâlinden sonra:
+  daire açılışlı sad→bright geçişi, bulutlu/yağmurlu üzgün Zibo, "GÜN 3" çıkartması, yazıyor balonu,
+  kalp yağmuru, canlı uygulama telefonu (su dolar, seri sayar, yüz gülümser, şükran yazılır),
+  kostüm ışıldağı + isim çıkartması, ay/yıldızlı veda, ritme (109,98 bpm) göre atan karakter/logo.
+  Müzik: From Sad to Bright (ilk ölçü 0,44 sn). Sahne sınırları ölçüye hizalı: S = [0, D0 + 2k·BAR].
+  Politika: kazan / takas / çark / ödül / oyun ekranı YOK.
+  ?f=v → 9:16, ?f=h → 16:9; ?l=tr|en|es dil. Animasyon yalnızca frame(t)'nin saf çıktısı.
+-->
+<link rel="stylesheet" href="../kit.css">
+<style>
+@font-face{font-family:Baloo2;src:url(../../dijital_kanka/assets/fonts/Baloo2-Variable.ttf);font-weight:400 800}
+@font-face{font-family:Nunito;src:url(../../dijital_kanka/assets/fonts/Nunito-Variable.ttf);font-weight:200 1000}
+:root{--outline:#14110C;--gold:#F3B23C;--cream:#FFF4DE;--sky:#8FD3FF;--red:#D9473A}
+html,body{margin:0;background:#000;overflow:hidden}
+#stage{position:relative;overflow:hidden;font-family:Baloo2,sans-serif;color:var(--outline)}
+.bg{position:absolute;inset:0;overflow:hidden}
+.scene{position:absolute;inset:0;visibility:hidden}
+.o{position:absolute;left:0;top:0}
+.dots{position:absolute;inset:0;background-image:radial-gradient(rgba(20,17,12,.07) 24%,transparent 26%);background-size:30px 30px}
+.rays{position:absolute;left:50%;top:50%;width:3400px;height:3400px;margin:-1700px 0 0 -1700px;
+  background:repeating-conic-gradient(from 0deg,rgba(255,255,255,.38) 0 9deg,transparent 9deg 18deg)}
+.hl{font-weight:800;line-height:1.02;text-align:center;white-space:nowrap;color:#fff;
+  -webkit-text-stroke:16px var(--outline);paint-order:stroke fill;text-shadow:0 9px 0 var(--outline)}
+.hl span{display:inline-block;transform-origin:50% 85%}
+.hl .g{color:var(--gold)}
+.row{display:flex;align-items:center;gap:22px;background:#fff;border:6px solid var(--outline);border-radius:30px;
+  box-shadow:8px 8px 0 var(--outline);padding:16px 28px 16px 22px;white-space:nowrap;box-sizing:border-box}
+.row .lb{font-weight:800;font-size:50px;line-height:1}
+.box{width:62px;height:62px;border:6px solid var(--outline);border-radius:16px;box-sizing:border-box;background:#fff;flex:none;position:relative}
+.xm{position:absolute;right:-22px;top:-74px;font-weight:800;font-size:120px;line-height:1;color:var(--red);
+  -webkit-text-stroke:8px var(--outline);paint-order:stroke fill;opacity:0}
+.bub{position:absolute;left:0;top:0;background:#fff;border:6px solid var(--outline);border-radius:40px;
+  box-shadow:9px 9px 0 var(--outline);box-sizing:border-box;padding:20px 36px;font-weight:800;text-align:center;
+  white-space:nowrap;line-height:1.1}
+.tail{position:absolute;left:50%;bottom:-17px;width:26px;height:26px;margin-left:-13px;background:#fff;
+  border-right:6px solid var(--outline);border-bottom:6px solid var(--outline);transform:rotate(45deg);box-sizing:border-box}
+.stk{background:var(--gold);border:6px solid var(--outline);border-radius:999px;box-shadow:9px 9px 0 var(--outline);
+  font-weight:800;white-space:nowrap;padding:.12em .75em .04em;line-height:1.35;font-size:70px;box-sizing:border-box;position:absolute;left:0;top:0}
+.glass{position:absolute;left:0;top:0;width:170px;height:230px;border:8px solid var(--outline);border-top:none;
+  border-radius:0 0 46px 46px;background:rgba(255,255,255,.85);box-sizing:border-box;overflow:hidden}
+.glass .water{position:absolute;left:0;bottom:0;width:100%;height:0;background:#4FB8F0}
+.ring{position:absolute;left:0;top:0;width:300px;height:300px;border:12px solid var(--gold);border-radius:50%;box-sizing:border-box;box-shadow:0 0 0 8px var(--outline)}
+.shadow{position:absolute;left:0;top:0;border-radius:50%;background:rgba(20,17,12,.2)}
+#flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:50}
+/* telefon */
+.phone{position:absolute;left:0;top:0;width:520px;height:960px;background:#FFF8E8;border:14px solid var(--outline);
+  border-radius:78px;box-shadow:16px 16px 0 var(--outline);box-sizing:border-box;overflow:hidden}
+.pc{position:absolute;background:#fff;border:6px solid var(--outline);border-radius:30px;box-shadow:6px 6px 0 var(--outline);box-sizing:border-box;overflow:hidden}
+.pc .t{position:absolute;left:22px;top:14px;font-weight:800;font-size:38px;line-height:1}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div class="bg" id="bgSad" style="background:linear-gradient(#DDE3EC,#C5CEDC)"><div class="dots"></div></div>
+  <div class="bg" id="bgHappy" style="background:linear-gradient(#FFF3D2,#FFD887)"><div class="rays" id="rays"></div><div class="dots"></div><div id="deco"></div></div>
+  <div class="bg" id="dusk" style="background:linear-gradient(#3A3F86,#B565A7 60%,#FFB48A);opacity:0"></div>
+  <div id="flash"></div>
+</div>
+<script src="../kit.js"></script>
+<script>
+// Metinler — üç dil aynı yapıda
+const T={
+ tr:{h1:['Kaç alışkanlığı','3. günde bıraktın?'], day:'GÜN',
+     habits:['Su içmek','Spor','Günlük not'],
+     s2:['Sorun sen değilsin.','*Yalnız* olman.'],
+     s3a:'Merhaba, ben Zibo!', s3b:'Bugün sadece 1 bardak su?',
+     s4:['Küçük adımlar.','Her birini birlikte kutlarız.'],
+     cards:['Su','Seri','Ruh hali','Şükran'], today:'Bugün', streak:'gün seri', great:'Harika!',
+     s5:['Seninle birlikte','*büyür.*'], cos:['Kral','Astronot','Korsan','Samuray'],
+     s6:['Yarın yine','*buradayım.*'],
+     s7:['Zibo ile tanış'], cta:'Ücretsiz indir'},
+ en:{h1:['How many habits','did you quit by day 3?'], day:'DAY',
+     habits:['Drink water','Exercise','Daily journal'],
+     s2:['It’s not you.','It’s doing it *alone.*'],
+     s3a:'Hi, I’m Zibo!', s3b:'Just one glass of water today?',
+     s4:['Small steps.','We celebrate each one together.'],
+     cards:['Water','Streak','Mood','Gratitude'], today:'Today', streak:'day streak', great:'Great!',
+     s5:['He grows','*with you.*'], cos:['King','Astronaut','Pirate','Samurai'],
+     s6:['I’ll be here','*tomorrow.*'],
+     s7:['Meet Zibo'], cta:'Download free'},
+ es:{h1:['¿Cuántos hábitos','dejaste al día 3?'], day:'DÍA',
+     habits:['Beber agua','Ejercicio','Diario'],
+     s2:['No eres tú.','Es hacerlo *solo.*'],
+     s3a:'¡Hola, soy Zibo!', s3b:'¿Solo un vaso de agua hoy?',
+     s4:['Pequeños pasos.','Celebramos cada uno juntos.'],
+     cards:['Agua','Racha','Ánimo','Gratitud'], today:'Hoy', streak:'días de racha', great:'¡Genial!',
+     s5:['Crece','*contigo.*'], cos:['Rey','Astronauta','Pirata','Samurái'],
+     s6:['Mañana sigo','*aquí.*'],
+     s7:['Conoce a Zibo'], cta:'Descarga gratis'}
+};
+const L=T[LANG]||T.tr;
+const P=(v,h)=>V?v:h;
+const COLS=['#F3B23C','#FFFFFF','#8FD3FF','#FF8FB1','#7BD389'];
+const BAR=240/109.98, D0=0.44, BEAT=60/109.98;
+const S=[0];for(let k=2;k<=14;k+=2)S.push(D0+k*BAR);
+const END=S[7];
+let ENV=0; // ritim zarfı: her vuruşta 1'e fırlar, hızla söner
+
+const bgSad=document.getElementById('bgSad'), bgHappy=document.getElementById('bgHappy');
+const rays=document.getElementById('rays'), flash=document.getElementById('flash'), dusk=document.getElementById('dusk');
+const SC=[];
+const scene=()=>{const el=mk(stage,'div','scene');const o={el};SC.push(o);return o};
+
+// ── çıkartma şekilleri (kontur: drop-shadow; şekil: clip-path)
+const STAR='polygon(50% 0%,61% 39%,100% 50%,61% 61%,50% 100%,39% 61%,0% 50%,39% 39%)';
+function mkStar(parent,size,color){const w=mk(parent,'div','o');w.style.cssText+=`;width:${size}px;height:${size}px;filter:drop-shadow(0 ${size*.07}px 0 #14110C)`;
+  const i=mk(w,'div','');i.style.cssText=`width:100%;height:100%;background:${color};clip-path:${STAR}`;return w}
+function mkHeart(parent,size,color){const w=mk(parent,'div','o');w.style.cssText+=`;width:${size}px;height:${size*.9}px;filter:drop-shadow(0 ${size*.06}px 0 #14110C)`;
+  const i=mk(w,'div','');i.style.cssText=`width:100px;height:90px;background:${color};transform-origin:0 0;transform:scale(${size/100});clip-path:path('M50 90 C10 55 0 35 0 22 C0 8 12 0 25 0 C37 0 46 8 50 16 C54 8 63 0 75 0 C88 0 100 8 100 22 C100 35 90 55 50 90 Z')`;return w}
+function mkDot(parent,size,color){const d=mk(parent,'div','o');d.style.cssText+=`;width:${size}px;height:${size}px;border-radius:50%;background:${color};border:${Math.max(3,size*.1)}px solid var(--outline);box-sizing:border-box`;return d}
+
+// ── yağmur (üzgün arka plan)
+const rain=[];{const r=rng(7);for(let i=0;i<40;i++){const d=mk(bgSad,'div','');
+  d.style.cssText='position:absolute;left:0;top:0;width:7px;height:56px;border-radius:4px;background:rgba(88,140,190,.5)';
+  rain.push({d,x:r()*W,y0:r()*H,sp:(900+r()*700)*(H/1920)});}}
+
+// ── neşeli arka plan: süzülen yıldız/daire/kalp süsleri
+const deco=document.getElementById('deco'), decoEls=[];
+{const r=rng(5);for(let i=0;i<16;i++){const k=i%3,size=34+r()*50,col=COLS[i%COLS.length];
+  const el=k===0?mkStar(deco,size,col):(k===1?mkDot(deco,size*.7,col):mkHeart(deco,size*.8,'#FF8FB1'));
+  decoEls.push({el,x:r()*W,y:r()*H,ph:r()*6.28,sp:.5+r()*.6})}}
+function drawDeco(t){decoEls.forEach(q=>{const x=q.x+Math.sin(t*q.sp+q.ph)*34,y=q.y+Math.cos(t*q.sp*.8+q.ph)*28;
+  q.el.style.transform=`translate(${x}px,${y}px) rotate(${t*18*q.sp+q.ph*40}deg)`})}
+
+// ── patlama / halka yardımcıları
+function burst(parent,n,seed,colors=COLS,sc=1){
+  const r=rng(seed),ps=[];
+  for(let i=0;i<n;i++){const k=r(),sz=(16+r()*24)*sc;
+    const d=k<.34?mkStar(parent,sz*1.3,colors[i%colors.length]):(k<.67?mkDot(parent,sz,colors[i%colors.length]):mkHeart(parent,sz*1.2,'#FF8FB1'));
+    d.style.opacity=0;ps.push({d,a:r()*Math.PI*2,v:(420+r()*420)*sc,rot:r()*360,vr:(r()-.5)*900});}
+  return(lt,x,y,t0,dur=1.1)=>{const p=prog(lt,t0,dur);
+    ps.forEach(q=>{const e=eOut(p),dist=q.v*e,px=x+Math.cos(q.a)*dist,py=y+Math.sin(q.a)*dist-300*p*(1-p)*4;
+      q.d.style.transform=`translate(${px}px,${py}px) translate(-50%,-50%) rotate(${q.rot+q.vr*p}deg) scale(${1-p*.7})`;
+      q.d.style.opacity=p<=0?0:(p<1?1-p*.5:0);});};
+}
+function ring(parent){const e=mk(parent,'div','ring');e.style.opacity=0;
+  return(lt,x,y,t0,dur=.55)=>{const p=prog(lt,t0,dur);
+    e.style.transform=`translate(${x}px,${y}px) translate(-50%,-50%) scale(${.35+eOut(p)*1.9})`;
+    e.style.opacity=p>0&&p<1?1-p:0;};}
+// ── yükselen kalpler (mutlu Zibo)
+function hearts(parent,n,seed){const r=rng(seed),hs=[];
+  for(let i=0;i<n;i++){const h=mkHeart(parent,36+r()*34,i%2?'#FF8FB1':'#FF6F91');h.style.opacity=0;hs.push({h,dx:(r()-.5)*260,t0:i*.42+r()*.15,sp:150+r()*90,ph:r()*6})}
+  return(lt,x,y,t0)=>hs.forEach(q=>{const a=lt-t0-q.t0,p=prog(a,0,1.8);
+    q.h.style.opacity=p<=0||p>=1?0:Math.min(1,p*6)*(1-p*.7);
+    q.h.style.transform=`translate(${x+q.dx+Math.sin(a*3+q.ph)*22}px,${y-a*q.sp}px) translate(-50%,-50%) scale(${.6+p*.5})`})}
+// ── konuşma balonu (kuyruklu)
+function bubble(parent,text,size,maxW){const b=mk(parent,'div','bub',text);b.style.fontSize=size+'px';mk(b,'div','tail');fit(b,maxW);return b}
+const shadowOf=(parent,w)=>{const s=mk(parent,'div','shadow');s.style.width=w+'px';s.style.height=w*.16+'px';return s};
+
+// ───────── 0: KANCA — "Kaç alışkanlığı 3. günde bıraktın?" ─────────
+{
+ const c=scene();
+ const ttl=headline(c.el,L.h1,P(116,96)); fit(ttl.el,P(W*.84,W*.5));
+ const zs=img(c.el,'zibo_df_pose1.webp',P(H*.36,H*.62)); zs.style.filter='grayscale(.85) brightness(.9)';
+ const cloud=mk(c.el,'div','o');cloud.style.cssText+=';width:400px;height:200px;filter:drop-shadow(0 9px 0 #14110C)';
+ [[0,50,150],[95,0,200],[250,50,150]].forEach(([x,y,w])=>{const e=mk(cloud,'div','');e.style.cssText=`position:absolute;left:${x}px;top:${y}px;width:${w}px;height:${w}px;border-radius:50%;background:#AEB8C9`});
+ const base=mk(cloud,'div','');base.style.cssText='position:absolute;left:36px;top:110px;width:328px;height:90px;border-radius:45px;background:#AEB8C9';
+ const day=mk(c.el,'div','o');day.style.cssText+=';width:230px;height:260px;background:#fff;border:8px solid var(--outline);border-radius:34px;box-shadow:10px 10px 0 var(--outline);box-sizing:border-box;overflow:hidden';
+ const dh=mk(day,'div','',L.day);dh.style.cssText='height:76px;background:var(--red);border-bottom:8px solid var(--outline);color:#fff;font-weight:800;font-size:52px;line-height:76px;text-align:center';
+ const dn=mk(day,'div','','3');dn.style.cssText='font-weight:800;font-size:150px;line-height:150px;text-align:center;color:var(--outline)';
+ const rows=L.habits.map(name=>{const r=mk(c.el,'div','o row');mk(r,'div','box');mk(r,'span','lb',name);
+   const x=mk(r,'span','xm','×');return{r,x}});
+ const sh=shadowOf(c.el,P(560,520));
+ c.draw=lt=>{
+   const jit=lt<.6?Math.sin(lt*70)*(.6-lt)*26:0;
+   popWords(ttl,lt,.15,.18);
+   put(ttl.el,P(W/2,W*.3)+jit,P(H*.17,H*.4));
+   const zx=P(W/2,W*.76), zy=P(H*.52,H*.58)+Math.sin(lt*2.2)*6;
+   put(zs,zx,zy,1,Math.sin(lt*1.6)*1.5);
+   put(sh,zx,P(H*.52,H*.58)+P(H*.17,H*.3),1,0,.9);
+   const cp=prog(lt,.5,.5);
+   put(cloud,zx,P(H*.31,H*.19)+Math.sin(lt*1.8)*8,cp<=0?0:eBack(cp)*P(.9,.8),0,cp>0?1:0);
+   const dp=prog(lt,1.2,.5);
+   put(day,P(W*.8,W*.54),P(H*.36,H*.22),dp<=0?0:eBack(dp)*P(1,.85),(1-eOut(dp))*-20+8,dp>0?1:0);
+   rows.forEach((o,i)=>{
+     const p=prog(lt,.9+i*.3,.42);
+     put(o.r,P(W/2,W*.3),P(H*.73,H*.66)+i*P(H*.085,H*.11),p<=0?0:eBack(p),0,p>0?1:0);
+     const q=prog(lt,1.9+i*.35,.3);
+     o.x.style.opacity=q>0?1:0;
+     o.x.style.transform=`rotate(-12deg) scale(${q<=0?0:eBack(q)})`;
+   });
+ };
+}
+
+// ───────── 1: SORUN — "Sorun sen değilsin. Yalnız olman." ─────────
+{
+ const c=scene();
+ const ttl=headline(c.el,L.s2,P(118,96)); fit(ttl.el,P(W*.84,W*.5));
+ const zs=img(c.el,'zibo_df_pose1.webp',P(H*.44,H*.66)); zs.style.filter='grayscale(.85) brightness(.9)';
+ const typing=mk(c.el,'div','bub','');typing.style.padding='26px 40px';typing.style.display='flex';typing.style.gap='16px';
+ const dts=[0,1,2].map(()=>{const d=mk(typing,'div','');d.style.cssText='width:28px;height:28px;border-radius:50%;background:#9AA3B2';return d});
+ mk(typing,'div','tail');
+ const sh=shadowOf(c.el,P(640,600));
+ c.draw=lt=>{
+   popWords(ttl,lt,.1,.2);
+   put(ttl.el,P(W/2,W*.3),P(H*.3,H*.42));
+   const zx=P(W/2,W*.72), zy=P(H*.68,H*.62)+Math.sin(lt*3)*5;
+   put(zs,zx,zy,1,Math.sin(lt*2.4)*2);
+   put(sh,zx,P(H*.68,H*.62)+P(H*.2,H*.34),1,0,.9);
+   const tp=prog(lt,1.4,.4);
+   put(typing,P(W*.74,W*.88),P(H*.5,H*.3),tp<=0?0:eBack(tp),0,tp>0?1:0);
+   dts.forEach((d,i)=>{const b=Math.max(0,Math.sin(lt*7-i*.9));d.style.transform=`translateY(${-b*14}px)`;d.style.opacity=.45+b*.55});
+ };
+}
+
+// ───────── 2: SELAM + SU — mutlu Zibo, kalpler, bardak ─────────
+{
+ const c=scene();
+ const sh=shadowOf(c.el,P(640,600));
+ const zh=img(c.el,'zibo_df_pose3.webp',P(H*.46,H*.66));
+ const b1=bubble(c.el,L.s3a,P(64,46),P(W*.8,W*.42));
+ const b2=bubble(c.el,L.s3b,P(56,40),P(W*.8,W*.42));
+ const gl=mk(c.el,'div','glass'); const wt=mk(gl,'div','water');
+ const sp=burst(c.el,18,21,['#4FB8F0','#FFFFFF','#8FD3FF'],.7);
+ const hr=hearts(c.el,10,12);
+ c.draw=lt=>{
+   const p1=prog(lt,.25,.42), p2=prog(lt,1.7,.42);
+   put(b1,P(W/2,W*.3),P(H*.2,H*.22),p1<=0?0:eBack(p1),0,p1>0?1:0);
+   put(b2,P(W/2,W*.3),P(H*.3,H*.36),p2<=0?0:eBack(p2),0,p2>0?1:0);
+   const hop=Math.abs(Math.sin(lt*3.6+.4)), zx=P(W/2,W*.72), gy=P(H*.66,H*.62);
+   const sy=1+ENV*.045, sx=1-ENV*.025;
+   put(zh,zx,gy-hop*26,sy,Math.sin(lt*2.5)*2.5,1,sx);
+   put(sh,zx,gy+P(H*.2,H*.34),1-hop*.12,0,.9);
+   hr(lt,zx,gy-P(H*.1,H*.2),.8);
+   const g=prog(lt,2.9,.45);
+   put(gl,P(W*.82,W*.5),P(H*.83,H*.82),g<=0?0:eBack(g),0,g>0?1:0);
+   wt.style.height=(eOut(prog(lt,3.2,1.1))*100)+'%';
+   sp(lt,P(W*.82,W*.5),P(H*.8,H*.8),3.3,.9);
+ };
+}
+
+// ───────── 3: KÜÇÜK ADIMLAR — canlı uygulama telefonu ─────────
+{
+ const c=scene();
+ const ttl=headline(c.el,L.s4,P(100,90)); fit(ttl.el,P(W*.84,W*.44));
+ const ph=mk(c.el,'div','phone');
+ const notch=mk(ph,'div','');notch.style.cssText='position:absolute;left:170px;top:14px;width:150px;height:30px;border-radius:20px;background:var(--outline)';
+ const hd=mk(ph,'div','',L.today);hd.style.cssText='position:absolute;left:36px;top:66px;font-weight:800;font-size:58px;line-height:1';
+ const card=(x,y,w,h,title)=>{const d=mk(ph,'div','pc');d.style.cssText+=`;left:${x}px;top:${y}px;width:${w}px;height:${h}px`;mk(d,'div','t',title);return d};
+ // su
+ const cw=card(30,146,436,190,L.cards[0]);
+ const g=mk(cw,'div','');g.style.cssText='position:absolute;left:30px;top:62px;width:84px;height:110px;border:7px solid var(--outline);border-top:none;border-radius:0 0 28px 28px;overflow:hidden;background:#EAF6FF;box-sizing:border-box';
+ const gw=mk(g,'div','');gw.style.cssText='position:absolute;left:0;bottom:0;width:100%;height:0;background:#4FB8F0';
+ const wc=mk(cw,'div','','0/8');wc.style.cssText='position:absolute;left:150px;top:64px;font-weight:800;font-size:96px;line-height:1';
+ // seri
+ const cs=card(30,356,206,214,L.cards[1]);
+ const sn=mk(cs,'div','gold-n','0');sn.style.cssText='position:absolute;left:0;right:0;top:56px;text-align:center;font-weight:800;font-size:112px;line-height:1;color:#fff;-webkit-text-stroke:9px var(--outline);paint-order:stroke fill';
+ const sl=mk(cs,'div','',L.streak);sl.style.cssText='position:absolute;left:0;right:0;bottom:16px;text-align:center;font-weight:700;font-size:30px;line-height:1';
+ // ruh hali
+ const cm=card(254,356,212,214,L.cards[2]);
+ const fc=mk(cm,'div','');fc.style.cssText='position:absolute;left:38px;top:62px;width:136px;height:136px;border-radius:50%;background:#FFD86B;border:8px solid var(--outline);box-sizing:border-box';
+ [34,0].forEach((_,i)=>{const e=mk(fc,'div','');e.style.cssText=`position:absolute;${i?'right':'left'}:34px;top:42px;width:15px;height:15px;border-radius:50%;background:var(--outline)`});
+ const msad=mk(fc,'div','');msad.style.cssText='position:absolute;left:40px;top:80px;width:48px;height:22px;border-top:9px solid var(--outline);border-radius:48px 48px 0 0;box-sizing:border-box';
+ const mhap=mk(fc,'div','');mhap.style.cssText='position:absolute;left:38px;top:62px;width:52px;height:26px;border-bottom:9px solid var(--outline);border-radius:0 0 52px 52px;box-sizing:border-box;opacity:0';
+ // şükran
+ const cg=card(30,590,436,190,L.cards[3]);
+ const lines=[300,360,230].map((w,i)=>{const l=mk(cg,'div','');l.style.cssText=`position:absolute;left:24px;top:${70+i*36}px;height:18px;width:0;border-radius:9px;background:#C9CED8`;l.dataset.w=w;return l});
+ const hh=mkHeart(cg,44,'#FF6F91');
+ // alt çubuk
+ const bar=mk(ph,'div','stk',L.great);bar.style.cssText+=';left:30px;top:808px;width:436px;text-align:center;font-size:54px;padding:.1em 0 .02em;transform-origin:50% 50%';
+ const pf=P(1.25,.76);
+ const conf=burst(c.el,30,33,COLS,.9);
+ c.draw=lt=>{
+   popWords(ttl,lt,.1,.18);
+   put(ttl.el,P(W/2,W*.27),P(H*.2,H*.42));
+   const p=prog(lt,.3,.55);
+   put(ph,P(W/2,W*.76),P(H*.61,H*.54),(p<=0?0:eBack(p))*pf,(1-eOut(p))*8,p>0?1:0);
+   const a=eOut(prog(lt,.9,1.1)); gw.style.height=a*80+'%'; wc.textContent=Math.floor(a*6+.001)+'/8';
+   sn.textContent=Math.floor(prog(lt,1.3,.5)*3+.001);
+   const mp=prog(lt,1.8,.2); mhap.style.opacity=mp>.5?1:0; msad.style.opacity=mp>.5?0:1;
+   lines.forEach((l,i)=>{l.style.width=eOut(prog(lt,2.1+i*.3,.5))*l.dataset.w+'px'});
+   hh.style.transform=`translate(${P(380,380)}px,${22}px) scale(${eBack(prog(lt,2.6,.4))})`;
+   const bp=prog(lt,3.2,.4); bar.style.opacity=bp>0?1:0; bar.style.transform=`scale(${bp<=0?0:eBack(bp)})`;
+   conf(lt,P(W/2,W*.76),P(H*.61,H*.54),3.3,.9);
+ };
+}
+
+// ───────── 4: BÜYÜR — kostümler, ışıldak, isim çıkartması ─────────
+{
+ const c=scene();
+ const ttl=headline(c.el,L.s5,P(116,96)); fit(ttl.el,P(W*.84,W*.5));
+ const names=['zibo_king.webp','zibo_astronot.webp','zibo_korsan.webp','zibo_samurai.webp'];
+ const rings=[1,2,3].map(()=>ring(c.el));
+ const sh=shadowOf(c.el,P(660,600));
+ const cos=names.map(n=>img(c.el,n,P(H*.5,H*.66)));
+ const labels=L.cos.map(t=>{const e=mk(c.el,'div','stk',t);e.style.fontSize=P(64,56)+'px';return e});
+ const dots=[0,1,2,3].map(()=>{const d=mk(c.el,'div','');d.style.cssText='position:absolute;left:0;top:0;width:30px;height:30px;border-radius:50%;border:5px solid var(--outline);box-sizing:border-box;background:#fff';return d});
+ const st=[0,1,2,3,4,5].map(i=>mkStar(c.el,34+i%3*14,COLS[i%COLS.length]));
+ c.draw=lt=>{
+   popWords(ttl,lt,.1,.2);
+   put(ttl.el,P(W/2,W*.3),P(H*.18,H*.4));
+   const idx=Math.min(3,Math.floor(lt/.95)), loc=lt-idx*.95;
+   const cx=P(W/2,W*.72), cy=P(H*.6,H*.58);
+   put(sh,cx,cy+P(H*.25,H*.35),1,0,.9);
+   cos.forEach((el,k)=>{
+     const on=k===idx, p=on?prog(loc,0,.35):0;
+     const hop=on?Math.abs(Math.sin(lt*3.2))*14:0;
+     put(el,cx,cy-hop,on?(p<=0?0:eBack(p))*(1+ENV*.03):0,on?Math.sin(lt*2)*1.6:0,on?1:0);
+   });
+   labels.forEach((el,k)=>{const on=k===idx,p=on?prog(loc,.1,.35):0;put(el,cx,P(H*.885,H*.88),on?(p<=0?0:eBack(p)):0,-3,on?1:0)});
+   rings.forEach((rg,k)=>rg(lt,cx,cy,(k+1)*.95,.6));
+   st.forEach((s,i)=>{const a=lt*2.2+i*1.05,rx=P(380,300),ry=P(500,330);
+     s.style.transform=`translate(${cx+Math.cos(a)*rx}px,${cy+Math.sin(a)*ry*.8}px) translate(-50%,-50%) rotate(${lt*120+i*40}deg) scale(${.7+.3*Math.sin(lt*5+i)})`});
+   dots.forEach((d,k)=>{
+     d.style.background=k<=idx?'var(--gold)':'#fff';
+     d.style.transform=`translate(${P(W/2+(k-1.5)*70,W*.72+(k-1.5)*52)}px,${P(H*.94,H*.95)}px) translate(-50%,-50%)`;
+   });
+ };
+}
+
+// ───────── 5: YARIN YİNE — akşam, ay, yıldızlar, el sallama ─────────
+{
+ const c=scene();
+ const ttl=headline(c.el,L.s6,P(116,96)); fit(ttl.el,P(W*.84,W*.5));
+ const sh=shadowOf(c.el,P(640,600));
+ const zh=img(c.el,'zibo_df_pose4.webp',P(H*.52,H*.66));
+ const moon=mkDot(c.el,P(190,150),'#FFE9A8');
+ [[.28,.3,.2],[.62,.5,.15],[.4,.7,.18]].forEach(([x,y,r])=>{const cr=mk(moon,'div','');cr.style.cssText=`position:absolute;left:${x*100}%;top:${y*100}%;width:${r*100}%;height:${r*100}%;border-radius:50%;background:#F2D582`});
+ const stars=[0,1,2,3,4,5,6].map(i=>mkStar(c.el,22+(i%3)*12,'#FFF3B0'));
+ const hr=hearts(c.el,6,31);
+ const pos=[[.1,.1],[.9,.14],[.78,.3],[.18,.32],[.5,.06],[.92,.46],[.06,.5]];
+ c.draw=lt=>{
+   popWords(ttl,lt,.1,.2);
+   put(ttl.el,P(W/2,W*.3),P(H*.18,H*.4));
+   const zx=P(W/2,W*.72), gy=P(H*.64,H*.62)+Math.sin(lt*2)*6;
+   put(zh,zx,gy,1+ENV*.03,Math.sin(lt*3)*4);
+   put(sh,zx,P(H*.64,H*.62)+P(H*.2,H*.35),1,0,.9);
+   const mp=prog(lt,.3,.7);
+   put(moon,P(W*.82,W*.9),P(H*.1,H*.2),eBack(mp)*(1+ENV*.04),0,mp>0?1:0);
+   stars.forEach((s,i)=>{const p=prog(lt,.5+i*.12,.4);
+     s.style.transform=`translate(${W*pos[i][0]}px,${H*pos[i][1]}px) translate(-50%,-50%) scale(${(p<=0?0:eBack(p))*(.8+.25*Math.sin(lt*4+i*2))}) rotate(${i*17}deg)`});
+   hr(lt,zx+P(120,180),gy-P(H*.18,H*.3),1.2);
+ };
+}
+
+// ───────── 6: SON — logo, konfeti, ücretsiz indir ─────────
+{
+ const c=scene();
+ const zh=img(c.el,'zibo_df_pose3.webp',P(H*.27,H*.5));
+ const lg=img(c.el,'zibo_logo_new.webp',P(320,250));
+ const ttl=headline(c.el,L.s7,P(112,96)); fit(ttl.el,P(W*.84,W*.5));
+ const cta=mk(c.el,'div','stk',L.cta); fit(cta,P(W*.8,W*.42));
+ const conf=burst(c.el,40,44,COLS,1.1), conf2=burst(c.el,26,45,COLS,.9);
+ const hr=hearts(c.el,6,51);
+ c.draw=lt=>{
+   const p=prog(lt,0,.5);
+   const lx=P(W/2,W*.3), ly=P(H*.25,H*.3);
+   put(lg,lx,ly,(p<=0?0:eBack(p))*(1+ENV*.05),0,p>0?1:0);
+   conf(lt,lx,ly,.25,1.3);
+   popWords(ttl,lt,.5,.2);
+   put(ttl.el,P(W/2,W*.3),P(H*.46,H*.52));
+   const zp=prog(lt,.8,.5);
+   put(zh,P(W/2,W*.76),P(H*.83,H*.58)-Math.abs(Math.sin(lt*3.6))*18,(zp<=0?0:eBack(zp))*(1+ENV*.04),Math.sin(lt*2.5)*3,zp>0?1:0);
+   hr(lt,P(W/2,W*.76),P(H*.7,H*.45),1.2);
+   const q=prog(lt,1.4,.4);
+   const pulse=1+ENV*.06;
+   put(cta,P(W/2,W*.3),P(H*.62,H*.72),(q<=0?0:eBack(q))*pulse,0,q>0?1:0);
+   conf2(lt,P(W/2,W*.3),P(H*.62,H*.72),1.5,1.1);
+ };
+}
+
+// ───────── ZAMANLAMA ─────────
+function frame(t){
+  const ph=((t-D0)%BEAT+BEAT)%BEAT; ENV=Math.exp(-ph*9);
+  // sad → bright: daire açılışı (Zibo'nun olduğu noktadan büyür)
+  const rp=eInOut(prog(t,S[2],.75)), R=Math.hypot(W,H);
+  bgHappy.style.clipPath=`circle(${rp*R}px at ${P(W/2,W*.72)}px ${P(H*.66,H*.62)}px)`;
+  bgHappy.style.visibility=rp>0?'visible':'hidden';
+  bgSad.style.visibility=t<S[2]+.9?'visible':'hidden';
+  rays.style.transform=`rotate(${t*9}deg)`;
+  rain.forEach(q=>{const y=(q.y0+t*q.sp)%H;q.d.style.transform=`translate(${q.x}px,${y}px)`});
+  drawDeco(t);
+  // akşam örtüsü (5. sahne): yumuşak girer, 6'da kalkar
+  const du=prog(t,S[5],.8)*(1-prog(t,S[6]+.15,.6)); dusk.style.opacity=du;
+  let fl=0;for(let k=1;k<S.length-1;k++){const d=t-S[k];if(d>=0&&d<.28)fl=Math.max(fl,(1-d/.28)*.55)}
+  flash.style.opacity=fl;
+  SC.forEach((c,k)=>{const lt=t-S[k];const on=lt>=0&&t<S[k+1];
+    c.el.style.visibility=on?'visible':'hidden'; if(on)c.draw(lt)});
+}
+boot(END,frame);
+</script>
+</body>
+</html>
