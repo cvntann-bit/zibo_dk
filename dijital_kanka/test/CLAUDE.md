@@ -3,8 +3,13 @@
 Komut: `export PATH="$PATH:/c/flutter/bin" && flutter test` (`dijital_kanka/` içinde).
 `flutter analyze` bu makinede ÇÖKÜYOR — kullanma.
 
-Önceden belgelenmiş flake: "Zibo'ya dokununca söz değişir..." testi `audioplayers`/`home_widget`
-platform-kanalı `MissingPluginException` sızıntısı — gerçek regresyon değil, ayrı bir görev.
+**Eski "Zibo'ya dokununca söz değişir..." flake'i ÇÖZÜLDÜ (2026-10-24).** Kök neden: tam uygulamayı açan testlerde
+`AudioPlayer()` (`xyz.luan/audioplayers.global` `init`) ve `HomeWidget.widgetClicked` (`home_widget/updates` `listen`)
+test ortamında OLMAYAN native kanallara bağlanıp `MissingPluginException` fırlatıyordu — kimsenin `await` etmediği
+asenkron akışta, yani test bittikten SONRA, o an koşan herhangi bir testi düşürüyordu. Çözüm: `test/fake_audioplayers_platform.dart`
+(`installFakeAudioplayersPlatform()` platform arayüzü örneğini sahteyle değiştirir; `installFakeHomeWidgetChannel()` olay kanalını
+sessizce kabul eder) — `widget_test.dart`'ta `main()`/`setUp`'tan çağrılıyor. Tam uygulamayı (`DijitalKankaApp`) sahte servis
+vermeden açan YENİ bir test dosyası eklersen aynı iki çağrıyı yap. Paket artık 738/738 yeşil; bir test düşüyorsa GERÇEK regresyondur.
 
 ## İki farklı "uygulamayı ayağa kaldır" yardımcısı — KARIŞTIRMA
 

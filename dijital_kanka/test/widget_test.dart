@@ -12,6 +12,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'fake_audioplayers_platform.dart';
 import 'package:dijital_kanka/data/goal_quotes.dart';
 import 'package:dijital_kanka/data/money_quotes.dart';
 import 'package:dijital_kanka/data/wheel_prizes.dart';
@@ -331,7 +332,10 @@ String _currentHomeMessage(WidgetTester tester) {
 }
 
 void main() {
+  // Gerçek `audioplayers` platform kanalı testte yok — bkz. fake_audioplayers_platform.dart (eski flake'in kök nedeni).
+  installFakeAudioplayersPlatform();
   setUp(() {
+    installFakeHomeWidgetChannel();
     SharedPreferences.setMockInitialValues({});
     // AdFreePromoTrigger oturum bazlı, STATIK bir sayaç (bkz. o dosyadaki
     // dokümantasyon) — testler AYNI süreçte art arda koştuğu için, sıfırlanmazsa
