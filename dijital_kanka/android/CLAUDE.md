@@ -26,6 +26,16 @@
   "Missing class" der → `proguard-rules.pro`'daki `-dontwarn com.amazon.privacypass.**` bunun için (Vungle 7.7.x bunu kendi kuralıyla
   örtüyordu AMA kilitli sınıfı 22 → 670 artırıyor; bu yüzden Vungle 7.6.1.0'da bırakıldı).
 
+## Yeni reklam ağı (Appodeal adaptörü) eklemeden ÖNCE — DEX kontrol listesi (2026-10-24, ölçülmüş)
+
+Bir ağın DEX maliyeti kendi kod boyutu değil, **kural dosyasının (consumer `proguard.txt`) neyi kilitlediği**dir. Vungle 7.6.1: kendi kodu 594 sınıf
+ama `-keep class com.google.android.gms.** {*;}` + protobuf keep'leri yüzünden Play Services/Firebase/Firestore kodunun ~3.600 sınıfı kilitleniyordu;
+çıkarınca Play optimizasyon %28 → %36. Eklemeden önce: (1) adaptör AAR'ı (`artifactory.appodeal.com/.../adapters/<ağ>/<sürüm>`) + ağın KENDİ SDK AAR'ının
+`proguard.txt`'ini oku (`unzip -p x.aar proguard.txt`); (2) `com.google.**`, `androidx.**`, `com.google.protobuf.**` için geniş `-keep` ara — varsa pahalıdır;
+(3) release APK derle, `build/app/outputs/mapping/release/{mapping,seeds,configuration}.txt` ile kilitli sınıf oranını ve `seeds.txt` kayıt sayısını önceki derlemeyle kıyasla;
+(4) Play skoru yalnızca yeni bundle yüklenince görünür. Ölçülenler: Yandex yığını ~35K kilitli kayıt, AppLovin ~19K, Mintegral ~+3,5K sınıf (oran %53→%59,5), Meta adaptörü ~+180 sınıf (ucuz) AMA Appodeal rehberi BidMachine'i şart koşuyor (+~65K kayıt, pahalı).
+Aday ağ kuralları: unity_ads SDK `-keep class com.unity3d.** {}` + `-keep public class com.google.protobuf.** {}` (pahalı, 2026-09'da zaten çıkarılmıştı); inmobi/ironsource/my_target adaptörleri geniş keep taşıyor; dt_exchange/bigo/moloco/pubmatic adaptör kuralları temiz (SDK kuralları doğrulanmadı).
+
 ## `AndroidManifest.xml`
 
 - `<queries>` bloğu: `mailto:`/`https:`/`market:` intent'leri + agresif OEM (Xiaomi/Huawei/Oppo/Vivo/OnePlus) autostart paket adları — Android 11+ paket görünürlüğü için açıkça listelenmeli, yoksa `canLaunchUrl`/`canResolveActivity` hep `false`.
