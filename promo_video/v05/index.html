@@ -1,0 +1,292 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>Zibo animasyon reklamı (v05)</title>
+<!--
+  v05 — "Yalnız değilsin" animasyon reklamı (~31 sn). Brief: docs/ads_creative_brief.md.
+  Müzik: From Sad to Bright — 109,98 bpm, ilk ölçü başı 0,44 sn. Sahne sınırları ölçülere hizalı:
+  S = [0, D0 + 2k·BAR]. Sad→bright geçişi (şarkının 9,17. sn'si) = S[2].
+  Politika: kazan / takas / çark / ödül / oyun ekranı YOK. Sahneler:
+    0 kanca (sorun listesi, yağmur) · 1 "sorun sen değilsin" · 2 Zibo selamı + su bardağı
+    3 küçük adımlar (kartlar, konfeti) · 4 büyür (kostümler, halkalar) · 5 yarın yine · 6 logo + ücretsiz
+  ?f=v → 9:16, ?f=h → 16:9; ?l=tr|en|es dil. Animasyon yalnızca seek(t)'nin saf çıktısı.
+-->
+<link rel="stylesheet" href="../kit.css">
+<style>
+@font-face{font-family:Baloo2;src:url(../../dijital_kanka/assets/fonts/Baloo2-Variable.ttf);font-weight:400 800}
+@font-face{font-family:Nunito;src:url(../../dijital_kanka/assets/fonts/Nunito-Variable.ttf);font-weight:200 1000}
+:root{--outline:#14110C;--gold:#F3B23C;--cream:#FFF4DE;--sad:#E9ECF1;--sky:#8FD3FF;--red:#D9473A}
+html,body{margin:0;background:#000;overflow:hidden}
+#stage{position:relative;overflow:hidden;font-family:Baloo2,sans-serif;color:var(--outline)}
+.bg{position:absolute;inset:0;overflow:hidden}
+.scene{position:absolute;inset:0;visibility:hidden}
+.o{position:absolute;left:0;top:0}
+.dots{position:absolute;inset:0;background-image:radial-gradient(rgba(20,17,12,.07) 24%,transparent 26%);background-size:30px 30px}
+.rays{position:absolute;left:50%;top:50%;width:3200px;height:3200px;margin:-1600px 0 0 -1600px;
+  background:repeating-conic-gradient(from 0deg,rgba(255,255,255,.34) 0 9deg,transparent 9deg 18deg)}
+.hl{font-weight:800;line-height:1.02;text-align:center;white-space:nowrap;color:#fff;
+  -webkit-text-stroke:16px var(--outline);paint-order:stroke fill;text-shadow:0 9px 0 var(--outline)}
+.hl span{display:inline-block;transform-origin:50% 85%}
+.hl .g{color:var(--gold)}
+.row{display:flex;align-items:center;gap:22px;background:#fff;border:6px solid var(--outline);border-radius:30px;
+  box-shadow:8px 8px 0 var(--outline);padding:16px 28px 16px 22px;white-space:nowrap;box-sizing:border-box}
+.row .lb{font-weight:800;font-size:50px;line-height:1}
+.box{width:62px;height:62px;border:6px solid var(--outline);border-radius:16px;box-sizing:border-box;background:#fff;flex:none;position:relative}
+.xm{position:absolute;right:-22px;top:-74px;font-weight:800;font-size:120px;line-height:1;color:var(--red);
+  -webkit-text-stroke:8px var(--outline);paint-order:stroke fill;opacity:0}
+.bub{position:absolute;left:0;top:0;background:#fff;border:6px solid var(--outline);border-radius:40px;
+  box-shadow:9px 9px 0 var(--outline);box-sizing:border-box;padding:20px 36px;font-weight:800;text-align:center;
+  white-space:nowrap;line-height:1.1}
+.card{position:absolute;left:0;top:0;width:330px;height:330px;background:#fff;border:7px solid var(--outline);
+  border-radius:42px;box-shadow:12px 12px 0 var(--outline);box-sizing:border-box;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:24px}
+.card .cl{font-weight:800;font-size:44px;line-height:1;white-space:nowrap}
+.gold-circ{width:150px;height:150px;border-radius:50%;background:var(--gold);border:7px solid var(--outline);box-sizing:border-box;
+  display:flex;align-items:center;justify-content:center;font-weight:800;font-size:110px;line-height:1;color:#fff;
+  -webkit-text-stroke:8px var(--outline);paint-order:stroke fill}
+.stk{background:var(--gold);border:6px solid var(--outline);border-radius:999px;box-shadow:9px 9px 0 var(--outline);
+  font-weight:800;white-space:nowrap;padding:.12em .75em .04em;line-height:1.35;font-size:70px;box-sizing:border-box;position:absolute;left:0;top:0}
+.glass{position:absolute;left:0;top:0;width:170px;height:230px;border:8px solid var(--outline);border-top:none;
+  border-radius:0 0 46px 46px;background:rgba(255,255,255,.85);box-sizing:border-box;overflow:hidden}
+.glass .water{position:absolute;left:0;bottom:0;width:100%;height:0;background:#4FB8F0}
+.ring{position:absolute;left:0;top:0;width:300px;height:300px;border:12px solid var(--gold);border-radius:50%;box-sizing:border-box;box-shadow:0 0 0 8px var(--outline)}
+#flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:50}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div class="bg" id="bgSad" style="background:var(--sad)"><div class="dots"></div></div>
+  <div class="bg" id="bgHappy" style="opacity:0;background:var(--cream)"><div class="rays" id="rays"></div><div class="dots" style="background-image:radial-gradient(rgba(20,17,12,.06) 24%,transparent 26%)"></div></div>
+  <div id="flash"></div>
+</div>
+<script src="../kit.js"></script>
+<script>
+// Metinler — üç dil aynı yapıda (kit.js'teki LANG ile seçilir).
+const T={
+ tr:{h1:['Kaç alışkanlığı','3. günde bıraktın?'],
+     habits:['Su içmek','Spor','Günlük not'],
+     s2:['Sorun sen değilsin.','Yalnız olman.'],
+     s3a:'Merhaba, ben Zibo!', s3b:'Bugün sadece 1 bardak su?',
+     s4:['Küçük adımlar.','Her birini birlikte kutlarız.'],
+     cards:['Hedef','Seri','Ruh hali','Şükran'],
+     s5:['Seninle birlikte','büyür.'],
+     s6:['Yarın yine','buradayım.'],
+     s7:['Zibo ile tanış'], cta:'Ücretsiz indir'},
+ en:{h1:['How many habits','did you quit by day 3?'],
+     habits:['Drink water','Exercise','Daily journal'],
+     s2:['It’s not you.','It’s doing it alone.'],
+     s3a:'Hi, I’m Zibo!', s3b:'Just one glass of water today?',
+     s4:['Small steps.','We celebrate each one together.'],
+     cards:['Goal','Streak','Mood','Gratitude'],
+     s5:['He grows','with you.'],
+     s6:['I’ll be here','tomorrow.'],
+     s7:['Meet Zibo'], cta:'Download free'},
+ es:{h1:['¿Cuántos hábitos','dejaste al día 3?'],
+     habits:['Beber agua','Ejercicio','Diario'],
+     s2:['No eres tú.','Es hacerlo solo.'],
+     s3a:'¡Hola, soy Zibo!', s3b:'¿Solo un vaso de agua hoy?',
+     s4:['Pequeños pasos.','Celebramos cada uno juntos.'],
+     cards:['Meta','Racha','Ánimo','Gratitud'],
+     s5:['Crece','contigo.'],
+     s6:['Mañana sigo','aquí.'],
+     s7:['Conoce a Zibo'], cta:'Descarga gratis'}
+};
+const L=T[LANG]||T.tr;
+const P=(v,h)=>V?v:h; // dikey (v) / yatay (h) konum seçici
+const COLS=['#F3B23C','#FFFFFF','#8FD3FF','#FF8FB1','#7BD389'];
+
+// Müzik: From Sad to Bright — 109,98 bpm, ilk ölçü 0,44 sn. Sahne sınırları ölçüye hizalı.
+const BAR=240/109.98, D0=0.44;
+const S=[0];for(let k=2;k<=14;k+=2)S.push(D0+k*BAR);
+const END=S[7];
+
+const bgSad=document.getElementById('bgSad'), bgHappy=document.getElementById('bgHappy');
+const rays=document.getElementById('rays'), flash=document.getElementById('flash');
+const SC=[];
+const scene=()=>{const el=mk(stage,'div','scene');const o={el};SC.push(o);return o};
+
+// ── yağmur (sad arka plan): deterministik damlalar
+const rain=[];{const r=rng(7);for(let i=0;i<34;i++){const d=mk(bgSad,'div','');
+  d.style.cssText='position:absolute;left:0;top:0;width:7px;height:54px;border-radius:4px;background:rgba(88,140,190,.5)';
+  rain.push({d,x:r()*W,y0:r()*H,sp:(900+r()*600)*(H/1920)});}}
+function drawRain(t){rain.forEach(q=>{const y=(q.y0+t*q.sp)%H;q.d.style.transform=`translate(${q.x}px,${y}px)`})}
+
+// ── patlama parçacıkları: deterministik açı/hız; draw(lt, x, y, t0)
+function burst(parent,n,seed,colors=COLS,sc=1){
+  const r=rng(seed),ps=[];
+  for(let i=0;i<n;i++){const d=mk(parent,'div','o');const sz=(14+r()*22)*sc;
+    d.style.cssText+=`;width:${sz}px;height:${sz}px;background:${colors[i%colors.length]};border:${4*sc}px solid var(--outline);box-sizing:border-box;border-radius:${r()<.5?'50%':'5px'};opacity:0`;
+    ps.push({d,a:r()*Math.PI*2,v:(380+r()*380)*sc,rot:r()*360,vr:(r()-.5)*900});}
+  return(lt,x,y,t0,dur=1)=>{const p=prog(lt,t0,dur);
+    ps.forEach(q=>{const e=eOut(p),dist=q.v*e,px=x+Math.cos(q.a)*dist,py=y+Math.sin(q.a)*dist-260*p*(1-p)*4;
+      q.d.style.transform=`translate(${px}px,${py}px) translate(-50%,-50%) rotate(${q.rot+q.vr*p}deg) scale(${1-p*.7})`;
+      q.d.style.opacity=p<=0?0:(p<1?1-p*.6:0);});};
+}
+// ── halka dalgası (vurguda)
+function ring(parent){const e=mk(parent,'div','ring');e.style.opacity=0;
+  return(lt,x,y,t0,dur=.55)=>{const p=prog(lt,t0,dur);
+    e.style.transform=`translate(${x}px,${y}px) translate(-50%,-50%) scale(${.35+eOut(p)*1.9})`;
+    e.style.opacity=p>0&&p<1?1-p:0;};}
+
+// ───────── 0: KANCA — sorun listesi, Zibo üzgün, yağmur ─────────
+{
+ const c=scene();
+ const ttl=headline(c.el,L.h1,P(116,96)); fit(ttl.el,P(W*.84,W*.5));
+ const zs=img(c.el,'zibo_df_pose1.webp',P(H*.36,H*.62)); zs.style.filter='grayscale(.85) brightness(.9)';
+ const rows=L.habits.map(name=>{const r=mk(c.el,'div','o row');mk(r,'div','box');mk(r,'span','lb',name);
+   const x=mk(r,'span','xm','×');return{r,x}});
+  c.draw=lt=>{
+   const jit=lt<.6?Math.sin(lt*70)*(.6-lt)*26:0;      // ilk anda sarsıntı
+   popWords(ttl,lt,.15,.18);
+   put(ttl.el,P(W/2,W*.3)+jit,P(H*.17,H*.4));
+   put(zs,P(W/2,W*.76),P(H*.52,H*.58)+Math.sin(lt*2.2)*6,1,Math.sin(lt*1.6)*1.5);
+   rows.forEach((o,i)=>{
+     const p=prog(lt,.9+i*.3,.42);
+     put(o.r,P(W/2,W*.3),P(H*.73,H*.66)+i*P(H*.085,H*.11),p<=0?0:eBack(p),0,p>0?1:0);
+     const q=prog(lt,1.9+i*.35,.3);
+     o.x.style.opacity=q>0?1:0;
+     o.x.style.transform=`rotate(-12deg) scale(${q<=0?0:eBack(q)})`;
+   });
+ };
+}
+
+// ───────── 1: SORUN — "Sorun sen değilsin." ─────────
+{
+ const c=scene();
+ const ttl=headline(c.el,L.s2,P(118,96)); fit(ttl.el,P(W*.84,W*.5));
+ const zs=img(c.el,'zibo_df_pose1.webp',P(H*.44,H*.66)); zs.style.filter='grayscale(.85) brightness(.9)';
+ c.draw=lt=>{
+   popWords(ttl,lt,.1,.2);
+   put(ttl.el,P(W/2,W*.3),P(H*.3,H*.42));
+   put(zs,P(W/2,W*.72),P(H*.68,H*.62)+Math.sin(lt*3)*5,1,Math.sin(lt*2.4)*2);
+ };
+}
+
+// ───────── 2: SELAM + SU — Zibo mutlu, balon, bardak dolar, sıçrama ─────────
+{
+ const c=scene();
+ const zh=img(c.el,'zibo_df_pose3.webp',P(H*.46,H*.66));
+ const b1=mk(c.el,'div','bub',L.s3a); b1.style.fontSize=P(64,46)+'px'; fit(b1,P(W*.8,W*.42));
+ const b2=mk(c.el,'div','bub',L.s3b); b2.style.fontSize=P(56,40)+'px'; fit(b2,P(W*.8,W*.42));
+ const gl=mk(c.el,'div','glass'); const wt=mk(gl,'div','water');
+ const sp=burst(c.el,18,21,['#4FB8F0','#FFFFFF','#8FD3FF'],.7);
+ c.draw=lt=>{
+   const p1=prog(lt,.25,.42), p2=prog(lt,1.7,.42);
+   put(b1,P(W/2,W*.3),P(H*.2,H*.22),p1<=0?0:eBack(p1),0,p1>0?1:0);
+   put(b2,P(W/2,W*.3),P(H*.3,H*.36),p2<=0?0:eBack(p2),0,p2>0?1:0);
+   const zy=P(H*.66,H*.62)+Math.sin(lt*4)*7;
+   put(zh,P(W/2,W*.72),zy,1,Math.sin(lt*2.5)*2.5);
+   const g=prog(lt,2.9,.45);
+   put(gl,P(W*.82,W*.48),P(H*.83,H*.82),g<=0?0:eBack(g),0,g>0?1:0);
+   const f=prog(lt,3.2,1.1); wt.style.height=(eOut(f)*100)+'%';
+   sp(lt,P(W*.82,W*.48),P(H*.8,H*.8),3.3,.9);
+ };
+}
+
+// ───────── 3: KÜÇÜK ADIMLAR — 4 kart, konfeti ─────────
+{
+ const c=scene();
+ const ttl=headline(c.el,L.s4,P(100,80)); fit(ttl.el,P(W*.84,W*.4));
+ const iconFns=[
+   d=>{const b=mk(d,'div','box');b.style.cssText+=';width:132px;height:132px;border-width:10px';
+       const ck=mk(b,'div','');ck.style.cssText='position:absolute;left:34px;top:10px;width:34px;height:64px;border-right:15px solid var(--gold);border-bottom:15px solid var(--gold);transform:rotate(45deg);box-sizing:border-box'},
+   d=>{mk(d,'div','gold-circ','3')},
+   d=>{const f=mk(d,'div','');f.style.cssText='width:136px;height:136px;border-radius:50%;background:#FFD86B;border:8px solid var(--outline);box-sizing:border-box;position:relative';
+       const e1=mk(f,'div','');e1.style.cssText='position:absolute;left:34px;top:42px;width:15px;height:15px;border-radius:50%;background:var(--outline)';
+       const e2=mk(f,'div','');e2.style.cssText='position:absolute;right:34px;top:42px;width:15px;height:15px;border-radius:50%;background:var(--outline)';
+       const m=mk(f,'div','');m.style.cssText='position:absolute;left:38px;top:62px;width:52px;height:26px;border-bottom:9px solid var(--outline);border-radius:0 0 52px 52px;box-sizing:border-box'},
+   d=>{const n=mk(d,'div','');n.style.cssText='width:150px;display:flex;flex-direction:column;gap:16px;align-items:center';
+       [124,100,116].forEach(w=>{const l=mk(n,'div','');l.style.cssText=`width:${w}px;height:15px;border-radius:8px;background:#C9CED8`})}
+ ];
+ const cards=L.cards.map((name,i)=>{const d=mk(c.el,'div','card');iconFns[i](d);mk(d,'div','cl',name);return d});
+ const conf=burst(c.el,30,33,COLS,.9);
+ c.draw=lt=>{
+   popWords(ttl,lt,.1,.18);
+   put(ttl.el,P(W/2,W*.27),P(H*.2,H*.42));
+   cards.forEach((d,i)=>{
+     const col=i%2,row=(i/2)|0;
+     const cx=P(W/2+(col?190:-190),W*.75+(col?150:-150));
+     const cy=P(H*.6+(row?200:-200),H*.56+(row?190:-190));
+     const p=prog(lt,.4+i*.25,.45);
+     put(d,cx,cy,p<=0?0:eBack(p),0,p>0?1:0);
+   });
+   conf(lt,P(W/2,W*.3),P(H*.6,H*.56),1.3,1.1);
+ };
+}
+
+// ───────── 4: BÜYÜR — kostümler döner, her geçişte halka ─────────
+{
+ const c=scene();
+ const ttl=headline(c.el,L.s5,P(116,96)); fit(ttl.el,P(W*.84,W*.5));
+ const names=['zibo_king.webp','zibo_astronot.webp','zibo_korsan.webp','zibo_samurai.webp'];
+ const cos=names.map(n=>img(c.el,n,P(H*.5,H*.66)));
+ const dots=[0,1,2,3].map(()=>{const d=mk(c.el,'div','');d.style.cssText='position:absolute;left:0;top:0;width:30px;height:30px;border-radius:50%;border:5px solid var(--outline);box-sizing:border-box;background:#fff';return d});
+ const rings=[1,2,3].map(()=>ring(c.el));
+ c.draw=lt=>{
+   popWords(ttl,lt,.1,.2);
+   put(ttl.el,P(W/2,W*.3),P(H*.18,H*.4));
+   const idx=Math.min(3,Math.floor(lt/.95)), loc=lt-idx*.95;
+   const cx=P(W/2,W*.72), cy=P(H*.6,H*.6);
+   cos.forEach((el,k)=>{
+     const on=k===idx, p=on?prog(loc,0,.35):0;
+     put(el,cx,cy+(on?Math.sin(lt*3)*6:0),on?(p<=0?0:eBack(p)):0,0,on?1:0);
+   });
+   rings.forEach((rg,k)=>rg(lt,cx,cy,(k+1)*.95,.6));
+   dots.forEach((d,k)=>{
+     d.style.background=k<=idx?'var(--gold)':'#fff';
+     d.style.transform=`translate(${P(W/2+(k-1.5)*70,W*.72+(k-1.5)*52)}px,${P(H*.9,H*.9)}px) translate(-50%,-50%)`;
+   });
+ };
+}
+
+// ───────── 5: YARIN YİNE — el sallayan Zibo ─────────
+{
+ const c=scene();
+ const ttl=headline(c.el,L.s6,P(116,96)); fit(ttl.el,P(W*.84,W*.5));
+ const zh=img(c.el,'zibo_df_pose4.webp',P(H*.52,H*.66));
+ c.draw=lt=>{
+   popWords(ttl,lt,.1,.2);
+   put(ttl.el,P(W/2,W*.3),P(H*.18,H*.4));
+   put(zh,P(W/2,W*.72),P(H*.64,H*.62)+Math.sin(lt*2)*6,1,Math.sin(lt*3)*4);
+ };
+}
+
+// ───────── 6: SON — logo + konfeti + ücretsiz ─────────
+{
+ const c=scene();
+ const lg=img(c.el,'zibo_logo_new.webp',P(300,230));
+ const ttl=headline(c.el,L.s7,P(112,96)); fit(ttl.el,P(W*.84,W*.5));
+ const cta=mk(c.el,'div','stk',L.cta); fit(cta,P(W*.8,W*.42));
+ const conf=burst(c.el,36,44,COLS,1);
+ c.draw=lt=>{
+   const p=prog(lt,0,.5);
+   put(lg,P(W/2,W*.3),P(H*.32,H*.32),p<=0?0:eBack(p),0,p>0?1:0);
+   conf(lt,P(W/2,W*.3),P(H*.32,H*.32),.25,1.2);
+   popWords(ttl,lt,.5,.2);
+   put(ttl.el,P(W/2,W*.3),P(H*.52,H*.56));
+   const q=prog(lt,1.4,.4);
+   put(cta,P(W/2,W*.3),P(H*.7,H*.7),q<=0?0:eBack(q),0,q>0?1:0);
+ };
+}
+
+// ───────── ZAMANLAMA ─────────
+function frame(t){
+  bgSad.style.opacity=1-prog(t,S[2],.45);
+  bgHappy.style.opacity=prog(t,S[2],.45);
+  rays.style.transform=`rotate(${t*9}deg)`;
+  drawRain(t);
+  // sahne geçiş flaşı (her sınırda kısa beyaz parlama)
+  let fl=0;for(let k=1;k<S.length-1;k++){const d=t-S[k];if(d>=0&&d<.28)fl=Math.max(fl,(1-d/.28)*.55)}
+  flash.style.opacity=fl;
+  SC.forEach((c,k)=>{
+    const lt=t-S[k];
+    const on=lt>=0&&t<S[k+1];
+    c.el.style.visibility=on?'visible':'hidden';
+    if(on)c.draw(lt);
+  });
+}
+boot(END,frame);
+</script>
+</body>
+</html>
