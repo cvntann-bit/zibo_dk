@@ -152,4 +152,8 @@ dependencies {
     // 2026-10-22 (Faz 3): banner fill için Yandex — Console'da Yandex banner/interstitial/rewarded
     // birimleri açık (docs/roadmap_growth_2026-10.md). DENEY: DEX etkisi ölçülene kadar AAB YOK.
     implementation("com.appodeal.ads.sdk.adapters:yandex:7.17.0.0")
+    // 2026-10-24: **mintegral eklendi** (banner için; Appodeal Console'da Appodeal hesabıyla "Mintegral banner bidding" birimi ON).
+    // DEX: Vungle çıkarılınca kilitli sınıf oranı %65,2 → %59,5 (Vungle'sız+Yandex+Mintegral), yayındaki 1.15.1'den DAHA İYİ
+    // (bkz. docs/roadmap_growth_2026-10.md "DEX analizi").
+    implementation("com.appodeal.ads.sdk.adapters:mintegral:17.1.81.1")
 }
