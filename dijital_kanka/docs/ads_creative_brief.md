@@ -68,3 +68,10 @@ Her varyant = aynı gövde (6–30 sn), yalnızca ilk 2 sn değişir. 9:16 (dike
 ## 7. Üretim durumu
 
 Henüz üretilmedi — kullanıcı onayı bekleniyor. Hat: `promo_video/render.py` (HTML sahne → MP4, `--lang tr|en|es`), müzik/sfx hazır.
+
+## 8. Kampanya durumu (2026-10-25)
+
+- v06 videoları YouTube'a liste dışı yüklendi: EN 9:16 `iNPHpCnXWeo`, EN 16:9 `zwgx-5-lb1Y`, ES 9:16 `EIxTcRWfRWU`, ES 16:9 `4Tdg7W7MMwE`.
+- **Zibo EN - US CA UK AU** yayınlandı → ilk gün 6 kurulum, **₺16,23/kurulum** (TR ₺1,95). Kullanıcı: "karşılayamam" → **DURAKLATILDI**. Yüksek gelirli EN pazarları bu bütçeyle kârsız; tekrar açılmaz (docs/unit_economics.md).
+- **Zibo ES - MX CO AR CL ES** yayında, ₺54,91/gün, teklif "Hedef EBM" (hedef değeri kontrol edilmeli). Politika sınırlaması yok.
+- EN alternatifi düşünülürse ucuz İngilizce pazarlar (ör. Filipinler, Hindistan, Nijerya, Pakistan, Kenya) — kurulum ucuz ama kullanıcı başı reklam geliri de düşük; önce ES verisini 14 gün izle.
