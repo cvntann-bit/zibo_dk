@@ -37,12 +37,24 @@ Kaynaklar: (1) rewarded reklam, (2) interstitial, (3) banner (şu an 0 fill), (4
 |---|---|---|---|
 | Mağaza "Reklam izle, coin kazan" | Rewarded | günde en fazla 2 (`maxDailyAdWatches`), ödül 20 ZC | `coin_provider.dart:65,393`, `coin_economy.dart:7` |
 | Şans Çarkı | Rewarded | Pro/Pro+ reklamı atlar; free izlemek zorunda; günlük çark hakkı | `coin_provider.dart:544` |
-| Ana Sayfa | Interstitial | reklamsız/Pro'da engelli | `home_screen.dart:289` |
-| Günlük Ödüller ekranı | Interstitial | aynı | `daily_rewards_screen.dart:56` |
-| Hedef Takibi | Interstitial | aynı | `goal_tracking_screen.dart:119` |
+| ~~Ana Sayfa (Zibo'ya hızlı dokunma)~~ | Interstitial | **2026-10-26 KALDIRILDI** — dokunurken açılıp kazara tıklama üretiyordu (CTR %55) | — |
+| Günlük Ödüller ekranı | Interstitial | `dailyReward` yerleşimi | `daily_rewards_screen.dart` |
+| Hedef Takibi 7/7 | Interstitial | `goalCycle` | `goal_tracking_screen.dart` |
+| Şükran kaydı → ekrandan çıkış / yeni rüya kaydı → listeye dönüş | Interstitial | `journalSaved` (2026-10-26) | `gratitude_journal_screen.dart`, `dream_entry_form_screen.dart` |
+| Mağaza "Bugünün vitrini" | Rewarded | kostüm nadirliğine göre 1–5 video → 24 saat deneme, günde 1 deneme (2026-10-26) | `store_screen.dart` `_CostumeTrialCard`, `costume_provider.dart` |
+| Oyun Salonu ikinci şans / ekstra hak | Rewarded | tur başına 1 devam, 5 sn sayaç (2026-10-26) | `assets/games/{tren,tugla,kule}` |
 | Banner | Banner | kod var, gerçek doluluk yok (bkz. hafıza: banner 0 fill) | `banner_ad_reload_signal.dart` |
 
-Tek giriş noktası `CoinProvider.showInterstitialAd` (Pro/reklamsız kontrolü orada).
+Tek giriş noktası `CoinProvider.showInterstitialAd(placement)` (Pro/reklamsız kontrolü + sıklık kuralları orada).
+
+**Interstitial sıklık kuralları (2026-10-26, `lib/services/interstitial_pacer.dart`, yalnız cihazda):** ilk açılıştan sonra
+3 saat hiç yok (kullanıcı kararı: 24 sa yerine 3 sa), günde en fazla 2, iki gösterim arası ≥4 dk. Her karar Firebase'e
+`interstitial_shown` / `interstitial_skipped{reason}` / `interstitial_unavailable` olarak `placement` ile düşer.
+
+**Rewarded sınırları (kullanıcı "kendi denklemini kur" dedi):** toplam bir üst sınır KONMADI — rewarded en iyi gelir
+kalemi (fill %60–87, eCPM ~1 $) ve kullanıcı kendi isteğiyle izliyor; her kaynak zaten kendi doğal sınırına sahip:
+mağaza coin 2/gün, çark günlük hak, oyun devam turu başına 1 (turlar günlük oyun hakkıyla sınırlı), kostüm denemesi
+günde 1 deneme (≤5 video). Coin VERMEYEN rewarded'lar (deneme, oyun devamı) coin ekonomisini şişirmez.
 
 ### Kullanıcı başı gelir formülü (ÖLÇÜLECEK değerlerle doldurulur)
 

@@ -16,6 +16,8 @@ import '../providers/ad_free_provider.dart';
 import '../providers/app_streak_provider.dart';
 import '../providers/auth_link_provider.dart';
 import '../providers/coin_provider.dart';
+import '../providers/costume_provider.dart';
+import '../providers/subscription_provider.dart';
 import '../screens/paywall_screen.dart';
 import '../utils/ad_free_promo_trigger.dart';
 import '../utils/coin_feedback.dart';
@@ -340,6 +342,7 @@ class _CostumesSectionState extends State<_CostumesSection> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        const _CostumeTrialCard(),
         for (final rarity in CostumeRarity.values)
           if (costumes.any((c) => c.rarity == rarity))
             _group(context, l10n, rarity),
@@ -764,6 +767,110 @@ class _StorePromoCta extends StatelessWidget {
 void _showCoinsAddedSnackBar(BuildContext context, int amount) {
   final l10n = AppLocalizations.of(context)!;
   showInfoDialog(context, l10n.storeCoinsAdded(amount));
+}
+
+/// "Bugünün vitrini" — günün kostümünü nadirliğine göre 1–5 ödüllü video
+/// izleyerek 24 saat ücretsiz giydirme (bkz. `CostumeProvider.
+/// trialAdsRequiredFor`, `registerTrialAdWatched`). Kullanıcının KENDİ
+/// isteğiyle izlediği reklam; Pro/Pro+ reklamsız, doğrudan açar. Tüm
+/// kostümlere sahipse kart görünmez.
+class _CostumeTrialCard extends StatefulWidget {
+  const _CostumeTrialCard();
+
+  @override
+  State<_CostumeTrialCard> createState() => _CostumeTrialCardState();
+}
+
+class _CostumeTrialCardState extends State<_CostumeTrialCard> {
+  bool _loading = false;
+
+  Future<void> _watch(BuildContext context, String costumeId, String name) async {
+    final l10n = AppLocalizations.of(context)!;
+    final costumes = context.read<CostumeProvider>();
+    final coins = context.read<CoinProvider>();
+    setState(() => _loading = true);
+    var started = false;
+    if (context.read<SubscriptionProvider>().isPro) {
+      started = await costumes.startTrial(costumeId);
+    } else {
+      final earned = await coins.showCostumeTrialAd();
+      if (!mounted) return;
+      if (!earned) {
+        setState(() => _loading = false);
+        if (context.mounted) unawaited(showInfoDialog(context, l10n.costumeTrialAdUnavailable));
+        return;
+      }
+      started = await costumes.registerTrialAdWatched(costumeId);
+    }
+    if (!mounted) return;
+    setState(() => _loading = false);
+    if (started && context.mounted) {
+      unawaited(showInfoDialog(context, l10n.costumeTrialStartedMessage(name)));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final provider = context.watch<CostumeProvider>();
+    final costume = provider.featuredTrialCostume;
+    if (costume == null) return const SizedBox.shrink();
+    final name = costume.localizedName(l10n);
+    final required = CostumeProvider.trialAdsRequiredFor(costume.rarity);
+    final watched = provider.trialAdsWatched(costume.id);
+    final remaining = provider.trialRemaining;
+    final active = provider.isTrialActive(costume.id);
+    final canStart = provider.canStartTrialToday;
+
+    final String subtitle;
+    if (active && remaining != null) {
+      subtitle = l10n.costumeTrialActive(
+        remaining.inHours,
+        remaining.inMinutes.remainder(60),
+      );
+    } else if (!canStart) {
+      subtitle = l10n.costumeTrialUsedToday;
+    } else if (watched > 0) {
+      subtitle = l10n.costumeTrialProgress(watched, required);
+    } else {
+      subtitle = required == 1
+          ? l10n.costumeTrialSubtitleOne
+          : l10n.costumeTrialSubtitle(required);
+    }
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 18),
+      child: _StorePromoCard(
+        leading: DecoratedBox(
+          decoration: stickerCircleDecoration(
+            fill: RarityStyle.of(costume.rarity).color,
+            borderWidth: 2.5,
+            shadowOffset: Offset.zero,
+          ),
+          child: SizedBox(
+            width: 44,
+            height: 44,
+            child: Padding(
+              padding: const EdgeInsets.all(3),
+              child: Image.asset(costume.imageAsset, semanticLabel: name),
+            ),
+          ),
+        ),
+        title: l10n.costumeTrialTitle(name),
+        subtitle: subtitle,
+        trailing: active || !canStart
+            ? const SizedBox.shrink()
+            : _StorePromoCta(
+                key: const Key('costumeTrialWatchButton'),
+                label: required > 1
+                    ? '${l10n.costumeTrialButton} ${watched + 1}/$required'
+                    : l10n.costumeTrialButton,
+                loading: _loading,
+                onTap: _loading ? null : () => _watch(context, costume.id, name),
+              ),
+      ),
+    );
+  }
 }
 
 class _WatchAdCard extends StatefulWidget {

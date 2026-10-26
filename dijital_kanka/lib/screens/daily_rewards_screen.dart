@@ -7,6 +7,7 @@ import '../l10n/app_localizations.dart';
 import '../models/coin_economy.dart';
 import '../providers/coin_provider.dart';
 import '../providers/daily_rewards_provider.dart';
+import '../services/interstitial_pacer.dart';
 import '../utils/zibo_event_signal.dart';
 import '../widgets/sticker_style.dart';
 
@@ -53,7 +54,7 @@ class _DailyRewardsScreenState extends State<DailyRewardsScreen> {
     // showInterstitialAd()` çağrısı; coin bakiyesini/işlem geçmişini HİÇ
     // etkilemiyor, günde en fazla bir kez tetiklenir (ödül zaten günde bir
     // kez alınabildiği için).
-    unawaited(coin.showInterstitialAd());
+    unawaited(coin.showInterstitialAd(InterstitialPlacement.dailyReward));
   }
 
   @override

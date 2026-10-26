@@ -821,5 +821,15 @@
   "exchangeUpsellButton": "Get coins in the Store",
   "exchangeProLine": "Weekly exchange limit {cap} ZC with Pro",
   "paywallProPerkGames": "Game Hall: 5 plays a day, 80 ZC exchange a week",
-  "paywallProPlusPerkGames": "Game Hall: 8 plays a day, 100 ZC exchange a week"
+  "paywallProPlusPerkGames": "Game Hall: 8 plays a day, 100 ZC exchange a week",
+  "costumeTrialTitle": "Today's showcase: {name}",
+  "costumeTrialSubtitle": "Watch {required} videos, wear it free for 24 hours",
+  "costumeTrialSubtitleOne": "Watch 1 video, wear it free for 24 hours",
+  "costumeTrialProgress": "{watched}/{required} videos watched — keep going!",
+  "costumeTrialButton": "🎬 Watch",
+  "costumeTrialActive": "Zibo is wearing it · {hours} h {minutes} min left",
+  "costumeTrialUsedToday": "You've used today's trial, a new costume arrives tomorrow!",
+  "costumeTrialStartedMessage": "{name} is yours for 24 hours! Zibo put it on right away.",
+  "costumeTrialBadge": "Trial",
+  "costumeTrialAdUnavailable": "No video is ready right now, please try again in a bit."
 }

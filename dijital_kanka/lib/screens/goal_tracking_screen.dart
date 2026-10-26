@@ -15,6 +15,7 @@ import '../providers/goals_provider.dart';
 import '../providers/profile_provider.dart';
 import '../providers/sound_effects_provider.dart';
 import '../providers/zibo_pose_provider.dart';
+import '../services/interstitial_pacer.dart';
 import '../services/sound_effects_service.dart';
 import 'completed_goals_screen.dart';
 import '../utils/address_term.dart';
@@ -116,7 +117,11 @@ class _GoalTrackingScreenState extends State<GoalTrackingScreen>
         // Puanlama penceresi çıkarsa o seferki reklam GÖSTERİLMEZ — ikisi
         // üst üste binmesin.
         if (!maybeShowRatePrompt(context)) {
-          unawaited(context.read<CoinProvider>().showInterstitialAd());
+          unawaited(
+            context.read<CoinProvider>().showInterstitialAd(
+              InterstitialPlacement.goalCycle,
+            ),
+          );
         }
       }
     }

@@ -2812,4 +2812,47 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get paywallProPlusPerkGames =>
       'Game Hall: 8 plays a day, 100 ZC exchange a week';
+
+  @override
+  String costumeTrialTitle(String name) {
+    return 'Today\'s showcase: $name';
+  }
+
+  @override
+  String costumeTrialSubtitle(int required) {
+    return 'Watch $required videos, wear it free for 24 hours';
+  }
+
+  @override
+  String get costumeTrialSubtitleOne =>
+      'Watch 1 video, wear it free for 24 hours';
+
+  @override
+  String costumeTrialProgress(int watched, int required) {
+    return '$watched/$required videos watched — keep going!';
+  }
+
+  @override
+  String get costumeTrialButton => '🎬 Watch';
+
+  @override
+  String costumeTrialActive(int hours, int minutes) {
+    return 'Zibo is wearing it · $hours h $minutes min left';
+  }
+
+  @override
+  String get costumeTrialUsedToday =>
+      'You\'ve used today\'s trial, a new costume arrives tomorrow!';
+
+  @override
+  String costumeTrialStartedMessage(String name) {
+    return '$name is yours for 24 hours! Zibo put it on right away.';
+  }
+
+  @override
+  String get costumeTrialBadge => 'Trial';
+
+  @override
+  String get costumeTrialAdUnavailable =>
+      'No video is ready right now, please try again in a bit.';
 }

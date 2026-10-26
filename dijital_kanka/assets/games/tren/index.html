@@ -277,7 +277,7 @@
         $('contText').textContent = t('contText', { c: eaten, p: points() });
         $('contBtn').textContent = CFG.tier === 'free' ? t('contAd') : t('contPro');
         $('contEnd').textContent = t('finish');
-        $('cont').hidden = false;
+        $('cont').hidden = false; startContTimer();
       } else finish();
     }, 550);
   }
@@ -286,7 +286,21 @@
     snake = s.s; dir = s.d; items = s.i; rocks = s.r; eaten = s.e; grow = s.g; queue = []; hist = []; rewinds += 1;
     state = 'paused'; $('cont').hidden = true; toast(t('back'));
   }
+  // İkinci Şans 5 sn sayacı (2026-10-26): süre dolunca oyun biter, puan alınır.
+  var contTimer = null;
+  function stopContTimer() { if (contTimer) { clearInterval(contTimer); contTimer = null; } }
+  function startContTimer() {
+    stopContTimer();
+    var left = 5, label = $('contBtn').textContent;
+    $('contBtn').textContent = label + ' (' + left + ')';
+    contTimer = setInterval(function () {
+      left -= 1;
+      if (left <= 0) { stopContTimer(); if (!$('cont').hidden) finish(); return; }
+      $('contBtn').textContent = label + ' (' + left + ')';
+    }, 1000);
+  }
   function finish() {
+    stopContTimer();
     if (state === 'end') return;
     state = 'end'; $('cont').hidden = true;
     send({ type: 'finish', points: points(), score: eaten, stats: { coins: eaten, length: snake.length } });
@@ -326,7 +340,7 @@
   coinImg.addEventListener('load', function () { if (!$('intro').hidden) showIntro(); });
   $('startBtn').addEventListener('click', function () { this.disabled = true; this.textContent = t('waiting'); send({ type: 'start' }); });
   $('playAdBtn').addEventListener('click', function () { this.disabled = true; send({ type: 'requestAd', reason: 'extraPlay' }); });
-  $('contBtn').addEventListener('click', function () { $('cont').hidden = true; send({ type: 'requestAd', reason: 'continue' }); });
+  $('contBtn').addEventListener('click', function () { stopContTimer(); $('cont').hidden = true; send({ type: 'requestAd', reason: 'continue' }); });
   $('contEnd').addEventListener('click', finish);
   $('againBtn').addEventListener('click', function () { this.disabled = true; send({ type: 'start' }); });
   $('exitBtn').addEventListener('click', function () { send({ type: 'exit' }); });

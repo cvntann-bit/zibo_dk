@@ -169,6 +169,25 @@ const _loginStreakBonusEs = <String>[
   "¡Eres una maravilla! ¡Este bono es completamente la recompensa de tu esfuerzo!",
 ];
 
+const _costumeTrialEndedTr = <String>[
+  'Deneme kostümümü geri bıraktım — çok yakışmıştı ama! Mağazada seni bekliyor.',
+  '24 saatlik deneme bitti, eski halime döndüm. Beğendiysen yarın yeni bir kostüm deneriz!',
+  'Kostüm provası sona erdi! Bugün vitrinde başka bir sürpriz var, bakmak ister misin?',
+  'Deneme süresi doldu, kostümü dolabına geri koydum. Yine de bana çok yakıştı, değil mi?',
+];
+const _costumeTrialEndedEn = <String>[
+  "I gave back my trial costume — it looked great, though! It's waiting for you in the Store.",
+  "The 24-hour trial is over, I'm back to my usual look. Tomorrow we can try a new costume!",
+  'Costume rehearsal is over! There is another surprise in the showcase today, want to look?',
+  'The trial ended, so I put the costume back in the closet. It did suit me, right?',
+];
+const _costumeTrialEndedEs = <String>[
+  '¡Devolví mi disfraz de prueba, aunque me quedaba genial! Te espera en la Tienda.',
+  'Terminó la prueba de 24 horas y volví a mi look de siempre. ¡Mañana probamos otro!',
+  '¡Se acabó el ensayo de disfraz! Hoy hay otra sorpresa en el escaparate, ¿quieres verla?',
+  'Terminó la prueba y guardé el disfraz en el armario. Me quedaba muy bien, ¿verdad?',
+];
+
 /// [type] olayı için [locale]'e göre söz havuzunu döner — havuz o dilde
 /// boşsa (bkz. dosya dokümantasyonu) Türkçe'ye düşer.
 List<String> eventMessagesForLocale(ZiboEventType type, Locale locale) {
@@ -184,18 +203,21 @@ List<String> _poolFor(ZiboEventType type, String languageCode) {
       ZiboEventType.streakBroken => _streakBrokenEn,
       ZiboEventType.costumeOrThemeUnlocked => _costumeOrThemeUnlockedEn,
       ZiboEventType.loginStreakBonus => _loginStreakBonusEn,
+      ZiboEventType.costumeTrialEnded => _costumeTrialEndedEn,
     },
     'es' => switch (type) {
       ZiboEventType.goalCycleCompleted => _goalCycleCompletedEs,
       ZiboEventType.streakBroken => _streakBrokenEs,
       ZiboEventType.costumeOrThemeUnlocked => _costumeOrThemeUnlockedEs,
       ZiboEventType.loginStreakBonus => _loginStreakBonusEs,
+      ZiboEventType.costumeTrialEnded => _costumeTrialEndedEs,
     },
     _ => switch (type) {
       ZiboEventType.goalCycleCompleted => _goalCycleCompletedTr,
       ZiboEventType.streakBroken => _streakBrokenTr,
       ZiboEventType.costumeOrThemeUnlocked => _costumeOrThemeUnlockedTr,
       ZiboEventType.loginStreakBonus => _loginStreakBonusTr,
+      ZiboEventType.costumeTrialEnded => _costumeTrialEndedTr,
     },
   };
 }

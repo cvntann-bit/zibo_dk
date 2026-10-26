@@ -2797,4 +2797,46 @@ class AppLocalizationsTr extends AppLocalizations {
   @override
   String get paywallProPlusPerkGames =>
       'Oyun Salonu: günde 8 hak, haftada 100 ZC takas';
+
+  @override
+  String costumeTrialTitle(String name) {
+    return 'Bugünün vitrini: $name';
+  }
+
+  @override
+  String costumeTrialSubtitle(int required) {
+    return '$required video izle, 24 saat ücretsiz giy';
+  }
+
+  @override
+  String get costumeTrialSubtitleOne => '1 video izle, 24 saat ücretsiz giy';
+
+  @override
+  String costumeTrialProgress(int watched, int required) {
+    return '$watched/$required video izlendi — devam!';
+  }
+
+  @override
+  String get costumeTrialButton => '🎬 İzle';
+
+  @override
+  String costumeTrialActive(int hours, int minutes) {
+    return 'Zibo şu an giyiyor · kalan $hours sa $minutes dk';
+  }
+
+  @override
+  String get costumeTrialUsedToday =>
+      'Bugünkü denemeni kullandın, yarın vitrinde yeni kostüm var!';
+
+  @override
+  String costumeTrialStartedMessage(String name) {
+    return '$name 24 saatliğine senin! Zibo hemen giydi.';
+  }
+
+  @override
+  String get costumeTrialBadge => 'Deneme';
+
+  @override
+  String get costumeTrialAdUnavailable =>
+      'Şu an video hazır değil, biraz sonra tekrar dene.';
 }

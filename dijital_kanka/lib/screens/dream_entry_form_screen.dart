@@ -1,9 +1,13 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../l10n/app_localizations.dart';
 import '../models/dream_entry.dart';
+import '../providers/coin_provider.dart';
 import '../providers/dream_journal_provider.dart';
+import '../services/interstitial_pacer.dart';
 import '../widgets/dot_grid_background.dart';
 import '../widgets/sticker_style.dart';
 
@@ -70,7 +74,13 @@ class _DreamEntryFormScreenState extends State<DreamEntryFormScreen> {
         text: _textController.text,
       );
     }
+    // Yeni rüya kaydedilip listeye dönülürken geçiş reklamı denenir (sıklık
+    // kuralları CoinProvider/InterstitialPacer'da); düzenlemede değil.
+    final coin = _isEditing ? null : context.read<CoinProvider>();
     Navigator.of(context).pop();
+    if (coin != null) {
+      unawaited(coin.showInterstitialAd(InterstitialPlacement.journalSaved));
+    }
   }
 
   Future<void> _confirmDelete() async {

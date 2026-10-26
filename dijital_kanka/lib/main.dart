@@ -68,6 +68,7 @@ import 'services/ad_service.dart';
 import 'services/appodeal_ad_service.dart';
 import 'services/google_auth_service.dart';
 import 'services/home_widget_service.dart';
+import 'services/interstitial_pacer.dart';
 import 'services/iap_purchase_service.dart';
 import 'services/purchase_service.dart';
 import 'services/push_notification_service.dart';
@@ -772,6 +773,11 @@ class DijitalKankaApp extends StatelessWidget {
               isProPlus: () => subscription.isProPlus,
               now: _trustedNow(context),
               onXpEarned: (amount) => xp.addXp(amount),
+              // Sıklık kuralları yalnızca GERÇEK reklam servisiyle (üretim);
+              // sahte servis enjekte eden testler kuralsız çalışır.
+              interstitialPacer: adService == null
+                  ? (InterstitialPacer(now: _trustedNow(context))..load())
+                  : null,
             );
           },
         ),
@@ -789,7 +795,9 @@ class DijitalKankaApp extends StatelessWidget {
             );
           },
         ),
-        ChangeNotifierProvider(create: (_) => CostumeProvider(uid: uid)),
+        ChangeNotifierProvider(
+          create: (context) => CostumeProvider(uid: uid, now: _trustedNow(context)),
+        ),
         // 2026 yeni özellik — Kurucu Üye rozeti artık Google hesabına
         // bağlanan İLK 500 kullanıcıya, canlı bir Firestore sayacıyla
         // veriliyor (bkz. FounderBadgeProvider dokümantasyonu). Diğer

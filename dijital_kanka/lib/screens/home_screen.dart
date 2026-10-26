@@ -16,7 +16,6 @@ import '../models/mood.dart';
 import '../models/water_entry.dart';
 import '../providers/ad_free_provider.dart';
 import '../providers/app_theme_provider.dart';
-import '../providers/coin_provider.dart';
 import '../providers/costume_provider.dart';
 import '../providers/custom_messages_provider.dart';
 import '../providers/dream_journal_provider.dart';
@@ -171,9 +170,9 @@ class _HomeScreenState extends State<HomeScreen>
     }
   }
 
-  /// 2026 güncellemesi — kullanıcı isteği: Zibo'ya art arda hızlı
-  /// dokunulunca (5-6 kez, birkaç saniye içinde) bir reklam VEYA (daha
-  /// düşük ihtimalle) Reklamsız Zibo teklifiyle karşılaşılsın. Gerçek
+  /// Zibo'ya art arda hızlı dokunulunca (5 kez, 3 sn içinde) bazen
+  /// Reklamsız Zibo teklifi açılır (2026-10-26'dan beri reklam YOK, bkz.
+  /// [_showRapidTapPromoOrAd]). Gerçek
   /// zaman damgası tutuluyor (`WheelTriggerButton`/`AdFreePromoTrigger`
   /// ile AYNI `DateTime.now().difference(...)` deseni) — bu ekranda başka
   /// yerde kalıcılık gerektirmeyen, saf/geçici bir "art arda dokunma"
@@ -182,8 +181,8 @@ class _HomeScreenState extends State<HomeScreen>
   static const _rapidTapThreshold = 5;
   static const _rapidTapWindow = Duration(seconds: 3);
 
-  /// Art arda dokunma eşiği dolunca reklam yerine Reklamsız Zibo
-  /// teklifinin gösterilme ihtimali — kullanıcının kendi ifadesiyle
+  /// Art arda dokunma eşiği dolunca Reklamsız Zibo teklifinin gösterilme
+  /// ihtimali — kullanıcının kendi ifadesiyle
   /// "%20-30 ihtimalle", ikisinin ortası seçildi.
   static const _adFreePromoChanceOnRapidTap = 0.25;
 
@@ -267,26 +266,22 @@ class _HomeScreenState extends State<HomeScreen>
     unawaited(_showRapidTapPromoOrAd());
   }
 
-  /// Reklam VEYA (kullanıcının bazen "reklamsız ol" teklifiyle de
-  /// karşılaşması için) Reklamsız Zibo tanıtım sheet'ini gösterir —
-  /// İKİSİ BİRDEN asla aynı tetiklemede olmuyor, `_adPromoRandom` her
-  /// seferinde tek bir yol seçiyor. Kullanıcı ZATEN "Zibo ADS" satın
-  /// aldıysa ikisi de anlamsız (reklam zaten `CoinProvider.
-  /// showInterstitialAd()` içinde engelleniyor, tanıtım sheet'i ise
-  /// zaten sahip olduğu bir şeyi tekrar tekrar satmaya çalışırdı) — bu
-  /// yüzden BURADA erken çıkılıyor.
+  /// Art arda dokunma eşiği dolunca [_adFreePromoChanceOnRapidTap]
+  /// ihtimalle Reklamsız Zibo tanıtımını açar, aksi halde hiçbir şey yapmaz.
+  /// **2026-10-26: geçiş reklamı bu tetikleyiciden KALDIRILDI** — kullanıcı
+  /// Zibo'ya hızlı hızlı dokunurken açılan reklam kazara tıklamaya yol
+  /// açıyordu (Appodeal CTR %55; reklam ağları bunu geçersiz trafik sayar).
+  /// Geçiş reklamları artık yalnızca anlamlı akış sonlarında (bkz.
+  /// `InterstitialPlacement`). Kullanıcı zaten reklamsızsa tanıtım anlamsız.
   Future<void> _showRapidTapPromoOrAd() async {
     if (context.read<AdFreeProvider>().isAdFree) return;
+    if (_adPromoRandom.nextDouble() >= _adFreePromoChanceOnRapidTap) return;
     _showingRapidTapPromo = true;
     try {
-      if (_adPromoRandom.nextDouble() < _adFreePromoChanceOnRapidTap) {
-        if (mounted) {
-          await Navigator.of(
-            context,
-          ).push(MaterialPageRoute<void>(builder: (_) => const PaywallScreen()));
-        }
-      } else {
-        await context.read<CoinProvider>().showInterstitialAd();
+      if (mounted) {
+        await Navigator.of(
+          context,
+        ).push(MaterialPageRoute<void>(builder: (_) => const PaywallScreen()));
       }
     } finally {
       _showingRapidTapPromo = false;

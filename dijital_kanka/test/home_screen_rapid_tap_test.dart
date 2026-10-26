@@ -1,7 +1,8 @@
-// HomeScreen'in Zibo'ya art arda hızlı (5 kez, birkaç saniye içinde)
-// dokunulunca bir reklam VEYA (daha düşük ihtimalle) Reklamsız Zibo
-// tanıtım sheet'ini gösterdiğini, ikisinin ASLA aynı anda tetiklenmediğini
-// ve eşik dolmadan (4 dokunuşta) hiçbir şeyin tetiklenmediğini doğrular —
+// HomeScreen'de Zibo'ya art arda hızlı (5 kez, birkaç saniye içinde)
+// dokunulunca bazen Reklamsız Zibo tanıtımının açıldığını, geçiş reklamının
+// ise ASLA gösterilmediğini (2026-10-26: kazara tıklama riski yüzünden
+// kaldırıldı) ve eşik dolmadan (4 dokunuşta) hiçbir şeyin tetiklenmediğini
+// doğrular —
 // `home_screen_sound_test.dart`'taki "bağımsız test uygulaması + sahte
 // servis enjeksiyonu" deseniyle AYNI.
 
@@ -118,7 +119,7 @@ void main() {
   });
 
   testWidgets(
-    'Zibo\'ya art arda 5 kez dokununca (yüksek random değeri) geçiş reklamı gösterilir',
+    'Zibo\'ya art arda 5 kez dokununca (yüksek random değeri) hiçbir şey açılmaz — reklam YOK',
     (tester) async {
       final adService = _RecordingAdService();
       await tester.pumpWidget(
@@ -127,7 +128,7 @@ void main() {
       await _tapZiboNTimes(tester, 5);
       await tester.pumpAndSettle();
 
-      expect(adService.interstitialCallCount, 1);
+      expect(adService.interstitialCallCount, 0);
       expect(find.byKey(const Key('paywallOneTimeButton')), findsNothing);
     },
   );

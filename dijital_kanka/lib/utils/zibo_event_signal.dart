@@ -25,6 +25,10 @@ enum ZiboEventType {
   /// o metodun dokümantasyonu, bu mekanik BU TURDA İCAT EDİLMEDİ, yalnızca
   /// mesaj kancası hazırlandı.
   loginStreakBonus,
+
+  /// "Bugünün vitrini" 24 saatlik kostüm denemesi bitti, kostüm çıkarıldı
+  /// (bkz. `CostumeProvider._expireTrialIfDue`) — Zibo bunu nazikçe söyler.
+  costumeTrialEnded,
 }
 
 /// Ana Sayfa'nın (bkz. `HomeScreen._pickAndSetQuote`) BİR SONRAKİ söz

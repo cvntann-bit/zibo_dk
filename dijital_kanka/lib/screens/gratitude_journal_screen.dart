@@ -17,6 +17,7 @@ import '../providers/gratitude_provider.dart';
 import '../providers/profile_provider.dart';
 import '../providers/subscription_provider.dart';
 import '../providers/zibo_pose_provider.dart';
+import '../services/interstitial_pacer.dart';
 import '../utils/address_term.dart';
 import '../utils/info_dialog.dart';
 import '../widgets/banner_ad_slot.dart';
@@ -49,6 +50,12 @@ class _GratitudeJournalScreenState extends State<GratitudeJournalScreen> {
   final _controllers = List.generate(3, (_) => TextEditingController());
   bool _canSave = false;
 
+  /// Bu ziyarette kayıt yapıldıysa ekrandan çıkışta geçiş reklamı denenir
+  /// ("kaydet ve geri dön" — bkz. [InterstitialPlacement.journalSaved]).
+  /// `dispose`'ta `context.read` yasak olduğu için referans kayıt anında
+  /// saklanıyor.
+  CoinProvider? _coinForExitAd;
+
   @override
   void initState() {
     super.initState();
@@ -66,6 +73,10 @@ class _GratitudeJournalScreenState extends State<GratitudeJournalScreen> {
     _timer?.cancel();
     for (final controller in _controllers) {
       controller.dispose();
+    }
+    final coin = _coinForExitAd;
+    if (coin != null) {
+      unawaited(coin.showInterstitialAd(InterstitialPlacement.journalSaved));
     }
     super.dispose();
   }
@@ -102,7 +113,8 @@ class _GratitudeJournalScreenState extends State<GratitudeJournalScreen> {
       // Koordinasyon GoalCard._onTodayTap'teki desenle AYNI: iki provider
       // birbirine bağımlı değil, bunu bağlayan burası (widget) — bkz.
       // GratitudeProvider.saveToday dokümantasyonu.
-      context.read<CoinProvider>().earnGratitudeJournal();
+      final coin = context.read<CoinProvider>()..earnGratitudeJournal();
+      _coinForExitAd = coin;
       final l10n = AppLocalizations.of(context)!;
       unawaited(
         showInfoDialog(context, l10n.gratitudeCoinRewardMessage).then((_) {

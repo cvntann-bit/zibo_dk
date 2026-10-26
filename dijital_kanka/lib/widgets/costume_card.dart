@@ -57,6 +57,9 @@ class CostumeCard extends StatelessWidget {
     final costumeProvider = context.watch<CostumeProvider>();
     final owned = costumeProvider.isOwned(costume.id);
     final equipped = costumeProvider.isEquipped(costume.id);
+    // 24 saatlik vitrin denemesi: sahip değil ama şu an giyilebilir — kart
+    // satın alınabilir kalır (deneme = satış anı), kilit yerine "Deneme".
+    final onTrial = !owned && costumeProvider.isTrialActive(costume.id);
     final rarityStyle = RarityStyle.of(costume.rarity);
     final acquisitionLabel = costume.acquisition.localizedLabel(l10n);
 
@@ -83,7 +86,7 @@ class CostumeCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Opacity(
-                    opacity: owned ? 1 : 0.45,
+                    opacity: (owned || onTrial) ? 1 : 0.45,
                     child: Image.asset(
                       costume.imageAsset,
                       height: 68,
@@ -115,7 +118,32 @@ class CostumeCard extends StatelessWidget {
                     ),
                   ),
                 ),
-                if (!owned)
+                if (onTrial)
+                  Positioned(
+                    top: -6,
+                    right: -6,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: colorScheme.primary,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: kStickerOutline, width: 1.5),
+                      ),
+                      child: Text(
+                        l10n.costumeTrialBadge,
+                        style: TextStyle(
+                          fontSize: 9.5,
+                          height: 1.1,
+                          fontWeight: FontWeight.w800,
+                          color: colorScheme.onPrimary,
+                        ),
+                      ),
+                    ),
+                  )
+                else if (!owned)
                   Positioned(
                     top: -6,
                     right: -6,

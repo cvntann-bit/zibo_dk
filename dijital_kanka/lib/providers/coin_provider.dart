@@ -9,8 +9,10 @@ import '../models/coin_economy.dart';
 import '../models/coin_package.dart';
 import '../models/coin_transaction.dart';
 import '../models/wheel_prize.dart';
+import '../services/ad_analytics.dart';
 import '../services/ad_service.dart';
 import '../services/cloud_state_store.dart';
+import '../services/interstitial_pacer.dart';
 import '../services/purchase_service.dart';
 import '../services/sound_effects_service.dart';
 import '../utils/zibo_event_signal.dart';
@@ -36,7 +38,9 @@ class CoinProvider extends ChangeNotifier {
     bool Function() isPro = _alwaysFalse,
     bool Function() isProPlus = _alwaysFalse,
     void Function(int amount)? onXpEarned,
+    InterstitialPacer? interstitialPacer,
   }) : _adService = adService,
+       _interstitialPacer = interstitialPacer,
        _purchaseService = purchaseService,
        _soundEffectsService = soundEffectsService ?? const FakeSoundEffectsService(),
        _random = random ?? Random(),
@@ -65,6 +69,14 @@ class CoinProvider extends ChangeNotifier {
   static const int maxDailyAdWatches = 2;
 
   final AdService _adService;
+
+  /// Geçiş reklamı sıklık kuralları (ilk 3 saat koruma, günde 2, 4 dk ara —
+  /// bkz. [InterstitialPacer]). `null` = kural yok (testlerin varsayılanı);
+  /// üretimde `main.dart` verir.
+  final InterstitialPacer? _interstitialPacer;
+
+  /// Bir geçiş reklamı zaten açılıyor/açıkken ikinci çağrıyı reddetmek için.
+  bool _interstitialInFlight = false;
   final PurchaseService _purchaseService;
   final SoundEffectsService _soundEffectsService;
   final CloudStateStore _store;
@@ -651,9 +663,12 @@ class CoinProvider extends ChangeNotifier {
 
   // --- Reklam gösterimi (coin ekonomisiyle DOĞRUDAN ilgisiz) -----------
 
-  /// Ana Sayfa'da Zibo'ya art arda hızlı dokunulduğunda gösterilen geçiş
-  /// (interstitial) reklamı — bkz. `HomeScreen._RapidTapState`
-  /// dokümantasyonu. Coin bakiyesini/işlem geçmişini HİÇ etkilemiyor,
+  /// Geçiş (interstitial) reklamı — TEK giriş noktası. [placement] yalnızca
+  /// anlamlı akış sonları (bkz. [InterstitialPlacement]); sıklık kuralları
+  /// [InterstitialPacer]'da. 2026-10-26: Ana Sayfa'daki "Zibo'ya art arda
+  /// dokunma" tetikleyicisi KALDIRILDI (kazara tıklama). Her karar
+  /// `interstitial_shown/skipped/unavailable` olayıyla loglanır.
+  /// Coin bakiyesini/işlem geçmişini HİÇ etkilemiyor,
   /// yalnızca zaten var olan (main.dart'ta gerçek Appodeal ile kurulan)
   /// [_adService] örneğini yeniden kullanmak için buradan geçiriliyor —
   /// ayrı bir ikinci `AdService` örneği/kablolaması gerekmesin diye.
@@ -663,9 +678,28 @@ class CoinProvider extends ChangeNotifier {
   /// BİLEREK bu kontrolün DIŞINDA, yalnızca zorunlu/geçiş reklamı kapanıyor.
   /// **Faz 3 — Zibo Pro/Pro+ perk "A1"**: Pro/Pro+ kullanıcılar ([_isPro])
   /// için de AYNI şekilde reklam hiç yüklenmeye çalışılmadan `false` döner.
-  Future<bool> showInterstitialAd() {
-    if (_isAdFree() || _isPro()) return Future.value(false);
-    return _adService.showInterstitialAd();
+  Future<bool> showInterstitialAd(InterstitialPlacement placement) async {
+    if (_isAdFree() || _isPro() || _interstitialInFlight) return false;
+    final pacer = _interstitialPacer;
+    final skip = pacer?.check();
+    if (skip != null) {
+      AdAnalytics.log('interstitial_skipped', {
+        'placement': placement.name,
+        'reason': skip.name,
+      });
+      return false;
+    }
+    _interstitialInFlight = true;
+    try {
+      final shown = await _adService.showInterstitialAd();
+      if (shown) await pacer?.recordShown();
+      AdAnalytics.log(shown ? 'interstitial_shown' : 'interstitial_unavailable', {
+        'placement': placement.name,
+      });
+      return shown;
+    } finally {
+      _interstitialInFlight = false;
+    }
   }
 
   /// Oyun Salonu'ndaki "reklam izle, +1 hak / tekrar dene / geri al"
@@ -675,6 +709,20 @@ class CoinProvider extends ChangeNotifier {
   Future<bool> showGameRewardedAd() {
     if (_isPro()) return Future.value(true);
     return _adService.showRewardedAd();
+  }
+
+  /// Mağaza "Bugünün vitrini — 24 saat dene" kostüm denemesi için ödüllü
+  /// reklam. Coin VERMEZ; kostümü `CostumeProvider.startTrial` açar. Günde
+  /// tek deneme hakkı `CostumeProvider`'da tutulur. Pro/Pro+ reklamsız geçer
+  /// ([showGameRewardedAd] ile aynı kural).
+  Future<bool> showCostumeTrialAd() async {
+    if (_isPro()) return true;
+    final earned = await _adService.showRewardedAd();
+    AdAnalytics.log('rewarded_result', {
+      'placement': 'costumeTrial',
+      'ok': earned ? 1 : 0,
+    });
+    return earned;
   }
 
   @override

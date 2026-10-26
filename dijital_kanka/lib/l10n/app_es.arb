@@ -821,5 +821,15 @@
   "exchangeUpsellButton": "Consigue monedas en la Tienda",
   "exchangeProLine": "Límite semanal de {cap} ZC con Pro",
   "paywallProPerkGames": "Sala de Juegos: 5 partidas al día, 80 ZC de canje por semana",
-  "paywallProPlusPerkGames": "Sala de Juegos: 8 partidas al día, 100 ZC de canje por semana"
+  "paywallProPlusPerkGames": "Sala de Juegos: 8 partidas al día, 100 ZC de canje por semana",
+  "costumeTrialTitle": "Escaparate de hoy: {name}",
+  "costumeTrialSubtitle": "Mira {required} videos y úsalo gratis 24 horas",
+  "costumeTrialSubtitleOne": "Mira 1 video y úsalo gratis 24 horas",
+  "costumeTrialProgress": "{watched}/{required} videos vistos, ¡sigue!",
+  "costumeTrialButton": "🎬 Ver",
+  "costumeTrialActive": "Zibo lo lleva puesto · quedan {hours} h {minutes} min",
+  "costumeTrialUsedToday": "Ya usaste la prueba de hoy, ¡mañana hay un disfraz nuevo!",
+  "costumeTrialStartedMessage": "¡{name} es tuyo por 24 horas! Zibo ya se lo puso.",
+  "costumeTrialBadge": "Prueba",
+  "costumeTrialAdUnavailable": "Ahora no hay un video listo, inténtalo de nuevo en un rato."
 }

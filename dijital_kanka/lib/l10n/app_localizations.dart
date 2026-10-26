@@ -4989,6 +4989,66 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'Oyun Salonu: günde 8 hak, haftada 100 ZC takas'**
   String get paywallProPlusPerkGames;
+
+  /// Mağaza kostümler bölümünün üstündeki 24 saatlik deneme kartının başlığı
+  ///
+  /// In tr, this message translates to:
+  /// **'Bugünün vitrini: {name}'**
+  String costumeTrialTitle(String name);
+
+  /// Deneme kartı alt metni: kaç video izlenince kostüm 24 saat açılır
+  ///
+  /// In tr, this message translates to:
+  /// **'{required} video izle, 24 saat ücretsiz giy'**
+  String costumeTrialSubtitle(int required);
+
+  /// Deneme kartı alt metni (tek video gereken kostümler)
+  ///
+  /// In tr, this message translates to:
+  /// **'1 video izle, 24 saat ücretsiz giy'**
+  String get costumeTrialSubtitleOne;
+
+  /// Deneme kartında izlenen video ilerlemesi
+  ///
+  /// In tr, this message translates to:
+  /// **'{watched}/{required} video izlendi — devam!'**
+  String costumeTrialProgress(int watched, int required);
+
+  /// Deneme kartındaki ödüllü video düğmesi
+  ///
+  /// In tr, this message translates to:
+  /// **'🎬 İzle'**
+  String get costumeTrialButton;
+
+  /// Deneme sürerken kalan süre
+  ///
+  /// In tr, this message translates to:
+  /// **'Zibo şu an giyiyor · kalan {hours} sa {minutes} dk'**
+  String costumeTrialActive(int hours, int minutes);
+
+  /// Günlük deneme hakkı kullanıldığında kart alt metni
+  ///
+  /// In tr, this message translates to:
+  /// **'Bugünkü denemeni kullandın, yarın vitrinde yeni kostüm var!'**
+  String get costumeTrialUsedToday;
+
+  /// Deneme açılınca gösterilen bilgi mesajı
+  ///
+  /// In tr, this message translates to:
+  /// **'{name} 24 saatliğine senin! Zibo hemen giydi.'**
+  String costumeTrialStartedMessage(String name);
+
+  /// Kostüm kartında denemesi süren kostümün durum etiketi
+  ///
+  /// In tr, this message translates to:
+  /// **'Deneme'**
+  String get costumeTrialBadge;
+
+  /// Ödüllü video yüklenemediğinde/tamamlanmadığında mesaj
+  ///
+  /// In tr, this message translates to:
+  /// **'Şu an video hazır değil, biraz sonra tekrar dene.'**
+  String get costumeTrialAdUnavailable;
 }
 
 class _AppLocalizationsDelegate
