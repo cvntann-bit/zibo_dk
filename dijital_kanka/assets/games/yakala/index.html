@@ -79,30 +79,30 @@
   'use strict';
   var TEXT = {
     tr: {
-      intro: 'Zibo\'yu parmağınla sağa sola kaydır, düşen coinleri yakala, bombalardan kaç. 45 saniye hayatta kal!',
+      intro: 'Zibo\'yu parmağınla sağa sola kaydır, savrulan coinleri yakala, bombalardan kaç. Süre yok: canların bitene kadar oyna, oyun kademe kademe hızlanır!',
       coin: 'Coin', coinD: '1 skor', stack: 'Coin kesesi', stackD: '3 skor, çok hızlı düşer', magnet: 'Mıknatıs', magnetD: '3 sn coinleri çeker', bomb: 'Bomba', bombD: '1 can gider (3 can)',
       playsLeft: '{n} hak kaldı', noPlays: 'Bugünlük hakların bitti', best: 'Rekor {n}', start: 'Başla', waiting: 'Bekleniyor…', adPlay: '🎬 Reklam izle, +1 hak',
-      sec: '{n} sn', magnetHud: 'Mıknatıs {n}', hint: 'Kaydır: Zibo\'yu hareket ettir',
+      sec: '{n} sn', level: 'Seviye {n}', levelUp: 'Seviye {n}! Hızlanıyor', magnetHud: 'Mıknatıs {n}', hint: 'Kaydır: Zibo\'yu hareket ettir',
       newBest: 'Yeni rekor!', timeUp: 'Süre bitti!', dead: 'Canların bitti!', score: 'Skor', livesLeft: 'Kalan can', lasted: 'Dayandın',
-      pts: '+{n} puan', note: '{s} skor = {s} puan', capNote: ' (tur tavanı {c})', deadNote: 'Canın bittiği için bu turda puan yok',
+      pts: '+{n} puan', note: '{s} skor = {s} puan', capNote: ' (tur tavanı {c})', deadNote: 'Seviye {l} · {s} skor = {s} puan',
       again: 'Tekrar oyna ({n} hak)', againNo: 'Hak kalmadı', exit: 'Oyun Salonu\'na dön', adFail: 'Reklam şu an yok, sonra tekrar dene', magnetPop: 'Mıknatıs!'
     },
     en: {
-      intro: 'Slide Zibo left and right with your finger, catch the falling coins and dodge the bombs. Survive 45 seconds!',
+      intro: 'Slide Zibo left and right with your finger, catch the swaying coins and dodge the bombs. No timer: play until you run out of lives — it speeds up level by level!',
       coin: 'Coin', coinD: '1 point', stack: 'Coin bag', stackD: '3 points, falls very fast', magnet: 'Magnet', magnetD: 'pulls coins for 3 s', bomb: 'Bomb', bombD: 'costs 1 life (3 lives)',
       playsLeft: '{n} plays left', noPlays: 'No plays left today', best: 'Best {n}', start: 'Start', waiting: 'Please wait…', adPlay: '🎬 Watch an ad, +1 play',
-      sec: '{n} s', magnetHud: 'Magnet {n}', hint: 'Slide: move Zibo',
+      sec: '{n} s', level: 'Level {n}', levelUp: 'Level {n}! Speeding up', magnetHud: 'Magnet {n}', hint: 'Slide: move Zibo',
       newBest: 'New record!', timeUp: 'Time\'s up!', dead: 'Out of lives!', score: 'Score', livesLeft: 'Lives left', lasted: 'Lasted',
-      pts: '+{n} points', note: '{s} score = {s} points', capNote: ' (round cap {c})', deadNote: 'Out of lives, no points this round',
+      pts: '+{n} points', note: '{s} score = {s} points', capNote: ' (round cap {c})', deadNote: 'Level {l} · {s} score = {s} points',
       again: 'Play again ({n} left)', againNo: 'No plays left', exit: 'Back to Game Hall', adFail: 'No ad right now, try again later', magnetPop: 'Magnet!'
     },
     es: {
-      intro: 'Desliza a Zibo con el dedo, atrapa las monedas que caen y esquiva las bombas. ¡Aguanta 45 segundos!',
+      intro: 'Desliza a Zibo con el dedo, atrapa las monedas que se balancean y esquiva las bombas. Sin tiempo: juega hasta quedarte sin vidas, ¡se acelera nivel a nivel!',
       coin: 'Moneda', coinD: '1 punto', stack: 'Bolsa de monedas', stackD: '3 puntos, cae muy rápido', magnet: 'Imán', magnetD: 'atrae monedas 3 s', bomb: 'Bomba', bombD: 'quita 1 vida (3 vidas)',
       playsLeft: 'Te quedan {n} partidas', noPlays: 'No te quedan partidas hoy', best: 'Récord {n}', start: 'Empezar', waiting: 'Espera…', adPlay: '🎬 Mira un anuncio, +1 partida',
-      sec: '{n} s', magnetHud: 'Imán {n}', hint: 'Desliza: mueve a Zibo',
+      sec: '{n} s', level: 'Nivel {n}', levelUp: '¡Nivel {n}! Más rápido', magnetHud: 'Imán {n}', hint: 'Desliza: mueve a Zibo',
       newBest: '¡Nuevo récord!', timeUp: '¡Se acabó el tiempo!', dead: '¡Sin vidas!', score: 'Puntos', livesLeft: 'Vidas', lasted: 'Aguantaste',
-      pts: '+{n} puntos', note: '{s} puntos de juego = {s} puntos', capNote: ' (tope {c})', deadNote: 'Te quedaste sin vidas, sin puntos esta vez',
+      pts: '+{n} puntos', note: '{s} puntos de juego = {s} puntos', capNote: ' (tope {c})', deadNote: 'Nivel {l} · {s} puntos de juego = {s} puntos',
       again: 'Jugar de nuevo (quedan {n})', againNo: 'No quedan partidas', exit: 'Volver a la Sala de Juegos', adFail: 'No hay anuncio ahora, inténtalo luego', magnetPop: '¡Imán!'
     }
   };
@@ -149,7 +149,9 @@
   };
 
   // ---------- tuval ----------
-  var W = 360, H = 640, OUT = '#14110C', GROUND = 70, ROUND = 45;
+  // Süresiz mod (kullanıcı, 2026-10-27): 45 sn sınırı kalktı; canlar bitene kadar sürer,
+  // her LEVEL_SEC saniyede bir kademe hızlanır, coinler sağa sola savrularak düşer.
+  var W = 360, H = 640, OUT = '#14110C', GROUND = 70, LEVEL_SEC = 15;
   var canvas = $('c'), ctx = canvas.getContext('2d');
   function fit() {
     var s = Math.min(window.innerWidth / W, window.innerHeight / H), dpr = window.devicePixelRatio || 1;
@@ -208,37 +210,42 @@
   function toastMsg(m) { toastText = m; toastT = 1.8; }
 
   // ---------- oyun ----------
-  var state = 'idle', tt = 0, zibo, items, pops, score, lives, timeLeft, spawnT, magnetT, hurtT, shakeT, squashT, targetX, keys = {}, outcome = null;
+  var state = 'idle', tt = 0, zibo, items, pops, score, lives, elapsed, lvl, spawnT, magnetT, hurtT, shakeT, squashT, targetX, keys = {}, outcome = null;
   function reset() {
     zibo = { x: W / 2, y: H - GROUND - 44 }; targetX = W / 2; items = []; pops = [];
-    score = 0; lives = 3; timeLeft = ROUND; spawnT = 0.4; magnetT = 0; hurtT = 0; shakeT = 0; squashT = 0; outcome = null;
+    score = 0; lives = 3; elapsed = 0; lvl = 1; spawnT = 0.4; magnetT = 0; hurtT = 0; shakeT = 0; squashT = 0; outcome = null;
   }
   reset();
-  function progress() { return 1 - timeLeft / ROUND; }
+  // Kademe ilerlemesi: 1. seviyede 0, 10. seviyede 1 (sonra hız tavanda kalır).
+  function progress() { return Math.min(1, (lvl - 1) / 9); }
   function points() { return Math.min(CFG.cap, Math.round(score * CFG.perScore)); }
   function spawn() {
-    var p = progress(), r = Math.random(), bc = 0.2 + p * 0.2;
+    var p = progress(), r = Math.random(), bc = 0.15 + p * 0.22;
     var kind = r < bc ? 'bomb' : r < bc + 0.04 ? 'stack' : (r < bc + 0.055 && magnetT <= 0) ? 'magnet' : 'coin';
-    var base = 210 + p * 240;
-    items.push({ kind: kind, x: 26 + Math.random() * (W - 52), y: -30, vy: kind === 'stack' ? base * 1.35 : kind === 'bomb' ? base * 1.08 : base, vx: kind === 'coin' && p > 0.15 ? (Math.random() - 0.5) * (60 + p * 80) : 0, spin: Math.random() * 6 });
+    var base = 170 + p * 260;
+    // Savrulma: coin/kese baştan sağa sola salınır, genlik ve sıklık kademeyle artar;
+    // bombalar 3. seviyeden sonra hafifçe salınır.
+    var amp = kind === 'bomb' ? (lvl >= 3 ? 12 + p * 24 : 0) : 26 + p * 44;
+    var x0 = 26 + amp + Math.random() * (W - 52 - 2 * amp);
+    items.push({ kind: kind, x: x0, x0: x0, amp: amp, ph: Math.random() * 6.283, f: 2 + Math.random() * 1.5 + p * 1.5, age: 0, y: -30, vy: kind === 'stack' ? base * 1.35 : kind === 'bomb' ? base * 1.08 : base, spin: Math.random() * 6 });
   }
   function startGame() { reset(); state = 'play'; }
-  function finish(survived) {
+  // Tek bitiş yolu canların bitmesi — skor artık her zaman puana dönüşür.
+  function finish() {
     if (state !== 'play') return;
     state = 'end';
-    outcome = { survived: survived, time: Math.ceil(ROUND - timeLeft) };
-    setTimeout(function () { send({ type: 'finish', points: survived ? points() : 0, score: survived ? score : 0, stats: { score: score, lives: lives, survived: survived } }); }, 700);
+    outcome = { time: Math.floor(elapsed), level: lvl };
+    setTimeout(function () { send({ type: 'finish', points: points(), score: score, stats: { score: score, level: lvl, seconds: Math.floor(elapsed) } }); }, 700);
   }
   function showResult(pts) {
-    var surv = outcome && outcome.survived, nb = surv && score > (CFG.best || 0);
+    var nb = score > (CFG.best || 0);
     if (nb) CFG.best = score;
-    $('resTitle').textContent = surv ? (nb ? t('newBest') : t('timeUp')) : t('dead');
-    $('resImg').src = '../../images/' + (surv ? 'zibo_df_pose3' : 'zibo_df_pose1') + '.webp';
+    $('resTitle').textContent = nb ? t('newBest') : t('dead');
+    $('resImg').src = '../../images/' + (nb ? 'zibo_df_pose3' : 'zibo_df_pose1') + '.webp';
     $('resA').textContent = score; $('resAL').textContent = t('score');
-    if (surv) { $('resB').textContent = lives; $('resBL').textContent = t('livesLeft'); }
-    else { $('resB').textContent = t('sec', { n: outcome.time }); $('resBL').textContent = t('lasted'); }
+    $('resB').textContent = t('sec', { n: outcome ? outcome.time : 0 }); $('resBL').textContent = t('lasted');
     $('resPts').textContent = t('pts', { n: pts });
-    $('resNote').textContent = surv ? t('note', { s: score }) + (pts >= CFG.cap ? t('capNote', { c: CFG.cap }) : '') : t('deadNote');
+    $('resNote').textContent = t('deadNote', { l: outcome ? outcome.level : 1, s: score }) + (pts >= CFG.cap ? t('capNote', { c: CFG.cap }) : '');
     var left = CFG.playsLeft;
     $('againBtn').textContent = left > 0 ? t('again', { n: left }) : t('againNo'); $('againBtn').disabled = left <= 0;
     $('exitBtn').textContent = t('exit');
@@ -287,23 +294,25 @@
     if (keys.ArrowRight) targetX += 340 * dt;
     targetX = Math.max(30, Math.min(W - 30, targetX));
     zibo.x += (targetX - zibo.x) * Math.min(1, dt * 9);
-    timeLeft -= dt; magnetT = Math.max(0, magnetT - dt); spawnT -= dt;
-    if (spawnT <= 0) { spawn(); spawnT = 0.62 - progress() * 0.34; }
+    elapsed += dt; magnetT = Math.max(0, magnetT - dt); spawnT -= dt;
+    var nl = 1 + Math.floor(elapsed / LEVEL_SEC);
+    if (nl > lvl) { lvl = nl; toastMsg(t('levelUp', { n: lvl })); }
+    if (spawnT <= 0) { spawn(); spawnT = 0.7 - progress() * 0.4; }
     var cy = zibo.y - 30;
     items.forEach(function (it) {
       it.spin += dt * 5;
-      if (magnetT > 0 && (it.kind === 'coin' || it.kind === 'stack') && it.y > 120) it.x += (zibo.x - it.x) * Math.min(1, dt * 4.5);
-      else { it.x += it.vx * dt; if (it.x < 20 || it.x > W - 20) it.vx *= -1; }
+      it.age += dt;
+      if (magnetT > 0 && (it.kind === 'coin' || it.kind === 'stack') && it.y > 120) { it.x0 += (zibo.x - it.x0) * Math.min(1, dt * 4.5); it.amp *= Math.max(0, 1 - dt * 6); }
+      it.x = Math.max(20, Math.min(W - 20, it.x0 + Math.sin(it.ph + it.age * it.f) * it.amp));
       it.y += it.vy * dt;
       if (state === 'play' && !it.gone && Math.abs(it.x - zibo.x) < 29 && it.y > cy - 22 && it.y < cy + 26) {
         it.gone = true;
-        if (it.kind === 'bomb') { lives -= 1; hurtT = 0.7; shakeT = 0.35; pops.push({ x: it.x, y: it.y, t: 0, txt: '-1 ❤', bad: true }); if (lives <= 0) finish(false); }
+        if (it.kind === 'bomb') { lives -= 1; hurtT = 0.7; shakeT = 0.35; pops.push({ x: it.x, y: it.y, t: 0, txt: '-1 ❤', bad: true }); if (lives <= 0) finish(); }
         else if (it.kind === 'magnet') { magnetT = 3; pops.push({ x: it.x, y: it.y, t: 0, txt: t('magnetPop') }); }
         else { var v = it.kind === 'stack' ? 3 : 1; score += v; squashT = 0.14; pops.push({ x: it.x, y: it.y, t: 0, txt: '+' + v }); }
       }
     });
     items = items.filter(function (it) { return !it.gone && it.y < H - GROUND + 10; });
-    if (timeLeft <= 0) { timeLeft = 0; finish(true); }
   }
   function draw() {
     ctx.save();
@@ -340,11 +349,12 @@
       for (var i = 0; i < 3; i++) heart(36 + i * 27, 34, 22, i < lives ? '#E4553B' : '#E7D6AE');
       pill(W - 118, 16, 104, 34); ptIcon(W - 99, 33, 11);
       ctx.font = '800 19px Baloo2, Nunito, sans-serif'; ctx.textAlign = 'left'; ctx.textBaseline = 'middle'; ctx.fillStyle = OUT; ctx.fillText(String(points()), W - 84, 34);
-      var bw = W - 28, fr = timeLeft / ROUND;
+      // Süre çubuğu yerine kademe çubuğu: bir sonraki hızlanmaya ne kadar kaldı.
+      var bw = W - 28, fr = (elapsed % LEVEL_SEC) / LEVEL_SEC;
       ctx.fillStyle = '#F3E4C0'; ctx.strokeStyle = OUT; ctx.lineWidth = 2.5; rr(ctx, 14, 60, bw, 14, 7); ctx.fill();
-      ctx.fillStyle = fr < 0.2 ? '#E4553B' : '#F3B23C'; rr(ctx, 14, 60, Math.max(14, bw * fr), 14, 7); ctx.fill();
+      ctx.fillStyle = '#F3B23C'; rr(ctx, 14, 60, Math.max(14, bw * fr), 14, 7); ctx.fill();
       rr(ctx, 14, 60, bw, 14, 7); ctx.stroke();
-      outlined(t('sec', { n: Math.ceil(timeLeft) }), W / 2, 96, 22, fr < 0.2 ? '#FFD9C7' : '#FFFDF7');
+      outlined(t('level', { n: lvl }), W / 2, 96, 22, '#FFFDF7');
       if (magnetT > 0) outlined(t('magnetHud', { n: Math.ceil(magnetT) }), W / 2, 126, 17, '#FFFDF7');
     }
     pops.forEach(function (p) { ctx.globalAlpha = 1 - p.t / 0.8; outlined(p.txt, p.x, p.y - 20 - p.t * 50, p.txt.length > 3 ? 17 : 22, p.bad ? '#E4553B' : '#F3B23C'); ctx.globalAlpha = 1; });

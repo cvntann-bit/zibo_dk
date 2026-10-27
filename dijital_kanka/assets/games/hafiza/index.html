@@ -164,9 +164,9 @@
 
   // Oyun mekaniği (sabit); puanlar CFG'den.
   var LEVELS = {
-    easy: { pairs: 6, limit: 11, three: 8, two: 10, peek: 3000, cfg: 'ptsEasy' },
-    mid: { pairs: 8, limit: 14, three: 10, two: 12, peek: 2000, cfg: 'ptsMid' },
-    hard: { pairs: 10, limit: 16, three: 12, two: 14, peek: 1500, cfg: 'ptsHard' }
+    easy: { pairs: 6, limit: 11, three: 8, two: 10, peek: 5000, cfg: 'ptsEasy' },
+    mid: { pairs: 8, limit: 14, three: 10, two: 12, peek: 4000, cfg: 'ptsMid' },
+    hard: { pairs: 10, limit: 16, three: 12, two: 14, peek: 3500, cfg: 'ptsHard' }
   };
 
   // ---------- köprü ----------
@@ -241,8 +241,16 @@
   function start(lvl) {
     level = lvl; moves = 0; found = 0; elapsed = 0; open = []; lock = true; outcome = null;
     build(true); hud();
-    $('peek').textContent = t('peek'); $('peek').hidden = false;
+    // Ezber süresi uzatıldı + geri sayım (kullanıcı, 2026-10-27): 3/2/1,5 sn → 5/4/3,5 sn.
+    var peekLeft = Math.ceil(LEVELS[level].peek / 1000);
+    $('peek').textContent = t('peek') + ' ' + peekLeft; $('peek').hidden = false;
+    clearInterval(start.peekTimer);
+    start.peekTimer = setInterval(function () {
+      peekLeft -= 1;
+      if (peekLeft > 0) $('peek').textContent = t('peek') + ' ' + peekLeft;
+    }, 1000);
     setTimeout(function () {
+      clearInterval(start.peekTimer);
       $('peek').hidden = true;
       cards.forEach(function (c) { c.up = false; c.el.classList.remove('up'); });
       lock = false; t0 = Date.now(); clearInterval(timer);

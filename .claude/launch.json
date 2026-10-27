@@ -27,6 +27,18 @@
         "cd /d C:\\dev\\ZIBODK~1\\DIJITA~1 && C:\\flutter\\bin\\flutter.bat run -d web-server --web-port 8815 -t lib/story_preview_main.dart"
       ],
       "port": 8815
+    },
+    {
+      "name": "zibo_games_static",
+      "runtimeExecutable": "python",
+      "runtimeArgs": [
+        "-m",
+        "http.server",
+        "8830",
+        "--directory",
+        "C:\\dev\\Zibo DK\\dijital_kanka\\assets"
+      ],
+      "port": 8830
     }
   ]
 }

@@ -151,7 +151,7 @@ Tüm oyunlarda: günde 3 hak (yukarıdaki kural), sonuç ekranı "+N puan", Taka
 |---|---|---|---|---|
 | **Zibo Zıpla** | Flappy tarzı: dokun-zıpla, sütun aralarından geç | **coin × 5** (sütun puan vermez, sadece rekor) | 600 | Çarpınca biter |
 | **Zibo Hafıza** | 16 kostümle kart eşleştirme, başta ezberleme süresi | Kolay 100 / Orta 180 / Zor 300 × yıldız (3★ tam, 2★ %60, 1★ %30) | — | Hamle limiti dolarsa **0** |
-| **Coin Yakala** | Düşen coinleri yakala, bombalardan kaç, 45 sn, 3 can | **1 skor = 1 ★** (coin 1, kese 3) | 400 | Canlar biterse **0** |
+| **Coin Yakala** | Savrulan coinleri yakala, bombalardan kaç, **süresiz**, 3 can, 15 sn'de bir kademe hızlanır | **1 skor = 1 ★** (coin 1, kese 3) | 400 | Canlar bitince biter, skor **puana döner** (2026-10-27) |
 | **Zibo 2048** | Kostüm birleştirme (2 Klasik → … → 2048 Altın → 4096 Elmas) | skor ÷ 20 + en yüksek kostüm bonusu (Samuray 50, Kral 100, Altın 200) | 600 | Hamle kalmayınca biter; geri al en fazla 3 (ücretsiz: her biri reklam, Pro: bedava) |
 | **Zibo Tren** | Snake: Zibo + arkasında coin vagonları | **coin × 5** (kese = 3 coin) | 600 | Çarpınca biter; 1 kez "geri dön" (reklam / Pro bedava) |
 | **Zibo Tuğla** | Bricks n Balls: nişan al, sayılı tuğlaları kır, +1 halkalar | **tuğla × 1** | 400 | Tuğlalar dibe inince biter; 1 kez "3 sırayı sil" (reklam / Pro bedava) |
@@ -160,16 +160,19 @@ Tüm oyunlarda: günde 3 hak (yukarıdaki kural), sonuç ekranı "+N puan", Taka
 Not: Hafıza ve 2048 şu an diğerlerinden daha çok puan veriyor olabilir — kullanıcıya soruldu, cevap bekleniyor.
 
 ### Oyun detayları (taslaktaki değerler)
-- **Hafıza:** Kolay 12 kart / 11 hamle / 3 sn ezber; Orta 16 / 14 / 2 sn; Zor 20 / 16 / 1,5 sn.
+- **Hafıza:** Kolay 12 kart / 11 hamle / **5 sn** ezber; Orta 16 / 14 / **4 sn**; Zor 20 / 16 / **3,5 sn** (2026-10-27 uzatıldı, ekranda geri sayım).
   3★ eşikleri ≤8 / ≤10 / ≤12 hamle, 2★ ≤10 / ≤12 / ≤14.
-- **Coin Yakala:** bomba oranı %20 → %40 (zamanla), düşüş hızı 210 → 450, erken zikzak,
-  dar yakalama alanı, ağır Zibo, mıknatıs 3 sn (kullanıcı "çok kolay" dedi, zorlaştırıldı).
+- **Coin Yakala (2026-10-27 süresiz):** seviye = 1 + geçen sn / 15; ilerleme 10. seviyede tavan. Bomba oranı %15 → %37,
+  düşüş hızı 170 → 430, doğma aralığı 0,7 → 0,3 sn. Coin/kese baştan sinüs salınımlı (genlik 26 → 70 px),
+  bombalar 3. seviyeden sonra hafif salınır. Mıknatıs 3 sn. HUD'da süre yerine "Seviye N" + sonraki kademe çubuğu.
 - **2048 başla penceresi GİZEMLİ (kullanıcı kararı 2026-09-27):** kostüm sırası gösterilmez; yalnızca Klasik + 5 adet "?" kart ve "Birleştirdikçe yeni kostümler açılır. Hepsini keşfedebilecek misin?". Hedef olarak Altın Zibo görünmeye devam ediyor.
 - **2048 kostüm sırası (oyuncuya önceden gösterilmez):** 2 Klasik (`zibo_yeni`), 4 Hippi, 8 Sporcu, 16 Asker, 32 Hoca, 64 Punk,
   128 Rapçi, 256 Samuray, 512 Korsan, 1024 Kral, 2048 Altın, 4096 Elmas.
 - **Tren:** 15×24 ızgara, her 6 coinde bir kaya, buz küpü 4 sn yavaşlatır, coin topladıkça hızlanır.
-- **Tuğla:** 7 sütun, her tur yeni sıra (hp = tur, %22 ihtimalle 2×tur), atış 4 sn'yi geçerse ×2 hız.
-- **Kule:** mükemmel = ±5 px, 3 mükemmel kombo bloğu +8 px genişletir, hız kat sayısıyla artar.
+- **Tuğla:** 7 sütun, her tur yeni sıra — **2026-10-27 kolaylaştırıldı:** sırada 2-5 tuğla (eskiden 3-6, artış tur/8),
+  hp = round(tur × 0,8), %12 ihtimalle ×1,5 (eskiden hp = tur, %22 ×2). Atış 4 sn'yi geçerse ×2 hız.
+- **Kule (2026-10-27 kolaylaştırıldı):** taban bloğu 260 px (eskiden 200, tuval 360), mükemmel = ±8 px (eskiden ±5),
+  2 mükemmel kombo bloğu +10 px genişletir (eskiden 3'te +8), hız 120 + 3/kat, tavan 280 (eskiden 150 + 6/kat, tavan 380).
 
 ## 5. Tasarım
 
@@ -398,3 +401,16 @@ Kullanıcı Kule, Hafıza, 2048, Coin Yakala ve Tren'i telefonda denedi: "çalı
   kendi yöntemiyle ölçülür → kesin sonuç yüklemeden sonra Play Console app bundle explorer'da doğrulanmalı.
 - **Analitik doğrulandı (2026-09-29):** cihaz FA log'unda `game_open`/`game_start`/`game_finish`/`points_exchanged`
   gönderildi (`lib/services/game_analytics.dart`).
+
+### Oyun düzenlemeleri — kullanıcı direktifleri (2026-10-27)
+Kullanıcının yazdığı liste (sırayla):
+1. **Kule** "çok hızlanıyor, hemen bitiyor" → kolaylaştır + ilk kule barı daha uzun. ✅ YAPILDI (yukarıdaki değerler).
+2. **Hafıza** ezber süresi çok kısa → daha uzun göster. ✅ YAPILDI (5 / 4 / 3,5 sn + geri sayım).
+3. **2048** 4×4'ten daha büyük olabilir (5×5 vb. varyantlar) → **seçenek sunulacak, kullanıcı seçecek.** ⏳ BEKLİYOR.
+4. **Coin Yakala** 45 sn sınırı kalksın, kademe kademe hızlansın, coinler sağa sola savrulsun, canlar bitene kadar oynansın. ✅ YAPILDI.
+5. **Tuğla** tuğla sayısı birden çok artıyor, kısa sürüyor → kolaylaştır. ✅ YAPILDI.
+
+Ekonomi notu: Coin Yakala'da artık ölümde de skor puana dönüyor (eskiden 0) → tur başına ortalama ★ artar;
+tur tavanı (400) ve haftalık takas tavanı değişmedi, ZC'ye çevrim yine haftalık sınırla korunuyor.
+İkinci Şans ekranında (Tren/Tuğla/Kule) 5 sn geri sayım var (2026-10-26) — süre dolarsa oyun biter, puan alınır.
+Henüz telefonda denenmedi (debug APK).

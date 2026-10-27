@@ -196,8 +196,11 @@
   }
   function spawnRow() {
     var cols = [0, 1, 2, 3, 4, 5, 6].sort(function () { return Math.random() - 0.5; });
-    var n = 3 + Math.floor(Math.random() * Math.min(4, 1 + turnNo / 4));
-    for (var i = 0; i < n; i++) bricks.push({ c: cols[i], r: 0, hp: Math.random() < 0.22 ? turnNo * 2 : turnNo });
+    // Kolaylaştırıldı (kullanıcı, 2026-10-27): sırada 3-6 → 2-5 tuğla (yavaş artar),
+    // can = tur × 0,8; güçlü tuğla %22 ×2 → %12 ×1,5.
+    var n = 2 + Math.floor(Math.random() * Math.min(4, 1 + turnNo / 8));
+    var hp = Math.max(1, Math.round(turnNo * 0.8));
+    for (var i = 0; i < n; i++) bricks.push({ c: cols[i], r: 0, hp: Math.random() < 0.12 ? Math.round(hp * 1.5) : hp });
     rings.push({ c: cols[n], r: 0 });
   }
   function shift() { bricks.forEach(function (b) { b.r += 1; }); rings.forEach(function (g) { g.r += 1; }); rings = rings.filter(function (g) { return g.r < ROWS; }); }

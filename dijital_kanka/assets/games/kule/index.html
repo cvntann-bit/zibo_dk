@@ -194,14 +194,16 @@
   function toast(m) { toastMsg = m; toastT = 1.8; }
 
   // ---------- oyun ----------
-  var BH = 26, BASE_Y = 540, BASE_W = 200, PERFECT = 5;
+  // Kolaylaştırıldı (kullanıcı, 2026-10-27): taban 200→260 px, mükemmel ±5→±8 px,
+  // hız 150+6/kat (tavan 380) → 120+3/kat (tavan 280), kombo 2'de büyür (+10 px).
+  var BH = 26, BASE_Y = 540, BASE_W = 260, PERFECT = 8;
   var COLORS = ['#FFF3DC', '#FAD99C', '#F3B23C', '#EE9A45', '#F6D488', '#DDF2FF'];
   var state = 'idle', tt = 0, stack, cur, fall, cam, perfects, combo, conts, pops, jump, flash;
   function reset() { stack = [{ x: (W - BASE_W) / 2, w: BASE_W }]; fall = []; cam = 0; perfects = 0; combo = 0; conts = 0; pops = []; jump = 0; flash = 0; cur = null; }
   reset();
   function floors() { return stack.length - 1; }
   function points() { return Math.min(CFG.cap, floors() * CFG.perFloor + perfects * CFG.perfectBonus); }
-  function speed() { return Math.min(380, 150 + stack.length * 6); }
+  function speed() { return Math.min(280, 120 + stack.length * 3); }
   function nextBlock() { var top = stack[stack.length - 1], fromLeft = stack.length % 2 === 0; cur = { x: fromLeft ? -top.w * 0.5 : W - top.w * 0.5, w: top.w, dir: fromLeft ? 1 : -1 }; }
   function levelY(i) { return BASE_Y - i * BH + cam; }
   function startGame() { reset(); nextBlock(); state = 'play'; }
@@ -213,7 +215,7 @@
     var py = levelY(lvl) - 20;
     if (Math.abs(cur.x - top.x) <= PERFECT) {
       combo += 1; perfects += 1;
-      var nw = combo >= 3 ? Math.min(BASE_W, top.w + 8) : top.w;
+      var nw = combo >= 2 ? Math.min(BASE_W, top.w + 10) : top.w;
       stack.push({ x: top.x - (nw - top.w) / 2, w: nw }); jump = 0.35;
       pops.push({ x: W / 2, y: py, t: 0, txt: combo >= 2 ? t('combo', { n: combo }) : t('perfect'), gold: true });
     } else {
