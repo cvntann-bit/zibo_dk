@@ -1,0 +1,336 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Zibo ES ads factory</title>
+<!--
+  İspanyolca reklam fabrikası (2026-10-28) — Google Ads (ES kampanyası) için 10 konsept × dikey/yatay, 30/45 sn.
+  Sayfa ?spec=<URL-kodlu JSON> alır (build.py üretir): {bpm, total, scenes:[{type, sec, pal, ...}]}.
+  ?f=v → 1080x1920, ?f=h → 1920x1080. Her sahne türünün iki formata ayrı yerleşimi var (L(v,h)).
+  Animasyon YALNIZCA seek(t)'nin çıktısı; sesler window.EVENTS ile build.py'de kurulur (reels ile aynı sözleşme).
+  POLİTİKA (sosyal kumar): oyun, puan, coin, takas, ödül, kazan, hediye kutusu YOK; sahte kullanıcı sayısı/yorum YOK.
+-->
+<link rel="stylesheet" href="../kit.css">
+<style>
+.dots{position:absolute;inset:0;background-image:radial-gradient(rgba(20,17,12,.07) 24%,transparent 26%);background-size:30px 30px}
+.rays{position:absolute;left:50%;top:50%;width:3600px;height:3600px;margin:-1800px 0 0 -1800px;
+  background:repeating-conic-gradient(from 0deg,rgba(255,255,255,.26) 0 9deg,transparent 9deg 18deg)}
+.wipe{position:absolute;left:50%;top:50%;width:200px;height:200px;margin:-100px 0 0 -100px;border-radius:50%}
+.conf{border:3px solid var(--outline);box-sizing:border-box}
+.icon{border:7px solid var(--outline);border-radius:23%;box-shadow:10px 10px 0 var(--outline);box-sizing:border-box}
+.card{background:#fff;border:7px solid var(--outline);border-radius:38px;box-shadow:10px 10px 0 var(--outline);box-sizing:border-box}
+.rowc{display:flex;align-items:center;gap:26px;width:100%}
+.rowc b{font-weight:800;line-height:1.05;white-space:nowrap}
+.tbox{border:6px solid var(--outline);border-radius:18px;box-sizing:border-box;flex:none;background:#fff;
+  display:flex;align-items:center;justify-content:center}
+.glass{width:330px;height:470px;border:9px solid var(--outline);border-radius:20px 20px 64px 64px;background:rgba(255,255,255,.62);
+  overflow:hidden;box-shadow:12px 12px 0 var(--outline);box-sizing:border-box}
+.water{position:absolute;left:0;right:0;bottom:0;background:#4FB3FF;border-top:9px solid #C9EBFF}
+.bub{border:6px solid var(--outline);border-radius:40px;box-shadow:8px 8px 0 var(--outline);box-sizing:border-box;
+  padding:18px 34px;font-weight:800;white-space:nowrap;line-height:1.12;display:flex;align-items:center;gap:18px}
+.bub img{width:72px;height:72px;flex:none}
+.face{border:7px solid var(--outline);border-radius:50%;background:#fff;box-shadow:8px 8px 0 var(--outline);box-sizing:border-box;
+  display:flex;align-items:center;justify-content:center;font-family:'Segoe UI Emoji','Noto Color Emoji',sans-serif}
+.opt{background:#fff;border:7px solid var(--outline);border-radius:34px;box-shadow:9px 9px 0 var(--outline);box-sizing:border-box;
+  display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:10px;padding-bottom:18px;overflow:hidden}
+.opt img{height:68%;object-fit:contain}
+.opt b{font-weight:800;white-space:nowrap}
+.opt i{position:absolute;left:16px;top:12px;font-style:normal;font-weight:800;background:var(--gold);border:5px solid var(--outline);
+  border-radius:50%;width:66px;height:66px;display:flex;align-items:center;justify-content:center;font-size:40px;box-sizing:border-box}
+.tile{background:#fff;border:7px solid var(--outline);border-radius:32px;box-shadow:8px 8px 0 var(--outline);box-sizing:border-box;
+  display:flex;align-items:center;gap:20px;padding:0 24px}
+.tile img{flex:none}
+.tile b{font-weight:800;white-space:nowrap}
+.emo{font-family:'Segoe UI Emoji','Noto Color Emoji',sans-serif}
+.wm{display:flex;align-items:center;gap:14px;font-weight:800;color:#fff;-webkit-text-stroke:8px var(--outline);paint-order:stroke fill}
+.wm img{border:5px solid var(--outline);border-radius:24%;box-sizing:border-box}
+</style>
+</head>
+<body>
+<div id="stage"></div>
+<script src="../kit.js"></script>
+<script>
+const SPEC=JSON.parse(Q.get('spec'));
+const b=60/SPEC.bpm;
+const EVENTS=[];window.EVENTS=EVENTS;
+const ev=(t,s,g=1,a={})=>EVENTS.push({t,s,g,a});
+const PENT=[523.3,587.3,659.3,784.0,880.0,1046.5,1174.7];
+const PAL=[['#F3B23C','#FFE08A'],['#3FA9F5','#9ADBFF'],['#8E5BE6','#C3A4FF'],['#FF6F91','#FFB3C6'],['#2FBF71','#9BE7B5'],
+  ['#FF7A45','#FFC09A'],['#3B63C9','#7C9BE8'],['#FFF4DE','#FFE3A6'],['#14B8A6','#99F6E4'],['#F97362','#FECACA'],
+  ['#5B6478','#9AA3B5']];   // 10: gri — "önce" sahneleri
+const L=(v,h)=>V?v:h, F=(v,h)=>V?v:h;
+const CX=W/2;
+
+// ---------- zaman çizelgesi: saniyeler vuruşa oturtulur, son sahne (kapanış) kalanı alır ----------
+const TOTAL_BEATS=Math.round(SPEC.total/b);
+let acc=0;
+SPEC.scenes.forEach((s,i)=>{const last=i===SPEC.scenes.length-1;
+  const n=last?Math.max(8,TOTAL_BEATS-acc):Math.max(2,Math.round(s.sec/b));
+  s.t0=acc*b;s.d=n*b;acc+=n});
+const END=acc*b;
+window.SCENE_MIDS=SPEC.scenes.map((s,i)=>s.t0+(i===SPEC.scenes.length-1?Math.min(s.d-.2,b*5):s.d*.72));
+
+// ---------- zemin: sahne değişiminde yeni renk daire olarak açılır ----------
+const bg=mk(stage,'div','full'),wipe=mk(stage,'div','wipe'),rays=mk(stage,'div','rays');mk(stage,'div','dots');
+const grad=p=>`linear-gradient(${PAL[p][0]},${PAL[p][1]})`;
+function bgTick(t){rays.style.transform=`rotate(${t*7}deg)`;
+  let i=SPEC.scenes.findIndex(s=>t>=s.t0&&t<s.t0+s.d);if(i<0)i=SPEC.scenes.length-1;
+  const s=SPEC.scenes[i],p=s.pal??0,prev=i?SPEC.scenes[i-1].pal??0:p,lt=t-s.t0,k=prog(lt,0,.42);
+  if(p!==prev&&k<1){bg.style.background=grad(prev);wipe.style.background=grad(p);wipe.style.transform=`scale(${eOut(k)*24})`;wipe.style.opacity=1}
+  else{bg.style.background=grad(p);wipe.style.opacity=0}
+  rays.style.opacity=p===10?.08:1}
+
+// ---------- ortak yardımcılar ----------
+const zibo=(f,h)=>img(stage,f.includes('.')?f:f+'.webp',h);
+const zsh=w=>{const e=mk(stage,'div','o shadow');e.style.width=w+'px';e.style.height=w*.15+'px';return e};
+// Zibo: tin'de yukarıdan zıplayarak düşer, nefes alır, sahne sonunda küçülür.
+function zput(z,sh,x,y,h,lt,d,tin=.25){const vis=lt>=tin&&lt<d,dr=eBounce(prog(lt,tin,.6)),ex=prog(lt,d-.3,.3),s=vis?1-ex*ex:0;
+  put(z,x,lerp(y-1500,y,dr)+Math.sin(lt*3)*7,s,Math.sin(lt*2)*1.5);if(sh)put(sh,x,y+h*.47,lerp(.3,1,dr)*s,0,1)}
+const HL=(lines,size,maxW)=>{const h=headline(stage,lines,size);fit(h.el,maxW);return h};
+const sticker=(txt,size,white,maxW)=>{const e=mk(stage,'div','o stk',txt);e.style.fontSize=size+'px';if(white)e.style.background='#fff';if(maxW)fit(e,maxW);return e};
+const CHECK='<svg viewBox="0 0 24 24" width="70%"><path d="M4 12.5l5.5 5.5L20 6.5" fill="none" stroke="#14110C" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const wordPops=(h,t0,step=.13)=>h.words.forEach((w,i)=>ev(t0+i*step,'pop',.42,{p:600+(i%5)*80}));
+
+// Filigran: kapanış dışında köşede uygulama simgesi + "Zibo"
+const wm=mk(stage,'div','o wm','<img src="'+IMG+'zibo_app_icon.png" width="'+F(92,84)+'">Zibo');wm.style.fontSize=F(60,54)+'px';
+
+const T={};
+
+// 1) TITLE — başlık kelime kelime; isteğe bağlı Zibo + alt çıkartma
+T.title=(o,sc)=>{const hz=!!o.z,n=o.lines.length,big=n===1&&!o.sub;
+  const h=HL(o.lines,o.size||F(n>2?96:big?150:120,n>2?86:big?140:108),V?990:(hz?1080:1760));
+  const zh=F(o.zh||660,o.zh||720),z=hz?zibo(o.z,zh):null,sh=hz?zsh(F(330,340)):null;
+  const sub=o.sub?sticker(o.sub,F(60,54),true,V?980:(hz?1060:1500)):null;
+  const P=hz?{h:L([540,o.sub?420:470],[720,o.sub?400:470]),z:L([540,1150],[1460,600]),s:L([540,1560],[720,700])}
+            :{h:L([540,o.sub?800:880],[960,o.sub?440:520]),s:L([540,1120],[960,720])};
+  if(hz&&V&&o.sub)P.z=[540,1110];
+  ev(sc.t0,'whoosh',.35,{d:.3,lo:400,hi:3000});wordPops(h,sc.t0+.12);
+  if(hz)ev(sc.t0+.45,'thud',.8,{d:.2,p:120});
+  const tsub=.25+h.words.length*.13;if(sub)ev(sc.t0+tsub,'blop',.7,{p:460});
+  if(o.fx)ev(sc.t0+(o.fxAt??tsub+.3),o.fx,.8);
+  return lt=>{put(h.el,...P.h,io(lt,0,sc.d),o.rot??-2);popWords(h,lt,.12,.13);
+    if(z)zput(z,sh,...P.z,zh,lt,sc.d,.3);
+    if(sub)put(sub,...P.s,io(lt,tsub,sc.d),2)}};
+
+// 2) POV — paneller sırayla: başlık + Zibo pozu + alt çıkartma
+T.pov=(o,sc)=>{const n=o.panels.length,span=sc.d/n;
+  const els=o.panels.map((p,i)=>{const h=HL(p.t.split('|'),F(112,100),V?990:1080),zh=F(640,700),z=zibo(p.z,zh);
+    const sub=p.s?sticker(p.s,F(58,54),true,V?980:1060):null;const t0=i*span;
+    ev(sc.t0+t0,'whoosh',.45,{d:.3,lo:400,hi:3000});ev(sc.t0+t0+.12,'pop',.8,{p:560+i*70});ev(sc.t0+t0+.3,'thud',.5,{d:.12,p:140});
+    if(p.fx)ev(sc.t0+t0+.55,p.fx,.8);if(sub)ev(sc.t0+t0+.5,'blop',.6,{p:480});
+    return{h,z,zh,sub,t0}});
+  return lt=>els.forEach((e,i)=>{const l=lt-e.t0,on=l>=0&&l<span,q=prog(l,span-.2,.2),pz=eBack(prog(l,0,.3)),s=on?pz*(1-q*q):0;
+    put(e.h.el,...L([540,450],[720,430]),s,i%2?2:-2);popWords(e.h,l,.05,.1);
+    put(e.z,...L([540,1130],[1460,600]),s,Math.sin(lt*2+i)*2);e.z.style.translate=`0 ${Math.sin(lt*3+i)*7}px`;
+    if(e.sub)put(e.sub,...L([540,1550],[720,690]),on?io(l,.45,span):0,-2)})};
+
+// 3) CHAT — Zibo ile mesajlaşma: "yazıyor…" balonu, sonra mesaj
+T.chat=(o,sc)=>{const n=o.msgs.length,gap=(sc.d-1)/n,fs=F(48,44),bw=F(940,1000),left=L(70,220),y0=L(380,190),dy=L(150,150);
+  const zh=F(520,700),z=zibo(o.z||'zibo_df_pose3',zh),sh=zsh(F(260,330));
+  const typing=mk(stage,'div','o bub','<span class="emo">•••</span>');typing.style.cssText+=`font-size:${fs}px;background:var(--gold)`;
+  const ms=o.msgs.map((m,i)=>{const e=mk(stage,'div','o bub',(m.z?'<img src="'+IMG+'zibo_icon.webp">':'')+'<span>'+m.t+'</span>');
+    e.style.fontSize=fs+'px';e.style.background=m.z?'var(--gold)':'#fff';fit(e,bw);
+    const ti=.35+i*gap+(m.z?.5:0);ev(sc.t0+ti,m.z?'blop':'pop',.75,{p:m.z?520:820});return{e,m,ti,y:y0+i*dy}});
+  return lt=>{let ty=null;
+    ms.forEach(x=>{const w=x.e.offsetWidth,xx=x.m.z?left+w/2:L(1010,1240)-w/2;
+      put(x.e,xx,x.y,io(lt,x.ti,sc.d),0);x.e.style.transformOrigin=x.m.z?'0% 50%':'100% 50%';
+      if(x.m.z&&lt>=x.ti-.5&&lt<x.ti)ty=x});
+    if(ty)put(typing,left+typing.offsetWidth/2,ty.y,1+Math.sin(lt*14)*.04,0,1);else put(typing,0,0,0,0,0);
+    zput(z,sh,...L([540,1340],[1560,620]),zh,lt,sc.d,.1)}};
+
+// 4) CHECKLIST — kart üstünde maddeler vuruşla ✓
+T.checklist=(o,sc)=>{const n=o.items.length,rh=F(112,92),fs=F(50,46),box=F(70,62);
+  const h=HL([o.title],F(96,84),V?990:1080);
+  const card=mk(stage,'div','o card');card.style.cssText+=`width:${F(900,980)}px;padding:${F(28,22)}px ${F(40,36)}px;display:flex;flex-direction:column;gap:${F(10,6)}px`;
+  const rows=o.items.map((it,i)=>{const r=mk(card,'div','rowc');r.style.height=rh+'px';
+    const bx=mk(r,'div','tbox',CHECK);bx.style.width=bx.style.height=box+'px';const lb=mk(r,'b',null,it);lb.style.fontSize=fs+'px';
+    return{bx,ck:bx.firstChild,lb}});
+  const step=Math.min(b*1.5,(sc.d-1.8)/n),T0=.8;
+  rows.forEach((r,i)=>{ev(sc.t0+T0+i*step,'pop',.7,{p:800});ev(sc.t0+T0+i*step+.02,'bell',.3,{f:PENT[i%7]*2})});
+  const cnt=sticker('',F(80,64),true);ev(sc.t0+T0+n*step,'sparkle',.45);ev(sc.t0+T0+n*step,'chime',.3);
+  const zh=720,z=V?null:zibo(o.z||'zibo_df_pose3',zh),sh=V?null:zsh(330);
+  const cardH=n*(rh+F(10,6))+F(56,44);
+  return lt=>{put(h.el,...L([540,400],[740,110]),io(lt,0,sc.d),-2);popWords(h,lt,.1,.12);
+    put(card,...L([540,560+cardH/2],[740,180+cardH/2+40]),io(lt,.25,sc.d),-1);
+    let done=0;rows.forEach((r,i)=>{const p=prog(lt,T0+i*step,.22);if(p>0)done++;r.bx.style.background=p>0?'#F3B23C':'#fff';
+      r.ck.style.transform=`scale(${p<=0?0:eBack(p)})`;r.lb.style.opacity=lerp(1,.55,p)});
+    cnt.textContent=done+' / '+n;
+    put(cnt,...L([540,560+cardH+110],[740,180+cardH+150]),io(lt,.5,sc.d)*(1+(done===n?Math.sin(Math.PI*prog(lt,T0+n*step,.3))*.12:0)),-2);
+    if(z)zput(z,sh,1560,600,zh,lt,sc.d,.3)}};
+
+// 5) WATER — bardak dolar, rozet "¡Meta cumplida!"
+T.water=(o,sc)=>{const h=HL([o.title||'Agua de hoy'],F(100,84),V?990:1080);
+  const glass=mk(stage,'div','o glass'),water=mk(glass,'div','water');
+  const ml=sticker('',F(92,80),true),bd=img(stage,'su_kahramani_rozet.webp',F(300,260)),done=sticker(o.done||'¡Meta cumplida!',F(70,62));
+  const fT=.6,fD=sc.d-2.2;for(let i=0;i<Math.floor(fD/.28);i++)ev(sc.t0+fT+i*.28,'blop',.4,{p:300+i*12,d:.1});
+  ev(sc.t0+fT+fD,'bell',.6,{f:PENT[4]});ev(sc.t0+fT+fD,'sparkle',.4);
+  const zh=700,z=V?null:zibo(o.z||'zibo_df_pose3',zh),sh=V?null:zsh(320);
+  return lt=>{const lv=eInOut(prog(lt,fT,fD));water.style.height=(lv*88+Math.sin(lt*8)*1.2*(lv<1?1:0))+'%';
+    ml.textContent=Math.round(lv*2000/50)*50+' ml';
+    put(h.el,...L([540,330],[740,120]),io(lt,0,sc.d),-2);popWords(h,lt,.1,.12);
+    put(glass,...L([400,900],[560,600]),io(lt,.15,sc.d),-2);
+    put(ml,...L([790,640],[990,330]),io(lt,.3,sc.d),3);
+    put(bd,...L([800,980],[1000,640]),io(lt,fT+fD,sc.d),lerp(-30,0,eOut(prog(lt,fT+fD,.5))));
+    put(done,...L([540,1380],[760,960]),io(lt,fT+fD+.3,sc.d),-3);
+    if(z)zput(z,sh,1560,600,zh,lt,sc.d,.3)}};
+
+// 6) MOOD — 5 yüz; seçici gezer, birinde durur; Zibo cevap verir
+T.mood=(o,sc)=>{const FACES=['😢','😕','😐','🙂','😄'],pick=o.pick??3,fz=F(170,160),gap=F(196,190);
+  const h=HL([o.title||'¿Cómo te sientes hoy?'],F(92,84),V?990:1080);
+  const faces=FACES.map(f=>{const e=mk(stage,'div','o face',f);e.style.width=e.style.height=fz+'px';e.style.fontSize=fz*.58+'px';return e});
+  const rx=L(540,740),ry=L(720,420);
+  const zh=F(500,660),z=zibo(o.z||'zibo_df_pose3',zh),sh=zsh(F(260,320));
+  const rep=sticker(o.reply||'Zibo te escucha 💛',F(62,56),true,V?980:1060);rep.classList.add('emo');rep.style.fontFamily='Baloo2,"Segoe UI Emoji",sans-serif';
+  const hopT=.7,hop=.22,hops=5+pick,landT=hopT+hops*hop;
+  for(let k=0;k<hops;k++)ev(sc.t0+hopT+k*hop,'tick',.5,{p:1100+(k%5)*120});
+  ev(sc.t0+landT,'bell',.6,{f:PENT[3]});ev(sc.t0+landT,'sparkle',.35);ev(sc.t0+landT+.6,'blop',.7,{p:480});
+  return lt=>{put(h.el,...L([540,330],[740,140]),io(lt,0,sc.d),-2);popWords(h,lt,.1,.12);
+    const cur=lt<hopT?-1:lt<landT?Math.floor((lt-hopT)/hop)%5:pick;
+    faces.forEach((e,i)=>{const sel=i===cur,landed=lt>=landT&&i===pick;
+      e.style.background=landed?'#F3B23C':sel?'#FFF4DE':'#fff';
+      put(e,rx+(i-2)*gap,ry-(sel?18:0),io(lt,.2+i*.06,sc.d)*(landed?1.22+Math.sin(lt*6)*.03:sel?1.1:lt>=landT?.88:1),0,lt>=landT&&!landed?.55:1)});
+    put(rep,...L([540,950],[740,700]),io(lt,landT+.55,sc.d),-2);
+    zput(z,sh,...L([540,1300],[1560,600]),zh,lt,sc.d,landT+.3)}};
+
+// 7) STREAK — gün sayacı 1→N, seri rozetleri
+T.streak=(o,sc)=>{const N=o.to||30,big=mk(stage,'div','o hl','');big.style.fontSize=F(340,300)+'px';
+  const lab=sticker(o.label||'DÍAS SEGUIDOS',F(78,66));
+  const bd=[['ilk_hafta_rozet.webp',7],['bir_hafta_seri_rozet.webp',14],['demir_irade_rozet.webp',21],['bir_aylik_seri_rozet.webp',30]]
+    .filter(x=>x[1]<=N).map((x,i)=>({e:img(stage,x[0],F(220,180)),day:x[1],i}));
+  const T0=.5,D=sc.d-1.4,dayAt=l=>Math.max(1,Math.min(N,Math.round(1+(N-1)*Math.pow(prog(l,T0,D),1.35))));
+  for(let d=2;d<=N;d++)ev(sc.t0+T0+D*Math.pow((d-1.5)/(N-1),1/1.35),'tick',.35,{p:1000+d*30});
+  bd.forEach(x=>{x.t=T0+D*Math.pow((x.day-1)/(N-1),1/1.35);ev(sc.t0+x.t,'bell',.55,{f:PENT[x.i+2]});ev(sc.t0+x.t,'pop',.6,{p:800})});
+  const zh=720,z=V?null:zibo(o.z||'zibo_sporcu','720'),sh=V?null:zsh(320);
+  return lt=>{big.textContent=dayAt(lt);put(big,...L([540,700],[740,400]),io(lt,0,sc.d)*(1+Math.sin(lt*5)*.015),-3);
+    put(lab,...L([540,960],[740,640]),io(lt,.2,sc.d),2);
+    const bx=L(540,740),gp=F(250,215),ox=(bd.length-1)/2;
+    bd.forEach(x=>put(x.e,bx+(x.i-ox)*gp,L(1250,870)+Math.sin(lt*3+x.day)*8,io(lt,x.t,sc.d),lerp(-25,0,eOut(prog(lt,x.t,.5)))));
+    if(z)zput(z,sh,1560,600,zh,lt,sc.d,.3)}};
+
+// 8) COSTUMES — moda geçidi: her vuruşta yeni kostüm + adı
+const CNAME={zibo_king:'Rey',zibo_astronot:'Astronauta',zibo_korsan:'Pirata',zibo_samurai:'Samurái',zibo_punk:'Punk',zibo_hippi:'Hippie',
+  zibo_gladyator:'Gladiador',zibo_cyborg:'Cyborg',zibo_altin:'Dorado',zibo_elmas:'Diamante',zibo_gentleman:'Caballero',zibo_rapci:'Rapero',
+  zibo_sporcu:'Deportista',zibo_hoca:'Profesor',zibo_ninja:'Ninja',zibo_kovboy:'Vaquero',zibo_viking:'Vikingo',zibo_buyucu:'Mago',
+  zibo_chef:'Chef',zibo_firavun:'Faraón',zibo_galaksi:'Galaxia',zibo_artist:'Artista'};
+T.costumes=(o,sc)=>{const list=(o.list||['zibo_king','zibo_astronot','zibo_korsan','zibo_samurai','zibo_ninja','zibo_punk','zibo_viking','zibo_buyucu','zibo_galaksi','zibo_altin','zibo_elmas','zibo_kovboy']);
+  const zh=F(820,820),ims=list.map(f=>img(stage,f+'.webp',zh));
+  const h=HL((o.title||'Vístelo a tu estilo').split('|'),F(100,100),V?990:1000);
+  const spot=mk(stage,'div','o');spot.style.cssText+=`width:${F(1100,1000)}px;height:${F(1100,1000)}px;border-radius:50%;background:radial-gradient(closest-side,rgba(255,255,255,.65),rgba(255,255,255,0))`;
+  const nm=sticker('',F(66,58),true);
+  const st=o.step||b,T0=.6,n=Math.floor((sc.d-T0-.3)/st);
+  for(let k=0;k<n;k++){ev(sc.t0+T0+k*st,'pop',.55,{p:600+(k%4)*110});if(k%4===3)ev(sc.t0+T0+k*st+.05,'sparkle',.25)}
+  return lt=>{put(h.el,...L([540,320],[620,470]),io(lt,0,sc.d),-2);popWords(h,lt,.1,.12);
+    put(spot,...L([540,960],[1400,540]),io(lt,.1,sc.d));
+    const k=Math.max(0,Math.floor((lt-T0)/st)),on=lt>=T0&&lt<sc.d-.3;
+    ims.forEach((e,i)=>put(e,...L([540,980+Math.sin(lt*4)*8],[1400,500+Math.sin(lt*4)*8]),on&&i===k%ims.length?eBack(prog(lt-(T0+k*st),0,.22)):0,Math.sin(lt*3)*2));
+    nm.textContent=CNAME[list[k%list.length]]||'Zibo';put(nm,...L([540,1500],[1400,975]),on?1:0,-2)}};
+
+// 9) CHOOSE — "¿Cuál eres tú?": 3 kart, vurgu gezer, birinde durur, parmak dokunur
+T.choose=(o,sc)=>{const h=HL(o.q.split('|'),F(96,92),V?990:1700);
+  const ow=F(320,380),oh=F(500,560);
+  const opts=o.opts.map((x,i)=>{const e=mk(stage,'div','o opt');e.style.width=ow+'px';e.style.height=oh+'px';
+    const im=mk(e,'img');im.src=IMG+(x.z.includes('.')?x.z:x.z+'.webp');const lb=mk(e,'b',null,x.name);lb.style.fontSize=F(42,44)+'px';
+    mk(e,'i',null,'ABC'[i]);return e});
+  const hand=mk(stage,'div','o emo','👆');hand.style.fontSize=F(170,150)+'px';
+  const pick=o.pick??1,hopT=.9,hop=.26,hops=6+pick,landT=hopT+hops*hop;
+  for(let k=0;k<hops;k++)ev(sc.t0+hopT+k*hop,'tick',.5,{p:1000+(k%3)*180});
+  ev(sc.t0+landT,'pop',.9,{p:900});ev(sc.t0+landT+.05,'bell',.55,{f:PENT[4]});ev(sc.t0+landT+.05,'sparkle',.4);
+  const xs=[-1,0,1].map(k=>L(540,960)+k*F(345,430)),y=L(1040,640);
+  return lt=>{put(h.el,...L([540,380],[960,180]),io(lt,0,sc.d),-2);popWords(h,lt,.1,.12);
+    const cur=lt<hopT?-1:lt<landT?Math.floor((lt-hopT)/hop)%3:pick;
+    opts.forEach((e,i)=>{const landed=lt>=landT&&i===pick,sel=i===cur;e.style.background=landed?'#F3B23C':sel?'#FFF4DE':'#fff';
+      put(e,xs[i],y-(sel?20:0),io(lt,.2+i*.1,sc.d)*(landed?1.1:1),[-3,1,3][i],lt>=landT&&!landed?.5:1)});
+    const hp=prog(lt,landT-.5,.5);put(hand,xs[pick]+ow*.42,lerp(y+oh*1.1,y+oh*.5+20,eOut(hp))+(lt>landT?Math.sin(lt*8)*6:0),hp>0&&lt<sc.d-.2?1:0,-15)}};
+
+// 10) COUNTDOWN — 3, 2, 1 büyük rakamlar, halka
+T.countdown=(o,sc)=>{const N=o.from||3,step=(sc.d-.4)/N;
+  const nums=Array.from({length:N},(_,i)=>{const e=mk(stage,'div','o hl',String(N-i));e.style.fontSize=F(640,560)+'px';return e});
+  const ring=mk(stage,'div','o');ring.style.cssText+=`width:${F(760,700)}px;height:${F(760,700)}px;border-radius:50%;border:22px solid #fff;box-shadow:0 0 0 8px #14110C,inset 0 0 0 8px #14110C;box-sizing:border-box`;
+  const cap=o.cap?sticker(o.cap,F(62,56),true,V?980:1500):null;
+  for(let i=0;i<N;i++){ev(sc.t0+.1+i*step,'thud',1,{d:.3,p:110-i*12});ev(sc.t0+.1+i*step,'tick',.5,{p:1300})}
+  return lt=>{const c=L([540,900],[960,500]);
+    nums.forEach((e,i)=>{const l=lt-.1-i*step;put(e,...c,l>=0&&l<step?lerp(1.5,1,eOut(prog(l,0,.25)))*(1-prog(l,step-.15,.15)):0,0)});
+    const l=(lt-.1)%step;put(ring,...c,io(lt,0,sc.d)*lerp(1.12,.95,l/step),lt*40);
+    if(cap)put(cap,...L([540,1420],[960,960]),io(lt,0,sc.d),-2)}};
+
+// 11) CURVE — %1 daha iyi / %1 daha kötü eğrisi
+T.curve=(o,sc)=>{const h=HL((o.title||'1% cada día').split('|'),F(96,84),V?990:1080);
+  const cw=F(940,1040),ch=F(680,620),card=mk(stage,'div','o card');card.style.width=cw+'px';card.style.height=ch+'px';
+  const up=[],dn=[];for(let d=0;d<=365;d+=5){const x=70+d/365*(cw-170);up.push(x+','+(ch*.72-(Math.pow(1.01,d)-1)/36.8*(ch*.62)));dn.push(x+','+(ch*.72+(1-Math.pow(.99,d))*ch*.12))}
+  card.innerHTML=`<svg width="${cw-14}" height="${ch-14}" style="position:absolute;left:0;top:0">
+   <line x1="60" y1="${ch*.72}" x2="${cw-80}" y2="${ch*.72}" stroke="#14110C" stroke-opacity=".15" stroke-width="4" stroke-dasharray="10 10"/>
+   <polyline id="cu" points="${up.join(' ')}" fill="none" stroke="#2FBF71" stroke-width="14" stroke-linecap="round" stroke-linejoin="round" pathLength="1" stroke-dasharray="1 1"/>
+   <polyline id="cd" points="${dn.join(' ')}" fill="none" stroke="#E8553D" stroke-width="14" stroke-linecap="round" stroke-linejoin="round" pathLength="1" stroke-dasharray="1 1"/>
+   <text x="60" y="${ch-40}" font-family="Nunito" font-weight="900" font-size="40" fill="#14110C">${o.d1||'Día 1'}</text>
+   <text x="${cw-80}" y="${ch-40}" text-anchor="end" font-family="Nunito" font-weight="900" font-size="40" fill="#14110C">${o.d2||'Día 365'}</text></svg>`;
+  const cu=card.querySelector('#cu'),cd=card.querySelector('#cd');
+  const lu=sticker(o.upLabel||'1% mejor → ×37',F(60,54)),ld=sticker(o.dnLabel||'1% peor → ×0,03',F(50,46),true);lu.style.background='#9BE7B5';
+  const dT=.6,dD=sc.d-2.4;ev(sc.t0+dT,'whoosh',.5,{d:dD,lo:150,hi:2400});ev(sc.t0+dT+dD,'sparkle',.5);ev(sc.t0+dT+dD,'chime',.35);ev(sc.t0+dT+dD+.4,'blop',.6,{p:420});
+  const zh=720,z=V?null:zibo(o.z||'zibo_ogrenci',zh),sh=V?null:zsh(320);
+  return lt=>{const p=eInOut(prog(lt,dT,dD));cu.style.strokeDashoffset=1-p;cd.style.strokeDashoffset=1-p;
+    put(h.el,...L([540,340],[740,120]),io(lt,0,sc.d),-2);popWords(h,lt,.1,.12);
+    const c=L([540,1000],[740,600]);put(card,...c,io(lt,.2,sc.d),-1);
+    put(lu,c[0]+cw*.18,c[1]-ch/2+F(70,60),io(lt,dT+dD,sc.d),-3);
+    put(ld,...(V?[c[0],c[1]+ch/2+90]:[c[0]+cw*.22,c[1]+ch/2+68]),io(lt,dT+dD+.4,sc.d),2);
+    if(z)zput(z,sh,1560,600,zh,lt,sc.d,.3)}};
+
+// 12) FEATURES — modül kutucukları sırayla belirir
+const FEAT={metas:['ilk_adim_rozet.webp','Metas'],agua:['su_kahramani_rozet.webp','Agua'],gratitud:['sükran_rozeti.webp','Gratitud'],
+  animo:['ruh_hali_rozet.webp','Ánimo'],suenos:['ruya_yorumcusu_rozet.webp','Sueños'],ahorro:['birikim_ustasi_rozet.webp','Ahorro'],
+  enfoque:['denge_ustasi_rozet.webp','Enfoque'],racha:['bir_hafta_seri_rozet.webp','Rachas']};
+T.features=(o,sc)=>{const keys=o.items||['metas','agua','gratitud','animo','suenos','ahorro','enfoque','racha'];
+  const h=HL((o.title||'Todo en un solo lugar').split('|'),F(92,84),V?990:1700);
+  const tw=F(440,400),th=F(190,190),is=F(130,130);
+  const tiles=keys.map(k=>{const e=mk(stage,'div','o tile');e.style.width=tw+'px';e.style.height=th+'px';
+    const im=mk(e,'img');im.src=IMG+encodeURI(FEAT[k][0]);im.style.width=im.style.height=is+'px';const lb=mk(e,'b',null,FEAT[k][1]);lb.style.fontSize=F(50,50)+'px';return e});
+  const step=Math.min(b,(sc.d-1.6)/keys.length),T0=.5;
+  tiles.forEach((_,i)=>{ev(sc.t0+T0+i*step,'pop',.6,{p:620+(i%5)*90});ev(sc.t0+T0+i*step+.03,'bell',.22,{f:PENT[i%7]*2})});
+  return lt=>{put(h.el,...L([540,330],[960,150]),io(lt,0,sc.d),-2);popWords(h,lt,.1,.12);
+    tiles.forEach((e,i)=>{const c=V?[300+(i%2)*480,560+Math.floor(i/2)*230]:[330+(i%4)*420,450+Math.floor(i/4)*240];
+      put(e,...c,io(lt,T0+i*step,sc.d),(i%2?1:-1)*1.5)})}};
+
+// 13) TIMER — odak sayacı 25:00 → 00:00
+T.timer=(o,sc)=>{const h=HL([o.title||'Modo enfoque'],F(96,84),V?990:1080);const R=F(280,250);
+  const ring=mk(stage,'div','o');ring.innerHTML=`<svg width="${R*2+40}" height="${R*2+40}"><circle cx="${R+20}" cy="${R+20}" r="${R}" fill="#fff" stroke="#14110C" stroke-width="14"/>
+   <circle id="ar" cx="${R+20}" cy="${R+20}" r="${R-22}" fill="none" stroke="#F3B23C" stroke-width="30" pathLength="1" stroke-dasharray="1 1" transform="rotate(-90 ${R+20} ${R+20})"/></svg>`;
+  const ar=ring.querySelector('#ar'),tx=mk(stage,'div','o');tx.style.cssText+=`font-family:Nunito;font-weight:900;font-size:${F(150,130)}px;font-variant-numeric:tabular-nums`;
+  const done=sticker(o.done||'¡Sesión completada!',F(66,58));
+  const T0=.5,D=sc.d-2;for(let i=0;i<Math.floor(D/.25);i++)ev(sc.t0+T0+i*.25,'tick',.3,{p:1500});ev(sc.t0+T0+D,'bell',.6,{f:PENT[5]});ev(sc.t0+T0+D,'sparkle',.45);
+  const zh=720,z=V?null:zibo(o.z||'zibo_ogrenci',zh),sh=V?null:zsh(320);
+  return lt=>{const p=prog(lt,T0,D),s=Math.round((1-p)*1500);tx.textContent=String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');
+    ar.style.strokeDashoffset=p;const c=L([540,900],[740,560]);
+    put(h.el,...L([540,330],[740,110]),io(lt,0,sc.d),-2);popWords(h,lt,.1,.12);
+    put(ring,...c,io(lt,.15,sc.d));put(tx,...c,io(lt,.15,sc.d));
+    put(done,...L([540,1350],[740,970]),io(lt,T0+D+.1,sc.d),-3);
+    if(z)zput(z,sh,1560,600,zh,lt,sc.d,.3)}};
+
+// 14) END — kapanış: simge, logo, "Gratis en Google Play", DESCARGAR düğmesi, dokunan parmak
+T.end=(o,sc)=>{const ic=img(stage,'zibo_app_icon.png',F(300,330)),lg=img(stage,'zibo_logo_new.webp',null,F(520,560));ic.classList.add('icon');
+  const tag=o.tag?sticker(o.tag,F(56,52),true,V?980:900):null;
+  // Google'ın resmi "Disponible en Google Play" rozeti (play_badge_es.png, play.google.com/badges).
+  const tx=mk(stage,'img','o');tx.src='play_badge_es.png';tx.style.width=F(600,580)+'px';
+  const bt=sticker(o.btn||'DESCARGAR GRATIS',F(78,72));const hand=mk(stage,'div','o emo','👆');hand.style.fontSize=F(150,130)+'px';
+  const R1=rng(7),cols=['#F3B23C','#23408E','#8FD3FF','#E8553D','#fff','#F6D488'],conf=[];
+  for(let i=0;i<60;i++){const e=mk(stage,'div','o conf'),w=18+R1()*26;e.style.width=w+'px';e.style.height=(i%3?w*.5:w)+'px';
+    e.style.background=cols[i%cols.length];if(i%4==0)e.style.borderRadius='50%';const a=-Math.PI/2+(R1()-.5)*2.4,v=900+R1()*1400;
+    conf.push({e,vx:Math.cos(a)*v,vy:Math.sin(a)*v,r:R1()*360,rv:(R1()-.5)*900})}
+  ev(sc.t0+.1,'blop',.9,{p:340});ev(sc.t0+.15,'party',.7);ev(sc.t0+.45,'blop',.7,{p:460});ev(sc.t0+b*2,'blop',.8,{p:560});ev(sc.t0+b*3,'chime',.4);
+  for(let k=0;k<3;k++)ev(sc.t0+b*4+k*b*2,'tick',.45,{p:900});
+  const P={ic:L([540,450],[560,520]),lg:L([540,760],[1250,270]),tx:L([540,975],[1250,470]),bt:L([540,1180],[1250,680]),tag:L([540,1370],[1250,870])};
+  return lt=>{const on=lt>=0,inf=sc.d+9;
+    conf.forEach(c=>{const tc=lt-.15;put(c.e,P.ic[0]+c.vx*tc*.9,P.ic[1]+40+c.vy*tc+1400*tc*tc,1,c.r+c.rv*tc,on&&tc>=0?clamp(2.6-tc):0)});
+    put(ic,...P.ic,on?io(lt,.1,inf):0,lerp(-18,-4,eOut(prog(lt,.1,.5))));
+    put(lg,...P.lg,on?io(lt,.4,inf):0,-2);
+    put(tx,...P.tx,on?io(lt,b*1.5,inf):0,0);
+    put(bt,...P.bt,on?io(lt,b*2,inf)*(1+Math.sin(lt*6.5)*.04):0,-2);
+    const tp=(lt-b*4)%(b*2),hp=lt>b*4?1:0;
+    put(hand,P.bt[0]+F(200,230),P.bt[1]+F(110,100)-(tp<.25?0:Math.min(1,(tp-.25)/.3))*0+Math.sin(Math.PI*clamp(tp/(b*2)))*-30,hp,-20);
+    if(tag)put(tag,...P.tag,on?io(lt,b*3,inf):0,2)}};
+
+// ---------- sahneleri kur ----------
+const RUN=SPEC.scenes.map(s=>({s,f:T[s.type](s,s)}));
+boot(END,t=>{bgTick(t);RUN.forEach(r=>r.f(t-r.s.t0));
+  const endS=SPEC.scenes[SPEC.scenes.length-1];put(wm,...L([200,120],[200,90]),1,0,t<endS.t0-.1?1:0)});
+</script>
+</body>
+</html>
