@@ -9,6 +9,7 @@ import '../providers/game_points_provider.dart';
 import '../providers/games_config_provider.dart';
 import '../providers/subscription_provider.dart';
 import '../services/game_analytics.dart';
+import '../services/interstitial_pacer.dart';
 import '../widgets/sticker_style.dart';
 
 /// Oyun Salonu'ndaki bir HTML oyununu (APK içindeki `assets/games/<id>/`)
@@ -18,7 +19,8 @@ import '../widgets/sticker_style.dart';
 /// Oyun ↔ Flutter konuşması `ZiboBridge` JavaScript kanalı üzerinden JSON:
 /// `ready` → [_sendInit]; `start` → hak düşülür; `finish` → puan tur
 /// tavanına göre DOĞRULANIP [GamePointsProvider]'a yazılır; `requestAd` →
-/// ödüllü reklam; `exit` → kapanır. Sonuç ekranı oyunun içinde (kullanıcı
+/// ödüllü reklam; `breakAd` → uzun turda mola geçiş reklamı (sıklık
+/// [InterstitialPacer]'da), cevap `ziboBreakDone`; `exit` → kapanır. Sonuç ekranı oyunun içinde (kullanıcı
 /// kararı 2026-09-29).
 ///
 /// Rakamlar [GamesConfigProvider]'dan (varsayılanlar + Firestore
@@ -124,6 +126,14 @@ class _GameWebViewScreenState extends State<GameWebViewScreen> {
         if (!mounted) return;
         GameAnalytics.log('game_ad', {'game': game, 'reason': reason, 'ok': ok ? 1 : 0});
         await _call('ziboAdResult', _playState(ok: ok, reason: reason));
+      case 'breakAd':
+        // Uzun turda mola reklamı (2048) — sıklık kuralları InterstitialPacer'da;
+        // gösterilsin ya da gösterilmesin oyun cevabı bekleyip girişi açar.
+        final shown = await context.read<CoinProvider>().showInterstitialAd(
+          InterstitialPlacement.gameBreak,
+        );
+        if (!mounted) return;
+        await _call('ziboBreakDone', {'shown': shown});
       case 'exit':
         if (mounted) Navigator.of(context).pop();
     }

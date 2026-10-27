@@ -41,6 +41,7 @@ Kaynaklar: (1) rewarded reklam, (2) interstitial, (3) banner (şu an 0 fill), (4
 | Günlük Ödüller ekranı | Interstitial | `dailyReward` yerleşimi | `daily_rewards_screen.dart` |
 | Hedef Takibi 7/7 | Interstitial | `goalCycle` | `goal_tracking_screen.dart` |
 | Şükran kaydı → ekrandan çıkış / yeni rüya kaydı → listeye dönüş | Interstitial | `journalSaved` (2026-10-26) | `gratitude_journal_screen.dart`, `dream_entry_form_screen.dart` |
+| 2048 uzun tur — her 120 hamlede bir mola (yalnızca ücretsiz) | Interstitial | `gameBreak` (2026-10-27) | `assets/games/2048/index.html` → `game_webview_screen.dart` |
 | Mağaza "Bugünün vitrini" | Rewarded | kostüm nadirliğine göre 1–5 video → 24 saat deneme, günde 1 deneme (2026-10-26) | `store_screen.dart` `_CostumeTrialCard`, `costume_provider.dart` |
 | Oyun Salonu ikinci şans / ekstra hak | Rewarded | tur başına 1 devam, 5 sn sayaç (2026-10-26) | `assets/games/{tren,tugla,kule}` |
 | Banner | Banner | kod var, gerçek doluluk yok (bkz. hafıza: banner 0 fill) | `banner_ad_reload_signal.dart` |

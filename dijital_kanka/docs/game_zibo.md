@@ -410,6 +410,9 @@ Kullanıcının yazdığı liste (sırayla):
    penceresinde 4×4 Klasik / 5×5 Geniş / 6×6 Dev; seçim cihazda hatırlanır (`localStorage zibo2048.size`).
    Büyük tahta daha kolay ve uzun → skor böleni `scoreDiv × {1; 1,5; 2}` (÷20/÷30/÷40); bonuslar + tur tavanı 600 aynı.
    `finish.stats.size` gönderiliyor. Rekor tüm boyutlar için ortak (Flutter tarafı tek `best` tutuyor).
+   **Mola reklamı (kullanıcı, 2026-10-27):** uzun turda ücretsiz kullanıcıya her 120 hamlede bir, hamle arasında
+   `breakAd` → Flutter `showInterstitialAd(InterstitialPlacement.gameBreak)` → `ziboBreakDone`; cevap gelene kadar
+   giriş kilitli (60 sn emniyet). Gerçek sıklık `InterstitialPacer` kurallarıyla (ilk 3 sa yok, günde ≤2, ≥4 dk).
 4. **Coin Yakala** 45 sn sınırı kalksın, kademe kademe hızlansın, coinler sağa sola savrulsun, canlar bitene kadar oynansın. ✅ YAPILDI.
 5. **Tuğla** tuğla sayısı birden çok artıyor, kısa sürüyor → kolaylaştır. ✅ YAPILDI.
 

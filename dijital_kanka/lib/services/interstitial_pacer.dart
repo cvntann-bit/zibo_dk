@@ -14,6 +14,10 @@ enum InterstitialPlacement {
 
   /// Şükran/rüya günlüğüne kayıt yapılıp ekrandan çıkıldı.
   journalSaved,
+
+  /// Uzun süren 2048 turunda belirli hamle aralığında verilen mola
+  /// (oyun `breakAd` ister, hamle arası — kaydırma ortasında DEĞİL).
+  gameBreak,
 }
 
 /// Bir geçiş reklamının neden GÖSTERİLMEDİĞİ (analitik `reason`).

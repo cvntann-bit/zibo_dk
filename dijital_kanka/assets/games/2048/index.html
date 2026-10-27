@@ -211,6 +211,7 @@
       if (msg.type === 'start') window.ziboStartResult({ ok: CFG.playsLeft > 0, playsLeft: Math.max(0, CFG.playsLeft - 1) });
       if (msg.type === 'finish') window.ziboFinishResult({ accepted: true, points: Math.min(CFG.cap, msg.points) });
       if (msg.type === 'requestAd') window.ziboAdResult({ ok: true, reason: msg.reason, playsLeft: CFG.playsLeft + (msg.reason === 'extraPlay' ? 1 : 0) });
+      if (msg.type === 'breakAd') window.ziboBreakDone({ shown: false });
       if (msg.type === 'exit') location.reload();
     }, msg.type === 'requestAd' ? 900 : 60);
   }
@@ -231,6 +232,10 @@
   window.ziboFinishResult = function (r) {
     if (typeof r.canAdForPlay === 'boolean') CFG.canAdForPlay = r.canAdForPlay;
     if (typeof r.playsLeft === 'number') CFG.playsLeft = r.playsLeft; showResult(r.accepted ? r.points : 0); };
+  window.ziboBreakDone = function () {
+    clearTimeout(breakGuard); inBreak = false;
+    if (playing) { lock = false; hud(); if (!canMove()) stuck(); }
+  };
   window.ziboAdResult = function (r) {
     if (typeof r.canAdForPlay === 'boolean') CFG.canAdForPlay = r.canAdForPlay;
     if (typeof r.playsLeft === 'number') CFG.playsLeft = r.playsLeft;
@@ -245,6 +250,15 @@
   var SIZES = [4, 5, 6], DIV_MULT = { 4: 1, 5: 1.5, 6: 2 }, N = 4;
   try { var savedN = +localStorage.getItem('zibo2048.size'); if (SIZES.indexOf(savedN) >= 0) N = savedN; } catch (e) {}
   var tiles = [], idc = 0, score = 0, prev = null, lock = true, undos = 0, top = 2, won = false, seen = {}, playing = false;
+  // Mola reklamı (kullanıcı, 2026-10-27): uzun turda her BREAK_EVERY hamlede bir, hamle ARASINDA
+  // Flutter'dan geçiş reklamı istenir. Ücretsiz kullanıcıda; asıl sıklık sınırı Flutter'daki
+  // InterstitialPacer'da (ilk 3 sa yok, günde ≤2, ≥4 dk). Cevap gelene kadar giriş kilitli.
+  var BREAK_EVERY = 120, moves = 0, inBreak = false, breakGuard = null;
+  function requestBreak() {
+    inBreak = true; lock = true; hud();
+    breakGuard = setTimeout(window.ziboBreakDone, 60000);
+    send({ type: 'breakAd' });
+  }
   function div() { return Math.round(CFG.scoreDiv * DIV_MULT[N]); }
   function bonusFor(v) { return v >= 2048 ? CFG.bonus2048 : v >= 1024 ? CFG.bonus1024 : v >= 256 ? CFG.bonus256 : 0; }
   function points() { return Math.min(CFG.cap, Math.floor(score / div()) + bonusFor(top)); }
@@ -296,7 +310,7 @@
     });
     $('sizeNote').textContent = t('sizeNote', { d: div() });
   }
-  function startGame() { tiles = []; $('layer').innerHTML = ''; score = 0; prev = null; undos = 0; top = 2; won = false; seen = { 2: true }; spawn(); spawn(); lock = false; playing = true; hud(); }
+  function startGame() { moves = 0; tiles = []; $('layer').innerHTML = ''; score = 0; prev = null; undos = 0; top = 2; won = false; seen = { 2: true }; spawn(); spawn(); lock = false; playing = true; hud(); }
   function plus(n) { var p = document.createElement('span'); p.className = 'plus'; p.textContent = '+' + n; $('scoreBox').appendChild(p); setTimeout(function () { p.remove(); }, 820); }
   function move(dir) {
     if (lock || !playing) return;
@@ -321,7 +335,7 @@
       });
     });
     if (!moved) return;
-    prev = snap; score += gained; lock = true;
+    prev = snap; score += gained; lock = true; moves += 1;
     tiles.forEach(function (x) { x.el.classList.remove('new', 'merged'); x.el.style.setProperty('--r', x.r); x.el.style.setProperty('--c', x.c); });
     setTimeout(function () {
       tiles = tiles.filter(function (x) { if (x.dead) { x.el.remove(); return false; } return true; });
@@ -331,6 +345,7 @@
       if (!seen[top]) { seen[top] = true; if (top >= 2048 && !won) { won = true; toast(t('gold')); } else if (top >= 8) toast(t('unlocked', { name: nameOf(top) })); }
       hud();
       if (!canMove()) stuck();
+      else if (CFG.tier === 'free' && moves % BREAK_EVERY === 0) requestBreak();
     }, 115);
     hud();
   }
