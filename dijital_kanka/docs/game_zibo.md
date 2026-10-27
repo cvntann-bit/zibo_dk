@@ -152,7 +152,7 @@ Tüm oyunlarda: günde 3 hak (yukarıdaki kural), sonuç ekranı "+N puan", Taka
 | **Zibo Zıpla** | Flappy tarzı: dokun-zıpla, sütun aralarından geç | **coin × 5** (sütun puan vermez, sadece rekor) | 600 | Çarpınca biter |
 | **Zibo Hafıza** | 16 kostümle kart eşleştirme, başta ezberleme süresi | Kolay 100 / Orta 180 / Zor 300 × yıldız (3★ tam, 2★ %60, 1★ %30) | — | Hamle limiti dolarsa **0** |
 | **Coin Yakala** | Savrulan coinleri yakala, bombalardan kaç, **süresiz**, 3 can, 15 sn'de bir kademe hızlanır | **1 skor = 1 ★** (coin 1, kese 3) | 400 | Canlar bitince biter, skor **puana döner** (2026-10-27) |
-| **Zibo 2048** | Kostüm birleştirme (2 Klasik → … → 2048 Altın → 4096 Elmas) | skor ÷ 20 + en yüksek kostüm bonusu (Samuray 50, Kral 100, Altın 200) | 600 | Hamle kalmayınca biter; geri al en fazla 3 (ücretsiz: her biri reklam, Pro: bedava) |
+| **Zibo 2048** | Kostüm birleştirme (2 Klasik → … → 2048 Altın → 4096 Elmas); tahta 4×4 / 5×5 / 6×6 oyuncu seçer | skor ÷ 20 (5×5 ÷ 30, 6×6 ÷ 40) + en yüksek kostüm bonusu (Samuray 50, Kral 100, Altın 200) | 600 | Hamle kalmayınca biter; geri al en fazla 3 (ücretsiz: her biri reklam, Pro: bedava) |
 | **Zibo Tren** | Snake: Zibo + arkasında coin vagonları | **coin × 5** (kese = 3 coin) | 600 | Çarpınca biter; 1 kez "geri dön" (reklam / Pro bedava) |
 | **Zibo Tuğla** | Bricks n Balls: nişan al, sayılı tuğlaları kır, +1 halkalar | **tuğla × 1** | 400 | Tuğlalar dibe inince biter; 1 kez "3 sırayı sil" (reklam / Pro bedava) |
 | **Zibo Kule** | Stack: kayan bloğu zamanında bırak, taşan kesilir | **kat × 2 + mükemmel × 1** | 250 | Iskalayınca biter; 1 kez "tekrar dene" (reklam / Pro bedava) |
@@ -406,7 +406,10 @@ Kullanıcı Kule, Hafıza, 2048, Coin Yakala ve Tren'i telefonda denedi: "çalı
 Kullanıcının yazdığı liste (sırayla):
 1. **Kule** "çok hızlanıyor, hemen bitiyor" → kolaylaştır + ilk kule barı daha uzun. ✅ YAPILDI (yukarıdaki değerler).
 2. **Hafıza** ezber süresi çok kısa → daha uzun göster. ✅ YAPILDI (5 / 4 / 3,5 sn + geri sayım).
-3. **2048** 4×4'ten daha büyük olabilir (5×5 vb. varyantlar) → **seçenek sunulacak, kullanıcı seçecek.** ⏳ BEKLİYOR.
+3. **2048** 4×4'ten daha büyük olabilir → 3 seçenek sunuldu, kullanıcı **"oyuncu seçsin"** dedi. ✅ YAPILDI: başla
+   penceresinde 4×4 Klasik / 5×5 Geniş / 6×6 Dev; seçim cihazda hatırlanır (`localStorage zibo2048.size`).
+   Büyük tahta daha kolay ve uzun → skor böleni `scoreDiv × {1; 1,5; 2}` (÷20/÷30/÷40); bonuslar + tur tavanı 600 aynı.
+   `finish.stats.size` gönderiliyor. Rekor tüm boyutlar için ortak (Flutter tarafı tek `best` tutuyor).
 4. **Coin Yakala** 45 sn sınırı kalksın, kademe kademe hızlansın, coinler sağa sola savrulsun, canlar bitene kadar oynansın. ✅ YAPILDI.
 5. **Tuğla** tuğla sayısı birden çok artıyor, kısa sürüyor → kolaylaştır. ✅ YAPILDI.
 

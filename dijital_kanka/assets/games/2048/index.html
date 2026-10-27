@@ -25,11 +25,13 @@
   .hud img { height: 24px; }
   .plus { position: absolute; left: 50%; top: -6px; transform: translateX(-50%); font: 800 16px 'Baloo2', sans-serif; color: var(--gold); -webkit-text-stroke: 1.5px var(--outline); paint-order: stroke fill; pointer-events: none; animation: rise 800ms ease-out forwards; }
   @keyframes rise { to { transform: translate(-50%, -26px); opacity: 0; } }
-  .board { position: relative; aspect-ratio: 1; background: #C9A46B; border: 3px solid var(--outline); border-radius: 16px; box-shadow: 4px 4px 0 var(--outline); touch-action: none; }
+  .board { --n: 4; --gap: 7px; position: relative; aspect-ratio: 1; background: #C9A46B; border: 3px solid var(--outline); border-radius: 16px; box-shadow: 4px 4px 0 var(--outline); touch-action: none; }
   .cells, .layer { position: absolute; inset: 7px; }
-  .cells { display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(4, 1fr); gap: 7px; }
+  .cells { display: grid; grid-template-columns: repeat(var(--n), 1fr); grid-template-rows: repeat(var(--n), 1fr); gap: var(--gap); }
   .cells i { background: rgba(255, 248, 232, .42); border: 2px dashed rgba(20, 17, 12, .22); border-radius: 11px; }
-  .tile { position: absolute; left: 0; top: 0; width: calc((100% - 21px) / 4); height: calc((100% - 21px) / 4); transform: translate(calc(var(--c) * (100% + 7px)), calc(var(--r) * (100% + 7px))); transition: transform 110ms ease-out; }
+  .tile { position: absolute; left: 0; top: 0; width: calc((100% - (var(--n) - 1) * var(--gap)) / var(--n)); height: calc((100% - (var(--n) - 1) * var(--gap)) / var(--n)); transform: translate(calc(var(--c) * (100% + var(--gap))), calc(var(--r) * (100% + var(--gap)))); transition: transform 110ms ease-out; }
+  .board.n6 .t b { font-size: 9.5px; padding: 1px 2px 0; }
+  .board.n6 .t small { font-size: 7.5px; }
   .t { position: absolute; inset: 0; border: 2.5px solid var(--outline); border-radius: 11px; box-shadow: 2px 2px 0 var(--outline); overflow: hidden; background: var(--bg); }
   .t img { position: absolute; left: 6%; top: 4%; width: 88%; height: 76%; object-fit: contain; }
   .t b { position: absolute; top: 3px; left: 3px; color: #2A2115; font: 800 11px/1 'Baloo2', sans-serif; background: #FFFDF7; border: 1.5px solid var(--outline); border-radius: 6px; padding: 2px 3px 1px; }
@@ -64,6 +66,11 @@
   .chip { display: inline-flex; align-items: center; gap: 4px; border: 2.5px solid var(--outline); border-radius: 999px; padding: 1px 10px; font: 800 12.5px 'Nunito', sans-serif; background: var(--chip); }
   .chip.gold { background: var(--gold); }
   .chips { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; }
+  .sizes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; width: 100%; }
+  .sizes button { border: 2.5px solid var(--outline); border-radius: 12px; background: var(--chip); padding: 5px 2px; cursor: pointer; display: grid; gap: 1px; font: 800 17px/1.1 'Baloo2', sans-serif; color: var(--outline); }
+  .sizes button small { font: 800 10px 'Nunito', sans-serif; color: #6E5B40; }
+  .sizes button.on { background: var(--gold); box-shadow: 2px 2px 0 var(--outline); }
+  .sizes button.on small { color: var(--outline); }
   .pt { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; border-radius: 50%; background: var(--ice); border: 2px solid var(--outline); color: var(--ice-ink); font: 800 10px/1 'Nunito', sans-serif; font-style: normal; flex: none; }
   .pt.lg { width: 30px; height: 30px; font-size: 16px; border-width: 2.5px; }
   .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; }
@@ -100,6 +107,8 @@
     <p id="introText"></p>
     <p id="teaseText" style="font-size:12px"></p>
     <div class="mys" id="mys"></div>
+    <div class="sizes" id="sizes"></div>
+    <p id="sizeNote" style="font-size:12px"></p>
     <div class="chips"><span class="chip gold" id="introPlays"></span><span class="chip" id="introBest"></span></div>
     <button class="btn" id="startBtn"></button>
     <button class="btn ice" id="playAdBtn" hidden></button>
@@ -137,6 +146,7 @@
     tr: {
       intro: 'Kaydır; aynı kostümlü iki Zibo birleşince bir üst kostüme dönüşür. Hedef: Altın Zibo!',
       tease: 'Birleştirdikçe yeni kostümler açılır. Hepsini keşfedebilecek misin?', classic: 'Klasik',
+      size4: 'Klasik', size5: 'Geniş', size6: 'Dev', sizeNote: 'Tahta büyüdükçe oyun uzar: skor ÷ {d} = ★',
       playsLeft: '{n} hak kaldı', noPlays: 'Bugünlük hakların bitti', best: 'Rekor {n}', start: 'Başla', waiting: 'Bekleniyor…', adPlay: '🎬 Reklam izle, +1 hak',
       score: 'Skor', bestL: 'Rekor', undo: '↶ Geri al ({n})', undoAd: '🎬 Geri al ({n})', undoNone: 'Geri alma bitti', end: 'Bitir · +{n} ★', hint: 'Kaydır ya da ok tuşlarını kullan',
       stuckTitle: 'Hamle kalmadı!', stuckText: 'Son hamleyi geri alıp devam edebilir ya da {p} ★ alıp bitirebilirsin.', stuckNoUndo: 'Geri alma hakkın bitti. {p} ★ alıp bitir.',
@@ -149,6 +159,7 @@
     en: {
       intro: 'Swipe; two Zibos in the same costume merge into the next costume. Goal: Golden Zibo!',
       tease: 'New costumes unlock as you merge. Can you discover them all?', classic: 'Classic',
+      size4: 'Classic', size5: 'Wide', size6: 'Giant', sizeNote: 'Bigger boards play longer: score ÷ {d} = ★',
       playsLeft: '{n} plays left', noPlays: 'No plays left today', best: 'Best {n}', start: 'Start', waiting: 'Please wait…', adPlay: '🎬 Watch an ad, +1 play',
       score: 'Score', bestL: 'Best', undo: '↶ Undo ({n})', undoAd: '🎬 Undo ({n})', undoNone: 'No undos left', end: 'Finish · +{n} ★', hint: 'Swipe or use the arrow keys',
       stuckTitle: 'No moves left!', stuckText: 'Undo your last move and keep going, or finish and take {p} ★.', stuckNoUndo: 'No undos left. Finish and take {p} ★.',
@@ -161,6 +172,7 @@
     es: {
       intro: 'Desliza; dos Zibos con el mismo disfraz se combinan en el siguiente. Meta: ¡el Zibo Dorado!',
       tease: 'Al combinar se desbloquean nuevos disfraces. ¿Podrás descubrirlos todos?', classic: 'Clásico',
+      size4: 'Clásico', size5: 'Amplio', size6: 'Gigante', sizeNote: 'Tablero más grande, partida más larga: puntos ÷ {d} = ★',
       playsLeft: 'Te quedan {n} partidas', noPlays: 'No te quedan partidas hoy', best: 'Récord {n}', start: 'Empezar', waiting: 'Espera…', adPlay: '🎬 Mira un anuncio, +1 partida',
       score: 'Puntos', bestL: 'Récord', undo: '↶ Deshacer ({n})', undoAd: '🎬 Deshacer ({n})', undoNone: 'Sin deshacer', end: 'Terminar · +{n} ★', hint: 'Desliza o usa las flechas',
       stuckTitle: '¡Sin movimientos!', stuckText: 'Deshaz tu último movimiento y sigue, o termina y llévate {p} ★.', stuckNoUndo: 'No te quedan deshacer. Termina y llévate {p} ★.',
@@ -228,9 +240,14 @@
   };
 
   // ---------- oyun ----------
+  // Tahta boyutu oyuncunun seçimi (kullanıcı, 2026-10-27): 4×4 / 5×5 / 6×6. Büyük tahta daha
+  // kolay ve uzun sürdüğü için skor böleni büyür (÷20 → ÷30 → ÷40); kostüm bonusları ve tur tavanı aynı.
+  var SIZES = [4, 5, 6], DIV_MULT = { 4: 1, 5: 1.5, 6: 2 }, N = 4;
+  try { var savedN = +localStorage.getItem('zibo2048.size'); if (SIZES.indexOf(savedN) >= 0) N = savedN; } catch (e) {}
   var tiles = [], idc = 0, score = 0, prev = null, lock = true, undos = 0, top = 2, won = false, seen = {}, playing = false;
+  function div() { return Math.round(CFG.scoreDiv * DIV_MULT[N]); }
   function bonusFor(v) { return v >= 2048 ? CFG.bonus2048 : v >= 1024 ? CFG.bonus1024 : v >= 256 ? CFG.bonus256 : 0; }
-  function points() { return Math.min(CFG.cap, Math.floor(score / CFG.scoreDiv) + bonusFor(top)); }
+  function points() { return Math.min(CFG.cap, Math.floor(score / div()) + bonusFor(top)); }
   function toast(m) { var el = $('toast'); el.textContent = m; el.classList.add('on'); clearTimeout(toast.h); toast.h = setTimeout(function () { el.classList.remove('on'); }, 1700); }
   function paint(tl) {
     var d = L(tl.v);
@@ -238,9 +255,9 @@
     if (tl.shown !== tl.v) { tl.el.innerHTML = '<div class="t ' + d[3] + '" style="--bg:' + d[2] + '"><img src="../../images/' + d[0] + '.webp" alt=""><b>' + tl.v + '</b><small>' + nameOf(tl.v) + '</small></div>'; tl.shown = tl.v; }
   }
   function add(v, r, c, isNew) { var el = document.createElement('div'); el.className = 'tile' + (isNew ? ' new' : ''); var tl = { v: v, r: r, c: c, el: el, id: ++idc }; paint(tl); $('layer').appendChild(el); tiles.push(tl); return tl; }
-  function grid() { var g = [[], [], [], []]; for (var r = 0; r < 4; r++) for (var c = 0; c < 4; c++) g[r][c] = null; tiles.forEach(function (tl) { if (!tl.dead) g[tl.r][tl.c] = tl; }); return g; }
-  function spawn() { var g = grid(), e = []; for (var r = 0; r < 4; r++) for (var c = 0; c < 4; c++) if (!g[r][c]) e.push([r, c]); if (e.length) { var p = e[Math.floor(Math.random() * e.length)]; add(Math.random() < 0.9 ? 2 : 4, p[0], p[1], true); } }
-  function canMove() { var g = grid(); for (var r = 0; r < 4; r++) for (var c = 0; c < 4; c++) { var x = g[r][c]; if (!x) return true; if (c < 3 && g[r][c + 1] && g[r][c + 1].v === x.v) return true; if (r < 3 && g[r + 1][c] && g[r + 1][c].v === x.v) return true; } return false; }
+  function grid() { var g = []; for (var r = 0; r < N; r++) { g.push([]); for (var c = 0; c < N; c++) g[r][c] = null; } tiles.forEach(function (tl) { if (!tl.dead) g[tl.r][tl.c] = tl; }); return g; }
+  function spawn() { var g = grid(), e = []; for (var r = 0; r < N; r++) for (var c = 0; c < N; c++) if (!g[r][c]) e.push([r, c]); if (e.length) { var p = e[Math.floor(Math.random() * e.length)]; add(Math.random() < 0.9 ? 2 : 4, p[0], p[1], true); } }
+  function canMove() { var g = grid(); for (var r = 0; r < N; r++) for (var c = 0; c < N; c++) { var x = g[r][c]; if (!x) return true; if (c < N - 1 && g[r][c + 1] && g[r][c + 1].v === x.v) return true; if (r < N - 1 && g[r + 1][c] && g[r + 1][c].v === x.v) return true; } return false; }
   function hud() {
     $('hScore').textContent = score.toLocaleString(lang);
     $('hBest').textContent = Math.max(CFG.best || 0, score).toLocaleString(lang);
@@ -256,8 +273,28 @@
   }
   function reset() {
     tiles = []; $('layer').innerHTML = ''; score = 0; prev = null; undos = 0; top = 2; won = false; lock = true; playing = false; seen = { 2: true };
-    var cells = $('cells'); if (!cells.children.length) for (var i = 0; i < 16; i++) cells.appendChild(document.createElement('i'));
+    applySize();
     add(2, 1, 1, false); add(4, 2, 2, false); hud(); fitBoard();
+  }
+  function applySize() {
+    var b = $('board'), cells = $('cells');
+    b.style.setProperty('--n', N); b.style.setProperty('--gap', N >= 6 ? '5px' : N === 5 ? '6px' : '7px'); b.classList.toggle('n6', N >= 6);
+    if (cells.children.length !== N * N) { cells.innerHTML = ''; for (var i = 0; i < N * N; i++) cells.appendChild(document.createElement('i')); }
+  }
+  function setSize(n) {
+    if (n === N) return; N = n;
+    try { localStorage.setItem('zibo2048.size', String(n)); } catch (e) {}
+    reset(); renderSizes();
+  }
+  function renderSizes() {
+    var box = $('sizes'); box.innerHTML = '';
+    SIZES.forEach(function (n) {
+      var b = document.createElement('button'); b.type = 'button'; b.className = n === N ? 'on' : '';
+      b.innerHTML = n + '×' + n + '<small>' + t('size' + n) + '</small>';
+      b.addEventListener('click', function () { setSize(n); });
+      box.appendChild(b);
+    });
+    $('sizeNote').textContent = t('sizeNote', { d: div() });
   }
   function startGame() { tiles = []; $('layer').innerHTML = ''; score = 0; prev = null; undos = 0; top = 2; won = false; seen = { 2: true }; spawn(); spawn(); lock = false; playing = true; hud(); }
   function plus(n) { var p = document.createElement('span'); p.className = 'plus'; p.textContent = '+' + n; $('scoreBox').appendChild(p); setTimeout(function () { p.remove(); }, 820); }
@@ -265,7 +302,7 @@
     if (lock || !playing) return;
     var v = { left: [0, -1], right: [0, 1], up: [-1, 0], down: [1, 0] }[dir], g = grid();
     var snap = { tiles: tiles.map(function (x) { return [x.v, x.r, x.c]; }), score: score, top: top };
-    var rows = [0, 1, 2, 3], cols = [0, 1, 2, 3];
+    var rows = [], cols = []; for (var i = 0; i < N; i++) { rows.push(i); cols.push(i); }
     if (v[0] === 1) rows.reverse(); if (v[1] === 1) cols.reverse();
     var moved = false, gained = 0;
     rows.forEach(function (r) {
@@ -274,7 +311,7 @@
         var nr = r, nc = c;
         for (;;) {
           var r2 = nr + v[0], c2 = nc + v[1];
-          if (r2 < 0 || r2 > 3 || c2 < 0 || c2 > 3) break;
+          if (r2 < 0 || r2 >= N || c2 < 0 || c2 >= N) break;
           var o = g[r2][c2];
           if (!o) { nr = r2; nc = c2; continue; }
           if (o.v === x.v && !o.merged) { g[r][c] = null; x.dead = true; x.r = r2; x.c = c2; o.v *= 2; o.merged = true; gained += o.v; moved = true; if (o.v > top) top = o.v; return; }
@@ -323,7 +360,7 @@
   function finish() {
     if (!playing) return;
     playing = false; lock = true; $('stuck').hidden = true; hud();
-    send({ type: 'finish', points: points(), score: score, stats: { score: score, top: top, undos: undos } });
+    send({ type: 'finish', points: points(), score: score, stats: { score: score, top: top, undos: undos, size: N } });
   }
   function showResult(pts) {
     var nb = score > (CFG.best || 0);
@@ -334,7 +371,7 @@
     $('resTop').textContent = nameOf(top); $('resTopL').textContent = t('highest');
     $('resPts').textContent = t('pts', { n: pts });
     var b = bonusFor(top);
-    $('resNote').textContent = t('note', { d: CFG.scoreDiv, s: Math.floor(score / CFG.scoreDiv) }) + (b ? t('noteBonus', { name: nameOf(top), b: b }) : '') + (pts >= CFG.cap ? t('capNote', { c: CFG.cap }) : '');
+    $('resNote').textContent = N + '×' + N + ' · ' + t('note', { d: div(), s: Math.floor(score / div()) }) + (b ? t('noteBonus', { name: nameOf(top), b: b }) : '') + (pts >= CFG.cap ? t('capNote', { c: CFG.cap }) : '');
     var left = CFG.playsLeft;
     $('againBtn').textContent = left > 0 ? t('again', { n: left }) : t('againNo'); $('againBtn').disabled = left <= 0;
     $('exitBtn').textContent = t('exit');
@@ -343,6 +380,7 @@
   function showIntro() {
     $('introText').textContent = t('intro'); $('teaseText').textContent = t('tease');
     $('mys').innerHTML = '<span><img src="../../images/zibo_yeni.webp" alt="">' + t('classic') + '</span>' + new Array(6).join('<span class="q"><b>?</b>???</span>');
+    renderSizes();
     var left = CFG.playsLeft;
     $('introPlays').textContent = left > 0 ? t('playsLeft', { n: left }) : t('noPlays');
     $('introBest').innerHTML = '<i class="pt">★</i>' + t('best', { n: (CFG.best || 0).toLocaleString(lang) });
