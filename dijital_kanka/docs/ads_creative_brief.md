@@ -75,3 +75,16 @@ Henüz üretilmedi — kullanıcı onayı bekleniyor. Hat: `promo_video/render.p
 - **Zibo EN - US CA UK AU** yayınlandı → ilk gün 6 kurulum, **₺16,23/kurulum** (TR ₺1,95). Kullanıcı: "karşılayamam" → **DURAKLATILDI**. Yüksek gelirli EN pazarları bu bütçeyle kârsız; tekrar açılmaz (docs/unit_economics.md).
 - **Zibo ES - MX CO AR CL ES** yayında, ₺54,91/gün, teklif "Hedef EBM" (hedef değeri kontrol edilmeli). Politika sınırlaması yok.
 - EN alternatifi düşünülürse ucuz İngilizce pazarlar (ör. Filipinler, Hindistan, Nijerya, Pakistan, Kenya) — kurulum ucuz ama kullanıcı başı reklam geliri de düşük; önce ES verisini 14 gün izle.
+
+### Talep Yaratma — ₺25.000 promosyon kredisi (2026-10-28)
+- Google'ın verdiği kredi: "Talep Yaratma kampanyalarında kullanabileceğiniz ₺25.000 reklam kredisi", durum **Etkin**,
+  harcama şartı yok, son kullanma **25 Ara 2026**. Google yardım (answer/6388096): promosyon kredisi nakit/geri ödeme
+  değil, reklam kredisidir — **geri ödenmez**. Yalnızca Talep Yaratma harcamasına uygulanır; diğer kampanyalar karttan.
+- **Zibo ES - Talep Yaratma (kredi)** yayında: toplam bütçe **₺24.000** (krediden ₺1.000 pay), 28.10–24.12.2026
+  (~₺414/gün), teklif "Tıklama sayısını en üst düzeye çıkarma" (bu hesapta Talep Yaratma için yükleme hedefi
+  sunulmuyor → hedef "Etkileşimler" seçildi, teklif tıklama), MX/CO/AR/CL/ES + İspanyolca, yalnızca Android
+  telefon+tablet, kanallar YouTube/Shorts/Keşfet/Gmail (Görüntülü Reklam Ağı KAPALI), nihai URL Play Store `&hl=es`.
+- Reklamlar: v06 (2 video), ES 01-05 dikey, ES 01-05 yatay, ES 06-10 yatay (şimdilik 08/09/10). Başlık/açıklamalar
+  kumar-güvenli ("Tu compañero de hábitos" vb.). `promo_video/es_ads/` 20 videodan YouTube'da eksik: 06/07 (ikisi de),
+  08/09/10 dikey → yüklenince 06-10 dikey reklamı eklenecek, 06-10 yatay'a 06/07 eklenecek.
+- **Kredi bitince/24 Aralık'ta kampanya bitiş tarihiyle kendiliğinden durur**; yine de harcamayı haftalık kontrol et.
