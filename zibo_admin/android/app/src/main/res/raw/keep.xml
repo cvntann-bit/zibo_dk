@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  `google_sign_in_android`, serverClientId'yi `default_web_client_id` string'inden isimle
+  (getIdentifier) okuyor; release'in kaynak küçültücüsü bunu göremeyip siliyor. Ana uygulamada
+  yaşanan "release'te Google girişi çalışmıyor" hatasının aynısı (bkz. dijital_kanka/android/
+  app/src/main/res/raw/keep.xml).
+-->
+<resources xmlns:tools="http://schemas.android.com/tools"
+    tools:keep="@string/default_web_client_id" />

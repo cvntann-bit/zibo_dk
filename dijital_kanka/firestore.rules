@@ -2,6 +2,16 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    // Yönetici uygulaması (`zibo_admin/`, docs/admin_panel.md): tek hesap, Google ile
+    // doğrulanmış e-posta. zibo_admin/lib/admin_auth.dart'taki kAdminEmail ile AYNI.
+    // Yönetici izinleri aşağıda sahip (isOwner) kurallarına OR olarak eklendi —
+    // kullanıcıların kendi yazımlarına uygulanan doğrulamalar DEĞİŞMEDİ.
+    function isAdmin() {
+      return request.auth != null
+        && request.auth.token.email == 'cvntann@gmail.com'
+        && request.auth.token.email_verified == true;
+    }
+
     match /users/{userId} {
       function isOwner() {
         return request.auth != null && request.auth.uid == userId;
@@ -12,6 +22,7 @@ service cloud.firestore {
       // `lastActiveAt` yazıyor (bkz. push_notification_service.dart). Coin
       // verisiyle ilgisi yok, dokunulmadı.
       allow read, write: if isOwner();
+      allow read: if isAdmin();
 
       // --- coinState: coin ekonomisinin EN KRİTİK dokümanı ------------------
       // Mod APK/hile koruması İÇİN eklendi (bkz. CLAUDE.md "Coin Ekonomisi
@@ -30,7 +41,11 @@ service cloud.firestore {
             && d.totalSpent is int && d.totalSpent >= 0;
         }
 
-        allow read: if isOwner();
+        allow read: if isOwner() || isAdmin();
+
+        // Yönetici hediyesi (grantGift.js'in panel karşılığı): delta sınırı YOK, yalnızca
+        // şekil — Admin SDK'nın bugüne kadar yaptığıyla aynı yetki.
+        allow create, update: if isAdmin() && isValidShape(request.resource.data);
 
         // İLK senkronizasyon (yerel veriden Firestore'a TEK SEFERLİK göç,
         // bkz. CloudStateStore.load()) — bu andan ÖNCEki gerçek işlem
@@ -115,8 +130,8 @@ service cloud.firestore {
                     && d.subscriptionExpiryDate.size() <= 40));
         }
 
-        allow read: if isOwner();
-        allow create, update: if isOwner()
+        allow read: if isOwner() || isAdmin();
+        allow create, update: if (isOwner() || isAdmin())
           && isValidSubscription(request.resource.data);
         allow delete: if false;
       }
@@ -135,7 +150,34 @@ service cloud.firestore {
         allow read, write: if isOwner()
           && stateDoc != 'coinState'
           && stateDoc != 'subscriptionState';
+        // Yönetici: okuma + hediye işaretleri (ör. gamePointsState.unlimitedPlays).
+        allow read, write: if isAdmin()
+          && stateDoc != 'coinState'
+          && stateDoc != 'subscriptionState';
       }
+
+      // Hediye çift-ekleme koruması (GRANT_ID) — grantGift.js ve yönetici paneli yazar.
+      match /giftGrants/{grantId} {
+        allow read, create: if isAdmin();
+        allow update, delete: if false;
+      }
+    }
+
+    // Yönetici işlem kaydı — her panel yazımıyla aynı batch'te. Silinemez/değiştirilemez.
+    match /adminLog/{logId} {
+      allow read, create: if isAdmin();
+      allow update, delete: if false;
+    }
+
+    // Yönetici duyuruları — panel yazar, saatlik iş (Admin SDK) gönderir (docs/admin_panel.md A5).
+    match /broadcasts/{broadcastId} {
+      allow read, write: if isAdmin();
+    }
+
+    // Günlük özet sayıları — saatlik iş (Admin SDK) yazar, yalnızca yönetici okur (A6).
+    match /stats/{statId} {
+      allow read: if isAdmin();
+      allow write: if false;
     }
 
     // TrustedTimeProvider'ın FirestoreTrustedTimeService'i sunucu zaman
@@ -192,10 +234,10 @@ service cloud.firestore {
     // TUTARLI, çift katmanlı bir güvenlik.
     // Oyun Salonu uzaktan ayarları (docs/game_zibo.md, GamesConfigProvider):
     // puan oranı / tur tavanı / günlük hak / oyun aç-kapa. Giriş yapmış herkes
-    // OKUR; istemci ASLA yazamaz — yalnızca Firebase konsolundan elle.
+    // OKUR; yalnızca yönetici uygulaması (ya da Firebase konsolu) yazar.
     match /config/games {
       allow read: if request.auth != null;
-      allow write: if false;
+      allow write: if isAdmin();
     }
 
     match /founderBadgeStatus/status {

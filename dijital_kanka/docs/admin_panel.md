@@ -1,6 +1,6 @@
 # Zibo Yönetici Uygulaması (Admin Paneli) — FİKİR, 2026-10-29
 
-Durum: **SIRADA DEĞİL** — kullanıcı: "Zibo'nun Evi bitince" (`docs/zibo_home.md`). Kod YOK.
+Durum: **YAPILIYOR (v1)** — 2026-10-29 başladı, Zibo'nun Evi'nden ÖNCE. Kod: repo kökünde `zibo_admin/`. Adımlar aşağıda "BAŞLADI" bölümünde.
 
 ## Kullanıcının istediği
 Her şeyi tek yerden kontrol edip değiştirmek: düzenlemeler/değişiklikler, **tüm kitleye mesaj ("mail")**,
@@ -88,10 +88,27 @@ Mimari kararlar (mevcut kısıtlara göre — `docs/decisions/002`: Cloud Functi
 - **İşlem kaydı:** her yazım `adminLog/{id}` (zaman, işlem, eski→yeni).
 
 Adımlar:
-- [ ] A0 Firebase: Android uygulaması `com.dijitalkanka.zibo_admin` kaydı + SHA-1 → `google-services.json` (kullanıcı onayıyla).
-- [ ] A1 İskelet (2026-10-29: yalnızca `flutter create` çalıştı → `zibo_admin/` boş şablon, commit EDİLMEDİ; kullanıcı devamı yeni oturumda istedi): Flutter projesi, tema (Zibo sticker dili + siyah üst şerit), Google girişi, admin kapısı, sekmeler.
-- [ ] A2 `firestore.rules`: `isAdmin()` okuma/yazma kuralları (Console'a yapıştırma kullanıcıyla).
-- [ ] A3 Ayarlar: `config/games` düzenleyici (fark + onay + kayıt).
+- [ ] A0 Firebase: Android uygulaması `com.dijitalkanka.zibo_admin` kaydı + SHA-1 → `zibo_admin/android/app/google-services.json`
+  (kullanıcı onayıyla, Chrome). Eklenecek SHA-1'ler: **upload anahtarı** `CD:E6:95:44:D1:5A:5D:9E:2C:B6:F4:BC:2B:E5:CD:E6:12:53:44:A3`
+  (release imzası — ana uygulamanın `dijital_kanka/android/key.properties`'i ORTAK kullanılıyor) + **debug**
+  `AD:E5:CB:35:ED:DF:E0:C0:EE:44:25:2A:A8:C1:50:5D:7E:81:55:5B`. Bu dosya gelmeden APK DERLENMEZ (google-services eklentisi).
+- [x] A1 İskelet (2026-10-29, kod; cihazda test A0'dan sonra): `zibo_admin/lib/` — `theme.dart` (taslağın renkleri,
+  siyah üst şerit, sticker kart), `admin_auth.dart` (Google → Firebase giriş, `kAdminEmail` kapısı), `main.dart`
+  (`AuthGate`: giriş yok → giriş ekranı, yönetici değil → "yönetici değil" + çıkış), `screens/home_shell.dart`
+  (5 sekme: Özet · Ayarlar · Duyuru · Kullanıcı · Kayıt; henüz yapılmayanlar "Yakında · A?"), `admin_log.dart`
+  (her yazım `adminLog` ile AYNI batch'te), `screens/admin_log_screen.dart` (son 100 işlem). Release imzası = ana
+  uygulamanın upload anahtarı; `res/raw/keep.xml` `default_web_client_id`'yi korur (ana uygulamadaki release-giriş
+  hatasının aynısı önlendi). Challenge sekmesi v1'de YOK (özellik yok).
+- [~] A2 `firestore.rules` (2026-10-29, repoda yazıldı; **Console'a YAPIŞTIRILMADI**): `isAdmin()` + v1'in TÜM yönetici
+  izinleri tek seferde — `config/games` yazma; `users/{uid}` + `state/*` okuma; `coinState` yazma (yalnız şekil, delta
+  sınırı yok = Admin SDK ile aynı yetki); `subscriptionState` yazma (aynı şekil kuralı); diğer `state/*` yazma;
+  `giftGrants` okuma/oluşturma; `adminLog` okuma/oluşturma (değiştirilemez/silinemez); `broadcasts` okuma/yazma;
+  `stats` okuma. Kullanıcıların kendi (isOwner) kuralları DEĞİŞMEDİ, yönetici izinleri OR ile eklendi.
+- [x] A3 Ayarlar (2026-10-29, kod): `screens/games_config_screen.dart` — `config/games`'i sunucudan okur, Zibo'nun
+  `GamesConfig.defaults` AYNASIYLA birleştirip etkin değeri gösterir (**Zibo'da varsayılan değişirse panelde de
+  değiştir**); günlük haklar, reklamla ek hak, her oyun için aç/kapa + tüm sayılar (−/+, sayıya dokununca elle yazma);
+  "Gözden geçir" eski→yeni listesi → "Yayınla": yalnızca DEĞİŞEN alanlar `merge` ile yazılır (exchangeLadder vb.
+  dokunulmaz) + `adminLog`. Takas Gişesi basamakları v1'de düzenlenmiyor.
 - [ ] A4 Kullanıcı + Hediye (uid ile bul; coin / Pro / sınırsız oyun).
 - [ ] A5 Duyuru: `broadcasts` + saatlik iş adımı (Actions log'u ile doğrulama).
 - [ ] A6 Özet: `stats/daily`.

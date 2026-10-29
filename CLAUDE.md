@@ -4,6 +4,7 @@ Bu repo iki parça içerir:
 
 - **`dijital_kanka/`** — Flutter uygulaması (asıl proje). **Proje haritası ve tüm kurallar: [`dijital_kanka/CLAUDE.md`](dijital_kanka/CLAUDE.md).** Çalışmaya oradan başla.
 - **`notification-scripts/`** — sunucu tarafı zamanlanmış işler (Node + firebase-admin, GitHub Actions'tan). Kuralları: [`notification-scripts/CLAUDE.md`](notification-scripts/CLAUDE.md).
+- **`zibo_admin/`** — yönetici uygulaması (Flutter, yalnız Android, Play'e yüklenmez; aynı Firebase projesi). Plan ve adımlar: [`dijital_kanka/docs/admin_panel.md`](dijital_kanka/docs/admin_panel.md).
 - `.github/workflows/` — yukarıdaki betiklerin cron'ları.
 
 Dokümantasyon mimarisi `dijital_kanka/docs/` altında (`CURRENT_STATE.md`, `ARCHITECTURE.md`,

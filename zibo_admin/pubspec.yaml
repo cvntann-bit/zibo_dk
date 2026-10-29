@@ -1,0 +1,23 @@
+name: zibo_admin
+description: "Zibo yönetici uygulaması (yalnız Android, Play'e yüklenmez)."
+publish_to: 'none'
+version: 0.1.0+1
+
+environment:
+  sdk: ^3.12.2
+
+dependencies:
+  cloud_firestore: ^6.8.0
+  firebase_auth: ^6.5.7
+  firebase_core: ^4.13.0
+  flutter:
+    sdk: flutter
+  google_sign_in: ^7.2.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
