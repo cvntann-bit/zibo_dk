@@ -85,3 +85,6 @@ telefonda/tablette denenir.
 3. Mobilyalar: sabit mi, kullanıcı kendi yerleştirebilsin mi (sürükle-bırak dekorasyon)?
 4. Yeni Zibo pozlarını kim üretecek (kullanıcı mı, katmanlı çözüm mü)?
 5. Yiyecek/sabun bedava mı, coin'le mi, Pro'ya özel ürün var mı?
+
+## Etkileşimli taslak (2026-10-29)
+`docs/home_prototype/index.html` (+ `img/`), yayın: https://claude.ai/artifact/L3y1mxe5W3j5o1ieQi5ihD — banyo (sünger/sabun köpüğü, duş, havlu), mutfak (yemeği ağza sürükle, 2 bedava öğün, sahte reklamla +1), yatak (lamba → uyku, enerji), salon (mobilya al → yerleşir), ihtiyaç göstergeleri, 3 günlük görev + ödül sandığı. Emoji/CSS geçici görseller; Zibo gerçek pozlar. Kullanıcı geri bildirimi buraya yazılacak.

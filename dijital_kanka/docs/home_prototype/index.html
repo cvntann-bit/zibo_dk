@@ -1,0 +1,592 @@
+<title>Zibo'nun Evi</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* Layout: phone-sized interactive house on the left, short reading notes on the right (stacks on phones).
+   Deliberately single-look: Zibo's comic-sticker world (docs/theme_new.md), cream ground, thick ink outlines. */
+:root{
+  --outline:#14110C; --ink:#14110C; --ink-soft:#5B4E3A;
+  --gold:#F3B23C; --gold-soft:#F6D488; --gold-muted:#C9A46B; --gold-pale:#F3E4C0;
+  --cream:#FFF4DE; --paper:#FFFDF7;
+  --tile:#DDEFF1; --tile-line:#C3DFE4; --water:#6EC6E6;
+  --kitchen:#FCE3C2; --kitchen-line:#F5D2A6; --wood:#C98D55; --wood-dark:#9C6537;
+  --night:#2E2C55; --night-wall:#BDB8EA; --salon:#F7E4C6; --rug:#E9A86B;
+  --display:"Baloo 2",ui-rounded,"Arial Rounded MT Bold",system-ui,sans-serif;
+  --body:"Nunito",ui-rounded,system-ui,sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{background:var(--cream);color:var(--ink)}
+body{font-family:var(--body);font-size:15px;line-height:1.45;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 48px}
+.wrap{max-width:1000px;margin:0 auto;display:grid;grid-template-columns:minmax(0,420px) minmax(0,1fr);gap:32px;align-items:start}
+@media (max-width:860px){.wrap{grid-template-columns:minmax(0,1fr)}.phone{margin-inline:auto}}
+
+/* ---------- phone ---------- */
+.phone{width:100%;max-width:420px;background:var(--paper);border:3px solid var(--outline);border-radius:30px;
+  box-shadow:6px 6px 0 var(--outline);overflow:hidden;position:relative;user-select:none;-webkit-user-select:none}
+.top{display:flex;align-items:center;justify-content:space-between;padding:12px 14px 6px}
+.top h1{font-family:var(--display);font-weight:800;font-size:24px;line-height:1;margin:0}
+.coin{display:flex;align-items:center;gap:6px;font-weight:800;border:2.5px solid var(--outline);border-radius:999px;
+  padding:3px 10px 3px 4px;background:var(--gold-soft);box-shadow:2px 2px 0 var(--outline);font-variant-numeric:tabular-nums}
+.coin b{display:grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--gold);border:2px solid var(--outline);
+  font-family:var(--display);font-size:10px}
+.coin.bump{animation:bump .4s}
+@keyframes bump{40%{transform:scale(1.15)}}
+
+.needs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;padding:6px 14px 10px}
+.need{font-size:11px;font-weight:800;color:var(--ink-soft)}
+.need span{display:flex;justify-content:space-between;gap:4px}
+.bar{height:10px;border:2px solid var(--outline);border-radius:99px;background:var(--gold-pale);overflow:hidden;margin-top:3px}
+.bar i{display:block;height:100%;width:50%;background:var(--gold);transition:width .35s}
+.need.low .bar i{background:var(--gold-muted)}
+.need.low .bar{animation:pulse 1.2s infinite}
+@keyframes pulse{50%{box-shadow:0 0 0 3px rgba(201,164,107,.45)}}
+
+/* ---------- stage ---------- */
+.stage{position:relative;aspect-ratio:10/11;border-block:3px solid var(--outline);overflow:hidden;touch-action:none;background:var(--tile)}
+.room-bg,.front{position:absolute;inset:0;pointer-events:none}
+.room-bg{z-index:1}.zbox{z-index:2}.front{z-index:3}
+canvas.fx{position:absolute;inset:0;width:100%;height:100%;z-index:4;pointer-events:none}
+.zbox{position:absolute;aspect-ratio:600/780;transition:filter .6s}
+.zbox img{width:100%;height:100%;object-fit:contain;object-position:bottom;display:block;pointer-events:none;transform-origin:50% 100%}
+.zbox img.chomp{animation:chomp .9s}
+@keyframes chomp{15%,55%{transform:scale(1.04,.95)}35%,75%{transform:scale(.97,1.04)}}
+.zbox img.hop{animation:hop .7s}
+@keyframes hop{30%{transform:translateY(-7%) scale(.98,1.03)}60%{transform:translateY(0) scale(1.03,.97)}}
+.stage[data-room=bath] .zbox{width:46%;left:27%;bottom:13%}
+.stage[data-room=kitchen] .zbox{width:44%;left:28%;bottom:17%}
+.stage[data-room=bed] .zbox{width:40%;left:36%;bottom:16%}
+.stage[data-room=salon] .zbox{width:40%;left:30%;bottom:9%}
+
+/* bath */
+.tiles{position:absolute;inset:0 0 22% 0;background:
+  linear-gradient(var(--tile-line) 2px,transparent 2px) 0 0/34px 34px,
+  linear-gradient(90deg,var(--tile-line) 2px,transparent 2px) 0 0/34px 34px,var(--tile)}
+.bfloor{position:absolute;inset:78% 0 0 0;background:repeating-linear-gradient(90deg,#CFE7EA 0 26px,#C2DEE2 26px 52px);border-top:3px solid var(--outline)}
+.shower{position:absolute;top:0;left:50%;width:120px;transform:translateX(-50%)}
+.shower .pipe{position:absolute;left:56px;top:0;width:10px;height:26px;background:#B9C4C8;border:2.5px solid var(--outline);border-top:none}
+.shower .head{position:absolute;left:30px;top:22px;width:62px;height:18px;border-radius:0 0 40px 40px;background:#D3DCDF;border:2.5px solid var(--outline)}
+.mirror{position:absolute;left:6%;top:12%;width:17%;aspect-ratio:3/4;border-radius:50% 50% 12px 12px;background:linear-gradient(135deg,#fff 0 30%,#E8F6F8 30% 45%,#fff 45%);border:3px solid var(--outline)}
+.shelf{position:absolute;right:6%;top:24%;width:20%;height:9px;background:var(--wood);border:2.5px solid var(--outline);border-radius:4px}
+.shelf::before{content:"🧴 🧼";position:absolute;bottom:7px;left:4px;font-size:20px;letter-spacing:6px}
+.tub{position:absolute;left:8%;right:8%;bottom:7%;height:27%;background:#fff;border:3px solid var(--outline);border-radius:14px 14px 46px 46px;box-shadow:inset 0 -10px 0 #E5EEF0}
+.tub::before{content:"";position:absolute;left:-10px;right:-10px;top:-12px;height:16px;background:#fff;border:3px solid var(--outline);border-radius:12px}
+.tub::after{content:"";position:absolute;bottom:-14px;left:12%;right:12%;height:14px;background:radial-gradient(circle at 8px 0,var(--gold) 7px,transparent 8px) left/50% 100% no-repeat,radial-gradient(circle at calc(100% - 8px) 0,var(--gold) 7px,transparent 8px) right/50% 100% no-repeat}
+.duck{position:absolute;right:12%;bottom:30%;font-size:30px;filter:drop-shadow(2px 2px 0 var(--outline));animation:bob 2.4s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-4px) rotate(-6deg)}}
+
+/* kitchen */
+.kwall{position:absolute;inset:0 0 30% 0;background:repeating-linear-gradient(90deg,var(--kitchen) 0 28px,var(--kitchen-line) 28px 32px)}
+.kfloor{position:absolute;inset:70% 0 0 0;background:repeating-conic-gradient(#F1E2CB 0 25%,#FFF6E7 0 50%) 0 0/36px 36px;border-top:3px solid var(--outline)}
+.fridge{position:absolute;left:4%;bottom:22%;width:22%;height:58%;background:#F4F7F8;border:3px solid var(--outline);border-radius:12px}
+.fridge::before{content:"";position:absolute;left:0;right:0;top:36%;border-top:3px solid var(--outline)}
+.fridge::after{content:"";position:absolute;right:8px;top:12%;width:6px;height:16%;background:var(--outline);border-radius:3px;box-shadow:0 calc(var(--fh,60px) * 1.1) 0 var(--outline)}
+.magnets{position:absolute;left:8%;top:48%;font-size:15px;line-height:1.3}
+.window{position:absolute;right:7%;top:9%;width:26%;aspect-ratio:1;background:linear-gradient(#BFE6F7,#E9F7FC);border:3px solid var(--outline);border-radius:8px}
+.window::before,.window::after{content:"";position:absolute;background:var(--outline)}
+.window::before{left:50%;top:0;bottom:0;width:3px;transform:translateX(-50%)}
+.window::after{top:50%;left:0;right:0;height:3px;transform:translateY(-50%)}
+.table{position:absolute;left:12%;right:12%;bottom:9%;height:15%;background:var(--wood);border:3px solid var(--outline);border-radius:10px 10px 4px 4px;box-shadow:inset 0 -8px 0 var(--wood-dark)}
+.plate{position:absolute;left:50%;bottom:20%;transform:translateX(-50%);width:28%;height:7%;background:#fff;border:3px solid var(--outline);border-radius:50%}
+
+/* bedroom */
+.nwall{position:absolute;inset:0 0 26% 0;background:radial-gradient(circle at 20% 10%,#D4D0F4,var(--night-wall))}
+.nfloor{position:absolute;inset:74% 0 0 0;background:repeating-linear-gradient(90deg,#A8774A 0 44px,#9A6B41 44px 46px);border-top:3px solid var(--outline)}
+.nwin{position:absolute;left:8%;top:10%;width:26%;aspect-ratio:1;border-radius:50% 50% 8px 8px;background:radial-gradient(circle at 65% 35%,#FFF3C4 0 14%,transparent 15%),var(--night);border:3px solid var(--outline)}
+.nwin::after{content:"✦  ✧ ✦";position:absolute;left:12%;top:58%;color:#FFF3C4;font-size:11px;letter-spacing:2px}
+.bedhead{position:absolute;left:28%;right:6%;bottom:22%;height:40%;background:var(--gold-muted);border:3px solid var(--outline);border-radius:26px 26px 6px 6px}
+.blanket{position:absolute;left:24%;right:2%;bottom:6%;height:24%;background:repeating-linear-gradient(45deg,var(--gold-soft) 0 14px,var(--gold) 14px 28px);border:3px solid var(--outline);border-radius:22px 22px 10px 10px}
+.lamp{position:absolute;left:5%;bottom:26%;width:15%;height:30%;pointer-events:auto;cursor:pointer;z-index:5}
+.lamp::before{content:"";position:absolute;left:10%;right:10%;top:0;height:40%;background:var(--gold-soft);border:3px solid var(--outline);border-radius:40% 40% 6px 6px;clip-path:polygon(20% 0,80% 0,100% 100%,0 100%)}
+.lamp::after{content:"";position:absolute;left:44%;width:12%;top:38%;bottom:0;background:var(--outline);border-radius:2px;box-shadow:0 0 0 0 var(--outline)}
+.glow{position:absolute;left:-6%;bottom:30%;width:44%;aspect-ratio:1;background:radial-gradient(circle,rgba(255,226,140,.55),transparent 65%);transition:opacity .6s}
+.dim{position:absolute;inset:0;background:rgba(18,16,48,.62);opacity:0;transition:opacity .7s;z-index:3;pointer-events:none}
+.stage.dark .dim{opacity:1}.stage.dark .glow{opacity:0}
+.stage.dark .zbox{filter:brightness(.55) saturate(.8)}
+
+/* salon */
+.swall{position:absolute;inset:0 0 28% 0;background:radial-gradient(circle at 70% 20%,#FBEBD3,var(--salon))}
+.sfloor{position:absolute;inset:72% 0 0 0;background:repeating-linear-gradient(90deg,var(--wood) 0 54px,var(--wood-dark) 54px 57px);border-top:3px solid var(--outline)}
+.sofa{position:absolute;left:4%;bottom:12%;width:44%;height:26%;background:var(--rug);border:3px solid var(--outline);border-radius:20px 20px 10px 10px;box-shadow:inset 0 -14px 0 #D48F55}
+.slot{position:absolute;font-size:44px;line-height:1;filter:drop-shadow(3px 3px 0 var(--outline));transition:transform .35s cubic-bezier(.3,1.6,.6,1),opacity .3s}
+.slot.off{opacity:0;transform:scale(.3)}
+.slot.empty{opacity:.35;filter:none;font-size:14px;border:2.5px dashed var(--ink-soft);border-radius:12px;display:grid;place-items:center;font-weight:800;color:var(--ink-soft);font-family:var(--body)}
+.frame{position:absolute;left:8%;top:10%;width:30%;padding:6px 6px 8px;background:#fff;border:3px solid var(--outline);border-radius:6px;box-shadow:inset 0 0 0 5px var(--gold-soft);text-align:center;font-weight:800;font-size:11px;line-height:1.15}
+.frame em{display:block;font-size:24px;font-style:normal}
+
+/* ---------- tray, tasks, nav ---------- */
+.hint{display:flex;align-items:center;gap:8px;min-height:40px;padding:8px 14px 0;font-weight:700;font-size:13.5px}
+.hint .dot{width:10px;height:10px;border-radius:50%;background:var(--gold);border:2px solid var(--outline);flex:none}
+.tray{display:flex;gap:8px;overflow-x:auto;padding:8px 14px 12px;scrollbar-width:none}
+.tray::-webkit-scrollbar{display:none}
+.chip{flex:none;display:flex;flex-direction:column;align-items:center;gap:1px;min-width:74px;padding:6px 8px 5px;background:#fff;
+  border:2.5px solid var(--outline);border-radius:16px;box-shadow:3px 3px 0 var(--outline);font:inherit;font-weight:800;font-size:12px;color:var(--ink);cursor:grab;touch-action:none}
+.chip .e{font-size:26px;line-height:1.1}
+.chip small{font-weight:800;font-size:11px;color:var(--ink-soft)}
+.chip.sel{background:var(--gold-soft);transform:translate(2px,2px);box-shadow:1px 1px 0 var(--outline)}
+.chip.ad{background:var(--gold-pale);border-style:dashed}
+.chip.owned small{color:var(--ink)}
+.chip:focus-visible,.tab:focus-visible,.chest:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+
+.tasks{margin:0 14px 12px;border:2.5px solid var(--outline);border-radius:16px;padding:9px 12px;background:var(--cream)}
+.tasks h3{margin:0 0 4px;font-family:var(--display);font-size:16px;display:flex;justify-content:space-between}
+.tasks ul{list-style:none;margin:0;padding:0;display:grid;gap:3px;font-weight:700;font-size:13px}
+.tasks li::before{content:"";display:inline-block;width:14px;height:14px;margin-right:7px;vertical-align:-2px;border:2px solid var(--outline);border-radius:4px;background:#fff}
+.tasks li.done{color:var(--ink-soft);text-decoration:line-through}
+.tasks li.done::before{background:var(--gold) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2.5 6.2l2.3 2.3 4.7-5' stroke='%2314110C' stroke-width='2' fill='none'/%3E%3C/svg%3E") center/11px no-repeat}
+.chest{margin-top:8px;width:100%;font:inherit;font-family:var(--display);font-weight:800;font-size:15px;padding:7px;border:2.5px solid var(--outline);border-radius:12px;
+  background:var(--gold-pale);color:var(--ink-soft);box-shadow:3px 3px 0 var(--outline);cursor:not-allowed}
+.chest.ready{background:var(--gold);color:var(--ink);cursor:pointer;animation:bump 1.2s infinite}
+
+.nav{display:grid;grid-template-columns:repeat(4,1fr);border-top:3px solid var(--outline);background:#fff}
+.tab{font:inherit;font-weight:800;font-size:12px;background:none;border:none;padding:8px 2px 10px;display:flex;flex-direction:column;align-items:center;gap:1px;color:var(--ink-soft);cursor:pointer}
+.tab .e{font-size:22px;filter:grayscale(.6);opacity:.75}
+.tab[aria-selected=true]{color:var(--ink);background:var(--gold-soft)}
+.tab[aria-selected=true] .e{filter:none;opacity:1}
+
+.ghost{position:fixed;z-index:60;font-size:42px;pointer-events:none;transform:translate(-50%,-60%);filter:drop-shadow(3px 3px 0 var(--outline))}
+.toast{position:absolute;left:50%;bottom:74px;transform:translate(-50%,20px);opacity:0;z-index:20;background:var(--ink);color:#fff;font-weight:800;font-size:13px;
+  padding:8px 14px;border-radius:999px;white-space:nowrap;transition:.3s;pointer-events:none;max-width:92%;overflow:hidden;text-overflow:ellipsis}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+.adcover{position:absolute;inset:0;z-index:30;background:rgba(20,17,12,.88);color:#fff;display:grid;place-items:center;text-align:center;font-weight:800;padding:20px}
+.adcover b{display:block;font-family:var(--display);font-size:22px;color:var(--gold)}
+
+/* ---------- notes ---------- */
+.notes{min-width:0;max-width:62ch}
+.notes .eyebrow{font-weight:800;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);margin:6px 0 4px}
+.notes h2{font-family:var(--display);font-weight:800;font-size:34px;line-height:1.05;margin:0 0 10px;text-wrap:balance}
+.notes p{margin:0 0 12px}
+.notes h4{font-family:var(--display);font-size:18px;margin:18px 0 4px}
+.notes ul{margin:0;padding-left:18px;display:grid;gap:4px}
+.notes .tag{display:inline-block;font-size:11px;font-weight:800;border:2px solid var(--outline);border-radius:999px;padding:0 8px;background:var(--gold-soft);margin-right:4px}
+.callout{margin-top:18px;border:2.5px solid var(--outline);border-radius:16px;padding:12px 14px;background:var(--paper);box-shadow:4px 4px 0 var(--outline)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<div class="wrap">
+  <div class="phone" id="phone">
+    <div class="top">
+      <h1>Zibo'nun Evi</h1>
+      <div class="coin" id="coin" aria-label="Zibo Coin bakiyesi"><b>ZC</b><span id="coinVal">1.250</span></div>
+    </div>
+    <div class="needs" id="needs"></div>
+    <div class="stage" id="stage" data-room="bath">
+      <div class="room-bg" id="roomBg"></div>
+      <div class="zbox" id="zbox"><img id="zimg" src="img/zibo_pout.webp" alt="Zibo"></div>
+      <div class="front" id="front"></div>
+      <div class="dim"></div>
+      <canvas class="fx" id="fx"></canvas>
+    </div>
+    <div class="hint" id="hint"><span class="dot"></span><span id="hintText"></span></div>
+    <div class="tray" id="tray"></div>
+    <div class="tasks">
+      <h3>Bugünün görevleri <span id="taskCount">0/3</span></h3>
+      <ul>
+        <li id="t-feed">Zibo'yu besle</li>
+        <li id="t-bath">Banyosunu yaptır</li>
+        <li id="t-sleep">Uykusunu al</li>
+      </ul>
+      <button class="chest" id="chest" type="button" disabled>🎁 Ödül sandığı (3 görev)</button>
+    </div>
+    <nav class="nav" role="tablist">
+      <button class="tab" role="tab" data-room="salon" id="tab-salon"><span class="e">🛋️</span>Salon</button>
+      <button class="tab" role="tab" data-room="kitchen" id="tab-kitchen"><span class="e">🍳</span>Mutfak</button>
+      <button class="tab" role="tab" data-room="bath" id="tab-bath"><span class="e">🛁</span>Banyo</button>
+      <button class="tab" role="tab" data-room="bed" id="tab-bed"><span class="e">🌙</span>Yatak</button>
+    </nav>
+    <div class="toast" id="toast"></div>
+  </div>
+
+  <aside class="notes">
+    <div class="eyebrow">Taslak · Zibo'nun Evi · 2026-10-29</div>
+    <h2>Dokun, sürükle, köpürt</h2>
+    <p>Bu bir his taslağı: odalar, eşyalar ve efektler gerçek görsellerin yerini tutuyor. Zibo'nun kendisi uygulamadaki gerçek pozları.</p>
+
+    <h4>Banyo</h4>
+    <ul>
+      <li><span class="tag">Sünger</span> veya <span class="tag">Sabun</span> seç, Zibo'nun üstünde parmağını gezdir: lekeler silinir, köpük birikir.</li>
+      <li><span class="tag">Duş</span> köpüğü durular, Zibo ıslanır. <span class="tag">Havlu</span> ile sürterek kurula.</li>
+    </ul>
+    <h4>Mutfak</h4>
+    <ul>
+      <li>Yemeği tutup Zibo'nun ağzına sürükle. Günde 2 öğün bedava, sonrası Zibo Coin.</li>
+      <li>Öğün bitince "Reklam izle" ile bedava öğün (taslakta sahte reklam).</li>
+    </ul>
+    <h4>Yatak odası</h4>
+    <ul><li>Lambaya ya da "Işığı kapat"a dokun: oda kararır, Zibo uyur, enerji dolar.</li></ul>
+    <h4>Salon</h4>
+    <ul><li>Mobilya mağazasından eşya al, odaya yerleşir. Duvardaki çerçeve rozetini gösterir.</li></ul>
+
+    <div class="callout">
+      <strong>Gerçek sürümde:</strong> emoji yemek ve eşyalar yerine çizilmiş görseller; kostümsüz ~15 bakım pozu (kirli, köpüklü, ıslak, yemek yerken, uykulu); oda arka planları illüstrasyon. Fiyatlar ve reklam sıklığı uzaktan ayarlanır. Ayrıntılar: <code>docs/zibo_home.md</code>.
+    </div>
+  </aside>
+</div>
+
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const stage = $('stage'), zbox = $('zbox'), zimg = $('zimg'), fx = $('fx'), ctx = fx.getContext('2d');
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const IMG = { idle: 'img/zibo_idle.webp', happy: 'img/zibo_happy.webp', pout: 'img/zibo_pout.webp' };
+
+  const S = {
+    coins: 1250, room: 'bath', tool: null, freeMeals: 2,
+    need: { food: 30, clean: 20, energy: 45 },
+    tasks: { feed: false, bath: false, sleep: false }, chestOpened: false,
+    bath: 'dirty', wet: false, owned: new Set(['sofa']), sleeping: false, happyUntil: 0,
+  };
+
+  // ---------- needs ----------
+  const NEEDS = [['food', 'Tokluk', '🍎'], ['clean', 'Temizlik', '🫧'], ['energy', 'Enerji', '⚡'], ['mood', 'Mutluluk', '💛']];
+  function mood() { return Math.round((S.need.food + S.need.clean + S.need.energy) / 3); }
+  function renderNeeds() {
+    $('needs').innerHTML = NEEDS.map(([k, label, e]) => {
+      const v = k === 'mood' ? mood() : Math.round(S.need[k]);
+      return `<div class="need ${v < 35 ? 'low' : ''}"><span>${label}<span>${e}</span></span><div class="bar"><i style="width:${v}%"></i></div></div>`;
+    }).join('');
+    const low = S.need.food < 35 || S.need.clean < 35 || S.need.energy < 35;
+    const want = Date.now() < S.happyUntil ? IMG.happy : (low ? IMG.pout : IMG.idle);
+    if (!zimg.src.endsWith(want)) zimg.src = want;
+  }
+  function addNeed(k, d) { S.need[k] = Math.max(0, Math.min(100, S.need[k] + d)); renderNeeds(); }
+  function fmt(n) { return n.toLocaleString('tr-TR'); }
+  function setCoins(d) {
+    S.coins += d; $('coinVal').textContent = fmt(S.coins);
+    const c = $('coin'); c.classList.remove('bump'); void c.offsetWidth; c.classList.add('bump');
+  }
+  function beHappy(ms = 2600) { S.happyUntil = Date.now() + ms; renderNeeds(); hop(); setTimeout(renderNeeds, ms + 50); }
+  function hop() { zimg.classList.remove('hop'); void zimg.offsetWidth; zimg.classList.add('hop'); }
+
+  let toastT;
+  function toast(msg) { const t = $('toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('on'), 2200); }
+  function hint(msg) { $('hintText').textContent = msg; }
+
+  // ---------- tasks ----------
+  function done(key) {
+    if (S.tasks[key]) return;
+    S.tasks[key] = true; $('t-' + key).classList.add('done');
+    const n = Object.values(S.tasks).filter(Boolean).length;
+    $('taskCount').textContent = n + '/3';
+    if (n === 3 && !S.chestOpened) { const c = $('chest'); c.disabled = false; c.classList.add('ready'); c.textContent = '🎁 Ödül sandığını aç'; }
+    toast('Görev tamam: ' + $('t-' + key).textContent);
+  }
+  $('chest').addEventListener('click', () => {
+    if (S.chestOpened) return; S.chestOpened = true;
+    const c = $('chest'); c.classList.remove('ready'); c.disabled = true; c.textContent = '🎁 +50 ZC alındı · Reklamla 2 katı (yarın)';
+    setCoins(50); burstHearts(); beHappy();
+  });
+
+  // ---------- canvas fx ----------
+  let W = 0, H = 0, dpr = 1;
+  function resize() {
+    dpr = Math.min(2, devicePixelRatio || 1); W = stage.clientWidth; H = stage.clientHeight;
+    fx.width = W * dpr; fx.height = H * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  new ResizeObserver(resize).observe(stage); resize();
+  const zr = () => ({ x: zbox.offsetLeft, y: zbox.offsetTop, w: zbox.offsetWidth, h: zbox.offsetHeight });
+  const toStage = (nx, ny) => { const r = zr(); return [r.x + nx * r.w, r.y + ny * r.h]; };
+  const toNorm = (x, y) => { const r = zr(); return [(x - r.x) / r.w, (y - r.y) / r.h]; };
+
+  // dirt spots live in Zibo's own box (0..1) so they ride along with resizes
+  const DIRT0 = [[.38,.22,.07],[.62,.27,.06],[.5,.36,.05],[.3,.48,.08],[.7,.5,.07],[.45,.58,.06],[.6,.66,.05],[.36,.7,.05],[.55,.15,.05]];
+  let dirt = DIRT0.map(([x, y, r]) => ({ x, y, r, a: 1 }));
+  let foam = [], drops = [], parts = [], water = [];
+
+  function dirtLeft() { return dirt.reduce((s, d) => s + d.a, 0) / dirt.length; }
+
+  function spawnBubble(x, y, big) {
+    if (reduce && Math.random() < .7) return;
+    parts.push({ k: 'bub', x, y, r: (big ? 6 : 3) + Math.random() * (big ? 10 : 6), vx: (Math.random() - .5) * .8, vy: -.4 - Math.random() * 1.1, t: 0, life: 70 + Math.random() * 70, ph: Math.random() * 6 });
+  }
+  function burstHearts() {
+    const r = zr();
+    for (let i = 0; i < 9; i++) parts.push({ k: 'txt', s: Math.random() < .5 ? '💛' : '✨', x: r.x + r.w * (.2 + Math.random() * .6), y: r.y + r.h * (.15 + Math.random() * .3), vx: (Math.random() - .5) * 1.2, vy: -1 - Math.random(), t: 0, life: 60 + Math.random() * 30, size: 18 + Math.random() * 10 });
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    const r = zr();
+    if (S.room === 'bath') {
+      // dirt: clustered mud blobs
+      for (const d of dirt) {
+        if (d.a <= .02) continue;
+        const [x, y] = toStage(d.x, d.y), rad = d.r * r.w;
+        ctx.globalAlpha = d.a * .85; ctx.fillStyle = '#7A5230';
+        for (let i = 0; i < 5; i++) { ctx.beginPath(); ctx.arc(x + Math.cos(i * 1.3) * rad * .55, y + Math.sin(i * 2.1) * rad * .45, rad * (.42 + (i % 3) * .14), 0, 7); ctx.fill(); }
+        ctx.globalAlpha = d.a * .5; ctx.fillStyle = '#5C3A1E'; ctx.beginPath(); ctx.arc(x - rad * .2, y - rad * .1, rad * .25, 0, 7); ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+      // foam stuck to Zibo
+      for (const f of foam) {
+        const [x, y] = toStage(f.x, f.y);
+        ctx.fillStyle = '#fff'; ctx.strokeStyle = 'rgba(20,17,12,.55)'; ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.arc(x, y, f.r, 0, 7); ctx.fill(); ctx.stroke();
+        ctx.fillStyle = 'rgba(160,215,235,.6)'; ctx.beginPath(); ctx.arc(x - f.r * .3, y - f.r * .3, f.r * .3, 0, 7); ctx.fill();
+      }
+      // water drops on a wet Zibo
+      for (const d of drops) {
+        const [x, y] = toStage(d.x, d.y);
+        ctx.fillStyle = 'rgba(110,198,230,.9)'; ctx.strokeStyle = '#14110C'; ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.moveTo(x, y - 7); ctx.quadraticCurveTo(x + 5, y, x, y + 4); ctx.quadraticCurveTo(x - 5, y, x, y - 7); ctx.fill(); ctx.stroke();
+      }
+      // shower stream
+      for (let i = water.length - 1; i >= 0; i--) {
+        const w = water[i]; w.y += w.vy; w.vy += .25;
+        ctx.strokeStyle = 'rgba(110,198,230,.85)'; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.moveTo(w.x, w.y); ctx.lineTo(w.x, w.y + 9); ctx.stroke();
+        if (w.y > H * .8) water.splice(i, 1);
+      }
+    }
+    // free particles
+    for (let i = parts.length - 1; i >= 0; i--) {
+      const p = parts[i]; p.t++;
+      if (p.k === 'bub') {
+        p.x += p.vx + Math.sin((p.t + p.ph * 10) / 9) * .5; p.y += p.vy;
+        const a = Math.max(0, 1 - p.t / p.life);
+        ctx.globalAlpha = a; ctx.strokeStyle = '#14110C'; ctx.lineWidth = 1.6; ctx.fillStyle = 'rgba(255,255,255,.55)';
+        ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, 7); ctx.fill(); ctx.stroke();
+        ctx.fillStyle = 'rgba(243,178,60,.55)'; ctx.beginPath(); ctx.arc(p.x - p.r * .35, p.y - p.r * .35, p.r * .28, 0, 7); ctx.fill();
+        if (p.t > p.life) { // pop
+          for (let j = 0; j < 5; j++) parts.push({ k: 'spark', x: p.x, y: p.y, vx: Math.cos(j * 1.26) * 1.6, vy: Math.sin(j * 1.26) * 1.6, t: 0, life: 10 });
+          parts.splice(i, 1);
+        }
+      } else if (p.k === 'spark') {
+        p.x += p.vx; p.y += p.vy; ctx.globalAlpha = 1 - p.t / p.life; ctx.fillStyle = '#14110C';
+        ctx.fillRect(p.x - 1, p.y - 1, 2.4, 2.4); if (p.t > p.life) parts.splice(i, 1);
+      } else if (p.k === 'crumb') {
+        p.x += p.vx; p.y += p.vy; p.vy += .3; ctx.globalAlpha = 1 - p.t / p.life; ctx.fillStyle = p.c;
+        ctx.fillRect(p.x, p.y, 4, 4); if (p.t > p.life) parts.splice(i, 1);
+      } else if (p.k === 'txt') {
+        p.x += p.vx; p.y += p.vy; ctx.globalAlpha = Math.max(0, 1 - p.t / p.life);
+        ctx.font = `${p.size}px "Baloo 2", system-ui`; ctx.fillStyle = p.c || '#14110C'; ctx.textAlign = 'center'; ctx.fillText(p.s, p.x, p.y);
+        if (p.t > p.life) parts.splice(i, 1);
+      }
+    }
+    ctx.globalAlpha = 1;
+    requestAnimationFrame(draw);
+  }
+  requestAnimationFrame(draw);
+
+  // ---------- bath interactions ----------
+  function rub(x, y) {
+    const [nx, ny] = toNorm(x, y);
+    const onZibo = nx > .08 && nx < .92 && ny > .05 && ny < .8;
+    const t = S.tool;
+    if (t === 'sponge' || t === 'soap') {
+      spawnBubble(x + (Math.random() - .5) * 20, y + (Math.random() - .5) * 20, t === 'soap');
+      if (!onZibo) return;
+      for (const d of dirt) { if (Math.hypot(d.x - nx, (d.y - ny) * 1.3) < d.r * 1.7) d.a = Math.max(0, d.a - (t === 'soap' ? .07 : .05)); }
+      if (Math.random() < (t === 'soap' ? .55 : .3) && foam.length < 90) foam.push({ x: nx + (Math.random() - .5) * .08, y: ny + (Math.random() - .5) * .06, r: 4 + Math.random() * (t === 'soap' ? 9 : 6) });
+      S.need.clean = Math.round(20 + 60 * (1 - dirtLeft()));
+      renderNeeds();
+      if (dirtLeft() < .08 && S.bath === 'dirty') { S.bath = 'foamy'; hint('Tertemiz köpük! Şimdi Duş ile durula.'); toast('Lekeler gitti 🫧'); }
+    } else if (t === 'towel' && S.wet) {
+      for (let i = drops.length - 1; i >= 0; i--) if (Math.hypot(drops[i].x - nx, drops[i].y - ny) < .14) drops.splice(i, 1);
+      if (!drops.length) {
+        S.wet = false; S.bath = 'done'; S.need.clean = 100; renderNeeds(); burstHearts(); beHappy();
+        hint('Zibo mis gibi kokuyor! 💛'); done('bath');
+      }
+    }
+  }
+  function shower() {
+    if (S.room !== 'bath') return;
+    const r = zr(); let n = 0;
+    const iv = setInterval(() => {
+      for (let i = 0; i < 6; i++) water.push({ x: W / 2 - 26 + Math.random() * 52 + (Math.random() - .5) * (n * 1.5), y: 44, vy: 2 + Math.random() * 2 });
+      if (foam.length) { const f = foam.splice(0, Math.max(1, Math.ceil(foam.length / 6))); f.forEach(o => { const [x, y] = toStage(o.x, o.y); spawnBubble(x, y, true); }); }
+      if (++n > 26) {
+        clearInterval(iv);
+        foam = [];
+        if (S.bath === 'foamy' || dirtLeft() < .08) {
+          dirt.forEach(d => d.a = 0); S.wet = true; S.bath = 'wet';
+          drops = Array.from({ length: 16 }, () => ({ x: .22 + Math.random() * .56, y: .1 + Math.random() * .62 }));
+          S.need.clean = 92; renderNeeds(); hint('Islandı! Havlu ile sürterek kurula.');
+        } else {
+          hint('Önce Sünger ya da Sabunla lekeleri temizle.'); toast('Lekeler hâlâ duruyor');
+        }
+      }
+    }, 70);
+  }
+
+  // ---------- kitchen ----------
+  const FOODS = [
+    { id: 'apple', e: '🍎', name: 'Elma', price: 5, fill: 15 },
+    { id: 'simit', e: '🥨', name: 'Simit', price: 10, fill: 25 },
+    { id: 'soup', e: '🍲', name: 'Ev yemeği', price: 30, fill: 45 },
+    { id: 'cake', e: '🍰', name: 'Kek', price: 20, fill: 20 },
+    { id: 'ice', e: '🍦', name: 'Dondurma', price: 25, fill: 20 },
+    { id: 'churros', e: '🥖', name: 'Churros', price: 15, fill: 22 },
+  ];
+  function feed(f) {
+    if (S.need.food >= 100) { toast('Zibo tok, sonra yesin 😌'); return; }
+    if (S.freeMeals > 0) { S.freeMeals--; }
+    else if (S.coins >= f.price) setCoins(-f.price);
+    else { toast('Yeterli Zibo Coin yok'); return; }
+    zimg.classList.remove('chomp'); void zimg.offsetWidth; zimg.classList.add('chomp');
+    const [mx, my] = toStage(.5, .42);
+    for (let i = 0; i < 14; i++) parts.push({ k: 'crumb', x: mx, y: my, vx: (Math.random() - .5) * 4, vy: -Math.random() * 3, t: 0, life: 30 + Math.random() * 15, c: Math.random() < .5 ? '#C98D55' : '#F3B23C' });
+    parts.push({ k: 'txt', s: 'nyam nyam!', x: mx, y: my - 60, vx: 0, vy: -.6, t: 0, life: 60, size: 20 });
+    addNeed('food', f.fill); setTimeout(() => { beHappy(); burstHearts(); }, 700);
+    if (S.need.food >= 70) done('feed');
+    buildTray();
+  }
+  function fakeAd() {
+    const c = document.createElement('div'); c.className = 'adcover';
+    c.innerHTML = '<div><b>Reklam</b>Taslakta sahte reklam · 2 sn</div>';
+    $('phone').appendChild(c);
+    setTimeout(() => { c.remove(); S.freeMeals++; toast('+1 bedava öğün 🍽️'); buildTray(); }, 2000);
+  }
+
+  // ---------- bedroom ----------
+  let sleepIv = null;
+  function toggleLight() {
+    S.sleeping = !S.sleeping; stage.classList.toggle('dark', S.sleeping);
+    if (S.sleeping) {
+      hint('Şşş… Zibo uyuyor. Enerji doluyor.');
+      sleepIv = setInterval(() => {
+        addNeed('energy', 2);
+        const [x, y] = toStage(.6, .12);
+        if (Math.random() < .5) parts.push({ k: 'txt', s: 'z', x: x + Math.random() * 10, y, vx: .5, vy: -.7, t: 0, life: 70, size: 16 + Math.random() * 12, c: '#FFF3C4' });
+        if (S.need.energy >= 100) { clearInterval(sleepIv); toast('Zibo dinlendi ☀️'); done('sleep'); hint('Dinlendi! Işığı açıp uyandırabilirsin.'); }
+      }, 160);
+    } else { clearInterval(sleepIv); hint('Lambaya dokun: ışık kapanınca Zibo uyur.'); if (S.need.energy >= 100) beHappy(); }
+    buildTray();
+  }
+
+  // ---------- salon ----------
+  const FURN = [
+    { id: 'plant', e: '🪴', name: 'Saksı', price: 150, css: 'right:5%;bottom:24%' },
+    { id: 'aqua', e: '🐠', name: 'Akvaryum', price: 600, css: 'right:8%;top:30%;font-size:50px' },
+    { id: 'bear', e: '🧸', name: 'Ayıcık', price: 120, css: 'left:10%;bottom:30%;font-size:36px' },
+    { id: 'lampS', e: '🪔', name: 'Lamba', price: 180, css: 'left:40%;top:6%;font-size:34px' },
+    { id: 'tree', e: '🎄', name: 'Yılbaşı ağacı', price: 350, css: 'right:22%;bottom:20%;font-size:60px', season: true },
+    { id: 'tv', e: '📺', name: 'Oyun köşesi', price: 450, css: 'right:4%;bottom:44%;font-size:40px' },
+  ];
+  function buy(f) {
+    if (S.owned.has(f.id)) { const el = $('slot-' + f.id); el && el.classList.toggle('off'); return; }
+    if (S.coins < f.price) { toast('Yeterli Zibo Coin yok'); return; }
+    setCoins(-f.price); S.owned.add(f.id);
+    const el = $('slot-' + f.id); el.classList.remove('off'); burstHearts(); beHappy(1600);
+    toast(f.name + ' yerleştirildi'); buildTray();
+  }
+
+  // ---------- rooms ----------
+  const ROOMS = {
+    bath: {
+      bg: '<div class="tiles"></div><div class="bfloor"></div><div class="mirror"></div><div class="shelf"></div><div class="shower"><span class="pipe"></span><span class="head"></span></div>',
+      front: '<div class="tub"></div><div class="duck">🦆</div>',
+      hint: () => S.bath === 'done' ? 'Zibo tertemiz! Yarın yine kirlenecek 😄' : S.bath === 'wet' ? 'Havlu ile sürterek kurula.' : S.bath === 'foamy' ? 'Duş ile köpüğü durula.' : 'Zibo çamur olmuş! Sünger ya da Sabun seç, üstünde sürt.',
+    },
+    kitchen: {
+      bg: '<div class="kwall"></div><div class="kfloor"></div><div class="window"></div><div class="fridge"><div class="magnets">⭐<br>🍓</div></div>',
+      front: '<div class="table"></div><div class="plate"></div>',
+      hint: () => S.need.food >= 100 ? 'Zibo tok! 😋' : 'Bir yemeği tut ve Zibo\'nun ağzına sürükle.',
+    },
+    bed: {
+      bg: '<div class="nwall"></div><div class="nfloor"></div><div class="nwin"></div><div class="glow"></div><div class="bedhead"></div>',
+      front: '<div class="blanket"></div><div class="lamp" id="lamp" title="Lamba"></div>',
+      hint: () => S.sleeping ? 'Şşş… Zibo uyuyor.' : 'Lambaya dokun: ışık kapanınca Zibo uyur.',
+    },
+    salon: {
+      bg: () => '<div class="swall"></div><div class="sfloor"></div><div class="frame"><em>🏅</em>7 günlük seri</div><div class="sofa"></div>' +
+        FURN.map(f => `<div class="slot ${S.owned.has(f.id) ? '' : 'off'}" id="slot-${f.id}" style="${f.css}">${f.e}</div>`).join(''),
+      front: '',
+      hint: () => 'Mobilya mağazası: eşyaya dokun, salona yerleşsin.',
+    },
+  };
+
+  function buildTray() {
+    const tray = $('tray'); let h = '';
+    if (S.room === 'bath') {
+      h = [['sponge', '🧽', 'Sünger', 'sürt'], ['soap', '🧼', 'Sabun', 'köpürt'], ['shower', '🚿', 'Duş', 'durula'], ['towel', '🧺', 'Havlu', 'kurula']]
+        .map(([id, e, n, s]) => `<button class="chip ${S.tool === id ? 'sel' : ''}" data-tool="${id}" id="tool-${id}"><span class="e">${e}</span>${n}<small>${s}</small></button>`).join('');
+    } else if (S.room === 'kitchen') {
+      h = FOODS.map(f => `<button class="chip" data-food="${f.id}" id="food-${f.id}"><span class="e">${f.e}</span>${f.name}<small>${S.freeMeals > 0 ? 'Bedava' : f.price + ' ZC'}</small></button>`).join('') +
+        `<button class="chip ad" data-ad="1" id="food-ad"><span class="e">📺</span>Reklam izle<small>+1 öğün</small></button>`;
+      hint(S.freeMeals > 0 ? `Bugün ${S.freeMeals} bedava öğün kaldı. Yemeği Zibo'ya sürükle.` : 'Bedava öğün bitti: Zibo Coin ya da reklamla devam.');
+    } else if (S.room === 'bed') {
+      h = `<button class="chip ${S.sleeping ? 'sel' : ''}" data-light="1" id="tool-light"><span class="e">${S.sleeping ? '🌙' : '💡'}</span>${S.sleeping ? 'Işığı aç' : 'Işığı kapat'}<small>${S.sleeping ? 'uyandır' : 'uyut'}</small></button>` +
+        `<button class="chip" id="tool-pj" data-pj="1"><span class="e">👕</span>Pijama<small>80 ZC</small></button>`;
+    } else {
+      h = FURN.map(f => `<button class="chip ${S.owned.has(f.id) ? 'owned sel' : ''}" data-furn="${f.id}" id="furn-${f.id}"><span class="e">${f.e}</span>${f.name}<small>${S.owned.has(f.id) ? 'Senin ✓' : (f.season ? '⏳ ' : '') + f.price + ' ZC'}</small></button>`).join('');
+    }
+    tray.innerHTML = h;
+  }
+
+  function setRoom(room) {
+    if (S.sleeping && room !== 'bed') toggleLight();
+    S.room = room; S.tool = null; stage.dataset.room = room; parts = []; water = [];
+    const R = ROOMS[room];
+    $('roomBg').innerHTML = typeof R.bg === 'function' ? R.bg() : R.bg;
+    $('front').innerHTML = R.front;
+    document.querySelectorAll('.tab').forEach(t => t.setAttribute('aria-selected', t.dataset.room === room));
+    hint(R.hint()); buildTray();
+    const lamp = $('lamp'); if (lamp) lamp.addEventListener('click', toggleLight);
+  }
+  document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => setRoom(t.dataset.room)));
+
+  // ---------- tray clicks ----------
+  $('tray').addEventListener('click', e => {
+    const b = e.target.closest('.chip'); if (!b) return;
+    if (b.dataset.tool) {
+      if (b.dataset.tool === 'shower') { S.tool = null; buildTray(); shower(); hint('Şırıl şırıl…'); return; }
+      S.tool = S.tool === b.dataset.tool ? null : b.dataset.tool; buildTray();
+      if (S.tool === 'towel' && !S.wet) hint(S.bath === 'done' ? 'Zaten kuru ve temiz.' : 'Havlu duştan sonra.');
+      else if (S.tool) hint(S.tool === 'towel' ? 'Zibo\'nun üstünde sürterek kurula.' : 'Parmağını Zibo\'nun üstünde gezdir.');
+    } else if (b.dataset.ad) fakeAd();
+    else if (b.dataset.light) toggleLight();
+    else if (b.dataset.pj) toast('Pijama: uyurken giyilen kostüm (taslak)');
+    else if (b.dataset.furn) buy(FURN.find(f => f.id === b.dataset.furn));
+    else if (b.dataset.food) toast('Yemeği basılı tutup Zibo\'ya sürükle');
+  });
+
+  // ---------- food drag ----------
+  let ghost = null, dragFood = null;
+  $('tray').addEventListener('pointerdown', e => {
+    const b = e.target.closest('[data-food]'); if (!b) return;
+    e.preventDefault();
+    dragFood = FOODS.find(f => f.id === b.dataset.food);
+    ghost = document.createElement('div'); ghost.className = 'ghost'; ghost.textContent = dragFood.e; document.body.appendChild(ghost);
+    moveGhost(e);
+  });
+  function moveGhost(e) { if (ghost) { ghost.style.left = e.clientX + 'px'; ghost.style.top = e.clientY + 'px'; } }
+  addEventListener('pointermove', moveGhost);
+  addEventListener('pointerup', e => {
+    if (!ghost) return;
+    const r = zbox.getBoundingClientRect();
+    const over = e.clientX > r.left && e.clientX < r.right && e.clientY > r.top && e.clientY < r.top + r.height * .75;
+    ghost.remove(); ghost = null;
+    if (over) feed(dragFood); else toast('Zibo\'nun ağzına bırak 👄');
+    dragFood = null;
+  });
+
+  // ---------- rubbing on stage ----------
+  let rubbing = false, rubGhost = null;
+  const TOOL_E = { sponge: '🧽', soap: '🧼', towel: '🧺' };
+  function stagePt(e) { const s = stage.getBoundingClientRect(); return [e.clientX - s.left, e.clientY - s.top]; }
+  stage.addEventListener('pointerdown', e => {
+    if (S.room !== 'bath') return;
+    if (!S.tool) { toast('Önce aşağıdan bir araç seç'); return; }
+    rubbing = true; stage.setPointerCapture(e.pointerId);
+    rubGhost = document.createElement('div'); rubGhost.className = 'ghost'; rubGhost.textContent = TOOL_E[S.tool]; document.body.appendChild(rubGhost);
+    rubGhost.style.left = e.clientX + 'px'; rubGhost.style.top = e.clientY + 'px';
+    rub(...stagePt(e));
+  });
+  stage.addEventListener('pointermove', e => {
+    if (!rubbing) return;
+    rubGhost.style.left = e.clientX + 'px'; rubGhost.style.top = e.clientY + 'px';
+    rubGhost.style.transform = `translate(-50%,-60%) rotate(${Math.sin(e.clientX / 14) * 14}deg)`;
+    rub(...stagePt(e));
+  });
+  const endRub = () => { rubbing = false; rubGhost && rubGhost.remove(); rubGhost = null; };
+  stage.addEventListener('pointerup', endRub); stage.addEventListener('pointercancel', endRub);
+
+  // slow need decay so the meters feel alive
+  setInterval(() => { if (!S.sleeping) { S.need.energy = Math.max(0, S.need.energy - .4); } S.need.food = Math.max(0, S.need.food - .3); renderNeeds(); }, 4000);
+
+  renderNeeds(); setRoom('bath');
+})();
+</script>
