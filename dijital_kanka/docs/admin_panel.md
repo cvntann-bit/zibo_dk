@@ -204,5 +204,10 @@ Adımlar:
     altında ayrı; toplam hepsinin toplamı (Zibo İslami aynı Appodeal hesabındaysa karışır — o zaman app filtresi eklenecek).
     Panel: "Reklam geliri" kartı = dün $ + gösterim + eCPM + 7 gün toplamı.
 
+  - **Aboneler listesi** (2026-10-29, `HEAVY_VERSION = 5`, run 40944921282): `subscribers[]` = etkin Pro/Pro+ (sahip hariç)
+    + ad/e-posta/hesap açılışı/son aktif. **Satın alma tarihi Firestore'da YOK** — `lastConfirmed = bitiş − 35 gün`
+    (`SubscriptionProvider._rollingWindow`): ilk alım ya da Play'in son onayı. Kesin alım tarihi/tutarı → Play Console >
+    Siparişler. Panel: Özet > "⭐ Aboneler" (en son doğrulanan üstte). İlk okuma: 3 etkin abone (1 Pro, 2 Pro+).
+
 **Yönetici v1 TAMAM (2026-10-29)** — A0–A6 + uygulama içi mesaj kartı (A5b; Zibo tarafı 1.18.0 sürümüyle gelir).
 - Sonra (Zibo sürümü gerektirenler): uygulama içi duyuru kutusu, reklam sıklığını `config/ads`'e taşıma.
