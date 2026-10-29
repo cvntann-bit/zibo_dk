@@ -178,6 +178,9 @@ Adımlar:
     iki uid — biri isimli, biri anonim; aynı cihaz verisinin iki uid'e kopyalandığını düşündürüyor (hesap değiştirme /
     yerel→bulut göçü) — büyük olasılıkla sahibin test satın almaları. Üçüncü büyük: ~76.700 satın almalı tek hesap.
     Gerçek kullanıcılarda en yüksek bakiye ~1.500 ZC, hepsi organik (günlük giriş, çark, rozet) — hile belirtisi yok.
+  - Sahibin e-postasız 3 hesabı da hariç (`EXCLUDED_UIDS`, `HEAVY_VERSION = 3`, run 40941204869): hariç 5 hesap =
+    1.407.515 ZC → **gerçek dolaşım 36.940 ZC**; Pro 1, Pro+ 2 (önceki çalıştırmada 1 — 10 dk içinde bir Pro+ abonesinin
+    süresi yenilenmiş olmalı: Zibo açılışta Play'den doğrulayıp bitişi ileri iter; sayılar "süresi geçmemiş" anlık durumdur).
 
 **Yönetici v1 TAMAM (2026-10-29)** — A0–A6 + uygulama içi mesaj kartı (A5b; Zibo tarafı 1.18.0 sürümüyle gelir).
 - Sonra (Zibo sürümü gerektirenler): uygulama içi duyuru kutusu, reklam sıklığını `config/ads`'e taşıma.
