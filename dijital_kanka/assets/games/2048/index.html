@@ -282,7 +282,8 @@
     $('endBtn').textContent = t('end', { n: points() }); $('endBtn').disabled = !playing;
   }
   function fitBoard() {
-    var w = Math.min(window.innerWidth - 24, 440, window.innerHeight - 24 - 56 - 48 - 24 - 36);
+    // Tablet (2026-10-29): üst sınır 440 → 760 px; yükseklik zaten sınırlıyor.
+    var w = Math.min(window.innerWidth - 24, 760, window.innerHeight - 24 - 56 - 48 - 24 - 36);
     $('col').style.width = Math.max(240, w) + 'px';
   }
   function reset() {

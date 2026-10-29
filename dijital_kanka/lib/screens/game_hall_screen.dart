@@ -5,6 +5,7 @@ import '../l10n/app_localizations.dart';
 import '../providers/game_points_provider.dart';
 import '../providers/games_config_provider.dart';
 import '../providers/subscription_provider.dart';
+import '../utils/adaptive.dart';
 import '../widgets/sticker_style.dart';
 import 'game_exchange_screen.dart';
 import 'game_webview_screen.dart';
@@ -40,8 +41,12 @@ class GameHallScreen extends StatelessWidget {
       _GameEntry('zipla', l10n.gameNameZipla, l10n.gameDescZipla, playable: config.isEnabled('zipla')),
     ];
 
+    // Tablet (2026-10-29): gövde en fazla 960 dp ortalanır, oyun kartları
+    // geniş ekranda iki sütun.
+    final hPad = Adaptive.horizontalPadding(context, maxWidth: 960, minPadding: 16);
+    final twoCols = Adaptive.bodyWidth(context) - 2 * hPad >= 720;
     return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
+      padding: EdgeInsets.fromLTRB(hPad, 16, hPad, 96),
       children: [
         Row(
           children: [
@@ -80,10 +85,25 @@ class GameHallScreen extends StatelessWidget {
         const SizedBox(height: 16),
         const _PointsBox(),
         const SizedBox(height: 16),
-        for (final game in games) ...[
-          _GameCard(game: game),
-          const SizedBox(height: 12),
-        ],
+        if (twoCols)
+          for (var i = 0; i < games.length; i += 2) ...[
+            IntrinsicHeight(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Expanded(child: _GameCard(game: games[i])),
+                  const SizedBox(width: 12),
+                  Expanded(child: i + 1 < games.length ? _GameCard(game: games[i + 1]) : const SizedBox.shrink()),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+          ]
+        else
+          for (final game in games) ...[
+            _GameCard(game: game),
+            const SizedBox(height: 12),
+          ],
       ],
     );
   }

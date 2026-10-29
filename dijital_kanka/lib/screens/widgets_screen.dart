@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../utils/adaptive.dart';
 import '../l10n/app_localizations.dart';
 import '../services/home_widget_service.dart';
 import '../utils/widget_module.dart';
@@ -67,7 +68,7 @@ class _WidgetsScreenState extends State<WidgetsScreen> {
     final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(title: Text(l10n.widgetsScreenTitle)),
-      body: ListView(
+      body: AdaptiveCenter(child: ListView(
         padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
         children: [
           Text(
@@ -80,7 +81,7 @@ class _WidgetsScreenState extends State<WidgetsScreen> {
             const SizedBox(height: 10),
           ],
         ],
-      ),
+      )),
     );
   }
 }

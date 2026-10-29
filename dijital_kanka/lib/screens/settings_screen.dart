@@ -7,6 +7,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../utils/adaptive.dart';
 import '../data/legal_texts.dart';
 import '../l10n/app_localizations.dart';
 import '../providers/auth_link_provider.dart';
@@ -204,7 +205,7 @@ class SettingsScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: plainStickerAppBar(context, title: l10n.tabSettings),
-      body: Stack(
+      body: AdaptiveCenter(child: Stack(
         children: [
           const Positioned.fill(child: DotGridBackground()),
           ListView(
@@ -464,7 +465,7 @@ class SettingsScreen extends StatelessWidget {
             ],
           ),
         ],
-      ),
+      )),
     );
   }
 }

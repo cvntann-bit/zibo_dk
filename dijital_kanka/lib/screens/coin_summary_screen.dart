@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../utils/adaptive.dart';
 import '../l10n/app_localizations.dart';
 import '../providers/coin_provider.dart';
 
@@ -18,7 +19,7 @@ class CoinSummaryScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.coinSummaryScreenTitle)),
-      body: SafeArea(
+      body: AdaptiveCenter(child: SafeArea(
         child: ListView(
           padding: const EdgeInsets.fromLTRB(20, 24, 20, 32),
           children: [
@@ -37,7 +38,7 @@ class CoinSummaryScreen extends StatelessWidget {
             ),
           ],
         ),
-      ),
+      )),
     );
   }
 }

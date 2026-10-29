@@ -34,6 +34,7 @@ import '../services/home_widget_sync_coordinator.dart';
 import '../services/notification_service.dart';
 import '../services/push_notification_service.dart';
 import '../utils/founder_badge_reconcile.dart';
+import '../utils/adaptive.dart';
 import '../utils/info_dialog.dart';
 import '../utils/level_up_signal.dart';
 import '../utils/tab_navigation.dart';
@@ -603,6 +604,55 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
       StoreScreen(isActive: _selectedIndex == _storeTabIndex),
     ];
 
+    // Tablet yatay (2026-10-29): alt bar + Z düğmesi yerine sol dikey menü
+    // (bkz. `Adaptive.useSideNav`, `MainSideRail`).
+    final sideNav = Adaptive.useSideNav(context);
+    void openModules() => showModulesMenuSheet(context);
+    final tabsBody = SafeArea(
+      child: Stack(
+        children: [
+          // Mockup'ın `.screen::before` nokta deseni — bkz.
+          // `DotGridBackground` dokümantasyonu. Sekmelerin ARKASINDA tek
+          // bir yerden ekleniyor, her sekmenin kendi opak yüzeyi
+          // (kartlar, alt bar vb.) olduğu yerde zaten görünmez.
+          const Positioned.fill(child: DotGridBackground()),
+          IndexedStack(index: _selectedIndex, children: tabs),
+          // Şans Çarkı tetikleyicisi: yalnızca Ana Sayfa sekmesindeyken
+          // görünür (IndexedStack'in dışında olduğu için sekme geçişlerinde
+          // kendisi yeniden kurulmuyor, sadece görünürlüğü değişiyor).
+          // 2026 güncellemesi — kullanıcı ekran görüntüsüyle Günlük Ödül/
+          // Rozetler tetikleyicilerinin "çok iç içe" (üst üste biner gibi)
+          // durduğunu bildirdi; Çark/Günlük Ödül biraz daha yukarı
+          // (-0.8 → -0.88) taşındı, Rozetler ile Günlük Ödül arasındaki
+          // boşluk da büyütüldü (bkz. altta).
+          if (_selectedIndex == 0)
+            const Align(
+              alignment: Alignment(-1, -0.88),
+              child: WheelTriggerButton(),
+            ),
+          // Günlük Giriş Ödülleri tetikleyicisi: çarkın SİMETRİĞİ, sağ
+          // kenarda, aynı koşullu-görünürlük deseniyle.
+          if (_selectedIndex == 0)
+            const Align(
+              alignment: Alignment(1, -0.88),
+              child: DailyRewardsTriggerButton(),
+            ),
+          // Rozetler tetikleyicisi: Günlük Ödül'ün ALTINDA, aynı sağ
+          // kenarda, aynı koşullu-görünürlük deseniyle (bkz. CLAUDE.md
+          // "Rozet Sistemi" bölümü). Aradaki boşluk -0.8/-0.55'teki
+          // (0.25) eski değerden biraz büyütüldü (0.30) — artık arkasında
+          // dairesel bir dekorasyon/gölge OLMADIĞI için (bkz.
+          // BadgesTriggerButton dokümantasyonu) daha az gerekli olsa da,
+          // fazladan bir nefes payı bırakıldı.
+          if (_selectedIndex == 0)
+            const Align(
+              alignment: Alignment(1, -0.58),
+              child: BadgesTriggerButton(),
+            ),
+        ],
+      ),
+    );
+
     return Scaffold(
       appBar: AppBar(
         title: Semantics(
@@ -639,62 +689,38 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
           const SizedBox(width: 12),
         ],
       ),
-      body: SafeArea(
-        child: Stack(
-          children: [
-            // Mockup'ın `.screen::before` nokta deseni — bkz.
-            // `DotGridBackground` dokümantasyonu. Sekmelerin ARKASINDA tek
-            // bir yerden ekleniyor, her sekmenin kendi opak yüzeyi
-            // (kartlar, alt bar vb.) olduğu yerde zaten görünmez.
-            const Positioned.fill(child: DotGridBackground()),
-            IndexedStack(index: _selectedIndex, children: tabs),
-            // Şans Çarkı tetikleyicisi: yalnızca Ana Sayfa sekmesindeyken
-            // görünür (IndexedStack'in dışında olduğu için sekme geçişlerinde
-            // kendisi yeniden kurulmuyor, sadece görünürlüğü değişiyor).
-            // 2026 güncellemesi — kullanıcı ekran görüntüsüyle Günlük Ödül/
-            // Rozetler tetikleyicilerinin "çok iç içe" (üst üste biner gibi)
-            // durduğunu bildirdi; Çark/Günlük Ödül biraz daha yukarı
-            // (-0.8 → -0.88) taşındı, Rozetler ile Günlük Ödül arasındaki
-            // boşluk da büyütüldü (bkz. altta).
-            if (_selectedIndex == 0)
-              const Align(
-                alignment: Alignment(-1, -0.88),
-                child: WheelTriggerButton(),
-              ),
-            // Günlük Giriş Ödülleri tetikleyicisi: çarkın SİMETRİĞİ, sağ
-            // kenarda, aynı koşullu-görünürlük deseniyle.
-            if (_selectedIndex == 0)
-              const Align(
-                alignment: Alignment(1, -0.88),
-                child: DailyRewardsTriggerButton(),
-              ),
-            // Rozetler tetikleyicisi: Günlük Ödül'ün ALTINDA, aynı sağ
-            // kenarda, aynı koşullu-görünürlük deseniyle (bkz. CLAUDE.md
-            // "Rozet Sistemi" bölümü). Aradaki boşluk -0.8/-0.55'teki
-            // (0.25) eski değerden biraz büyütüldü (0.30) — artık arkasında
-            // dairesel bir dekorasyon/gölge OLMADIĞI için (bkz.
-            // BadgesTriggerButton dokümantasyonu) daha az gerekli olsa da,
-            // fazladan bir nefes payı bırakıldı.
-            if (_selectedIndex == 0)
-              const Align(
-                alignment: Alignment(1, -0.58),
-                child: BadgesTriggerButton(),
-              ),
-          ],
-        ),
-      ),
-      floatingActionButton: ZFloatingButton(
-        label: l10n.modulesMenuZButtonTooltip,
-        onTap: () => showModulesMenuSheet(context),
-      ),
+      body: sideNav
+          ? Row(
+              children: [
+                MainSideRail(
+                  selectedIndex: _selectedIndex,
+                  onHomeTap: () => _setSelectedIndex(0),
+                  onGamesTap: () => _setSelectedIndex(_gameHallTabIndex),
+                  onProfileTap: () => _setSelectedIndex(_profileTabIndex),
+                  onStoreTap: () => _setSelectedIndex(_storeTabIndex),
+                  onZTap: openModules,
+                  zLabel: l10n.modulesMenuZButtonTooltip,
+                ),
+                Expanded(child: tabsBody),
+              ],
+            )
+          : tabsBody,
+      floatingActionButton: sideNav
+          ? null
+          : ZFloatingButton(
+              label: l10n.modulesMenuZButtonTooltip,
+              onTap: openModules,
+            ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      bottomNavigationBar: MainBottomBar(
-        selectedIndex: _selectedIndex,
-        onHomeTap: () => _setSelectedIndex(0),
-        onGamesTap: () => _setSelectedIndex(_gameHallTabIndex),
-        onProfileTap: () => _setSelectedIndex(_profileTabIndex),
-        onStoreTap: () => _setSelectedIndex(_storeTabIndex),
-      ),
+      bottomNavigationBar: sideNav
+          ? null
+          : MainBottomBar(
+              selectedIndex: _selectedIndex,
+              onHomeTap: () => _setSelectedIndex(0),
+              onGamesTap: () => _setSelectedIndex(_gameHallTabIndex),
+              onProfileTap: () => _setSelectedIndex(_profileTabIndex),
+              onStoreTap: () => _setSelectedIndex(_storeTabIndex),
+            ),
     );
   }
 }

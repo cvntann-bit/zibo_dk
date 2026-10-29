@@ -34,6 +34,7 @@ import '../screens/longest_streak_screen.dart';
 import '../screens/monthly_stats_history_screen.dart';
 import '../screens/referral_screen.dart';
 import '../services/photo_picker_service.dart';
+import '../utils/adaptive.dart';
 import '../utils/google_link_action.dart';
 import '../utils/profile_stats.dart';
 import '../widgets/costume_closet_preview.dart';
@@ -272,8 +273,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final hasFrame = subscription.isPro;
     final avatarOuterSize = hasFrame ? frameDiameter : avatarDiameter;
 
+    // Tablet (2026-10-29): gövde en fazla [Adaptive.contentMaxWidth] ortalanır.
+    final hPad = Adaptive.horizontalPadding(context);
     return ListView(
-      padding: const EdgeInsets.fromLTRB(20, 24, 20, 32),
+      padding: EdgeInsets.fromLTRB(hPad, 24, hPad, 32),
       children: [
         Center(
           child: GestureDetector(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../utils/adaptive.dart';
 import '../l10n/app_localizations.dart';
 import '../providers/app_streak_provider.dart';
 import '../widgets/streak_freeze_balance_card.dart';
@@ -22,7 +23,7 @@ class LongestStreakScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.longestStreakScreenTitle)),
-      body: SafeArea(
+      body: AdaptiveCenter(child: SafeArea(
         child: ListView(
           padding: const EdgeInsets.fromLTRB(24, 32, 24, 32),
           children: [
@@ -67,7 +68,7 @@ class LongestStreakScreen extends StatelessWidget {
             ),
           ],
         ),
-      ),
+      )),
     );
   }
 }

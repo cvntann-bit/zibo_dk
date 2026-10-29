@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
+import '../utils/adaptive.dart';
 import '../data/costume_poses.dart';
 import '../data/costumes.dart';
 import '../data/goal_quotes.dart';
@@ -416,7 +417,7 @@ class _GoalTrackingPageState extends State<GoalTrackingPage> {
           const SizedBox(width: 12),
         ],
       ),
-      body: const GoalTrackingScreen(isActive: true),
+      body: AdaptiveCenter(child: const GoalTrackingScreen(isActive: true)),
     );
   }
 }

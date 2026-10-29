@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../l10n/app_localizations.dart';
 import 'sticker_style.dart';
+import 'z_floating_button.dart';
 
 /// Uygulamanın alt gezinme çubuğu — tamamen standart Flutter widget'larıyla
 /// (`BottomAppBar`, DÜZ — çentik YOK, bkz. aşağıdaki not) çizilir, hiçbir
@@ -181,6 +182,75 @@ class _NavItem extends StatelessWidget {
                 ),
               ],
             ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Geniş yatay ekranda (tablet, bkz. `Adaptive.useSideNav`) alt barın yerine
+/// geçen dikey sol menü (2026-10-29): en üstte Z düğmesi (modül menüsü),
+/// altında aynı dört sekme. Sekme indeksleri ve semantik etiketler
+/// [MainBottomBar] ile BİREBİR aynı.
+class MainSideRail extends StatelessWidget {
+  const MainSideRail({
+    super.key,
+    required this.selectedIndex,
+    required this.onHomeTap,
+    required this.onGamesTap,
+    required this.onProfileTap,
+    required this.onStoreTap,
+    required this.onZTap,
+    required this.zLabel,
+  });
+
+  final int selectedIndex;
+  final VoidCallback onHomeTap;
+  final VoidCallback onGamesTap;
+  final VoidCallback onProfileTap;
+  final VoidCallback onStoreTap;
+  final VoidCallback onZTap;
+  final String zLabel;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final colorScheme = Theme.of(context).colorScheme;
+    Widget item(String emoji, String visible, String semantic, int index, VoidCallback onTap) => SizedBox(
+          height: 76,
+          child: Row(
+            children: [
+              _NavItem(
+                emoji: emoji,
+                visibleLabel: visible,
+                semanticLabel: semantic,
+                selected: selectedIndex == index,
+                onTap: onTap,
+              ),
+            ],
+          ),
+        );
+
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainerLowest,
+        border: const Border(right: BorderSide(color: kStickerOutline, width: 3)),
+      ),
+      child: SafeArea(
+        right: false,
+        child: SizedBox(
+          width: 96,
+          child: Column(
+            children: [
+              const SizedBox(height: 16),
+              ZFloatingButton(label: zLabel, onTap: onZTap),
+              const SizedBox(height: 20),
+              item('🏠', l10n.tabHome, l10n.tabHome, 0, onHomeTap),
+              item('🎮', l10n.bottomBarGamesLabel, l10n.tabGameHall, 1, onGamesTap),
+              item('👤', l10n.profileScreenTitle, l10n.profileScreenTitle, 2, onProfileTap),
+              item('🛍️', l10n.storeTitle, l10n.storeTitle, 3, onStoreTap),
+            ],
           ),
         ),
       ),

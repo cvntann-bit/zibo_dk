@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../utils/adaptive.dart';
 import '../l10n/app_localizations.dart';
 import '../models/dream_entry.dart';
 import '../providers/coin_provider.dart';
@@ -136,7 +137,7 @@ class _DreamEntryFormScreenState extends State<DreamEntryFormScreen> {
             ),
         ],
       ),
-      body: Stack(
+      body: AdaptiveCenter(child: Stack(
         children: [
           const Positioned.fill(child: DotGridBackground()),
           SafeArea(
@@ -209,7 +210,7 @@ class _DreamEntryFormScreenState extends State<DreamEntryFormScreen> {
             ),
           ),
         ],
-      ),
+      )),
     );
   }
 }

@@ -168,8 +168,13 @@
   // ---------- tuval ----------
   var W = 360, H = 640, OUT = '#14110C';
   var canvas = $('c'), ctx = canvas.getContext('2d');
+  // Tablet/yatay (2026-10-29): yükseklik 640'ta sabit, genişlik ekran oranına göre 360–1200 →
+  // tuval ekranı doldurur, telefon boyutunda dar şerit kalmaz.
   function fit() {
-    var s = Math.min(window.innerWidth / W, window.innerHeight / H), dpr = window.devicePixelRatio || 1;
+    var vw = window.innerWidth, vh = window.innerHeight, oldW = W;
+    W = Math.max(360, Math.min(1200, Math.round(H * vw / vh)));
+    if (oldW !== W) onResize(oldW);
+    var s = Math.min(vw / W, vh / H), dpr = window.devicePixelRatio || 1;
     canvas.style.width = (W * s) + 'px'; canvas.style.height = (H * s) + 'px';
     canvas.width = Math.round(W * s * dpr); canvas.height = Math.round(H * s * dpr);
     ctx.setTransform(s * dpr, 0, 0, s * dpr, 0, 0);
@@ -210,11 +215,21 @@
   function toast(m) { toastText = m; toastT = 1.8; }
 
   // ---------- oyun ----------
-  var COLS = 15, ROWS = 24, CELL = 22, X0 = 15, TOP = 92;
+  // Izgara mantığı 22 px'lik hücrelerle; çizimde ekrana sığacak şekilde ölçeklenip ortalanır (BX/BY/BK).
+  // Yatay ekranda ızgara da yatay (24×15) kurulur — tur başında seçilir, oyun ortasında değişmez.
+  var COLS = 15, ROWS = 24, CELL = 22, X0 = 0, TOP = 0, BX = 15, BY = 92, BK = 1;
+  function layout() {
+    var bw = COLS * CELL, bh = ROWS * CELL;
+    BK = Math.min((W - 30) / bw, (H - 106) / bh);
+    BX = (W - bw * BK) / 2; BY = 92 + ((H - 106) - bh * BK) / 2;
+  }
+  function onResize() {}
   var VEC = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] }, OPP = { up: 'down', down: 'up', left: 'right', right: 'left' };
   var state = 'idle', tt = 0, snake, dir, queue, items, rocks, eaten, grow, acc, slow, hist, rewinds, pops, flash;
   function reset() {
-    snake = [{ x: 7, y: 14 }, { x: 7, y: 15 }, { x: 7, y: 16 }]; dir = 'up'; queue = []; items = []; rocks = [];
+    if (W > H) { COLS = 24; ROWS = 15; } else { COLS = 15; ROWS = 24; }
+    var sx = Math.floor(COLS / 2), sy = Math.floor(ROWS / 2) + 2;
+    snake = [{ x: sx, y: sy }, { x: sx, y: sy + 1 }, { x: sx, y: sy + 2 }]; dir = 'up'; queue = []; items = []; rocks = [];
     eaten = 0; grow = 0; acc = 0; slow = 0; hist = []; rewinds = 0; pops = []; flash = 0;
     place('coin');
   }
@@ -376,9 +391,10 @@
     var g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#FFF1D2'); g.addColorStop(1, '#FFE3A6');
     ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
     var bw = COLS * CELL, bh = ROWS * CELL;
+    layout(); ctx.save(); ctx.translate(BX, BY); ctx.scale(BK, BK);
     ctx.fillStyle = OUT; rr(ctx, X0 + 1, TOP + 1, bw + 6, bh + 6, 12); ctx.fill();
     ctx.save(); rr(ctx, X0 - 3, TOP - 3, bw + 6, bh + 6, 12); ctx.clip();
-    for (var y = 0; y < ROWS; y++) for (var x = 0; x < COLS; x++) { ctx.fillStyle = (x + y) % 2 ? '#FBE9C4' : '#FFF4DE'; ctx.fillRect(X0 + x * CELL, TOP + y * CELL, CELL, CELL); }
+    for (var y = 0; y < ROWS; y++) for (var x = 0; x < COLS; x++) { ctx.fillStyle = (x + y) % 2 ? '#FBE9C4' : '#FFF4DE'; ctx.fillRect(X0 + x * CELL, TOP + y * CELL, CELL + 0.6, CELL + 0.6); }
     ctx.restore();
     ctx.strokeStyle = OUT; ctx.lineWidth = 3; rr(ctx, X0 - 3, TOP - 3, bw + 6, bh + 6, 12); ctx.stroke();
     function cx(p) { return X0 + p.x * CELL + CELL / 2; }
@@ -394,6 +410,7 @@
     var hd = snake[0];
     ctx.fillStyle = 'rgba(20,17,12,.2)'; ctx.beginPath(); ctx.ellipse(cx(hd), cy(hd) + 10, 12, 4, 0, 0, 6.283); ctx.fill();
     if (ready(ziboUp)) { ctx.save(); ctx.translate(cx(hd), cy(hd) - 6); if (dir === 'left') ctx.scale(-1, 1); ctx.drawImage(ziboUp, -17, -22, 34, 44); ctx.restore(); }
+    ctx.restore();
     if (state !== 'idle') {
       pill(14, 16, 104, 34); ptIcon(33, 33, 11);
       ctx.font = '800 19px Baloo2, Nunito, sans-serif'; ctx.textAlign = 'left'; ctx.textBaseline = 'middle'; ctx.fillStyle = OUT; ctx.fillText(String(points()), 48, 34);
@@ -403,8 +420,10 @@
       else outlined(t('len', { n: snake.length }), W / 2, 34, 17, '#FFFDF7');
       ctx.font = '800 11px Nunito, sans-serif'; ctx.textAlign = 'center'; ctx.fillStyle = '#6E5B40'; ctx.fillText(t('hint'), W / 2, 72);
     }
-    if (state === 'paused') outlined(t('paused'), W / 2, TOP + bh / 2, 24, '#FFFDF7');
+    if (state === 'paused') outlined(t('paused'), W / 2, BY + bh * BK / 2, 24, '#FFFDF7');
+    ctx.save(); ctx.translate(BX, BY); ctx.scale(BK, BK);
     pops.forEach(function (p) { ctx.globalAlpha = 1 - p.t / 0.8; outlined(p.txt, p.x, p.y - 8 - p.t * 40, 16, p.ice ? '#DDF2FF' : '#8FD3FF'); ctx.globalAlpha = 1; });
+    ctx.restore();
     if (toastT > 0) {
       ctx.globalAlpha = Math.min(1, toastT * 3); ctx.font = '800 13px Nunito, sans-serif';
       var tw = ctx.measureText(toastText).width + 28; ctx.fillStyle = OUT; rr(ctx, W / 2 - tw / 2, H - 40, tw, 30, 15); ctx.fill();

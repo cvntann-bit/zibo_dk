@@ -1,3 +1,4 @@
+import '../utils/adaptive.dart';
 import 'package:flutter/material.dart';
 
 /// "Gizlilik Politikası"/"Kullanım Koşulları" için paylaşılan, minimal bir
@@ -23,10 +24,10 @@ class LegalPlaceholderScreen extends StatelessWidget {
       // daha uzun — SingleChildScrollView OLMADAN taşardı (bir önceki
       // sürümde yalnızca tek satırlık bir yer tutucu metin olduğu için bu
       // hiç sorun değildi).
-      body: SingleChildScrollView(
+      body: AdaptiveCenter(child: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Text(body, style: Theme.of(context).textTheme.bodyMedium),
-      ),
+      )),
     );
   }
 }

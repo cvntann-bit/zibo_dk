@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../utils/adaptive.dart';
 import '../data/badge_gift_rewards.dart';
 import '../data/consistency_badges.dart';
 import '../data/costumes.dart';
@@ -95,7 +96,7 @@ class _BadgesGalleryScreenState extends State<BadgesGalleryScreen> {
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.badgesGalleryTitle)),
-      body: SingleChildScrollView(
+      body: AdaptiveCenter(child: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -135,7 +136,7 @@ class _BadgesGalleryScreenState extends State<BadgesGalleryScreen> {
             ],
           ],
         ),
-      ),
+      )),
     );
   }
 }

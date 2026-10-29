@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../utils/adaptive.dart';
 import '../l10n/app_localizations.dart';
 import '../providers/profile_provider.dart';
 
@@ -50,7 +51,7 @@ class _AddressTermScreenState extends State<AddressTermScreen> {
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.addressTermScreenTitle)),
-      body: SafeArea(
+      body: AdaptiveCenter(child: SafeArea(
         child: ListView(
           padding: const EdgeInsets.all(20),
           children: [
@@ -74,7 +75,7 @@ class _AddressTermScreenState extends State<AddressTermScreen> {
             ),
           ],
         ),
-      ),
+      )),
     );
   }
 }

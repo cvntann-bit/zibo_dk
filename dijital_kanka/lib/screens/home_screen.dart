@@ -48,6 +48,7 @@ import '../widgets/banner_ad_slot.dart';
 import '../widgets/custom_messages_button.dart';
 import '../widgets/favorite_quote_button.dart';
 import '../widgets/home_module_widget.dart';
+import '../utils/adaptive.dart';
 import '../widgets/home_quick_module_picker_sheet.dart';
 import '../widgets/share_zibo_button.dart';
 import '../widgets/speech_bubble.dart';
@@ -318,10 +319,13 @@ class _HomeScreenState extends State<HomeScreen>
     // kutuyu neredeyse tamamen doldurmasını sağlıyor (eskiden `width`
     // büyütülse bile, görselin büyük kısmı şeffaf olduğu için görünen
     // karakter kutunun çok altında kalıyordu).
-    final ziboHeight = (MediaQuery.sizeOf(context).height * 0.36).clamp(
+    final screenSize = MediaQuery.sizeOf(context);
+    final twoPane = screenSize.width >= Adaptive.sideNavMinWidth && screenSize.width > screenSize.height;
+    final ziboHeight = (screenSize.height * 0.36).clamp(
       260.0,
-      400.0,
+      Adaptive.isWide(context) ? 500.0 : 400.0,
     );
+    final twoPaneZiboHeight = (screenSize.height * 0.62).clamp(260.0, 560.0);
     // Mağaza > Kostümler'den giyilen bir kostüm varsa Zibo'nun görseli onunla
     // değişir; yoksa (veya kostüm listeden kaldırılmışsa) varsayılan görsele
     // düşülür.
@@ -364,125 +368,188 @@ class _HomeScreenState extends State<HomeScreen>
     // Not: `Spacer`/`Expanded` DOĞRUDAN bir `SingleChildScrollView`'ın
     // İÇİNDE kullanılamaz (o eksende sınırsız yükseklik verir) — bu yüzden
     // esnek boşluk dış `Column`'da, kaydırma İÇ `Column`'da.
-    final content = Column(
+    // Zibo maskotu (dokununca zıplar + poz değişir).
+    final ziboTapTarget = GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: _onZiboTap,
+      child: AnimatedBuilder(
+        animation: _bounceController,
+        builder: (context, child) => Transform.translate(
+          offset: Offset(0, _jumpAnimation.value),
+          child: Transform.rotate(
+            angle: _wobbleAnimation.value,
+            child: child,
+          ),
+        ),
+        child: ZiboAnimatedImage(
+          imageKey: const Key('ziboCharacterImage'),
+          costumeId: equippedId,
+          poseStep: poseStep,
+          fallbackImage: equippedImageAsset,
+          height: twoPane ? twoPaneZiboHeight : ziboHeight,
+          semanticLabel: l10n.ziboImagePlaceholder,
+        ),
+      ),
+    );
+
+    // Konuşma balonu (köşe düğmeleriyle) + "Zibo'ya dokun" ipucu.
+    final bubbleBlock = Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
-        const SizedBox(height: 32),
-        Expanded(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                GestureDetector(
-                  behavior: HitTestBehavior.opaque,
-                  onTap: _onZiboTap,
-                  child: AnimatedBuilder(
-                    animation: _bounceController,
-                    builder: (context, child) => Transform.translate(
-                      offset: Offset(0, _jumpAnimation.value),
-                      child: Transform.rotate(
-                        angle: _wobbleAnimation.value,
-                        child: child,
-                      ),
-                    ),
-                    child: ZiboAnimatedImage(
-                      imageKey: const Key('ziboCharacterImage'),
-                      costumeId: equippedId,
-                      poseStep: poseStep,
-                      fallbackImage: equippedImageAsset,
-                      height: ziboHeight,
-                      semanticLabel: l10n.ziboImagePlaceholder,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Stack(
-                  clipBehavior: Clip.none,
-                  children: [
-                    SpeechBubble(message: message),
-                    Positioned(
-                      top: -13,
-                      right: -13,
-                      child: ShareZiboButton(message: message),
-                    ),
-                    Positioned(
-                      top: -13,
-                      left: -13,
-                      child: FavoriteQuoteButton(message: message),
-                    ),
-                    const Positioned(
-                      bottom: -13,
-                      right: -13,
-                      child: CustomMessagesButton(),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  l10n.tapZiboHint,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
-                ),
-              ],
+        Stack(
+          clipBehavior: Clip.none,
+          children: [
+            SpeechBubble(message: message),
+            Positioned(
+              top: -13,
+              right: -13,
+              child: ShareZiboButton(message: message),
             ),
-          ),
+            Positioned(
+              top: -13,
+              left: -13,
+              child: FavoriteQuoteButton(message: message),
+            ),
+            const Positioned(
+              bottom: -13,
+              right: -13,
+              child: CustomMessagesButton(),
+            ),
+          ],
         ),
-        // 2026 yeni özellik — kalıcı banner reklam (bkz. CLAUDE.md). Zibo/
-        // konuşma balonu bölümü ile Su/Hedef kartları arasındaki, ekran
-        // yüksekliğine göre değişen boşluğa BAĞIMLI olmaması için buraya,
-        // kaydırılabilir alan ile sabit kart satırının TAM SINIRINA
-        // yerleştirildi — ekran boyu ne olursa olsun her zaman aynı yerde
-        // durur (yukarısı küçülür/büyür, aşağısı hiç kımıldamaz).
-        Padding(
-          padding: const EdgeInsets.only(top: 12, bottom: 4),
-          // `isHomeTabActive` ile — bkz. `BannerAdSlot.isActive`
-          // dokümantasyonu: `IndexedStack` bu sekmeyi görünmezken de monte
-          // tutuyor, bu yüzden yalnızca GERÇEKTEN seçiliyken bir platform
-          // view kurulmalı (aksi halde Hedefler sekmesiyle paylaşılan
-          // Appodeal banner görünümünü "çalabilir").
-          child: ValueListenableBuilder<bool>(
-            valueListenable: isHomeTabActive,
-            builder: (context, active, _) => BannerAdSlot(isActive: active),
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(24, 16, 24, 44),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              HomeModuleWidget(
-                emoji: slot1Data.emoji,
-                title: slot1Data.title,
-                valueLabel: slot1Data.valueLabel,
-                progress: slot1Data.progress,
-                subtitle: slot1Data.subtitle,
-                onTap: slot1Data.onTap,
-                onEditTap: () => showHomeQuickModulePicker(
-                  context,
-                  current: quickWidgets.slot1,
-                  onSelect: quickWidgets.setSlot1,
-                ),
-              ),
-              const SizedBox(width: 12),
-              HomeModuleWidget(
-                emoji: slot2Data.emoji,
-                title: slot2Data.title,
-                valueLabel: slot2Data.valueLabel,
-                progress: slot2Data.progress,
-                subtitle: slot2Data.subtitle,
-                onTap: slot2Data.onTap,
-                onEditTap: () => showHomeQuickModulePicker(
-                  context,
-                  current: quickWidgets.slot2,
-                  onSelect: quickWidgets.setSlot2,
-                ),
-              ),
-            ],
+        const SizedBox(height: 16),
+        Text(
+          l10n.tapZiboHint,
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
         ),
       ],
     );
+
+    // 2026 yeni özellik — kalıcı banner reklam (bkz. CLAUDE.md). Zibo/
+    // konuşma balonu bölümü ile Su/Hedef kartları arasındaki, ekran
+    // yüksekliğine göre değişen boşluğa BAĞIMLI olmaması için buraya,
+    // kaydırılabilir alan ile sabit kart satırının TAM SINIRINA
+    // yerleştirildi — ekran boyu ne olursa olsun her zaman aynı yerde
+    // durur (yukarısı küçülür/büyür, aşağısı hiç kımıldamaz).
+    final bannerSlot = Padding(
+      padding: const EdgeInsets.only(top: 12, bottom: 4),
+      // `isHomeTabActive` ile — bkz. `BannerAdSlot.isActive`
+      // dokümantasyonu: `IndexedStack` bu sekmeyi görünmezken de monte
+      // tutuyor, bu yüzden yalnızca GERÇEKTEN seçiliyken bir platform
+      // view kurulmalı (aksi halde Hedefler sekmesiyle paylaşılan
+      // Appodeal banner görünümünü "çalabilir").
+      child: ValueListenableBuilder<bool>(
+        valueListenable: isHomeTabActive,
+        builder: (context, active, _) => BannerAdSlot(isActive: active),
+      ),
+    );
+
+    final quickCards = Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        HomeModuleWidget(
+          emoji: slot1Data.emoji,
+          title: slot1Data.title,
+          valueLabel: slot1Data.valueLabel,
+          progress: slot1Data.progress,
+          subtitle: slot1Data.subtitle,
+          onTap: slot1Data.onTap,
+          onEditTap: () => showHomeQuickModulePicker(
+            context,
+            current: quickWidgets.slot1,
+            onSelect: quickWidgets.setSlot1,
+          ),
+        ),
+        const SizedBox(width: 12),
+        HomeModuleWidget(
+          emoji: slot2Data.emoji,
+          title: slot2Data.title,
+          valueLabel: slot2Data.valueLabel,
+          progress: slot2Data.progress,
+          subtitle: slot2Data.subtitle,
+          onTap: slot2Data.onTap,
+          onEditTap: () => showHomeQuickModulePicker(
+            context,
+            current: quickWidgets.slot2,
+            onSelect: quickWidgets.setSlot2,
+          ),
+        ),
+      ],
+    );
+
+    // Tablet yatay (2026-10-29): solda büyük Zibo, sağda balon + banner +
+    // kartlar — tek sütun düzeni geniş ekranda yarısı boş kalıyordu.
+    final content = twoPane
+        ? Row(
+            children: [
+              Expanded(
+                flex: 5,
+                child: Center(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+                    child: ziboTapTarget,
+                  ),
+                ),
+              ),
+              Expanded(
+                flex: 6,
+                child: Center(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.fromLTRB(16, 40, 72, 32),
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 620),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          bubbleBlock,
+                          const SizedBox(height: 16),
+                          bannerSlot,
+                          const SizedBox(height: 16),
+                          quickCards,
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          )
+        // Mockup'ın `.mid-space{flex:1 1 auto}` alanı — maskot+balon+ipucu
+        // KENDİ `SingleChildScrollView`'ında üstte, mini kartlar SABİT olarak
+        // altta kalır; aradaki tüm boş alan burada birikir (küçük ekranda
+        // yeterse maskot bölümü kendi içinde kayar, dış Column asla taşmaz).
+        // Not: `Spacer`/`Expanded` DOĞRUDAN bir `SingleChildScrollView`'ın
+        // İÇİNDE kullanılamaz (o eksende sınırsız yükseklik verir) — bu yüzden
+        // esnek boşluk dış `Column`'da, kaydırma İÇ `Column`'da. Tablette
+        // (dikey) sütun [Adaptive.homeColumnMaxWidth] ile ortalanır.
+        : AdaptiveCenter(
+            maxWidth: Adaptive.homeColumnMaxWidth,
+            child: Column(
+              children: [
+                const SizedBox(height: 32),
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        ziboTapTarget,
+                        const SizedBox(height: 8),
+                        bubbleBlock,
+                      ],
+                    ),
+                  ),
+                ),
+                bannerSlot,
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(24, 16, 24, 44),
+                  child: quickCards,
+                ),
+              ],
+            ),
+          );
 
     if (equippedTheme == null) return content;
 

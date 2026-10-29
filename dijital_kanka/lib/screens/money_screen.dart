@@ -5,6 +5,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../utils/adaptive.dart';
 import '../data/costume_poses.dart';
 import '../data/costumes.dart';
 import '../data/currencies.dart';
@@ -210,7 +211,7 @@ class _MoneyScreenState extends State<MoneyScreen> {
           ),
         ],
       ),
-      body: Stack(
+      body: AdaptiveCenter(child: Stack(
         children: [
           const Positioned.fill(child: DotGridBackground()),
           SafeArea(
@@ -227,7 +228,7 @@ class _MoneyScreenState extends State<MoneyScreen> {
             ),
           ),
         ],
-      ),
+      )),
     );
   }
 

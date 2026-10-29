@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../utils/adaptive.dart';
 import '../data/costume_poses.dart' show defaultZiboImage;
 import '../data/paywall_comparison.dart';
 import '../data/paywall_quotes.dart';
@@ -44,7 +45,7 @@ class PaywallScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
-      body: const PaywallContent(),
+      body: AdaptiveCenter(child: const PaywallContent()),
     );
   }
 }

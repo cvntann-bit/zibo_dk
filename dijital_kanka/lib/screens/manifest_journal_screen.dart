@@ -5,6 +5,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../utils/adaptive.dart';
 import '../data/costume_poses.dart';
 import '../data/costumes.dart';
 import '../data/localized_calendar_names.dart';
@@ -335,7 +336,7 @@ class _ManifestJournalScreenState extends State<ManifestJournalScreen> {
 
     return Scaffold(
       appBar: plainStickerAppBar(context, title: l10n.manifestScreenTitle),
-      body: Stack(
+      body: AdaptiveCenter(child: Stack(
         children: [
           const Positioned.fill(child: DotGridBackground()),
           SafeArea(
@@ -530,7 +531,7 @@ class _ManifestJournalScreenState extends State<ManifestJournalScreen> {
             ),
           ),
         ],
-      ),
+      )),
     );
   }
 }

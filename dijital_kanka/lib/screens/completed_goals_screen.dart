@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../utils/adaptive.dart';
 import '../data/localized_calendar_names.dart';
 import '../l10n/app_localizations.dart';
 import '../models/goal_completion.dart';
@@ -38,7 +39,7 @@ class CompletedGoalsScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.completedGoalsScreenTitle)),
-      body: SafeArea(
+      body: AdaptiveCenter(child: SafeArea(
         child: completions.isEmpty
             ? Padding(
                 padding: const EdgeInsets.all(24),
@@ -61,7 +62,7 @@ class CompletedGoalsScreen extends StatelessWidget {
                   ],
                 ],
               ),
-      ),
+      )),
     );
   }
 }

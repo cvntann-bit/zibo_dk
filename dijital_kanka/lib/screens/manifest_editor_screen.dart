@@ -8,6 +8,7 @@ import 'package:flutter/rendering.dart';
 import 'package:gal/gal.dart';
 import 'package:provider/provider.dart';
 
+import '../utils/adaptive.dart';
 import '../data/costumes.dart';
 import '../data/localized_calendar_names.dart';
 import '../data/manifest_frames.dart';
@@ -364,7 +365,7 @@ class _ManifestEditorScreenState extends State<ManifestEditorScreen> {
           ),
         ],
       ),
-      body: Stack(
+      body: AdaptiveCenter(child: Stack(
         children: [
           const Positioned.fill(child: DotGridBackground()),
           SafeArea(
@@ -398,7 +399,7 @@ class _ManifestEditorScreenState extends State<ManifestEditorScreen> {
             ),
           ),
         ],
-      ),
+      )),
     );
   }
 

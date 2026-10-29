@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../utils/adaptive.dart';
 import '../l10n/app_localizations.dart';
 import '../providers/custom_messages_provider.dart';
 
@@ -29,7 +30,7 @@ class CustomMessagesScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.customMessagesScreenTitle)),
-      body: SafeArea(
+      body: AdaptiveCenter(child: SafeArea(
         child: Column(
           children: [
             Padding(
@@ -88,7 +89,7 @@ class CustomMessagesScreen extends StatelessWidget {
             ),
           ],
         ),
-      ),
+      )),
     );
   }
 }

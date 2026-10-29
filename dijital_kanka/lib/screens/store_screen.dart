@@ -19,6 +19,7 @@ import '../providers/coin_provider.dart';
 import '../providers/costume_provider.dart';
 import '../providers/subscription_provider.dart';
 import '../screens/paywall_screen.dart';
+import '../utils/adaptive.dart';
 import '../utils/ad_free_promo_trigger.dart';
 import '../utils/coin_feedback.dart';
 import '../utils/info_dialog.dart';
@@ -112,8 +113,9 @@ class _StoreScreenState extends State<StoreScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
+    final hPad = Adaptive.horizontalPadding(context, maxWidth: _storeMaxWidth);
     return ListView(
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
+      padding: EdgeInsets.fromLTRB(hPad, 20, hPad, 32),
       children: [
         Text(
           l10n.storeTitle,
@@ -139,6 +141,16 @@ class _StoreScreenState extends State<StoreScreen> {
       ],
     );
   }
+}
+
+/// Tablet (2026-10-29): Mağaza gövdesi en fazla bu genişlikte ortalanır;
+/// ızgaralar (coin paketi / kostüm / tema) bu genişliğe göre 2–5 sütun.
+const double _storeMaxWidth = 900;
+
+int _storeGridColumns(BuildContext context) {
+  final w = Adaptive.bodyWidth(context);
+  final content = (w < _storeMaxWidth ? w : _storeMaxWidth) - 40;
+  return Adaptive.columnsFor(content, minTileWidth: 190, max: 5);
 }
 
 /// Mockup'ın `.segmented`/`.seg` — gerçek `SegmentedButton`'ın sticker
@@ -302,7 +314,7 @@ class _BuyCoinsSection extends StatelessWidget {
         GridView.count(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
-          crossAxisCount: 2,
+          crossAxisCount: _storeGridColumns(context),
           mainAxisSpacing: 12,
           crossAxisSpacing: 12,
           // 2026: kartlara "+N bonus" satırı eklendi (bkz. `_PackageCard`) —
@@ -434,7 +446,7 @@ class _CostumesSectionState extends State<_CostumesSection> {
                     child: GridView.count(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
-                      crossAxisCount: 2,
+                      crossAxisCount: _storeGridColumns(context),
                       mainAxisSpacing: 12,
                       crossAxisSpacing: 12,
                       // Kilitli kartlar (görsel + isim + fiyat + "Satın Al") sahip olunan
@@ -498,7 +510,7 @@ class _ThemesGrid extends StatelessWidget {
     return GridView.count(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      crossAxisCount: 2,
+      crossAxisCount: _storeGridColumns(context),
       mainAxisSpacing: 12,
       crossAxisSpacing: 12,
       // Kilitli/sahip olunan kartların en uzun içeriği (isim + fiyat/rozet

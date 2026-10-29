@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../utils/adaptive.dart';
 import '../l10n/app_localizations.dart';
 import '../models/bond_level.dart';
 import '../providers/profile_provider.dart';
@@ -22,7 +23,7 @@ class BondLevelScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.bondLevelScreenTitle)),
-      body: SafeArea(
+      body: AdaptiveCenter(child: SafeArea(
         child: ListView(
           padding: const EdgeInsets.fromLTRB(24, 32, 24, 32),
           children: [
@@ -73,7 +74,7 @@ class BondLevelScreen extends StatelessWidget {
             ),
           ],
         ),
-      ),
+      )),
     );
   }
 }

@@ -153,8 +153,13 @@
   // her LEVEL_SEC saniyede bir kademe hızlanır, coinler sağa sola savrularak düşer.
   var W = 360, H = 640, OUT = '#14110C', GROUND = 70, LEVEL_SEC = 15;
   var canvas = $('c'), ctx = canvas.getContext('2d');
+  // Tablet/yatay (2026-10-29): yükseklik 640'ta sabit, genişlik ekran oranına göre 360–1200 →
+  // tuval ekranı doldurur, telefon boyutunda dar şerit kalmaz.
   function fit() {
-    var s = Math.min(window.innerWidth / W, window.innerHeight / H), dpr = window.devicePixelRatio || 1;
+    var vw = window.innerWidth, vh = window.innerHeight, oldW = W;
+    W = Math.max(360, Math.min(1200, Math.round(H * vw / vh)));
+    if (oldW !== W) onResize(oldW);
+    var s = Math.min(vw / W, vh / H), dpr = window.devicePixelRatio || 1;
     canvas.style.width = (W * s) + 'px'; canvas.style.height = (H * s) + 'px';
     canvas.width = Math.round(W * s * dpr); canvas.height = Math.round(H * s * dpr);
     ctx.setTransform(s * dpr, 0, 0, s * dpr, 0, 0);
@@ -217,6 +222,12 @@
   }
   reset();
   // Kademe ilerlemesi: 1. seviyede 0, 10. seviyede 1 (sonra hız tavanda kalır).
+  // Ekran dönerse Zibo ve düşen öğeler aynı göreli yerde kalsın.
+  function onResize(oldW) {
+    var d = (W - oldW) / 2;
+    if (zibo) { zibo.x += d; targetX += d; }
+    if (items) items.forEach(function (it) { it.x += d; it.x0 += d; });
+  }
   function progress() { return Math.min(1, (lvl - 1) / 9); }
   function points() { return Math.min(CFG.cap, Math.round(score * CFG.perScore)); }
   function spawn() {
@@ -297,7 +308,7 @@
     elapsed += dt; magnetT = Math.max(0, magnetT - dt); spawnT -= dt;
     var nl = 1 + Math.floor(elapsed / LEVEL_SEC);
     if (nl > lvl) { lvl = nl; toastMsg(t('levelUp', { n: lvl })); }
-    if (spawnT <= 0) { spawn(); spawnT = 0.7 - progress() * 0.4; }
+    if (spawnT <= 0) { spawn(); spawnT = (0.7 - progress() * 0.4) * Math.min(1, 420 / W); }
     var cy = zibo.y - 30;
     items.forEach(function (it) {
       it.spin += dt * 5;

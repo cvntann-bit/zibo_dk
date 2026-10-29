@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../utils/adaptive.dart';
 import '../data/costumes.dart';
 import '../data/games_config.dart';
 import '../l10n/app_localizations.dart';
@@ -88,7 +89,7 @@ class _GameExchangeScreenState extends State<GameExchangeScreen> {
 
     return Scaffold(
       appBar: plainStickerAppBar(context, title: l10n.exchangeTitle),
-      body: ListView(
+      body: AdaptiveCenter(child: ListView(
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
         children: [
           Row(
@@ -275,7 +276,7 @@ class _GameExchangeScreenState extends State<GameExchangeScreen> {
             ),
           ],
         ],
-      ),
+      )),
     );
   }
 

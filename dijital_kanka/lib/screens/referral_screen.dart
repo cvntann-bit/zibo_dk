@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
+import '../utils/adaptive.dart';
 import '../l10n/app_localizations.dart';
 import '../models/coin_economy.dart';
 import '../providers/referral_provider.dart';
@@ -72,7 +73,7 @@ class _ReferralScreenState extends State<ReferralScreen> {
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.referralScreenTitle)),
-      body: SafeArea(
+      body: AdaptiveCenter(child: SafeArea(
         child: ListView(
           padding: const EdgeInsets.fromLTRB(20, 24, 20, 32),
           children: [
@@ -177,7 +178,7 @@ class _ReferralScreenState extends State<ReferralScreen> {
               ),
           ],
         ),
-      ),
+      )),
     );
   }
 }

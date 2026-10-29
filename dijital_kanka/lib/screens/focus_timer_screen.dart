@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
+import '../utils/adaptive.dart';
 import '../data/costume_poses.dart';
 import '../data/costumes.dart';
 import '../data/focus_quotes.dart';
@@ -186,7 +187,7 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> {
 
     return Scaffold(
       appBar: plainStickerAppBar(context, title: l10n.focusTimerScreenTitle),
-      body: Stack(
+      body: AdaptiveCenter(child: Stack(
         children: [
           const Positioned.fill(child: DotGridBackground()),
           SafeArea(
@@ -316,7 +317,7 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> {
             ),
           ),
         ],
-      ),
+      )),
     );
   }
 
@@ -338,7 +339,7 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> {
       value: SystemUiOverlayStyle.light,
       child: Scaffold(
         backgroundColor: Colors.black,
-        body: Center(
+        body: AdaptiveCenter(child: Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -373,7 +374,7 @@ class _FocusTimerScreenState extends State<FocusTimerScreen> {
               ),
             ],
           ),
-        ),
+        )),
       ),
     );
   }

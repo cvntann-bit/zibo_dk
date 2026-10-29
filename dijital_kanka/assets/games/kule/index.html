@@ -171,8 +171,13 @@
   // ---------- tuval ----------
   var W = 360, H = 640, OUT = '#14110C';
   var canvas = $('c'), ctx = canvas.getContext('2d');
+  // Tablet/yatay (2026-10-29): yükseklik 640'ta sabit, genişlik ekran oranına göre 360–1200 →
+  // tuval ekranı doldurur, telefon boyutunda dar şerit kalmaz.
   function fit() {
-    var vw = window.innerWidth, vh = window.innerHeight, s = Math.min(vw / W, vh / H), dpr = window.devicePixelRatio || 1;
+    var vw = window.innerWidth, vh = window.innerHeight, oldW = W;
+    W = Math.max(360, Math.min(1200, Math.round(H * vw / vh)));
+    if (oldW !== W) onResize(oldW);
+    var s = Math.min(vw / W, vh / H), dpr = window.devicePixelRatio || 1;
     canvas.style.width = (W * s) + 'px'; canvas.style.height = (H * s) + 'px';
     canvas.width = Math.round(W * s * dpr); canvas.height = Math.round(H * s * dpr);
     ctx.setTransform(s * dpr, 0, 0, s * dpr, 0, 0);
@@ -201,6 +206,13 @@
   var state = 'idle', tt = 0, stack, cur, fall, cam, perfects, combo, conts, pops, jump, flash;
   function reset() { stack = [{ x: (W - BASE_W) / 2, w: BASE_W }]; fall = []; cam = 0; perfects = 0; combo = 0; conts = 0; pops = []; jump = 0; flash = 0; cur = null; }
   reset();
+  // Ekran dönerse kule ortada kalsın.
+  function onResize(oldW) {
+    var d = (W - oldW) / 2;
+    if (stack) stack.forEach(function (b) { b.x += d; });
+    if (cur) cur.x += d;
+    if (fall) fall.forEach(function (f) { f.x += d; });
+  }
   function floors() { return stack.length - 1; }
   function points() { return Math.min(CFG.cap, floors() * CFG.perFloor + perfects * CFG.perfectBonus); }
   function speed() { return Math.min(280, 120 + stack.length * 3); }

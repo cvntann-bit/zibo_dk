@@ -137,8 +137,13 @@
   // ---------- tuval ----------
   var W = 360, H = 640, OUT = '#14110C', ZG = 74;
   var canvas = $('c'), ctx = canvas.getContext('2d');
+  // Tablet/yatay (2026-10-29): yükseklik 640'ta sabit, genişlik ekran oranına göre 360–1200 →
+  // tuval ekranı doldurur, telefon boyutunda dar şerit kalmaz.
   function fit() {
-    var s = Math.min(window.innerWidth / W, window.innerHeight / H), dpr = window.devicePixelRatio || 1;
+    var vw = window.innerWidth, vh = window.innerHeight, oldW = W;
+    W = Math.max(360, Math.min(1200, Math.round(H * vw / vh)));
+    if (oldW !== W) onResize(oldW);
+    var s = Math.min(vw / W, vh / H), dpr = window.devicePixelRatio || 1;
     canvas.style.width = (W * s) + 'px'; canvas.style.height = (H * s) + 'px';
     canvas.width = Math.round(W * s * dpr); canvas.height = Math.round(H * s * dpr);
     ctx.setTransform(s * dpr, 0, 0, s * dpr, 0, 0);
@@ -170,7 +175,9 @@
     if (Math.random() < 0.35) coins.push({ x: x + 137, y: gy + (Math.random() * 80 - 40), spin: Math.random() * 6 });
   }
   function flap() { if (state === 'play') { z.vy = -420; flapT = 0.16; } }
-  function startGame() { reset(); spawnPipe(W + 40); state = 'play'; flap(); }
+  function onResize() {}
+  // Geniş ekranda ilk sütun çok uzakta doğmasın.
+  function startGame() { reset(); spawnPipe(Math.min(W, 520) + 40); state = 'play'; flap(); }
   function die() {
     if (state !== 'play') return;
     state = 'dead';

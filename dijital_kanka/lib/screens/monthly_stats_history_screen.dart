@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../utils/adaptive.dart';
 import '../data/localized_calendar_names.dart';
 import '../l10n/app_localizations.dart';
 import '../models/monthly_stats_snapshot.dart';
@@ -36,7 +37,7 @@ class MonthlyStatsHistoryScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.monthlyStatsScreenTitle)),
-      body: SafeArea(
+      body: AdaptiveCenter(child: SafeArea(
         child: snapshots.isEmpty
             ? Center(
                 child: Padding(
@@ -57,7 +58,7 @@ class MonthlyStatsHistoryScreen extends StatelessWidget {
                 itemBuilder: (context, index) =>
                     _MonthlySnapshotCard(snapshot: snapshots[index], locale: locale),
               ),
-      ),
+      )),
     );
   }
 }
