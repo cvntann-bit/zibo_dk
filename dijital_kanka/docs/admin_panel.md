@@ -70,3 +70,29 @@ o özellikler (Ev, Online) yapılınca eklenir; şimdi yapılırsa boş ekran ol
 **Süre tahmini (tahmin):** kod tarafı ~4–6 çalışma oturumu; takvimde kullanıcının test hızına göre ~1–2 hafta.
 İçinde 1 Zibo sürümü var (uzaktan reklam ayarı + hediye kutusu + duyuru kutusu). Ev ve Online geldikçe panele
 kendi ekranları eklenir (her biri ~1 oturum).
+
+## BAŞLADI — Yönetici v1 uygulama planı (kullanıcı: "şimdiden başlayalım", 2026-10-29)
+Mimari kararlar (mevcut kısıtlara göre — `docs/decisions/002`: Cloud Functions YOK, Node bu makinede YOK):
+- Proje: repo kökünde **`zibo_admin/`** (Flutter, yalnız Android), `applicationId com.dijitalkanka.zibo_admin`,
+  aynı Firebase projesi. Play'e yüklenmez; imzalı APK ile kullanıcının telefonuna kurulur.
+- **Yetki:** Google ile giriş + Firestore kuralında `isAdmin()` = `request.auth.token.email == 'cvntann@gmail.com'`
+  && `email_verified` (custom claim betiği gerekmez). Google hesabında 2 adımlı doğrulama açık olmalı.
+- **Ayarlar / hediye:** panel Firestore'a DOĞRUDAN yazar (kural: yalnız admin). Hediye = `grantGift.js` mantığının
+  Dart karşılığı (coinState/subscriptionState/gamePointsState, `GRANT_ID` ile çift-ekleme koruması) → Zibo sürümü
+  GEREKMEZ.
+- **Kullanıcı bulma:** davet kodu = uid (`ReferralProvider.referralCode`) → panelde uid ile arama.
+- **Duyuru (bildirim):** panel `broadcasts/{id}` (status `pending`, zaman, dil, kitle, metin) yazar →
+  `hourly-jobs.yml` içindeki yeni adım bir sonraki saat gönderir (ek workflow/dakika yok; "Hemen" = ≤1 saat).
+- **Özet:** saatlik iş `stats/daily` belgesine sayıları yazar (kullanıcı sayısı, aktif, coin akışı); Appodeal geliri
+  sonra (API anahtarı secret).
+- **İşlem kaydı:** her yazım `adminLog/{id}` (zaman, işlem, eski→yeni).
+
+Adımlar:
+- [ ] A0 Firebase: Android uygulaması `com.dijitalkanka.zibo_admin` kaydı + SHA-1 → `google-services.json` (kullanıcı onayıyla).
+- [ ] A1 İskelet: Flutter projesi, tema (Zibo sticker dili + siyah üst şerit), Google girişi, admin kapısı, sekmeler.
+- [ ] A2 `firestore.rules`: `isAdmin()` okuma/yazma kuralları (Console'a yapıştırma kullanıcıyla).
+- [ ] A3 Ayarlar: `config/games` düzenleyici (fark + onay + kayıt).
+- [ ] A4 Kullanıcı + Hediye (uid ile bul; coin / Pro / sınırsız oyun).
+- [ ] A5 Duyuru: `broadcasts` + saatlik iş adımı (Actions log'u ile doğrulama).
+- [ ] A6 Özet: `stats/daily`.
+- Sonra (Zibo sürümü gerektirenler): uygulama içi duyuru kutusu, reklam sıklığını `config/ads`'e taşıma.
