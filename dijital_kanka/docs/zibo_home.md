@@ -6,6 +6,7 @@ Durum: **BEKLEMEDE** — kullanıcının "otel işi" bitince başlanacak. Kod YO
 ## Kullanıcının istediği (2026-10-29)
 - Zibo'yu besleme + günlük görevler.
 - **Ev tasarımı**: odalar (banyo, mutfak, …), **mobilya tasarımı**, "en ince detaylarına kadar".
+- **Yemek tasarımları** ve kullanıcının deyişiyle "çok fazla şey" — kapsam BÜYÜK, fazlara bölünecek.
 - Detaylı etkileşim animasyonları — örnek: *Zibo kirlendi → banyo yaptırırken sabunu üstüne sürtünce
   baloncuklar çıkıyor.*
 
@@ -27,6 +28,15 @@ Durum: **BEKLEMEDE** — kullanıcının "otel işi" bitince başlanacak. Kod YO
 - **Riskler:** AAB zaten ~98 MB → oda/mobilya görselleri WebP ve sıkı boyutlu olmalı; çocuklara açık
   hedefleme → Play Aileler politikası (pazarlama "herkes için" kalsın); yiyecek/sabun gibi tüketilebilirler
   coin ekonomisini etkiler → `unit_economics.md` ile dengelenmeli.
+
+## Faz önerisi (büyük kapsam → küçük dilimler, her biri ayrı sürüm)
+1. **Çekirdek:** ihtiyaç göstergeleri + Banyo (sabun/köpük/duş/havlu) — tek oda, döngü doğrulanır.
+2. **Mutfak + yemekler:** yemek görselleri (meyve, tatlı, ev yemeği…), buzdolabı, çiğneme animasyonu, coin'le alım.
+3. **Günlük görevler + ödül sandığı** (eve ve modüllere bağlı).
+4. **Yatak odası** (uyku/enerji), sonra **Salon/Bahçe**.
+5. **Mobilya mağazası + dekorasyon** (sürükle-bırak yerleştirme).
+Görsel üretim ihtiyacı (oda arka planları, mobilyalar, yemekler, Zibo pozları) her fazdan ÖNCE listelenip
+kullanıcıyla planlanır — en büyük iş yükü kod değil görseller.
 
 ## Çalışma şekli
 Oda oda: **taslak (mockup) → kullanıcı onayı → uygulama** (tema yeniden tasarımındaki gibi), her adım debug APK ile
