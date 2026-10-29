@@ -54,5 +54,11 @@ Tetikleyici: kullanıcı — Zibo tablette Yaşam Tarzı'nda ilk 11'de, çocukla
       sekmeleri SEG koordinatı). Çıktı `store_assets/tablet/Zibo_Tablet_Ekran_Goruntuleri.zip` (TR/EN/ES × yatay/dikey ×
       7). Oyun içi görüntü yok (WebView web'de çalışmıyor) — gerekirse tabletten adb ile.
 - [ ] Ekran görüntülerini Play Console'a yükleme (kullanıcı).
-- [ ] Rozet başvuru formu (kullanıcıyla).
+- [ ] Rozet başvuru formu (kullanıcıyla) — developer.android.com/docs/quality-guidelines/adaptive-app-quality →
+      "Google Play Large Screen Badge" → "Get your badge" (Google Form:
+      https://docs.google.com/forms/d/e/1FAIpQLScwcqug_NeZZyGce7keKO9yKcHw7I_gHqwNUfLQDoy0F-7lYg/viewform).
+      Sayfadaki sıra: Tier 2 tamam → tablet/katlanabilir ekran görüntüleri → form. Tablet sürümü (1.17.0+56)
+      yayına çıktıktan SONRA gönderilmeli.
+- Play Console kontrolü (2026-10-29): TR girişinde 7" ve 10" tablet bölümlerinde zaten 8'er tasarımlı yatay görsel
+  var (Zibo + başlık) → değiştirilmedi; istenirse tekrar eden 1–2 kare gerçek tablet ekranıyla değiştirilebilir.
 - [ ] Sürüm (AAB) — kullanıcı isteyince.
