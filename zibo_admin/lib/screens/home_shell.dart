@@ -4,6 +4,7 @@ import '../admin_auth.dart';
 import 'admin_log_screen.dart';
 import 'games_config_screen.dart';
 import 'placeholder_screen.dart';
+import 'user_screen.dart';
 
 class HomeShell extends StatefulWidget {
   const HomeShell({super.key});
@@ -27,7 +28,7 @@ class _HomeShellState extends State<HomeShell> {
     0 => const PlaceholderScreen(step: 'A6', text: 'Günlük özet (stats/daily) saatlik işle gelecek.'),
     1 => const GamesConfigScreen(),
     2 => const PlaceholderScreen(step: 'A5', text: 'Duyuru / bildirim gönderme (broadcasts).'),
-    3 => const PlaceholderScreen(step: 'A4', text: 'Kullanıcı bul (davet kodu = uid) → hediye ver.'),
+    3 => const UserScreen(),
     _ => const AdminLogScreen(),
   };
 

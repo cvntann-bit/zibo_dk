@@ -110,7 +110,21 @@ Adımlar:
   değiştir**); günlük haklar, reklamla ek hak, her oyun için aç/kapa + tüm sayılar (−/+, sayıya dokununca elle yazma);
   "Gözden geçir" eski→yeni listesi → "Yayınla": yalnızca DEĞİŞEN alanlar `merge` ile yazılır (exchangeLadder vb.
   dokunulmaz) + `adminLog`. Takas Gişesi basamakları v1'de düzenlenmiyor.
-- [ ] A4 Kullanıcı + Hediye (uid ile bul; coin / Pro / sınırsız oyun).
+- [x] A3 telefonda doğrulandı (2026-10-29, kullanıcı: "çalıştı" — Google girişi + ayar yayınlama + kayıt).
+- [x] A4 Kullanıcı + Hediye (2026-10-29, kod + APK telefonda; **hediye yazımı cihazda henüz denenmedi**):
+  `screens/user_screen.dart` + `gifts.dart` (grantGift.js'in Dart karşılığı, aynı belge şekilleri). Davet kodu (= uid)
+  ile bul → kart: ad (profileState.name), son aktif, saat dilimi, ZC (bakiye/kazanılan/harcanan), üyelik (Zibo'nun
+  süre-geçti→free mantığıyla), Oyun ★, sınırsız oyun, XP. Hediyeler (her biri onay penceresi + `adminLog`):
+  - **ZC** (1–100.000): transaction; `giftGrants/panel-<ms>` diyalog başına tek id → çift ekleme yok; işlem listesine
+    "Hediye" kaydı (en çok 200 = `CoinProvider._maxStoredTransactions`; grantGift.js'te 50 kalmış, eski).
+    Bulutta `coinState` YOKSA reddeder (yazmak Zibo'nun yerel→bulut göçünü engeller, yerel bakiye silinirdi).
+  - **Pro / Pro+**: 7 gün / 30 gün / süresiz (2099). Zibo bitiş tarihine uyuyor; gerçek Play abonesi açılışta yeniden doğrulanır.
+  - **Sınırsız oyun** aç/kapat (`gamePointsState.unlimitedPlays`).
+  - Son 30 dk'da aktif kullanıcıda uyarı: açık oturum hediyeyi kapatıp açana kadar göremez (eski bakiye kural gereği
+    buluta yazılamaz; o oturumda kazanılan ZC yeniden açılışta buluttaki değerle ezilebilir — grantGift.js ile aynı sınır).
+- [x] İkon (2026-10-29, kullanıcı isteği): Kral Zibo (`zibo_king.webp`, baş+kaftan kırpımı), turuncu radyal zemin,
+  beyaz+siyah sticker kontur; uyarlanabilir ikon (`mipmap-anydpi-v26`) + eski PNG'ler. Üretici: `zibo_admin/tool/make_icon.py`.
+  Uygulama adı "Zibo Yönetici". Telefonda başlatıcı önbelleği yüzünden kaldır-kur gerekti.
 - [ ] A5 Duyuru: `broadcasts` + saatlik iş adımı (Actions log'u ile doğrulama).
 - [ ] A6 Özet: `stats/daily`.
 - Sonra (Zibo sürümü gerektirenler): uygulama içi duyuru kutusu, reklam sıklığını `config/ads`'e taşıma.
