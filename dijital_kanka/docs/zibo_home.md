@@ -29,6 +29,18 @@ Durum: **BEKLEMEDE** — kullanıcının "otel işi" bitince başlanacak. Kod YO
   hedefleme → Play Aileler politikası (pazarlama "herkes için" kalsın); yiyecek/sabun gibi tüketilebilirler
   coin ekonomisini etkiler → `unit_economics.md` ile dengelenmeli.
 
+## Kostüm × poz patlaması — çözüm (2026-10-29)
+Sorun (kullanıcı): ~27+ kostüm × her bakım pozu = 200+ görsel. Çözüm önerisi:
+- **Evde Zibo kostümsüz ("ev hâli")** — banyoda zaten soyunur, mutfakta önlük/mama önlüğü, yatakta pijama.
+  Bakım pozları YALNIZCA kostümsüz Zibo için üretilir → toplam ~12–15 görsel (kirli, ıslak/köpüklü, küvette,
+  havlulu, yemek yerken ×2, tok/mutlu, aç/üzgün, uykulu, uyuyor, pijamalı…).
+- **Efektler katman, kostümden bağımsız:** çamur lekeleri, köpük/baloncuk, su damlaları, buhar, kırıntılar,
+  "zzz" — kodla çizilir ya da tek şeffaf görsel, her pozun üstüne biner.
+- **Kostüm evde de görünür ama yeni görsel istemez:** Salonda giyili kostümüyle mevcut poz döngüsü
+  (`costumePoses`) aynen kullanılır; **Gardırop** mobilyası sahip olunan kostümleri askıda gösterir
+  (mevcut `Costume.imageAsset` küçültülür). "Banyoya gir → kostüm çıkar → çıkınca geri giyer" geçişi.
+- Kostüme özel bakım pozu yalnızca istisna (ör. en çok satan 2–3 kostüm, analitik verisine göre, sonra).
+
 ## Faz önerisi (büyük kapsam → küçük dilimler, her biri ayrı sürüm)
 1. **Çekirdek:** ihtiyaç göstergeleri + Banyo (sabun/köpük/duş/havlu) — tek oda, döngü doğrulanır.
 2. **Mutfak + yemekler:** yemek görselleri (meyve, tatlı, ev yemeği…), buzdolabı, çiğneme animasyonu, coin'le alım.
