@@ -147,7 +147,7 @@ Adımlar:
     simge (8 emoji), kitle (herkes / ücretsiz / Pro+Pro+), başlangıç (şimdi/planlı), süre (3/7/14/30 gün), isteğe bağlı
     "yalnızca bu hesap" (`onlyUid`), Zibo kartının önizlemesi, liste (Planlı/Yayında/Bitti) + "Durdur" (`endAt = şimdi`).
   - Firestore `inAppMessages/{id}`: `startAt`, `endAt`, `emoji`, `audience`, `texts{lang:{title,body}}`, `onlyUid?`,
-    `createdAt`. Kural: giriş yapmış herkes OKUR, yalnız yönetici YAZAR (**Console'a yapıştırılması gerekiyor**).
+    `createdAt`. Kural: giriş yapmış herkes OKUR, yalnız yönetici YAZAR (**Console'da yayınlandı 2026-10-29 22:11**; öncesinde canlı = 21:34 sürümü, SHA-1 ile doğrulandı; panel listesi izin hatasız yükleniyor).
   - Zibo (**sürüm gerektirir — 1.18.0**): `models/in_app_message.dart` (`fromFirestore` + `pickInAppMessage`: tarih
     aralığı, dil metni yoksa GÖSTERME, kitle, onlyUid, görülmemiş, en yeni başlayan), `providers/in_app_message_provider.dart`
     (açılışta tek sorgu `endAt > şimdi` limit 10; görülenler YALNIZ yerelde `SharedPreferences inAppMessageSeenIds`, en çok
