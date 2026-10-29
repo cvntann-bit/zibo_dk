@@ -155,5 +155,18 @@ Adımlar:
     "Tamam"), `RootScreen._maybeShowInAppMessage` (Ana Sayfa seçili + üstte pencere yokken, 2 sn gecikme, koşul tutmazsa
     3 sn arayla ≤20 deneme; oturum başına EN FAZLA 1 kart; gösterilince görüldü sayılır). Testler: `test/in_app_message_test.dart`
     (8), paket 759/759 yeşil. **Telefonda denenmedi**: telefondaki Zibo Play sürümü — debug kurmak kaldır-kur = veri kaybı.
-- [ ] A6 Özet: `stats/daily`.
+- [x] A6 Özet (2026-10-29, **canlı doğrulandı** — run 40938330516 + panel telefonda):
+  - Sunucu `notification-scripts/src/dailyStats.js` = `hourlyAll.js` SON işi → `stats/{YYYY-MM-DD}` (İstanbul günü; mevcut
+    `stats/{statId}` kuralı, yeni kural yok). Her saat count sorguları: `totalUsers`, `withToken`, `active1d/7d/30d`
+    (`lastActiveAt`). Günde bir (`heavyAt` yoksa): tüm `users` → coinState + subscriptionState `getAll` (kullanıcı başı ~3
+    okuma ≈ 7 bin okuma/gün, ölçülen tarama ~4 sn) → `coin{balance,earned,spent,holders}`, `subs{pro,proplus}` (süresi
+    geçmemiş). collectionGroup toplamı bilerek YOK (`gamePointsState.totalEarned` karışırdı + elle indeks gerekirdi).
+  - İlk ölçüm (2026-10-29 22:15): 2425 hesap, bildirim alabilen 2339, aktif 24 sa 211 / 7 g 797 / 30 g 2200;
+    dolaşımda 1.443.433 ZC (1156 hesapta); etkin Pro 1, Pro+ 3.
+  - Panel `screens/summary_screen.dart`: 4 sayı kartı, 15 günlük "24 sa aktif" çubuk grafiği (sabit 15 yuva, dokununca
+    değer), coin kartları (günlük kazanılan/harcanan = son iki ağır sayımın farkı → ikinci günden itibaren), Pro/Pro+.
+    Sıralama `orderBy('date')` — `documentId` ters sıralaması ayrı bileşik indeks istiyordu (FAILED_PRECONDITION görüldü).
+  - Yok: reklam geliri (Appodeal API anahtarı secret olarak gerekir), Crashlytics sayıları.
+
+**Yönetici v1 TAMAM (2026-10-29)** — A0–A6 + uygulama içi mesaj kartı (A5b; Zibo tarafı 1.18.0 sürümüyle gelir).
 - Sonra (Zibo sürümü gerektirenler): uygulama içi duyuru kutusu, reklam sıklığını `config/ads`'e taşıma.

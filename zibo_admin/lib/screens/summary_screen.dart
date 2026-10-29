@@ -35,7 +35,8 @@ class _SummaryScreenState extends State<SummaryScreen> {
   Future<List<Map<String, dynamic>>> _load() async {
     final snap = await FirebaseFirestore.instance
         .collection('stats')
-        .orderBy(FieldPath.documentId, descending: true)
+        // `date` alanı (= belge id'si): tek alanlı indeks otomatik; documentId'ye ters sıralama ayrı indeks ister.
+        .orderBy('date', descending: true)
         .limit(15)
         .get(const GetOptions(source: Source.server));
     return snap.docs.map((d) => d.data()).toList();
@@ -160,8 +161,11 @@ class _SummaryScreenState extends State<SummaryScreen> {
     );
   }
 
-  /// Son 15 günün "24 saat aktif" değeri — tek seri, tek renk; dokununca değer.
+  /// Son 15 günün "24 saat aktif" değeri — tek seri, tek renk; dokununca değer. Her zaman 15 sabit
+  /// yuva (veri az olsa da çubuk genişliği sabit kalsın); veri olmayan eski günler boş.
   Widget _activeChart(List<Map<String, dynamic>> days) {
+    const slots = 15;
+    final empty = slots - days.length;
     final values = [for (final d in days) (d['active1d'] as num? ?? 0).toDouble()];
     final maxV = values.fold<double>(1, (m, v) => v > m ? v : m);
     final selected = _selectedBar ?? values.length - 1;
@@ -183,6 +187,7 @@ class _SummaryScreenState extends State<SummaryScreen> {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
+                for (var i = 0; i < empty; i++) const Expanded(child: SizedBox()),
                 for (var i = 0; i < values.length; i++)
                   Expanded(
                     child: GestureDetector(
@@ -209,7 +214,7 @@ class _SummaryScreenState extends State<SummaryScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('${days.first['date'] ?? ''}'.substring(5), style: const TextStyle(color: kInkSoft, fontSize: 11)),
+              const Text('15 gün önce', style: TextStyle(color: kInkSoft, fontSize: 11)),
               Text('${days.last['date'] ?? ''}'.substring(5), style: const TextStyle(color: kInkSoft, fontSize: 11)),
             ],
           ),
