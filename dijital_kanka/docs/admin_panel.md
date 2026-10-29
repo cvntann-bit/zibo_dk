@@ -89,7 +89,7 @@ Mimari kararlar (mevcut kısıtlara göre — `docs/decisions/002`: Cloud Functi
 
 Adımlar:
 - [ ] A0 Firebase: Android uygulaması `com.dijitalkanka.zibo_admin` kaydı + SHA-1 → `google-services.json` (kullanıcı onayıyla).
-- [ ] A1 İskelet: Flutter projesi, tema (Zibo sticker dili + siyah üst şerit), Google girişi, admin kapısı, sekmeler.
+- [ ] A1 İskelet (2026-10-29: yalnızca `flutter create` çalıştı → `zibo_admin/` boş şablon, commit EDİLMEDİ; kullanıcı devamı yeni oturumda istedi): Flutter projesi, tema (Zibo sticker dili + siyah üst şerit), Google girişi, admin kapısı, sekmeler.
 - [ ] A2 `firestore.rules`: `isAdmin()` okuma/yazma kuralları (Console'a yapıştırma kullanıcıyla).
 - [ ] A3 Ayarlar: `config/games` düzenleyici (fark + onay + kayıt).
 - [ ] A4 Kullanıcı + Hediye (uid ile bul; coin / Pro / sınırsız oyun).
