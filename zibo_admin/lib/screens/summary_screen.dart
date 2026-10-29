@@ -127,6 +127,10 @@ class _SummaryScreenState extends State<SummaryScreen> {
           const SizedBox(height: 20),
           _adsAndRevenue(heavy.first, today),
         ],
+        if (heavy.isNotEmpty && heavy.first['subscribers'] is List) ...[
+          const SizedBox(height: 20),
+          _subscribers(heavy.first['subscribers'] as List),
+        ],
         if (heavy.isNotEmpty && heavy.first['excluded'] is Map)
           Padding(
             padding: const EdgeInsets.only(top: 8),
@@ -255,6 +259,71 @@ class _SummaryScreenState extends State<SummaryScreen> {
           'fiyatla (yıllık planlar ayrılamıyor) — üst sınır tahmini.',
           style: TextStyle(color: kInkSoft, fontSize: 12),
         ),
+      ],
+    );
+  }
+
+  /// Etkin aboneler (sahip hesapları hariç). Satın alma tarihi kayıtlı değil — "son doğrulama" = bitiş − 35 gün
+  /// (Zibo her Play onayında bitişi 35 gün ileri atar): ilk alım ya da aboneliğin son doğrulandığı açılış.
+  Widget _subscribers(List raw) {
+    final items = raw.whereType<Map>().toList();
+    String date(Object? iso) {
+      final t = DateTime.tryParse('${iso ?? ''}')?.toLocal();
+      return t == null ? '—' : _fmtTime(t);
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('⭐ Aboneler (${items.length})', style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800)),
+        const Text(
+          'En son doğrulanan en üstte · satın alma tarihi kayıtlı değil (Play Console > Siparişler)',
+          style: TextStyle(color: kInkSoft, fontSize: 12),
+        ),
+        const SizedBox(height: 8),
+        if (items.isEmpty) const Text('Etkin abone yok.', style: TextStyle(color: kInkSoft)),
+        for (final m in items)
+          GestureDetector(
+            onTap: () {
+              Clipboard.setData(ClipboardData(text: '${m['uid']}'));
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('uid kopyalandı: ${m['uid']}')));
+            },
+            child: Container(
+              margin: const EdgeInsets.only(bottom: 10),
+              padding: const EdgeInsets.all(12),
+              decoration: stickerDecoration(borderWidth: 2, shadowOffset: const Offset(2, 2)),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          [m['name'], m['email']].whereType<String>().where((x) => x.isNotEmpty).join(' · ').isEmpty
+                              ? '(adsız)'
+                              : [m['name'], m['email']].whereType<String>().where((x) => x.isNotEmpty).join(' · '),
+                          style: const TextStyle(fontWeight: FontWeight.w800),
+                        ),
+                      ),
+                      Text(
+                        '${m['tier'] == 'proplus' ? 'Pro+' : 'Pro'}${m['gift'] == true ? ' 🎁' : ''}',
+                        style: const TextStyle(fontWeight: FontWeight.w900),
+                      ),
+                    ],
+                  ),
+                  Text(
+                    m['gift'] == true ? 'süresiz hediye' : 'son doğrulama ${date(m['lastConfirmed'])} · bitiş ${date(m['expiry'])}',
+                    style: const TextStyle(fontSize: 12),
+                  ),
+                  Text(
+                    'hesap açılışı ${date(m['createdAt'])} · son aktif ${date(m['lastActive'])}',
+                    style: const TextStyle(color: kInkSoft, fontSize: 12),
+                  ),
+                  Text('${m['uid']}', style: const TextStyle(color: kInkSoft, fontSize: 10)),
+                ],
+              ),
+            ),
+          ),
       ],
     );
   }

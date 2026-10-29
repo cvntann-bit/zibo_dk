@@ -20,7 +20,7 @@ const { db, auth, userDateKey } = require('./common');
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const CHUNK = 300;
-const HEAVY_VERSION = 4;
+const HEAVY_VERSION = 5;
 
 // Sahibin kendi (test/hediye) hesapları — yüksek bakiyeleri "dolaşımdaki ZC"yi şişirmesin (kullanıcı, 2026-10-29).
 const EXCLUDED_EMAILS = ['cvntann@gmail.com', 'zuleturquia@gmail.com'];
@@ -147,6 +147,7 @@ async function heavyCounts(now) {
     activity[key] = emptyDay();
   }
   let giftedForever = 0;
+  const subscribers = [];
   for (let i = 0; i < userRefs.length; i += CHUNK) {
     const chunk = userRefs.slice(i, i + CHUNK);
     const refs = chunk.flatMap((u) => [
@@ -183,13 +184,26 @@ async function heavyCounts(now) {
         const expiry = Date.parse(data.subscriptionExpiryDate || '');
         if (Number.isFinite(expiry) && expiry > now.getTime()) {
           // 2099 = süresiz hediye (panel/grantGift) — gelir tahmininden ayrı say.
-          if (new Date(expiry).getUTCFullYear() >= 2090) giftedForever += 1;
+          const forever = new Date(expiry).getUTCFullYear() >= 2090;
+          if (forever) giftedForever += 1;
           else subs[data.subscriptionTier] += 1;
+          // Satın alma tarihi KAYITLI DEĞİL: Zibo her Play onayında bitişi şimdi+35 gün yapar
+          // (SubscriptionProvider._rollingWindow) → bitiş−35 g = SON doğrulama (ilk alım ya da son açılış).
+          subscribers.push({
+            uid,
+            tier: data.subscriptionTier,
+            productId: data.subscriptionProductId || null,
+            expiry: new Date(expiry).toISOString(),
+            lastConfirmed: forever ? null : new Date(expiry - 35 * DAY_MS).toISOString(),
+            gift: forever,
+          });
         }
       }
     }
   }
   const suspects = await buildSuspects(signals, now);
+  await enrichUsers(subscribers);
+  subscribers.sort((a, b) => String(b.lastConfirmed || '').localeCompare(String(a.lastConfirmed || '')));
   const activityOut = {};
   for (const [day, b] of Object.entries(activity)) {
     activityOut[day] = {
@@ -218,8 +232,32 @@ async function heavyCounts(now) {
     scannedUsers: userRefs.length,
     excluded: excludedTotals,
     suspects,
+    subscribers,
     heavyVersion: HEAVY_VERSION,
   };
+}
+
+/** Auth e-posta/oluşturulma + profil adı + son aktif (abone listesi için). */
+async function enrichUsers(list) {
+  if (list.length === 0) return;
+  const result = await auth.getUsers(list.map((s) => ({ uid: s.uid })));
+  const users = new Map(result.users.map((u) => [u.uid, u]));
+  const refs = list.flatMap((s) => [
+    db.collection('users').doc(s.uid).collection('state').doc('profileState'),
+    db.collection('users').doc(s.uid),
+  ]);
+  const snaps = await db.getAll(...refs);
+  for (let i = 0; i < list.length; i++) {
+    const s = list[i];
+    const profile = snaps[i * 2];
+    const root = snaps[i * 2 + 1];
+    const user = users.get(s.uid);
+    s.name = (profile.exists && profile.data().name) || null;
+    s.email = (user && user.email) || null;
+    s.createdAt = user ? new Date(user.metadata.creationTime).toISOString() : null;
+    const last = root.exists && root.data().lastActiveAt;
+    s.lastActive = last && last.toDate ? last.toDate().toISOString() : null;
+  }
 }
 
 /** En yüksek bakiyeler + işaretli hesaplar; Auth (e-posta, oluşturulma) ve profil adıyla zenginleştirilir. */
