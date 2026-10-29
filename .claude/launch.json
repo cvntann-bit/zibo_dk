@@ -51,6 +51,18 @@
         "C:\\dev\\Zibo DK\\dijital_kanka\\build\\web"
       ],
       "port": 8790
+    },
+    {
+      "name": "zibo_web_base",
+      "runtimeExecutable": "python",
+      "runtimeArgs": [
+        "-m",
+        "http.server",
+        "8791",
+        "--directory",
+        "C:\\dev\\zibo_base\\dijital_kanka\\build\\web"
+      ],
+      "port": 8791
     }
   ]
 }

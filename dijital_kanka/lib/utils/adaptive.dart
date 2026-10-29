@@ -54,12 +54,22 @@ class AdaptiveCenter extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Align(
-      alignment: Alignment.topCenter,
-      child: ConstrainedBox(
-        constraints: BoxConstraints(maxWidth: maxWidth),
-        child: child,
-      ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // Dar ekranda (telefon) çocuğa HİÇ dokunma — kısıtlar aynen geçer,
+        // düzen eskisiyle birebir aynı kalır.
+        if (!constraints.hasBoundedWidth || constraints.maxWidth <= maxWidth) return child;
+        // Geniş ekranda yalnızca genişlik daralır; yükseklik kısıtı olduğu
+        // gibi (sıkıysa sıkı) kalır → Expanded/Positioned.fill düzenleri bozulmaz.
+        return Align(
+          alignment: Alignment.topCenter,
+          child: SizedBox(
+            width: maxWidth,
+            height: constraints.hasBoundedHeight ? constraints.maxHeight : null,
+            child: child,
+          ),
+        );
+      },
     );
   }
 }

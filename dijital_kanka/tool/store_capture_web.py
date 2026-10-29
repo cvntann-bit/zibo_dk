@@ -14,7 +14,7 @@ from pathlib import Path
 
 from playwright.sync_api import sync_playwright
 
-URL = "http://localhost:8790"
+URL = os.environ.get("URL", "http://localhost:8790")
 ALL = ["zibo_" + x for x in "hippi sporcu chef ogrenci asker hoca artist kovboy punk rapci gentleman samurai gladyator korsan cyborg astronot buyucu ninja king zombi firavun viking altin anime ejder_ruhu galaksi elmas".split()]
 
 

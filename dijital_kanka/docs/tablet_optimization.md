@@ -35,6 +35,14 @@ Tetikleyici: kullanıcı — Zibo tablette Yaşam Tarzı'nda ilk 11'de, çocukla
   tüm tuvale yayılır. 2048 tahta sınırı 440 → 760 px. Hafıza kart sütunu kartları en büyük gösterecek şekilde seçilir.
 - Testler 751/751 yeşil. Tablette yatay+dikey tüm sekmeler ve 7 oyun gözle doğrulandı (release APK).
 
+## Telefon etkilenmiyor — ölçüm (2026-10-29)
+- `AdaptiveCenter` dar ekranda çocuğa HİÇ dokunmaz (LayoutBuilder; genişlik ≤ maxWidth → aynen döner).
+- Root AppBar ➕/⚙️: `expandTapTarget: Adaptive.isWide(context)` — telefonda üst bar aralığı eskisi gibi.
+- Kanıt: tablet çalışmasından ÖNCEKİ commit (9399188, `git worktree` → `C:\dev\zibo_base`) ve SONRAKİ sürüm web'de
+  412×915 telefon görünümünde aynı 9 ekranda piksel karşılaştırması: Mağaza/Oyun Salonu/Profil/Rozetler %0,00;
+  yalnızca hareketli öğeler (rastgele söz, dönen çark, sallanan Z) farklı. Görsel:
+  `store_assets/phone_check/telefon_once_sonra_fark.png` (eski | yeni | fark).
+
 ## Kalanlar
 - [ ] Klavye/fare kontrol listesi (Tier 2): Tab sırası, Esc ile kapanma, hover — Flutter Material varsayılanları büyük
       ölçüde karşılıyor, tablette fiziksel klavyeyle doğrulanmalı.

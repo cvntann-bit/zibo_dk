@@ -670,6 +670,8 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
             size: 30,
             iconSize: 16,
             borderRadius: 9,
+            // Telefonda sıkışık üst bar görünümü korunur; tablette 48dp.
+            expandTapTarget: Adaptive.isWide(context),
             // Mağaza artık bir sekme; "+" bu sekmeye geçiş yapar.
             onPressed: () => _setSelectedIndex(_storeTabIndex),
           ),
@@ -682,6 +684,8 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
             size: 30,
             iconSize: 16,
             borderRadius: 9,
+            // Telefonda sıkışık üst bar görünümü korunur; tablette 48dp.
+            expandTapTarget: Adaptive.isWide(context),
             onPressed: () => Navigator.of(
               context,
             ).push(MaterialPageRoute(builder: (_) => const SettingsScreen())),

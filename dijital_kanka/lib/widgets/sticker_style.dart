@@ -91,6 +91,7 @@ class StickerIconButton extends StatelessWidget {
     this.iconSize = 18,
     this.borderWidth = 2.5,
     this.borderRadius = 10,
+    this.expandTapTarget = true,
   }) : assert(
          (icon == null) != (emoji == null),
          'icon veya emoji tam olarak birinden biri sağlanmalı',
@@ -112,6 +113,10 @@ class StickerIconButton extends StatelessWidget {
   /// `null` verilirse tam daire (`CircleBorder`), aksi halde bu değerde
   /// yuvarlatılmış köşeli bir kare (`RoundedRectangleBorder`).
   final double? borderRadius;
+
+  /// `false` → dokunma alanı görsel boyutunda kalır (ör. telefonda sıkışık
+  /// AppBar eylemleri — bkz. RootScreen). Varsayılan `true`: ≥ 48dp.
+  final bool expandTapTarget;
 
   @override
   Widget build(BuildContext context) {
@@ -160,7 +165,7 @@ class StickerIconButton extends StatelessWidget {
     // dolguya dokunmak da [onPressed]'i çağırır. Köşeye `Positioned` ile
     // yerleştirilen düğmeler bu yüzden ofsetlerinden [stickerTapPadding] düşer.
     final target = size < kStickerMinTapTarget ? kStickerMinTapTarget : size;
-    if (target == size) return visual;
+    if (!expandTapTarget || target == size) return visual;
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: onPressed,
