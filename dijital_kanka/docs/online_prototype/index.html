@@ -1,0 +1,494 @@
+<title>Zibo Online</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* Layout: phone-sized interactive app on the left, reading notes on the right (stacks on phones).
+   Same comic-sticker world as the home prototype: cream ground, honey accent, thick ink outlines, flat shadows. */
+:root{
+  --outline:#14110C; --ink:#14110C; --ink-soft:#5B4E3A;
+  --gold:#F3B23C; --gold-soft:#F6D488; --gold-muted:#C9A46B; --gold-pale:#F3E4C0;
+  --cream:#FFF4DE; --paper:#FFFDF7; --wood:#C98D55; --wood-dark:#9C6537; --salon:#F7E4C6; --rug:#E9A86B;
+  --star:#8FD3FF; --star-ink:#0E3A5C;
+  --display:"Baloo 2",ui-rounded,"Arial Rounded MT Bold",system-ui,sans-serif;
+  --body:"Nunito",ui-rounded,system-ui,sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{background:var(--cream);color:var(--ink)}
+body{font-family:var(--body);font-size:15px;line-height:1.45;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 48px}
+.wrap{max-width:1000px;margin:0 auto;display:grid;grid-template-columns:minmax(0,420px) minmax(0,1fr);gap:32px;align-items:start}
+@media (max-width:860px){.wrap{grid-template-columns:minmax(0,1fr)}.phone{margin-inline:auto}}
+button{font:inherit;color:inherit}
+button:focus-visible,input:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+
+.phone{width:100%;max-width:420px;height:min(860px,calc(100vh - 40px));min-height:640px;display:flex;flex-direction:column;background:var(--paper);
+  border:3px solid var(--outline);border-radius:30px;box-shadow:6px 6px 0 var(--outline);overflow:hidden;position:relative}
+.top{display:flex;align-items:center;gap:10px;padding:12px 14px 10px;border-bottom:3px solid var(--outline);background:var(--gold-soft)}
+.top h1{font-family:var(--display);font-weight:800;font-size:23px;line-height:1;margin:0;flex:1}
+.top h1 small{display:block;font-family:var(--body);font-size:11px;font-weight:800;color:var(--ink-soft);letter-spacing:.04em}
+.coin{display:flex;align-items:center;gap:6px;font-weight:800;border:2.5px solid var(--outline);border-radius:999px;padding:3px 10px 3px 4px;background:#fff;
+  box-shadow:2px 2px 0 var(--outline);font-variant-numeric:tabular-nums}
+.coin b{display:grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--gold);border:2px solid var(--outline);font-family:var(--display);font-size:10px}
+.coin.bump{animation:bump .4s}
+@keyframes bump{40%{transform:scale(1.15)}}
+.me{width:38px;height:38px;border-radius:50%;border:2.5px solid var(--outline);background:#fff;overflow:hidden;flex:none}
+.me img,.av img{width:100%;height:150%;object-fit:cover;object-position:50% 8%}
+
+.screen{flex:1;overflow-y:auto;padding:14px;display:none;flex-direction:column;gap:12px}
+.screen.on{display:flex}
+.card{border:2.5px solid var(--outline);border-radius:18px;background:#fff;padding:12px;box-shadow:3px 3px 0 var(--outline)}
+.card h3{font-family:var(--display);font-weight:800;font-size:17px;margin:0 0 6px;line-height:1.15}
+.muted{color:var(--ink-soft);font-size:12.5px;font-weight:700}
+.btn{border:2.5px solid var(--outline);border-radius:12px;background:var(--gold);font-weight:800;padding:6px 12px;box-shadow:2px 2px 0 var(--outline);cursor:pointer}
+.btn:active{transform:translate(2px,2px);box-shadow:0 0 0 var(--outline)}
+.btn.ghosty{background:#fff}
+.btn:disabled{background:var(--gold-pale);color:var(--ink-soft);cursor:default;box-shadow:none}
+
+/* friends */
+.code{display:flex;align-items:center;gap:10px}
+.code strong{font-family:var(--display);font-size:26px;letter-spacing:.08em;flex:1}
+.add{display:flex;gap:8px;margin-top:8px}
+.add input{flex:1;min-width:0;border:2.5px solid var(--outline);border-radius:12px;padding:6px 10px;font:inherit;font-weight:800;text-transform:uppercase;background:var(--paper)}
+.friend{display:flex;align-items:center;gap:10px;padding:8px 0;border-top:2px dashed var(--gold-muted)}
+.friend:first-of-type{border-top:none}
+.av{width:48px;height:48px;border-radius:50%;border:2.5px solid var(--outline);overflow:hidden;background:var(--gold-pale);flex:none}
+.friend .who{flex:1;min-width:0}
+.friend .who b{display:block;font-size:14.5px}
+.friend .who b i{font-style:normal;color:var(--ink-soft);font-weight:700}
+.status{font-size:12px;font-weight:800;color:var(--ink-soft)}
+.status.need{color:var(--ink);background:var(--gold-soft);border-radius:6px;padding:0 5px}
+.friend.new{animation:pop .5s}
+@keyframes pop{0%{transform:scale(.7);opacity:0}60%{transform:scale(1.04)}}
+
+/* visit */
+.visit{flex:1;display:none;flex-direction:column;min-height:0}
+.visit.on{display:flex}
+.vhead{display:flex;align-items:center;gap:8px;padding:10px 14px}
+.vhead h2{font-family:var(--display);font-size:19px;margin:0;flex:1;line-height:1.1}
+.vhead h2 small{display:block;font-family:var(--body);font-size:12px;color:var(--ink-soft)}
+.room{position:relative;aspect-ratio:10/9;border-block:3px solid var(--outline);overflow:hidden;flex:none}
+.room .wall{position:absolute;inset:0 0 28% 0;background:radial-gradient(circle at 70% 20%,#FBEBD3,var(--salon))}
+.room .floor{position:absolute;inset:72% 0 0 0;background:repeating-linear-gradient(90deg,var(--wood) 0 54px,var(--wood-dark) 54px 57px);border-top:3px solid var(--outline)}
+.room .sofa{position:absolute;left:4%;bottom:12%;width:42%;height:24%;background:var(--rug);border:3px solid var(--outline);border-radius:20px 20px 10px 10px;box-shadow:inset 0 -14px 0 #D48F55}
+.room .item{position:absolute;font-size:42px;filter:drop-shadow(3px 3px 0 var(--outline))}
+.room .zib{position:absolute;left:31%;bottom:8%;width:40%;aspect-ratio:600/780}
+.room .zib img{width:100%;height:100%;object-fit:contain;object-position:bottom;transform-origin:50% 100%}
+.room .zib img.hop{animation:hop .7s}
+@keyframes hop{30%{transform:translateY(-7%) scale(.98,1.03)}60%{transform:scale(1.03,.97)}}
+.room .meter{position:absolute;right:10px;top:10px;background:#fff;border:2.5px solid var(--outline);border-radius:12px;padding:4px 8px;font-size:11px;font-weight:800;width:104px}
+.bar{height:9px;border:2px solid var(--outline);border-radius:99px;background:var(--gold-pale);overflow:hidden;margin-top:2px}
+.bar i{display:block;height:100%;background:var(--gold);transition:width .4s}
+.guest{position:absolute;left:8px;top:10px;display:flex;flex-direction:column;gap:5px;max-width:52%;z-index:2}
+.note{background:#fff;border:2.5px solid var(--outline);border-radius:12px 12px 12px 3px;padding:3px 8px;font-size:11.5px;font-weight:800;box-shadow:2px 2px 0 var(--outline);animation:pop .4s}
+.note i{font-style:normal;color:var(--ink-soft);display:block;font-size:10px}
+canvas.fx{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:3}
+.actions{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:12px 14px 6px}
+.act{border:2.5px solid var(--outline);border-radius:14px;background:#fff;box-shadow:2px 2px 0 var(--outline);padding:6px 4px;font-weight:800;font-size:12px;display:flex;flex-direction:column;align-items:center;cursor:pointer}
+.act .e{font-size:24px;line-height:1.15}
+.act small{font-size:10.5px;color:var(--ink-soft)}
+.act:disabled{opacity:.5;cursor:default}
+.phrases{display:flex;gap:6px;overflow-x:auto;padding:6px 14px 12px;scrollbar-width:none}
+.phrases::-webkit-scrollbar{display:none}
+.phr{flex:none;border:2px solid var(--outline);border-radius:999px;background:var(--gold-pale);padding:4px 10px;font-weight:800;font-size:12.5px;cursor:pointer}
+.report{margin:0 14px 12px;font-size:11.5px;font-weight:800;color:var(--ink-soft);background:none;border:none;text-decoration:underline;cursor:pointer;align-self:flex-start;padding:0}
+
+/* leaderboard */
+.seg{display:flex;border:2.5px solid var(--outline);border-radius:12px;overflow:hidden;background:#fff}
+.seg button{flex:1;border:none;background:none;padding:6px 4px;font-weight:800;font-size:12.5px;cursor:pointer}
+.seg button[aria-pressed=true]{background:var(--gold)}
+.seg button+button{border-left:2.5px solid var(--outline)}
+.podium{display:grid;grid-template-columns:repeat(3,1fr);align-items:end;gap:6px;margin-top:6px}
+.pod{display:flex;flex-direction:column;align-items:center;gap:2px;font-weight:800;font-size:12px;text-align:center;min-width:0}
+.pod .av{width:58px;height:58px}
+.pod .step{width:100%;border:2.5px solid var(--outline);border-radius:10px 10px 0 0;background:var(--gold-soft);display:grid;place-items:center;font-family:var(--display);font-size:22px}
+.pod:nth-child(1) .step{height:56px}.pod:nth-child(2) .step{height:80px;background:var(--gold)}.pod:nth-child(3) .step{height:42px;background:var(--gold-pale)}
+.pod b{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rows{display:flex;flex-direction:column}
+.row{display:flex;align-items:center;gap:10px;padding:6px 4px;border-top:2px dashed var(--gold-pale);font-weight:800;font-size:13.5px}
+.row .n{width:26px;text-align:right;font-variant-numeric:tabular-nums;color:var(--ink-soft)}
+.row .av{width:34px;height:34px}
+.row .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row .sc{font-variant-numeric:tabular-nums}
+.row.mine{background:var(--gold-soft);border:2.5px solid var(--outline);border-radius:12px;position:sticky;bottom:0}
+.pts{display:inline-flex;align-items:center;gap:3px}
+.pts::before{content:"★";display:grid;place-items:center;width:16px;height:16px;border-radius:50%;background:var(--star);color:var(--star-ink);font-size:10px;border:1.5px solid var(--star-ink)}
+.pts.fire::before{content:"🔥";background:none;border:none;font-size:13px}
+
+/* gifts */
+.inbox{display:flex;align-items:center;gap:10px}
+.inbox .big{font-size:34px;filter:drop-shadow(2px 2px 0 var(--outline))}
+.inbox .txt{flex:1;min-width:0;font-weight:700;font-size:13.5px}
+.picks{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}
+.pick{border:2.5px solid var(--outline);border-radius:12px;background:#fff;padding:4px 8px;font-weight:800;font-size:12.5px;cursor:pointer;display:flex;align-items:center;gap:6px}
+.pick .av{width:24px;height:24px;border-width:2px}
+.pick[aria-pressed=true]{background:var(--gold-soft);box-shadow:inset 0 0 0 2px var(--outline)}
+.pick .e{font-size:20px}
+
+/* challenge */
+.hero{background:linear-gradient(160deg,#D9F1FB,#fff 70%)}
+.hero .big{font-size:42px;float:right;line-height:1;filter:drop-shadow(2px 2px 0 var(--outline))}
+.prog{position:relative;height:22px;border:2.5px solid var(--outline);border-radius:99px;background:#fff;overflow:visible;margin:22px 0 8px}
+.prog i{display:block;height:100%;border-radius:99px;background:repeating-linear-gradient(45deg,var(--star) 0 10px,#B6E3FF 10px 20px);transition:width .5s}
+.tier{position:absolute;top:-21px;transform:translateX(-50%);font-size:15px;text-align:center}
+.tier::after{content:"";position:absolute;left:50%;top:19px;width:2.5px;height:22px;background:var(--outline);transform:translateX(-50%)}
+.tier.got{filter:none}.tier:not(.got){filter:grayscale(1);opacity:.6}
+.nums{display:flex;justify-content:space-between;font-weight:800;font-size:12.5px;font-variant-numeric:tabular-nums}
+.days{display:flex;gap:6px;margin:6px 0}
+.day{width:30px;height:30px;border-radius:50%;border:2.5px solid var(--outline);display:grid;place-items:center;font-size:11px;font-weight:800;background:#fff}
+.day.y{background:var(--gold)}.day.f{background:var(--gold-soft)}
+
+.nav{display:grid;grid-template-columns:repeat(4,1fr);border-top:3px solid var(--outline);background:#fff;flex:none}
+.tab{background:none;border:none;padding:8px 2px 10px;display:flex;flex-direction:column;align-items:center;gap:1px;font-weight:800;font-size:12px;color:var(--ink-soft);cursor:pointer;position:relative}
+.tab .e{font-size:22px;filter:grayscale(.6);opacity:.75}
+.tab[aria-selected=true]{color:var(--ink);background:var(--gold-soft)}
+.tab[aria-selected=true] .e{filter:none;opacity:1}
+.tab .dot{position:absolute;top:6px;right:calc(50% - 22px);min-width:18px;height:18px;border-radius:9px;background:var(--gold);border:2px solid var(--outline);font-size:10px;display:grid;place-items:center}
+
+.toast{position:absolute;left:50%;bottom:74px;transform:translate(-50%,20px);opacity:0;z-index:20;background:var(--ink);color:#fff;font-weight:800;font-size:13px;
+  padding:8px 14px;border-radius:999px;white-space:nowrap;transition:.3s;pointer-events:none;max-width:92%;overflow:hidden;text-overflow:ellipsis}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+.sheet{position:absolute;inset:0;z-index:25;background:rgba(20,17,12,.55);display:none;align-items:flex-end}
+.sheet.on{display:flex}
+.sheet .panel{width:100%;background:var(--paper);border-top:3px solid var(--outline);border-radius:22px 22px 0 0;padding:14px;display:flex;flex-direction:column;gap:10px}
+
+/* notes */
+.notes{min-width:0;max-width:62ch}
+.notes .eyebrow{font-weight:800;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);margin:6px 0 4px}
+.notes h2{font-family:var(--display);font-weight:800;font-size:34px;line-height:1.05;margin:0 0 10px;text-wrap:balance}
+.notes p{margin:0 0 12px}
+.notes h4{font-family:var(--display);font-size:18px;margin:18px 0 4px}
+.notes ul{margin:0;padding-left:18px;display:grid;gap:4px}
+.callout{margin-top:18px;border:2.5px solid var(--outline);border-radius:16px;padding:12px 14px;background:var(--paper);box-shadow:4px 4px 0 var(--outline)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<div class="wrap">
+  <div class="phone" id="phone">
+    <div class="top">
+      <div class="me"><img src="img/me.webp" alt="Senin Zibo'n"></div>
+      <h1>Zibo Online<small>PAMUK#2048 · SEVİYE 12</small></h1>
+      <div class="coin" id="coin"><b>ZC</b><span id="coinVal">1.250</span></div>
+    </div>
+
+    <!-- FRIENDS -->
+    <section class="screen on" id="s-friends">
+      <div class="card">
+        <h3>Arkadaş kodun</h3>
+        <div class="code"><strong id="myCode">ZB-7K4Q</strong><button class="btn ghosty" id="copyBtn" type="button">Kopyala</button></div>
+        <div class="add">
+          <input id="codeIn" placeholder="Arkadaşının kodu (örn. ZB-2X9M)" maxlength="7" autocomplete="off">
+          <button class="btn" id="addBtn" type="button">Ekle</button>
+        </div>
+        <p class="muted" style="margin:6px 0 0">Gerçek isim ve fotoğraf yok: herkes Zibo adıyla görünür.</p>
+      </div>
+      <div class="card">
+        <h3>Arkadaşların <span class="muted" id="fCount"></span></h3>
+        <div id="friendList"></div>
+      </div>
+    </section>
+
+    <!-- VISIT -->
+    <section class="visit" id="s-visit">
+      <div class="vhead">
+        <button class="btn ghosty" id="backBtn" type="button" aria-label="Geri">←</button>
+        <h2 id="vName">Yıldız#1207'nin evi<small>Seviye 18 · 🔥 34 gün seri</small></h2>
+      </div>
+      <div class="room" id="vRoom">
+        <div class="wall"></div><div class="floor"></div><div class="sofa"></div>
+        <div id="vItems"></div>
+        <div class="zib"><img id="vImg" src="img/astro.webp" alt="Arkadaşının Zibo'su"></div>
+        <div class="guest" id="guest"></div>
+        <div class="meter">Tokluk<div class="bar"><i id="vFood" style="width:30%"></i></div>Kalp ❤️ <span id="vHearts">12</span></div>
+        <canvas class="fx" id="fx"></canvas>
+      </div>
+      <div class="actions">
+        <button class="act" id="aHeart" type="button"><span class="e">❤️</span>Kalp bırak<small>günde 1</small></button>
+        <button class="act" id="aFeed" type="button"><span class="e">🍎</span>Yemek ver<small>5 ZC</small></button>
+        <button class="act" id="aGift" type="button"><span class="e">🎁</span>Hediye<small>gönder</small></button>
+      </div>
+      <div class="muted" style="padding:0 14px">Ziyaretçi defterine yaz:</div>
+      <div class="phrases" id="phrases"></div>
+      <button class="report" id="reportBtn" type="button">⚑ Şikâyet et / engelle</button>
+    </section>
+
+    <!-- LEADERBOARD -->
+    <section class="screen" id="s-board">
+      <div class="seg" id="boardSeg">
+        <button type="button" aria-pressed="true" data-b="games">Oyun ★</button>
+        <button type="button" aria-pressed="false" data-b="streak">Seri 🔥</button>
+      </div>
+      <div class="seg" id="scopeSeg">
+        <button type="button" aria-pressed="true" data-s="friends">Arkadaşlar</button>
+        <button type="button" aria-pressed="false" data-s="tr">Türkiye</button>
+        <button type="button" aria-pressed="false" data-s="world">Dünya</button>
+      </div>
+      <div class="card">
+        <h3 style="display:flex;justify-content:space-between">Bu hafta <span class="muted">bitimine 3g 14s</span></h3>
+        <div class="podium" id="podium"></div>
+      </div>
+      <div class="card"><div class="rows" id="rows"></div></div>
+      <p class="muted" style="margin:0">İlk 3'e rozet, ilk 10'a özel profil çerçevesi. Puanlar sunucuda doğrulanır.</p>
+    </section>
+
+    <!-- GIFTS -->
+    <section class="screen" id="s-gifts">
+      <div class="card">
+        <h3>Gelen hediyeler</h3>
+        <div id="inbox"></div>
+      </div>
+      <div class="card">
+        <h3>Hediye gönder</h3>
+        <div class="muted">Kime?</div>
+        <div class="picks" id="toPicks"></div>
+        <div class="muted">Ne?</div>
+        <div class="picks" id="itemPicks"></div>
+        <div style="display:flex;align-items:center;gap:10px;margin-top:4px">
+          <button class="btn" id="sendBtn" type="button" disabled>Gönder</button>
+          <span class="muted" id="sendInfo">Bugün 3 hediye hakkın var</span>
+        </div>
+      </div>
+      <p class="muted" style="margin:0">Hediyenin bedeli senin Zibo Coin'inden düşer; arkadaşına eşya gider, coin gitmez.</p>
+    </section>
+
+    <!-- CHALLENGE -->
+    <section class="screen" id="s-chal">
+      <div class="card hero">
+        <span class="big">🌊</span>
+        <h3>Su Dalgası</h3>
+        <div class="muted">Bu hafta tüm Zibo'cular birlikte <b>50.000 bardak</b> su içiyor.</div>
+        <div class="prog"><i id="cProg"></i><span id="tiers"></span></div>
+        <div class="nums"><span id="cNum">34.120 / 50.000</span><span>4 gün kaldı</span></div>
+        <div style="display:flex;align-items:center;gap:10px;margin-top:10px">
+          <button class="btn" id="drinkBtn" type="button">💧 Bir bardak içtim</button>
+          <span class="muted">Senin katkın: <b id="myCups">21</b> bardak</span>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Arkadaşınla birlikte</h3>
+        <div class="muted">Sen + Yıldız#1207 · 7 gün her gün Zibo'nu yıka</div>
+        <div class="days" id="days"></div>
+        <div class="muted">İkiniz de bitirirseniz: 🧽 Deniz yıldızı sünger</div>
+      </div>
+      <div class="card" style="background:var(--gold-pale)">
+        <h3>Yakında 🏆</h3>
+        <div class="muted">Hafta sonu Kule turnuvası · cumartesi 10:00'da açılır</div>
+      </div>
+    </section>
+
+    <nav class="nav" role="tablist">
+      <button class="tab" role="tab" aria-selected="true" data-s="s-friends" id="tab-friends"><span class="e">👫</span>Arkadaşlar</button>
+      <button class="tab" role="tab" aria-selected="false" data-s="s-board" id="tab-board"><span class="e">🏆</span>Sıralama</button>
+      <button class="tab" role="tab" aria-selected="false" data-s="s-gifts" id="tab-gifts"><span class="e">🎁</span>Hediyeler<span class="dot" id="giftDot">2</span></button>
+      <button class="tab" role="tab" aria-selected="false" data-s="s-chal" id="tab-chal"><span class="e">🌊</span>Challenge</button>
+    </nav>
+
+    <div class="sheet" id="sheet"><div class="panel" id="sheetPanel"></div></div>
+    <div class="toast" id="toast"></div>
+  </div>
+
+  <aside class="notes">
+    <div class="eyebrow">Taslak · Zibo Online · 2026-10-29</div>
+    <h2>Arkadaşının evine uğra</h2>
+    <p>Seçtiğin dört özellik: arkadaş evi ziyareti, sıralama, hediyeleşme ve ortak challenge. Sohbet ve canlı düello yok. Kişiler, puanlar ve sayılar örnek.</p>
+    <h4>Arkadaşlar</h4>
+    <ul>
+      <li>Arkadaş kodunu paylaş ya da arkadaşının kodunu yaz. Örnek: <code>ZB-2X9M</code>.</li>
+      <li>"Ziyaret et" ile evine gir: kalp bırak, aç olan Zibo'yu besle, hazır cümleyle ziyaretçi defterine yaz.</li>
+    </ul>
+    <h4>Sıralama</h4>
+    <ul><li>Haftalık oyun puanı ya da seri; arkadaşlar, Türkiye veya dünya. Senin satırın hep altta görünür.</li></ul>
+    <h4>Hediyeler</h4>
+    <ul><li>Gelen hediyeyi "Al" ile buzdolabına ya da odana koy. Göndermek için kişi ve eşya seç; günde 3 hak.</li></ul>
+    <h4>Challenge</h4>
+    <ul><li>Herkesin birlikte doldurduğu haftalık hedef ve basamak ödülleri; bir de arkadaşınla ortak 7 günlük görev.</li></ul>
+    <div class="callout">
+      <strong>Güvenlik ve gider:</strong> serbest yazı yok, yalnızca hazır cümleler; gerçek isim ve fotoğraf yok; şikâyet/engelle düğmesi her evde. Ayrı sunucu gerekmiyor; hediye ve sıralama puanları arka planda doğrulanır. Ayrıntılar: <code>docs/zibo_online.md</code>.
+    </div>
+  </aside>
+</div>
+
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const fmt = n => n.toLocaleString('tr-TR');
+  const S = { coins: 1250, giftsLeft: 3, to: null, item: null, cups: 21, total: 34120, board: 'games', scope: 'friends', visit: null };
+
+  const FRIENDS = [
+    { id: 'yildiz', name: 'Yıldız', tag: '1207', img: 'astro', lvl: 18, streak: 34, status: 'Evine 🪴 saksı koydu', food: 30, hearts: 12, items: [['🪴', 'right:6%;bottom:22%'], ['🐠', 'right:8%;top:22%;font-size:48px'], ['🧸', 'left:12%;bottom:28%;font-size:34px']], pts: 1840 },
+    { id: 'tornado', name: 'Tornado', tag: '3390', img: 'rap', lvl: 9, streak: 6, status: 'Zibo\'su aç 🍎', need: true, food: 12, hearts: 4, items: [['📺', 'right:5%;bottom:40%;font-size:38px']], pts: 960 },
+    { id: 'churro', name: 'Churro', tag: '5512', img: 'ninja', lvl: 22, streak: 51, status: 'Kule rekoru kırdı 🏆', food: 80, hearts: 31, items: [['🎄', 'right:14%;bottom:18%;font-size:58px'], ['🪔', 'left:42%;top:6%;font-size:32px']], pts: 2410 },
+    { id: 'kaptan', name: 'Kaptan', tag: '0921', img: 'pirate', lvl: 14, streak: 12, status: '2 gündür uğramadı', food: 45, hearts: 9, items: [['🪴', 'right:6%;bottom:22%']], pts: 1320 },
+  ];
+  const ADDABLE = { name: 'Barış', tag: '7743', img: 'hippi', lvl: 7, streak: 3, status: 'Yeni katıldı 👋', food: 60, hearts: 1, items: [], pts: 410 };
+  const ME = { name: 'Pamuk', tag: '2048', img: 'me', pts: 1560, streak: 19 };
+  const avatar = (img) => `<span class="av"><img src="img/${img}.webp" alt=""></span>`;
+
+  let toastT;
+  function toast(m) { const t = $('toast'); t.textContent = m; t.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('on'), 2200); }
+  function setCoins(d) { S.coins += d; $('coinVal').textContent = fmt(S.coins); const c = $('coin'); c.classList.remove('bump'); void c.offsetWidth; c.classList.add('bump'); }
+
+  // ---------- tabs ----------
+  function show(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.toggle('on', s.id === id));
+    $('s-visit').classList.remove('on');
+    document.querySelectorAll('.tab').forEach(t => t.setAttribute('aria-selected', t.dataset.s === id));
+  }
+  document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => show(t.dataset.s)));
+
+  // ---------- friends ----------
+  function renderFriends(newId) {
+    $('fCount').textContent = '· ' + FRIENDS.length;
+    $('friendList').innerHTML = FRIENDS.map(f => `
+      <div class="friend ${f.id === newId ? 'new' : ''}">
+        ${avatar(f.img)}
+        <div class="who"><b>${f.name}<i>#${f.tag}</i></b><span class="status ${f.need ? 'need' : ''}">${f.status}</span></div>
+        <button class="btn ${f.need ? '' : 'ghosty'}" type="button" data-visit="${f.id}" id="visit-${f.id}">Ziyaret et</button>
+      </div>`).join('');
+  }
+  $('friendList').addEventListener('click', e => { const b = e.target.closest('[data-visit]'); if (b) openVisit(b.dataset.visit); });
+  $('copyBtn').addEventListener('click', () => {
+    const done = () => toast('Kod kopyalandı: ZB-7K4Q');
+    try { navigator.clipboard.writeText('ZB-7K4Q').then(done, done); } catch (_) { done(); }
+  });
+  $('codeIn').addEventListener('input', e => { let v = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''); if (v.length > 2) v = v.slice(0, 2) + '-' + v.slice(2, 6); e.target.value = v; });
+  $('addBtn').addEventListener('click', () => {
+    const v = $('codeIn').value;
+    if (!/^ZB-[A-Z0-9]{4}$/.test(v)) { toast('Kod ZB- ile başlar, 4 harf/rakam (örn. ZB-2X9M)'); return; }
+    if (FRIENDS.some(f => f.id === 'baris')) { toast('Bu Zibo zaten arkadaşın'); return; }
+    FRIENDS.unshift({ id: 'baris', ...ADDABLE }); $('codeIn').value = ''; renderFriends('baris'); renderPicks(); toast('Barış#7743 arkadaşın oldu 🎉');
+  });
+
+  // ---------- visit ----------
+  const PHRASES = ['Evin çok güzel! 🏡', 'Zibo\'n harika! ✨', 'Kostümün süper! 👑', 'Rekorun efsane! 🏆', 'Yine gelirim! 👋'];
+  $('phrases').innerHTML = PHRASES.map((p, i) => `<button class="phr" type="button" data-p="${i}" id="phr-${i}">${p}</button>`).join('');
+  let hearted = new Set(), fed = new Set();
+  function openVisit(id) {
+    const f = FRIENDS.find(x => x.id === id); S.visit = f;
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('on'));
+    $('s-visit').classList.add('on');
+    $('vName').innerHTML = `${f.name}#${f.tag}'in evi<small>Seviye ${f.lvl} · 🔥 ${f.streak} gün seri</small>`;
+    $('vImg').src = `img/${f.img}.webp`;
+    $('vItems').innerHTML = f.items.map(([e, css]) => `<div class="item" style="${css}">${e}</div>`).join('');
+    $('vFood').style.width = f.food + '%'; $('vHearts').textContent = f.hearts;
+    $('guest').innerHTML = '<div class="note"><i>Churro#5512</i>¡Qué casa tan bonita! 🏡</div>';
+    $('aHeart').disabled = hearted.has(id);
+    $('aFeed').disabled = fed.has(id) || f.food >= 90;
+    $('aFeed').querySelector('small').textContent = f.food >= 90 ? 'tok' : fed.has(id) ? 'verildi' : '5 ZC';
+    resizeFx();
+  }
+  $('backBtn').addEventListener('click', () => show('s-friends'));
+  function hop() { const i = $('vImg'); i.classList.remove('hop'); void i.offsetWidth; i.classList.add('hop'); }
+  $('aHeart').addEventListener('click', () => {
+    const f = S.visit; hearted.add(f.id); f.hearts++; $('vHearts').textContent = f.hearts; $('aHeart').disabled = true;
+    burst('❤️', 10); hop(); toast(`${f.name}'e kalp bıraktın`);
+  });
+  $('aFeed').addEventListener('click', () => {
+    const f = S.visit; if (S.coins < 5) return toast('Yeterli Zibo Coin yok');
+    setCoins(-5); fed.add(f.id); f.food = Math.min(100, f.food + 30); f.need = false; f.status = 'Sen besledin 🍎';
+    $('vFood').style.width = f.food + '%'; $('aFeed').disabled = true; $('aFeed').querySelector('small').textContent = 'verildi';
+    burst('🍎', 6); hop(); toast(`${f.name}'in Zibo'su doydu, sana teşekkür edecek`); renderFriends();
+  });
+  $('aGift').addEventListener('click', () => { S.to = S.visit.id; renderPicks(); show('s-gifts'); toast(`${S.visit.name} seçildi, bir hediye seç`); });
+  $('phrases').addEventListener('click', e => {
+    const b = e.target.closest('.phr'); if (!b) return;
+    const g = $('guest'); const n = document.createElement('div'); n.className = 'note';
+    n.innerHTML = `<i>Sen (Pamuk#2048)</i>${PHRASES[b.dataset.p]}`; g.appendChild(n);
+    while (g.children.length > 3) g.firstElementChild.remove();
+    burst('✨', 5);
+  });
+  $('reportBtn').addEventListener('click', () => openSheet(`
+      <h3 style="font-family:var(--display);margin:0">Ne yapmak istersin?</h3>
+      <button class="btn ghosty" type="button" data-close>⚑ Uygunsuz içerik bildir</button>
+      <button class="btn ghosty" type="button" data-close>🚫 Bu Zibo'yu engelle</button>
+      <button class="btn" type="button" data-close>Vazgeç</button>
+      <p class="muted" style="margin:0">Bildirimler incelenir. Engellediğin kişi evini ziyaret edemez, sana hediye gönderemez.</p>`));
+
+  // tiny particle layer for the visit room
+  const fx = $('fx'), ctx = fx.getContext('2d'); let parts = [], FW = 0, FH = 0;
+  function resizeFx() { const d = Math.min(2, devicePixelRatio || 1); FW = fx.clientWidth; FH = fx.clientHeight; fx.width = FW * d; fx.height = FH * d; ctx.setTransform(d, 0, 0, d, 0, 0); }
+  new ResizeObserver(resizeFx).observe($('vRoom'));
+  function burst(e, n) { for (let i = 0; i < n; i++) parts.push({ e, x: FW * (.35 + Math.random() * .3), y: FH * (.45 + Math.random() * .2), vx: (Math.random() - .5) * 1.6, vy: -1.2 - Math.random() * 1.2, t: 0, life: 55 + Math.random() * 25, s: 18 + Math.random() * 10 }); }
+  (function loop() {
+    ctx.clearRect(0, 0, FW, FH);
+    for (let i = parts.length - 1; i >= 0; i--) { const p = parts[i]; p.t++; p.x += p.vx; p.y += p.vy; ctx.globalAlpha = Math.max(0, 1 - p.t / p.life); ctx.font = p.s + 'px system-ui'; ctx.textAlign = 'center'; ctx.fillText(p.e, p.x, p.y); if (p.t > p.life) parts.splice(i, 1); }
+    ctx.globalAlpha = 1; requestAnimationFrame(loop);
+  })();
+
+  // ---------- sheet ----------
+  function openSheet(html) { $('sheetPanel').innerHTML = html; $('sheet').classList.add('on'); }
+  $('sheet').addEventListener('click', e => { if (e.target.id === 'sheet' || e.target.closest('[data-close]')) { $('sheet').classList.remove('on'); if (e.target.closest('[data-close]') && !/Vazgeç/.test(e.target.textContent)) toast('Kaydedildi (taslak)'); } });
+
+  // ---------- leaderboard ----------
+  const POOLS = {
+    tr: [['Kartal', '4410', 'chef', 3920, 88], ['Minnoş', '1188', 'hippi', 3610, 71], ['Boncuk', '6021', 'rap', 3305, 64], ['Fıstık', '2299', 'astro', 2990, 59], ['Zeytin', '8812', 'pirate', 2720, 40], ['Pırtık', '3031', 'ninja', 2510, 38], ['Lokum', '5005', 'chef', 2380, 33]],
+    world: [['Luna', '9001', 'ninja', 5210, 140], ['Kai', '3141', 'astro', 4980, 122], ['Churro', '5512', 'ninja', 4720, 101], ['Mía', '2718', 'hippi', 4410, 97], ['Tango', '6060', 'rap', 4100, 90], ['Pepa', '1234', 'pirate', 3900, 77], ['Nube', '8080', 'chef', 3720, 70]],
+  };
+  function boardData() {
+    const key = S.board === 'games' ? 3 : 4;
+    let list = S.scope === 'friends'
+      ? FRIENDS.map(f => [f.name, f.tag, f.img, f.pts, f.streak]).concat([[ME.name, ME.tag, ME.img, ME.pts, ME.streak]])
+      : POOLS[S.scope].slice();
+    list.sort((a, b) => b[key] - a[key]);
+    const mineIdx = list.findIndex(r => r[1] === ME.tag);
+    const myRank = mineIdx >= 0 ? mineIdx + 1 : (S.scope === 'tr' ? 214 : 3870);
+    return { list, key, myRank };
+  }
+  function scoreHtml(v) { return S.board === 'games' ? `<span class="pts">${fmt(v)}</span>` : `<span class="pts fire">${v} gün</span>`; }
+  function renderBoard() {
+    const { list, key, myRank } = boardData();
+    const top = list.slice(0, 3); const order = [top[1], top[0], top[2]];
+    $('podium').innerHTML = order.map((r, i) => r ? `<div class="pod">${avatar(r[2])}<b>${r[0]}</b>${scoreHtml(r[key])}<div class="step">${[2, 1, 3][i]}</div></div>` : '<div></div>').join('');
+    const rest = list.slice(3).filter(r => r[1] !== ME.tag);
+    const mine = [ME.name, ME.tag, ME.img, ME.pts, ME.streak];
+    $('rows').innerHTML = rest.map((r, i) => `<div class="row"><span class="n">${i + 4}</span>${avatar(r[2])}<span class="nm">${r[0]}#${r[1]}</span><span class="sc">${scoreHtml(r[key])}</span></div>`).join('') +
+      `<div class="row mine"><span class="n">${myRank}</span>${avatar(mine[2])}<span class="nm">Sen · ${mine[0]}#${mine[1]}</span><span class="sc">${scoreHtml(mine[key])}</span></div>`;
+  }
+  function segWire(id, attr, keyName) {
+    $(id).addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; S[keyName] = b.dataset[attr];
+      $(id).querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x === b)); renderBoard(); });
+  }
+  segWire('boardSeg', 'b', 'board'); segWire('scopeSeg', 's', 'scope');
+
+  // ---------- gifts ----------
+  let inbox = [
+    { from: 'Yıldız#1207', e: '🍰', what: 'Kek', where: 'buzdolabına' },
+    { from: 'Churro#5512', e: '🧽', what: 'Deniz yıldızı sünger', where: 'banyona' },
+  ];
+  function renderInbox() {
+    $('inbox').innerHTML = inbox.length ? inbox.map((g, i) => `<div class="inbox"><span class="big">${g.e}</span><span class="txt"><b>${g.from}</b> sana ${g.what} gönderdi</span><button class="btn" type="button" data-claim="${i}" id="claim-${i}">Al</button></div>`).join('<hr style="border:none;border-top:2px dashed var(--gold-pale);margin:6px 0">')
+      : '<p class="muted" style="margin:0">Yeni hediye yok. Arkadaşlarını ziyaret et, onlar da sana gönderir.</p>';
+    const d = $('giftDot'); d.textContent = inbox.length; d.hidden = !inbox.length;
+  }
+  $('inbox').addEventListener('click', e => { const b = e.target.closest('[data-claim]'); if (!b) return; const g = inbox.splice(+b.dataset.claim, 1)[0]; renderInbox(); toast(`${g.e} ${g.what} ${g.where} kondu`); });
+  const GIFTS = [['apple', '🍎', 'Elma', 5], ['cake', '🍰', 'Kek', 20], ['bear', '🧸', 'Ayıcık', 120], ['plant', '🪴', 'Saksı', 150]];
+  function renderPicks() {
+    $('toPicks').innerHTML = FRIENDS.map(f => `<button class="pick" type="button" aria-pressed="${S.to === f.id}" data-to="${f.id}" id="to-${f.id}">${avatar(f.img)}${f.name}</button>`).join('');
+    $('itemPicks').innerHTML = GIFTS.map(([id, e, n, p]) => `<button class="pick" type="button" aria-pressed="${S.item === id}" data-item="${id}" id="gift-${id}"><span class="e">${e}</span>${n} · ${p} ZC</button>`).join('');
+    $('sendBtn').disabled = !(S.to && S.item && S.giftsLeft > 0);
+    $('sendInfo').textContent = S.giftsLeft ? `Bugün ${S.giftsLeft} hediye hakkın var` : 'Bugünlük hakkın bitti';
+  }
+  $('toPicks').addEventListener('click', e => { const b = e.target.closest('[data-to]'); if (b) { S.to = b.dataset.to; renderPicks(); } });
+  $('itemPicks').addEventListener('click', e => { const b = e.target.closest('[data-item]'); if (b) { S.item = b.dataset.item; renderPicks(); } });
+  $('sendBtn').addEventListener('click', () => {
+    const f = FRIENDS.find(x => x.id === S.to), g = GIFTS.find(x => x[0] === S.item);
+    if (S.coins < g[3]) return toast('Yeterli Zibo Coin yok');
+    setCoins(-g[3]); S.giftsLeft--; S.item = null; renderPicks(); toast(`${g[1]} ${g[2]} → ${f.name}#${f.tag} gönderildi`);
+  });
+
+  // ---------- challenge ----------
+  const GOAL = 50000, TIERS = [[.25, '🪙', '20 ZC'], [.5, '🏅', 'Rozet'], [.75, '🧽', 'Sünger'], [1, '👑', 'Kostüm denemesi']];
+  function renderChal() {
+    const r = S.total / GOAL;
+    $('cProg').style.width = Math.min(100, r * 100) + '%';
+    $('cNum').textContent = `${fmt(S.total)} / ${fmt(GOAL)}`; $('myCups').textContent = S.cups;
+    $('tiers').innerHTML = TIERS.map(([t, e, n]) => `<span class="tier ${r >= t ? 'got' : ''}" style="left:${t * 100 - (t === 1 ? 3 : 0)}%" title="${n}">${e}</span>`).join('');
+  }
+  $('drinkBtn').addEventListener('click', () => { S.cups++; S.total += 1 + Math.floor(Math.random() * 40); renderChal(); toast('Katkın eklendi 💧 (herkesin bardakları da akıyor)'); });
+  $('days').innerHTML = ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'].map((d, i) => `<span class="day ${i < 3 ? 'y' : i === 3 ? 'f' : ''}" title="${i < 3 ? 'İkiniz de yaptınız' : i === 3 ? 'Sen yaptın, Yıldız bekleniyor' : ''}">${d}</span>`).join('');
+
+  renderFriends(); renderBoard(); renderInbox(); renderPicks(); renderChal();
+})();
+</script>

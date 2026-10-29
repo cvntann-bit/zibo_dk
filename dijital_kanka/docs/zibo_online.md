@@ -41,3 +41,13 @@ Durum: kullanıcı "ilerleyen seviyelerde Zibo'yu online yapmayı düşünüyoru
 
 ## Netleşecek
 - "Online"dan kastın ne: arkadaş evini ziyaret mi, birlikte oyun mu, sıralama mı, sohbet mi?
+
+## Etkileşimli taslak (2026-10-29)
+`docs/online_prototype/index.html` (+ `img/`, küçültülmüş kostümlü Zibo görselleri), yayın:
+https://claude.ai/artifact/3PHGgYiTUXhY9R112LfAZ7
+- Arkadaş kodu (ZB-XXXX) + arkadaş listesi.
+- Ev ziyareti: kalp (günde 1), aç Zibo'yu 5 ZC ile besle, hazır cümlelerle ziyaretçi defteri, şikâyet/engelle.
+- Sıralama: Oyun ★ / Seri; Arkadaşlar / Türkiye / Dünya; podyum + sabit "Sen" satırı.
+- Hediyeler: gelen kutusu ("Al"), kişi + eşya seç, günde 3, bedel gönderenden düşer.
+- Challenge: topluluk "Su Dalgası" basamak ödülleri + arkadaşla 7 günlük ortak görev.
+İsimler "Zibo adı#etiket". Kullanıcı geri bildirimi buraya yazılacak.
