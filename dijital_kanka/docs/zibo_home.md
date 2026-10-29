@@ -55,6 +55,17 @@ Ev = uygulamanın ana **coin harcama + ödüllü reklam** alanı olacak. Öneri:
   - Fiyatlar ve reklam sıklığı `docs/unit_economics.md` ile hesaplanır; rakamlar Firestore `config/` ile
     uzaktan ayarlanabilir olmalı (oyunlardaki `config/games` gibi).
 
+## Eşya kataloğu fikirleri (2026-10-29, kullanıcı: "yeni mobilyalar, yemekler, banyo süngeri vs vs")
+Sürekli yeni içerik = sürekli geri dönme sebebi + coin harcama. Kostümler gibi **sezonluk/sınırlı** ürünler.
+- **Banyo:** sünger çeşitleri (deniz yıldızı, ayıcık), sabun/şampuan kokuları (çilek, nane — köpük rengi değişir),
+  banyo ördeği, köpük banyosu, kese, havlu desenleri, bornoz.
+- **Mutfak / yemek:** meyveler, tatlılar (dondurma, kek), ev yemekleri, içecekler; **yöresel/ülkeye göre**
+  (TR: simit, baklava; ES: churros, paella — üç dil pazarına uygun), özel gün yemekleri (doğum günü pastası).
+- **Mobilya:** yatak, koltuk, halı, lamba, saksı bitkisi, akvaryum, raf, tablo (kullanıcının rozetleri çerçevede?),
+  oyun konsolu köşesi.
+- **Sezonluk:** Yılbaşı ağacı, Ramazan/bayram süsleri, Cadılar Bayramı balkabağı, yaz havuzu — sınırlı süre.
+- Her ürünün nadirlik seviyesi (kostüm nadirlik sistemiyle aynı dil, 1.15.0).
+
 ## Faz önerisi (büyük kapsam → küçük dilimler, her biri ayrı sürüm)
 1. **Çekirdek:** ihtiyaç göstergeleri + Banyo (sabun/köpük/duş/havlu) — tek oda, döngü doğrulanır.
 2. **Mutfak + yemekler:** yemek görselleri (meyve, tatlı, ev yemeği…), buzdolabı, çiğneme animasyonu, coin'le alım.
