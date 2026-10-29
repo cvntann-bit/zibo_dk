@@ -68,6 +68,9 @@ jobs:
         run: npm run hourly-all
         env:
           FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
+          # Özet > reklam geliri (dailyStats.js). Secret yoksa adım kendini atlar.
+          APPODEAL_API_KEY: ${{ secrets.APPODEAL_API_KEY }}
+          APPODEAL_USER_ID: ${{ secrets.APPODEAL_USER_ID }}
 
       - name: Davet Et Ödüllerini İşle
         if: ${{ !cancelled() }}

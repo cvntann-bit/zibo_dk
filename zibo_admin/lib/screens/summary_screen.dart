@@ -125,7 +125,7 @@ class _SummaryScreenState extends State<SummaryScreen> {
           ),
         if (heavy.isNotEmpty && heavy.first['activity'] is Map) ...[
           const SizedBox(height: 20),
-          _adsAndRevenue(heavy.first),
+          _adsAndRevenue(heavy.first, today),
         ],
         if (heavy.isNotEmpty && heavy.first['excluded'] is Map)
           Padding(
@@ -154,7 +154,7 @@ class _SummaryScreenState extends State<SummaryScreen> {
 
   /// Reklam & gelir — dailyStats.js `activity` (gün kovaları) + `revenue`. Ağır sayım günde bir, günün ilk
   /// saatinde → en yeni TAM gün "dün".
-  Widget _adsAndRevenue(Map<String, dynamic> heavyDay) {
+  Widget _adsAndRevenue(Map<String, dynamic> heavyDay, Map<String, dynamic> today) {
     final activity = (heavyDay['activity'] as Map).cast<String, dynamic>();
     final keys = activity.keys.toList()..sort((a, b) => b.compareTo(a));
     final full = keys.length > 1 ? keys.sublist(1) : keys; // [0] = sayım anındaki yarım gün
@@ -164,6 +164,23 @@ class _SummaryScreenState extends State<SummaryScreen> {
     final week = full.take(7).toList().reversed.toList();
     final weekUsers = [for (final k in week) ((activity[k] as Map)['adUsers'] as num? ?? 0).toDouble()];
     final maxU = weekUsers.fold<double>(1, (m, v) => v > m ? v : m);
+
+    // Appodeal (dailyStats.js `appodeal`, 6 saatte bir, son 8 gün) — günün belgesinde.
+    final appodealDays = ((today['appodeal'] as Map?)?['days'] as Map?)?.cast<String, dynamic>();
+    final adY = appodealDays?[full.first] as Map?;
+    final ad7 = [for (final k in full.take(7)) appodealDays?[k] as Map?].whereType<Map>();
+    final rev7 = ad7.fold<num>(0, (acc, d) => acc + (d['revenue'] as num? ?? 0));
+    final imp7 = ad7.fold<num>(0, (acc, d) => acc + (d['impressions'] as num? ?? 0));
+    final appodealError = today['appodealError'] as String?;
+    String usd(num? v) => v == null ? '—' : '\$${v.toStringAsFixed(v < 1 ? 3 : 2)}';
+    final (String, String, String?) adTile = appodealDays == null
+        ? ('Reklam geliri', '—', appodealError ?? 'Appodeal secret eklenince gelir')
+        : (
+            'Reklam geliri',
+            usd(adY?['revenue'] as num?),
+            '${_n(adY?['impressions'] as num?)} gösterim · eCPM ${usd(adY?['ecpm'] as num?)}\n'
+                '7 gün ${usd(rev7)} · ${_n(imp7)} gösterim',
+          );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -181,7 +198,7 @@ class _SummaryScreenState extends State<SummaryScreen> {
             'Pro ${_n(subs['pro'] as num?)} · Pro+ ${_n(subs['proplus'] as num?)}'
                 '${(subs['giftedForever'] as num? ?? 0) > 0 ? ' · süresiz hediye ${_n(subs['giftedForever'] as num?)}' : ''}',
           ),
-          ('Reklam geliri', '—', 'Appodeal API anahtarı gerekli'),
+          adTile,
         ]),
         const SizedBox(height: 12),
         Container(
@@ -233,8 +250,8 @@ class _SummaryScreenState extends State<SummaryScreen> {
         ),
         const SizedBox(height: 8),
         const Text(
-          "Yalnızca Firestore'a iz bırakan ödüllü reklamlar sayılır; geçiş (interstitial) ve kostüm denemesi reklamları "
-          "ve reklam geliri Appodeal'da. ₺ tutarları liste fiyatı, Google payı (%15) düşülmemiş; abonelik hepsi aylık "
+          "Reklam izleyen kişi yalnızca Firestore'a iz bırakan ödüllü reklamları sayar (geçiş ve kostüm denemesi hariç); "
+          "reklam geliri/gösterim Appodeal'dan (tüm reklam türleri; son 3 gün ağlar tarafından düzeltilebilir). ₺ tutarları liste fiyatı, Google payı (%15) düşülmemiş; abonelik hepsi aylık "
           'fiyatla (yıllık planlar ayrılamıyor) — üst sınır tahmini.',
           style: TextStyle(color: kInkSoft, fontSize: 12),
         ),

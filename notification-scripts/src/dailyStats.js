@@ -264,6 +264,84 @@ async function buildSuspects(signals, now) {
   return out.slice(0, MAX_SUSPECTS);
 }
 
+// --- Appodeal reklam geliri (Reporting API) -------------------------------------------------
+// Belge: https://docs.appodeal.com/reporting/reporting-api — EŞZAMANSIZ: stats_api → task_id →
+// check_status (yokla) → output_result (`{code:0, data:[{date, app_key, app_name, impressions, revenue, ecpm, ...}]}`,
+// büyükse `{code:0, url}` → indir). Belge yanıt şekillerini tam vermiyor → alan adları savunmacı okunur.
+// Anahtar/ID GitHub Secret (APPODEAL_API_KEY, APPODEAL_USER_ID; Appodeal > Profil > API Credentials). Yoksa ADIM ATLANIR.
+// Ağ gelirleri 4–6 saatte bir güncellenir ve son 3 gün değişebilir → 6 saatte bir son 8 gün yeniden çekilir.
+// Anahtar ASLA log'a yazılmaz (yalnızca HTTP durumu/mesajı).
+const APPODEAL_BASE = 'https://api-services.appodeal.com/api/v2';
+const APPODEAL_EVERY_MS = 6 * 60 * 60 * 1000;
+const APPODEAL_DAYS = 8;
+
+async function appodealGet(path, params) {
+  const url = new URL(`${APPODEAL_BASE}/${path}`);
+  url.searchParams.set('api_key', process.env.APPODEAL_API_KEY);
+  url.searchParams.set('user_id', process.env.APPODEAL_USER_ID);
+  for (const [k, v] of params) url.searchParams.append(k, v);
+  const res = await fetch(url, { signal: AbortSignal.timeout(30000) });
+  const text = await res.text();
+  let body;
+  try {
+    body = JSON.parse(text);
+  } catch (_) {
+    throw new Error(`Appodeal ${path}: HTTP ${res.status}, JSON değil`);
+  }
+  if (!res.ok || (body.code !== undefined && Number(body.code) !== 0)) {
+    throw new Error(`Appodeal ${path}: HTTP ${res.status} code=${body.code} ${String(body.message || '').slice(0, 120)}`);
+  }
+  return body;
+}
+
+const pick = (obj, ...keys) => keys.map((k) => obj && obj[k]).find((v) => v !== undefined && v !== null);
+
+async function fetchAppodealRevenue(now) {
+  const dateTo = userDateKey({ timeZone: 'Europe/Istanbul' }, now);
+  const dateFrom = userDateKey({ timeZone: 'Europe/Istanbul' }, new Date(now.getTime() - (APPODEAL_DAYS - 1) * DAY_MS));
+  const start = await appodealGet('stats_api', [
+    ['date_from', dateFrom],
+    ['date_to', dateTo],
+    ['detalisation[]', 'date'],
+    ['detalisation[]', 'app'],
+  ]);
+  const taskId = pick(start, 'task_id') || pick(start.data, 'task_id');
+  if (!taskId) throw new Error('Appodeal stats_api: task_id gelmedi');
+
+  // Durum alanı belgede yok — "bitti" sinyali gelene ya da 90 sn dolana kadar yokla; sonra output_result dene.
+  for (let i = 0; i < 18; i++) {
+    await new Promise((r) => setTimeout(r, 5000));
+    const st = await appodealGet('check_status', [['task_id', taskId]]).catch(() => null);
+    const status = String(pick(st, 'task_status', 'status') || pick(st && st.data, 'task_status', 'status') || '');
+    if (/^(1|true|done|finished|ready|success|completed)$/i.test(status)) break;
+  }
+  let out = await appodealGet('output_result', [['task_id', taskId]]);
+  if (!Array.isArray(out.data) && out.url) {
+    const res = await fetch(out.url, { signal: AbortSignal.timeout(30000) });
+    out = JSON.parse(await res.text());
+  }
+  const rows = Array.isArray(out.data) ? out.data : [];
+  const days = {};
+  for (const row of rows) {
+    const date = String(pick(row, 'date') || '').slice(0, 10);
+    if (!date) continue;
+    const app = String(pick(row, 'app_name', 'app_key') || 'app');
+    const day = (days[date] = days[date] || { revenue: 0, impressions: 0, apps: {} });
+    const revenue = Number(row.revenue) || 0;
+    const impressions = Number(row.impressions) || 0;
+    day.revenue += revenue;
+    day.impressions += impressions;
+    const a = (day.apps[app] = day.apps[app] || { revenue: 0, impressions: 0 });
+    a.revenue += revenue;
+    a.impressions += impressions;
+  }
+  for (const d of Object.values(days)) {
+    d.revenue = Math.round(d.revenue * 10000) / 10000;
+    d.ecpm = d.impressions ? Math.round((d.revenue / d.impressions) * 1000 * 100) / 100 : 0;
+  }
+  return { days, rows: rows.length, from: dateFrom, to: dateTo };
+}
+
 async function main() {
   const now = new Date();
   const dateKey = userDateKey({ timeZone: 'Europe/Istanbul' }, now);
@@ -284,6 +362,24 @@ async function main() {
           .map(([d, a]) => `${d.slice(5)}=${a.coinAdUsers}/${a.gameAdUsers}`)
           .join(' ')} | abonelik ~${heavy.revenue.subsMonthlyTry} TL/ay, coin satışı 7g ~${heavy.revenue.purchaseTry7d} TL`,
     );
+  }
+  if (!process.env.APPODEAL_API_KEY || !process.env.APPODEAL_USER_ID) {
+    console.log('Appodeal: APPODEAL_API_KEY / APPODEAL_USER_ID secret yok — reklam geliri atlandı.');
+  } else {
+    const last = existing.exists && existing.data().appodealAt ? existing.data().appodealAt.toMillis() : 0;
+    if (now.getTime() - last >= APPODEAL_EVERY_MS) {
+      try {
+        const appodeal = await fetchAppodealRevenue(now);
+        update.appodeal = appodeal;
+        update.appodealAt = admin.firestore.FieldValue.serverTimestamp();
+        update.appodealError = admin.firestore.FieldValue.delete();
+        const total = Object.values(appodeal.days).reduce((sum, d) => sum + d.revenue, 0);
+        console.log(`Appodeal: ${appodeal.rows} satır, ${appodeal.from}→${appodeal.to} toplam gelir $${total.toFixed(4)}`);
+      } catch (error) {
+        update.appodealError = String(error.message || error).slice(0, 200);
+        console.warn('Appodeal okunamadı:', update.appodealError);
+      }
+    }
   }
   await ref.set(update, { merge: true });
   console.log(
