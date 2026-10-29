@@ -194,7 +194,7 @@ Adımlar:
     + kostüm denemesi reklamları ve reklam GELİRİ → Appodeal Reporting API (API anahtarı + kullanıcı id'si GitHub
     secret olarak — kullanıcı ekler) ya da GA4 Data API gerekir. Bkz. `docs/unit_economics.md`.
 
-  - **Appodeal reklam geliri** (2026-10-29, kod + workflow; **secret'lar kullanıcı tarafından EKLENMEDİ → henüz veri yok**):
+  - **Appodeal reklam geliri** (2026-10-29, kod + workflow hazır; **kullanıcı: "sonra bakarız" — secret EKLENMEDİ, ERTELENDİ; veri yok, adım kendini atlıyor**):
     `dailyStats.js` `fetchAppodealRevenue` — Reporting API (https://docs.appodeal.com/reporting/reporting-api):
     `stats_api?date_from&date_to&detalisation[]=date&detalisation[]=app` → `task_id` → `check_status` yokla (≤90 sn; durum
     alanı belgede yok → savunmacı) → `output_result` (`data[]` ya da büyükse `url`). 6 saatte bir son 8 gün →
