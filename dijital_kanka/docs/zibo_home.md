@@ -41,6 +41,20 @@ Sorun (kullanıcı): ~27+ kostüm × her bakım pozu = 200+ görsel. Çözüm ö
   (mevcut `Costume.imageAsset` küçültülür). "Banyoya gir → kostüm çıkar → çıkınca geri giyer" geçişi.
 - Kostüme özel bakım pozu yalnızca istisna (ör. en çok satan 2–3 kostüm, analitik verisine göre, sonra).
 
+## Gelir kurgusu — kullanıcı (2026-10-29): "her şeyden ZC harcatabiliriz, reklam izletebiliriz"
+Ev = uygulamanın ana **coin harcama + ödüllü reklam** alanı olacak. Öneri:
+- **ZC harcama:** yemekler (tüketilir), sabun/şampuan/köpük çeşitleri (tüketilir), mobilya, oda açma, duvar
+  kâğıdı/zemin, banyo oyuncakları (ördek vb.), özel tabaklar; Pro'ya özel ürünler (`subscribe_model.md`).
+- **Ödüllü reklam (isteğe bağlı, kullanıcı seçer):** "Buzdolabı boş → reklam izle, 1 yemek al", "günlük ödül
+  sandığını 2 katına çıkar", "sabun bitti → reklamla 1 sabun", "yeni mobilyayı 24 saat dene" (kostüm denemesi gibi).
+- **Kurallar (zarar etmemek + politika):**
+  - Bakım etkileşiminin ORTASINDA zorunlu geçiş reklamı YOK (banyo/yemek animasyonunu bölmek = kötü deneyim +
+    Play "rahatsız edici reklam" politikası). Geçiş reklamları yalnızca merkezi `InterstitialPacer` kurallarıyla.
+  - Her zaman **bedava bir yol** olsun (günde birkaç ücretsiz yemek/sabun) — Zibo'nun "acı çekmesi" ancak
+    ödeyerek bitiyormuş gibi görünmesin (çocuklar oynuyor → istismarcı görünür, mağaza yorumları + Aileler riski).
+  - Fiyatlar ve reklam sıklığı `docs/unit_economics.md` ile hesaplanır; rakamlar Firestore `config/` ile
+    uzaktan ayarlanabilir olmalı (oyunlardaki `config/games` gibi).
+
 ## Faz önerisi (büyük kapsam → küçük dilimler, her biri ayrı sürüm)
 1. **Çekirdek:** ihtiyaç göstergeleri + Banyo (sabun/köpük/duş/havlu) — tek oda, döngü doğrulanır.
 2. **Mutfak + yemekler:** yemek görselleri (meyve, tatlı, ev yemeği…), buzdolabı, çiğneme animasyonu, coin'le alım.
