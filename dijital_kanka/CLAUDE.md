@@ -68,6 +68,7 @@ Flutter mobil uygulaması: "Zibo" adlı maskot karakterin eşlik ettiği bir ki�
 | **Gelir/gider dengesi (ÖNEMLİ — zarar etmemek)** (kullanıcı başı gider/gelir, reklam yerleşimleri, başa baş) | `docs/unit_economics.md` |
 | **Tablet uyumu / Play "tablet için tasarlandı" rozeti** (eşikler, `Adaptive` yardımcıları, oyun tuvali, kalanlar) | `docs/tablet_optimization.md` |
 | **Zibo'nun Evi** (besleme, bakım, günlük görevler, oda/mobilya tasarımı — FİKİR, beklemede) | `docs/zibo_home.md` |
+| **Yönetici uygulaması / admin paneli** (uzaktan ayar, duyuru/bildirim, challenge, hediye — FİKİR, Ev'den sonra) | `docs/admin_panel.md` |
 | **Oyun Salonu / mini oyunlar** (7 oyun, Oyun Puanı ★ + Takas Gişesi ekonomisi, hibrit WebView planı, taslaklar, bekleyen kararlar) — henüz kodda YOK | `docs/game_zibo.md` |
 
 **`docs/history/` dosyalarını görevin AÇIKÇA geçmiş bağlam gerektirmediği sürece OKUMA** —
