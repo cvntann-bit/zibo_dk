@@ -35,6 +35,8 @@ Her şeyi tek yerden kontrol edip değiştirmek: düzenlemeler/değişiklikler, 
   işlemi kayıt altına alınır (`adminLog`), toplu işlemler önizleme + onay ister.
 
 ## Netleşecek sorular
-1. Panel nerede çalışsın — telefon, bilgisayar tarayıcısı, ikisi?
+1. ~~Panel nerede çalışsın?~~ **KARAR (kullanıcı, 2026-10-29): TELEFONDA** → ayrı Android uygulaması (Flutter),
+   Play'e YAYINLANMAZ — yalnızca imzalı APK ile kendi telefonuna kurulur (ya da Play'de dahili test kanalı, tek
+   test kullanıcısı). Ayrı `applicationId` (ör. `com.dijitalkanka.zibo_admin`), aynı Firebase projesi.
 2. Challenge örnekleri (ör. "7 gün su hedefi", "hafta sonu oyun turnuvası") ve ödül türleri.
 3. Başka yönetici olacak mı (ekip), yoksa yalnızca sen mi?
