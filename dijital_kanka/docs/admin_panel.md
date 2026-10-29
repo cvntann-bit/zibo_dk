@@ -194,5 +194,15 @@ Adımlar:
     + kostüm denemesi reklamları ve reklam GELİRİ → Appodeal Reporting API (API anahtarı + kullanıcı id'si GitHub
     secret olarak — kullanıcı ekler) ya da GA4 Data API gerekir. Bkz. `docs/unit_economics.md`.
 
+  - **Appodeal reklam geliri** (2026-10-29, kod + workflow; **secret'lar kullanıcı tarafından EKLENMEDİ → henüz veri yok**):
+    `dailyStats.js` `fetchAppodealRevenue` — Reporting API (https://docs.appodeal.com/reporting/reporting-api):
+    `stats_api?date_from&date_to&detalisation[]=date&detalisation[]=app` → `task_id` → `check_status` yokla (≤90 sn; durum
+    alanı belgede yok → savunmacı) → `output_result` (`data[]` ya da büyükse `url`). 6 saatte bir son 8 gün →
+    `stats/{bugün}.appodeal{days{gün:{revenue,impressions,ecpm,apps{ad:{…}}}}}`; hata `appodealError`'a (anahtar log'a
+    yazılmaz). Secret yoksa adım atlanır (doğrulandı, run 40943527279). `hourly-jobs.yml` env: `APPODEAL_API_KEY`,
+    `APPODEAL_USER_ID` (Appodeal > Profil > API Credentials). `app[]` filtresi yok → hesaptaki TÜM uygulamalar `apps`
+    altında ayrı; toplam hepsinin toplamı (Zibo İslami aynı Appodeal hesabındaysa karışır — o zaman app filtresi eklenecek).
+    Panel: "Reklam geliri" kartı = dün $ + gösterim + eCPM + 7 gün toplamı.
+
 **Yönetici v1 TAMAM (2026-10-29)** — A0–A6 + uygulama içi mesaj kartı (A5b; Zibo tarafı 1.18.0 sürümüyle gelir).
 - Sonra (Zibo sürümü gerektirenler): uygulama içi duyuru kutusu, reklam sıklığını `config/ads`'e taşıma.
