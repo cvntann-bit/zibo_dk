@@ -497,7 +497,7 @@ class _HomeScreenState extends State<HomeScreen>
                 flex: 6,
                 child: Center(
                   child: SingleChildScrollView(
-                    padding: const EdgeInsets.fromLTRB(16, 40, 72, 32),
+                    padding: const EdgeInsets.fromLTRB(16, 40, 120, 32),
                     child: ConstrainedBox(
                       constraints: const BoxConstraints(maxWidth: 620),
                       child: Column(

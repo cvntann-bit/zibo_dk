@@ -66,6 +66,7 @@ Flutter mobil uygulaması: "Zibo" adlı maskot karakterin eşlik ettiği bir ki�
 | **Abonelik modeli** (Zibo Pro/Pro+ ürün/plan ID'leri, fiyatlar, perk listeleri + uygulama durumu, paywall giriş noktaları, yükseltme mekanizması) | `docs/subscribe_model.md` |
 | **Büyüme yol haritası** (crash, Appodeal SDK güncellemesi, yeni reklam ağları + Yandex, retention — fazlar ve durum) | `docs/roadmap_growth_2026-10.md` |
 | **Gelir/gider dengesi (ÖNEMLİ — zarar etmemek)** (kullanıcı başı gider/gelir, reklam yerleşimleri, başa baş) | `docs/unit_economics.md` |
+| **Tablet uyumu / Play "tablet için tasarlandı" rozeti** (eşikler, `Adaptive` yardımcıları, oyun tuvali, kalanlar) | `docs/tablet_optimization.md` |
 | **Oyun Salonu / mini oyunlar** (7 oyun, Oyun Puanı ★ + Takas Gişesi ekonomisi, hibrit WebView planı, taslaklar, bekleyen kararlar) — henüz kodda YOK | `docs/game_zibo.md` |
 
 **`docs/history/` dosyalarını görevin AÇIKÇA geçmiş bağlam gerektirmediği sürece OKUMA** —
