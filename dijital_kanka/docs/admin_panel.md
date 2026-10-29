@@ -53,3 +53,20 @@ Her şeyi tek yerden kontrol edip değiştirmek: düzenlemeler/değişiklikler, 
   Online şikâyetleri (sorun yok / uyar / engelle).
 - **🧾 İşlem kaydı:** her yönetici işlemi zaman damgasıyla.
 Kullanıcı geri bildirimi buraya yazılacak.
+
+## "Önce bunu mu yapsak?" — değerlendirme (2026-10-29, kullanıcı sordu; KARAR BEKLİYOR)
+Öneri: **evet ama yalın "Yönetici v1"** — bugün var olan şeyleri yöneten kısım. Challenge ve şikâyet ekranları,
+o özellikler (Ev, Online) yapılınca eklenir; şimdi yapılırsa boş ekran olur.
+
+**v1 kapsamı (ölçülen mevcut durum):**
+| Parça | Bugün ne var | v1'de gereken |
+|---|---|---|
+| Giriş + güvenlik | yok | ayrı Flutter uygulaması, Google girişi, `admin` custom claim (bir kez betikle), Firestore kuralları, işlem kaydı |
+| Ayarlar | `config/games` zaten uzaktan okunuyor | düzenleme ekranı + fark/onay. Reklam sıklığı (`InterstitialPacer` maxPerDay=2 vb.) şu an KODDA sabit → `config/ads`'e taşımak Zibo'da küçük değişiklik + sürüm |
+| Hediye | `notification-scripts/src/grantGift.js` (elle) | panelden tetikleme; coin/eşya için Zibo'da "Hediyeni al" kutusu (sürüm) |
+| Duyuru | bildirim betikleri var (cron, saatlik) | anında gönderim için tetikleyici: Firestore'a "iş emri" → Cloud Function (Blaze bütçe uyarısı kurulu; maliyet ~0) ya da saatlik cron (gecikme ≤1 sa). Uygulama içi duyuru kutusu Zibo'ya eklenir (sürüm) |
+| Özet | Firebase Analytics/Appodeal verisi telefondan doğrudan OKUNAMAZ (sunucu anahtarı gerekir) | günlük cron istatistikleri `stats/daily` belgesine yazar (kullanıcı sayısı, coin akışı, Appodeal gelir API'si); Crashlytics sayıları v1'de yok |
+
+**Süre tahmini (tahmin):** kod tarafı ~4–6 çalışma oturumu; takvimde kullanıcının test hızına göre ~1–2 hafta.
+İçinde 1 Zibo sürümü var (uzaktan reklam ayarı + hediye kutusu + duyuru kutusu). Ev ve Online geldikçe panele
+kendi ekranları eklenir (her biri ~1 oturum).
