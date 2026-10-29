@@ -129,13 +129,16 @@ Adımlar:
 - [~] A5 Duyuru (2026-10-29, kod + APK telefonda; **sunucu tarafı ilk Actions çalışmasıyla HENÜZ doğrulanmadı**):
   - Panel `screens/broadcast_screen.dart`: TR/EN/ES metin (seçilmeyen dildeki kullanıcıya GİTMEZ), kitle (herkes /
     Pro+Pro+ süresi geçmemiş / 7+ gün gelmeyen), zaman (hemen = sonraki saat başı +07 dk, ya da planlı tarih-saat),
-    bildirim önizlemesi, "Önce teste gönder" (`testUid`, varsayılan yöneticinin kendi uid'i; kitle/dil filtresi yok),
+    bildirim önizlemesi, "Önce teste gönder" (`testUid` = Zibo davet kodu, boş gelir; token yoksa uyarır; kitle/dil filtresi yok),
     ulaşım tahmini = `users where fcmToken != null` count (ölçüldü: 2336), son 20 duyuru (durum + sayılar), bekleyeni iptal.
   - Sunucu `notification-scripts/src/sendBroadcasts.js` → `hourlyAll.js` JOBS'un İLK işi (yeni workflow/step YOK, dakika
     maliyeti ~0). `status=='pending'` sorgusu + `sendAfter` JS'te; transaction ile `pending→sending` (çift gönderim yok);
     sonuç `sentCount/skippedCount/failedCount`. `sendToUser` artık gönderdiyse `true` döner; `broadcast` türü için
     tür anahtarı kontrolü yok. FCM `data.type='broadcast'` — Zibo bilinmeyen türü de gösterir (dokununca yalnız açılır)
     → **Zibo sürümü GEREKMEZ**.
+  - İlk canlı test (2026-10-29 21:50, elle tetiklenen hourly-jobs run 40934500055): betik çalıştı — "Bekleyen 1, zamanı
+    gelen 1 → TEST gönderildi=0 atlandı=1". Sebep: test kutusu yönetici uygulamasının uid'iyle doluydu; o hesabın
+    `fcmToken`'ı yok (telefondaki Zibo farklı uid). Düzeltme: kutu boş geliyor + sıraya almadan önce `fcmToken` kontrolü.
   - Bilinen sınır: "Hemen" herkese aynı anda gider (yerel saat penceresi yok) — gece göndermemek yöneticiye kalmış.
     İleride: kullanıcı yerel saatine göre (ör. 10–21) bekletme.
 - [ ] A6 Özet: `stats/daily`.

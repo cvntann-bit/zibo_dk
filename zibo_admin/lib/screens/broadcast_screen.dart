@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import '../admin_log.dart';
@@ -29,7 +28,9 @@ class _BroadcastScreenState extends State<BroadcastScreen> {
 
   final _title = {for (final l in _langs.keys) l: TextEditingController()};
   final _body = {for (final l in _langs.keys) l: TextEditingController()};
-  final _testUid = TextEditingController(text: FirebaseAuth.instance.currentUser?.uid ?? '');
+  // Bilerek boş: yönetici uygulamasının uid'i telefondaki Zibo hesabıyla aynı DEĞİL (token'ı yok —
+  // 2026-10-29 ilk testte "atlandı=1" böyle çıktı). Zibo > Davet Et'teki kod yapıştırılır.
+  final _testUid = TextEditingController();
   final Set<String> _enabledLangs = {'tr'};
   String _lang = 'tr';
   String _audience = 'all';
@@ -100,9 +101,20 @@ class _BroadcastScreenState extends State<BroadcastScreen> {
       return;
     }
     final testUid = _testUid.text.trim();
-    if (test && testUid.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Test için davet kodu (uid) gir.')));
-      return;
+    if (test) {
+      if (testUid.isEmpty || testUid.contains('/')) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Test için Zibo davet kodunu gir.')));
+        return;
+      }
+      // Token'ı olmayan hesaba gönderim sessizce "atlandı" olur — sıraya almadan önce söyle.
+      final snap = await FirebaseFirestore.instance.collection('users').doc(testUid).get();
+      if (!mounted) return;
+      if (snap.data()?['fcmToken'] == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Bu hesabın bildirim token'ı yok (Zibo bu kodla açık değil ya da bildirim izni kapalı).")),
+        );
+        return;
+      }
     }
     final when = test || _sendAfter == null ? 'bir sonraki saat başı (+07 dk)' : _fmt(_sendAfter!);
     final who = test ? 'YALNIZCA test hesabı: $testUid' : '${_audiences[_audience]} · ${_enabledLangs.map((l) => _langs[l]).join(', ')}';
@@ -204,7 +216,11 @@ class _BroadcastScreenState extends State<BroadcastScreen> {
         const SizedBox(height: 8),
         TextField(
           controller: _testUid,
-          decoration: const InputDecoration(labelText: 'Test hesabı (davet kodu / uid)', isDense: true),
+          decoration: const InputDecoration(
+            labelText: 'Test hesabı — Zibo davet kodun',
+            helperText: "Zibo > Davet Et'teki kod",
+            isDense: true,
+          ),
         ),
         const SizedBox(height: 24),
         const Text('Son duyurular', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800)),
