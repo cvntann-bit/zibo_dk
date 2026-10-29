@@ -182,5 +182,17 @@ Adımlar:
     1.407.515 ZC → **gerçek dolaşım 36.940 ZC**; Pro 1, Pro+ 2 (önceki çalıştırmada 1 — 10 dk içinde bir Pro+ abonesinin
     süresi yenilenmiş olmalı: Zibo açılışta Play'den doğrulayıp bitişi ileri iter; sayılar "süresi geçmemiş" anlık durumdur).
 
+  - **Reklam & gelir** (2026-10-29, kullanıcı isteği; `HEAVY_VERSION = 4`, run 40942574209): ağır taramaya
+    `gamePointsState` eklendi (+1 okuma/kullanıcı/gün). `activity{gün}` = son 8 gün: `coinAds/coinAdUsers` (coinState
+    işlemlerinde 'Reklam izleme'), `gameAds/gameAdUsers` (`plays[*].ads`, `dayKey` günü), `adUsers` (birleşik tekil),
+    `purchases/purchaseZc/purchaseTry` ('Satın alma: N ZC' → coin_packages.dart TRY liste fiyatı). `revenue{subsMonthlyTry,
+    purchaseTry7d}` — abonelik aylık fiyatla (aylık/yıllık ayrımı yok → üst sınır), Google %15 payı düşülmemiş; 2099 bitişli
+    süresiz hediye abonelikler `subs.giftedForever` olarak ayrı, gelire girmez. Panel: Özet > "Reklam & gelir · dün" (6 kart)
+    + 7 günlük "reklam izleyen kişi" çubukları.
+  - İlk ölçüm: ödüllü reklam izleyen kişi günde **0–6** (coin 0–4, Oyun Salonu 0–3) — ~210 DAU'ya göre çok düşük;
+    7 günde coin satışı 0; abonelik ~260 ₺/ay brüt (Pro 1, Pro+ 2). Firestore'a iz bırakmayanlar: geçiş (interstitial)
+    + kostüm denemesi reklamları ve reklam GELİRİ → Appodeal Reporting API (API anahtarı + kullanıcı id'si GitHub
+    secret olarak — kullanıcı ekler) ya da GA4 Data API gerekir. Bkz. `docs/unit_economics.md`.
+
 **Yönetici v1 TAMAM (2026-10-29)** — A0–A6 + uygulama içi mesaj kartı (A5b; Zibo tarafı 1.18.0 sürümüyle gelir).
 - Sonra (Zibo sürümü gerektirenler): uygulama içi duyuru kutusu, reklam sıklığını `config/ads`'e taşıma.
