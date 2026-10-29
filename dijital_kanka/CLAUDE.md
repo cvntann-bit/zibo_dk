@@ -67,6 +67,7 @@ Flutter mobil uygulaması: "Zibo" adlı maskot karakterin eşlik ettiği bir ki�
 | **Büyüme yol haritası** (crash, Appodeal SDK güncellemesi, yeni reklam ağları + Yandex, retention — fazlar ve durum) | `docs/roadmap_growth_2026-10.md` |
 | **Gelir/gider dengesi (ÖNEMLİ — zarar etmemek)** (kullanıcı başı gider/gelir, reklam yerleşimleri, başa baş) | `docs/unit_economics.md` |
 | **Tablet uyumu / Play "tablet için tasarlandı" rozeti** (eşikler, `Adaptive` yardımcıları, oyun tuvali, kalanlar) | `docs/tablet_optimization.md` |
+| **Google Play politika e-postaları** (her güncellemenin Zibo'ya etkisi, son tarihler: tüccar beyanı, Japonya, bellek eşiği) | `docs/play_policy_updates.md` |
 | **Zibo'nun Evi** (besleme, bakım, günlük görevler, oda/mobilya tasarımı — FİKİR, beklemede) | `docs/zibo_home.md` |
 | **Yönetici uygulaması / admin paneli** (uzaktan ayar, duyuru/bildirim, challenge, hediye — FİKİR, Ev'den sonra) | `docs/admin_panel.md` |
 | **Zibo Online** (arkadaş, ev ziyareti, sıralama, düello — UZUN VADELİ FİKİR, admin panelinden sonra) | `docs/zibo_online.md` |
