@@ -141,5 +141,19 @@ Adımlar:
     `fcmToken`'ı yok (telefondaki Zibo farklı uid). Düzeltme: kutu boş geliyor + sıraya almadan önce `fcmToken` kontrolü.
   - Bilinen sınır: "Hemen" herkese aynı anda gider (yerel saat penceresi yok) — gece göndermemek yöneticiye kalmış.
     İleride: kullanıcı yerel saatine göre (ör. 10–21) bekletme.
+- [~] A5b Uygulama içi mesaj kartı (2026-10-29, kullanıcı isteği: "uygulama içi ve bildirim şeklinde ikiye ayıralım"):
+  - Panel: Duyuru sekmesinin üstünde **Bildirim | Uygulama içi** seçimi (`screens/announce_screen.dart`, iki ekran
+    `IndexedStack` ile taslağı korur). `screens/in_app_message_screen.dart`: TR/EN/ES başlık (≤60) + mesaj (≤500),
+    simge (8 emoji), kitle (herkes / ücretsiz / Pro+Pro+), başlangıç (şimdi/planlı), süre (3/7/14/30 gün), isteğe bağlı
+    "yalnızca bu hesap" (`onlyUid`), Zibo kartının önizlemesi, liste (Planlı/Yayında/Bitti) + "Durdur" (`endAt = şimdi`).
+  - Firestore `inAppMessages/{id}`: `startAt`, `endAt`, `emoji`, `audience`, `texts{lang:{title,body}}`, `onlyUid?`,
+    `createdAt`. Kural: giriş yapmış herkes OKUR, yalnız yönetici YAZAR (**Console'a yapıştırılması gerekiyor**).
+  - Zibo (**sürüm gerektirir — 1.18.0**): `models/in_app_message.dart` (`fromFirestore` + `pickInAppMessage`: tarih
+    aralığı, dil metni yoksa GÖSTERME, kitle, onlyUid, görülmemiş, en yeni başlayan), `providers/in_app_message_provider.dart`
+    (açılışta tek sorgu `endAt > şimdi` limit 10; görülenler YALNIZ yerelde `SharedPreferences inAppMessageSeenIds`, en çok
+    50 — buluta yazım maliyeti yok), `widgets/in_app_message_card.dart` (sticker pencere: emoji dairesi, başlık, metin,
+    "Tamam"), `RootScreen._maybeShowInAppMessage` (Ana Sayfa seçili + üstte pencere yokken, 2 sn gecikme, koşul tutmazsa
+    3 sn arayla ≤20 deneme; oturum başına EN FAZLA 1 kart; gösterilince görüldü sayılır). Testler: `test/in_app_message_test.dart`
+    (8), paket 759/759 yeşil. **Telefonda denenmedi**: telefondaki Zibo Play sürümü — debug kurmak kaldır-kur = veri kaybı.
 - [ ] A6 Özet: `stats/daily`.
 - Sonra (Zibo sürümü gerektirenler): uygulama içi duyuru kutusu, reklam sıklığını `config/ads`'e taşıma.

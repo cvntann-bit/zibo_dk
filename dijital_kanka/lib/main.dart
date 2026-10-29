@@ -35,6 +35,7 @@ import 'providers/games_config_provider.dart';
 import 'providers/goals_provider.dart';
 import 'providers/gratitude_provider.dart';
 import 'providers/hidden_badge_provider.dart';
+import 'providers/in_app_message_provider.dart';
 import 'providers/home_quick_widgets_provider.dart';
 import 'providers/instagram_follow_provider.dart';
 import 'providers/manifest_decor_provider.dart';
@@ -805,6 +806,8 @@ class DijitalKankaApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => FounderBadgeProvider(uid: uid)),
         // Oyun Salonu (docs/game_zibo.md Faz 2): rakamlar + kalıcı ★ cüzdanı.
         ChangeNotifierProvider(create: (_) => GamesConfigProvider(uid: uid)),
+        // Yönetici panelinin uygulama içi mesaj kartları (docs/admin_panel.md).
+        ChangeNotifierProvider(create: (_) => InAppMessageProvider(uid: uid)),
         ChangeNotifierProvider(
           create: (context) =>
               GamePointsProvider(now: _trustedNow(context), uid: uid),

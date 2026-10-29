@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../l10n/app_localizations.dart';
+import '../models/in_app_message.dart';
 import '../models/push_notification_type.dart';
+import '../models/subscription_tier.dart';
 import '../providers/app_streak_provider.dart';
 import '../providers/app_theme_provider.dart';
 import '../providers/auth_link_provider.dart';
@@ -18,6 +20,7 @@ import '../providers/coin_provider.dart';
 import '../providers/goals_provider.dart';
 import '../providers/gratitude_provider.dart';
 import '../providers/hidden_badge_provider.dart';
+import '../providers/in_app_message_provider.dart';
 import '../providers/locale_provider.dart';
 import '../providers/manifest_provider.dart';
 import '../providers/money_provider.dart';
@@ -44,6 +47,7 @@ import '../widgets/badges_trigger_button.dart';
 import '../widgets/coin_balance_widget.dart';
 import '../widgets/daily_rewards_trigger_button.dart';
 import '../widgets/dot_grid_background.dart';
+import '../widgets/in_app_message_card.dart';
 import '../widgets/main_bottom_bar.dart';
 import '../widgets/modules_menu_sheet.dart';
 import '../widgets/sticker_style.dart';
@@ -94,6 +98,13 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
   static const _storeTabIndex = 3;
 
   int _selectedIndex = 0;
+
+  // Yönetici panelinin uygulama içi mesaj kartı — oturum başına EN FAZLA bir kart
+  // (bkz. `_maybeShowInAppMessage`).
+  InAppMessageProvider? _inAppMessages;
+  Timer? _inAppMessageTimer;
+  bool _inAppMessageShown = false;
+  int _inAppMessageAttempts = 0;
   late final PushNotificationService _pushNotificationService =
       widget.pushNotificationService ??
       FirebaseMessagingPushNotificationService();
@@ -252,6 +263,9 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
       );
       // Kurucu Üye rozeti — bkz. `_maybeClaimFounderBadge()` dokümantasyonu.
       unawaited(_maybeClaimFounderBadge());
+      _inAppMessages = context.read<InAppMessageProvider>()
+        ..addListener(_scheduleInAppMessageCheck);
+      _scheduleInAppMessageCheck();
     });
     // 2026 güncellemesi — Sosyal/Paylaşım Rozetleri: `ReferralProvider.
     // successfulReferralCount` sunucu tarafında (GitHub Actions cron'u)
@@ -390,7 +404,46 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
       sync.dispose();
     }
     _badgeCoordinator?.dispose();
+    _inAppMessages?.removeListener(_scheduleInAppMessageCheck);
+    _inAppMessageTimer?.cancel();
     super.dispose();
+  }
+
+  /// Kart adayı varsa kısa bir gecikmeyle kontrol planlar — açılıştaki diğer pencereler
+  /// (Günlük Ödül, Seri Dondurma teklifi vb.) önce açılsın. Aday YOKSA zamanlayıcı kurulmaz
+  /// (testlerde `uid == null` → mesaj okunmaz → "pending timer" hatası olmaz).
+  void _scheduleInAppMessageCheck() {
+    final provider = _inAppMessages;
+    if (!mounted || _inAppMessageShown || provider == null || provider.messages.isEmpty) return;
+    if (_inAppMessageTimer?.isActive ?? false) return;
+    _inAppMessageTimer = Timer(const Duration(seconds: 2), _maybeShowInAppMessage);
+  }
+
+  /// Ana Sayfa seçili VE üstte başka pencere/sayfa yokken görülmemiş kartı gösterir. Koşul
+  /// tutmazsa 3 sn arayla en çok 20 kez yeniden dener; olmazsa kart bir sonraki açılışa kalır.
+  void _maybeShowInAppMessage() {
+    final provider = _inAppMessages;
+    if (!mounted || _inAppMessageShown || provider == null) return;
+    final languageCode = context.read<LocaleProvider>().locale.languageCode;
+    final message = pickInAppMessage(
+      provider.messages,
+      now: DateTime.now(),
+      uid: _uid,
+      isPro: context.read<SubscriptionProvider>().tier != SubscriptionTier.free,
+      languageCode: languageCode,
+      seenIds: provider.seenIds,
+    );
+    if (message == null) return;
+    final isTopRoute = ModalRoute.of(context)?.isCurrent ?? true;
+    if (_selectedIndex != 0 || !isTopRoute) {
+      if (_inAppMessageAttempts++ < 20) {
+        _inAppMessageTimer = Timer(const Duration(seconds: 3), _maybeShowInAppMessage);
+      }
+      return;
+    }
+    _inAppMessageShown = true;
+    unawaited(provider.markSeen(message.id));
+    unawaited(showInAppMessageCard(context, message: message, languageCode: languageCode));
   }
 
   @override

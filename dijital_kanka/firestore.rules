@@ -180,6 +180,13 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // Uygulama içi mesaj kartları — yönetici yazar, Zibo açılışta okur (InAppMessageProvider,
+    // docs/admin_panel.md). İçerik herkese açık duyuru metni; kişisel veri yok.
+    match /inAppMessages/{messageId} {
+      allow read: if request.auth != null;
+      allow write: if isAdmin();
+    }
+
     // TrustedTimeProvider'ın FirestoreTrustedTimeService'i sunucu zaman
     // damgasını okumak için paylaşılan bir "ping" belgesine yazıp hemen
     // geri okuyor (bkz. trusted_time_service.dart) — belge içeriği

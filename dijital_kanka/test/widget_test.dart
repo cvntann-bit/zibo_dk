@@ -40,6 +40,7 @@ import 'package:dijital_kanka/providers/games_config_provider.dart';
 import 'package:dijital_kanka/providers/goals_provider.dart';
 import 'package:dijital_kanka/providers/gratitude_provider.dart';
 import 'package:dijital_kanka/providers/hidden_badge_provider.dart';
+import 'package:dijital_kanka/providers/in_app_message_provider.dart';
 import 'package:dijital_kanka/providers/home_quick_widgets_provider.dart';
 import 'package:dijital_kanka/providers/instagram_follow_provider.dart';
 import 'package:dijital_kanka/providers/locale_provider.dart';
@@ -197,6 +198,7 @@ Widget _buildAppWithClock(DateTime Function() now) {
       ChangeNotifierProvider(create: (_) => ThemeProvider()),
       ChangeNotifierProvider(create: (_) => WaterProvider(now: now)),
       ChangeNotifierProvider(create: (_) => GamesConfigProvider()),
+      ChangeNotifierProvider(create: (_) => InAppMessageProvider()),
       ChangeNotifierProvider(create: (_) => GamePointsProvider(now: now)),
       ChangeNotifierProvider(create: (_) => XpProvider()),
       ChangeNotifierProvider(create: (_) => ZiboPoseProvider()),
