@@ -1,0 +1,462 @@
+<title>Zibo Yönetici</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* Layout: phone-sized admin tool (denser, tool-like) on the left, reading notes on the right; stacks on phones.
+   Same Zibo sticker language, but an ink header marks "this is the owner's control room", not the kids' app. */
+:root{
+  --outline:#14110C; --ink:#14110C; --ink-soft:#5B4E3A; --line:#E7D9BE;
+  --gold:#F3B23C; --gold-soft:#F6D488; --gold-muted:#C9A46B; --gold-pale:#F3E4C0;
+  --cream:#FFF4DE; --paper:#FFFDF7; --good:#3E8E4E; --warn:#C7741B; --bad:#C2412F;
+  --display:"Baloo 2",ui-rounded,"Arial Rounded MT Bold",system-ui,sans-serif;
+  --body:"Nunito",ui-rounded,system-ui,sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{background:var(--cream);color:var(--ink)}
+body{font-family:var(--body);font-size:15px;line-height:1.45;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 48px}
+.wrap{max-width:1000px;margin:0 auto;display:grid;grid-template-columns:minmax(0,420px) minmax(0,1fr);gap:32px;align-items:start}
+@media (max-width:860px){.wrap{grid-template-columns:minmax(0,1fr)}.phone{margin-inline:auto}}
+button,input,select,textarea{font:inherit;color:inherit}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+
+.phone{width:100%;max-width:420px;height:min(860px,calc(100vh - 40px));min-height:660px;display:flex;flex-direction:column;background:var(--paper);
+  border:3px solid var(--outline);border-radius:30px;box-shadow:6px 6px 0 var(--outline);overflow:hidden;position:relative}
+.top{display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--ink);color:#fff}
+.top h1{font-family:var(--display);font-weight:800;font-size:21px;line-height:1;margin:0;flex:1}
+.top h1 small{display:block;font-family:var(--body);font-size:11px;font-weight:700;color:var(--gold-soft)}
+.lock{font-size:11px;font-weight:800;border:2px solid var(--gold);color:var(--gold);border-radius:999px;padding:2px 8px}
+.iconbtn{background:none;border:2px solid #fff;color:#fff;border-radius:10px;width:34px;height:34px;cursor:pointer;font-size:16px}
+
+.screen{flex:1;overflow-y:auto;padding:12px 14px 16px;display:none;flex-direction:column;gap:10px}
+.screen.on{display:flex}
+.card{border:2.5px solid var(--outline);border-radius:16px;background:#fff;padding:11px 12px;box-shadow:3px 3px 0 var(--outline)}
+.card h3{font-family:var(--display);font-weight:800;font-size:16px;margin:0 0 6px;line-height:1.15;display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.muted{color:var(--ink-soft);font-size:12px;font-weight:700}
+.sample{font-size:10.5px;font-weight:800;color:var(--ink-soft);background:var(--gold-pale);border-radius:6px;padding:1px 6px;letter-spacing:.03em}
+.btn{border:2.5px solid var(--outline);border-radius:12px;background:var(--gold);font-weight:800;padding:7px 12px;box-shadow:2px 2px 0 var(--outline);cursor:pointer}
+.btn:active{transform:translate(2px,2px);box-shadow:none}
+.btn.ghosty{background:#fff}.btn.danger{background:#F6D3CC}
+.btn.wide{width:100%}
+.btn:disabled{background:var(--gold-pale);color:var(--ink-soft);box-shadow:none;cursor:default}
+
+/* KPIs */
+.kpis{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.kpi{border:2.5px solid var(--outline);border-radius:14px;background:#fff;padding:8px 10px}
+.kpi .v{font-family:var(--display);font-weight:800;font-size:24px;line-height:1.1;font-variant-numeric:tabular-nums}
+.kpi .l{font-size:11.5px;font-weight:800;color:var(--ink-soft)}
+.delta{font-size:11.5px;font-weight:800}
+.up{color:var(--good)}.down{color:var(--bad)}
+svg.spark{width:100%;height:70px;display:block}
+.alerts{display:grid;gap:6px}
+.alert{display:flex;gap:8px;align-items:flex-start;font-size:13px;font-weight:700;border-left:5px solid var(--warn);background:#FFF7E8;border-radius:8px;padding:6px 8px}
+.alert.bad{border-color:var(--bad);background:#FDEDEA}.alert.ok{border-color:var(--good);background:#EEF7EF}
+
+/* settings */
+.set{display:grid;grid-template-columns:1fr auto;gap:2px 10px;align-items:center;padding:8px 0;border-top:2px dashed var(--line)}
+.set:first-of-type{border-top:none}
+.set label{font-weight:800;font-size:13.5px}
+.set .muted{grid-column:1/-1}
+.step{display:flex;align-items:center;border:2.5px solid var(--outline);border-radius:10px;overflow:hidden;background:#fff}
+.step button{border:none;background:var(--gold-pale);width:30px;height:30px;font-weight:800;cursor:pointer}
+.step input{width:56px;border:none;text-align:center;font-weight:800;font-variant-numeric:tabular-nums;background:#fff}
+.step.changed{background:var(--gold-soft)}.step.changed input{background:var(--gold-soft)}
+.sw{position:relative;width:46px;height:26px;border:2.5px solid var(--outline);border-radius:99px;background:var(--gold-pale);cursor:pointer;padding:0}
+.sw::after{content:"";position:absolute;top:2px;left:2px;width:17px;height:17px;border-radius:50%;background:#fff;border:2px solid var(--outline);transition:.2s}
+.sw[aria-checked=true]{background:var(--gold)}.sw[aria-checked=true]::after{left:21px}
+.savebar{position:sticky;bottom:-16px;margin:0 -14px -16px;padding:10px 14px;background:var(--ink);color:#fff;display:flex;align-items:center;gap:10px;font-weight:800;font-size:13px}
+.savebar[hidden]{display:none}
+
+/* compose */
+.field{display:grid;gap:4px}
+.field>span{font-weight:800;font-size:12.5px}
+.field input,.field textarea,.field select{border:2.5px solid var(--outline);border-radius:12px;padding:7px 10px;background:var(--paper);font-weight:700;width:100%;min-width:0}
+.field textarea{resize:vertical;min-height:62px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:2px solid var(--outline);border-radius:999px;background:#fff;padding:3px 10px;font-weight:800;font-size:12.5px;cursor:pointer}
+.chip[aria-pressed=true]{background:var(--gold-soft);box-shadow:inset 0 0 0 1.5px var(--outline)}
+.notif{border-radius:16px;background:#2A2723;color:#fff;padding:10px 12px;display:flex;gap:10px;align-items:flex-start}
+.notif .ic{width:30px;height:30px;border-radius:8px;background:var(--gold);display:grid;place-items:center;font-family:var(--display);font-weight:800;color:var(--ink);flex:none}
+.notif b{display:block;font-size:13.5px}.notif span{font-size:12.5px;opacity:.9}
+.reach{font-family:var(--display);font-weight:800;font-size:20px;font-variant-numeric:tabular-nums}
+
+/* lists */
+.li{display:flex;align-items:center;gap:10px;padding:8px 0;border-top:2px dashed var(--line);font-size:13.5px}
+.li:first-child{border-top:none}
+.li .grow{flex:1;min-width:0}
+.li b{display:block}
+.pill{font-size:11px;font-weight:800;border:2px solid var(--outline);border-radius:999px;padding:0 8px;white-space:nowrap}
+.pill.live{background:var(--gold)}.pill.soon{background:#fff}.pill.done{background:var(--gold-pale);color:var(--ink-soft);border-color:var(--gold-muted)}
+.bar{height:8px;border:2px solid var(--outline);border-radius:99px;background:var(--gold-pale);overflow:hidden;margin-top:3px}
+.bar i{display:block;height:100%;background:var(--gold)}
+
+/* users */
+.search{display:flex;gap:8px}
+.search input{flex:1;min-width:0;border:2.5px solid var(--outline);border-radius:12px;padding:7px 10px;font-weight:800;text-transform:uppercase;background:var(--paper)}
+.ucard{display:flex;gap:10px;align-items:center}
+.uav{width:56px;height:56px;border-radius:50%;border:2.5px solid var(--outline);overflow:hidden;background:var(--gold-pale);flex:none}
+.uav img{width:100%;height:150%;object-fit:cover;object-position:50% 8%}
+.ufacts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:8px}
+.ufacts div{border:2px solid var(--line);border-radius:10px;padding:4px 6px;font-size:11px;font-weight:800;color:var(--ink-soft)}
+.ufacts b{display:block;font-size:15px;color:var(--ink);font-variant-numeric:tabular-nums}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.report{border-left:5px solid var(--bad);background:#FDEDEA;border-radius:8px;padding:6px 8px;font-size:12.5px;font-weight:700;display:grid;gap:6px}
+.report .row{display:flex;gap:6px}
+
+/* log */
+.log{font-size:12.5px}
+.log .li{align-items:flex-start}
+.log time{font-variant-numeric:tabular-nums;color:var(--ink-soft);font-weight:800;width:42px;flex:none}
+
+.nav{display:grid;grid-template-columns:repeat(5,1fr);border-top:3px solid var(--outline);background:#fff;flex:none}
+.tab{background:none;border:none;padding:8px 2px 10px;display:flex;flex-direction:column;align-items:center;gap:1px;font-weight:800;font-size:11px;color:var(--ink-soft);cursor:pointer;position:relative}
+.tab .e{font-size:20px;filter:grayscale(.6);opacity:.75}
+.tab[aria-selected=true]{color:var(--ink);background:var(--gold-soft)}
+.tab[aria-selected=true] .e{filter:none;opacity:1}
+.tab .dot{position:absolute;top:5px;right:calc(50% - 20px);min-width:17px;height:17px;border-radius:9px;background:var(--bad);color:#fff;border:2px solid var(--outline);font-size:10px;display:grid;place-items:center}
+
+.sheet{position:absolute;inset:0;z-index:25;background:rgba(20,17,12,.55);display:none;align-items:flex-end}
+.sheet.on{display:flex}
+.sheet .panel{width:100%;background:var(--paper);border-top:3px solid var(--outline);border-radius:22px 22px 0 0;padding:14px;display:flex;flex-direction:column;gap:10px;max-height:85%;overflow:auto}
+.sheet h3{font-family:var(--display);margin:0;font-size:19px}
+.diff{font-size:13px;font-weight:700;display:grid;gap:4px}
+.diff s{color:var(--ink-soft)}
+.toast{position:absolute;left:50%;bottom:72px;transform:translate(-50%,20px);opacity:0;z-index:30;background:var(--ink);color:#fff;font-weight:800;font-size:13px;
+  padding:8px 14px;border-radius:999px;white-space:nowrap;transition:.3s;pointer-events:none;max-width:92%;overflow:hidden;text-overflow:ellipsis}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+
+.notes{min-width:0;max-width:62ch}
+.notes .eyebrow{font-weight:800;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);margin:6px 0 4px}
+.notes h2{font-family:var(--display);font-weight:800;font-size:34px;line-height:1.05;margin:0 0 10px;text-wrap:balance}
+.notes p{margin:0 0 12px}
+.notes h4{font-family:var(--display);font-size:18px;margin:18px 0 4px}
+.notes ul{margin:0;padding-left:18px;display:grid;gap:4px}
+.callout{margin-top:18px;border:2.5px solid var(--outline);border-radius:16px;padding:12px 14px;background:var(--paper);box-shadow:4px 4px 0 var(--outline)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+  <div class="phone" id="phone">
+    <div class="top">
+      <h1>Zibo Yönetici<small>cvntann@gmail.com</small></h1>
+      <span class="lock">🔒 2 adımlı ✓</span>
+      <button class="iconbtn" id="logBtn" type="button" aria-label="İşlem kaydı">🧾</button>
+    </div>
+
+    <!-- OVERVIEW -->
+    <section class="screen on" id="s-home">
+      <div class="kpis">
+        <div class="kpi"><div class="l">Günlük aktif</div><div class="v">212</div><div class="delta up">▲ %9 dün</div></div>
+        <div class="kpi"><div class="l">Yeni kurulum (bugün)</div><div class="v">38</div><div class="delta up">▲ ES kampanyası</div></div>
+        <div class="kpi"><div class="l">Reklam geliri (7 gün)</div><div class="v">$2,41</div><div class="delta">ARPDAU $0,0016</div></div>
+        <div class="kpi"><div class="l">Çökmesiz kullanıcı</div><div class="v">%99,2</div><div class="delta down">▼ 0,1 puan</div></div>
+      </div>
+      <div class="card">
+        <h3>Günlük aktif · 14 gün <span class="sample">ÖRNEK VERİ</span></h3>
+        <svg class="spark" id="spark" viewBox="0 0 300 70" preserveAspectRatio="none" aria-label="Günlük aktif kullanıcı grafiği"></svg>
+        <div class="muted" style="display:flex;justify-content:space-between"><span>16 Eki · 168</span><span>bugün · 212</span></div>
+      </div>
+      <div class="card">
+        <h3>Dikkat</h3>
+        <div class="alerts">
+          <div class="alert bad">⚑ 2 yeni şikâyet bekliyor (Zibo Online)</div>
+          <div class="alert">🪙 Coin dolaşımı haftada %18 arttı: Takas Gişesi kurunu gözden geçir</div>
+          <div class="alert ok">✓ Firebase gideri bu ay ₺4,10 · bütçe ₺300</div>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Ekonomi <span class="sample">ÖRNEK VERİ</span></h3>
+        <div class="li"><span class="grow">Bugün kazanılan ZC</span><b>18.420</b></div>
+        <div class="li"><span class="grow">Bugün harcanan ZC</span><b>15.960</b></div>
+        <div class="li"><span class="grow">Ödüllü reklam izlenme</span><b>146</b></div>
+        <div class="li"><span class="grow">Pro abone</span><b>7</b></div>
+      </div>
+    </section>
+
+    <!-- SETTINGS -->
+    <section class="screen" id="s-set">
+      <div class="card">
+        <h3>Oyunlar <span class="muted">config/games</span></h3>
+        <div id="setGames"></div>
+      </div>
+      <div class="card">
+        <h3>Zibo'nun Evi <span class="muted">config/home</span></h3>
+        <div id="setHome"></div>
+      </div>
+      <div class="card">
+        <h3>Reklam sıklığı <span class="muted">config/ads</span></h3>
+        <div id="setAds"></div>
+      </div>
+      <div class="card">
+        <h3>Sezonluk ürünler</h3>
+        <div id="setSeason"></div>
+      </div>
+      <div class="savebar" id="savebar" hidden><span id="saveCount" style="flex:1">1 değişiklik</span><button class="btn ghosty" id="discardBtn" type="button">Vazgeç</button><button class="btn" id="reviewBtn" type="button">Gözden geçir</button></div>
+    </section>
+
+    <!-- BROADCAST -->
+    <section class="screen" id="s-msg">
+      <div class="card">
+        <h3>Duyuru gönder</h3>
+        <div class="field"><span>Kanal</span>
+          <div class="chips" id="chanChips">
+            <button class="chip" type="button" aria-pressed="true" data-v="push">🔔 Bildirim</button>
+            <button class="chip" type="button" aria-pressed="true" data-v="inapp">📣 Uygulama içi</button>
+          </div>
+        </div>
+        <div class="field" style="margin-top:8px"><span>Kime</span>
+          <div class="chips" id="langChips">
+            <button class="chip" type="button" aria-pressed="true" data-v="tr">TR</button>
+            <button class="chip" type="button" aria-pressed="true" data-v="es">ES</button>
+            <button class="chip" type="button" aria-pressed="false" data-v="en">EN</button>
+          </div>
+          <div class="chips" id="segChips">
+            <button class="chip" type="button" aria-pressed="true" data-v="all">Herkes</button>
+            <button class="chip" type="button" aria-pressed="false" data-v="pro">Yalnız Pro</button>
+            <button class="chip" type="button" aria-pressed="false" data-v="idle">7 gündür gelmeyen</button>
+          </div>
+        </div>
+        <label class="field" style="margin-top:8px"><span>Başlık</span><input id="mTitle" value="Zibo'nun evi açıldı! 🏡" maxlength="40"></label>
+        <label class="field" style="margin-top:8px"><span>Mesaj</span><textarea id="mBody" maxlength="120">Banyoda köpük, mutfakta simit seni bekliyor. Bugün 2 bedava öğün!</textarea></label>
+        <label class="field" style="margin-top:8px"><span>Zaman</span>
+          <select id="mWhen"><option value="now">Hemen</option><option value="19">Bugün 19:00 (kullanıcının saatiyle)</option><option value="sat">Cumartesi 11:00</option></select>
+        </label>
+      </div>
+      <div class="card">
+        <h3>Önizleme <span class="muted">Ulaşacak: <span class="reach" id="reach">1.180</span> kişi</span></h3>
+        <div class="notif"><span class="ic">Z</span><div><b id="pTitle"></b><span id="pBody"></span></div></div>
+        <p class="muted" style="margin:8px 0 0">Her dil kendi metniyle gider; ES/EN çevirisi gönderimden önce gösterilir.</p>
+      </div>
+      <button class="btn wide" id="sendMsg" type="button">Gönder…</button>
+      <div class="card">
+        <h3>Son gönderilenler</h3>
+        <div class="li"><span class="grow"><b>Tablet sürümü yayında 📱</b><span class="muted">29 Eki · 1.240 kişi · açılma %11</span></span></div>
+        <div class="li"><span class="grow"><b>2048'de dev tahta!</b><span class="muted">27 Eki · 1.105 kişi · açılma %14</span></span></div>
+      </div>
+    </section>
+
+    <!-- CHALLENGES -->
+    <section class="screen" id="s-chal">
+      <button class="btn wide" id="newChal" type="button">＋ Yeni challenge</button>
+      <div class="card"><h3>Challenge'lar</h3><div id="chalList"></div></div>
+    </section>
+
+    <!-- USERS -->
+    <section class="screen" id="s-users">
+      <div class="card">
+        <h3>Kullanıcı bul</h3>
+        <div class="search"><input id="uq" value="ZB-7K4Q" placeholder="Arkadaş kodu ya da kullanıcı no"><button class="btn" id="uFind" type="button">Bul</button></div>
+      </div>
+      <div class="card" id="uCard">
+        <div class="ucard">
+          <div class="uav"><img src="img/me.webp" alt=""></div>
+          <div style="flex:1;min-width:0"><b style="font-size:16px">Pamuk#2048</b><div class="muted">TR · Android · Google bağlı ✓ · son görülme 2 sa önce</div></div>
+        </div>
+        <div class="ufacts">
+          <div>Coin<b id="uCoins">1.250</b></div><div>Seviye<b>12</b></div><div>Seri<b>19 gün</b></div>
+          <div>Oyun ★<b>1.560</b></div><div>Üyelik<b>Ücretsiz</b></div><div>Katılım<b>3 Eyl</b></div>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Hediye ver</h3>
+        <div class="grid2">
+          <button class="btn ghosty" type="button" data-gift="coin">🪙 Coin</button>
+          <button class="btn ghosty" type="button" data-gift="item">🍰 Eşya / kostüm</button>
+          <button class="btn ghosty" type="button" data-gift="plays">🎮 Sınırsız oyun</button>
+          <button class="btn ghosty" type="button" data-gift="pro">⭐ Pro (7 gün)</button>
+        </div>
+        <p class="muted" style="margin:8px 0 0">Hediye kullanıcının kutusuna düşer, uygulamayı açınca "Hediyeni al" der. Coin hesabına doğrudan yazılmaz.</p>
+      </div>
+      <div class="card">
+        <h3>Şikâyetler <span class="pill live" id="repCount">2</span></h3>
+        <div id="reports" style="display:grid;gap:8px"></div>
+      </div>
+    </section>
+
+    <nav class="nav" role="tablist">
+      <button class="tab" role="tab" aria-selected="true" data-s="s-home" id="tab-home"><span class="e">📊</span>Özet</button>
+      <button class="tab" role="tab" aria-selected="false" data-s="s-set" id="tab-set"><span class="e">🎛️</span>Ayarlar</button>
+      <button class="tab" role="tab" aria-selected="false" data-s="s-msg" id="tab-msg"><span class="e">📣</span>Duyuru</button>
+      <button class="tab" role="tab" aria-selected="false" data-s="s-chal" id="tab-chal"><span class="e">🌊</span>Challenge</button>
+      <button class="tab" role="tab" aria-selected="false" data-s="s-users" id="tab-users"><span class="e">👤</span>Kullanıcı<span class="dot" id="userDot">2</span></button>
+    </nav>
+    <div class="sheet" id="sheet"><div class="panel" id="panel"></div></div>
+    <div class="toast" id="toast"></div>
+  </div>
+
+  <aside class="notes">
+    <div class="eyebrow">Taslak · Yönetici uygulaması · 2026-10-29</div>
+    <h2>Her şey tek telefonda</h2>
+    <p>Yalnızca senin telefonunda çalışan, Play'e yüklenmeyen ayrı uygulama. Sayılar örnek; gerçekte Firebase ve Appodeal'dan gelir. Hiçbir düğme gerçek bir şey göndermez.</p>
+    <h4>Özet</h4>
+    <ul><li>Günlük aktif, kurulum, reklam geliri, çökmesiz oran, coin akışı ve dikkat isteyen işler.</li></ul>
+    <h4>Ayarlar</h4>
+    <ul><li>Oyun hakları, ev fiyatları, bedava öğün, reklam sıklığı ve sezonluk ürünler. Değiştir, "Gözden geçir"de eski → yeni farkı gör, onayla. Yeni sürüm çıkarmadan herkese yansır.</li></ul>
+    <h4>Duyuru</h4>
+    <ul><li>Bildirim ve uygulama içi duyuru; dil ve kitle seç, önizlemeyi ve kaç kişiye gideceğini gör, saat seç.</li></ul>
+    <h4>Challenge</h4>
+    <ul><li>Herkesin birlikte doldurduğu hedefler: oluştur, tarih ve ödül basamaklarını ver, ilerlemeyi izle.</li></ul>
+    <h4>Kullanıcı</h4>
+    <ul><li>Arkadaş koduyla kişiyi bul, hediye ver, Online şikâyetlerini incele (uyar, gizle, engelle).</li></ul>
+    <div class="callout">
+      <strong>Güvenlik:</strong> yalnız senin Google hesabın ve 2 adımlı doğrulama; toplu işlemler önce özet gösterir ve onay ister; her işlem 🧾 kaydına düşer. Ayrıntılar: <code>docs/admin_panel.md</code>.
+    </div>
+  </aside>
+</div>
+
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const fmt = n => n.toLocaleString('tr-TR');
+  let toastT;
+  const toast = m => { const t = $('toast'); t.textContent = m; t.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('on'), 2300); };
+  const LOG = [
+    ['09:12', 'Giriş yapıldı (2 adımlı doğrulama)'],
+    ['Dün', 'Duyuru: "Tablet sürümü yayında 📱" → 1.240 kişi'],
+    ['Dün', 'config/games: Kule günlük hak 5 → 6'],
+  ];
+  const now = () => new Date().toTimeString().slice(0, 5);
+  const log = m => LOG.unshift([now(), m]);
+
+  // tabs
+  document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => {
+    document.querySelectorAll('.screen').forEach(s => s.classList.toggle('on', s.id === t.dataset.s));
+    document.querySelectorAll('.tab').forEach(x => x.setAttribute('aria-selected', x === t));
+  }));
+
+  // sheet
+  const sheet = (html) => { $('panel').innerHTML = html; $('sheet').classList.add('on'); };
+  const close = () => $('sheet').classList.remove('on');
+  $('sheet').addEventListener('click', e => { if (e.target.id === 'sheet' || e.target.closest('[data-close]')) close(); });
+
+  // sparkline
+  (() => {
+    const d = [168, 171, 175, 169, 180, 186, 183, 190, 194, 188, 197, 201, 195, 212];
+    const min = 150, max = 220, X = i => i * 300 / (d.length - 1), Y = v => 66 - (v - min) / (max - min) * 60;
+    const pts = d.map((v, i) => `${X(i).toFixed(1)},${Y(v).toFixed(1)}`).join(' ');
+    $('spark').innerHTML = [0, 1, 2].map(i => `<line x1="0" x2="300" y1="${6 + i * 30}" y2="${6 + i * 30}" stroke="#E7D9BE" stroke-width="1" vector-effect="non-scaling-stroke"/>`).join('') +
+      `<polygon points="0,70 ${pts} 300,70" fill="#F6D488" opacity=".6"/><polyline points="${pts}" fill="none" stroke="#14110C" stroke-width="2.5" vector-effect="non-scaling-stroke"/>` +
+      `<circle cx="${X(d.length - 1)}" cy="${Y(212)}" r="4.5" fill="#F3B23C" stroke="#14110C" stroke-width="2"/>`;
+  })();
+
+  // ---------- settings ----------
+  const SET = {
+    setGames: [['kulePlays', 'Kule günlük hak', 6, 1, 'Ücretsiz kullanıcı, gün başına'], ['exchangeCap', 'Haftalık takas tavanı (ZC)', 60, 10, 'Pro: +20, Pro+: +40'], ['breakEvery', '2048 mola reklamı (hamle)', 120, 10, 'Ücretsiz kullanıcıda kaç hamlede bir']],
+    setHome: [['freeMeals', 'Günlük bedava öğün', 2, 1, 'Sonrası Zibo Coin ya da reklam'], ['simit', 'Simit fiyatı (ZC)', 10, 5, ''], ['plant', 'Saksı fiyatı (ZC)', 150, 10, '']],
+    setAds: [['interMax', 'Günlük en fazla geçiş reklamı', 2, 1, 'Kişi başı; ilk 3 saat hiç yok'], ['interGap', 'İki reklam arası (dk)', 4, 1, ''], ['rewardMax', 'Günlük en fazla ödüllü reklam', 6, 1, 'Kullanıcı isteyerek izler']],
+  };
+  const orig = {}, cur = {};
+  const label = {};
+  Object.entries(SET).forEach(([box, rows]) => {
+    $(box).innerHTML = rows.map(([k, l, v, st, h]) => { orig[k] = cur[k] = v; label[k] = l;
+      return `<div class="set"><label for="in-${k}">${l}</label><div class="step" id="st-${k}"><button type="button" data-k="${k}" data-d="-${st}" aria-label="Azalt">−</button><input id="in-${k}" inputmode="numeric" value="${v}"><button type="button" data-k="${k}" data-d="${st}" aria-label="Artır">+</button></div>${h ? `<span class="muted">${h}</span>` : ''}</div>`; }).join('');
+  });
+  const SEASON = [['tree', '🎄 Yılbaşı ağacı', true], ['pumpkin', '🎃 Cadılar Bayramı balkabağı', false], ['pool', '🏖️ Yaz havuzu', false]];
+  SEASON.forEach(([k, l, v]) => { orig[k] = cur[k] = v; label[k] = l; });
+  $('setSeason').innerHTML = SEASON.map(([k, l, v]) => `<div class="set"><label id="lb-${k}">${l}</label><button class="sw" role="switch" type="button" aria-labelledby="lb-${k}" aria-checked="${v}" data-sw="${k}" id="sw-${k}"></button></div>`).join('');
+  const changes = () => Object.keys(cur).filter(k => cur[k] !== orig[k]);
+  function refreshSave() {
+    const c = changes(); $('savebar').hidden = !c.length; $('saveCount').textContent = `${c.length} değişiklik`;
+    Object.keys(SET).forEach(b => SET[b].forEach(([k]) => { $('st-' + k).classList.toggle('changed', cur[k] !== orig[k]); $('in-' + k).value = cur[k]; }));
+    SEASON.forEach(([k]) => $('sw-' + k).setAttribute('aria-checked', cur[k]));
+  }
+  $('s-set').addEventListener('click', e => {
+    const b = e.target.closest('[data-d]'); if (b) { cur[b.dataset.k] = Math.max(0, cur[b.dataset.k] + +b.dataset.d); refreshSave(); }
+    const s = e.target.closest('[data-sw]'); if (s) { cur[s.dataset.sw] = !cur[s.dataset.sw]; refreshSave(); }
+  });
+  $('s-set').addEventListener('change', e => { if (e.target.id?.startsWith('in-')) { const k = e.target.id.slice(3); const v = parseInt(e.target.value, 10); cur[k] = isNaN(v) ? orig[k] : Math.max(0, v); refreshSave(); } });
+  const show = v => v === true ? 'açık' : v === false ? 'kapalı' : v;
+  $('discardBtn').addEventListener('click', () => { Object.keys(cur).forEach(k => cur[k] = orig[k]); refreshSave(); });
+  $('reviewBtn').addEventListener('click', () => sheet(`
+    <h3>Değişiklikleri onayla</h3>
+    <div class="diff">${changes().map(k => `<div>${label[k]}: <s>${show(orig[k])}</s> → <b>${show(cur[k])}</b></div>`).join('')}</div>
+    <p class="muted" style="margin:0">Kullanıcılar uygulamayı bir sonraki açışlarında yeni değerleri alır. İstersen kayıttan geri alabilirsin.</p>
+    <button class="btn wide" type="button" id="applyBtn">Yayınla</button>
+    <button class="btn ghosty wide" type="button" data-close>Vazgeç</button>`));
+  $('panel').addEventListener('click', e => {
+    if (e.target.id === 'applyBtn') { const c = changes(); c.forEach(k => { log(`Ayar: ${label[k]} ${show(orig[k])} → ${show(cur[k])}`); orig[k] = cur[k]; }); refreshSave(); close(); toast(`${c.length} ayar yayınlandı (taslak)`); }
+    if (e.target.id === 'sendNow') { close(); log(`Duyuru: "${$('mTitle').value}" → ${$('reach').textContent} kişi`); toast('Duyuru sıraya alındı (taslak, gerçekte gitmedi)'); }
+    if (e.target.dataset?.giftgo) { close(); const n = e.target.dataset.giftgo; log(`Hediye → Pamuk#2048: ${n}`); toast(`${n} hediye kutusuna bırakıldı`); }
+    if (e.target.id === 'saveChal') { const n = $('cName').value.trim() || 'Yeni challenge'; CHAL.unshift({ n, goal: +$('cGoal').value || 1000, now: 0, st: 'soon', when: $('cWhen').value }); renderChal(); close(); log(`Challenge oluşturuldu: ${n}`); toast('Challenge planlandı'); }
+  });
+
+  // ---------- broadcast ----------
+  function chipGroup(id, single) {
+    $(id).addEventListener('click', e => { const b = e.target.closest('.chip'); if (!b) return;
+      if (single) $(id).querySelectorAll('.chip').forEach(x => x.setAttribute('aria-pressed', x === b));
+      else b.setAttribute('aria-pressed', b.getAttribute('aria-pressed') !== 'true');
+      reach(); });
+  }
+  chipGroup('chanChips'); chipGroup('langChips'); chipGroup('segChips', true);
+  const on = id => [...$(id).querySelectorAll('.chip[aria-pressed=true]')].map(b => b.dataset.v);
+  function reach() {
+    const L = { tr: 820, es: 360, en: 60 }; let n = on('langChips').reduce((s, l) => s + L[l], 0);
+    const seg = on('segChips')[0]; if (seg === 'pro') n = Math.round(n * .006); if (seg === 'idle') n = Math.round(n * .55);
+    $('reach').textContent = fmt(n); $('pTitle').textContent = $('mTitle').value; $('pBody').textContent = $('mBody').value;
+    $('sendMsg').disabled = !n || !on('chanChips').length;
+  }
+  ['mTitle', 'mBody'].forEach(id => $(id).addEventListener('input', reach));
+  $('sendMsg').addEventListener('click', () => sheet(`
+    <h3>Gönderilsin mi?</h3>
+    <div class="diff"><div>Kanal: <b>${on('chanChips').map(c => c === 'push' ? 'Bildirim' : 'Uygulama içi').join(' + ')}</b></div>
+    <div>Dil: <b>${on('langChips').map(x => x.toUpperCase()).join(', ')}</b> · Kitle: <b>${$('segChips').querySelector('[aria-pressed=true]').textContent}</b></div>
+    <div>Zaman: <b>${$('mWhen').selectedOptions[0].textContent}</b></div>
+    <div>Ulaşacak: <b>${$('reach').textContent} kişi</b></div></div>
+    <button class="btn wide" type="button" id="sendNow">Evet, gönder</button>
+    <button class="btn ghosty wide" type="button" data-close>Vazgeç</button>`));
+  reach();
+
+  // ---------- challenges ----------
+  const CHAL = [
+    { n: '🌊 Su Dalgası', goal: 50000, now: 34120, st: 'live', when: '27 Eki – 2 Kas' },
+    { n: '🏆 Hafta sonu Kule turnuvası', goal: 0, now: 0, st: 'soon', when: '1–2 Kas' },
+    { n: '🫧 Köpük Haftası (banyo)', goal: 8000, now: 8000, st: 'done', when: '20–26 Eki' },
+  ];
+  function renderChal() {
+    const P = { live: ['live', 'Yayında'], soon: ['soon', 'Planlandı'], done: ['done', 'Bitti'] };
+    $('chalList').innerHTML = CHAL.map(c => `<div class="li"><div class="grow"><b>${c.n}</b><span class="muted">${c.when}${c.goal ? ` · ${fmt(c.now)} / ${fmt(c.goal)}` : ' · sıralama'}</span>${c.goal ? `<div class="bar"><i style="width:${Math.min(100, c.now / c.goal * 100)}%"></i></div>` : ''}</div><span class="pill ${P[c.st][0]}">${P[c.st][1]}</span></div>`).join('');
+  }
+  renderChal();
+  $('newChal').addEventListener('click', () => sheet(`
+    <h3>Yeni challenge</h3>
+    <label class="field"><span>Ad</span><input id="cName" value="🍎 Sağlıklı Mutfak"></label>
+    <label class="field"><span>Hedef (herkes birlikte)</span><input id="cGoal" inputmode="numeric" value="20000"></label>
+    <label class="field"><span>Ne sayılır</span><select id="cWhat"><option>Zibo'ya verilen meyve</option><option>İçilen bardak su</option><option>Banyo sayısı</option><option>Oyun ★</option></select></label>
+    <label class="field"><span>Tarih</span><select id="cWhen"><option>3–9 Kas</option><option>10–16 Kas</option></select></label>
+    <div class="field"><span>Ödül basamakları</span><div class="chips"><span class="chip">%25 · 20 ZC</span><span class="chip">%50 · rozet</span><span class="chip">%75 · eşya</span><span class="chip">%100 · kostüm denemesi</span></div></div>
+    <button class="btn wide" type="button" id="saveChal">Planla</button>
+    <button class="btn ghosty wide" type="button" data-close>Vazgeç</button>`));
+
+  // ---------- users ----------
+  $('uFind').addEventListener('click', () => { const v = $('uq').value.trim().toUpperCase(); if (v === 'ZB-7K4Q' || v === '') toast('Pamuk#2048 bulundu'); else toast('Taslakta yalnız ZB-7K4Q var'); });
+  document.querySelectorAll('[data-gift]').forEach(b => b.addEventListener('click', () => {
+    const g = b.dataset.gift;
+    const opts = { coin: [['100 ZC', '100 ZC'], ['500 ZC', '500 ZC']], item: [['🍰 Kek ×3', 'Kek ×3'], ['👑 Kral kostümü', 'Kral kostümü']], plays: [['🎮 Sınırsız oyun (7 gün)', 'Sınırsız oyun 7 gün']], pro: [['⭐ Pro 7 gün', 'Pro 7 gün']] }[g];
+    sheet(`<h3>Pamuk#2048'e hediye</h3>${opts.map(([l, v]) => `<button class="btn ghosty wide" type="button" data-giftgo="${v}">${l}</button>`).join('')}
+      <label class="field"><span>Not (kullanıcı görür)</span><input value="Teşekkürler, iyi ki varsın! 💛"></label>
+      <button class="btn ghosty wide" type="button" data-close>Vazgeç</button>`);
+  }));
+  let REPORTS = [
+    { id: 1, who: 'Tornado#3390', what: 'Ziyaretçi defteri: "Kostümün süper! 👑" ×14 aynı eve', by: '3 kişi' },
+    { id: 2, who: 'Kaptan#0921', what: 'Zibo adı uygunsuz olabilir', by: '1 kişi' },
+  ];
+  function renderReports() {
+    $('reports').innerHTML = REPORTS.length ? REPORTS.map(r => `<div class="report"><div><b>${r.who}</b> · ${r.what}<div class="muted">Bildiren: ${r.by}</div></div>
+      <div class="row"><button class="btn ghosty" type="button" data-r="${r.id}" data-a="ok">Sorun yok</button><button class="btn ghosty" type="button" data-r="${r.id}" data-a="warn">Uyar</button><button class="btn danger" type="button" data-r="${r.id}" data-a="block">Engelle</button></div></div>`).join('')
+      : '<p class="muted" style="margin:0">Bekleyen şikâyet yok.</p>';
+    $('repCount').textContent = REPORTS.length; const d = $('userDot'); d.textContent = REPORTS.length; d.hidden = !REPORTS.length;
+  }
+  $('reports').addEventListener('click', e => {
+    const b = e.target.closest('[data-r]'); if (!b) return;
+    const r = REPORTS.find(x => x.id == b.dataset.r); REPORTS = REPORTS.filter(x => x !== r); renderReports();
+    const t = { ok: 'kapatıldı', warn: 'uyarıldı', block: 'engellendi' }[b.dataset.a]; log(`Şikâyet: ${r.who} ${t}`); toast(`${r.who} ${t}`);
+  });
+  renderReports();
+
+  // ---------- log ----------
+  $('logBtn').addEventListener('click', () => sheet(`<h3>İşlem kaydı</h3><div class="log">${LOG.map(([t, m]) => `<div class="li"><time>${t}</time><span class="grow">${m}</span></div>`).join('')}</div><button class="btn ghosty wide" type="button" data-close>Kapat</button>`));
+})();
+</script>

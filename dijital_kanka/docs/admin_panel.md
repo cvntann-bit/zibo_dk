@@ -40,3 +40,16 @@ Her şeyi tek yerden kontrol edip değiştirmek: düzenlemeler/değişiklikler, 
    test kullanıcısı). Ayrı `applicationId` (ör. `com.dijitalkanka.zibo_admin`), aynı Firebase projesi.
 2. Challenge örnekleri (ör. "7 gün su hedefi", "hafta sonu oyun turnuvası") ve ödül türleri.
 3. Başka yönetici olacak mı (ekip), yoksa yalnızca sen mi?
+
+## Etkileşimli taslak (2026-10-29)
+`docs/admin_prototype/index.html`, yayın: https://claude.ai/artifact/2Kj7jdXL7mHc68T3hM8WcE (sayılar örnek)
+- **Özet:** günlük aktif, kurulum, reklam geliri, çökmesiz oran, 14 günlük grafik, "Dikkat" uyarıları, coin ekonomisi.
+- **Ayarlar:** config/games, config/home, config/ads değerleri (−/+), sezonluk ürün anahtarları; "Gözden geçir" eski→yeni
+  farkını gösterir, "Yayınla" ile onay.
+- **Duyuru:** bildirim + uygulama içi; dil (TR/ES/EN) ve kitle (herkes / Pro / 7 gündür gelmeyen), önizleme, ulaşacak kişi
+  sayısı, zamanlama, onay penceresi, son gönderilenler (açılma oranı).
+- **Challenge:** liste (yayında/planlandı/bitti + ilerleme), yeni challenge formu (hedef, ne sayılır, tarih, ödül basamakları).
+- **Kullanıcı:** arkadaş koduyla bul, bilgi kartı, hediye (coin / eşya-kostüm / sınırsız oyun / Pro 7 gün — kutuya düşer),
+  Online şikâyetleri (sorun yok / uyar / engelle).
+- **🧾 İşlem kaydı:** her yönetici işlemi zaman damgasıyla.
+Kullanıcı geri bildirimi buraya yazılacak.
