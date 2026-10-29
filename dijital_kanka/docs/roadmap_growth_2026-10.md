@@ -227,3 +227,13 @@ Google Ads (hesap 303-794-1588, Chrome `authuser=1`): "Zibo Tanıtım" uygulama 
 **Play Console DEX sonucu — 1.15.2+54 (2026-10-24, kullanıcının ekran görüntüsü; Vungle'sız + Yandex + Mintegral + Faz D kuralları):** Optimizasyon **%36** (1.15.1: %28, 1.13.x öncesi %24→%27) · Kod karartma **%36** (önceki %29) · Daraltma **%56** (önceki %48) · sıkıştırılmamış DEX 20,5 MB · R8 dört ayar ✔ · "Orta seviye". Eşik %25'in **11 puan üstü**. Ölçüm vekili (kilitli sınıf oranı) ile uyumlu: A %65,2 → C %59,5 ⇒ Play %28 → %36. Mintegral BU sürümde dahil olduğu halde skor yükseldi (Vungle çıkarma kazancı > Mintegral maliyeti). Bundan sonraki ağ eklemelerinin maliyetini vekille tahmin et ama Play skorunu yeni bundle yüklenince doğrula; Meta+BidMachine (+~65K kilitli kayıt) şu an belirsiz/riskli.
 
 **Meta Audience Network — BEKLEMEDE (2026-10-24):** Android placement'ını ödeme hesabına bağlarken "Bu platform bu ödeme alma hesabının bulunduğu bölgede desteklenmiyor" (hesap ülkesi Türkiye/Şahıs, ülke alanı kilitli; yeni hesapta ülke listesi tüm ülkeleri gösteriyor, destek bilgisi yok). Başka kullanıcılar da aynı hatayı raporlamış (forum, çözüm yok). Kullanıcı "destek mesajları işe yaramıyor" dedi → destek yolu denenmeyecek; ABD seçmek yalnızca gerçekten ABD işletme/vergi kaydı olursa doğru (beyan). Meta: DEĞER DÜŞÜK, öncelik YOK. Odak: Yandex + Mintegral (1.15.2) verisi, AppLovin. Sonraki ağ adayı gerekirse `android/CLAUDE.md` "DEX kontrol listesi" ile seç.
+
+## Büyük gelecek işler — sıra (kullanıcı, 2026-10-29)
+Önce yukarıdaki açık kısa işler (tablet rozeti sonucu, ES Talep Yaratma takibi, crash doğrulama, cihaz testleri),
+sonra kullanıcının "otel işi" bitince bu sırayla:
+1. **Zibo'nun Evi** — besleme/bakım, banyo-köpük, mutfak-yemek, mobilya, günlük görevler, ZC + ödüllü reklam
+   kurgusu → `docs/zibo_home.md` (+ yeni mini oyunlar → `docs/game_zibo.md` "Gelecek fikirler").
+2. **Yönetici uygulaması** (telefonda, Play'e yayınlanmaz) — uzaktan ayar, duyuru/bildirim, challenge, hediye →
+   `docs/admin_panel.md`.
+3. **Zibo Online** — sıralama, arkadaş evi ziyareti, hediyeleşme, ortak challenge (sunucu gerekmez, gider düşük) →
+   `docs/zibo_online.md`.
