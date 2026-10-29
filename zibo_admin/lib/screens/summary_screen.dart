@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../theme.dart';
 
@@ -122,6 +123,19 @@ class _SummaryScreenState extends State<SummaryScreen> {
               style: TextStyle(color: kInkSoft, fontSize: 12),
             ),
           ),
+        if (heavy.isNotEmpty && heavy.first['excluded'] is Map)
+          Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: Text(
+              'Senin hesapların hariç: ${_n((heavy.first['excluded'] as Map)['accounts'] as num?)} hesap, '
+              '${_n((heavy.first['excluded'] as Map)['balance'] as num?)} ZC',
+              style: const TextStyle(color: kInkSoft, fontSize: 12),
+            ),
+          ),
+        if (heavy.isNotEmpty && heavy.first['suspects'] is List) ...[
+          const SizedBox(height: 20),
+          _suspects(heavy.first['suspects'] as List),
+        ],
         const SizedBox(height: 16),
         const Text(
           'Coin ve üyelik sayıları günde bir (ilk saatlik çalışmada) güncellenir; aktif sayıları her saat. '
@@ -129,6 +143,82 @@ class _SummaryScreenState extends State<SummaryScreen> {
           style: TextStyle(color: kInkSoft, fontSize: 12),
         ),
       ],
+    );
+  }
+
+  static const _flagText = {
+    'mismatch': 'Bakiye ≠ kazanılan − harcanan',
+    'bigEarn': 'Satın alma dışı büyük kazanç',
+    'fastEarn': 'Günde 1000+ ZC (satın alma hariç)',
+  };
+
+  /// Hile şüphesi: en yüksek bakiyeler + işaretli hesaplar (dailyStats.js `buildSuspects`).
+  Widget _suspects(List raw) {
+    final items = raw.whereType<Map>().toList();
+    final flagged = items.where((m) => (m['flags'] as List?)?.isNotEmpty ?? false).length;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text('🔍 Dikkat — yüksek bakiyeler', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800)),
+        Text(
+          '$flagged işaretli · dokun = uid kopyala (Kullanıcı sekmesinde aratabilirsin)',
+          style: const TextStyle(color: kInkSoft, fontSize: 12),
+        ),
+        const SizedBox(height: 8),
+        for (final m in items) _suspectTile(m),
+      ],
+    );
+  }
+
+  Widget _suspectTile(Map m) {
+    final flags = ((m['flags'] as List?) ?? const []).cast<String>();
+    final uid = m['uid'] as String? ?? '';
+    final who = [m['name'], m['email']].whereType<String>().where((x) => x.isNotEmpty).join(' · ');
+    final providers = ((m['providers'] as List?) ?? const []).join(',');
+    return GestureDetector(
+      onTap: () {
+        Clipboard.setData(ClipboardData(text: uid));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('uid kopyalandı: $uid')));
+      },
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 10),
+        padding: const EdgeInsets.all(12),
+        decoration: stickerDecoration(
+          fill: flags.isEmpty ? kPaper : kGoldPale,
+          borderWidth: 2,
+          shadowOffset: const Offset(2, 2),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    who.isEmpty ? '(adsız · ${providers.isEmpty ? 'anonim' : providers})' : who,
+                    style: const TextStyle(fontWeight: FontWeight.w800),
+                  ),
+                ),
+                Text('${_n(m['balance'] as num?)} ZC', style: const TextStyle(fontWeight: FontWeight.w900)),
+              ],
+            ),
+            Text(
+              'kazanılan ${_n(m['earned'] as num?)} · harcanan ${_n(m['spent'] as num?)} · '
+              'satın alma ~${_n(m['purchased'] as num?)}${(m['gifted'] as num? ?? 0) > 0 ? ' · hediye ${_n(m['gifted'] as num?)}' : ''}',
+              style: const TextStyle(fontSize: 12),
+            ),
+            Text(
+              '${m['ageDays'] == null ? '' : '${m['ageDays']} günlük hesap · '}'
+              '${m['earnPerDay'] == null ? '' : '~${_n(m['earnPerDay'] as num?)} ZC/gün · '}'
+              'en büyük kazanç ${_n(m['maxOrganic'] as num?)}${m['maxOrganicReason'] == null ? '' : ' (${m['maxOrganicReason']})'}',
+              style: const TextStyle(color: kInkSoft, fontSize: 12),
+            ),
+            for (final f in flags)
+              Text('⚠️ ${_flagText[f] ?? f}', style: const TextStyle(color: kBad, fontSize: 12, fontWeight: FontWeight.w700)),
+            Text(uid, style: const TextStyle(color: kInkSoft, fontSize: 10)),
+          ],
+        ),
+      ),
     );
   }
 
