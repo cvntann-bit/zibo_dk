@@ -167,6 +167,17 @@ Adımlar:
     değer), coin kartları (günlük kazanılan/harcanan = son iki ağır sayımın farkı → ikinci günden itibaren), Pro/Pro+.
     Sıralama `orderBy('date')` — `documentId` ters sıralaması ayrı bileşik indeks istiyordu (FAILED_PRECONDITION görüldü).
   - Yok: reklam geliri (Appodeal API anahtarı secret olarak gerekir), Crashlytics sayıları.
+  - **Sahip hesapları hariç + hile şüphesi listesi** (2026-10-29, kullanıcı isteği; `HEAVY_VERSION = 2`): `EXCLUDED_EMAILS`
+    (cvntann, zuleturquia) Auth'tan uid'e çevrilip coin VE üyelik sayılarından çıkarılır (`excluded{accounts,balance}`).
+    `suspects` = en yüksek 25 bakiye + işaretliler (≤40), Auth e-posta/sağlayıcı/oluşturulma + profil adıyla; işaretler:
+    `mismatch` (bakiye ≠ kazanılan−harcanan — kural yalnız İLK yazımda buna izin verir), `bigEarn` (satın alma dışı tek kazanç
+    > 1000; meşru en büyük = 777 rozet), `fastEarn` (satın alma/hediye hariç > 1000 ZC/gün). Kişisel veri yalnız Firestore'da
+    (yönetici okur), Actions log'unda yok. Panel: Özet > "🔍 Dikkat", dokun = uid kopyala.
+  - İlk sonuç (run 40939902085): hariç 2 hesap = 372.749 ZC; dolaşım 1.443.433 → 1.070.696; Pro+ 3 → 1 (2'si sahibin).
+    **İşaretli hesap 0.** Dolaşımın ~1.028.000'i İKİ hesapta: birebir aynı rakamlı (514.022 ZC, ~590.000 "Satın alma")
+    iki uid — biri isimli, biri anonim; aynı cihaz verisinin iki uid'e kopyalandığını düşündürüyor (hesap değiştirme /
+    yerel→bulut göçü) — büyük olasılıkla sahibin test satın almaları. Üçüncü büyük: ~76.700 satın almalı tek hesap.
+    Gerçek kullanıcılarda en yüksek bakiye ~1.500 ZC, hepsi organik (günlük giriş, çark, rozet) — hile belirtisi yok.
 
 **Yönetici v1 TAMAM (2026-10-29)** — A0–A6 + uygulama içi mesaj kartı (A5b; Zibo tarafı 1.18.0 sürümüyle gelir).
 - Sonra (Zibo sürümü gerektirenler): uygulama içi duyuru kutusu, reklam sıklığını `config/ads`'e taşıma.
