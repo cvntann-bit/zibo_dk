@@ -16,7 +16,8 @@
     "cleanup-stale-anonymous-users": "node src/cleanupStaleAnonymousUsers.js",
     "process-referral-rewards": "node src/processReferralRewards.js",
     "init-founder-badge-counter": "node src/initFounderBadgeCounter.js",
-    "grant-gift": "node src/grantGift.js"
+    "grant-gift": "node src/grantGift.js",
+    "send-broadcasts": "node src/sendBroadcasts.js"
   },
   "dependencies": {
     "firebase-admin": "^12.7.0"

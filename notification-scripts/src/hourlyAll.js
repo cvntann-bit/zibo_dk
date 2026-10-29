@@ -6,7 +6,9 @@
 // yapılır (bkz. common.js). Her iş kendi try/catch'inde — biri patlarsa diğerleri yine çalışır (eski
 // `if: ${{ !cancelled() }}` davranışıyla AYNI). Betikler hâlâ tek başına (`npm run daily-motivation` vb.) çalışır.
 
+// Yönetici duyuruları EN BAŞTA — paneldeki "Hemen" en kısa sürede gitsin (bekleyen yoksa tek sorgu, tarama yok).
 const JOBS = [
+  ['send-broadcasts', './sendBroadcasts'],
   ['daily-motivation', './dailyMotivation'],
   ['streak-reminder', './streakReminder'],
   ['daily-reward-reminder', './dailyRewardReminder'],

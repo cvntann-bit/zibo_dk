@@ -279,6 +279,8 @@ const TYPE_INFO = {
   daily_reward: { field: 'dailyReward' },
   re_engagement: { field: 'reEngagement' },
   water_reminder: { field: 'waterReminder' },
+  // Yönetici duyurusu (sendBroadcasts.js) — tür bazlı kapatma anahtarı YOK, herkese gider.
+  broadcast: { field: null },
 };
 
 /** Faz 5 (E2) — Zibo Pro+'a özel bildirim sesleri. Android bir kanalın
@@ -299,10 +301,11 @@ const PROPLUS_SOUND_CHANNELS = {
   '5': 'push_notifications_proplus_5',
 };
 
+/** Gönderildiyse `true` (yalnızca sendBroadcasts.js sayım için kullanır; diğerleri yok sayar). */
 async function sendToUser(user, type, title, body) {
-  if (!user.fcmToken) return;
+  if (!user.fcmToken) return false;
   const info = TYPE_INFO[type];
-  if (!(await isTypeEnabled(user.uid, info.field))) return;
+  if (info.field && !(await isTypeEnabled(user.uid, info.field))) return false;
   const channelId = PROPLUS_SOUND_CHANNELS[user.proPlusSoundChoice] || 'push_notifications';
   try {
     await messaging.send({
@@ -327,11 +330,13 @@ async function sendToUser(user, type, title, body) {
       },
     });
     console.log(`Gönderildi: uid=${user.uid} type=${type}`);
+    return true;
   } catch (error) {
     // Geçersiz/eskimiş token — sessizce atla, tüm çalıştırmayı bozmasın.
     // `fcmToken` bir sonraki uygulama açılışında zaten yenilenip üzerine
     // yazılacak (bkz. PushNotificationService).
     console.warn(`sendToUser başarısız: uid=${user.uid} type=${type}`, error.message || error);
+    return false;
   }
 }
 

@@ -125,6 +125,18 @@ Adımlar:
 - [x] İkon (2026-10-29, kullanıcı isteği): Kral Zibo (`zibo_king.webp`, baş+kaftan kırpımı), turuncu radyal zemin,
   beyaz+siyah sticker kontur; uyarlanabilir ikon (`mipmap-anydpi-v26`) + eski PNG'ler. Üretici: `zibo_admin/tool/make_icon.py`.
   Uygulama adı "Zibo Yönetici". Telefonda başlatıcı önbelleği yüzünden kaldır-kur gerekti.
-- [ ] A5 Duyuru: `broadcasts` + saatlik iş adımı (Actions log'u ile doğrulama).
+- [x] A4 telefonda doğrulandı (2026-10-29, kullanıcı: "çalıştı").
+- [~] A5 Duyuru (2026-10-29, kod + APK telefonda; **sunucu tarafı ilk Actions çalışmasıyla HENÜZ doğrulanmadı**):
+  - Panel `screens/broadcast_screen.dart`: TR/EN/ES metin (seçilmeyen dildeki kullanıcıya GİTMEZ), kitle (herkes /
+    Pro+Pro+ süresi geçmemiş / 7+ gün gelmeyen), zaman (hemen = sonraki saat başı +07 dk, ya da planlı tarih-saat),
+    bildirim önizlemesi, "Önce teste gönder" (`testUid`, varsayılan yöneticinin kendi uid'i; kitle/dil filtresi yok),
+    ulaşım tahmini = `users where fcmToken != null` count (ölçüldü: 2336), son 20 duyuru (durum + sayılar), bekleyeni iptal.
+  - Sunucu `notification-scripts/src/sendBroadcasts.js` → `hourlyAll.js` JOBS'un İLK işi (yeni workflow/step YOK, dakika
+    maliyeti ~0). `status=='pending'` sorgusu + `sendAfter` JS'te; transaction ile `pending→sending` (çift gönderim yok);
+    sonuç `sentCount/skippedCount/failedCount`. `sendToUser` artık gönderdiyse `true` döner; `broadcast` türü için
+    tür anahtarı kontrolü yok. FCM `data.type='broadcast'` — Zibo bilinmeyen türü de gösterir (dokununca yalnız açılır)
+    → **Zibo sürümü GEREKMEZ**.
+  - Bilinen sınır: "Hemen" herkese aynı anda gider (yerel saat penceresi yok) — gece göndermemek yöneticiye kalmış.
+    İleride: kullanıcı yerel saatine göre (ör. 10–21) bekletme.
 - [ ] A6 Özet: `stats/daily`.
 - Sonra (Zibo sürümü gerektirenler): uygulama içi duyuru kutusu, reklam sıklığını `config/ads`'e taşıma.

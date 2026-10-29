@@ -62,6 +62,7 @@ jobs:
       # 2026-10-23 (maliyet): 5 bildirim işi TEK süreçte (`hourlyAll.js`) — `users` koleksiyonu saatte BİR kez
       # okunur (eskiden 5 kez). Her iş kendi try/catch'inde, biri patlarsa diğerleri çalışır.
       # Günlük Motivasyon (9/12/16/20) · Streak (21) · Günlük Ödül (18) · Su (14) · Geri Kazanma (11) — yerel saat.
+      # 2026-10-29: + Yönetici duyuruları (sendBroadcasts.js, EN BAŞTA) — panelin `broadcasts` kuyruğu.
       - name: Bildirim işleri (tek tarama)
         if: ${{ !cancelled() }}
         run: npm run hourly-all

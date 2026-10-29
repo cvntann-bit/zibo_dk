@@ -27,6 +27,7 @@ mantığı zaten hangi dakikada tetiklendiğinden bağımsız (bkz. altta "catch
 | `dailyRewardReminder.js` | `hourly-jobs.yml` | 18 | Bugün Günlük Giriş Ödülü alınmamışsa |
 | `waterReminder.js` | `hourly-jobs.yml` | 14 | `waterState` var ama bugün yarım/başlanmamışsa |
 | `reEngagement.js` | `hourly-jobs.yml` | 11 | `users/{uid}.lastActiveAt` 2+ gün eski |
+| `sendBroadcasts.js` | `hourly-jobs.yml` (`hourlyAll.js` İLK işi) | (her çalıştırma) | Yönetici panelinin `broadcasts` kuyruğu: `pending` + `sendAfter` geçmiş → transaction ile `sending` → kitle (all/pro/inactive7) + dil filtresi → FCM `type=broadcast` → `sent` + sayılar. `testUid` varsa yalnız ona. Bkz. `dijital_kanka/docs/admin_panel.md` A5 |
 | `processReferralRewards.js` | `hourly-jobs.yml` | (her çalıştırma) | `referralRedemptions` `pending` → her iki tarafa 100 ZC, `dry_run` varsayılan `false` |
 | `cleanupStaleAnonymousUsers.js` | kendi dosyası, yalnızca `workflow_dispatch` | — | 30+ gün terkedilmiş anonim kullanıcıları sil, `dry_run` varsayılan `true`, İKİ AŞAMALI onay |
 | `grantGift.js` | `grant-gift.yml`, yalnızca `workflow_dispatch` | — | Sahibin bir kullanıcıya HEDİYE vermesi: `coinState`'e ZC ekle (Admin SDK kuralları aşar, `GRANT_ID` ile çift-ekleme koruması), `subscriptionState` Pro/Pro+ (tier JSON'u `'proplus'` küçük harf, bitiş 2099), `gamePointsState.unlimitedPlays=true` (uygulama 1.14.1+ okur). `dry_run` varsayılan `true` — hesabı (uid/ad/sağlayıcı) loglar, yazmaz. Hesap sahibi uygulamayı tamamen kapatıp açmalı |
