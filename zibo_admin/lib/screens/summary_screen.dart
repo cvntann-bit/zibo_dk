@@ -123,6 +123,10 @@ class _SummaryScreenState extends State<SummaryScreen> {
               style: TextStyle(color: kInkSoft, fontSize: 12),
             ),
           ),
+        if (heavy.isNotEmpty && heavy.first['activity'] is Map) ...[
+          const SizedBox(height: 20),
+          _adsAndRevenue(heavy.first),
+        ],
         if (heavy.isNotEmpty && heavy.first['excluded'] is Map)
           Padding(
             padding: const EdgeInsets.only(top: 8),
@@ -140,6 +144,98 @@ class _SummaryScreenState extends State<SummaryScreen> {
         const Text(
           'Coin ve üyelik sayıları günde bir (ilk saatlik çalışmada) güncellenir; aktif sayıları her saat. '
           'Reklam geliri henüz yok (Appodeal API anahtarı gerekiyor).',
+          style: TextStyle(color: kInkSoft, fontSize: 12),
+        ),
+      ],
+    );
+  }
+
+  String _try(num? v) => v == null ? '—' : '₺${v.toStringAsFixed(v >= 100 ? 0 : 2).replaceAll('.', ',')}';
+
+  /// Reklam & gelir — dailyStats.js `activity` (gün kovaları) + `revenue`. Ağır sayım günde bir, günün ilk
+  /// saatinde → en yeni TAM gün "dün".
+  Widget _adsAndRevenue(Map<String, dynamic> heavyDay) {
+    final activity = (heavyDay['activity'] as Map).cast<String, dynamic>();
+    final keys = activity.keys.toList()..sort((a, b) => b.compareTo(a));
+    final full = keys.length > 1 ? keys.sublist(1) : keys; // [0] = sayım anındaki yarım gün
+    final y = (activity[full.first] as Map).cast<String, dynamic>();
+    final revenue = (heavyDay['revenue'] as Map?)?.cast<String, dynamic>() ?? const {};
+    final subs = (heavyDay['subs'] as Map?)?.cast<String, dynamic>() ?? const {};
+    final week = full.take(7).toList().reversed.toList();
+    final weekUsers = [for (final k in week) ((activity[k] as Map)['adUsers'] as num? ?? 0).toDouble()];
+    final maxU = weekUsers.fold<double>(1, (m, v) => v > m ? v : m);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Reklam & gelir · dün (${full.first.substring(5)})', style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800)),
+        const SizedBox(height: 8),
+        _tiles([
+          ('Reklam izleyen kişi', _n(y['adUsers'] as num?), 'ödüllü: coin + Oyun Salonu'),
+          ('Coin için reklam', _n(y['coinAds'] as num?), '${_n(y['coinAdUsers'] as num?)} kişi'),
+          ('Oyun Salonu reklamı', _n(y['gameAds'] as num?), '${_n(y['gameAdUsers'] as num?)} kişi (ek hak)'),
+          ('Coin satışı', _n(y['purchases'] as num?), '~${_try(y['purchaseTry'] as num?)} · 7 gün ~${_try(revenue['purchaseTry7d'] as num?)}'),
+          (
+            'Abonelik geliri',
+            '~${_try(revenue['subsMonthlyTry'] as num?)}/ay',
+            'Pro ${_n(subs['pro'] as num?)} · Pro+ ${_n(subs['proplus'] as num?)}'
+                '${(subs['giftedForever'] as num? ?? 0) > 0 ? ' · süresiz hediye ${_n(subs['giftedForever'] as num?)}' : ''}',
+          ),
+          ('Reklam geliri', '—', 'Appodeal API anahtarı gerekli'),
+        ]),
+        const SizedBox(height: 12),
+        Container(
+          padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+          decoration: stickerDecoration(),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('Reklam izleyen kişi · 7 gün', style: TextStyle(fontWeight: FontWeight.w800)),
+              const SizedBox(height: 10),
+              SizedBox(
+                height: 90,
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    for (var i = 0; i < week.length; i++)
+                      Expanded(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            Text(_n(weekUsers[i]), style: const TextStyle(fontSize: 11, color: kInkSoft)),
+                            const SizedBox(height: 2),
+                            Container(
+                              margin: const EdgeInsets.symmetric(horizontal: 3),
+                              height: (weekUsers[i] / maxU * 66).clamp(2, 66),
+                              decoration: const BoxDecoration(
+                                color: kGold,
+                                borderRadius: BorderRadius.vertical(top: Radius.circular(4)),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              Container(height: 1.5, color: kLine),
+              const SizedBox(height: 4),
+              Row(
+                children: [
+                  for (final k in week)
+                    Expanded(
+                      child: Text(k.substring(8), textAlign: TextAlign.center, style: const TextStyle(color: kInkSoft, fontSize: 11)),
+                    ),
+                ],
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 8),
+        const Text(
+          "Yalnızca Firestore'a iz bırakan ödüllü reklamlar sayılır; geçiş (interstitial) ve kostüm denemesi reklamları "
+          "ve reklam geliri Appodeal'da. ₺ tutarları liste fiyatı, Google payı (%15) düşülmemiş; abonelik hepsi aylık "
+          'fiyatla (yıllık planlar ayrılamıyor) — üst sınır tahmini.',
           style: TextStyle(color: kInkSoft, fontSize: 12),
         ),
       ],

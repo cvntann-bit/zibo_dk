@@ -20,7 +20,7 @@ const { db, auth, userDateKey } = require('./common');
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const CHUNK = 300;
-const HEAVY_VERSION = 3;
+const HEAVY_VERSION = 4;
 
 // Sahibin kendi (test/hediye) hesapları — yüksek bakiyeleri "dolaşımdaki ZC"yi şişirmesin (kullanıcı, 2026-10-29).
 const EXCLUDED_EMAILS = ['cvntann@gmail.com', 'zuleturquia@gmail.com'];
@@ -35,6 +35,13 @@ const EXCLUDED_UIDS = [
 // Hile şüphesi eşikleri. Meşru en büyük tek kazanç (satın alma HARİÇ) = 777 ZC rozet ödülü (zcReward);
 // satın alma en çok 10500 (coins_10000 + bonus). `transactions` yalnızca son 200 işlemi tutar → satın alma/
 // hediye toplamı ve oran YAKLAŞIK.
+// Reklam/gelir (HEAVY_VERSION 4): Firestore'da iz bırakan reklamlar = coin için ödüllü reklam ('Reklam izleme'
+// işlemi) + Oyun Salonu reklamla ek hak (gamePointsState.plays[*].ads, dayKey günü). Geçiş (interstitial) ve kostüm
+// denemesi reklamları Firestore'a YAZILMAZ — onların sayısı/geliri yalnızca Appodeal'da. Fiyatlar Zibo'nun TRY liste
+// fiyatları (coin_packages.dart / subscription_products.dart fallbackPrice) — Google payı (%15) DÜŞÜLMEMİŞ brüt tahmin.
+const PACKAGE_TRY = { 100: 16.99, 250: 37.99, 500: 69.99, 1000: 129.99, 5000: 599.99, 10000: 1099.99 };
+const MONTHLY_TRY = { pro: 59.9, proplus: 99.9 };
+const ACTIVITY_DAYS = 8;
 const BIG_ORGANIC_EARN = 1000;
 const FAST_EARN_PER_DAY = 1000;
 const TOP_BALANCES = 25;
@@ -70,6 +77,38 @@ async function excludedUids() {
   return uids;
 }
 
+function emptyDay() {
+  return { coinAds: 0, coinAdUsers: new Set(), gameAds: 0, gameAdUsers: new Set(), purchases: 0, purchaseZc: 0, purchaseTry: 0 };
+}
+
+/** Son işlemleri gün kovalarına dağıtır. İşlem zamanı cihazın yerel ISO metni → ilk 10 karakter = yerel gün. */
+function addCoinActivity(activity, uid, data, dayKeys) {
+  for (const t of Array.isArray(data.transactions) ? data.transactions : []) {
+    if (!t || t.type !== 'earn') continue;
+    const day = String(t.timestamp || '').slice(0, 10);
+    if (!dayKeys.has(day)) continue;
+    const bucket = activity[day];
+    const reason = String(t.reason || '');
+    if (reason === 'Reklam izleme') {
+      bucket.coinAds += 1;
+      bucket.coinAdUsers.add(uid);
+    } else if (reason.includes('Satın alma')) {
+      const m = /Satın alma: (\d+) ZC/.exec(reason);
+      bucket.purchases += 1;
+      bucket.purchaseZc += Number(t.amount) || 0;
+      if (m && PACKAGE_TRY[m[1]]) bucket.purchaseTry += PACKAGE_TRY[m[1]];
+    }
+  }
+}
+
+function addGameActivity(activity, uid, data, dayKeys) {
+  if (!dayKeys.has(data.dayKey) || !data.plays || typeof data.plays !== 'object') return;
+  const ads = Object.values(data.plays).reduce((sum, p) => sum + (Number(p && p.ads) || 0), 0);
+  if (ads <= 0) return;
+  activity[data.dayKey].gameAds += ads;
+  activity[data.dayKey].gameAdUsers.add(uid);
+}
+
 /** coinState'in son işlemlerinden şüphe işaretleri. */
 function coinSignals(uid, data) {
   const balance = Number(data.balance) || 0;
@@ -100,11 +139,20 @@ async function heavyCounts(now) {
   const subs = { pro: 0, proplus: 0 };
   const excludedTotals = { accounts: 0, balance: 0 };
   const signals = [];
+  const dayKeys = new Set();
+  const activity = {};
+  for (let d = 0; d < ACTIVITY_DAYS; d++) {
+    const key = userDateKey({ timeZone: 'Europe/Istanbul' }, new Date(now.getTime() - d * DAY_MS));
+    dayKeys.add(key);
+    activity[key] = emptyDay();
+  }
+  let giftedForever = 0;
   for (let i = 0; i < userRefs.length; i += CHUNK) {
     const chunk = userRefs.slice(i, i + CHUNK);
     const refs = chunk.flatMap((u) => [
       u.collection('state').doc('coinState'),
       u.collection('state').doc('subscriptionState'),
+      u.collection('state').doc('gamePointsState'),
     ]);
     const snaps = await db.getAll(...refs);
     for (const snap of snaps) {
@@ -119,8 +167,13 @@ async function heavyCounts(now) {
         }
         continue;
       }
+      if (snap.id === 'gamePointsState') {
+        addGameActivity(activity, uid, data, dayKeys);
+        continue;
+      }
       if (snap.id === 'coinState') {
         signals.push(coinSignals(uid, data));
+        addCoinActivity(activity, uid, data, dayKeys);
         coin.balance += Number(data.balance) || 0;
         coin.earned += Number(data.totalEarned) || 0;
         coin.spent += Number(data.totalSpent) || 0;
@@ -128,12 +181,45 @@ async function heavyCounts(now) {
       } else if (['pro', 'proplus'].includes(data.subscriptionTier)) {
         // Zibo'nun `SubscriptionProvider.tier` mantığı: süresi geçmişse free.
         const expiry = Date.parse(data.subscriptionExpiryDate || '');
-        if (Number.isFinite(expiry) && expiry > now.getTime()) subs[data.subscriptionTier] += 1;
+        if (Number.isFinite(expiry) && expiry > now.getTime()) {
+          // 2099 = süresiz hediye (panel/grantGift) — gelir tahmininden ayrı say.
+          if (new Date(expiry).getUTCFullYear() >= 2090) giftedForever += 1;
+          else subs[data.subscriptionTier] += 1;
+        }
       }
     }
   }
   const suspects = await buildSuspects(signals, now);
-  return { coin, subs, scannedUsers: userRefs.length, excluded: excludedTotals, suspects, heavyVersion: HEAVY_VERSION };
+  const activityOut = {};
+  for (const [day, b] of Object.entries(activity)) {
+    activityOut[day] = {
+      coinAds: b.coinAds,
+      coinAdUsers: b.coinAdUsers.size,
+      gameAds: b.gameAds,
+      gameAdUsers: b.gameAdUsers.size,
+      adUsers: new Set([...b.coinAdUsers, ...b.gameAdUsers]).size,
+      purchases: b.purchases,
+      purchaseZc: b.purchaseZc,
+      purchaseTry: Math.round(b.purchaseTry * 100) / 100,
+    };
+  }
+  subs.giftedForever = giftedForever;
+  const revenue = {
+    // Aylık/yıllık plan ayrımı subscriptionState'te yok → hepsi aylık fiyatla (üst sınır tahmini).
+    subsMonthlyTry: Math.round((subs.pro * MONTHLY_TRY.pro + subs.proplus * MONTHLY_TRY.proplus) * 100) / 100,
+    purchaseTry7d:
+      Math.round(Object.values(activityOut).slice(0, 7).reduce((sum, d) => sum + d.purchaseTry, 0) * 100) / 100,
+  };
+  return {
+    coin,
+    subs,
+    revenue,
+    activity: activityOut,
+    scannedUsers: userRefs.length,
+    excluded: excludedTotals,
+    suspects,
+    heavyVersion: HEAVY_VERSION,
+  };
 }
 
 /** En yüksek bakiyeler + işaretli hesaplar; Auth (e-posta, oluşturulma) ve profil adıyla zenginleştirilir. */
@@ -193,7 +279,10 @@ async function main() {
       `Günlük ağır sayım: kullanıcı=${heavy.scannedUsers} ZC dolaşımda=${heavy.coin.balance} ` +
         `Pro=${heavy.subs.pro} Pro+=${heavy.subs.proplus} | hariç=${heavy.excluded.accounts} hesap ` +
         `(${heavy.excluded.balance} ZC) | şüpheli listesi=${heavy.suspects.length} ` +
-        `(işaretli ${heavy.suspects.filter((x) => x.flags.length).length})`,
+        `(işaretli ${heavy.suspects.filter((x) => x.flags.length).length}) | ` +
+        `reklam (gün: coin/oyun izleyen) ${Object.entries(heavy.activity)
+          .map(([d, a]) => `${d.slice(5)}=${a.coinAdUsers}/${a.gameAdUsers}`)
+          .join(' ')} | abonelik ~${heavy.revenue.subsMonthlyTry} TL/ay, coin satışı 7g ~${heavy.revenue.purchaseTry7d} TL`,
     );
   }
   await ref.set(update, { merge: true });
