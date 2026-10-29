@@ -420,3 +420,12 @@ Ekonomi notu: Coin Yakala'da artık ölümde de skor puana dönüyor (eskiden 0)
 tur tavanı (400) ve haftalık takas tavanı değişmedi, ZC'ye çevrim yine haftalık sınırla korunuyor.
 İkinci Şans ekranında (Tren/Tuğla/Kule) 5 sn geri sayım var (2026-10-26) — süre dolarsa oyun biter, puan alınır.
 Henüz telefonda denenmedi (debug APK).
+
+### Gelecek fikirler — kullanıcı (2026-10-29, BEKLEMEDE)
+Kullanıcı: "yeni oyunlar ekleyeceğiz, Zibo'yu besleme vs. gibi şeyler de yapacağız — ilerleyen vakitlerde".
+Bağlam: çocuklar uygulamayı çok sevmeye başladı (tablette Yaşam Tarzı ilk 11). Kullanıcının "daha deli fikirleri" var;
+**şu an başlanmıyor** (kullanıcının "otel işi" bitince, kullanıcı söyleyince).
+- [ ] Yeni mini oyunlar (kullanıcının fikirleri gelince buraya yazılacak).
+- [ ] **Zibo'yu besleme / bakım** (sanal evcil hayvan tarzı etkileşim) — kapsam kullanıcıyla netleşecek.
+- Dikkat: çocuklara AÇIKÇA hedeflenen pazarlama/özellik → Google Play Aileler politikası + reklam SDK kısıtları
+  riski; tasarlarken `docs/unit_economics.md` (zarar etmemek) ve bu risk birlikte değerlendirilecek.
