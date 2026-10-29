@@ -39,6 +39,18 @@
         "C:\\dev\\Zibo DK\\dijital_kanka\\assets"
       ],
       "port": 8830
+    },
+    {
+      "name": "zibo_web_release",
+      "runtimeExecutable": "python",
+      "runtimeArgs": [
+        "-m",
+        "http.server",
+        "8790",
+        "--directory",
+        "C:\\dev\\Zibo DK\\dijital_kanka\\build\\web"
+      ],
+      "port": 8790
     }
   ]
 }

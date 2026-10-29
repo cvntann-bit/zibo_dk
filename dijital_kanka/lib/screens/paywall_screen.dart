@@ -446,8 +446,8 @@ class _PaywallContentState extends State<PaywallContent>
         children: [
           animated,
           Positioned(
-            top: 4,
-            right: 4,
+            top: -3,
+            right: -3,
             child: StickerIconButton(
               icon: Icons.close_rounded,
               tooltip: l10n.paywallCloseTooltip,

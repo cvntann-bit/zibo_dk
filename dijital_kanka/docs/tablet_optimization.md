@@ -38,7 +38,13 @@ Tetikleyici: kullanıcı — Zibo tablette Yaşam Tarzı'nda ilk 11'de, çocukla
 ## Kalanlar
 - [ ] Klavye/fare kontrol listesi (Tier 2): Tab sırası, Esc ile kapanma, hover — Flutter Material varsayılanları büyük
       ölçüde karşılıyor, tablette fiziksel klavyeyle doğrulanmalı.
-- [ ] 48dp dokunma alanı taraması (küçük ikon düğmeleri: AppBar ➕/⚙️ 30 px, balon köşe düğmeleri).
-- [ ] Tablet ekran görüntüleri (TR/EN/ES, 16:9 ve 9:16) → Play Console.
+- [x] 48dp dokunma alanı (2026-10-29): `StickerIconButton` görseli aynı, dokunma alanı ≥ 48dp (`kStickerMinTapTarget`,
+      `stickerTapPadding`); köşe `Positioned` ofsetleri dolgu kadar düzeltildi (Ana Sayfa balonu, Hedefler, Para,
+      Paywall kapat, Ana Sayfa kart kalemi). Yatay iki bölmede sağ dolgu 120 → rozet/hediye düğmeleri balona binmiyor.
+- [x] Tablet ekran görüntüleri (2026-10-29): `tool/store_capture_web.py ... tablet` (release web build `build/web`
+      + `zibo_web_release` launch config, VIEWPORT=1280x720/720x1280, DSF=1.5 → 1920x1080 / 1080x1920; Mağaza alt
+      sekmeleri SEG koordinatı). Çıktı `store_assets/tablet/Zibo_Tablet_Ekran_Goruntuleri.zip` (TR/EN/ES × yatay/dikey ×
+      7). Oyun içi görüntü yok (WebView web'de çalışmıyor) — gerekirse tabletten adb ile.
+- [ ] Ekran görüntülerini Play Console'a yükleme (kullanıcı).
 - [ ] Rozet başvuru formu (kullanıcıyla).
 - [ ] Sürüm (AAB) — kullanıcı isteyince.

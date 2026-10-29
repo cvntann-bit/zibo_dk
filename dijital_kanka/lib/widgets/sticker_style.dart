@@ -154,9 +154,29 @@ class StickerIconButton extends StatelessWidget {
       ),
     );
 
-    return tooltip == null ? button : Tooltip(message: tooltip!, child: button);
+    final visual = tooltip == null ? button : Tooltip(message: tooltip!, child: button);
+    // Dokunma alanı en az [kStickerMinTapTarget] (Google tablet kalite kuralı:
+    // ≥ 48dp, 2026-10-29). Görsel aynı boyutta kalır; çevresindeki şeffaf
+    // dolguya dokunmak da [onPressed]'i çağırır. Köşeye `Positioned` ile
+    // yerleştirilen düğmeler bu yüzden ofsetlerinden [stickerTapPadding] düşer.
+    final target = size < kStickerMinTapTarget ? kStickerMinTapTarget : size;
+    if (target == size) return visual;
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: onPressed,
+      excludeFromSemantics: true,
+      child: SizedBox(width: target, height: target, child: Center(child: visual)),
+    );
   }
 }
+
+/// [StickerIconButton]'ın asgari dokunma alanı (dp).
+const double kStickerMinTapTarget = 48;
+
+/// [size] boyutlu bir [StickerIconButton]'ın görselin çevresine eklediği
+/// şeffaf dolgu — köşe `Positioned` ofsetlerini görseli kaydırmadan
+/// düzeltmek için.
+double stickerTapPadding(double size) => size < kStickerMinTapTarget ? (kStickerMinTapTarget - size) / 2 : 0;
 
 /// Ayarlar'dan başlayıp Rüya/Şükran/Ruh Hali/Su/Manifest/Para/Odak
 /// modüllerinin HEPSİNİN paylaştığı "push ekranı" AppBar'ı — geri oku

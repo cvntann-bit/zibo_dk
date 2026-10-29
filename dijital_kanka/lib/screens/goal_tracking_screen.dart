@@ -302,8 +302,8 @@ class _GoalTrackingScreenState extends State<GoalTrackingScreen>
               children: [
                 SpeechBubble(message: quote),
                 Positioned(
-                  top: -13,
-                  right: -13,
+                  top: -24,
+                  right: -24,
                   child: ShareZiboButton(message: quote),
                 ),
               ],

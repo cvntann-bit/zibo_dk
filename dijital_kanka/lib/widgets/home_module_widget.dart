@@ -147,8 +147,8 @@ class HomeModuleWidget extends StatelessWidget {
           ),
           if (onEditTap != null)
             Positioned(
-              top: -6,
-              right: -6,
+              top: -17,
+              right: -17,
               child: StickerIconButton(
                 icon: Icons.edit_rounded,
                 onPressed: onEditTap,

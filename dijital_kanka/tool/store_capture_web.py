@@ -45,7 +45,9 @@ def main():
     mode = sys.argv[2] if len(sys.argv) > 2 else "liste"
     with sync_playwright() as p:
         b = p.chromium.launch(channel="chrome", headless=False, args=["--window-position=0,0"])
-        ctx = b.new_context(viewport={"width": 412, "height": 915}, device_scale_factor=int(os.environ.get("DSF","3")), locale=LANG)
+        # Tablet (2026-10-29): VIEWPORT=1280x720 DSF=1.5 → 1920x1080 (16:9 yatay), VIEWPORT=720x1280 → 1080x1920.
+        vw, vh = (int(x) for x in os.environ.get("VIEWPORT", "412x915").split("x"))
+        ctx = b.new_context(viewport={"width": vw, "height": vh}, device_scale_factor=float(os.environ.get("DSF","3")), locale=LANG)
         ctx.add_init_script(init_script(keys=os.environ.get('KEYS','').split(',') if os.environ.get('KEYS') else None))
         page = ctx.new_page()
         page.on('console', lambda m: print('[console]', m.type, m.text[:1500]) if m.type in ('error','warning','log') else None)
@@ -85,6 +87,34 @@ def main():
                 else:
                     break
 
+        if mode == "tablet":
+            # Sekmeler a11y etiketiyle (yan menü / alt bar aynı etiketler) — dile göre.
+            T = {"tr": ("Ana Sayfa", "Oyun Salonu", "Profil", "Mağaza", "Kostümler", "Temalar"),
+                 "en": ("Home", "Game Hall", "Profile", "Store", "Costumes", "Themes"),
+                 "es": ("Inicio", "Sala de Juegos", "Perfil", "Tienda", "Disfraces", "Temas")}[LANG]
+            page.wait_for_timeout(2500)
+            shot("t_ana_sayfa")
+            for i, n in ((1, "t_oyun_salonu"), (2, "t_profil"), (3, "t_magaza_coin")):
+                try:
+                    tap(T[i])
+                except Exception as e:
+                    print("tap fail", T[i], e)
+                shot(n)
+            # Mağaza alt sekmeleri tek a11y düğümü → koordinat (SEG="x,y;x,y" — Kostümler;Temalar).
+            seg = [tuple(int(v) for v in xy.split(",")) for xy in os.environ.get("SEG", "574,138;802,138").split(";")]
+            tap_xy(*seg[0])
+            page.mouse.move(vw / 2, vh / 2); page.mouse.wheel(0, 380); page.wait_for_timeout(900)
+            shot("t_magaza_kostumler")
+            page.mouse.wheel(0, -3000); page.wait_for_timeout(700)
+            tap_xy(*seg[1]); shot("t_magaza_temalar")
+            # Modül menüsü (Z) — yan menüde/alt barda Z düğmesi, a11y etiketiyle.
+            try:
+                tap(os.environ.get("ZLABEL", "Modüller"))
+                shot("t_modul_menusu")
+            except Exception as e:
+                print("tap fail Z", e)
+            b.close()
+            return
         if mode == "liste":
             dismiss()
             for t in labels():

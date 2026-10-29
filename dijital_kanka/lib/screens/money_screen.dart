@@ -262,8 +262,8 @@ class _MoneyScreenState extends State<MoneyScreen> {
               children: [
                 SpeechBubble(message: quote),
                 Positioned(
-                  top: -6,
-                  right: -6,
+                  top: -17,
+                  right: -17,
                   child: ShareZiboButton(message: quote),
                 ),
               ],

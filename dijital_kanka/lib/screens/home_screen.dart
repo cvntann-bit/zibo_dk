@@ -401,18 +401,18 @@ class _HomeScreenState extends State<HomeScreen>
           children: [
             SpeechBubble(message: message),
             Positioned(
-              top: -13,
-              right: -13,
+              top: -24,
+              right: -24,
               child: ShareZiboButton(message: message),
             ),
             Positioned(
-              top: -13,
-              left: -13,
+              top: -24,
+              left: -24,
               child: FavoriteQuoteButton(message: message),
             ),
             const Positioned(
-              bottom: -13,
-              right: -13,
+              bottom: -24,
+              right: -24,
               child: CustomMessagesButton(),
             ),
           ],
