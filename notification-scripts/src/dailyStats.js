@@ -20,10 +20,17 @@ const { db, auth, userDateKey } = require('./common');
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const CHUNK = 300;
-const HEAVY_VERSION = 2;
+const HEAVY_VERSION = 3;
 
 // Sahibin kendi (test/hediye) hesapları — yüksek bakiyeleri "dolaşımdaki ZC"yi şişirmesin (kullanıcı, 2026-10-29).
 const EXCLUDED_EMAILS = ['cvntann@gmail.com', 'zuleturquia@gmail.com'];
+// E-postaya bağlı OLMAYAN sahip hesapları (aynı test cihazının eski/anonim uid'leri, test satın almaları) —
+// kullanıcı 2026-10-29'da Özet > Dikkat listesinden "benim" diye onayladı.
+const EXCLUDED_UIDS = [
+  'V7YvzBBhOkhV2phM1RmoW8ENSAG3',
+  'gexFCXfAsudZgDFmXL6Xk0bv66S2',
+  'd918GHIJ3fgCc4qTI6BQr7Q3YRh2',
+];
 
 // Hile şüphesi eşikleri. Meşru en büyük tek kazanç (satın alma HARİÇ) = 777 ZC rozet ödülü (zcReward);
 // satın alma en çok 10500 (coins_10000 + bonus). `transactions` yalnızca son 200 işlemi tutar → satın alma/
@@ -52,7 +59,7 @@ async function cheapCounts(now) {
 }
 
 async function excludedUids() {
-  const uids = new Set();
+  const uids = new Set(EXCLUDED_UIDS);
   for (const email of EXCLUDED_EMAILS) {
     try {
       uids.add((await auth.getUserByEmail(email)).uid);
