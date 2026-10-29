@@ -1,0 +1,116 @@
+{
+  "project_info": {
+    "project_number": "855986625717",
+    "project_id": "zibo-dijital-kankan",
+    "storage_bucket": "zibo-dijital-kankan.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:855986625717:android:3560f525b17050ceb032fc",
+        "android_client_info": {
+          "package_name": "com.dijitalkanka.dijital_kanka"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "855986625717-62bb8chs51ij1pedi773pdmcc67rvhg4.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.dijitalkanka.dijital_kanka",
+            "certificate_hash": "cde69544d15a5d9e2cb6f4bc2be5cde6125344a3"
+          }
+        },
+        {
+          "client_id": "855986625717-e5nnivam3tdoit0qgg13r77dq1376iko.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.dijitalkanka.dijital_kanka",
+            "certificate_hash": "ebaa2e930106d6db541d9abc537db49a61f3cf32"
+          }
+        },
+        {
+          "client_id": "855986625717-q28imp8uvrrp8l8lfrfo2u1mqnhi50f0.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.dijitalkanka.dijital_kanka",
+            "certificate_hash": "ade5cb35eddfe0c0ee44252aa8c1505d7e81555b"
+          }
+        },
+        {
+          "client_id": "855986625717-u1brfc2ovu98fcpge5mq86kg9v1m65i7.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.dijitalkanka.dijital_kanka",
+            "certificate_hash": "00765c1196cdfcb343d9d33168b832ba5d3fd277"
+          }
+        },
+        {
+          "client_id": "855986625717-mh3dbtmiqkih8c1lufr8gac6jn6oep4v.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDgzC47A0VUCKhhU1oUQpi1s0LwKatOCgg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "855986625717-mh3dbtmiqkih8c1lufr8gac6jn6oep4v.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:855986625717:android:a81b32e2b8a0cfaab032fc",
+        "android_client_info": {
+          "package_name": "com.dijitalkanka.zibo_admin"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "855986625717-961pfmq9egir4hlhnr2nqg1jhthpaje9.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.dijitalkanka.zibo_admin",
+            "certificate_hash": "ade5cb35eddfe0c0ee44252aa8c1505d7e81555b"
+          }
+        },
+        {
+          "client_id": "855986625717-j1kgkpupe9chv610upqqk1hs4l4bo8ar.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.dijitalkanka.zibo_admin",
+            "certificate_hash": "cde69544d15a5d9e2cb6f4bc2be5cde6125344a3"
+          }
+        },
+        {
+          "client_id": "855986625717-mh3dbtmiqkih8c1lufr8gac6jn6oep4v.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDgzC47A0VUCKhhU1oUQpi1s0LwKatOCgg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "855986625717-mh3dbtmiqkih8c1lufr8gac6jn6oep4v.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

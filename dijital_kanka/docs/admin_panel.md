@@ -88,10 +88,11 @@ Mimari kararlar (mevcut kısıtlara göre — `docs/decisions/002`: Cloud Functi
 - **İşlem kaydı:** her yazım `adminLog/{id}` (zaman, işlem, eski→yeni).
 
 Adımlar:
-- [ ] A0 Firebase: Android uygulaması `com.dijitalkanka.zibo_admin` kaydı + SHA-1 → `zibo_admin/android/app/google-services.json`
-  (kullanıcı onayıyla, Chrome). Eklenecek SHA-1'ler: **upload anahtarı** `CD:E6:95:44:D1:5A:5D:9E:2C:B6:F4:BC:2B:E5:CD:E6:12:53:44:A3`
-  (release imzası — ana uygulamanın `dijital_kanka/android/key.properties`'i ORTAK kullanılıyor) + **debug**
-  `AD:E5:CB:35:ED:DF:E0:C0:EE:44:25:2A:A8:C1:50:5D:7E:81:55:5B`. Bu dosya gelmeden APK DERLENMEZ (google-services eklentisi).
+- [x] A0 Firebase (2026-10-29): Android uygulaması `com.dijitalkanka.zibo_admin` ("Zibo Yonetici", App ID
+  `1:855986625717:android:a81b32e2b8a0cfaab032fc`) kaydedildi; SHA-1'ler: **upload** `CD:E6:95:…:44:A3` (release imzası —
+  ana uygulamanın `dijital_kanka/android/key.properties`'i ORTAK) + **debug** `AD:E5:CB:…:55:5B`.
+  `zibo_admin/android/app/google-services.json` repoda. Firebase konsolu hesabı: **contact@getzibo.com** (Chrome
+  "personal" profili, `/u/0/`) — cvntann@gmail.com'da bu proje YOK. Debug APK telefonda açıldı (giriş ekranı).
 - [x] A1 İskelet (2026-10-29, kod; cihazda test A0'dan sonra): `zibo_admin/lib/` — `theme.dart` (taslağın renkleri,
   siyah üst şerit, sticker kart), `admin_auth.dart` (Google → Firebase giriş, `kAdminEmail` kapısı), `main.dart`
   (`AuthGate`: giriş yok → giriş ekranı, yönetici değil → "yönetici değil" + çıkış), `screens/home_shell.dart`
@@ -99,7 +100,7 @@ Adımlar:
   (her yazım `adminLog` ile AYNI batch'te), `screens/admin_log_screen.dart` (son 100 işlem). Release imzası = ana
   uygulamanın upload anahtarı; `res/raw/keep.xml` `default_web_client_id`'yi korur (ana uygulamadaki release-giriş
   hatasının aynısı önlendi). Challenge sekmesi v1'de YOK (özellik yok).
-- [~] A2 `firestore.rules` (2026-10-29, repoda yazıldı; **Console'a YAPIŞTIRILMADI**): `isAdmin()` + v1'in TÜM yönetici
+- [x] A2 `firestore.rules` (2026-10-29, **Console'da YAYINLANDI 21:34** — öncesinde canlı kuralın repodaki eski sürümle birebir aynı olduğu SHA-1 ile doğrulandı): `isAdmin()` + v1'in TÜM yönetici
   izinleri tek seferde — `config/games` yazma; `users/{uid}` + `state/*` okuma; `coinState` yazma (yalnız şekil, delta
   sınırı yok = Admin SDK ile aynı yetki); `subscriptionState` yazma (aynı şekil kuralı); diğer `state/*` yazma;
   `giftGrants` okuma/oluşturma; `adminLog` okuma/oluşturma (değiştirilemez/silinemez); `broadcasts` okuma/yazma;
