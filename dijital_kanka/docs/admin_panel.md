@@ -126,7 +126,7 @@ Adımlar:
   beyaz+siyah sticker kontur; uyarlanabilir ikon (`mipmap-anydpi-v26`) + eski PNG'ler. Üretici: `zibo_admin/tool/make_icon.py`.
   Uygulama adı "Zibo Yönetici". Telefonda başlatıcı önbelleği yüzünden kaldır-kur gerekti.
 - [x] A4 telefonda doğrulandı (2026-10-29, kullanıcı: "çalıştı").
-- [~] A5 Duyuru (2026-10-29, kod + APK telefonda; **sunucu tarafı ilk Actions çalışmasıyla HENÜZ doğrulanmadı**):
+- [x] A5 Duyuru (2026-10-29, **uçtan uca DOĞRULANDI**: run 40935741032 → "TEST gönderildi=1", bildirim telefonda `push_notifications` kanalında görüldü; gerçek kitleye henüz gönderilmedi):
   - Panel `screens/broadcast_screen.dart`: TR/EN/ES metin (seçilmeyen dildeki kullanıcıya GİTMEZ), kitle (herkes /
     Pro+Pro+ süresi geçmemiş / 7+ gün gelmeyen), zaman (hemen = sonraki saat başı +07 dk, ya da planlı tarih-saat),
     bildirim önizlemesi, "Önce teste gönder" (`testUid` = Zibo davet kodu, boş gelir; token yoksa uyarır; kitle/dil filtresi yok),
