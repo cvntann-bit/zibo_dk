@@ -14,6 +14,8 @@ const JOBS = [
   ['daily-reward-reminder', './dailyRewardReminder'],
   ['water-reminder', './waterReminder'],
   ['re-engagement', './reEngagement'],
+  // Yönetici paneli Özet sayıları — EN SONDA (bildirimleri geciktirmesin).
+  ['daily-stats', './dailyStats'],
 ];
 
 async function run() {

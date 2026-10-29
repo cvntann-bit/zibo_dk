@@ -4,7 +4,7 @@ import '../admin_auth.dart';
 import 'admin_log_screen.dart';
 import 'announce_screen.dart';
 import 'games_config_screen.dart';
-import 'placeholder_screen.dart';
+import 'summary_screen.dart';
 import 'user_screen.dart';
 
 class HomeShell extends StatefulWidget {
@@ -26,7 +26,7 @@ class _HomeShellState extends State<HomeShell> {
   ];
 
   Widget _body() => switch (_index) {
-    0 => const PlaceholderScreen(step: 'A6', text: 'Günlük özet (stats/daily) saatlik işle gelecek.'),
+    0 => const SummaryScreen(),
     1 => const GamesConfigScreen(),
     2 => const AnnounceScreen(),
     3 => const UserScreen(),
