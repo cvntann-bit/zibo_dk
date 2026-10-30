@@ -14,6 +14,10 @@ Bunlar uygulamanın çalışma zamanına dahil DEĞİL. `image` paketi yalnızca
 - **Diğer**: `flutter_launcher_icons` (dev_dependency) — `dart run flutter_launcher_icons` tüm mipmap boyutlarını tek kaynaktan üretir.
 - **İçerik üretimi**: `generate_content_js_daily_motivation.dart` — `lib/data/zibo_messages.dart`'ı düz metin okuyup `notification-scripts/src/content.js`'in `daily_motivation` bloğunu üretir (837 satırı elle kopyalamak yerine).
 
+## Eşya kütüphanesi — Python
+
+`build_asset_library.py <ham_klasör> <çıktı>`: CC0/MIT paketlerden `asset_library/` üretir (OBJ render + kontur + WebP). Saf Python render, Blender gerekmez. Kenney modelleri -Z'ye bakar (yaw 148), Quaternius +Z (yaw -32). Ayrıntı: `asset_library/README.md`.
+
 ## KRİTİK: PNG şeffaflık doğrulaması
 
 Önizleme aracına (`Read`, görsel önizleyici) GÜVENME — şeffaf pikselleri farklı renklerde

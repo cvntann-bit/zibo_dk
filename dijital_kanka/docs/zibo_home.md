@@ -107,5 +107,11 @@ telefonda/tablette denenir.
   Ücretli: Synty (ticari oyun serbest, düzenlenmiş varlık yeniden satılamaz, 2B render ve mobil için lisans metni okunmalı), Envato Elements (Envato'ya göre lisans abonelik bitse de geçerli; uygulama içi eşya netleşmeli), Icons8 3D Fluency (ücretli; uygulama lisansı doğrulanmadı).
   Hazır kütüphane simit/baklava ve Zibo'ya özel eşyayı çözmez: asıl sınırsız kaynak referanslı üretim. Üretim aracının ticari kullanım koşulları ayrıca kontrol edilmeli.
 
+## Eşya kütüphanesi (2026-10-31, kullanıcı: "en geniş ücretsiz olanı al, bunu yapacağız")
+`asset_library/` (repo kökü): 1.186 eşya, stil hattından geçmiş WebP (256 px, ortalama ~6 KB, toplam ~7 MB). **Uygulamaya dahil değil**, AAB değişmez.
+Katalog: `asset_library/katalog.html`, yayın: https://claude.ai/artifact/RGVjqNmhtubTm5pi2QU8gz. Üretim: `dijital_kanka/tool/build_asset_library.py`. Lisanslar: `asset_library/LICENSES.md`.
+Karar: Poly Pizza betikle erişimi 403 ile engelliyor ve ticari API'si ücretli, Kenney'nin sitesi de otomatik indirmeyi reddediyor; ikisi zorlanmadı. Yerine toplu indirmeye açık kaynaklar: Fluent (GitHub) + Kenney/Quaternius (OpenGameArt).
+Eksik: banyo 25, yatak 25, mutfak 39 parça ile en dar kategoriler; simit/baklava gibi yöresel ürünler yok; Fluent 256 px sınırı ve görsellerin tablette yumuşaması denenmedi.
+
 ## Etkileşimli taslak (2026-10-29)
 `docs/home_prototype/index.html` (+ `img/`), yayın: https://claude.ai/artifact/L3y1mxe5W3j5o1ieQi5ihD — banyo (sünger/sabun köpüğü, duş, havlu), mutfak (yemeği ağza sürükle, 2 bedava öğün, sahte reklamla +1), yatak (lamba → uyku, enerji), salon (mobilya al → yerleşir), ihtiyaç göstergeleri, 3 günlük görev + ödül sandığı. Emoji/CSS geçici görseller; Zibo gerçek pozlar. Kullanıcı geri bildirimi buraya yazılacak.
