@@ -1,6 +1,6 @@
 # Satın alma doğrulaması (2026-10-30)
 
-Durum: **kod hazır, canlı değil.** Etkinleşmesi için aşağıdaki "Yayın sırası" tamamlanmalı.
+Durum: **kod hazır, canlı değil.** Kurallar ve API tamam (2026-10-30); kalan adımlar aşağıdaki "Yayın sırası"nda.
 
 ## Ne çözüyor, ne çözmüyor
 - **Çözüyor (görünürlük):** sahte makbuz (Lucky Patcher vb. sahte "satın alındı" yanıtı), iade alıp ürünü tutma, aynı
@@ -33,13 +33,13 @@ görünmez. Kayıt + Play API yetkisi + `verifyPurchases.js` ileride anlık doğ
    Belgede `date` alanı yok, bu yüzden günlük `stats` sorgusuna karışmaz.
 
 ## Yayın sırası — bu sıra ÖNEMLİ
-1. [ ] **`firestore.rules` Console'da yayınlanır — 1.18.0'dan ÖNCE.** Kural yoksa yazım `permission-denied` alır ve
-   `PurchaseRecorder` bunu "zaten var" sayıp bir daha denemez, yani o makbuzlar sessizce kaybolur.
-2. [ ] Google Cloud (`zibo-dijital-kankan`): **Google Play Android Developer API** açılır.
-3. [ ] Play Console > Kullanıcılar ve izinler: `FIREBASE_SERVICE_ACCOUNT_JSON`'daki servis hesabı
-   (`firebase-adminsdk-…@zibo-dijital-kankan.iam.gserviceaccount.com`) davet edilir, yalnızca Zibo, önce yalnızca
-   **Finansal verileri görüntüle**. Panelde 403 kalırsa **Siparişleri ve abonelikleri yönet** eklenir. Yetkinin
-   yayılması 24–36 saat sürebilir.
+1. [x] **`firestore.rules` yayınlandı (2026-10-30).** Canlı sürüm repodakiyle SHA-1 ile aynıydı, yeni sürüm de repoyla aynı. Bu adım 1.18.0'dan ÖNCE şarttı: kural yoksa yazım `permission-denied` alır ve
+   `PurchaseRecorder` bunu "zaten var" sayıp bir daha denemez.
+2. [x] Google Cloud (`zibo-dijital-kankan`): **Google Play Android Developer API** açıldı (2026-10-30).
+3. [ ] Play Console > Kullanıcılar ve izinler: `firebase-adminsdk-fbsvc@zibo-dijital-kankan.iam.gserviceaccount.com` davet
+   edilecek, yalnızca Zibo, uygulama izni **Finansal verileri görüntüleme** (açıklamasında Satın Alma API'si erişimi yazıyor;
+   uygulama bilgisi + kalite izinleri otomatik gelir). Form dolduruldu, son onay kullanıcıda. Yetkinin yayılması 24–36 saat
+   sürebilir. GitHub secret'ı bu hesaptan üretilmiş varsayılıyor (projede 4 servis hesabı var); `lastError` 403 kalırsa önce buna bak.
 4. [ ] Zibo **1.18.0** yayınlanır (uygulama içi mesaj kartıyla birlikte). Eski sürümler kayıt yazmaz; abonelikler
    güncelleyip uygulamayı açınca `restorePurchases` ile kendiliğinden kaydolur.
 5. [ ] Gerçek bir test alımıyla uçtan uca doğrulanır (ilk Actions log'u + panel kartı). **Node bu makinede yok:
