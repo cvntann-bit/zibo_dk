@@ -29,6 +29,8 @@ Her "Geliştirici Güncellemesi" e-postası buraya özetlenir + Zibo'ya etkisi �
   bakılmadı. İki parça: PSA = yalnızca "Continue" onayı; ISA (Japonya'ya satanlar) = ad, adres + son 5 yıla dair 2 evet/hayır soru.
   **Risk:** yeni satıcıda ilk Japon alıcıdan gelir geldiği an, ISA tamamlanmadıysa küresel ödeme durur. Seçenek: davet gelince
   doldurmak ya da Japonya'yı dağıtımdan çıkarmak (dil desteği yok). Kaynak: support.google.com/paymentscenter/answer/17595997
+  **ERTELENDİ (kullanıcı, 2026-10-30):** "oradan kullanan yok", şimdilik işlem yapılmadı, Japonya yayında kaldı. Karar 1 Aralık'tan önce
+  yeniden gözden geçirilecek; Japonya'dan satış gelirse ödeme durması riski açık (ölçülmedi, kullanıcı beyanı).
 - [ ] **Uygulama kalitesi: bellek + kod optimizasyonu eşikleri — Şubat 2027 son tarih.** (Üretim panelinde 1.17.0 için "R8 optimizasyonu ile belleği ve performansı artırın" önerisi var, 2026-10-30.) DEX optimizasyonu %25
   tabanı için 2026-09-19'da reklam adaptörleri temizlendi (yalnızca AppLovin + Vungle). Bellek eşiği yeni →
   Play Console "Android vitals / Uygulama kalitesi" sayfasında Zibo'nun durumu ölçülecek.
