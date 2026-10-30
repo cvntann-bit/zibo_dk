@@ -17,12 +17,19 @@ Her "Geliştirici Güncellemesi" e-postası buraya özetlenir + Zibo'ya etkisi �
 | Uygunluk kriterli abonelik indirimi (öğrenci planı vb.) | Zibo Pro/Pro+'ta böyle plan yok (`subscribe_model.md`). **İleride öğrenci/aile indirimi eklenirse** kriter, doğrulama ve sonrası fiyat açıkça yazılmalı. |
 
 ### DİKKAT / YAPILACAKLAR
-- [ ] **Tüccar (trader) durumu beyanı — Kasım 2026'dan itibaren zorunlu.** Zibo IAP + abonelik satıyor →
-  Play Console'da beyan edilecek (kullanıcı yapar; birlikte bakılabilir). Console'da uyarı çıkınca hemen.
-- [ ] **Japonya yetkilendirmesi — son tarih 1 Aralık 2026**, yapılmazsa ödemeler **küresel** olarak bekletilir.
-  Zibo Japonya'da satış yapıyor mu (ülke/bölge listesi) Play Console'da kontrol edilecek; yapıyorsa form
-  doldurulacak, gerekmiyorsa Japonya'yı dağıtımdan çıkarmak da seçenek (dil desteği yok: TR/EN/ES).
-- [ ] **Uygulama kalitesi: bellek + kod optimizasyonu eşikleri — Şubat 2027 son tarih.** DEX optimizasyonu %25
+- [ ] **Tüccar (trader) durumu beyanı — son tarih 1 ŞUBAT 2027** (e-postadaki "Kasım 2026" formun açılma zamanı; 2026-10-30'da
+  Hesap ayrıntıları > Hakkınızda'da henüz görünmüyor). Yapılmazsa güncelleme engeli ve küresel kaldırma olabilir. Yol: Hesabı
+  yönetme > Hesap ayrıntıları > Hakkınızda; tüccarsa her uygulama için Uygulama içeriği'nden onay + **Hizmet Şartları linki**.
+  Google'ın ölçütleri düzenli IAP/abonelik/reklam gelirini örnek veriyor, yani Zibo tüccar örneklerine uyuyor. Yanlış "tüccar değil"
+  beyanı hesap kapatma sebebi. **Kişisel hesapta tüccarsan telefon + ADRES 1 Mart 2027'den itibaren mağazada herkese görünür.**
+  Kişisel hesapla devam mı, şirket hesabı mı: hukukçu/muhasebeciyle kullanıcı kararı. Kaynak: support.google.com/googleplay/android-developer/answer/17594752
+- [ ] **Japonya yetkilendirmesi — son tarih 1 Aralık 2026**, yapılmazsa ödemeler **küresel** olarak bekletilir. Zibo Japonya'da
+  yayında (178 ülke, 2026-10-30 doğrulandı). Yardım sayfası tetikleyici olarak "satış" diyor, eşik yok; salt dağıtımın yetip yetmediği
+  açık değil. Davet e-posta / Play Console / Payments Center'a gelir: 2026-10-30'da Console ve Payments Center'da YOK, e-posta
+  bakılmadı. İki parça: PSA = yalnızca "Continue" onayı; ISA (Japonya'ya satanlar) = ad, adres + son 5 yıla dair 2 evet/hayır soru.
+  **Risk:** yeni satıcıda ilk Japon alıcıdan gelir geldiği an, ISA tamamlanmadıysa küresel ödeme durur. Seçenek: davet gelince
+  doldurmak ya da Japonya'yı dağıtımdan çıkarmak (dil desteği yok). Kaynak: support.google.com/paymentscenter/answer/17595997
+- [ ] **Uygulama kalitesi: bellek + kod optimizasyonu eşikleri — Şubat 2027 son tarih.** (Üretim panelinde 1.17.0 için "R8 optimizasyonu ile belleği ve performansı artırın" önerisi var, 2026-10-30.) DEX optimizasyonu %25
   tabanı için 2026-09-19'da reklam adaptörleri temizlendi (yalnızca AppLovin + Vungle). Bellek eşiği yeni →
   Play Console "Android vitals / Uygulama kalitesi" sayfasında Zibo'nun durumu ölçülecek.
 - [ ] **Aileler İçin Kendi Kendini Onaylayan Reklam SDK Programı** artık yeni başvuru alıyor → Appodeal ve
@@ -39,4 +46,4 @@ Her "Geliştirici Güncellemesi" e-postası buraya özetlenir + Zibo'ya etkisi �
 Bildirim: "Ödeme hesabınızda ilgilenmeniz gereken acil bir sorun var". Ödeme profili sayfasında iki uyarı var, kazanç ₺62,65 (eşik ₺20 aşıldı):
 - [ ] **Kırmızı — vergi bilgileri:** "Ödemenizin bir sonraki ödeme döngüsüne dahil edilmesi için lütfen vergi bilgilerinizi girin." Girilmezse ödeme yapılmaz.
 - [ ] **Sarı — İrlanda vergi bilgileri:** Stopajın doğru tutarda kesilebilmesi için gönderilmesi isteniyor.
-Yol: Hesabı yönetme > Ödeme profili > "Güncelle". **Kullanıcı kendisi doldurur** (vergi kimliği, kişisel bilgi). İrlanda stopajı için hangi formun gerektiği muhasebeciyle netleşmeli.
+Yol: Hesabı yönetme > Ödeme profili > "Güncelle". **Kullanıcı kendisi doldurur** (vergi kimliği, kişisel bilgi). Payments Center'da üçüncü uyarı: Google Ads 303-794-1588 için yedek ödeme yöntemi. İrlanda stopajı için hangi formun gerektiği muhasebeciyle netleşmeli.
