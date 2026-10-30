@@ -34,3 +34,9 @@ Her "Geliştirici Güncellemesi" e-postası buraya özetlenir + Zibo'ya etkisi �
   kural var: puan/yorum karşılığı ZC ödülü YOK (`project_review_boost`).
 - `targetSdk` şu an 36. API 37'ye geçince yerel ağ / konum düğmesi kuralları devreye girer — o zaman bu
   dosyadaki "etkilemeyenler" tablosu tekrar doğrulanacak.
+
+## Ödeme profili uyarıları (2026-10-30, Play Console'dan okundu)
+Bildirim: "Ödeme hesabınızda ilgilenmeniz gereken acil bir sorun var". Ödeme profili sayfasında iki uyarı var, kazanç ₺62,65 (eşik ₺20 aşıldı):
+- [ ] **Kırmızı — vergi bilgileri:** "Ödemenizin bir sonraki ödeme döngüsüne dahil edilmesi için lütfen vergi bilgilerinizi girin." Girilmezse ödeme yapılmaz.
+- [ ] **Sarı — İrlanda vergi bilgileri:** Stopajın doğru tutarda kesilebilmesi için gönderilmesi isteniyor.
+Yol: Hesabı yönetme > Ödeme profili > "Güncelle". **Kullanıcı kendisi doldurur** (vergi kimliği, kişisel bilgi). İrlanda stopajı için hangi formun gerektiği muhasebeciyle netleşmeli.
