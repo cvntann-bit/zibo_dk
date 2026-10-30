@@ -86,5 +86,18 @@ telefonda/tablette denenir.
 4. Yeni Zibo pozlarını kim üretecek (kullanıcı mı, katmanlı çözüm mü)?
 5. Yiyecek/sabun bedava mı, coin'le mi, Pro'ya özel ürün var mı?
 
+## Materyal beyin fırtınası (2026-10-30, kullanıcı: "satın alacağım ya da açık kaynak var mı") — KARAR YOK
+Öneri: karma yol + tek stil hattı. Hiçbir hazır paket Zibo'yu içermez; asıl risk stil uyumsuzluğu ve satılan ürünün lisansı.
+- **Zibo pozları + oda arka planları:** kullanıcı üretir (onboarding'deki referanslı üretim). Kostüm çözümü gereği ~12–15 poz.
+- **Mobilya:** Kenney Furniture Kit (CC0, 140 dosya) + Quaternius paketleri (CC0 listeleniyor) → 3B kaynak, Blender'da render.
+- **Yemek/sünger/küçük eşya:** Microsoft Fluent Emoji 3D (MIT olduğu ikincil kaynaklarda yazıyor, LICENSE dosyası okunmalı; marka içeren emojiler yok) +
+  Quaternius Low Poly Food Pack (CC0 listeleniyor). Simit, baklava, churros, paella gibi yöresel ürünler kendimiz üretilir.
+- **Tek stil hattı:** her kaynak `tool/` betiğinden geçer: aynı kalın kontur, gölge, renk tonu, boyut, WebP.
+- **Satın alma ikinci planda:** CraftPix ticari kullanım diyor (lisans sayfası okunmalı). Freepik/Vecteezy'de satılan uygulama içi ürün gri alan: Freepik
+  sticker'ı uygulamada "secondary only" sayıyor, satılık eşya için KULLANILMAMALI. Unity Asset Store başka motorda serbest diyor ama ilan bazında kontrol şart.
+- **Boyut (tahmin):** bugün `assets/images` 14 MB, AAB ~98 MB. Eşya başına ~20–40 KB WebP → 200 eşya ~4–8 MB. Sezonluk içerik ileride uzaktan indirilebilir.
+- **Kural:** her dış varlık için kaynak, lisans, tarih bir kayıt dosyasında tutulur (CC0/MIT dahil); çocuk uygulaması: telifli karakter/marka içeren paket yok.
+- **Sıradaki adım önerisi:** pilot: Zibo + 3 kaynaktan 6 eşya aynı banyo/mutfak sahnesinde yan yana, kullanıcı stile karar verir.
+
 ## Etkileşimli taslak (2026-10-29)
 `docs/home_prototype/index.html` (+ `img/`), yayın: https://claude.ai/artifact/L3y1mxe5W3j5o1ieQi5ihD — banyo (sünger/sabun köpüğü, duş, havlu), mutfak (yemeği ağza sürükle, 2 bedava öğün, sahte reklamla +1), yatak (lamba → uyku, enerji), salon (mobilya al → yerleşir), ihtiyaç göstergeleri, 3 günlük görev + ödül sandığı. Emoji/CSS geçici görseller; Zibo gerçek pozlar. Kullanıcı geri bildirimi buraya yazılacak.
