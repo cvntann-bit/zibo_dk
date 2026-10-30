@@ -102,6 +102,10 @@ telefonda/tablette denenir.
   Fluent MIT `LICENSE` dosyasından, Kenney CC0 paket `License.txt`'den doğrulandı. Quaternius CC0 yalnızca OpenGameArt sayfasından.
   İzlenim: küçük eşya + yemek = Fluent (256 px sınırı, yöresel ürün yok, MIT metni lisans ekranına eklenmeli); mobilya = Kenney başlangıç için yeterli ama köşeli; Quaternius ikinci planda.
   Öneri: C (Karma). Kullanıcı kararı bekleniyor.
+- **Daha geniş kütüphane araştırması (2026-10-30, kullanıcı: "çok fazla şey yok"):** Fluent 1.595 emoji (repodan ölçüldü). Kenney 30.000+ (eski forum notu, CC0; All-in-1 paketi var).
+  Poly Pizza ~10.000+ düşük poligonlu model (üçüncü taraf sayısı; model bazında CC0 veya CC-BY, yalnızca CC0 süzülmeli ya da atıf eklenmeli). 3dicons 120–1.440 (kaynaklar çelişiyor, CC0).
+  Ücretli: Synty (ticari oyun serbest, düzenlenmiş varlık yeniden satılamaz, 2B render ve mobil için lisans metni okunmalı), Envato Elements (Envato'ya göre lisans abonelik bitse de geçerli; uygulama içi eşya netleşmeli), Icons8 3D Fluency (ücretli; uygulama lisansı doğrulanmadı).
+  Hazır kütüphane simit/baklava ve Zibo'ya özel eşyayı çözmez: asıl sınırsız kaynak referanslı üretim. Üretim aracının ticari kullanım koşulları ayrıca kontrol edilmeli.
 
 ## Etkileşimli taslak (2026-10-29)
 `docs/home_prototype/index.html` (+ `img/`), yayın: https://claude.ai/artifact/L3y1mxe5W3j5o1ieQi5ihD — banyo (sünger/sabun köpüğü, duş, havlu), mutfak (yemeği ağza sürükle, 2 bedava öğün, sahte reklamla +1), yatak (lamba → uyku, enerji), salon (mobilya al → yerleşir), ihtiyaç göstergeleri, 3 günlük görev + ödül sandığı. Emoji/CSS geçici görseller; Zibo gerçek pozlar. Kullanıcı geri bildirimi buraya yazılacak.
