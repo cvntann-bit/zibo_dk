@@ -180,6 +180,28 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // Satın alma makbuzları (docs/purchase_verification.md): uygulama yalnızca YENİ `pending`
+    // kayıt açar (PurchaseRecorder), sonucu saatlik iş (Admin SDK) yazar. Belge kimliği token'ın
+    // özeti: var olan belgeye yazım `update` sayılır ve reddedilir, aynı makbuz iki kez açılamaz.
+    // Özetin doğruluğunu saatlik iş kontrol eder.
+    match /purchaseRecords/{recordId} {
+      allow read: if isAdmin();
+      allow create: if request.auth != null
+        && request.resource.data.keys().hasOnly(
+          ['uid', 'productId', 'purchaseToken', 'orderId', 'status', 'createdAt'])
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.status == 'pending'
+        && request.resource.data.productId is string
+        && request.resource.data.productId.size() <= 64
+        && request.resource.data.purchaseToken is string
+        && request.resource.data.purchaseToken.size() <= 1024
+        && (request.resource.data.orderId == null
+            || (request.resource.data.orderId is string
+                && request.resource.data.orderId.size() <= 64))
+        && request.resource.data.createdAt == request.time;
+      allow update, delete: if false;
+    }
+
     // Uygulama içi mesaj kartları — yönetici yazar, Zibo açılışta okur (InAppMessageProvider,
     // docs/admin_panel.md). İçerik herkese açık duyuru metni; kişisel veri yok.
     match /inAppMessages/{messageId} {

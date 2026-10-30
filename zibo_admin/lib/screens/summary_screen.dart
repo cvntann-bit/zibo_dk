@@ -32,8 +32,14 @@ String _fmtTime(DateTime t) {
 class _SummaryScreenState extends State<SummaryScreen> {
   late Future<List<Map<String, dynamic>>> _future = _load();
   int? _selectedBar;
+  Map<String, dynamic>? _purchases;
 
   Future<List<Map<String, dynamic>>> _load() async {
+    // `date` alanı yok, aşağıdaki sorguya girmez — satın alma doğrulama özeti (verifyPurchases.js).
+    final purchases = await FirebaseFirestore.instance
+        .doc('stats/purchases')
+        .get(const GetOptions(source: Source.server));
+    _purchases = purchases.data();
     final snap = await FirebaseFirestore.instance
         .collection('stats')
         // `date` alanı (= belge id'si): tek alanlı indeks otomatik; documentId'ye ters sıralama ayrı indeks ister.
@@ -126,6 +132,10 @@ class _SummaryScreenState extends State<SummaryScreen> {
         if (heavy.isNotEmpty && heavy.first['activity'] is Map) ...[
           const SizedBox(height: 20),
           _adsAndRevenue(heavy.first, today),
+        ],
+        if (_purchases != null) ...[
+          const SizedBox(height: 20),
+          _purchaseVerification(_purchases!),
         ],
         if (heavy.isNotEmpty && heavy.first['subscribers'] is List) ...[
           const SizedBox(height: 20),
@@ -265,6 +275,64 @@ class _SummaryScreenState extends State<SummaryScreen> {
 
   /// Etkin aboneler (sahip hesapları hariç). Satın alma tarihi kayıtlı değil — "son doğrulama" = bitiş − 35 gün
   /// (Zibo her Play onayında bitişi 35 gün ileri atar): ilk alım ya da aboneliğin son doğrulandığı açılış.
+  /// Satın alma doğrulama — `stats/purchases`. Yalnızca etiket: coin/üyelik geri alınmaz.
+  Widget _purchaseVerification(Map<String, dynamic> data) {
+    final counts = data['counts'] as Map? ?? const {};
+    num count(String key) => counts[key] as num? ?? 0;
+    final lastError = data['lastError'] as String?;
+    final problems = (data['problems'] as List? ?? const []).whereType<Map>().toList();
+    final updatedAt = (data['updatedAt'] as Timestamp?)?.toDate();
+    const labels = {'invalid': 'Google tanımıyor', 'canceled': 'İptal', 'voided': 'İade'};
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text('🧾 Satın alma doğrulama', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800)),
+        Text(
+          "Google'a soruldu · ${updatedAt == null ? '—' : _fmtTime(updatedAt)} · yalnızca etiket, geri alma yok",
+          style: const TextStyle(color: kInkSoft, fontSize: 12),
+        ),
+        const SizedBox(height: 8),
+        _tiles([
+          ('Doğrulandı', _n(count('verified')), null),
+          ('Bekliyor', _n(count('pending')), null),
+          ('Google tanımıyor', _n(count('invalid')), null),
+          ('İptal / iade', _n(count('canceled') + count('voided')), null),
+        ]),
+        if (lastError != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: Text("Google'a ulaşılamadı: $lastError", style: const TextStyle(color: kBad, fontSize: 12)),
+          ),
+        for (final m in problems)
+          GestureDetector(
+            onTap: () {
+              Clipboard.setData(ClipboardData(text: '${m['uid']}'));
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('uid kopyalandı: ${m['uid']}')));
+            },
+            child: Container(
+              margin: const EdgeInsets.only(top: 10),
+              padding: const EdgeInsets.all(12),
+              decoration: stickerDecoration(borderWidth: 2, shadowOffset: const Offset(2, 2)),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '${labels[m['status']] ?? m['status']} · ${m['productId']}${m['testPurchase'] == true ? ' · test' : ''}',
+                    style: const TextStyle(fontWeight: FontWeight.w800),
+                  ),
+                  Text(
+                    '${m['uid']}${m['reason'] == null ? '' : '\n${m['reason']}'}',
+                    style: const TextStyle(color: kInkSoft, fontSize: 12),
+                  ),
+                ],
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
   Widget _subscribers(List raw) {
     final items = raw.whereType<Map>().toList();
     String date(Object? iso) {

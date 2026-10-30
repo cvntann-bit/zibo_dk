@@ -33,7 +33,7 @@ Son güncelleme bağlamı: sürüm `1.14.1+50` (2026-10-02, AAB alındı — ban
   - Unity Ads adaptörü `android/app/build.gradle.kts`'te HAZIR ama Appodeal Console "Store URL required" (uygulama Play'de yayında olunca 24 saatte otomatik doğrulanır) yüzünden Console'da OFF.
   - **AdMob geçmişi**: eski AdMob hesabı Google tarafından devre dışı bırakıldı ("ilişkili hesap"), itiraz gönderildi, sonuç belirsiz. Appodeal'e geçiş bu yüzden. `google_mobile_ads` paketi tamamen kaldırıldı.
 - **IAP: Google Play Billing** (`in_app_purchase`), 5 tüketilebilir coin paketi (`coins_100`…`coins_10000`), Play Console'da oluşturuldu.
-  - **AÇIK GÜVENLİK BOŞLUĞU**: satın alma makbuzu sunucu tarafında (Google Play Developer API) doğrulanmıyor — istemcinin "purchased" durumuna güveniliyor. Tam çözüm Cloud Functions/backend gerektirir (Blaze kararı bekliyor). Launch öncesi ele alınmalı.
+  - **AÇIK GÜVENLİK BOŞLUĞU**: satın alma makbuzu sunucu tarafında (Google Play Developer API) doğrulanmıyor — istemcinin "purchased" durumuna güveniliyor. **2026-10-30: saatlik Google kontrolü kodlandı, henüz canlı değil (yalnızca etiket) → `docs/purchase_verification.md`.**
 - **Zibo ADS** ("reklamsız deneyim") = tamamen GÖRSEL MOCKUP. Gerçek satın alma yok, "Yakında" SnackBar'ı.
 
 ## Yerel bildirimler

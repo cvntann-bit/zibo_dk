@@ -135,7 +135,7 @@ Plan (taslak, kullanıcı onayıyla):
 
 ## Faz 5 — Güvenlik/gelir sağlamlığı (zamanı gelince)
 
-- Satın alma makbuzu sunucu doğrulaması (Cloud Functions/Blaze kararı gerekir) — gerçek kullanıcı sayısı arttıkça önceliği yükselir.
+- Satın alma makbuzu sunucu doğrulaması — **2026-10-30 saatlik işle kodlandı (yalnızca etiket), yayın adımları bekliyor** → `docs/purchase_verification.md`.
 - iOS (hedef: 10 bin kullanıcı) — ayrı karar.
 
 ## Çalışma kuralları (bu plan için)

@@ -14,6 +14,8 @@ const JOBS = [
   ['daily-reward-reminder', './dailyRewardReminder'],
   ['water-reminder', './waterReminder'],
   ['re-engagement', './reEngagement'],
+  // Satın alma makbuzlarını Google'a sor (docs/purchase_verification.md) — bekleyen yoksa tek sorgu.
+  ['verify-purchases', './verifyPurchases'],
   // Yönetici paneli Özet sayıları — EN SONDA (bildirimleri geciktirmesin).
   ['daily-stats', './dailyStats'],
 ];

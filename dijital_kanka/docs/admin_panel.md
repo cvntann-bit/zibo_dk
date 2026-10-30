@@ -209,5 +209,7 @@ Adımlar:
     (`SubscriptionProvider._rollingWindow`): ilk alım ya da Play'in son onayı. Kesin alım tarihi/tutarı → Play Console >
     Siparişler. Panel: Özet > "⭐ Aboneler" (en son doğrulanan üstte). İlk okuma: 3 etkin abone (1 Pro, 2 Pro+).
 
+- **Satın alma doğrulama kartı** (2026-10-30): Özet > "🧾 Satın alma doğrulama" = `stats/purchases` → `docs/purchase_verification.md`.
+
 **Yönetici v1 TAMAM (2026-10-29)** — A0–A6 + uygulama içi mesaj kartı (A5b; Zibo tarafı 1.18.0 sürümüyle gelir).
 - Sonra (Zibo sürümü gerektirenler): uygulama içi duyuru kutusu, reklam sıklığını `config/ads`'e taşıma.

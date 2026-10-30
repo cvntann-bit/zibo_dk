@@ -183,6 +183,7 @@ Pro→Pro+ katman yükseltmesi var.
   kaynak: `tier`, `isPro`, `isProPlus`, `purchase(offer)`,
   `upgradeToProPlus(offer)`. Firestore'da `users/{uid}/state/subscriptionState`
   altında (`subscriptionTier`/`subscriptionExpiryDate`/`subscriptionProductId`).
+- **2026-10-30:** abonelik makbuzları saatlik işle Google'a soruluyor (yalnızca etiket, henüz canlı değil; gerçek `expiryTime` kaydediliyor) → `docs/purchase_verification.md`.
 - **İstemci-yetkili, TAM sunucu doğrulaması YOK** — coin ekonomisiyle
   (`docs/decisions/005`) AYNI mimari kısıt, proje backend'siz (`docs/decisions/002`).
   Detaylı gerekçe → `docs/decisions/012-subscription-tier-tracking.md`.

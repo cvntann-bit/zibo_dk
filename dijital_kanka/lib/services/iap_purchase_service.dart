@@ -52,6 +52,7 @@ class InAppPurchasePurchaseService extends PurchaseService {
   StreamSubscription<List<PurchaseDetails>>? _subscription;
   final Map<String, Completer<bool>> _pending = {};
   final _orphanedController = StreamController<String>.broadcast();
+  final _receiptController = StreamController<PurchaseReceipt>.broadcast();
 
   /// Kullanıcı, Play Billing ödeme ekranını başlattıktan SONRA (ör. sistem
   /// GERİ tuşuyla) öyle bir şekilde kapatabiliyor ki `purchaseStream` HİÇBİR
@@ -92,9 +93,13 @@ class InAppPurchasePurchaseService extends PurchaseService {
   @override
   Stream<String> get orphanedPurchaseProductIds => _orphanedController.stream;
 
+  @override
+  Stream<PurchaseReceipt> get purchaseReceipts => _receiptController.stream;
+
   void dispose() {
     _subscription?.cancel();
     _orphanedController.close();
+    _receiptController.close();
   }
 
   @override
@@ -346,6 +351,17 @@ class InAppPurchasePurchaseService extends PurchaseService {
       final succeeded =
           purchase.status == PurchaseStatus.purchased ||
           purchase.status == PurchaseStatus.restored;
+
+      if (succeeded) {
+        // Android'de `serverVerificationData` = Play'in satın alma token'ı.
+        _receiptController.add(
+          PurchaseReceipt(
+            productId: purchase.productID,
+            purchaseToken: purchase.verificationData.serverVerificationData,
+            orderId: purchase.purchaseID,
+          ),
+        );
+      }
 
       if (completer != null) {
         if (!completer.isCompleted) completer.complete(succeeded);

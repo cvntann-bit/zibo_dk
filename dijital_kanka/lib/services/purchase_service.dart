@@ -1,6 +1,21 @@
 import '../models/coin_package.dart';
 import '../models/subscription_offer.dart';
 
+/// Google Play'in bir satın alma için verdiği makbuz — `PurchaseRecorder`
+/// bunu `purchaseRecords`'a yazar, saatlik iş Google'a sorup doğrular
+/// (bkz. `docs/purchase_verification.md`).
+class PurchaseReceipt {
+  const PurchaseReceipt({
+    required this.productId,
+    required this.purchaseToken,
+    this.orderId,
+  });
+
+  final String productId;
+  final String purchaseToken;
+  final String? orderId;
+}
+
 /// Uygulama içi satın alma (IAP) işlemlerinden sorumlu servisin soyut
 /// arayüzü. Gerçek implementasyon [InAppPurchasePurchaseService]
 /// ([iap_purchase_service.dart](iap_purchase_service.dart)) — `AdService`/
@@ -34,6 +49,11 @@ abstract class PurchaseService {
   /// [PurchaseService] örneği paylaşılmalı. Varsayılan: hiçbir zaman olay
   /// yayınlamayan boş bir stream.
   Stream<String> get orphanedPurchaseProductIds => const Stream.empty();
+
+  /// Başarılı/geri yüklenen HER satın almanın makbuzu. Teslimat bu stream'e
+  /// BAĞLI DEĞİL — yalnızca sonradan doğrulama için kayıt. Varsayılan:
+  /// hiçbir zaman olay yayınlamayan boş bir stream.
+  Stream<PurchaseReceipt> get purchaseReceipts => const Stream.empty();
 
   /// "Reklamsız Zibo" (bkz. `AdFreeProvider.productId`) KALICI/tek seferlik
   /// ürününün satın alma akışını başlatır — [purchaseCoinPackage]'ın

@@ -71,6 +71,7 @@ import 'services/google_auth_service.dart';
 import 'services/home_widget_service.dart';
 import 'services/interstitial_pacer.dart';
 import 'services/iap_purchase_service.dart';
+import 'services/purchase_recorder.dart';
 import 'services/purchase_service.dart';
 import 'services/push_notification_service.dart';
 import 'services/sound_effects_service.dart';
@@ -686,6 +687,18 @@ class DijitalKankaApp extends StatelessWidget {
         purchaseService ?? InAppPurchasePurchaseService();
     return MultiProvider(
       providers: [
+        // Satın alma makbuzu kaydı (bkz. PurchaseRecorder). `lazy: false` VE
+        // listenin başında: `purchaseReceipts` broadcast — provider'ların
+        // tetiklediği `restorePurchases` sonuçları kaçmasın diye önce
+        // dinlemeye başlamalı.
+        Provider<PurchaseRecorder>(
+          lazy: false,
+          create: (_) => PurchaseRecorder(
+            uid: uid,
+            purchaseService: resolvedPurchaseService,
+          ),
+          dispose: (_, recorder) => recorder.dispose(),
+        ),
         // TrustedTimeProvider EN BAŞTA olmalı — aşağıdaki "güne bağlı"
         // provider'ların `create` callback'leri `context.read<
         // TrustedTimeProvider>()` ile buna erişiyor (MultiProvider listede

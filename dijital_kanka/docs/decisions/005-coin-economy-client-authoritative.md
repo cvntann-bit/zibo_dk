@@ -23,7 +23,7 @@ yetkisi DEĞİL):
 - **Bu KISMİ düzeltme sürdürülen/scripted saldırıya karşı KORUMASIZ** — rules'un izin verdiği küçük "kural dostu" yazımları (5 ZC check-in) bir betikle sınırsız tekrarlayan bir saldırgan zamanla istediği bakiyeye ulaşır. Rules'un zaman/sıklık hafızası YOK.
 - **Kostüm/tema `ownedIds` listeleri hâlâ TAMAMEN korumasız** — istemci ödemeden ID ekleyebilir. Rules-only bir izin listesi `costumes.dart`/`app_themes.dart` ile sürekli senkron tutulması gereken kırılgan bir yük olurdu — bilerek kapsam dışı.
 - **KRİTİK BAKIM**: yeni bir daha pahalı coin paketi / kostüm / tema eklenirse `firestore.rules`'taki `10000` / `33000` üst sınırları ELLE yükselt — yoksa o TEK satın alma Firestore'a yazılamaz (sessiz senkron durması).
-- **IAP makbuz doğrulaması da AYNI mimari boşlukta** — `purchaseStream`'in `purchased` durumu tek başına güvenilir değil. Tam çözüm: istemci makbuzu bir backend'e gönderir → Google Play Developer API ile doğrulanır → Admin SDK ile `coinState` güncellenir, istemci artık coin EKLEMEZ. Launch öncesi ele alınmalı.
+- **IAP makbuz doğrulaması da AYNI mimari boşlukta** — `purchaseStream`'in `purchased` durumu tek başına güvenilir değil. Tam çözüm: istemci makbuzu bir backend'e gönderir → Google Play Developer API ile doğrulanır → Admin SDK ile `coinState` güncellenir, istemci artık coin EKLEMEZ. Launch öncesi ele alınmalı. **2026-10-30:** teslimat istemcide kaldı, makbuzlar saatlik işle sonradan doğrulanıyor (yalnızca etiket) → `docs/purchase_verification.md`.
 
 ## İlgili
 `firestore.rules` (uzun yorumlar) · `docs/history/backend-auth-security-referral.md`

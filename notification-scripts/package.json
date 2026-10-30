@@ -18,9 +18,11 @@
     "init-founder-badge-counter": "node src/initFounderBadgeCounter.js",
     "grant-gift": "node src/grantGift.js",
     "send-broadcasts": "node src/sendBroadcasts.js",
-    "daily-stats": "node src/dailyStats.js"
+    "daily-stats": "node src/dailyStats.js",
+    "verify-purchases": "node src/verifyPurchases.js"
   },
   "dependencies": {
-    "firebase-admin": "^12.7.0"
+    "firebase-admin": "^12.7.0",
+    "google-auth-library": "^9.15.1"
   }
 }
