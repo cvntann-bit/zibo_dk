@@ -97,7 +97,11 @@ telefonda/tablette denenir.
   sticker'ı uygulamada "secondary only" sayıyor, satılık eşya için KULLANILMAMALI. Unity Asset Store başka motorda serbest diyor ama ilan bazında kontrol şart.
 - **Boyut (tahmin):** bugün `assets/images` 14 MB, AAB ~98 MB. Eşya başına ~20–40 KB WebP → 200 eşya ~4–8 MB. Sezonluk içerik ileride uzaktan indirilebilir.
 - **Kural:** her dış varlık için kaynak, lisans, tarih bir kayıt dosyasında tutulur (CC0/MIT dahil); çocuk uygulaması: telifli karakter/marka içeren paket yok.
-- **Sıradaki adım önerisi:** pilot: Zibo + 3 kaynaktan 6 eşya aynı banyo/mutfak sahnesinde yan yana, kullanıcı stile karar verir.
+- **Pilot sonucu (2026-10-30):** `docs/home_materials_pilot/index.html` (+ `img/`, `LICENSES.md`), yayın: https://claude.ai/artifact/J1BQhbhncUWzbLnqpdph5Z
+  25 eşya, gerçek Zibo ile banyo/mutfak, ham ve kontürlü. Ölçüm: eşya başına ortalama 5,3 KB (3–10 KB, 170–460 px WebP), yani önceki 20–40 KB tahmini fazlaydı; tablet boyutunda artar.
+  Fluent MIT `LICENSE` dosyasından, Kenney CC0 paket `License.txt`'den doğrulandı. Quaternius CC0 yalnızca OpenGameArt sayfasından.
+  İzlenim: küçük eşya + yemek = Fluent (256 px sınırı, yöresel ürün yok, MIT metni lisans ekranına eklenmeli); mobilya = Kenney başlangıç için yeterli ama köşeli; Quaternius ikinci planda.
+  Öneri: C (Karma). Kullanıcı kararı bekleniyor.
 
 ## Etkileşimli taslak (2026-10-29)
 `docs/home_prototype/index.html` (+ `img/`), yayın: https://claude.ai/artifact/L3y1mxe5W3j5o1ieQi5ihD — banyo (sünger/sabun köpüğü, duş, havlu), mutfak (yemeği ağza sürükle, 2 bedava öğün, sahte reklamla +1), yatak (lamba → uyku, enerji), salon (mobilya al → yerleşir), ihtiyaç göstergeleri, 3 günlük görev + ödül sandığı. Emoji/CSS geçici görseller; Zibo gerçek pozlar. Kullanıcı geri bildirimi buraya yazılacak.
