@@ -19,7 +19,8 @@ Eşyalar farklı paketlerden, farklı kamerayla, Zibo düşünülmeden yapılmı
 
 ## Deneme sonuçları
 - 2026-11-01, 3B oda: reddedildi. Zibo yüzü bozuldu, ölçek tutmadı.
-- 2026-11-01, 2B oda (önden): stil umut verici. Gerçek 3B Zibo pozu üstüne kondu, düz ve kalın konturlu hali karşılaştırıldı; kullanıcı kararı bekleniyor. Görselde masa kadraj dışına taşıyor, zemin ~%62'den başlıyor.
+- 2026-11-01, 2B oda (önden): stil umut verici. Gerçek 3B Zibo pozu üstüne kondu, düz ve kalın konturlu hali karşılaştırıldı; Görselde masa kadraj dışına taşıyor, zemin ~%62'den başlıyor. **Kullanıcı: "aklımdaki bu değil".** Stil hâlâ açık, kullanıcıdan örnek görsel istendi.
+- Mobilya değiştirme modeli: oda arka planı boş, her mobilya yuvası aynı taban noktası ve boy sınırıyla ayrı saydam görsel; satın alınan eşya depoya girer, kullanıcı yuvaya takar. Yeni eşya kataloğa eklenir, görsel uygulamada yoksa sürüm ya da uzaktan indirme gerekir.
 
 ## Oda katmanları (arkadan öne)
 | Katman | Satılır mı? | Üretim |
