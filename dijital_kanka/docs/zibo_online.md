@@ -1,5 +1,7 @@
 # Zibo Online — sosyal/çok oyunculu (UZUN VADELİ FİKİR, 2026-10-29)
 
+> 2026-11-01: Sıralama ve arkadaşlar Zibo Dünyası'nın içine girecek → `docs/zibo_world.md`.
+
 Durum: kullanıcı "ilerleyen seviyelerde Zibo'yu online yapmayı düşünüyorum". Sıra: Zibo'nun Evi
 (`docs/zibo_home.md`) → Admin paneli (`docs/admin_panel.md`) → bu. Kod YOK. Kapsam kullanıcıyla netleşecek.
 

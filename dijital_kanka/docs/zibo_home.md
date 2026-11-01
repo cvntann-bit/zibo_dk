@@ -1,5 +1,7 @@
 # Zibo'nun Evi — besleme, bakım, günlük görevler (FİKİR AŞAMASI, 2026-10-29)
 
+> 2026-11-01: Ev, Zibo Dünyası'nın parçası oldu; ikram düz özellik değil bakım oyunu olacak, Oyun Salonu eve taşınacak → `docs/zibo_world.md`.
+
 Durum: **BEKLEMEDE** — kullanıcının "otel işi" bitince başlanacak. Kod YOK.
 İlgili: `docs/game_zibo.md` "Gelecek fikirler", `docs/unit_economics.md` (zarar etmemek), `docs/theme_new.md` (görsel dil).
 
