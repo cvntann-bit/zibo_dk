@@ -28,6 +28,12 @@ Stil kilidi: `Polished 3D cartoon render, same material and lighting style as th
 Fark: ilk 3B denemedeki soluk bej yerine canlı renk, tam önden kamera, görselde karakter yok.
 Deneme 3 (2026-11-01): canlı sarı duvar, parlak zemin, tam önden mutfak. Gerçek Zibo pozu konturSUZ üstüne kondu, stil ve ışık uyumu iyi. Kullanıcı onayı bekleniyor.
 
+## Kodla çizim denemesi (2026-11-01)
+Kullanıcı üç üretim denemesini de beğenmedi ("aklımdaki bu değil") ve benim çizmemi istedi. `docs/kitchen_studio/index.html`, yayın: https://claude.ai/artifact/VBTTTHp6ncR9UCrUpAA3ji
+Oda ve eşyalar SVG ile çizildi, Zibo gerçek poz. Boya, duvar kağıdı, zemin, buzdolabı, ocak, dolap, masa, sandalye seçilir, önce denenir sonra ZC ile alınır. Artısı: renk varyantı yeni görsel gerektirmez, her ekranda keskin, orantı sabit. Eksisi: görsel üretici kadar detaylı değil. Kullanıcı yorumu bekleniyor.
+
+**Görsel üretici bağlama:** MCP kataloğunda özel görsel üretim bağlayıcısı bulunamadı (Adobe var, üretim yeteneği doğrulanmadı). Alternatif: görsel API'si + yerel betik; anahtar ortam değişkeninde kalır, sohbete yazılmaz. Sağlayıcının ticari kullanım koşulları ve görsel başı ücreti seçimden önce kontrol edilir.
+
 ## Oda katmanları (arkadan öne)
 | Katman | Satılır mı? | Üretim |
 |---|---|---|
