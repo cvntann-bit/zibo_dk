@@ -46,6 +46,6 @@ Her "Geliştirici Güncellemesi" e-postası buraya özetlenir + Zibo'ya etkisi �
 
 ## Ödeme profili uyarıları (2026-10-30, Play Console'dan okundu)
 Bildirim: "Ödeme hesabınızda ilgilenmeniz gereken acil bir sorun var". Ödeme profili sayfasında iki uyarı var, kazanç ₺62,65 (eşik ₺20 aşıldı):
-- [ ] **Kırmızı — vergi bilgileri:** "Ödemenizin bir sonraki ödeme döngüsüne dahil edilmesi için lütfen vergi bilgilerinizi girin." Girilmezse ödeme yapılmaz.
+- [x] **(TAMAM, kullanıcı 2026-11-01)** **Kırmızı — vergi bilgileri:** "Ödemenizin bir sonraki ödeme döngüsüne dahil edilmesi için lütfen vergi bilgilerinizi girin." Girilmezse ödeme yapılmaz.
 - [ ] **Sarı — İrlanda vergi bilgileri:** Stopajın doğru tutarda kesilebilmesi için gönderilmesi isteniyor.
 Yol: Hesabı yönetme > Ödeme profili > "Güncelle". **Kullanıcı kendisi doldurur** (vergi kimliği, kişisel bilgi). Payments Center'da üçüncü uyarı: Google Ads 303-794-1588 için yedek ödeme yöntemi. İrlanda stopajı için hangi formun gerektiği muhasebeciyle netleşmeli.
