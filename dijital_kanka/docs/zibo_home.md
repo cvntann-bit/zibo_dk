@@ -113,5 +113,16 @@ Katalog: `asset_library/katalog.html`, yayın: https://claude.ai/artifact/RGVjqN
 Karar: Poly Pizza betikle erişimi 403 ile engelliyor ve ticari API'si ücretli, Kenney'nin sitesi de otomatik indirmeyi reddediyor; ikisi zorlanmadı. Yerine toplu indirmeye açık kaynaklar: Fluent (GitHub) + Kenney/Quaternius (OpenGameArt).
 Eksik: banyo 25, yatak 25, mutfak 39 parça ile en dar kategoriler; simit/baklava gibi yöresel ürünler yok; Fluent 256 px sınırı ve görsellerin tablette yumuşaması denenmedi.
 
+## Kütüphaneyle neler yapılabilir — fikirler (2026-11-01, KARAR YOK)
+Amaç: hafta-1 tutma (%14,6) ve coin harcama. Evin tamamını beklemeden küçük dilimler. Öneri sırası:
+1. **Zibo'ya ikram:** Ana Sayfa'da günde birkaç ücretsiz yemek ver, Zibo mevcut mutlu pozla tepki versin; özel yemek ZC, +1 ikram ödüllü reklam. Yeni poz gerektirmez, beslemenin ilk testi.
+2. **Çıkartma albümü:** Hedef/görev tamamlayınca sürpriz eşya; setler (meyve, tatlı, oyuncak) bitince ZC veya rozet. Sürekli içerik + geri dönme sebebi.
+3. **Yılbaşı takvimi:** 1–25 Aralık her gün bir hediye kutusu (Holiday Kit: kutu, çorap, kardan adam, ağaç); sezonluk süs ZC ile. Tarih bağlı: en geç kasım sonu hazır olmalı.
+4. **Oyun Salonu temaları:** Hafıza kartları, Yakala nesneleri için yemek/eşya setleri; açılabilir tema = ★ ve ZC harcama alanı.
+5. **Yeni oyun:** Eşya birleştirme oyunu, görselleri hazır.
+6. **Küçük dokunuşlar:** Bildirim/paylaşım görselleri, Play Store ve reklam içerikleri.
+7. **Sonra:** Evin kendisi; Zibo Online hediyeleri aynı eşyaları kullanır.
+**İçerik süzgeci (uygulamaya girmeden):** kütüphanede çocuklara uygun olmayanlar var, kullanılmayacak: bira, kokteyl, sigara, tabut, hançer, silahlar, iç giyim vb. Dini sembollü eşyalar (Hanuka, Kwanzaa) da sezonluk etkinliğe otomatik girmemeli. Çok dilli isim gerekir: katalog adları İngilizce.
+
 ## Etkileşimli taslak (2026-10-29)
 `docs/home_prototype/index.html` (+ `img/`), yayın: https://claude.ai/artifact/L3y1mxe5W3j5o1ieQi5ihD — banyo (sünger/sabun köpüğü, duş, havlu), mutfak (yemeği ağza sürükle, 2 bedava öğün, sahte reklamla +1), yatak (lamba → uyku, enerji), salon (mobilya al → yerleşir), ihtiyaç göstergeleri, 3 günlük görev + ödül sandığı. Emoji/CSS geçici görseller; Zibo gerçek pozlar. Kullanıcı geri bildirimi buraya yazılacak.
