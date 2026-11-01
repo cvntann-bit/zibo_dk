@@ -22,6 +22,11 @@ Eşyalar farklı paketlerden, farklı kamerayla, Zibo düşünülmeden yapılmı
 - 2026-11-01, 2B oda (önden): stil umut verici. Gerçek 3B Zibo pozu üstüne kondu, düz ve kalın konturlu hali karşılaştırıldı; Görselde masa kadraj dışına taşıyor, zemin ~%62'den başlıyor. **Kullanıcı: "aklımdaki bu değil".** Stil hâlâ açık, kullanıcıdan örnek görsel istendi.
 - Mobilya değiştirme modeli: oda arka planı boş, her mobilya yuvası aynı taban noktası ve boy sınırıyla ayrı saydam görsel; satın alınan eşya depoya girer, kullanıcı yuvaya takar. Yeni eşya kataloğa eklenir, görsel uygulamada yoksa sürüm ya da uzaktan indirme gerekir.
 
+## Güncel stil yönü (2026-11-01, kullanıcı: "2B ama 3B şeklinde, Zibo gibi")
+Düzen 2B oyun gibi tam önden, görünüm Zibo gibi 3B render (2.5B). Bu bölüm yukarıdaki 2B stil kilidinin yerine geçer.
+Stil kilidi: `Polished 3D cartoon render, same material and lighting style as the reference character, smooth glossy surfaces, soft subsurface look, vivid saturated colors, chunky rounded toy-like shapes, seen perfectly straight from the front like a 2D side-view game, orthographic, no perspective.`
+Fark: ilk 3B denemedeki soluk bej yerine canlı renk, tam önden kamera, görselde karakter yok.
+
 ## Oda katmanları (arkadan öne)
 | Katman | Satılır mı? | Üretim |
 |---|---|---|
