@@ -17,6 +17,10 @@ Eşyalar farklı paketlerden, farklı kamerayla, Zibo düşünülmeden yapılmı
 - **Tuval:** Oda 1080×1440. Zemin çizgisi yukarıdan %68'de. Üst %10 ve alt %12 arayüze bırakılır.
 - **Eşya:** Saf beyaz zemin (sonra `tool/cutout_*` ile saydamlaştırılır), en uzun kenar en az 1024 px, tek nesne, zemin gölgesi yok. Üretimin tamamı bitince `cwebp`.
 
+## Deneme sonuçları
+- 2026-11-01, 3B oda: reddedildi. Zibo yüzü bozuldu, ölçek tutmadı.
+- 2026-11-01, 2B oda (önden): stil umut verici. Gerçek 3B Zibo pozu üstüne kondu, düz ve kalın konturlu hali karşılaştırıldı; kullanıcı kararı bekleniyor. Görselde masa kadraj dışına taşıyor, zemin ~%62'den başlıyor.
+
 ## Oda katmanları (arkadan öne)
 | Katman | Satılır mı? | Üretim |
 |---|---|---|
