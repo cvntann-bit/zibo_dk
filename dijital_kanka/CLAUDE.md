@@ -70,6 +70,7 @@ Flutter mobil uygulaması: "Zibo" adlı maskot karakterin eşlik ettiği bir ki�
 | **Satın alma doğrulaması** (makbuz kaydı, saatlik Google kontrolü, yayın sırası, neyi çözmediği) | `docs/purchase_verification.md` |
 | **Google Play politika e-postaları** (her güncellemenin Zibo'ya etkisi, son tarihler: tüccar beyanı, Japonya, bellek eşiği) | `docs/play_policy_updates.md` |
 | **Zibo Dünyası** (Oyunlar sekmesinin yerine gelen merkez: ev, oyunlar, etkinlikler, sıralama, arkadaşlar; sıra ve kurallar) | `docs/zibo_world.md` |
+| **Ev görsel üretim rehberi** (stil, kamera, ölçek, oda katmanları, prompt'lar, ZC fiyat taslağı) | `docs/zibo_home_art.md` |
 | **Hazır eşya görselleri** (1.186 eşya, uygulamaya dahil değil; katalog, lisans kaydı, üretim betiği) | `../asset_library/README.md` |
 | **Zibo'nun Evi** (besleme, bakım, günlük görevler, oda/mobilya tasarımı — FİKİR, beklemede) | `docs/zibo_home.md` |
 | **Yönetici uygulaması / admin paneli** (uzaktan ayar, duyuru/bildirim, challenge, hediye — FİKİR, Ev'den sonra) | `docs/admin_panel.md` |

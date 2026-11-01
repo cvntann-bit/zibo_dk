@@ -46,8 +46,12 @@ Zibo Dünyası (kendi ekranı, kendi gezintisi)
 - Bakım etkileşiminin ortasında zorunlu reklam yok; reklam kullanıcı seçimiyle.
 - Her faz ayrı sürüm, önce taslak ve kullanıcı onayı, sonra kod.
 
+## Kararlar (2026-11-01)
+- **Ev merkezde:** Sekme açılınca Zibo evinde karşılar, diğer bölümler evin üstünde düğme olur.
+- **Mini Sims:** Mobilya, boya, duvar kağıdı, zemin ZC ile satılır, oda oda ilerlenir. Üretim rehberi: `docs/zibo_home_art.md`.
+- `asset_library/` mobilyaları beğenilmedi, yeni görsel üretilecek.
+
 ## Netleşecekler
 1. Sekmenin ve dünyanın adı.
-2. Kapı düzeni: Zibo'nun evi merkezde mi, kartlı menü mü?
 3. Oyun Salonu evde bir oda mı, ana menüde de görünsün mü?
 4. Yılbaşına yetişmek için etkinlikler evden önce mi?
