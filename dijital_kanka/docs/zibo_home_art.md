@@ -26,6 +26,7 @@ Eşyalar farklı paketlerden, farklı kamerayla, Zibo düşünülmeden yapılmı
 Düzen 2B oyun gibi tam önden, görünüm Zibo gibi 3B render (2.5B). Bu bölüm yukarıdaki 2B stil kilidinin yerine geçer.
 Stil kilidi: `Polished 3D cartoon render, same material and lighting style as the reference character, smooth glossy surfaces, soft subsurface look, vivid saturated colors, chunky rounded toy-like shapes, seen perfectly straight from the front like a 2D side-view game, orthographic, no perspective.`
 Fark: ilk 3B denemedeki soluk bej yerine canlı renk, tam önden kamera, görselde karakter yok.
+Deneme 3 (2026-11-01): canlı sarı duvar, parlak zemin, tam önden mutfak. Gerçek Zibo pozu konturSUZ üstüne kondu, stil ve ışık uyumu iyi. Kullanıcı onayı bekleniyor.
 
 ## Oda katmanları (arkadan öne)
 | Katman | Satılır mı? | Üretim |
