@@ -122,6 +122,7 @@ Amaç: hafta-1 tutma (%14,6) ve coin harcama. Evin tamamını beklemeden küçü
 5. **Yeni oyun:** Eşya birleştirme oyunu, görselleri hazır.
 6. **Küçük dokunuşlar:** Bildirim/paylaşım görselleri, Play Store ve reklam içerikleri.
 7. **Sonra:** Evin kendisi; Zibo Online hediyeleri aynı eşyaları kullanır.
+**Oynanabilir vitrin (2026-11-01):** `docs/ideas_prototype/index.html`, yayın: https://claude.ai/artifact/KPDWwUETWooQbWExX6Xesm — ikram, albüm, takvim, hafıza temaları, birleştirme, 4 odalı ev; ZC ve ödüller örnek, kurallar kullanıcı onayı bekliyor.
 **İçerik süzgeci (uygulamaya girmeden):** kütüphanede çocuklara uygun olmayanlar var, kullanılmayacak: bira, kokteyl, sigara, tabut, hançer, silahlar, iç giyim vb. Dini sembollü eşyalar (Hanuka, Kwanzaa) da sezonluk etkinliğe otomatik girmemeli. Çok dilli isim gerekir: katalog adları İngilizce.
 
 ## Etkileşimli taslak (2026-10-29)
