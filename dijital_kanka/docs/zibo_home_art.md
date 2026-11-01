@@ -6,14 +6,14 @@ ZC satın almaya gerçek bir sebep. `asset_library/` yalnızca geçici yer tutuc
 
 ## Orantısızlık neden oldu, nasıl önlenir
 Eşyalar farklı paketlerden, farklı kamerayla, Zibo düşünülmeden yapılmıştı. Çözüm:
-1. **Önce ana sahne:** Oda, Zibo içindeyken tek görsel olarak üretilir. Stil, kamera ve ölçek buradan kilitlenir.
+1. **Önce ana sahne:** Oda Zibo'suz, tek görsel olarak üretilir (üretici araçlar Zibo'nun yüzünü bozuyor). Stil ve kamera buradan kilitlenir, gerçek Zibo pozu üstüne konup ölçek kontrol edilir.
 2. **Sonra parçalar:** Her eşya ana sahne referans verilerek tek tek, aynı kamerayla üretilir.
 3. **Ölçek birimi Zibo'dur:** Boylar "Zibo boyu" (ZB) ile yazılır, uygulamada kodla sabitlenir.
 
 ## Sabit kurallar
-- **Stil:** Zibo ile aynı, sinema animasyonu tarzı yumuşak 3B; yuvarlak köşeler, tombul oranlar, sıcak ışık. Düşük poligon yok.
-- **Kamera:** Önden, göz hizasından hafif yukarı. Oda bebek evi kesiti gibi görünür. Bütün odalarda aynı.
-- **Işık:** Sol üstten yumuşak ve sıcak; gölge sağa-aşağıya.
+- **Stil (kullanıcı kararı 2026-11-01):** Önden, 2B çizgi film. Temiz koyu kontur, düz renkler, basit gölgeleme, canlı palet. Yumuşak 3B deneme beğenilmedi ("aklımdaki bu değil").
+- **Kamera:** Tam önden, perspektifsiz. Bütün odalarda aynı.
+- **Açık risk:** Zibo 3B render, oda 2B. Uyum ilk denemede gerçek pozla kontrol edilecek. Tüm pozları 2B çizmek 200+ görsel demek, önerilmez.
 - **Tuval:** Oda 1080×1440. Zemin çizgisi yukarıdan %68'de. Üst %10 ve alt %12 arayüze bırakılır.
 - **Eşya:** Saf beyaz zemin (sonra `tool/cutout_*` ile saydamlaştırılır), en uzun kenar en az 1024 px, tek nesne, zemin gölgesi yok. Üretimin tamamı bitince `cwebp`.
 
@@ -33,7 +33,7 @@ Yerleştirme: ilk sürümde **sabit yuvalar** (her yuvaya varyant seçilir), ser
 ## Mutfak (ilk oda) üretim listesi
 | Parça | Boy (ZB) | Adet |
 |---|---|---|
-| Ana sahne (Zibo'lu) | — | 1 |
+| Ana sahne (Zibo'suz) | — | 1 |
 | Buzdolabı | 1,35 | 3 |
 | Tezgah + ocak | 0,65 | 3 |
 | Üst dolap | 0,45 | 2 |
@@ -48,21 +48,21 @@ Yerleştirme: ilk sürümde **sabit yuvalar** (her yuvaya varyant seçilir), ser
 Toplam ~39 görsel. **Toplu üretime geçmeden önce deneme seti:** ana sahne + 1 buzdolabı + 1 masa.
 
 ## Prompt'lar
-Referans: `store_assets/zibo_referans.png` her seferinde verilir. Ana sahne beğenilince o da referans olur.
+Ana sahne referanssız üretilir, beğenilince sonraki her prompt'a referans verilir.
 
 **Stil kilidi (her prompt'a eklenir):**
-`Stylized 3D animated-film look, soft Pixar-like shading, rounded chunky shapes, slightly oversized cute proportions, warm soft light from the upper left, clean high quality render.`
+`Flat 2D cartoon illustration for a cute mobile pet game, clean bold dark outlines, simple flat colors with soft cel shading, bright cheerful palette, storybook style.`
 
 **Ana sahne:**
-`[Stil kilidi] Cozy kitchen seen straight from the front like a dollhouse cross-section, eye level, slightly elevated camera, no perspective distortion, back wall and floor only. Vertical 3:4. The character from the reference stands in the center, same design and outfit, full body, feet on the floor. Beside him a rounded retro fridge 1.35 times his height, a low counter with a stove reaching his chest, a small round table and one chair. Plain warm cream painted wall, simple wooden floor. The floor line is at two thirds of the image height. Tidy, cheerful, for all ages.`
+`[Stil kilidi] Cozy kitchen seen straight from the front, flat side-on view, no perspective, back wall and floor only. Vertical 3:4. A tall rounded retro fridge on the left, a low counter with a stove in the middle against the wall, a small round table with one chair on the right, everything fully inside the frame. Plain pastel yellow painted wall, simple wooden floor. The floor starts at two thirds of the image height. Empty space in the center for a character. No characters, no people, no animals. Tidy, cheerful, for all ages.`
 
-**Tek eşya (ana sahne + Zibo referans):**
-`[Stil kilidi] Single [EŞYA] in exactly the same style, camera angle and lighting as the reference kitchen, front view slightly from above, isolated on a pure white background, no floor, no shadow, nothing else in the image, centered, full object visible.`
+**Tek eşya (ana sahne referans):**
+`[Stil kilidi] Single [EŞYA] in exactly the same style as the reference kitchen, flat front view, isolated on a pure white background, no floor, no shadow, nothing else in the image, centered, full object visible.`
 
 **Duvar kağıdı / zemin:**
-`Seamless repeating tile texture, [DESEN], soft pastel colors matching a cozy 3D animated film kitchen, flat even lighting, no shadows, no perspective, edges tile perfectly, square.`
+`Seamless repeating tile texture, [DESEN], flat 2D cartoon style with soft pastel colors, even lighting, no shadows, no perspective, edges tile perfectly, square.`
 
-**Kaçın:** `text, letters, logo, watermark, extra fingers, different character, realistic photo, low poly, harsh shadows, wide-angle distortion, brand names.`
+**Kaçın:** `text, letters, logo, watermark, extra fingers, characters, realistic photo, 3D render, low poly, perspective, brand names.`
 
 ## Ekonomi taslağı (rakamlar kesin değil)
 Referans: 110 ZC ≈ ₺16,99 (`coins_100`), kostüm 440–33.000 ZC. Fiyatlar `unit_economics.md` ile hesaplanır, uzaktan değişebilir olur.
