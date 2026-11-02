@@ -2839,4 +2839,46 @@ class AppLocalizationsTr extends AppLocalizations {
   @override
   String get costumeTrialAdUnavailable =>
       'Şu an video hazır değil, biraz sonra tekrar dene.';
+
+  @override
+  String get worldTitle => 'Zibo Dünyası';
+
+  @override
+  String get bottomBarWorldLabel => 'Dünya';
+
+  @override
+  String get worldNeedHunger => 'Tokluk';
+
+  @override
+  String get worldNeedHygiene => 'Temizlik';
+
+  @override
+  String get worldNeedEnergy => 'Enerji';
+
+  @override
+  String get worldNeedFun => 'Neşe';
+
+  @override
+  String get worldRoomKitchen => 'Mutfak';
+
+  @override
+  String get worldRoomBath => 'Banyo';
+
+  @override
+  String get worldRoomBedroom => 'Yatak odası';
+
+  @override
+  String get worldRoomLiving => 'Salon';
+
+  @override
+  String get worldDoorGames => 'Oyunlar';
+
+  @override
+  String get worldDoorEvents => 'Etkinlikler';
+
+  @override
+  String get worldDoorLeaderboard => 'Sıralama';
+
+  @override
+  String get worldDoorFriends => 'Arkadaşlar';
 }

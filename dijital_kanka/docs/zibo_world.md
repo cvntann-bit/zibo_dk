@@ -58,7 +58,7 @@ satın alma doğrulaması kaydı (`purchase_verification.md`), uygulama içi mes
 Sonuç: bunlar Zibo Dünyası bitene kadar canlıya çıkmaz. Her adım yine debug APK ile telefonda denenir (`feedback_debug_apk_workflow`).
 
 ### Uygulama adımları (öneri sırası) — ayrıntılı faz planı: `docs/zibo_world_roadmap.md`
-1. **Veri ve kabuk:** `HomeNeedsProvider` (4 ihtiyaç, `TrustedTimeProvider` ile zamanla düşer, ceza yok), `HomeDecorProvider` (oda başına sahip olunan/takılı eşya, `CloudStateStore` `homeState`). Alt çubukta Oyun Salonu sekmesi → `ZiboWorldScreen`; bugünkü `GameHallScreen` Oyunlar kapısından açılır.
+1. **Veri ve kabuk:** `HomeNeedsProvider` (4 ihtiyaç, `TrustedTimeProvider` ile zamanla düşer, ceza yok), `HomeDecorProvider` (oda başına sahip olunan/takılı eşya, `CloudStateStore` `homeDecorState`; ihtiyaçlar ayrı `homeNeedsState`). Alt çubukta Oyun Salonu sekmesi → `ZiboWorldScreen`; bugünkü `GameHallScreen` Oyunlar kapısından açılır.
 2. **Oda çizimi:** taslaktaki SVG çizimleri Flutter `CustomPainter`'a taşınır (oda + eşya + desen + zemin). En büyük iş; görünüm taslakla aynı kalmalı.
 3. **Giriş ekranı:** ev kesiti, ihtiyaç halkaları, Zibo'nun konuşma balonu, kapılar, etkinlik kartı.
 4. **Bakım oyunları:** besle (Fluent görselleri `assets/` + lisans ekranı), köpükle yıka, uyut, salonda oyna.

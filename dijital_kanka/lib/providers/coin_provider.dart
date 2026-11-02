@@ -661,6 +661,23 @@ class CoinProvider extends ChangeNotifier {
     return success;
   }
 
+  /// Zibo'nun Evi harcamaları. Neden önekleri (`Ev: `, `Ev yemeği: `,
+  /// `Sabun: `) sabit tutulmalı — ev ekonomisinin harcama analizi bu
+  /// öneklere dayanacak (docs/zibo_world_roadmap.md).
+  bool spendOnHomeItem({required String itemKey, required int cost}) {
+    final success = _spend(cost, 'Ev: $itemKey');
+    if (success && _isSoundEnabled()) _soundEffectsService.playThemeBuy();
+    return success;
+  }
+
+  bool spendOnFood({required String foodId, required int cost}) => _spend(cost, 'Ev yemeği: $foodId');
+
+  bool spendOnSoap({required String soapId, required int cost}) {
+    final success = _spend(cost, 'Sabun: $soapId');
+    if (success && _isSoundEnabled()) _soundEffectsService.playThemeBuy();
+    return success;
+  }
+
   // --- Reklam gösterimi (coin ekonomisiyle DOĞRUDAN ilgisiz) -----------
 
   /// Geçiş (interstitial) reklamı — TEK giriş noktası. [placement] yalnızca

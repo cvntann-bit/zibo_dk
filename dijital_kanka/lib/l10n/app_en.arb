@@ -831,5 +831,19 @@
   "costumeTrialUsedToday": "You've used today's trial, a new costume arrives tomorrow!",
   "costumeTrialStartedMessage": "{name} is yours for 24 hours! Zibo put it on right away.",
   "costumeTrialBadge": "Trial",
-  "costumeTrialAdUnavailable": "No video is ready right now, please try again in a bit."
+  "costumeTrialAdUnavailable": "No video is ready right now, please try again in a bit.",
+  "worldTitle": "Zibo's World",
+  "bottomBarWorldLabel": "World",
+  "worldNeedHunger": "Food",
+  "worldNeedHygiene": "Clean",
+  "worldNeedEnergy": "Energy",
+  "worldNeedFun": "Fun",
+  "worldRoomKitchen": "Kitchen",
+  "worldRoomBath": "Bathroom",
+  "worldRoomBedroom": "Bedroom",
+  "worldRoomLiving": "Living room",
+  "worldDoorGames": "Games",
+  "worldDoorEvents": "Events",
+  "worldDoorLeaderboard": "Leaderboard",
+  "worldDoorFriends": "Friends"
 }

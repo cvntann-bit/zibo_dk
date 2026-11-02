@@ -32,15 +32,16 @@ Taslaklar (birebir hedef görünüm):
 ## Faz 1 — Veri modeli ve kabuk
 **Hedef:** Oyunlar sekmesi Zibo Dünyası olur, mevcut oyunlar kaybolmadan içine taşınır.
 - **Firestore**
-  - `users/{uid}/state/homeState` (genel `state/{stateDoc}` sahip kuralı kapsar, yeni kural gerekmez):
-    `needs {tokluk, temizlik, enerji, mutluluk, updatedAt}`, `rooms {mutfak|banyo|yatak|salon: {eq: {kategori: itemId}, owned: [itemId]}}`,
-    `soaps [id]`, `feed {day, freeUsed}`, `sleep {startedAt|null}`, `stats {fed, bathed, slept, played}`.
-  - `config/home` (okuma: giriş yapmış herkes, yazma: `isAdmin()` → **kural eklenecek**): fiyat ezmeleri, ihtiyaç düşüş hızları, günlük ücretsiz yemek, uyku hızı, açık/kapalı bayraklar.
+  - İki ayrı state dokümanı (genel `state/{stateDoc}` sahip kuralı kapsar, yeni kural gerekmez; ikiye bölündü ki sık yazılan ihtiyaçlar dekor kaydını her seferinde yeniden yazmasın):
+    - `users/{uid}/state/homeNeedsState` — `levels {hunger, hygiene, energy, fun}`, `updatedAt`, `sleepStartedAt|null`, `sleepStartEnergy`, `freeFoodDay`, `freeFoodsUsed`. (`stats` sayaçları Faz 4'te eklenecek.)
+    - `users/{uid}/state/homeDecorState` — `equipped {oda: {kategori: itemId}}`, `owned ["oda:kategori:eşya"]`, `soaps [id]`, `soap`.
+  - `config/home` (okuma: giriş yapmış herkes, yazma: `isAdmin()` — **kural `firestore.rules`'ta eklendi, Console'a yayın bekliyor**): `decayPerHour`, `minLevel`, `sleepMinutesToFull`, ücretsiz yemek sayıları, Pro/Pro+ indirim ve hızları, `priceOverrides {"oda:kategori:eşya" | "food:id" | "soap:id": ZC}`.
   - `events/{id}` (Faz 6, kural Faz 6'da).
-- **Modeller/veri:** `lib/models/home_item.dart` (id, oda, kategori, çizim türü, renk, fiyat, nadirlik), `lib/data/home_catalog.dart` (taslaktaki tüm eşyalar), `lib/data/home_foods.dart`, `lib/data/home_soaps.dart`.
+- **Modeller/veri:** `lib/models/home_item.dart` (oda, kategori türü, eşya, yemek, sabun), `lib/models/home_need.dart`, `lib/data/home_config.dart`, `lib/data/home_catalog.dart` — **üretilen dosya**: `tool/generate_home_catalog.py` taslaktaki (`docs/home_studio/index.html`) eşya, yemek ve sabun bloklarını okuyup yazar; taslak değişince betik yeniden çalıştırılır. Adlar şimdilik yalnız TR (çeviri Faz 5'te).
 - **Provider'lar:** `HomeNeedsProvider` (ihtiyaçlar, `TrustedTimeProvider` ile zamanla düşer, alt sınır var), `HomeDecorProvider` (sahip/takılı, `CloudStateStore`), `HomeConfigProvider` (`GamesConfigProvider` deseni).
-- **Coin:** `CoinProvider`'a `spendOnHomeItem({itemId, cost})`, `spendOnFood`, `spendOnSoap` (işlem nedeni sabit önekli → `dailyStats.js` ayrıştırabilsin). `coinState` kuralı değişmez (tek yazım ≤ 33.000 ZC; en pahalı ev eşyası 1.500).
+- **Coin:** `CoinProvider`'a `spendOnHomeItem({itemId, cost})`, `spendOnFood`, `spendOnSoap` (işlem nedeni sabit önekli: `Ev: `, `Ev yemeği: `, `Sabun: ` → ileride harcama analizi). `coinState` kuralı değişmez (tek yazım ≤ 33.000 ZC; en pahalı ev eşyası 1.500).
 - **Kabuk:** `RootScreen` sekme 1 → `ZiboWorldScreen`; `GameHallScreen` Oyunlar kapısından push; `onGamesTap` çağrıları yeni yere bağlanır. `main.dart` MultiProvider + `test/` `_buildAppWithClock` provider listesi güncellenir (`test/CLAUDE.md`).
+- **Durum (2026-11-02): kod tamam, testler yeşil** — 13 birim testi (`test/zibo_world_test.dart`). Ekran şimdilik iskelet: halkalar, boya renkli 2×2 oda kartları, Zibo en düşük ihtiyacın odasında, kapılar (Sıralama/Arkadaşlar kilitli). Oda kartları "Yakında" der (Faz 2–5). Kalan: APK kontrolü + `config/home` kuralını Console'a yayınlama.
 - **Kontrol noktası (APK):** sekme açılıyor, boş ev iskeleti, Oyunlar kapısı → bugünkü Oyun Salonu sorunsuz, eski kullanıcı verisi duruyor.
 
 ## Faz 2 — Çizim motoru (taslak → Flutter)
@@ -72,7 +73,7 @@ Taslaklar (birebir hedef görünüm):
 - **Kontrol noktası (APK):** dört döngü baştan sona, ZC doğru düşüyor, uygulama kapatılıp açılınca durum korunuyor.
 
 ## Faz 5 — Dekor mağazası
-- Oda başına kategoriler (mutfak 14, banyo 14, yatak 13, salon 13), modeller ve renkler `home_catalog.dart`'tan.
+- Oda başına kategoriler (mutfak 13, banyo 14 — sabun şekli dahil, yatak 12, salon 13; toplam 52 kategori, 279 eşya), modeller ve renkler `home_catalog.dart`'tan.
 - Önce dene, sonra "Odadakileri al" (sepet), sahip olunanlar "Sende var", fiyat `config/home` ezmesi.
 - Nadirlik dili kostümlerle aynı (1.15.0); Pro/Pro+ kararına göre özel ürünler.
 - Sezonluk/sınırlı ürün altyapısı (tarih aralığı, `config/home`).
@@ -80,7 +81,7 @@ Taslaklar (birebir hedef görünüm):
 
 ## Faz 6 — Etkinlikler
 - `events/{id}`: `type` (1.18.0'da yalnızca `takvim`), başlık/açıklama TR/EN/ES, `start`, `end`, `days[] {reward: zc|itemId}`, `enabled`. Kural: okuma giriş yapmış herkes, yazma `isAdmin()`.
-- `EventsProvider`: aktif/yaklaşan etkinlik, gün açma (gün anahtarı `TrustedTimeProvider`, tekrar açma koruması `homeState.events`).
+- `EventsProvider`: aktif/yaklaşan etkinlik, gün açma (gün anahtarı `TrustedTimeProvider`, tekrar açma koruması ayrı bir `eventsState` dokümanında).
 - Ödüller: ZC (`CoinProvider` nedenli kazanç, tek yazım sınırı içinde) ya da sezonluk dekor (Yılbaşı: çam, hediye, ışık, kardan adam — kodla çizim).
 - **Yönetici uygulaması:** `events_screen.dart` (oluştur, tarih, ödül tablosu, aç/kapat) + `adminLog`.
 - Sınır: yeni etkinlik **türü** ilk kez eklenirken sürüm gerekir.
@@ -130,10 +131,11 @@ Taslaklar (birebir hedef görünüm):
 | 7 Sıralama + Arkadaşlar (1.19.0) | 4–6 |
 
 ## Ek A — Taslaktaki katalog (uygulamaya taşınacak)
-- **Mutfak (14):** boya, duvar kağıdı, zemin, buzdolabı ×10, ocak ×5, dolap ×5, tezgâh üstü ×5, masa ×5, masa örtüsü ×4, sandalye ×5, sarkıt lamba ×4, duvar süsü ×4, perde ×5.
-- **Banyo (14):** boya, fayans ×8, zemin ×5, küvet ×8, lavabo ×6, ayna ×6, havlu ×6, duş başlığı ×4, raf ×3, paspas ×5, oyuncak ×4, bitki ×2, duvar süsü ×3; sabun ×5.
-- **Yatak odası (13):** boya, duvar kağıdı ×7, zemin ×4, yatak ×6, nevresim ×6, komodin ×4, abajur ×5, gardırop ×4, perde ×5, halı ×5, oyuncak ×4, duvar süsü ×3.
-- **Salon (13):** boya, duvar kağıdı ×6, zemin ×4, kanepe ×6, TV ×4, ünite ×3, sehpa ×4, lambader ×4, halı ×4, perde ×5, köşe ×3, duvar süsü ×4, puf ×3.
+- **Mutfak (13):** boya ×8, duvar kağıdı ×6, zemin ×5, buzdolabı ×10, ocak ×5, dolap ×5, tezgâh üstü ×6, masa ×5, masa örtüsü ×5, sandalye ×5, sarkıt lamba ×5, duvar süsü ×5, perde ×5.
+- **Banyo (14):** boya ×8, fayans ×8, zemin ×5, küvet ×8, lavabo ×6, ayna ×6, havlu ×6, duş başlığı ×4, raf ×4, paspas ×6, oyuncak ×5, bitki ×3, duvar süsü ×4, sabun şekli ×5; ayrıca sabun türü ×5 (bir kez alınır).
+- **Yatak odası (12):** boya ×8, duvar kağıdı ×7, zemin ×4, yatak ×6, nevresim ×6, komodin ×4, abajur ×5, gardırop ×4, perde ×5, halı ×6, oyuncak ×5, duvar süsü ×4.
+- **Salon (13):** boya ×8, duvar kağıdı ×6, zemin ×4, kanepe ×6, TV ×4, TV ünitesi ×3, sehpa ×4, lambader ×4, halı ×5, perde ×5, köşe ×4, duvar süsü ×5, puf ×4.
+- Sayılar `lib/data/home_catalog.dart`'tan (üretilen); her listede "yok"/başlangıç seçeneği dahil.
 - **Yemek (57):** meyve-sebze 17, yemek 22, tatlı 13, içecek 5 (fiyat ve tokluk değerleri `home_studio` taslağında).
 - **İhtiyaçlar:** tokluk (mutfak), temizlik (banyo), enerji (yatak), mutluluk (salon).
 

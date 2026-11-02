@@ -831,5 +831,19 @@
   "costumeTrialUsedToday": "Ya usaste la prueba de hoy, ¡mañana hay un disfraz nuevo!",
   "costumeTrialStartedMessage": "¡{name} es tuyo por 24 horas! Zibo ya se lo puso.",
   "costumeTrialBadge": "Prueba",
-  "costumeTrialAdUnavailable": "Ahora no hay un video listo, inténtalo de nuevo en un rato."
+  "costumeTrialAdUnavailable": "Ahora no hay un video listo, inténtalo de nuevo en un rato.",
+  "worldTitle": "El mundo de Zibo",
+  "bottomBarWorldLabel": "Mundo",
+  "worldNeedHunger": "Comida",
+  "worldNeedHygiene": "Limpieza",
+  "worldNeedEnergy": "Energía",
+  "worldNeedFun": "Diversión",
+  "worldRoomKitchen": "Cocina",
+  "worldRoomBath": "Baño",
+  "worldRoomBedroom": "Dormitorio",
+  "worldRoomLiving": "Salón",
+  "worldDoorGames": "Juegos",
+  "worldDoorEvents": "Eventos",
+  "worldDoorLeaderboard": "Clasificación",
+  "worldDoorFriends": "Amigos"
 }

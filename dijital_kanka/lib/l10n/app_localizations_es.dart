@@ -2869,4 +2869,46 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get costumeTrialAdUnavailable =>
       'Ahora no hay un video listo, inténtalo de nuevo en un rato.';
+
+  @override
+  String get worldTitle => 'El mundo de Zibo';
+
+  @override
+  String get bottomBarWorldLabel => 'Mundo';
+
+  @override
+  String get worldNeedHunger => 'Comida';
+
+  @override
+  String get worldNeedHygiene => 'Limpieza';
+
+  @override
+  String get worldNeedEnergy => 'Energía';
+
+  @override
+  String get worldNeedFun => 'Diversión';
+
+  @override
+  String get worldRoomKitchen => 'Cocina';
+
+  @override
+  String get worldRoomBath => 'Baño';
+
+  @override
+  String get worldRoomBedroom => 'Dormitorio';
+
+  @override
+  String get worldRoomLiving => 'Salón';
+
+  @override
+  String get worldDoorGames => 'Juegos';
+
+  @override
+  String get worldDoorEvents => 'Eventos';
+
+  @override
+  String get worldDoorLeaderboard => 'Clasificación';
+
+  @override
+  String get worldDoorFriends => 'Amigos';
 }

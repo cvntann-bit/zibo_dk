@@ -3886,5 +3886,61 @@
   "costumeTrialAdUnavailable": "Şu an video hazır değil, biraz sonra tekrar dene.",
   "@costumeTrialAdUnavailable": {
     "description": "Ödüllü video yüklenemediğinde/tamamlanmadığında mesaj"
+  },
+  "worldTitle": "Zibo Dünyası",
+  "@worldTitle": {
+    "description": "Zibo Dünyası sekmesinin başlığı (Oyun Salonu sekmesinin yerine geldi)"
+  },
+  "bottomBarWorldLabel": "Dünya",
+  "@bottomBarWorldLabel": {
+    "description": "Alt barda Zibo Dünyası sekmesinin kısa etiketi"
+  },
+  "worldNeedHunger": "Tokluk",
+  "@worldNeedHunger": {
+    "description": "Zibo'nun ihtiyaç göstergesi: açlık/tokluk"
+  },
+  "worldNeedHygiene": "Temizlik",
+  "@worldNeedHygiene": {
+    "description": "Zibo'nun ihtiyaç göstergesi: temizlik"
+  },
+  "worldNeedEnergy": "Enerji",
+  "@worldNeedEnergy": {
+    "description": "Zibo'nun ihtiyaç göstergesi: enerji/uyku"
+  },
+  "worldNeedFun": "Neşe",
+  "@worldNeedFun": {
+    "description": "Zibo'nun ihtiyaç göstergesi: eğlence/mutluluk"
+  },
+  "worldRoomKitchen": "Mutfak",
+  "@worldRoomKitchen": {
+    "description": "Zibo'nun evindeki oda adı"
+  },
+  "worldRoomBath": "Banyo",
+  "@worldRoomBath": {
+    "description": "Zibo'nun evindeki oda adı"
+  },
+  "worldRoomBedroom": "Yatak odası",
+  "@worldRoomBedroom": {
+    "description": "Zibo'nun evindeki oda adı"
+  },
+  "worldRoomLiving": "Salon",
+  "@worldRoomLiving": {
+    "description": "Zibo'nun evindeki oda adı"
+  },
+  "worldDoorGames": "Oyunlar",
+  "@worldDoorGames": {
+    "description": "Zibo Dünyası'nda Oyun Salonu'nu açan kapı"
+  },
+  "worldDoorEvents": "Etkinlikler",
+  "@worldDoorEvents": {
+    "description": "Zibo Dünyası'nda etkinlikler kapısı"
+  },
+  "worldDoorLeaderboard": "Sıralama",
+  "@worldDoorLeaderboard": {
+    "description": "Zibo Dünyası'nda sıralama kapısı (henüz kapalı)"
+  },
+  "worldDoorFriends": "Arkadaşlar",
+  "@worldDoorFriends": {
+    "description": "Zibo Dünyası'nda arkadaşlar kapısı (henüz kapalı)"
   }
 }

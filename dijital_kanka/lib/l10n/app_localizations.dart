@@ -5049,6 +5049,90 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'Şu an video hazır değil, biraz sonra tekrar dene.'**
   String get costumeTrialAdUnavailable;
+
+  /// Zibo Dünyası sekmesinin başlığı (Oyun Salonu sekmesinin yerine geldi)
+  ///
+  /// In tr, this message translates to:
+  /// **'Zibo Dünyası'**
+  String get worldTitle;
+
+  /// Alt barda Zibo Dünyası sekmesinin kısa etiketi
+  ///
+  /// In tr, this message translates to:
+  /// **'Dünya'**
+  String get bottomBarWorldLabel;
+
+  /// Zibo'nun ihtiyaç göstergesi: açlık/tokluk
+  ///
+  /// In tr, this message translates to:
+  /// **'Tokluk'**
+  String get worldNeedHunger;
+
+  /// Zibo'nun ihtiyaç göstergesi: temizlik
+  ///
+  /// In tr, this message translates to:
+  /// **'Temizlik'**
+  String get worldNeedHygiene;
+
+  /// Zibo'nun ihtiyaç göstergesi: enerji/uyku
+  ///
+  /// In tr, this message translates to:
+  /// **'Enerji'**
+  String get worldNeedEnergy;
+
+  /// Zibo'nun ihtiyaç göstergesi: eğlence/mutluluk
+  ///
+  /// In tr, this message translates to:
+  /// **'Neşe'**
+  String get worldNeedFun;
+
+  /// Zibo'nun evindeki oda adı
+  ///
+  /// In tr, this message translates to:
+  /// **'Mutfak'**
+  String get worldRoomKitchen;
+
+  /// Zibo'nun evindeki oda adı
+  ///
+  /// In tr, this message translates to:
+  /// **'Banyo'**
+  String get worldRoomBath;
+
+  /// Zibo'nun evindeki oda adı
+  ///
+  /// In tr, this message translates to:
+  /// **'Yatak odası'**
+  String get worldRoomBedroom;
+
+  /// Zibo'nun evindeki oda adı
+  ///
+  /// In tr, this message translates to:
+  /// **'Salon'**
+  String get worldRoomLiving;
+
+  /// Zibo Dünyası'nda Oyun Salonu'nu açan kapı
+  ///
+  /// In tr, this message translates to:
+  /// **'Oyunlar'**
+  String get worldDoorGames;
+
+  /// Zibo Dünyası'nda etkinlikler kapısı
+  ///
+  /// In tr, this message translates to:
+  /// **'Etkinlikler'**
+  String get worldDoorEvents;
+
+  /// Zibo Dünyası'nda sıralama kapısı (henüz kapalı)
+  ///
+  /// In tr, this message translates to:
+  /// **'Sıralama'**
+  String get worldDoorLeaderboard;
+
+  /// Zibo Dünyası'nda arkadaşlar kapısı (henüz kapalı)
+  ///
+  /// In tr, this message translates to:
+  /// **'Arkadaşlar'**
+  String get worldDoorFriends;
 }
 
 class _AppLocalizationsDelegate

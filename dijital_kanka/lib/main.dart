@@ -32,6 +32,9 @@ import 'providers/focus_provider.dart';
 import 'providers/founder_badge_provider.dart';
 import 'providers/game_points_provider.dart';
 import 'providers/games_config_provider.dart';
+import 'providers/home_config_provider.dart';
+import 'providers/home_decor_provider.dart';
+import 'providers/home_needs_provider.dart';
 import 'providers/goals_provider.dart';
 import 'providers/gratitude_provider.dart';
 import 'providers/hidden_badge_provider.dart';
@@ -819,6 +822,22 @@ class DijitalKankaApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => FounderBadgeProvider(uid: uid)),
         // Oyun Salonu (docs/game_zibo.md Faz 2): rakamlar + kalıcı ★ cüzdanı.
         ChangeNotifierProvider(create: (_) => GamesConfigProvider(uid: uid)),
+        // Zibo Dünyası (docs/zibo_world_roadmap.md Faz 1): ev rakamları,
+        // ihtiyaçlar (güvenilir saat + abonelik avantajları) ve dekor.
+        ChangeNotifierProvider(create: (_) => HomeConfigProvider(uid: uid)),
+        ChangeNotifierProvider(
+          create: (context) {
+            final config = context.read<HomeConfigProvider>();
+            final subscription = context.read<SubscriptionProvider>();
+            return HomeNeedsProvider(
+              uid: uid,
+              now: _trustedNow(context),
+              config: () => config.config,
+              tier: () => subscription.tier,
+            );
+          },
+        ),
+        ChangeNotifierProvider(create: (_) => HomeDecorProvider(uid: uid)),
         // Yönetici panelinin uygulama içi mesaj kartları (docs/admin_panel.md).
         ChangeNotifierProvider(create: (_) => InAppMessageProvider(uid: uid)),
         ChangeNotifierProvider(

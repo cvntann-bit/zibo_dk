@@ -37,6 +37,9 @@ import 'package:dijital_kanka/providers/focus_provider.dart';
 import 'package:dijital_kanka/providers/founder_badge_provider.dart';
 import 'package:dijital_kanka/providers/game_points_provider.dart';
 import 'package:dijital_kanka/providers/games_config_provider.dart';
+import 'package:dijital_kanka/providers/home_config_provider.dart';
+import 'package:dijital_kanka/providers/home_decor_provider.dart';
+import 'package:dijital_kanka/providers/home_needs_provider.dart';
 import 'package:dijital_kanka/providers/goals_provider.dart';
 import 'package:dijital_kanka/providers/gratitude_provider.dart';
 import 'package:dijital_kanka/providers/hidden_badge_provider.dart';
@@ -198,6 +201,9 @@ Widget _buildAppWithClock(DateTime Function() now) {
       ChangeNotifierProvider(create: (_) => ThemeProvider()),
       ChangeNotifierProvider(create: (_) => WaterProvider(now: now)),
       ChangeNotifierProvider(create: (_) => GamesConfigProvider()),
+      ChangeNotifierProvider(create: (_) => HomeConfigProvider()),
+      ChangeNotifierProvider(create: (_) => HomeNeedsProvider(now: now)),
+      ChangeNotifierProvider(create: (_) => HomeDecorProvider()),
       ChangeNotifierProvider(create: (_) => InAppMessageProvider()),
       ChangeNotifierProvider(create: (_) => GamePointsProvider(now: now)),
       ChangeNotifierProvider(create: (_) => XpProvider()),
@@ -1544,7 +1550,7 @@ void main() {
       // Birikim'in yeri, bkz. CLAUDE.md "Alt Gezinme Çubuğu" — Profil↔
       // Birikim yer değiştirme notu).
       expect(find.text('Home'), findsOneWidget);
-      expect(find.text('Games'), findsOneWidget);
+      expect(find.text('World'), findsOneWidget);
       expect(find.text('Profile'), findsOneWidget);
       expect(_currentHomeMessage(tester), isNotEmpty);
     },

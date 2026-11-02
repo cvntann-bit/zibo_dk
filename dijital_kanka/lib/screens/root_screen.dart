@@ -56,7 +56,7 @@ import '../widgets/wheel_trigger_button.dart';
 import '../widgets/z_floating_button.dart';
 import '../widgets/zibo_share_sheet.dart';
 import 'daily_rewards_screen.dart';
-import 'game_hall_screen.dart';
+import 'zibo_world_screen.dart';
 import 'goal_tracking_screen.dart';
 import 'home_screen.dart';
 import 'money_screen.dart';
@@ -652,7 +652,7 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
     // _selectedIndex ile kuruluyor.
     final tabs = [
       const HomeScreen(),
-      const GameHallScreen(),
+      ZiboWorldScreen(isActive: _selectedIndex == _gameHallTabIndex),
       ProfileScreen(isActive: _selectedIndex == _profileTabIndex),
       StoreScreen(isActive: _selectedIndex == _storeTabIndex),
     ];
