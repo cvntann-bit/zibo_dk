@@ -39,6 +39,12 @@ Deneme 3 (2026-11-01): canlı sarı duvar, parlak zemin, tam önden mutfak. Ger�
 - **Banyo yap:** Zibo küvette (yalnızca üst gövde, küvetin önü üstte çizilir), kir lekeleri; sabunu Zibo'nun üstünde sürükle → köpük + yükselen baloncuklar, lekeler silinir; duş → damlalar, köpük erir; havlu → parıltı + mutlu poz. Temizlik göstergesi. Kirli/temiz için mevcut pout/happy pozları.
 - Uygulamaya geçerken: sabun/köpük türleri ZC ürünü olabilir; temizlik zamanla düşer (`TrustedTimeProvider`); yeni poz ihtiyacı: küvette oturan Zibo (şu an ayakta poz küvetle kesiliyor).
 
+## Yatak odası (2026-11-02) + ürün çeşitliliği kuralı
+Kullanıcı: "ürünleri çeşitlendireceğiz unutma". **Kural: her odada çok kategori, her kategoride birkaç model ve renk.** Mutfak ve banyo da aynı çeşitlendirme turundan geçecek (pencere, perde, raf, saksı, saat, lamba; banyo: paspas, sabunluk, bitki, duvar süsü…).
+- **Yatak odası, 13 kategori:** boya; duvar kağıdı (bulut, ay-yıldız, yıldız, puantiye, kalp, çizgi); zemin (ahşap, balık sırtı, koyu, lila karo); yatak (klasik ×2, bulut başlıklı ×2, kanopi ×2 — 0–1.200 ZC); nevresim (düz, yıldızlı gece, kalpli, puantiye, kareli, bulutlu); komodin ×4; abajur (klasik ×2, mantar, ay, yıldız); gardırop ×4; perde ×5; halı (oval, yuvarlak, yıldız, halısız); oyuncak (ayıcık ×2, top, roket); duvar süsü (yıldız ışıkları, tablo, kitap rafı).
+- **Uyut:** Zibo yatakta (yalnız baş ve omuz, yorgan üstte çizilir). Işığı kapat → oda kararır, pencerede ay ve yıldız, abajur parlar, Z'ler yükselir, enerji dolar; Işığı aç → mutlu poz. Yorgun = pout, uyurken = idle.
+- **Poz ihtiyacı:** uyuyan (gözleri kapalı) Zibo, küvette oturan Zibo. Şu an mevcut pozlar kullanılıyor.
+
 ## Kodla çizim denemesi (2026-11-01)
 Kullanıcı üç üretim denemesini de beğenmedi ("aklımdaki bu değil") ve benim çizmemi istedi. `docs/kitchen_studio/index.html`, yayın: https://claude.ai/artifact/VBTTTHp6ncR9UCrUpAA3ji
 Oda ve eşyalar SVG ile çizildi, Zibo gerçek poz. Boya, duvar kağıdı, zemin, buzdolabı, ocak, dolap, masa, sandalye seçilir, önce denenir sonra ZC ile alınır. Artısı: renk varyantı yeni görsel gerektirmez, her ekranda keskin, orantı sabit. Eksisi: görsel üretici kadar detaylı değil. Kullanıcı yorumu bekleniyor.
