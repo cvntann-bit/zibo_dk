@@ -50,6 +50,7 @@ Zibo Dünyası (kendi ekranı, kendi gezintisi)
 - **Ev merkezde:** Sekme açılınca Zibo evinde karşılar, diğer bölümler evin üstünde düğme olur.
 - **Mini Sims:** Mobilya, boya, duvar kağıdı, zemin ZC ile satılır, oda oda ilerlenir. Üretim rehberi: `docs/zibo_home_art.md`.
 - `asset_library/` mobilyaları beğenilmedi, yeni görsel üretilecek.
+- **Stil kilitlendi (2026-11-02):** odalar kodla çizilir (`docs/kitchen_studio/`, https://claude.ai/artifact/VBTTTHp6ncR9UCrUpAA3ji), Zibo gerçek pozu. Ayrıntı `docs/zibo_home_art.md`.
 
 ## Netleşecekler
 1. Sekmenin ve dünyanın adı.

@@ -1,5 +1,10 @@
 # Zibo'nun Evi — görsel üretim rehberi (2026-11-01)
 
+> **STİL KİLİTLENDİ (kullanıcı, 2026-11-02): "tam olarak aklımdaki şey bu" → kodla çizilmiş oda (`docs/kitchen_studio/`).**
+> Oda, mobilya, boya, duvar kağıdı ve zemin vektör olarak kodla çizilir; Zibo gerçek 3B pozu. Görsel üretici denemeleri (3B, 2B, 2.5B) reddedildi,
+> aşağıdaki prompt bölümleri yalnızca tarihçe. Kurallar: tam önden kamera, yumuşak degrade + parlama, yuvarlak tombul şekiller, zemin çizgisi 800/1200,
+> her eşya renk parametresiyle çizilir (renk varyantı = yeni çizim değil). Flutter'da `CustomPainter` ile yeniden yazılır (`flutter_svg` desen/pattern desteklemediği için SVG doğrudan taşınmaz).
+
 Kullanıcı kararları: Zibo Dünyası'nda **ev merkezde**. Oda oda ilerlenir. `asset_library/` mobilyaları **beğenilmedi** (kötü görünüyor, orantısız):
 mobilya yeni üretilecek. Her odanın **arka planı, duvar kağıdı, deseni, boyası** ZC ile satılacak. Hedef **mini Sims**: asıl ZC harcama alanı,
 ZC satın almaya gerçek bir sebep. `asset_library/` yalnızca geçici yer tutucu; küçük eşya (Fluent) ayrıca değerlendirilecek.
