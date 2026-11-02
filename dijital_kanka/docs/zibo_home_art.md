@@ -39,6 +39,11 @@ Deneme 3 (2026-11-01): canlı sarı duvar, parlak zemin, tam önden mutfak. Ger�
 - **Banyo yap:** Zibo küvette (yalnızca üst gövde, küvetin önü üstte çizilir), kir lekeleri; sabunu Zibo'nun üstünde sürükle → köpük + yükselen baloncuklar, lekeler silinir; duş → damlalar, köpük erir; havlu → parıltı + mutlu poz. Temizlik göstergesi. Kirli/temiz için mevcut pout/happy pozları.
 - Uygulamaya geçerken: sabun/köpük türleri ZC ürünü olabilir; temizlik zamanla düşer (`TrustedTimeProvider`); yeni poz ihtiyacı: küvette oturan Zibo (şu an ayakta poz küvetle kesiliyor).
 
+## Banyo çeşitlendirmesi (2026-11-02)
+- **14 kategori:** boya; fayans ×8 (turuncu metro, gece pulu yeni); zemin ×5; küvet ×8 (ayaklı 4 renk — altın 1.500 ZC, modern ×2, yuvarlak ×2); lavabo (ayaklı ×3, dolaplı ×3); ayna ×6; havlu ×6; duş başlığı (krom, altın, pembe, mavi); raf (şampuan, havlu sepeti, bitkili); paspas (oval ×2, püsküllü ×2, bulut); oyuncak (ördek ×3, gemi); bitki (deve tabanı, kaktüs); duvar süsü (tablo, saat, yıldız ışıkları).
+- **Sabun çeşitleri (Banyo yap):** pembe (bedava), nane 40, lavanta 60, limon 60, gökkuşağı 120 ZC; her sabun kendi renginde köpük çıkarır (gökkuşağı karışık). Tüketilebilir değil, bir kez alınır (taslak; tüketilebilir yapmak ayrıca karar).
+- Dört oda da çeşitlendirildi: mutfak 14, banyo 14, yatak odası 13, salon 13 kategori.
+
 ## Mutfak: besleme + çeşitlendirme (2026-11-02)
 - **Besle:** Zibo masada (masanın önü Zibo'nun üstünde çizilir). Yemeğe dokun → tabağa gelir; tabaktan ağza sürükle (ya da tabaktakine dokun) → çiğneme zıplaması, kırıntı, kalpler, tokluk artar. Günde 3 ücretsiz (elma, muz, havuç), diğerleri ZC: simit 10, churros 12, çorba 12, pizza 15, hamburger 18, pasta 20, dondurma 14, süt 8. Yemekler de kodla çizildi (yöresel: simit TR, churros ES). Tokluk: <50 pout, orta idle, yerken/dolu happy.
 - **Dekor 14 kategori:** boya; duvar kağıdı; zemin; buzdolabı ×10 (retro 6 renk, ikiz ×2 — altın 1.500 ZC, mini ×2); ocak ×5; dolap ×5; tezgâh üstü (tencere ×2, kahve makinesi, meyve kâsesi, mikser); masa (yuvarlak ×3, kare ×2); masa örtüsü (kareli, puantiye, çiçekli, yıldızlı); sandalye (×3 + tabure ×2); sarkıt lamba (kubbe ×2, cam küre, kafes); duvar süsü (kavanoz rafı, tabak rafı, saat, tablo); perde ×5.
