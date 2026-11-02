@@ -845,5 +845,6 @@
   "worldDoorGames": "Juegos",
   "worldDoorEvents": "Eventos",
   "worldDoorLeaderboard": "Clasificación",
-  "worldDoorFriends": "Amigos"
+  "worldDoorFriends": "Amigos",
+  "worldRoomPreviewHint": "Vista previa: prueba objetos, no se guarda nada. Pronto podrás comprar."
 }

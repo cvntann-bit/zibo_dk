@@ -1,0 +1,82 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+
+import '../../models/home_item.dart';
+import 'room_art.dart';
+
+/// Bir odayı çizer: arka SVG → Zibo pozu → ön SVG (docs/zibo_world_roadmap.md
+/// Faz 2). 900×1200 birimlik taslak sahnesi verilen genişliğe ölçeklenir.
+/// Sahneyi her build'de yeniden üretmemek için [RoomSceneCache] kullan.
+class RoomView extends StatelessWidget {
+  const RoomView({super.key, required this.scene, this.semanticLabel});
+
+  final RoomScene scene;
+  final String? semanticLabel;
+
+  static const double sceneWidth = 900;
+  static const double sceneHeight = 1200;
+
+  @override
+  Widget build(BuildContext context) {
+    final zibo = scene.zibo;
+    return Semantics(
+      image: true,
+      label: semanticLabel,
+      excludeSemantics: true,
+      child: AspectRatio(
+        aspectRatio: sceneWidth / sceneHeight,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final s = constraints.maxWidth / sceneWidth;
+            return RepaintBoundary(
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  SvgPicture.string(scene.back, fit: BoxFit.fill),
+                  Positioned(
+                    left: zibo.x * s,
+                    top: zibo.y * s,
+                    width: zibo.w * s,
+                    height: zibo.h * s,
+                    child: Image.asset('assets/images/home/zibo_${zibo.pose}.webp', fit: BoxFit.contain),
+                  ),
+                  SvgPicture.string(scene.front, fit: BoxFit.fill),
+                ],
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+/// Aynı girdilerle sahneyi yeniden üretmez — eşya seçimi değişmedikçe SVG
+/// metni (ve flutter_svg'nin ayrıştırma önbelleği) korunur.
+class RoomSceneCache {
+  String? _key;
+  RoomScene? _scene;
+
+  RoomScene get(
+    HomeRoom room,
+    Map<String, HomeItem> items, {
+    bool care = false,
+    String pose = 'happy',
+    String soapColor = '#FF9FBF',
+    bool dark = false,
+  }) {
+    final key = [room.id, care, pose, soapColor, dark, for (final e in items.entries) '${e.key}=${e.value.id}'].join('|');
+    if (key != _key || _scene == null) {
+      _key = key;
+      _scene = RoomArt.build(
+        room,
+        (cat) => items[cat] ?? const HomeItem('yok', '', style: 'none', price: 0),
+        care: care,
+        pose: pose,
+        soapColor: soapColor,
+        dark: dark,
+      );
+    }
+    return _scene!;
+  }
+}

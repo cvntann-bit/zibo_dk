@@ -2881,4 +2881,8 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get worldDoorFriends => 'Arkadaşlar';
+
+  @override
+  String get worldRoomPreviewHint =>
+      'Önizleme: eşyaları deneyebilirsin, kaydedilmez. Satın alma yakında.';
 }

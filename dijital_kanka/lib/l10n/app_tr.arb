@@ -3942,5 +3942,9 @@
   "worldDoorFriends": "Arkadaşlar",
   "@worldDoorFriends": {
     "description": "Zibo Dünyası'nda arkadaşlar kapısı (henüz kapalı)"
+  },
+  "worldRoomPreviewHint": "Önizleme: eşyaları deneyebilirsin, kaydedilmez. Satın alma yakında.",
+  "@worldRoomPreviewHint": {
+    "description": "Oda ekranında eşya seçicinin altındaki not (deneme kaydedilmez)"
   }
 }

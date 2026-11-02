@@ -2911,4 +2911,8 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get worldDoorFriends => 'Amigos';
+
+  @override
+  String get worldRoomPreviewHint =>
+      'Vista previa: prueba objetos, no se guarda nada. Pronto podrás comprar.';
 }

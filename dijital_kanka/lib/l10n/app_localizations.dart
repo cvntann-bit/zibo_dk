@@ -5133,6 +5133,12 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'Arkadaşlar'**
   String get worldDoorFriends;
+
+  /// Oda ekranında eşya seçicinin altındaki not (deneme kaydedilmez)
+  ///
+  /// In tr, this message translates to:
+  /// **'Önizleme: eşyaları deneyebilirsin, kaydedilmez. Satın alma yakında.'**
+  String get worldRoomPreviewHint;
 }
 
 class _AppLocalizationsDelegate

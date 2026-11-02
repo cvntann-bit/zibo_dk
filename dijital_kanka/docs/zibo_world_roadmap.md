@@ -41,7 +41,7 @@ Taslaklar (birebir hedef görünüm):
 - **Provider'lar:** `HomeNeedsProvider` (ihtiyaçlar, `TrustedTimeProvider` ile zamanla düşer, alt sınır var), `HomeDecorProvider` (sahip/takılı, `CloudStateStore`), `HomeConfigProvider` (`GamesConfigProvider` deseni).
 - **Coin:** `CoinProvider`'a `spendOnHomeItem({itemId, cost})`, `spendOnFood`, `spendOnSoap` (işlem nedeni sabit önekli: `Ev: `, `Ev yemeği: `, `Sabun: ` → ileride harcama analizi). `coinState` kuralı değişmez (tek yazım ≤ 33.000 ZC; en pahalı ev eşyası 1.500).
 - **Kabuk:** `RootScreen` sekme 1 → `ZiboWorldScreen`; `GameHallScreen` Oyunlar kapısından push; `onGamesTap` çağrıları yeni yere bağlanır. `main.dart` MultiProvider + `test/` `_buildAppWithClock` provider listesi güncellenir (`test/CLAUDE.md`).
-- **Durum (2026-11-02): kod tamam, testler yeşil** — 13 birim testi (`test/zibo_world_test.dart`). Ekran şimdilik iskelet: halkalar, boya renkli 2×2 oda kartları, Zibo en düşük ihtiyacın odasında, kapılar (Sıralama/Arkadaşlar kilitli). Oda kartları "Yakında" der (Faz 2–5). Kural yayınlandı (2026-11-03). Kalan: APK kontrolü.
+- **Durum (2026-11-02): kod tamam, testler yeşil** — 13 birim testi (`test/zibo_world_test.dart`). Ekran şimdilik iskelet: halkalar, boya renkli 2×2 oda kartları, Zibo en düşük ihtiyacın odasında, kapılar (Sıralama/Arkadaşlar kilitli). Oda kartları Faz 2'den beri oda ekranını açar. Kural yayınlandı (2026-11-03). Kalan: APK kontrolü.
 - **Kontrol noktası (APK):** sekme açılıyor, boş ev iskeleti, Oyunlar kapısı → bugünkü Oyun Salonu sorunsuz, eski kullanıcı verisi duruyor.
 
 ## Faz 2 — Çizim motoru (taslak → Flutter)
@@ -53,6 +53,15 @@ Taslaklar (birebir hedef görünüm):
 - **Performans:** her oda `RepaintBoundary` + `Picture` önbelleği; yalnızca dekor değişince yeniden çizim. Düşük segment cihazda kare hızı ölçülür.
 - **Görsel doğrulama:** `flutter run -d web-server` + tarayıcıda taslakla yan yana (CLAUDE.md'deki web akışı). Tablet oranı kontrolü.
 - **Kontrol noktası (APK):** 4 oda taslakla aynı görünüyor, renk/desen değişimi anlık.
+- **Uygulanan yol (2026-11-03) — KARAR: `CustomPainter` yerine SVG metni + `flutter_svg`.** Taslağın SVG üreten JS'i Dart'a çevrildi (`lib/widgets/home_art/`): `svg_kit.dart` (mix/grad/shine/handle/feet/gölge), `furniture_art.dart` (73 eşya çizimi + 5 sabun şekli), `surface_art.dart` (duvar kağıdı/fayans/zemin/örtü/yorgan), `room_art.dart` (4 oda; Zibo'nun arkası ve önü ayrı SVG), `room_view.dart` (arka SVG → Zibo pozu → ön SVG). Neden: koordinatlar ve renkler taslakla birebir kalıyor, ~45 ressamı elle yazmaktan çok daha hızlı ve hatasız; `flutter_svg` zaten bağımlılık.
+  - **Tuzak:** `flutter_svg` `<pattern>` öğesini web'de hiç çizmiyor (o SVG'nin tamamı boş kalıyor). Desenler `SvgKit.tiled` ile elle döşeniyor (`<clipPath>` + `<use>`); test `<pattern>` kullanımını yasaklıyor.
+  - Bulanık gölge (`feGaussianBlur`) desteklenmiyor → kenarı yumuşak radyal degrade (`SvgKit.softEllipse`).
+  - Zibo pozları taslaktakiyle aynı: `assets/images/home/zibo_{happy,pout,idle}.webp`.
+  - Sabun şekli lavabonun sağ kenarında; rengi seçili sabun türünden.
+  - Oda kartı → `HomeRoomScreen`: oda çizimi + kategori/eşya seçici (DENEME, kaydedilmez; satın alma Faz 5).
+  - Önizleme: `lib/home_room_preview_main.dart` (Firebase'siz, 4 oda başlangıç + her kategorinin son eşyası; `flutter run -d web-server -t lib/home_room_preview_main.dart`).
+  - Testler `test/home_art_test.dart`: her katalog eşyasının çizimi var, her eşya seçimiyle ve bakım modunda SVG iyi biçimli, Zibo katmanı (kanepe oturağı, yorgan) önde.
+  - Kalan: telefonda performans ve görünüm kontrolü (APK).
 
 ## Faz 3 — Giriş ekranı
 - Ev kesiti: çatı, tabela, baca, 2×2 küçük oda (önbellekten), alt çim.

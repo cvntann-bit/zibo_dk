@@ -845,5 +845,6 @@
   "worldDoorGames": "Games",
   "worldDoorEvents": "Events",
   "worldDoorLeaderboard": "Leaderboard",
-  "worldDoorFriends": "Friends"
+  "worldDoorFriends": "Friends",
+  "worldRoomPreviewHint": "Preview: try things on, nothing is saved. Buying comes soon."
 }

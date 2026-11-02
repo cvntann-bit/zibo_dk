@@ -11,6 +11,7 @@ import '../providers/home_needs_provider.dart';
 import '../utils/adaptive.dart';
 import '../widgets/sticker_style.dart';
 import 'game_hall_screen.dart';
+import 'home_room_screen.dart';
 
 /// Alt bardaki 2. sekme — Zibo Dünyası (docs/zibo_world.md). Oyun Salonu
 /// sekmesinin yerini aldı; oyunlar artık buradaki "Oyunlar" kapısından
@@ -18,7 +19,8 @@ import 'game_hall_screen.dart';
 ///
 /// Faz 1 iskeleti (docs/zibo_world_roadmap.md): dört ihtiyaç göstergesi,
 /// 2×2 ev kesiti (odalar takılı boya rengiyle; Zibo en düşük ihtiyacın
-/// odasında) ve kapılar. Oda ekranları Faz 2–5'te gelir.
+/// odasında) ve kapılar. Oda kartı [HomeRoomScreen]'i açar (Faz 2: çizim +
+/// eşya deneme; bakım Faz 4, satın alma Faz 5).
 ///
 /// İhtiyaçlar zamanla düştüğü için sekme görünürken dakikada bir yenilenir —
 /// `IndexedStack` sekmeyi hep kurulu tuttuğu için [isActive] korumalı.
@@ -120,7 +122,11 @@ class _ZiboWorldScreenState extends State<ZiboWorldScreen> {
                           room: row[i],
                           wall: Color(decor.equippedItem(row[i], 'boya').color ?? 0xFFFFE7B0),
                           hasZibo: row[i] == ziboRoom,
-                          onTap: _comingSoon,
+                          onTap: () => Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => HomeRoomScreen(room: row[i], title: _roomLabel(l10n, row[i])),
+                            ),
+                          ),
                         ),
                       ),
                     ],
