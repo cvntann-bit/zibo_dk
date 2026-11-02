@@ -39,6 +39,12 @@ Deneme 3 (2026-11-01): canlı sarı duvar, parlak zemin, tam önden mutfak. Ger�
 - **Banyo yap:** Zibo küvette (yalnızca üst gövde, küvetin önü üstte çizilir), kir lekeleri; sabunu Zibo'nun üstünde sürükle → köpük + yükselen baloncuklar, lekeler silinir; duş → damlalar, köpük erir; havlu → parıltı + mutlu poz. Temizlik göstergesi. Kirli/temiz için mevcut pout/happy pozları.
 - Uygulamaya geçerken: sabun/köpük türleri ZC ürünü olabilir; temizlik zamanla düşer (`TrustedTimeProvider`); yeni poz ihtiyacı: küvette oturan Zibo (şu an ayakta poz küvetle kesiliyor).
 
+## Salon (2026-11-02) — Oyun Salonu eve taşındı
+- **13 kategori:** boya; duvar kağıdı ×6; zemin ×4; kanepe (klasik ×2, yuvarlak ×2, kapitone ×2 — 0–1.400 ZC); televizyon (retro tüplü ×2, ince, dev ekran — 0–1.200 ZC); TV ünitesi ×3; sehpa (yuvarlak ×2, dikdörtgen, cam); lambader (klasik ×2, küre, kavisli); halı; perde ×5; köşe (deve tabanı, kaktüs, akvaryum); duvar süsü (tablo, saat, kitap rafı, yıldız ışıkları); puf (puf ×2, armut koltuk).
+- Zibo kanepede oturuyor gibi: kanepe arkası Zibo'nun arkasında, oturağı önünde çizilir (küvet/yorgan hilesinin aynısı).
+- **Oyna:** 7 Oyun Salonu oyunu gerçek kapak görselleriyle listelenir; seçince televizyon ekranında oyun görseli açılır, yıldızlar uçar, bitince +★ ve mutluluk +25. Gerçek uygulamada oyun TV'den tam ekran açılır (bugünkü WebView). Ekran boyu TV modeline göre değişir (büyük TV satma sebebi).
+- Mutluluk: düşük = pout, orta = idle, oynarken/dolu = happy.
+
 ## Yatak odası (2026-11-02) + ürün çeşitliliği kuralı
 Kullanıcı: "ürünleri çeşitlendireceğiz unutma". **Kural: her odada çok kategori, her kategoride birkaç model ve renk.** Mutfak ve banyo da aynı çeşitlendirme turundan geçecek (pencere, perde, raf, saksı, saat, lamba; banyo: paspas, sabunluk, bitki, duvar süsü…).
 - **Yatak odası, 13 kategori:** boya; duvar kağıdı (bulut, ay-yıldız, yıldız, puantiye, kalp, çizgi); zemin (ahşap, balık sırtı, koyu, lila karo); yatak (klasik ×2, bulut başlıklı ×2, kanopi ×2 — 0–1.200 ZC); nevresim (düz, yıldızlı gece, kalpli, puantiye, kareli, bulutlu); komodin ×4; abajur (klasik ×2, mantar, ay, yıldız); gardırop ×4; perde ×5; halı (oval, yuvarlak, yıldız, halısız); oyuncak (ayıcık ×2, top, roket); duvar süsü (yıldız ışıkları, tablo, kitap rafı).

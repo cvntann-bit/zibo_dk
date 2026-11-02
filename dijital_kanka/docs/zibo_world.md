@@ -54,5 +54,5 @@ Zibo Dünyası (kendi ekranı, kendi gezintisi)
 
 ## Netleşecekler
 1. Sekmenin ve dünyanın adı.
-3. Oyun Salonu evde bir oda mı, ana menüde de görünsün mü?
+3. Oyun Salonu: salondaki televizyondan açılıyor (taslak 2026-11-02). Ana menüde ayrıca kısayol olsun mu?
 4. Yılbaşına yetişmek için etkinlikler evden önce mi?
