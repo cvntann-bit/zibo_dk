@@ -82,6 +82,18 @@ fallbackPrice`'ta sabit/görsel yer tutucu olarak da tutuluyor):
 | Para & Birikim gelişmiş analiz (D3) | ✅ Uygulandı, **2026-09-24 TAMAMEN yeniden tasarlandı** — eski 3 satırlık metin özeti (ortalama aylık harcama/birikim, en çok harcanan kalem) KALDIRILDI, yerine: (1) her para biriminin KENDİ ayrı kartında üç kategori toplamı (`MoneyProvider.totalsByCurrencyFor`, otomatik kur çevirisi YOK — mevcut çoklu para birimi mimarisiyle AYNI kural), (2) harcama kalemlerinin donut grafiği (`fl_chart` `PieChart`, en büyük 4 kalem + "Diğer" dilimi, `MoneyProvider.expenseBreakdownByNameFor` — YENİ getter, TAM dağılım döner). `averageMonthlyFor`/`topExpenseItemByCurrency` getter'ları KODDA KALDI (silinmedi, artık UI'da kullanılmıyor). Bölüm `LockedFeatureOverlay` ile bulanıklaştırılıyor (aşağıya bkz.). Bonus: "Mevcut Durum" trend grafiğine (bu bölümün DIŞINDA, HERKESE açık) üçüncü bir "Aylık" granülarite seçeneği eklendi |
 | Su Takibi trend grafiği + hedef oranı (2026-09-24, YENİ) | ✅ Uygulandı — `WaterTrendChart` (`lib/widgets/water_trend_chart.dart`), Mood/Money ile AYNI desen: Günlük/Haftalık/Aylık `SegmentedButton` (Haftalık/Aylık metinleri `moneyTrendGranularityWeekly/Monthly` ARB anahtarları YENİDEN KULLANILIYOR, aynı metin olduğu için yeni anahtar açılmadı), günlük görünüm son 14 güne ait ham `consumedMl`, haftalık/aylık ISO-hafta/takvim-ayı bazında ORTALAMA (son 8/6 dolu kova, boş kova atlanıyor). Grafiğin üstünde hedefi gösteren kesikli yatay referans çizgisi (`ExtraLinesData`/`HorizontalLine`, `goalMl`), altında ortalama hedef tutturma yüzdesi özeti (`_GoalRateSummary`, tüm `WaterEntry.unitCount/goalUnitCount` ortalaması). `LockedFeatureOverlay` ile bulanıklaştırılıyor; veri yoksa VE kilitliyse 7 noktalık sabit örnek seri kullanılıyor. `WaterEntry` geçmiş günlerin O GÜNKÜ hedef/birim ayarını koruduğu için hedef çizgisi/oran hesap doğru kalıyor |
 
+## Zibo Dünyası avantajları (1.18.0) — KARAR: olacak, liste TASLAK (2026-11-02)
+Kullanıcı: "pro avantajı kesinlikle olsun". Aşağıdaki liste öneri, kesinleşince perk metinleri paywall'a eklenir ve "Perk uygulama durumu" tablosuna satır açılır.
+| Avantaj | Pro | Pro+ |
+|---|---|---|
+| Günlük ücretsiz yemek | 3 → 5 | 3 → 7 |
+| Dekor ve sabun indirimi | %10 | %20 |
+| Pro'ya özel dekor serisi (ör. altın/elmas seri) | ✔ | ✔ + Pro+ serisi |
+| Uyku hızı | 1,5× | 2× |
+| İhtiyaçların düşme hızı | normal | yavaş (%25 daha az) |
+| Bakım ödüllü reklamı (+1 ikram vb.) | reklamsız | reklamsız |
+Zarar etmeme: indirim ve ücretsiz yemek `unit_economics.md` ile hesaplanır; abonelik geliri bu kayıpları karşılamalı. Değerler `config/home` ile uzaktan değişebilir olmalı.
+
 ## Paywall ekranı (`lib/screens/paywall_screen.dart`)
 
 **2026-09-23'te "sticker" görsel diline göre komple yeniden tasarlandı**

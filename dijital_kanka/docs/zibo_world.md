@@ -69,12 +69,18 @@ Sonuç: bunlar Zibo Dünyası bitene kadar canlıya çıkmaz. Her adım yine deb
 
 ### Kullanıcıdan gerekenler
 - Yeni Zibo pozları: küvette oturan, uyuyan (gözler kapalı), yemek yiyen.
-- Kapsam: Sıralama ve Arkadaşlar 1.18.0'a mı girsin, sonraki sürüme mi kalsın?
+- ~~Kapsam~~ → Sıralama ve Arkadaşlar 1.19.0 (karar 2026-11-02).
 
 ### Riskler
 - Büyük tek sürüm: hata çıkarsa her şey birden etkilenir → her adım ayrı commit, debug APK, testler.
 - Satın alma doğrulaması gecikir: sahte satın almalar 1.18.0'a kadar görünmez kalır.
 - Japonya yetkilendirmesi son tarihi 1 Aralık (`play_policy_updates.md`), sürümden bağımsız.
+
+## Faz 0 kararları (kullanıcı, 2026-11-02)
+- Sıralama ve Arkadaşlar **1.18.0'a girmiyor** → 1.19.0. 1.18.0'da kapılar "Yakında".
+- Uyku **gerçek zamanlı**: uygulama kapalıyken de enerji dolar.
+- Sabun **bir kez alınır**; **sabunun şekli dekor ürünü** olarak satılır ve değiştirilir.
+- **Pro avantajı kesinlikle olacak** → `subscribe_model.md` "Zibo Dünyası avantajları".
 
 ## Giriş ekranı taslağı (2026-11-02)
 `docs/zibo_world_prototype/index.html`, yayın: https://claude.ai/artifact/TLAUdqjmFvWYNvDAK45DA3. Oda çizimleri Ev Stüdyosu (`docs/home_studio/`) ile aynı koddan.

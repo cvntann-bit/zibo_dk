@@ -20,12 +20,12 @@ Taslaklar (birebir hedef görünüm):
 ## Faz 0 — Kararlar ve girdiler (kod öncesi)
 | Konu | Durum | Not |
 |---|---|---|
-| Sıralama + Arkadaşlar 1.18.0'da mı? | **Karar bekliyor** | Öneri: 1.19.0'a; 1.18.0'da kapılar "Yakında" |
+| Sıralama + Arkadaşlar 1.18.0'da mı? | **KARAR: HAYIR (2026-11-02)** | 1.19.0'a kaldı; 1.18.0'da kapılar "Yakında" |
 | Sekme/dünya adı | Bekliyor | Geçici: "Zibo Dünyası" (alt çubuk), "Zibo'nun Evi" (başlık) |
 | Yeni Zibo pozları | Kullanıcı üretecek | Küvette oturan, uyuyan (gözler kapalı), yemek yiyen. Gelene kadar mevcut pozlar |
-| Sabun tüketilebilir mi? | Bekliyor | Taslakta bir kez alınır |
-| Uyku gerçek zamanlı mı? | Bekliyor | Öneri: uyutunca zamanla dolar (ör. 1 saatte %100), uygulama kapalıyken de |
-| Pro/Pro+ avantajı | Bekliyor | Ör. Pro'ya özel eşyalar ya da indirim → `subscribe_model.md` |
+| Sabun tüketilebilir mi? | **KARAR: bir kez alınır (2026-11-02)** | Ayrıca **sabunun şekli dekor ürünü** olarak satılır ve değiştirilir (kalp, yıldız, ördek, bulut…); köpük rengi sabun türünden, görünüm şekilden gelir |
+| Uyku gerçek zamanlı mı? | **KARAR: gerçek zamanlı (2026-11-02)** | Uyutunca `sleep.startedAt` yazılır, enerji geçen süreye göre dolar (uygulama kapalıyken de); hız `config/home` (varsayılan taslak: 0→100 yaklaşık 60 dk) |
+| Pro/Pro+ avantajı | **KARAR: kesinlikle olsun (2026-11-02)** | Ayrıntı taslağı `subscribe_model.md` "Zibo Dünyası avantajları"; kesin liste kullanıcı onayıyla |
 | Yılbaşına yetişme | Bekliyor | 1 Aralık öncesi çıkarsa takvim uzaktan açılır |
 | Ekonomi tablosu | Faz 9'dan önce | Kazanma ~100–120 ZC/gün aktif kullanıcı (tahmin: check-in 5 + görev 15 + 2 reklam 40 + günlükler ~15 + giriş ödülü ort. ~30 + takas) |
 
@@ -64,8 +64,8 @@ Taslaklar (birebir hedef görünüm):
 
 ## Faz 4 — Bakım oyunları
 - **4a Besle (mutfak):** 57 yemek (Fluent → `assets/images/home/food/*.webp`, ~6 KB, toplam ~350 KB; simit/churros çizim), gruplar, tabağa koy, ağza sürükle (ya da dokun), çiğneme zıplaması, kırıntı + kalp parçacıkları, günde 3 ücretsiz (gün anahtarı `TrustedTimeProvider`), ZC ile özel yemek, isteğe bağlı ödüllü reklamla +1 (`AdService`, günlük sınır). **MIT lisans metni uygulamanın lisanslar ekranına** (`asset_library/LICENSE-fluent-emoji.txt`).
-- **4b Banyo:** temizlik düştükçe kir lekeleri, sabunu sürükle → köpük + baloncuk, duş, havlu, parıltı; sabun çeşitleri (renkli köpük), sabun satın alma.
-- **4c Uyut:** ışığı kapat → oda kararır, pencerede gece, abajur parlar, Z'ler; enerji zamanla dolar (Faz 0 kararı), uyandır.
+- **4b Banyo:** temizlik düştükçe kir lekeleri, sabunu sürükle → köpük + baloncuk, duş, havlu, parıltı; sabun türleri bir kez alınır (renkli köpük), **sabun şekli** banyo dekor kategorisi olarak satılır.
+- **4c Uyut (gerçek zamanlı):** ışığı kapat → oda kararır, pencerede gece, abajur parlar, Z'ler; `sleep.startedAt` ile enerji uygulama kapalıyken de dolar; uyandır. İsteğe bağlı: "Zibo uyandı" bildirimi (FCM saatlik iş ya da yerel bildirim — yerel bildirimler şu an rafta).
 - **4d Oyna (salon):** TV'de 7 oyun → bugünkü WebView oyunları; oyun bitince mutluluk artışı (`GamePointsProvider` sonucu üzerinden), TV boyutu modele göre.
 - **Ortak:** parçacık sistemi (`Ticker` + `CustomPainter`), ses efektleri (yemek, köpük, duş, uyku — `SoundEffectsService`, yeni ses dosyaları), hafif titreşim, analytics olayları.
 - **Rozetler (öneri, `add-badge` becerisiyle):** ilk besleme, 7 gün bakım, "Şef Zibo", "Mis gibi", "Uykucu".
@@ -86,7 +86,7 @@ Taslaklar (birebir hedef görünüm):
 - Sınır: yeni etkinlik **türü** ilk kez eklenirken sürüm gerekir.
 - **Kontrol noktası (APK):** panelden açılan takvim uygulamada görünüyor, gün açılıyor, ödül geliyor.
 
-## Faz 7 — Sıralama ve Arkadaşlar (öneri: 1.19.0)
+## Faz 7 — Sıralama ve Arkadaşlar (KARAR: 1.19.0)
 - **Sıralama:** haftalık oyun ★; istemci kendi puanını yazar, saatlik iş (`notification-scripts`) doğrular ve `leaderboards/{hafta}` tek belgesine ilk 100 + arkadaş görünümü yazar. Oyun başına üst sınırla hile kontrolü (`game_zibo.md` cap'leri). İsim "Zibo adı#etiket".
 - **Arkadaşlar:** arkadaş kodu (ZB-XXXX), istek/kabul, ev vitrini belgesi (`users/{uid}/public/home`), ziyaret (kalp, yemek bırak), hediye (sunucuda doğrulanır, günde sınır), hazır ifadeler, şikâyet/engelle, rozet bildirimi.
 - Kurallar ve maliyet: `zibo_online.md` (DAU 10k'da ~10–15 $/ay tahmini). Play Aileler ve çocuk güvenliği incelemesi.
