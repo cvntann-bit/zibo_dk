@@ -57,7 +57,7 @@ Ara sürüm yok; Zibo Dünyası hazır olunca tek büyük güncellemeyle çıkar
 satın alma doğrulaması kaydı (`purchase_verification.md`), uygulama içi mesaj kartı (`admin_panel.md`), tablet yan menü 840 dp.
 Sonuç: bunlar Zibo Dünyası bitene kadar canlıya çıkmaz. Her adım yine debug APK ile telefonda denenir (`feedback_debug_apk_workflow`).
 
-### Uygulama adımları (öneri sırası)
+### Uygulama adımları (öneri sırası) — ayrıntılı faz planı: `docs/zibo_world_roadmap.md`
 1. **Veri ve kabuk:** `HomeNeedsProvider` (4 ihtiyaç, `TrustedTimeProvider` ile zamanla düşer, ceza yok), `HomeDecorProvider` (oda başına sahip olunan/takılı eşya, `CloudStateStore` `homeState`). Alt çubukta Oyun Salonu sekmesi → `ZiboWorldScreen`; bugünkü `GameHallScreen` Oyunlar kapısından açılır.
 2. **Oda çizimi:** taslaktaki SVG çizimleri Flutter `CustomPainter`'a taşınır (oda + eşya + desen + zemin). En büyük iş; görünüm taslakla aynı kalmalı.
 3. **Giriş ekranı:** ev kesiti, ihtiyaç halkaları, Zibo'nun konuşma balonu, kapılar, etkinlik kartı.

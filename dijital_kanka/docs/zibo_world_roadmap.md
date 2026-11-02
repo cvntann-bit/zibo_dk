@@ -1,0 +1,145 @@
+# Zibo Dünyası — uygulama yol haritası (1.18.0 büyük güncellemesi)
+
+Durum: **plan (2026-11-02), kod yok.** Bu dosya taslakların uygulamaya nasıl geçeceğinin tek kaynağıdır; her faz bitince işaretlenir.
+Kararlar ve gerekçeler: `zibo_world.md`. Görsel kurallar: `zibo_home_art.md`. Ekonomi: `unit_economics.md`.
+
+Taslaklar (birebir hedef görünüm):
+- Giriş ekranı: `docs/zibo_world_prototype/` — https://claude.ai/artifact/TLAUdqjmFvWYNvDAK45DA3
+- Odalar, dekor, bakım: `docs/home_studio/` — https://claude.ai/artifact/Xsg9UadXjmGRobPkxnpXaE
+
+## Değişmez ilkeler
+- **1.18.0 tek büyük sürüm.** Ara sürüm yok; satın alma doğrulaması kaydı, uygulama içi mesaj kartı, tablet 840 dp de bu sürümle çıkar.
+- **Her faz:** ayrı commit'ler, `flutter test` yeşil, **debug APK ile telefonda kontrol noktası**, kullanıcı onayı. AAB yalnızca Faz 10'da.
+- **Görünüm taslakla aynı:** odalar kodla çizilir (Flutter `CustomPainter`), Zibo gerçek pozu, renk varyantı yeni görsel istemez.
+- **Çocuk güvenliği:** ceza yok (Zibo ölmez/hastalanmaz), bakımın ortasında zorunlu reklam yok, her şeyin bedava bir yolu var, serbest sohbet yok.
+- **Zarar etmemek:** her yeni ZC ödülü/fiyatı `unit_economics.md`'den geçer; fiyatlar ve hızlar uzaktan (`config/home`) değişebilir.
+- Proje kuralları geçerli: katman bazlı klasörler (`lib/screens|widgets|providers|models|data`), ARB'ler TR/EN/ES, kullanılmayan ARB silinmez, `flutter analyze` yok.
+
+---
+
+## Faz 0 — Kararlar ve girdiler (kod öncesi)
+| Konu | Durum | Not |
+|---|---|---|
+| Sıralama + Arkadaşlar 1.18.0'da mı? | **Karar bekliyor** | Öneri: 1.19.0'a; 1.18.0'da kapılar "Yakında" |
+| Sekme/dünya adı | Bekliyor | Geçici: "Zibo Dünyası" (alt çubuk), "Zibo'nun Evi" (başlık) |
+| Yeni Zibo pozları | Kullanıcı üretecek | Küvette oturan, uyuyan (gözler kapalı), yemek yiyen. Gelene kadar mevcut pozlar |
+| Sabun tüketilebilir mi? | Bekliyor | Taslakta bir kez alınır |
+| Uyku gerçek zamanlı mı? | Bekliyor | Öneri: uyutunca zamanla dolar (ör. 1 saatte %100), uygulama kapalıyken de |
+| Pro/Pro+ avantajı | Bekliyor | Ör. Pro'ya özel eşyalar ya da indirim → `subscribe_model.md` |
+| Yılbaşına yetişme | Bekliyor | 1 Aralık öncesi çıkarsa takvim uzaktan açılır |
+| Ekonomi tablosu | Faz 9'dan önce | Kazanma ~100–120 ZC/gün aktif kullanıcı (tahmin: check-in 5 + görev 15 + 2 reklam 40 + günlükler ~15 + giriş ödülü ort. ~30 + takas) |
+
+## Faz 1 — Veri modeli ve kabuk
+**Hedef:** Oyunlar sekmesi Zibo Dünyası olur, mevcut oyunlar kaybolmadan içine taşınır.
+- **Firestore**
+  - `users/{uid}/state/homeState` (genel `state/{stateDoc}` sahip kuralı kapsar, yeni kural gerekmez):
+    `needs {tokluk, temizlik, enerji, mutluluk, updatedAt}`, `rooms {mutfak|banyo|yatak|salon: {eq: {kategori: itemId}, owned: [itemId]}}`,
+    `soaps [id]`, `feed {day, freeUsed}`, `sleep {startedAt|null}`, `stats {fed, bathed, slept, played}`.
+  - `config/home` (okuma: giriş yapmış herkes, yazma: `isAdmin()` → **kural eklenecek**): fiyat ezmeleri, ihtiyaç düşüş hızları, günlük ücretsiz yemek, uyku hızı, açık/kapalı bayraklar.
+  - `events/{id}` (Faz 6, kural Faz 6'da).
+- **Modeller/veri:** `lib/models/home_item.dart` (id, oda, kategori, çizim türü, renk, fiyat, nadirlik), `lib/data/home_catalog.dart` (taslaktaki tüm eşyalar), `lib/data/home_foods.dart`, `lib/data/home_soaps.dart`.
+- **Provider'lar:** `HomeNeedsProvider` (ihtiyaçlar, `TrustedTimeProvider` ile zamanla düşer, alt sınır var), `HomeDecorProvider` (sahip/takılı, `CloudStateStore`), `HomeConfigProvider` (`GamesConfigProvider` deseni).
+- **Coin:** `CoinProvider`'a `spendOnHomeItem({itemId, cost})`, `spendOnFood`, `spendOnSoap` (işlem nedeni sabit önekli → `dailyStats.js` ayrıştırabilsin). `coinState` kuralı değişmez (tek yazım ≤ 33.000 ZC; en pahalı ev eşyası 1.500).
+- **Kabuk:** `RootScreen` sekme 1 → `ZiboWorldScreen`; `GameHallScreen` Oyunlar kapısından push; `onGamesTap` çağrıları yeni yere bağlanır. `main.dart` MultiProvider + `test/` `_buildAppWithClock` provider listesi güncellenir (`test/CLAUDE.md`).
+- **Kontrol noktası (APK):** sekme açılıyor, boş ev iskeleti, Oyunlar kapısı → bugünkü Oyun Salonu sorunsuz, eski kullanıcı verisi duruyor.
+
+## Faz 2 — Çizim motoru (taslak → Flutter)
+**Hedef:** taslaktaki oda ve eşya çizimlerinin birebir Flutter karşılığı. En büyük iş.
+- **Temel:** degrade (`LinearGradient` shader), desen (küçük `Picture` → `ImageShader`), parlama, yumuşak gölge, renk karıştırma (`mix`).
+- **Eşya ressamları (~45):** buzdolabı ×3 model, ocak, dolap, masa ×2, sandalye/tabure, küvet ×3, lavabo ×2, ayna ×3, havlu, yatak ×3 (kanopi dahil), komodin, abajur ×4, gardırop, halı ×3, oyuncaklar, kanepe ×3 (arka/ön parça), TV ×3, ünite, sehpa ×3, lambader ×3, bitkiler, akvaryum, saat, raflar, sarkıt lamba ×3, tezgâh eşyaları, paspas ×3, ördek/gemi, duvar süsleri.
+- **Desenler:** duvar kağıdı ×9, fayans ×5, zemin ×5, nevresim/örtü desenleri.
+- **Oda ressamları ×4** + **katman düzeni:** `Stack` [oda arkası] → [Zibo pozu `Image`] → [ön parça: küvet önü, yorgan, kanepe oturağı, masa]. Bu "oturuyor gibi" hilesi yeni poz gerekmeden çalışır.
+- **Performans:** her oda `RepaintBoundary` + `Picture` önbelleği; yalnızca dekor değişince yeniden çizim. Düşük segment cihazda kare hızı ölçülür.
+- **Görsel doğrulama:** `flutter run -d web-server` + tarayıcıda taslakla yan yana (CLAUDE.md'deki web akışı). Tablet oranı kontrolü.
+- **Kontrol noktası (APK):** 4 oda taslakla aynı görünüyor, renk/desen değişimi anlık.
+
+## Faz 3 — Giriş ekranı
+- Ev kesiti: çatı, tabela, baca, 2×2 küçük oda (önbellekten), alt çim.
+- 4 ihtiyaç halkası (dokununca odaya), Zibo en düşük ihtiyacın odasında + konuşma balonu (TR/EN/ES cümle havuzu).
+- Sağ sütun kapıları: **Oyunlar**, Etkinlikler (rozet), Sıralama, Arkadaşlar (1.18.0'da kapsam dışı kalırsa "Yakında").
+- Etkinlik kartı (`EventsProvider`'dan; etkinlik yoksa gizli).
+- Odaya geçiş: yakınlaştırma animasyonu, geri dönüş.
+- Tablet: ev ve kapılar yan yana geniş düzen (`lib/utils/adaptive.dart`).
+- **Kontrol noktası (APK):** gezinme akıcı, halkalar doğru, Zibo doğru odada.
+
+## Faz 4 — Bakım oyunları
+- **4a Besle (mutfak):** 57 yemek (Fluent → `assets/images/home/food/*.webp`, ~6 KB, toplam ~350 KB; simit/churros çizim), gruplar, tabağa koy, ağza sürükle (ya da dokun), çiğneme zıplaması, kırıntı + kalp parçacıkları, günde 3 ücretsiz (gün anahtarı `TrustedTimeProvider`), ZC ile özel yemek, isteğe bağlı ödüllü reklamla +1 (`AdService`, günlük sınır). **MIT lisans metni uygulamanın lisanslar ekranına** (`asset_library/LICENSE-fluent-emoji.txt`).
+- **4b Banyo:** temizlik düştükçe kir lekeleri, sabunu sürükle → köpük + baloncuk, duş, havlu, parıltı; sabun çeşitleri (renkli köpük), sabun satın alma.
+- **4c Uyut:** ışığı kapat → oda kararır, pencerede gece, abajur parlar, Z'ler; enerji zamanla dolar (Faz 0 kararı), uyandır.
+- **4d Oyna (salon):** TV'de 7 oyun → bugünkü WebView oyunları; oyun bitince mutluluk artışı (`GamePointsProvider` sonucu üzerinden), TV boyutu modele göre.
+- **Ortak:** parçacık sistemi (`Ticker` + `CustomPainter`), ses efektleri (yemek, köpük, duş, uyku — `SoundEffectsService`, yeni ses dosyaları), hafif titreşim, analytics olayları.
+- **Rozetler (öneri, `add-badge` becerisiyle):** ilk besleme, 7 gün bakım, "Şef Zibo", "Mis gibi", "Uykucu".
+- **Kontrol noktası (APK):** dört döngü baştan sona, ZC doğru düşüyor, uygulama kapatılıp açılınca durum korunuyor.
+
+## Faz 5 — Dekor mağazası
+- Oda başına kategoriler (mutfak 14, banyo 14, yatak 13, salon 13), modeller ve renkler `home_catalog.dart`'tan.
+- Önce dene, sonra "Odadakileri al" (sepet), sahip olunanlar "Sende var", fiyat `config/home` ezmesi.
+- Nadirlik dili kostümlerle aynı (1.15.0); Pro/Pro+ kararına göre özel ürünler.
+- Sezonluk/sınırlı ürün altyapısı (tarih aralığı, `config/home`).
+- **Kontrol noktası (APK):** satın alma, deneme, sahiplik, yeniden açılışta kalıcılık, ZC kuralı reddi yok.
+
+## Faz 6 — Etkinlikler
+- `events/{id}`: `type` (1.18.0'da yalnızca `takvim`), başlık/açıklama TR/EN/ES, `start`, `end`, `days[] {reward: zc|itemId}`, `enabled`. Kural: okuma giriş yapmış herkes, yazma `isAdmin()`.
+- `EventsProvider`: aktif/yaklaşan etkinlik, gün açma (gün anahtarı `TrustedTimeProvider`, tekrar açma koruması `homeState.events`).
+- Ödüller: ZC (`CoinProvider` nedenli kazanç, tek yazım sınırı içinde) ya da sezonluk dekor (Yılbaşı: çam, hediye, ışık, kardan adam — kodla çizim).
+- **Yönetici uygulaması:** `events_screen.dart` (oluştur, tarih, ödül tablosu, aç/kapat) + `adminLog`.
+- Sınır: yeni etkinlik **türü** ilk kez eklenirken sürüm gerekir.
+- **Kontrol noktası (APK):** panelden açılan takvim uygulamada görünüyor, gün açılıyor, ödül geliyor.
+
+## Faz 7 — Sıralama ve Arkadaşlar (öneri: 1.19.0)
+- **Sıralama:** haftalık oyun ★; istemci kendi puanını yazar, saatlik iş (`notification-scripts`) doğrular ve `leaderboards/{hafta}` tek belgesine ilk 100 + arkadaş görünümü yazar. Oyun başına üst sınırla hile kontrolü (`game_zibo.md` cap'leri). İsim "Zibo adı#etiket".
+- **Arkadaşlar:** arkadaş kodu (ZB-XXXX), istek/kabul, ev vitrini belgesi (`users/{uid}/public/home`), ziyaret (kalp, yemek bırak), hediye (sunucuda doğrulanır, günde sınır), hazır ifadeler, şikâyet/engelle, rozet bildirimi.
+- Kurallar ve maliyet: `zibo_online.md` (DAU 10k'da ~10–15 $/ay tahmini). Play Aileler ve çocuk güvenliği incelemesi.
+
+## Faz 8 — Yönetici uygulaması ve istatistik
+- `config/home` düzenleyici (fiyat, düşüş hızı, ücretsiz yemek, uyku hızı, sezonluk ürün aç/kapat).
+- Etkinlik ekranı (Faz 6).
+- `dailyStats.js`: ev harcaması (yemek/sabun/dekor ayrı), en çok satılan eşyalar, bakım sıklığı, ortalama ihtiyaçlar → Özet'e yeni kart.
+
+## Faz 9 — Metin, ekonomi, kalite
+- **ARB:** tahmini 300+ anahtar × 3 dil (eşya adları, kategoriler, konuşma balonları, etkinlik metinleri). İçerik havuzları `xTr/xEn/xEs` deseni.
+- **Ekonomi:** kazanma/harcama dengesi, fiyat tablosu, ödüllü reklam sınırları, ZC paketi satın alma motivasyonu (ölçüm planı). `unit_economics.md` güncellenir.
+- **Analytics olayları:** `home_open`, `room_open`, `care_feed/bath/sleep/play`, `decor_try`, `decor_buy`, `event_day_open`, `need_low_seen`.
+- **Testler:** provider birim testleri (ihtiyaç düşüşü, saat manipülasyonu, ücretsiz yemek sıfırlanması, satın alma), ekran testleri (gezinme), mevcut 763 testin yeşil kalması.
+- **Kalite:** düşük segment telefonda performans, tablet düzeni, erişilebilirlik (Semantics), AAB boyutu (hedef < +1,5 MB), bellek (Şubat 2027 Play eşiği, `play_policy_updates.md`).
+
+## Faz 10 — Yayın
+- Bekleyen işler: tablet yan menü 840 dp, uygulama içi mesaj kartı testi, satın alma doğrulaması gerçek test alımı.
+- `pubspec` 1.18.0+57, AAB (`release-aab` becerisi), sürüm notları TR/EN/ES (≤ 500 karakter).
+- Mağaza görselleri: Zibo Dünyası panoraması (`tool/CLAUDE.md`).
+- Kademeli yayın önerisi: %20 → %100; Crashlytics ve yönetici Özet'i izlenir.
+- Yayın sonrası: `config/home` ile fiyat ince ayarı, ilk etkinlik.
+
+---
+
+## Bağımlılıklar
+`Faz 1 → 2 → 3 → 4 → 5`; `6` Faz 1'den sonra paralel ilerleyebilir (Yılbaşı için öne alınabilir); `8` her fazla birlikte; `9` sürekli; `7` ayrı sürüm.
+
+## Kaba süre tahmini (TAHMİN, oturum sayısı)
+| Faz | Oturum |
+|---|---|
+| 1 Veri + kabuk | 1–2 |
+| 2 Çizim motoru | 4–6 |
+| 3 Giriş ekranı | 1–2 |
+| 4 Bakım oyunları | 3–4 |
+| 5 Dekor mağazası | 2 |
+| 6 Etkinlikler | 2 |
+| 8–9 Panel, metin, test | 2–3 |
+| 10 Yayın | 1 |
+| **1.18.0 toplam (7 hariç)** | **~16–22** |
+| 7 Sıralama + Arkadaşlar (1.19.0) | 4–6 |
+
+## Ek A — Taslaktaki katalog (uygulamaya taşınacak)
+- **Mutfak (14):** boya, duvar kağıdı, zemin, buzdolabı ×10, ocak ×5, dolap ×5, tezgâh üstü ×5, masa ×5, masa örtüsü ×4, sandalye ×5, sarkıt lamba ×4, duvar süsü ×4, perde ×5.
+- **Banyo (14):** boya, fayans ×8, zemin ×5, küvet ×8, lavabo ×6, ayna ×6, havlu ×6, duş başlığı ×4, raf ×3, paspas ×5, oyuncak ×4, bitki ×2, duvar süsü ×3; sabun ×5.
+- **Yatak odası (13):** boya, duvar kağıdı ×7, zemin ×4, yatak ×6, nevresim ×6, komodin ×4, abajur ×5, gardırop ×4, perde ×5, halı ×5, oyuncak ×4, duvar süsü ×3.
+- **Salon (13):** boya, duvar kağıdı ×6, zemin ×4, kanepe ×6, TV ×4, ünite ×3, sehpa ×4, lambader ×4, halı ×4, perde ×5, köşe ×3, duvar süsü ×4, puf ×3.
+- **Yemek (57):** meyve-sebze 17, yemek 22, tatlı 13, içecek 5 (fiyat ve tokluk değerleri `home_studio` taslağında).
+- **İhtiyaçlar:** tokluk (mutfak), temizlik (banyo), enerji (yatak), mutluluk (salon).
+
+## Ek B — Açık riskler
+- Çizim motoru taşıması uzun ve görsel birebirlik zor → oda oda onay.
+- Tek büyük sürüm → hata etkisi geniş; kademeli yayın şart.
+- Satın alma doğrulaması 1.18.0'a kadar canlıda değil.
+- Yılbaşı etkinliği zamana sıkışabilir.
+- Japonya yetkilendirmesi 1 Aralık, tüccar beyanı 1 Şubat 2027 (sürümden bağımsız).
