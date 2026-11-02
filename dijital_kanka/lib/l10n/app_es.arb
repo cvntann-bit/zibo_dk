@@ -846,5 +846,7 @@
   "worldDoorEvents": "Eventos",
   "worldDoorLeaderboard": "Clasificación",
   "worldDoorFriends": "Amigos",
-  "worldRoomPreviewHint": "Vista previa: prueba objetos, no se guarda nada. Pronto podrás comprar."
+  "worldRoomPreviewHint": "Vista previa: prueba objetos, no se guarda nada. Pronto podrás comprar.",
+  "worldHouseSign": "Casa de Zibo",
+  "worldNeedPercent": "{need} {percent} %"
 }

@@ -3946,5 +3946,21 @@
   "worldRoomPreviewHint": "Önizleme: eşyaları deneyebilirsin, kaydedilmez. Satın alma yakında.",
   "@worldRoomPreviewHint": {
     "description": "Oda ekranında eşya seçicinin altındaki not (deneme kaydedilmez)"
+  },
+  "worldHouseSign": "Zibo'nun Evi",
+  "@worldHouseSign": {
+    "description": "Zibo Dünyası giriş ekranında evin çatısındaki tabela"
+  },
+  "worldNeedPercent": "{need} %{percent}",
+  "@worldNeedPercent": {
+    "description": "İhtiyaç halkasının altındaki etiket: ihtiyaç adı ve yüzdesi",
+    "placeholders": {
+      "need": {
+        "type": "String"
+      },
+      "percent": {
+        "type": "int"
+      }
+    }
   }
 }

@@ -2885,4 +2885,12 @@ class AppLocalizationsTr extends AppLocalizations {
   @override
   String get worldRoomPreviewHint =>
       'Önizleme: eşyaları deneyebilirsin, kaydedilmez. Satın alma yakında.';
+
+  @override
+  String get worldHouseSign => 'Zibo\'nun Evi';
+
+  @override
+  String worldNeedPercent(String need, int percent) {
+    return '$need %$percent';
+  }
 }

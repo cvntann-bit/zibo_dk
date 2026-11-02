@@ -846,5 +846,7 @@
   "worldDoorEvents": "Events",
   "worldDoorLeaderboard": "Leaderboard",
   "worldDoorFriends": "Friends",
-  "worldRoomPreviewHint": "Preview: try things on, nothing is saved. Buying comes soon."
+  "worldRoomPreviewHint": "Preview: try things on, nothing is saved. Buying comes soon.",
+  "worldHouseSign": "Zibo's House",
+  "worldNeedPercent": "{need} {percent}%"
 }

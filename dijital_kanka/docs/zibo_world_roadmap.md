@@ -71,6 +71,13 @@ Taslaklar (birebir hedef görünüm):
 - Odaya geçiş: yakınlaştırma animasyonu, geri dönüş.
 - Tablet: ev ve kapılar yan yana geniş düzen (`lib/utils/adaptive.dart`).
 - **Kontrol noktası (APK):** gezinme akıcı, halkalar doğru, Zibo doğru odada.
+- **Uygulandı (2026-11-03):** `ZiboWorldScreen` taslağın `houseSvg()`'si birebir: çatı, baca + duman, tabela (metin Flutter'da, çevrilir: `worldHouseSign`), ahşap çerçeve, çim; odalar `RoomThumb` (sahnenin y 120–1160 bandı) ile 2×2 — üst sıra mutfak · banyo, alt sıra yatak · salon, takılı dekorla.
+  - Halkalar taslağın renkleri ve simgeleriyle; etiket `worldNeedPercent` ("Tokluk %35" / "Food 35%"). Dokununca o odanın ekranı.
+  - Zibo en düşük ihtiyacın odasında; o ihtiyaç %30'un altındaysa somurtkan poz. Balon: en düşük ihtiyaç %70'in altındaysa o ihtiyacın cümlesi (dokununca oda açılır), değilse mutlu cümle. Cümle havuzu `lib/data/zibo_world_lines.dart` (TR/EN/ES, ihtiyaç başına 3 + mutlu 3; saat başı değişir).
+  - Kapılar sağ sütunda taslağın simgeleriyle; Sıralama ve Arkadaşlar kilitli (1.18.0 dışı), Etkinlikler "Yakında" (Faz 6).
+  - Odaya geçiş: odanın evdeki yerinden ölçek + solma (320 ms); "hareketi azalt" açıksa düz geçiş.
+  - Etkinlik kartı Faz 6'ya kaldı (`EventsProvider` yok).
+  - Tablet: içerik en fazla 640 dp, ortalanır.
 
 ## Faz 4 — Bakım oyunları
 - **4a Besle (mutfak):** 57 yemek (Fluent → `assets/images/home/food/*.webp`, ~6 KB, toplam ~350 KB; simit/churros çizim), gruplar, tabağa koy, ağza sürükle (ya da dokun), çiğneme zıplaması, kırıntı + kalp parçacıkları, günde 3 ücretsiz (gün anahtarı `TrustedTimeProvider`), ZC ile özel yemek, isteğe bağlı ödüllü reklamla +1 (`AdService`, günlük sınır). **MIT lisans metni uygulamanın lisanslar ekranına** (`asset_library/LICENSE-fluent-emoji.txt`).

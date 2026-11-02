@@ -8,10 +8,13 @@ import 'room_art.dart';
 /// Faz 2). 900×1200 birimlik taslak sahnesi verilen genişliğe ölçeklenir.
 /// Sahneyi her build'de yeniden üretmemek için [RoomSceneCache] kullan.
 class RoomView extends StatelessWidget {
-  const RoomView({super.key, required this.scene, this.semanticLabel});
+  const RoomView({super.key, required this.scene, this.semanticLabel, this.showZibo = true});
 
   final RoomScene scene;
   final String? semanticLabel;
+
+  /// Giriş ekranının ev kesitinde Zibo yalnızca bir odada görünür.
+  final bool showZibo;
 
   static const double sceneWidth = 900;
   static const double sceneHeight = 1200;
@@ -33,13 +36,14 @@ class RoomView extends StatelessWidget {
                 fit: StackFit.expand,
                 children: [
                   SvgPicture.string(scene.back, fit: BoxFit.fill),
-                  Positioned(
-                    left: zibo.x * s,
-                    top: zibo.y * s,
-                    width: zibo.w * s,
-                    height: zibo.h * s,
-                    child: Image.asset('assets/images/home/zibo_${zibo.pose}.webp', fit: BoxFit.contain),
-                  ),
+                  if (showZibo)
+                    Positioned(
+                      left: zibo.x * s,
+                      top: zibo.y * s,
+                      width: zibo.w * s,
+                      height: zibo.h * s,
+                      child: Image.asset('assets/images/home/zibo_${zibo.pose}.webp', fit: BoxFit.contain),
+                    ),
                   SvgPicture.string(scene.front, fit: BoxFit.fill),
                 ],
               ),
@@ -78,5 +82,43 @@ class RoomSceneCache {
       );
     }
     return _scene!;
+  }
+}
+
+/// Odanın ev kesitindeki küçük hali: taslaktaki gibi sahnenin y 120–1160
+/// bandı (900×1040) gösterilir — tavanın ve zeminin ucu kırpılır.
+class RoomThumb extends StatelessWidget {
+  const RoomThumb({super.key, required this.scene, required this.showZibo});
+
+  final RoomScene scene;
+  final bool showZibo;
+
+  static const double cropTop = 120;
+  static const double cropHeight = 1040;
+
+  @override
+  Widget build(BuildContext context) {
+    return AspectRatio(
+      aspectRatio: RoomView.sceneWidth / cropHeight,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final w = constraints.maxWidth;
+          final s = w / RoomView.sceneWidth;
+          return ClipRect(
+            child: OverflowBox(
+              alignment: Alignment.topLeft,
+              minWidth: w,
+              maxWidth: w,
+              minHeight: RoomView.sceneHeight * s,
+              maxHeight: RoomView.sceneHeight * s,
+              child: Transform.translate(
+                offset: Offset(0, -cropTop * s),
+                child: RoomView(scene: scene, showZibo: showZibo),
+              ),
+            ),
+          );
+        },
+      ),
+    );
   }
 }

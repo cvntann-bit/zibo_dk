@@ -5139,6 +5139,18 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'Önizleme: eşyaları deneyebilirsin, kaydedilmez. Satın alma yakında.'**
   String get worldRoomPreviewHint;
+
+  /// Zibo Dünyası giriş ekranında evin çatısındaki tabela
+  ///
+  /// In tr, this message translates to:
+  /// **'Zibo\'nun Evi'**
+  String get worldHouseSign;
+
+  /// İhtiyaç halkasının altındaki etiket: ihtiyaç adı ve yüzdesi
+  ///
+  /// In tr, this message translates to:
+  /// **'{need} %{percent}'**
+  String worldNeedPercent(String need, int percent);
 }
 
 class _AppLocalizationsDelegate

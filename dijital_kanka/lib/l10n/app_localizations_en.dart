@@ -2901,4 +2901,12 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get worldRoomPreviewHint =>
       'Preview: try things on, nothing is saved. Buying comes soon.';
+
+  @override
+  String get worldHouseSign => 'Zibo\'s House';
+
+  @override
+  String worldNeedPercent(String need, int percent) {
+    return '$need $percent%';
+  }
 }

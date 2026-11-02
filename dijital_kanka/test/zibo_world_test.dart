@@ -1,11 +1,13 @@
 // Zibo Dünyası Faz 1 (docs/zibo_world_roadmap.md): ev ayarları, ihtiyaçlar
 // (tembel düşüş, taban, gerçek zamanlı uyku, günlük ücretsiz yemek) ve dekor.
 
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:dijital_kanka/data/home_catalog.dart';
 import 'package:dijital_kanka/data/home_config.dart';
+import 'package:dijital_kanka/data/zibo_world_lines.dart';
 import 'package:dijital_kanka/models/home_item.dart';
 import 'package:dijital_kanka/models/home_need.dart';
 import 'package:dijital_kanka/models/subscription_tier.dart';
@@ -181,6 +183,23 @@ void main() {
       await q.ready;
       expect(q.selectedSoap, 'nane');
       expect(q.equipped(HomeRoom.living, 'boya'), 'gok');
+    });
+  });
+
+  group('Konuşma balonu cümleleri', () {
+    test('üç dilde her ihtiyaç için aynı sayıda cümle', () {
+      for (final need in HomeNeed.values) {
+        final n = ziboWorldNeedLinesTr[need]!.length;
+        expect(ziboWorldNeedLinesEn[need]!.length, n);
+        expect(ziboWorldNeedLinesEs[need]!.length, n);
+      }
+      expect(ziboWorldHappyLinesEn.length, ziboWorldHappyLinesTr.length);
+      expect(ziboWorldHappyLinesEs.length, ziboWorldHappyLinesTr.length);
+    });
+
+    test('dile göre seçilir, bilinmeyen dil Türkçe', () {
+      expect(ziboWorldLineForLocale(const Locale('en'), HomeNeed.hunger, 0), ziboWorldNeedLinesEn[HomeNeed.hunger]![0]);
+      expect(ziboWorldLineForLocale(const Locale('de'), null, 4), ziboWorldHappyLinesTr[4 % ziboWorldHappyLinesTr.length]);
     });
   });
 }

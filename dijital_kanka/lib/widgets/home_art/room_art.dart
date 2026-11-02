@@ -134,7 +134,7 @@ class RoomArt {
         ? '$table<ellipse cx="${tx + 140}" cy="792" rx="86" ry="18" fill="#FFFFFF" stroke="#D5DEE3" stroke-width="4"/>'
               '<ellipse cx="${tx + 140}" cy="790" rx="58" ry="10" fill="#EEF3F6"/>'
         : '';
-    return _scene(back, front, feeding ? ZiboSpot(pose, 250, 420, 520) : const ZiboSpot('happy', 104, 620, 500));
+    return _scene(back, front, feeding ? ZiboSpot(pose, 250, 420, 520) : ZiboSpot(pose, 104, 620, 500));
   }
 
   RoomScene _bath(bool caring, String pose, String soapColor) {
@@ -168,7 +168,7 @@ class RoomArt {
         '${k.shadow(270, 842, 230)}${k.shadow(720, 842, 90)}${_draw('lavabo', 620, 540)}$soap'
         '${_draw('paspas', 410, 1052)}$plant'
         '${caring ? '' : '$tub$duck${k.softEllipse(610, 1112, 150, 20, .28)}'}';
-    return _scene(back, caring ? '$tub$duck' : '', caring ? ZiboSpot(pose, 120, 330, 430) : const ZiboSpot('happy', 450, 640, 470));
+    return _scene(back, caring ? '$tub$duck' : '', caring ? ZiboSpot(pose, 120, 330, 430) : ZiboSpot(pose, 450, 640, 470));
   }
 
   RoomScene _bedroom(bool caring, String pose, bool dark) {
@@ -212,7 +212,7 @@ class RoomArt {
     return _scene(
       back,
       '${caring ? quilt : ''}$toy$night',
-      caring ? ZiboSpot(pose, 150, 410, 380) : const ZiboSpot('happy', 420, 650, 460),
+      caring ? ZiboSpot(pose, 150, 410, 380) : ZiboSpot(pose, 420, 650, 460),
     );
   }
 
@@ -253,7 +253,7 @@ class RoomArt {
         '${corner == 'none' ? '' : _draw('kose', 700, corner == 'aquarium' ? 880 : 860)}'
         '${k.shadow(380, 1060, 150)}${_draw('sehpa', 230, 940)}'
         '${puf == 'none' ? '' : _draw('puf', 560, puf == 'beanbag' ? 1010 : 1020)}';
-    return _scene(back, front, ZiboSpot(caring ? pose : 'happy', 190, 404, 400));
+    return _scene(back, front, ZiboSpot(pose, 190, 404, 400));
   }
 }
 
