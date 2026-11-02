@@ -56,7 +56,8 @@ Zibo Dünyası (kendi ekranı, kendi gezintisi)
 `docs/zibo_world_prototype/index.html`, yayın: https://claude.ai/artifact/TLAUdqjmFvWYNvDAK45DA3. Oda çizimleri Ev Stüdyosu (`docs/home_studio/`) ile aynı koddan.
 - **Üstte 4 ihtiyaç halkası** (tokluk, temizlik, enerji, mutluluk): dokununca ilgili odaya gider.
 - **Ev kesiti:** çatılı ev, 2×2 oda (mutfak, banyo, yatak, salon). Zibo en düşük ihtiyacın odasında durur ve konuşma balonuyla söyler ("Karnım acıktı, mutfağa gidelim!"); balona ya da odaya dokununca oda açılır.
-- **Sağda dikey kapılar:** Etkinlikler (rozet 1), Sıralama, Arkadaşlar (rozet 2). Tek ekrana sığsın diye alttan sağa taşındı.
+- **Sağda dikey kapılar:** Oyunlar, Etkinlikler (rozet 1), Sıralama, Arkadaşlar (rozet 2). Tek ekrana sığsın diye alttan sağa taşındı.
+- **Oyunlar nerede (kullanıcı sorusu, 2026-11-02):** iki kapı. (1) Sağ sütunun en üstünde Oyunlar kapısı: bugünkü Oyun Salonu aynen (7 oyun, ★, Takas Gişesi) — ayrı sekme yerine Zibo Dünyası'nın içinde. (2) Salondaki televizyon: aynı liste, orada oynamak mutluluğu da doldurur. Gerekçe: oyunlar ★ ve oyun içi reklam gelirinin kaynağı; yalnız salona gömmek bulunmayı zorlaştırırdı.
 - **Etkinlik kartı:** "Yılbaşı takvimi · 1 Aralık'ta başlıyor" — metin/tarih/ödül uzaktan.
 - **Oda görünümü:** geri, oda adı, büyük bakım düğmesi (Besle/Banyo yap/Uyut/Oyna) + Dekor, ihtiyaç çubuğu.
 - **Etkinlikler / Sıralama / Arkadaşlar** ekranları örnek veriyle (podyum, "Sen" satırı, arkadaş kodu ZB-7K4Q, hediye, ziyaret).
@@ -64,5 +65,5 @@ Zibo Dünyası (kendi ekranı, kendi gezintisi)
 
 ## Netleşecekler
 1. Sekmenin ve dünyanın adı.
-3. Oyun Salonu: salondaki televizyondan açılıyor (taslak 2026-11-02). Ana menüde ayrıca kısayol olsun mu?
+3. ~~Oyun Salonu nerede?~~ → Oyunlar kapısı + salon televizyonu (2026-11-02 taslak, kullanıcı onayı bekleniyor).
 4. Yılbaşına yetişmek için etkinlikler evden önce mi?
