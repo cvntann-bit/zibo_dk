@@ -88,3 +88,14 @@ Henüz üretilmedi — kullanıcı onayı bekleniyor. Hat: `promo_video/render.p
   kumar-güvenli ("Tu compañero de hábitos" vb.). `promo_video/es_ads/` 20 videodan YouTube'da eksik: 06/07 (ikisi de),
   08/09/10 dikey → yüklenince 06-10 dikey reklamı eklenecek, 06-10 yatay'a 06/07 eklenecek.
 - **Kredi bitince/24 Aralık'ta kampanya bitiş tarihiyle kendiliğinden durur**; yine de harcamayı haftalık kontrol et.
+
+### HESAP DURAKLATILDI (2026-11-03)
+- Banner: "Hesabınız duraklatıldı — Reklam yayınlamaya devam etmek için ödeme yapmanız gerekiyor." Yönetici > Politika > Hesap
+  (eski adı Reklamveren doğrulaması) sayfasında kalan tek görev **"Ödeme yönteminizle ödeme yapın"**. Diğer görevler
+  20 Eki–3 Kas arası tamamlanmış (kuruluş soruları, video selfie, AB siyasi reklam beyanı, ödeyen kişi sorusu).
+- Google kullanıcıdan **~₺15.000** istiyor; kullanıcının şu an bu parası yok.
+- Google yardımı (adspolicy 16204275, 15577076): tutar ya **ödenmemiş bakiye** ya da **sistemin belirlediği tek seferlik
+  ödeme**. Hangisi olduğu Faturalandırma > Özet / İşlemler'den bakılmalı. Taksit planı bulunamadı; yeni hesap açmak
+  önerilmiyor (o da duraklatılabilir). Duraklatıldıkça harcama yok ama **₺25.000 Talep Yaratma kredisi kullanılamıyor,
+  25 Ara 2026'da sona eriyor.**
+- Durum: kullanıcıya seçenekler sunuldu, karar bekleniyor.
