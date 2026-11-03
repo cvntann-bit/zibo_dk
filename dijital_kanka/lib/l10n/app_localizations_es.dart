@@ -2923,4 +2923,119 @@ class AppLocalizationsEs extends AppLocalizations {
   String worldNeedPercent(String need, int percent) {
     return '$need $percent %';
   }
+
+  @override
+  String get careModeCare => 'Cuidado';
+
+  @override
+  String get careModeDecor => 'Decoración';
+
+  @override
+  String get careFeedTitleHungry => 'A Zibo le ruge la panza';
+
+  @override
+  String get careFeedTitleSome => 'Zibo podría comer un poco más';
+
+  @override
+  String get careFeedTitleFull => 'Zibo está lleno y feliz';
+
+  @override
+  String get careFeedHint =>
+      'Toca una comida para ponerla en el plato y arrástrala a la boca de Zibo.';
+
+  @override
+  String get careFeedFree => 'Gratis';
+
+  @override
+  String get careFeedTomorrow => 'Mañana';
+
+  @override
+  String get careFeedPlateFirst => 'Primero dale lo del plato';
+
+  @override
+  String get careFeedFullMsg => 'Zibo está lleno, vuelve luego';
+
+  @override
+  String get careFeedNoFree => 'Se acabaron las comidas gratis de hoy';
+
+  @override
+  String get careFeedYum => '¡Ñam ñam, qué rico!';
+
+  @override
+  String get careFeedThanks => '¡Estoy lleno, gracias amigo!';
+
+  @override
+  String get careFoodFruit => 'Frutas y verduras';
+
+  @override
+  String get careFoodMeal => 'Comidas';
+
+  @override
+  String get careFoodSweet => 'Dulces';
+
+  @override
+  String get careFoodDrink => 'Bebidas';
+
+  @override
+  String get careBathTitleDirty => 'Zibo se ensució, vamos a bañarlo';
+
+  @override
+  String get careBathTitleClean => '¡Zibo está limpísimo!';
+
+  @override
+  String get careBathStep1 => 'Pasa el jabón por Zibo para hacer espuma';
+
+  @override
+  String get careBathStep2 => 'Abre la ducha para enjuagar';
+
+  @override
+  String get careBathStep3 => 'Sécalo con la toalla';
+
+  @override
+  String get careBathShower => 'Ducha';
+
+  @override
+  String get careBathTowel => 'Secar';
+
+  @override
+  String get careBathSoap => 'Jabón';
+
+  @override
+  String get careBedTired => 'Zibo está muy cansado';
+
+  @override
+  String get careBedSleeping => 'Zibo está durmiendo, shh…';
+
+  @override
+  String get careBedFull =>
+      '¡Energía llena! Enciende la luz para despertar a Zibo';
+
+  @override
+  String get careBedRested => '¡Zibo descansó y está listo!';
+
+  @override
+  String get careBedSleep => 'Apaga la luz, a dormir';
+
+  @override
+  String get careBedWake => 'Enciende la luz, despierta';
+
+  @override
+  String get careBedNote =>
+      'El sueño es en tiempo real: la energía se llena aunque cierres la app.';
+
+  @override
+  String get carePlayBored => 'Zibo está aburrido, juguemos juntos';
+
+  @override
+  String get carePlaySome => 'Un juego más haría muy feliz a Zibo';
+
+  @override
+  String get carePlayHappy => '¡Zibo está feliz!';
+
+  @override
+  String get carePlayHint =>
+      'Elige un juego; Zibo se alegra cuando lo terminas.';
+
+  @override
+  String get settingsOpenSourceLicenses => 'Licencias de código abierto';
 }

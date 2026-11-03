@@ -93,6 +93,10 @@ class HomeConfig {
     return (price * (1 - discount)).round().clamp(1, price);
   }
 
+  /// Yemek fiyatı: abonelik indirimi YOK (Pro avantajı daha çok ücretsiz
+  /// yemek), yalnızca uzaktan ezme (`food:<id>`).
+  int foodPrice(String id, int base) => priceOverrides['food:$id'] ?? base;
+
   factory HomeConfig.fromJson(Map<String, dynamic>? json) {
     if (json == null) return defaults;
     double num0(String key, double fallback) => (json[key] as num?)?.toDouble() ?? fallback;

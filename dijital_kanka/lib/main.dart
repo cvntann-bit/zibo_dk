@@ -15,6 +15,7 @@ import 'package:stack_appodeal_flutter/stack_appodeal_flutter.dart';
 
 import 'config/appodeal_config.dart';
 import 'data/app_themes.dart';
+import 'data/third_party_licenses.dart';
 import 'l10n/app_localizations.dart';
 import 'providers/ad_free_provider.dart';
 import 'providers/app_streak_provider.dart';
@@ -302,6 +303,7 @@ bool _isBenignFirestoreStreamTeardownError(Object error) {
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  registerThirdPartyLicenses();
   // "Zibo ADS" tanıtım sıklığının en son gösterim zamanını (kalıcı, oturumlar
   // arası) belleğe yükler — bkz. ad_free_promo_trigger.dart. `runApp`'tan
   // ÖNCE tamamlanması gerekiyor, aksi halde ilk Mağaza ziyaretinde henüz

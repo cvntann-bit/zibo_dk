@@ -2893,4 +2893,118 @@ class AppLocalizationsTr extends AppLocalizations {
   String worldNeedPercent(String need, int percent) {
     return '$need %$percent';
   }
+
+  @override
+  String get careModeCare => 'Bakım';
+
+  @override
+  String get careModeDecor => 'Dekor';
+
+  @override
+  String get careFeedTitleHungry => 'Zibo\'nun karnı zil çalıyor';
+
+  @override
+  String get careFeedTitleSome => 'Zibo biraz daha yiyebilir';
+
+  @override
+  String get careFeedTitleFull => 'Zibo tok ve mutlu';
+
+  @override
+  String get careFeedHint =>
+      'Yemeğe dokun, tabağa gelsin; tabaktan Zibo\'nun ağzına sürükle.';
+
+  @override
+  String get careFeedFree => 'Ücretsiz';
+
+  @override
+  String get careFeedTomorrow => 'Yarın';
+
+  @override
+  String get careFeedPlateFirst => 'Önce tabaktakini yedir';
+
+  @override
+  String get careFeedFullMsg => 'Zibo tok, sonra yine gel';
+
+  @override
+  String get careFeedNoFree => 'Bugünkü ücretsiz yemekler bitti';
+
+  @override
+  String get careFeedYum => 'Ham ham, çok güzelmiş!';
+
+  @override
+  String get careFeedThanks => 'Doydum, teşekkürler kanka!';
+
+  @override
+  String get careFoodFruit => 'Meyve ve sebze';
+
+  @override
+  String get careFoodMeal => 'Yemek';
+
+  @override
+  String get careFoodSweet => 'Tatlı';
+
+  @override
+  String get careFoodDrink => 'İçecek';
+
+  @override
+  String get careBathTitleDirty => 'Zibo kirlenmiş, yıkayalım';
+
+  @override
+  String get careBathTitleClean => 'Zibo tertemiz!';
+
+  @override
+  String get careBathStep1 => 'Sabunu Zibo\'nun üstünde gezdir, köpürt';
+
+  @override
+  String get careBathStep2 => 'Duşu aç, köpükleri durula';
+
+  @override
+  String get careBathStep3 => 'Havluyla kurula';
+
+  @override
+  String get careBathShower => 'Duşu aç';
+
+  @override
+  String get careBathTowel => 'Havluyla kurula';
+
+  @override
+  String get careBathSoap => 'Sabun';
+
+  @override
+  String get careBedTired => 'Zibo çok yorgun';
+
+  @override
+  String get careBedSleeping => 'Zibo uyuyor, şşş…';
+
+  @override
+  String get careBedFull => 'Enerji doldu! Işığı açıp uyandır';
+
+  @override
+  String get careBedRested => 'Zibo dinlendi, güne hazır!';
+
+  @override
+  String get careBedSleep => 'Işığı kapat, uyut';
+
+  @override
+  String get careBedWake => 'Işığı aç, uyandır';
+
+  @override
+  String get careBedNote =>
+      'Uyku gerçek zamanlı: uygulamayı kapatsan da enerji dolar.';
+
+  @override
+  String get carePlayBored => 'Zibo sıkıldı, birlikte oynayalım';
+
+  @override
+  String get carePlaySome => 'Bir oyun daha Zibo\'yu çok sevindirir';
+
+  @override
+  String get carePlayHappy => 'Zibo çok mutlu!';
+
+  @override
+  String get carePlayHint =>
+      'Bir oyun seç; oyunu bitirince Zibo\'nun neşesi artar.';
+
+  @override
+  String get settingsOpenSourceLicenses => 'Açık kaynak lisansları';
 }

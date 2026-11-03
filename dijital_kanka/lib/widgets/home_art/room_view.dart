@@ -8,13 +8,16 @@ import 'room_art.dart';
 /// Faz 2). 900×1200 birimlik taslak sahnesi verilen genişliğe ölçeklenir.
 /// Sahneyi her build'de yeniden üretmemek için [RoomSceneCache] kullan.
 class RoomView extends StatelessWidget {
-  const RoomView({super.key, required this.scene, this.semanticLabel, this.showZibo = true});
+  const RoomView({super.key, required this.scene, this.semanticLabel, this.showZibo = true, this.ziboLift = 0});
 
   final RoomScene scene;
   final String? semanticLabel;
 
   /// Giriş ekranının ev kesitinde Zibo yalnızca bir odada görünür.
   final bool showZibo;
+
+  /// Zibo'yu sahne biriminde yukarı kaldırır (yemek yerken zıplama).
+  final double ziboLift;
 
   static const double sceneWidth = 900;
   static const double sceneHeight = 1200;
@@ -39,7 +42,7 @@ class RoomView extends StatelessWidget {
                   if (showZibo)
                     Positioned(
                       left: zibo.x * s,
-                      top: zibo.y * s,
+                      top: (zibo.y - ziboLift) * s,
                       width: zibo.w * s,
                       height: zibo.h * s,
                       child: Image.asset('assets/images/home/zibo_${zibo.pose}.webp', fit: BoxFit.contain),
@@ -68,8 +71,10 @@ class RoomSceneCache {
     String pose = 'happy',
     String soapColor = '#FF9FBF',
     bool dark = false,
+    String? foamFill,
+    String foamStroke = '#CDEBF7',
   }) {
-    final key = [room.id, care, pose, soapColor, dark, for (final e in items.entries) '${e.key}=${e.value.id}'].join('|');
+    final key = [room.id, care, pose, soapColor, dark, foamFill, foamStroke, for (final e in items.entries) '${e.key}=${e.value.id}'].join('|');
     if (key != _key || _scene == null) {
       _key = key;
       _scene = RoomArt.build(
@@ -79,6 +84,8 @@ class RoomSceneCache {
         pose: pose,
         soapColor: soapColor,
         dark: dark,
+        foamFill: foamFill,
+        foamStroke: foamStroke,
       );
     }
     return _scene!;

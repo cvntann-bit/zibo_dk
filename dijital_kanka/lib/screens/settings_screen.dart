@@ -455,6 +455,12 @@ class SettingsScreen extends StatelessWidget {
                       ),
                     ),
                   ),
+                  _groupDivider(context),
+                  _SettingsRow(
+                    iconContent: const Text('📜', style: TextStyle(fontSize: 15, height: 1)),
+                    title: l10n.settingsOpenSourceLicenses,
+                    onTap: () => showLicensePage(context: context, applicationName: l10n.appTitle),
+                  ),
                 ],
               ),
 

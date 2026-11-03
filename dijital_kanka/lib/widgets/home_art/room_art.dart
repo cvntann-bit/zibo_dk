@@ -51,11 +51,13 @@ class RoomArt {
     String pose = 'happy',
     String soapColor = '#FF9FBF',
     bool dark = false,
+    String? foamFill,
+    String foamStroke = '#CDEBF7',
   }) {
     final art = RoomArt._(pick);
     return switch (room) {
       HomeRoom.kitchen => art._kitchen(care, pose),
-      HomeRoom.bath => art._bath(care, pose, soapColor),
+      HomeRoom.bath => art._bath(care, pose, soapColor, foamFill, foamStroke),
       HomeRoom.bedroom => art._bedroom(care, pose, dark),
       HomeRoom.living => art._living(care, pose),
     };
@@ -137,7 +139,10 @@ class RoomArt {
     return _scene(back, front, feeding ? ZiboSpot(pose, 250, 420, 520) : ZiboSpot(pose, 104, 620, 500));
   }
 
-  RoomScene _bath(bool caring, String pose, String soapColor) {
+  /// Gökkuşağı sabunun köpük renkleri.
+  static const rainbow = ['#FFB3BA', '#FFDFBA', '#FFFFBA', '#BAFFC9', '#BAE1FF', '#E2C6FF'];
+
+  RoomScene _bath(bool caring, String pose, String soapColor, String? foamFill, String foamStroke) {
     final dusC = _c('dus');
     final head = k.grad(SvgKit.mix(dusC, .45), SvgKit.mix(dusC, -.25));
     final toy = _style('oyuncak');
@@ -168,7 +173,16 @@ class RoomArt {
         '${k.shadow(270, 842, 230)}${k.shadow(720, 842, 90)}${_draw('lavabo', 620, 540)}$soap'
         '${_draw('paspas', 410, 1052)}$plant'
         '${caring ? '' : '$tub$duck${k.softEllipse(610, 1112, 150, 20, .28)}'}';
-    return _scene(back, caring ? '$tub$duck' : '', caring ? ZiboSpot(pose, 120, 330, 430) : ZiboSpot(pose, 450, 640, 470));
+    // Küvetin kenarında köpük (bakımda, yıkanırken). foamFill 'rainbow' = gökkuşağı.
+    final foamTop = caring && foamFill != null
+        ? List.generate(
+            11,
+            (i) =>
+                '<circle cx="${70 + i * 40}" cy="${592 - (i % 2) * 10}" r="${26 + (i % 3) * 6}" '
+                'fill="${foamFill == 'rainbow' ? rainbow[i % 6] : foamFill}" stroke="$foamStroke" stroke-width="3"/>',
+          ).join()
+        : '';
+    return _scene(back, caring ? '$tub$foamTop$duck' : '', caring ? ZiboSpot(pose, 120, 330, 430) : ZiboSpot(pose, 450, 640, 470));
   }
 
   RoomScene _bedroom(bool caring, String pose, bool dark) {

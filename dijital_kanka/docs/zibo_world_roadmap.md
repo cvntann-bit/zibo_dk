@@ -89,6 +89,15 @@ Taslaklar (birebir hedef görünüm):
 - **Ortak:** parçacık sistemi (`Ticker` + `CustomPainter`), ses efektleri (yemek, köpük, duş, uyku — `SoundEffectsService`, yeni ses dosyaları), hafif titreşim, analytics olayları.
 - **Rozetler (öneri, `add-badge` becerisiyle):** ilk besleme, 7 gün bakım, "Şef Zibo", "Mis gibi", "Uykucu".
 - **Kontrol noktası (APK):** dört döngü baştan sona, ZC doğru düşüyor, uygulama kapatılıp açılınca durum korunuyor.
+- **Uygulandı (2026-11-03):** `HomeRoomScreen` artık **Bakım / Dekor** sekmeli; sahne üstte sabit (sürükleme listeyi kaydırmaz), panel altta kayar. Efektler `lib/widgets/home_art/care_fx.dart` (taslağın efekt tuvali: kir, köpük, baloncuk, damla, parıltı, kırıntı, kalp, Z, ★ yazısı), kare başına `Ticker` — efekt yokken durur.
+  - **4a Besle:** 55 Fluent yemek görseli `assets/images/home/food/` (~250 KB) + simit/churros kodla. Gruplar, fiyatsız yemekler günlük ücretsiz haktan düşer (`HomeNeedsProvider.useFreeFood`), fiyatlı olanlar `CoinProvider.spendOnFood` (abonelik indirimi yok, yalnız `food:<id>` uzaktan ezme). Tabaktan ağza sürükle ya da tabaktakine dokun → tokluk + çiğneme zıplaması + kırıntı + kalpler.
+  - **4b Banyo:** kir lekesi sayısı temizlik eksiğine göre (3–12); sabun yalnız Zibo'nun gövdesinde köpürür; lekeler %75 silinince duş açılır (110 kare), sonra havlu → temizlik 100 + parıltı. Küvet kenarında köpük (sabun türünün rengi, gökkuşağı dahil). Sabun türü seçici: sahip olunmayan `spendOnSoap` ile bir kez alınır (Pro/Pro+ indirimli).
+  - **4c Uyut:** gerçek zamanlı (`startSleep`/`wake`); oda kararır, pencerede ay ve yıldız, abajur parlar, Z'ler yükselir; enerji göstergesi saniyede bir tazelenir.
+  - **4d Oyna:** salonda 7 oyun (uzaktan kapalı olan soluk); oyun bitip ★ kazanılınca mutluluk +25 ve "+N ★" yazısı.
+  - Pozlar: mutfak (yerken/tok mutlu, <50 somurtkan, değilse bekleyen), banyo (temiz mutlu), yatak (uyurken bekleyen, dolunca mutlu), salon (oynayınca mutlu).
+  - Lisans: Ayarlar → "Açık kaynak lisansları" (Flutter `LicensePage`), Fluent Emoji MIT metni `lib/data/third_party_licenses.dart`.
+  - Testler: `test/home_room_screen_test.dart` (besle, yıka, uyut, dekor).
+  - **Ertelenenler (düzeltme listesine):** yeni Zibo pozları (küvette, uyuyan, yiyen — kullanıcı), ses efektleri, ödüllü reklamla +1 yemek, rozetler, analytics olayları, yemek/eşya adlarının EN/ES çevirisi.
 
 ## Faz 5 — Dekor mağazası
 - Oda başına kategoriler (mutfak 13, banyo 14 — sabun şekli dahil, yatak 12, salon 13; toplam 52 kategori, 279 eşya), modeller ve renkler `home_catalog.dart`'tan.

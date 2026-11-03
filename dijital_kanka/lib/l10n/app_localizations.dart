@@ -5151,6 +5151,228 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'{need} %{percent}'**
   String worldNeedPercent(String need, int percent);
+
+  /// Oda ekranında bakım modu sekmesi
+  ///
+  /// In tr, this message translates to:
+  /// **'Bakım'**
+  String get careModeCare;
+
+  /// Oda ekranında dekor modu sekmesi
+  ///
+  /// In tr, this message translates to:
+  /// **'Dekor'**
+  String get careModeDecor;
+
+  /// Mutfak bakımı başlığı: tokluk düşük
+  ///
+  /// In tr, this message translates to:
+  /// **'Zibo\'nun karnı zil çalıyor'**
+  String get careFeedTitleHungry;
+
+  /// Mutfak bakımı başlığı: tokluk orta
+  ///
+  /// In tr, this message translates to:
+  /// **'Zibo biraz daha yiyebilir'**
+  String get careFeedTitleSome;
+
+  /// Mutfak bakımı başlığı: tok
+  ///
+  /// In tr, this message translates to:
+  /// **'Zibo tok ve mutlu'**
+  String get careFeedTitleFull;
+
+  /// Mutfak bakımı ipucu
+  ///
+  /// In tr, this message translates to:
+  /// **'Yemeğe dokun, tabağa gelsin; tabaktan Zibo\'nun ağzına sürükle.'**
+  String get careFeedHint;
+
+  /// Yemek kartında ücretsiz etiketi
+  ///
+  /// In tr, this message translates to:
+  /// **'Ücretsiz'**
+  String get careFeedFree;
+
+  /// Ücretsiz hak bitince yemek kartında
+  ///
+  /// In tr, this message translates to:
+  /// **'Yarın'**
+  String get careFeedTomorrow;
+
+  /// Tabakta yemek varken yeni yemek seçilince
+  ///
+  /// In tr, this message translates to:
+  /// **'Önce tabaktakini yedir'**
+  String get careFeedPlateFirst;
+
+  /// Tokken yemek seçilince
+  ///
+  /// In tr, this message translates to:
+  /// **'Zibo tok, sonra yine gel'**
+  String get careFeedFullMsg;
+
+  /// Ücretsiz hak bitince
+  ///
+  /// In tr, this message translates to:
+  /// **'Bugünkü ücretsiz yemekler bitti'**
+  String get careFeedNoFree;
+
+  /// Zibo yemek yiyince
+  ///
+  /// In tr, this message translates to:
+  /// **'Ham ham, çok güzelmiş!'**
+  String get careFeedYum;
+
+  /// Zibo doyunca
+  ///
+  /// In tr, this message translates to:
+  /// **'Doydum, teşekkürler kanka!'**
+  String get careFeedThanks;
+
+  /// Yemek grubu
+  ///
+  /// In tr, this message translates to:
+  /// **'Meyve ve sebze'**
+  String get careFoodFruit;
+
+  /// Yemek grubu
+  ///
+  /// In tr, this message translates to:
+  /// **'Yemek'**
+  String get careFoodMeal;
+
+  /// Yemek grubu
+  ///
+  /// In tr, this message translates to:
+  /// **'Tatlı'**
+  String get careFoodSweet;
+
+  /// Yemek grubu
+  ///
+  /// In tr, this message translates to:
+  /// **'İçecek'**
+  String get careFoodDrink;
+
+  /// Banyo bakımı başlığı: kirli
+  ///
+  /// In tr, this message translates to:
+  /// **'Zibo kirlenmiş, yıkayalım'**
+  String get careBathTitleDirty;
+
+  /// Banyo bakımı başlığı: temiz
+  ///
+  /// In tr, this message translates to:
+  /// **'Zibo tertemiz!'**
+  String get careBathTitleClean;
+
+  /// Banyo adımı 1
+  ///
+  /// In tr, this message translates to:
+  /// **'Sabunu Zibo\'nun üstünde gezdir, köpürt'**
+  String get careBathStep1;
+
+  /// Banyo adımı 2
+  ///
+  /// In tr, this message translates to:
+  /// **'Duşu aç, köpükleri durula'**
+  String get careBathStep2;
+
+  /// Banyo adımı 3
+  ///
+  /// In tr, this message translates to:
+  /// **'Havluyla kurula'**
+  String get careBathStep3;
+
+  /// Banyo düğmesi
+  ///
+  /// In tr, this message translates to:
+  /// **'Duşu aç'**
+  String get careBathShower;
+
+  /// Banyo düğmesi
+  ///
+  /// In tr, this message translates to:
+  /// **'Havluyla kurula'**
+  String get careBathTowel;
+
+  /// Banyoda sabun seçici başlığı
+  ///
+  /// In tr, this message translates to:
+  /// **'Sabun'**
+  String get careBathSoap;
+
+  /// Yatak odası bakımı başlığı: yorgun
+  ///
+  /// In tr, this message translates to:
+  /// **'Zibo çok yorgun'**
+  String get careBedTired;
+
+  /// Yatak odası bakımı başlığı: uyuyor
+  ///
+  /// In tr, this message translates to:
+  /// **'Zibo uyuyor, şşş…'**
+  String get careBedSleeping;
+
+  /// Uyurken enerji dolunca
+  ///
+  /// In tr, this message translates to:
+  /// **'Enerji doldu! Işığı açıp uyandır'**
+  String get careBedFull;
+
+  /// Yatak odası bakımı başlığı: dinlenmiş
+  ///
+  /// In tr, this message translates to:
+  /// **'Zibo dinlendi, güne hazır!'**
+  String get careBedRested;
+
+  /// Uyutma düğmesi
+  ///
+  /// In tr, this message translates to:
+  /// **'Işığı kapat, uyut'**
+  String get careBedSleep;
+
+  /// Uyandırma düğmesi
+  ///
+  /// In tr, this message translates to:
+  /// **'Işığı aç, uyandır'**
+  String get careBedWake;
+
+  /// Yatak odası bakım notu
+  ///
+  /// In tr, this message translates to:
+  /// **'Uyku gerçek zamanlı: uygulamayı kapatsan da enerji dolar.'**
+  String get careBedNote;
+
+  /// Salon bakımı başlığı: sıkılmış
+  ///
+  /// In tr, this message translates to:
+  /// **'Zibo sıkıldı, birlikte oynayalım'**
+  String get carePlayBored;
+
+  /// Salon bakımı başlığı: orta
+  ///
+  /// In tr, this message translates to:
+  /// **'Bir oyun daha Zibo\'yu çok sevindirir'**
+  String get carePlaySome;
+
+  /// Salon bakımı başlığı: mutlu
+  ///
+  /// In tr, this message translates to:
+  /// **'Zibo çok mutlu!'**
+  String get carePlayHappy;
+
+  /// Salon bakımı ipucu
+  ///
+  /// In tr, this message translates to:
+  /// **'Bir oyun seç; oyunu bitirince Zibo\'nun neşesi artar.'**
+  String get carePlayHint;
+
+  /// Ayarlar: üçüncü taraf lisans sayfası (Fluent Emoji MIT vb.)
+  ///
+  /// In tr, this message translates to:
+  /// **'Açık kaynak lisansları'**
+  String get settingsOpenSourceLicenses;
 }
 
 class _AppLocalizationsDelegate

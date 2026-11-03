@@ -3962,5 +3962,153 @@
         "type": "int"
       }
     }
+  },
+  "careModeCare": "Bakım",
+  "@careModeCare": {
+    "description": "Oda ekranında bakım modu sekmesi"
+  },
+  "careModeDecor": "Dekor",
+  "@careModeDecor": {
+    "description": "Oda ekranında dekor modu sekmesi"
+  },
+  "careFeedTitleHungry": "Zibo'nun karnı zil çalıyor",
+  "@careFeedTitleHungry": {
+    "description": "Mutfak bakımı başlığı: tokluk düşük"
+  },
+  "careFeedTitleSome": "Zibo biraz daha yiyebilir",
+  "@careFeedTitleSome": {
+    "description": "Mutfak bakımı başlığı: tokluk orta"
+  },
+  "careFeedTitleFull": "Zibo tok ve mutlu",
+  "@careFeedTitleFull": {
+    "description": "Mutfak bakımı başlığı: tok"
+  },
+  "careFeedHint": "Yemeğe dokun, tabağa gelsin; tabaktan Zibo'nun ağzına sürükle.",
+  "@careFeedHint": {
+    "description": "Mutfak bakımı ipucu"
+  },
+  "careFeedFree": "Ücretsiz",
+  "@careFeedFree": {
+    "description": "Yemek kartında ücretsiz etiketi"
+  },
+  "careFeedTomorrow": "Yarın",
+  "@careFeedTomorrow": {
+    "description": "Ücretsiz hak bitince yemek kartında"
+  },
+  "careFeedPlateFirst": "Önce tabaktakini yedir",
+  "@careFeedPlateFirst": {
+    "description": "Tabakta yemek varken yeni yemek seçilince"
+  },
+  "careFeedFullMsg": "Zibo tok, sonra yine gel",
+  "@careFeedFullMsg": {
+    "description": "Tokken yemek seçilince"
+  },
+  "careFeedNoFree": "Bugünkü ücretsiz yemekler bitti",
+  "@careFeedNoFree": {
+    "description": "Ücretsiz hak bitince"
+  },
+  "careFeedYum": "Ham ham, çok güzelmiş!",
+  "@careFeedYum": {
+    "description": "Zibo yemek yiyince"
+  },
+  "careFeedThanks": "Doydum, teşekkürler kanka!",
+  "@careFeedThanks": {
+    "description": "Zibo doyunca"
+  },
+  "careFoodFruit": "Meyve ve sebze",
+  "@careFoodFruit": {
+    "description": "Yemek grubu"
+  },
+  "careFoodMeal": "Yemek",
+  "@careFoodMeal": {
+    "description": "Yemek grubu"
+  },
+  "careFoodSweet": "Tatlı",
+  "@careFoodSweet": {
+    "description": "Yemek grubu"
+  },
+  "careFoodDrink": "İçecek",
+  "@careFoodDrink": {
+    "description": "Yemek grubu"
+  },
+  "careBathTitleDirty": "Zibo kirlenmiş, yıkayalım",
+  "@careBathTitleDirty": {
+    "description": "Banyo bakımı başlığı: kirli"
+  },
+  "careBathTitleClean": "Zibo tertemiz!",
+  "@careBathTitleClean": {
+    "description": "Banyo bakımı başlığı: temiz"
+  },
+  "careBathStep1": "Sabunu Zibo'nun üstünde gezdir, köpürt",
+  "@careBathStep1": {
+    "description": "Banyo adımı 1"
+  },
+  "careBathStep2": "Duşu aç, köpükleri durula",
+  "@careBathStep2": {
+    "description": "Banyo adımı 2"
+  },
+  "careBathStep3": "Havluyla kurula",
+  "@careBathStep3": {
+    "description": "Banyo adımı 3"
+  },
+  "careBathShower": "Duşu aç",
+  "@careBathShower": {
+    "description": "Banyo düğmesi"
+  },
+  "careBathTowel": "Havluyla kurula",
+  "@careBathTowel": {
+    "description": "Banyo düğmesi"
+  },
+  "careBathSoap": "Sabun",
+  "@careBathSoap": {
+    "description": "Banyoda sabun seçici başlığı"
+  },
+  "careBedTired": "Zibo çok yorgun",
+  "@careBedTired": {
+    "description": "Yatak odası bakımı başlığı: yorgun"
+  },
+  "careBedSleeping": "Zibo uyuyor, şşş…",
+  "@careBedSleeping": {
+    "description": "Yatak odası bakımı başlığı: uyuyor"
+  },
+  "careBedFull": "Enerji doldu! Işığı açıp uyandır",
+  "@careBedFull": {
+    "description": "Uyurken enerji dolunca"
+  },
+  "careBedRested": "Zibo dinlendi, güne hazır!",
+  "@careBedRested": {
+    "description": "Yatak odası bakımı başlığı: dinlenmiş"
+  },
+  "careBedSleep": "Işığı kapat, uyut",
+  "@careBedSleep": {
+    "description": "Uyutma düğmesi"
+  },
+  "careBedWake": "Işığı aç, uyandır",
+  "@careBedWake": {
+    "description": "Uyandırma düğmesi"
+  },
+  "careBedNote": "Uyku gerçek zamanlı: uygulamayı kapatsan da enerji dolar.",
+  "@careBedNote": {
+    "description": "Yatak odası bakım notu"
+  },
+  "carePlayBored": "Zibo sıkıldı, birlikte oynayalım",
+  "@carePlayBored": {
+    "description": "Salon bakımı başlığı: sıkılmış"
+  },
+  "carePlaySome": "Bir oyun daha Zibo'yu çok sevindirir",
+  "@carePlaySome": {
+    "description": "Salon bakımı başlığı: orta"
+  },
+  "carePlayHappy": "Zibo çok mutlu!",
+  "@carePlayHappy": {
+    "description": "Salon bakımı başlığı: mutlu"
+  },
+  "carePlayHint": "Bir oyun seç; oyunu bitirince Zibo'nun neşesi artar.",
+  "@carePlayHint": {
+    "description": "Salon bakımı ipucu"
+  },
+  "settingsOpenSourceLicenses": "Açık kaynak lisansları",
+  "@settingsOpenSourceLicenses": {
+    "description": "Ayarlar: üçüncü taraf lisans sayfası (Fluent Emoji MIT vb.)"
   }
 }
