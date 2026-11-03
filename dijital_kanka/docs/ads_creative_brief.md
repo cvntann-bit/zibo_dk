@@ -98,4 +98,10 @@ Henüz üretilmedi — kullanıcı onayı bekleniyor. Hat: `promo_video/render.p
   ödeme**. Hangisi olduğu Faturalandırma > Özet / İşlemler'den bakılmalı. Taksit planı bulunamadı; yeni hesap açmak
   önerilmiyor (o da duraklatılabilir). Duraklatıldıkça harcama yok ama **₺25.000 Talep Yaratma kredisi kullanılamıyor,
   25 Ara 2026'da sona eriyor.**
+- **Faturalandırma kontrolü (2026-11-03, salt okunur):** borç YOK — Özet "Bir krediniz var ₺7,27", "Yaklaşan ödeme yok",
+  son ödeme 2 Kas ₺411 (manuel, Mastercard 8072). Kasım net maliyet ₺403,73 / ödemeler ₺813,86; Ekim ₺5.788,23 / ₺6.355,55;
+  Eylül ₺1.734,84 / ₺759,14. Ödeme görevi paneli: **"Ödenecek tutar ₺15.000,00", sabit (değiştirilemiyor)**, Mastercard 8072
+  seçili → sistemin belirlediği tek seferlik ödeme, borç değil. Ödeme yapılmadı.
+- Promosyon: ₺25.000 kredinin **₺2.623,93'ü harcandı (%10,5), ~₺22.376 kaldı**, geçerlilik 25 Ara 2026.
+- Google iade sayfaları: hesaba yatan ve harcanmayan para hesap kapatılırsa ödeme yöntemine iade edilir; promosyon kredisi iade edilmez.
 - Durum: kullanıcıya seçenekler sunuldu, karar bekleniyor.
