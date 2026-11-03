@@ -217,5 +217,5 @@ Adımlar:
 ## Etkinlik sekmesi (2026-11-03, Zibo Dünyası Faz 6)
 `zibo_admin/lib/screens/events_screen.dart` → Firestore `events/{id}` (Zibo `ZiboEvent` şekli). Takvim etkinliği oluştur
 (TR/EN/ES başlık, başlangıç, gün sayısı, günlük ZC, son gün ödülü: Yılbaşı çamı / Kardan adam / Hediye kutuları / ZC,
-telafi), listede aç/kapat. Her yazım `adminLog` ile aynı batch'te. Kural `events/{id}` yazma `isAdmin()` — Console'a
+telafi), listede aç/kapat. Her yazım `adminLog` ile aynı batch'te. Kural `events/{id}` yazma `isAdmin()` — Console'a yayınlandı (2026-11-03);
 yayınlanması gerekiyor. Zibo tarafı 1.18.0 ile gelir.

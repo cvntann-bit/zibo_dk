@@ -127,7 +127,7 @@ Taslaklar (birebir hedef görünüm):
   - **Yılbaşı eşyaları (yalnız etkinlikten, mağazada satılmaz, `HomeItem.eventOnly`):** salon köşe `cam` (Yılbaşı çamı), `kardan` (Kardan adam), salon puf `hediye` (Hediye kutuları) — kodla çizim, `tool/generate_home_catalog.py` EVENT_ITEMS.
   - Ekran `lib/screens/events_screen.dart`: süren takvim (gün kutuları: açılabilir 🎁, açılmış ödül, kilitli 🔒, bugün kırmızı çerçeve), yaklaşanlar listesi, boş durum. Ödül penceresi (ZC ya da eşya küçük resmi).
   - Giriş ekranı: Etkinlikler kapısı ekranı açar + açılmayı bekleyen kutu rozeti; süren etkinlik varsa evin altında lacivert etkinlik kartı.
-  - `firestore.rules`: `events/{id}` okuma giriş yapmış herkes, yazma `isAdmin()` — **Console'a yayınlanmadı (kullanıcı onayı bekliyor)**.
+  - `firestore.rules`: `events/{id}` okuma giriş yapmış herkes, yazma `isAdmin()` — **Console'a yayınlandı 2026-11-03**.
   - **Yönetici uygulaması:** yeni "Etkinlik" sekmesi (`zibo_admin/lib/screens/events_screen.dart`): TR/EN/ES başlık + açıklama, başlangıç tarihi, gün sayısı (3–31), günlük ZC, son gün ödülü (Yılbaşı eşyalarından biri ya da ZC), telafi anahtarı, onay penceresinde kişi başı toplam ZC; liste + aç/kapat anahtarı; her yazım `adminLog` ile aynı batch'te.
   - Testler: `test/events_test.dart` (model, aktif/yaklaşan, tek açma, telafi, bitiş, Firestore filtresi, ekranda ZC + eşya ödülü).
 
