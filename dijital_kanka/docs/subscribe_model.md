@@ -94,6 +94,14 @@ Kullanıcı: "pro avantajı kesinlikle olsun". Aşağıdaki liste öneri, kesinl
 | Bakım ödüllü reklamı (+1 ikram vb.) | reklamsız | reklamsız |
 Zarar etmeme: indirim ve ücretsiz yemek `unit_economics.md` ile hesaplanır; abonelik geliri bu kayıpları karşılamalı. Değerler `config/home` ile uzaktan değişebilir olmalı.
 
+**Uygulama durumu (2026-11-03, 1.18.0 için kodda, yayında değil):** değerler `HomeConfig` varsayılanları + `config/home` ezmesi.
+- Ücretsiz yemek 3/5/7 — `HomeNeedsProvider.freeFoodsLeft`. Yemeklerde abonelik indirimi YOK.
+- Dekor + sabun indirimi %10/%20 — `HomeConfig.priceFor`; mağaza kartında indirimli fiyat görünür.
+- Pro'ya özel eşya ALTYAPISI hazır: `config/home.proOnly: ["oda:kategori:eşya"]` → kartta 👑, Pro olmayan alamaz (satın alınmış eşya abonelik bitince de kalır). Katalogda henüz Pro'ya özel seri YOK (çizilecek, kullanıcı onayıyla).
+- Sezonluk/sınırlı eşya altyapısı: `config/home.limited: {"oda:kategori:eşya": {from, to}}` → kartta ⏳, aralık dışında mağazada görünmez.
+- Uyku hızı 1,5×/2× ve Pro+ yavaş düşüş — `HomeNeedsProvider`.
+- Bakım ödüllü reklamı henüz yok (düzeltme listesinde). Paywall'a perk metinleri EKLENMEDİ (liste kesinleşince).
+
 ## Paywall ekranı (`lib/screens/paywall_screen.dart`)
 
 **2026-09-23'te "sticker" görsel diline göre komple yeniden tasarlandı**

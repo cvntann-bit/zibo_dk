@@ -16,7 +16,9 @@ import '../providers/home_config_provider.dart';
 import '../providers/home_decor_provider.dart';
 import '../providers/home_needs_provider.dart';
 import '../providers/subscription_provider.dart';
+import '../data/rarity_colors.dart';
 import '../widgets/home_art/care_fx.dart';
+import '../widgets/home_art/item_thumb.dart';
 import '../widgets/home_art/room_art.dart';
 import '../widgets/home_art/room_view.dart';
 import '../widgets/home_art/svg_kit.dart';
@@ -299,6 +301,7 @@ class _HomeRoomScreenState extends State<HomeRoomScreen> with SingleTickerProvid
                   onSelectionChanged: (v) => setState(() => _care = v.first),
                 ),
               ),
+              if (!_care) _shopBar(l10n, decor),
               Expanded(
                 child: ListView(
                   padding: const EdgeInsets.fromLTRB(16, 10, 16, 24),
@@ -421,6 +424,7 @@ class _HomeRoomScreenState extends State<HomeRoomScreen> with SingleTickerProvid
             alignment: Alignment.centerLeft,
             child: FractionallySizedBox(
               widthFactor: (percent / 100).clamp(0.0, 1.0),
+              heightFactor: 1,
               child: DecoratedBox(decoration: BoxDecoration(gradient: LinearGradient(colors: colors))),
             ),
           ),
@@ -674,8 +678,114 @@ class _HomeRoomScreenState extends State<HomeRoomScreen> with SingleTickerProvid
     ];
   }
 
+  // --- Dekor mağazası (Faz 5) ------------------------------------------------
+
+  String _key(String category, String itemId) => HomeDecorProvider.key(widget.room, category, itemId);
+
+  /// Denenen ama sahip olunmayan eşyalar ve (abonelik indirimli) fiyatları.
+  List<(String, HomeItem, int)> _cart(HomeDecorProvider decor) {
+    final config = context.read<HomeConfigProvider>().config;
+    final tier = context.read<SubscriptionProvider>().tier;
+    final def = HomeDecorProvider.roomDef(widget.room);
+    final cart = <(String, HomeItem, int)>[];
+    for (final e in _preview.entries) {
+      final item = def.category(e.key)?.item(e.value);
+      if (item == null || decor.isOwned(widget.room, e.key, e.value)) continue;
+      cart.add((e.key, item, config.priceFor(_key(e.key, e.value), item.price, tier)));
+    }
+    return cart;
+  }
+
+  void _tapItem(HomeDecorProvider decor, HomeCategory category, HomeItem item) {
+    final l10n = AppLocalizations.of(context)!;
+    final key = _key(category.id, item.id);
+    final owned = decor.isOwned(widget.room, category.id, item.id);
+    final config = context.read<HomeConfigProvider>().config;
+    if (!owned && config.isProOnly(key) && !context.read<SubscriptionProvider>().isPro) {
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(content: Text(l10n.shopProOnlyMsg)));
+      return;
+    }
+    setState(() {
+      if (owned) {
+        // Sahip olunan eşya hemen takılır (ücretsiz).
+        decor.equip(widget.room, category.id, item.id);
+        _preview.remove(category.id);
+      } else {
+        _preview[category.id] = item.id;
+      }
+    });
+  }
+
+  void _buyCart(HomeDecorProvider decor) {
+    final l10n = AppLocalizations.of(context)!;
+    final cart = _cart(decor);
+    if (cart.isEmpty) return;
+    final total = cart.fold<int>(0, (n, e) => n + e.$3);
+    final keys = [for (final e in cart) '${e.$1}:${e.$2.id}'].join(',');
+    final ok = context.read<CoinProvider>().spendOnHomeItem(itemKey: '${widget.room.id}:$keys', cost: total);
+    final messenger = ScaffoldMessenger.of(context)..hideCurrentSnackBar();
+    if (!ok) {
+      messenger.showSnackBar(SnackBar(content: Text(l10n.insufficientCoins)));
+      return;
+    }
+    for (final (category, item, _) in cart) {
+      decor.markOwned(widget.room, category, item.id);
+      decor.equip(widget.room, category, item.id);
+    }
+    setState(_preview.clear);
+    messenger.showSnackBar(SnackBar(content: Text(l10n.shopBought)));
+  }
+
+  /// Dekor modunda listenin üstünde sabit duran bakiye + sepet çubuğu (aşağıdaki
+  /// bir eşya denenince de "Odadakileri al" görünür kalsın).
+  Widget _shopBar(AppLocalizations l10n, HomeDecorProvider decor) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final balance = context.watch<CoinProvider>().balance;
+    final cart = _cart(decor);
+    final total = cart.fold<int>(0, (n, e) => n + e.$3);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+      child: Row(
+        children: [
+          Flexible(
+            flex: 2,
+            fit: FlexFit.tight,
+            child: Text(
+              l10n.shopBalance(balance),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(fontWeight: FontWeight.w800, fontSize: 12, color: colorScheme.onSurfaceVariant),
+            ),
+          ),
+          if (cart.isNotEmpty)
+            IconButton(
+              onPressed: () => setState(_preview.clear),
+              tooltip: l10n.shopCancel,
+              icon: const Icon(Icons.undo_rounded),
+            ),
+          Flexible(
+            flex: 3,
+            child: FilledButton(
+              onPressed: cart.isEmpty ? null : () => _buyCart(decor),
+              child: Text(
+                cart.isEmpty ? l10n.shopRoomDone : l10n.shopBuyRoom(total),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   List<Widget> _decorPanel(AppLocalizations l10n, HomeDecorProvider decor, HomeRoomDef def, Map<String, HomeItem> items) {
     final colorScheme = Theme.of(context).colorScheme;
+    final config = context.watch<HomeConfigProvider>().config;
+    final sub = context.watch<SubscriptionProvider>();
+    final now = DateTime.now();
     final category = def.category(_category)!;
     return [
       SizedBox(
@@ -686,41 +796,139 @@ class _HomeRoomScreenState extends State<HomeRoomScreen> with SingleTickerProvid
           separatorBuilder: (_, _) => const SizedBox(width: 8),
           itemBuilder: (context, i) {
             final c = def.categories[i];
+            final trying = _preview.containsKey(c.id) && !decor.isOwned(widget.room, c.id, _preview[c.id]!);
             return ChoiceChip(
-              label: Text(c.nameTr),
+              label: Text(trying ? '${c.nameTr} •' : c.nameTr),
               selected: c.id == _category,
               onSelected: (_) => setState(() => _category = c.id),
             );
           },
         ),
       ),
-      const SizedBox(height: 8),
+      const SizedBox(height: 10),
       Wrap(
         spacing: 8,
         runSpacing: 8,
         children: [
           for (final item in category.items)
-            ChoiceChip(
-              avatar: item.color == null ? null : CircleAvatar(backgroundColor: Color(item.color!), radius: 8),
-              label: Text(item.nameTr),
-              selected: items[category.id]?.id == item.id,
-              onSelected: (_) => setState(() {
-                if (decor.equipped(widget.room, category.id) == item.id) {
-                  _preview.remove(category.id);
-                } else {
-                  _preview[category.id] = item.id;
-                }
-              }),
-            ),
+            if (decor.isOwned(widget.room, category.id, item.id) || config.isOnSale(_key(category.id, item.id), now))
+              _ShopTile(
+                category: category,
+                item: item,
+                selected: items[category.id]?.id == item.id,
+                equipped: decor.equipped(widget.room, category.id) == item.id,
+                owned: decor.isOwned(widget.room, category.id, item.id),
+                price: config.priceFor(_key(category.id, item.id), item.price, sub.tier),
+                proOnly: config.isProOnly(_key(category.id, item.id)),
+                limited: config.isLimited(_key(category.id, item.id)),
+                onTap: () => _tapItem(decor, category, item),
+              ),
         ],
       ),
       const SizedBox(height: 12),
       Text(
-        l10n.worldRoomPreviewHint,
+        l10n.shopHint,
         textAlign: TextAlign.center,
         style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12, color: colorScheme.onSurfaceVariant),
       ),
     ];
+  }
+}
+
+/// Mağazada bir eşya: küçük resim (nadirlik çerçeveli), ad, durum/fiyat.
+class _ShopTile extends StatelessWidget {
+  const _ShopTile({
+    required this.category,
+    required this.item,
+    required this.selected,
+    required this.equipped,
+    required this.owned,
+    required this.price,
+    required this.proOnly,
+    required this.limited,
+    required this.onTap,
+  });
+
+  final HomeCategory category;
+  final HomeItem item;
+  final bool selected;
+  final bool equipped;
+  final bool owned;
+  final int price;
+  final bool proOnly;
+  final bool limited;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final colorScheme = Theme.of(context).colorScheme;
+    final rarity = homeItemRarity(item.price);
+    final style = rarity == null ? null : RarityStyle.of(rarity);
+    final tag = equipped
+        ? l10n.shopEquipped
+        : owned
+        ? l10n.shopOwned
+        : '$price ZC';
+    final badge = [if (proOnly) '👑', if (limited) '⏳'].join(' ');
+    return Semantics(
+      button: true,
+      selected: selected,
+      label: '${item.nameTr}, $tag',
+      excludeSemantics: true,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: onTap,
+        child: Ink(
+          width: 96,
+          padding: const EdgeInsets.fromLTRB(4, 6, 4, 6),
+          decoration: BoxDecoration(
+            color: selected ? colorScheme.primaryContainer : colorScheme.surfaceContainerLowest,
+            border: Border.all(
+              color: selected ? kStickerOutline : (style?.color ?? colorScheme.outlineVariant),
+              width: selected ? 3 : 2,
+            ),
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: style?.glowShadows,
+          ),
+          child: Column(
+            children: [
+              Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  HomeItemThumb(kind: category.kind, item: item),
+                  if (badge.isNotEmpty) Positioned(top: -4, right: -4, child: Text(badge, style: const TextStyle(fontSize: 13))),
+                ],
+              ),
+              const SizedBox(height: 2),
+              Text(
+                item.nameTr,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 11),
+              ),
+              Text(
+                tag,
+                style: TextStyle(
+                  fontWeight: FontWeight.w800,
+                  fontSize: 10,
+                  color: owned || equipped ? colorScheme.primary : kGoldDeep,
+                ),
+              ),
+              if (rarity != null && !owned)
+                Text(
+                  rarity.localizedName(l10n),
+                  style: TextStyle(
+                    fontWeight: FontWeight.w800,
+                    fontSize: 9,
+                    color: style!.labelColor(Theme.of(context).brightness),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
 

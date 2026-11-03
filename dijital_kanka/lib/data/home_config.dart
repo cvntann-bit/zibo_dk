@@ -22,6 +22,8 @@ class HomeConfig {
     required this.proPlusSleepSpeed,
     required this.proPlusDecayFactor,
     required this.priceOverrides,
+    this.proOnlyItems = const {},
+    this.limitedItems = const {},
   });
 
   /// Saatte düşen puan. 4/saat ≈ 100'den tabana bir günde iner.
@@ -50,6 +52,26 @@ class HomeConfig {
 
   /// `oda:kategori:eşya` (ya da `food:id`, `soap:id`) → ZC.
   final Map<String, int> priceOverrides;
+
+  /// Yalnızca Pro/Pro+ aboneliğin alabildiği eşyalar (`oda:kategori:eşya`).
+  /// Satın alınmışsa abonelik bitse de sahiplik kalır.
+  final Set<String> proOnlyItems;
+
+  /// Sezonluk/sınırlı eşyalar: yalnızca [from]–[to] (dahil, gün olarak)
+  /// arasında mağazada görünür; satın alınmışsa hep kalır.
+  final Map<String, ({DateTime from, DateTime to})> limitedItems;
+
+  bool isProOnly(String key) => proOnlyItems.contains(key);
+
+  bool isLimited(String key) => limitedItems.containsKey(key);
+
+  /// Sınırlı değilse her zaman; sınırlıysa yalnızca tarih aralığında.
+  bool isOnSale(String key, DateTime now) {
+    final window = limitedItems[key];
+    if (window == null) return true;
+    final day = DateTime(now.year, now.month, now.day);
+    return !day.isBefore(window.from) && !day.isAfter(window.to);
+  }
 
   static const defaults = HomeConfig(
     decayPerHour: {HomeNeed.hunger: 4, HomeNeed.hygiene: 3, HomeNeed.energy: 3, HomeNeed.fun: 4},
@@ -116,6 +138,20 @@ class HomeConfig {
         if (entry.value is num) prices['${entry.key}'] = (entry.value as num).toInt();
       }
     }
+    final proOnly = <String>{
+      for (final e in (json['proOnly'] is List ? json['proOnly'] as List : const [])) '$e',
+    };
+    final limited = <String, ({DateTime from, DateTime to})>{};
+    final rawLimited = json['limited'];
+    if (rawLimited is Map) {
+      for (final entry in rawLimited.entries) {
+        final v = entry.value;
+        if (v is! Map) continue;
+        final from = DateTime.tryParse('${v['from'] ?? ''}');
+        final to = DateTime.tryParse('${v['to'] ?? ''}');
+        if (from != null && to != null) limited['${entry.key}'] = (from: from, to: to);
+      }
+    }
     return HomeConfig(
       decayPerHour: decay,
       minLevel: num0('minLevel', defaults.minLevel),
@@ -129,6 +165,8 @@ class HomeConfig {
       proPlusSleepSpeed: num0('proPlusSleepSpeed', defaults.proPlusSleepSpeed),
       proPlusDecayFactor: num0('proPlusDecayFactor', defaults.proPlusDecayFactor),
       priceOverrides: prices,
+      proOnlyItems: proOnly,
+      limitedItems: limited,
     );
   }
 }

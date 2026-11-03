@@ -40,15 +40,15 @@ String wallpaperLayer(SvgKit k, String style, String wall, {required num height}
 }
 
 /// Zemin deseni, verilen dikdörtgene döşenir.
-String floorLayer(SvgKit k, String style, String a, String b, {required num y, required num height}) {
+String floorLayer(SvgKit k, String style, String a, String b, {required num y, required num height, num width = 900}) {
   final (w, h, draw) = floorArt[style] ?? floorArt['ahsap']!;
-  return k.tiled(draw(a, b), w, h, x: 0, y: y, width: 900, height: height);
+  return k.tiled(draw(a, b), w, h, x: 0, y: y, width: width, height: height);
 }
 
 /// Fayans deseni, verilen dikdörtgene döşenir.
-String tileLayer(SvgKit k, String style, String a, String l, {required num y, required num height}) {
+String tileLayer(SvgKit k, String style, String a, String l, {required num y, required num height, num width = 900}) {
   final (w, h, draw) = tileArt[style] ?? tileArt['duz']!;
-  return k.tiled(draw(a, l), w, h, x: 0, y: y, width: 900, height: height);
+  return k.tiled(draw(a, l), w, h, x: 0, y: y, width: width, height: height);
 }
 
 String _fabric(String style, String a, String b) => '<rect width="80" height="80" fill="$a"/>${(wallArt[style] ?? wallArt['duz']!)(b)}';

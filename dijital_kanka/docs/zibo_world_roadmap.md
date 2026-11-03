@@ -105,6 +105,13 @@ Taslaklar (birebir hedef görünüm):
 - Nadirlik dili kostümlerle aynı (1.15.0); Pro/Pro+ kararına göre özel ürünler.
 - Sezonluk/sınırlı ürün altyapısı (tarih aralığı, `config/home`).
 - **Kontrol noktası (APK):** satın alma, deneme, sahiplik, yeniden açılışta kalıcılık, ZC kuralı reddi yok.
+- **Uygulandı (2026-11-03):** oda ekranının **Dekor** sekmesi mağaza oldu.
+  - Eşya kartı: küçük resim (`lib/widgets/home_art/item_thumb.dart` — taslağın `thumb()`/`tileSvg()` ve `VB` kadrajları), ad, durum (Takılı / Sende var / fiyat), nadirlik çerçevesi ve etiketi (kostümlerle aynı `RarityStyle`; fiyattan: 1–100 Yaygın, 101–250 Nadir, 251–500 Epik, 501–1000 Efsanevi, 1000+ Mitik; ücretsiz başlangıç eşyasında kademe yok).
+  - Sahip olunan eşyaya dokununca hemen ve ücretsiz takılır; sahip olunmayana dokununca odada DENENİR (kategori çipinde •).
+  - Listenin üstünde sabit çubuk: bakiye, geri al, **"Odadakileri al · N ZC"** → tek `spendOnHomeItem` (neden `Ev: oda:kat:eşya,…`), sonra sahiplik + takma. ZC yetmezse "Yetersiz Zibo Coin".
+  - Fiyat = `config/home` ezmesi + Pro %10 / Pro+ %20 indirim. `proOnly` (👑) ve `limited` (⏳, tarih aralığı) altyapısı `HomeConfig`'te.
+  - Testler: `home_room_screen_test.dart` (dene → al → takılı, sahip olunana dönüş ücretsiz, ZC yetmezse alınmaz, vazgeç).
+  - Ayrıca düzeltildi: bakım göstergesi çubuğu boş görünüyordu (doluluk kutusu 0 yükseklik); dar ekranda satın alma çubuğu taşıyordu.
 
 ## Faz 6 — Etkinlikler
 - `events/{id}`: `type` (1.18.0'da yalnızca `takvim`), başlık/açıklama TR/EN/ES, `start`, `end`, `days[] {reward: zc|itemId}`, `enabled`. Kural: okuma giriş yapmış herkes, yazma `isAdmin()`.

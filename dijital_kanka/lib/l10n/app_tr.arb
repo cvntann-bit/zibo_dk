@@ -4110,5 +4110,51 @@
   "settingsOpenSourceLicenses": "Açık kaynak lisansları",
   "@settingsOpenSourceLicenses": {
     "description": "Ayarlar: üçüncü taraf lisans sayfası (Fluent Emoji MIT vb.)"
+  },
+  "shopBalance": "Bakiyen: {coins} ZC",
+  "@shopBalance": {
+    "description": "Dekor mağazasında ZC bakiyesi",
+    "placeholders": {
+      "coins": {
+        "type": "int"
+      }
+    }
+  },
+  "shopCancel": "Vazgeç",
+  "@shopCancel": {
+    "description": "Denenen eşyaları geri al"
+  },
+  "shopRoomDone": "Oda tamam",
+  "@shopRoomDone": {
+    "description": "Sepet boşken satın al düğmesi"
+  },
+  "shopBuyRoom": "Odadakileri al · {cost} ZC",
+  "@shopBuyRoom": {
+    "description": "Denenen eşyaların hepsini satın alma düğmesi",
+    "placeholders": {
+      "cost": {
+        "type": "int"
+      }
+    }
+  },
+  "shopBought": "Odan yenilendi!",
+  "@shopBought": {
+    "description": "Dekor satın alındıktan sonra"
+  },
+  "shopEquipped": "Takılı",
+  "@shopEquipped": {
+    "description": "Eşya kartında: odada takılı"
+  },
+  "shopOwned": "Sende var",
+  "@shopOwned": {
+    "description": "Eşya kartında: sahip olunuyor"
+  },
+  "shopProOnlyMsg": "Bu eşya Zibo Pro'ya özel.",
+  "@shopProOnlyMsg": {
+    "description": "Pro'ya özel eşyaya Pro olmayan dokununca"
+  },
+  "shopHint": "Dokun ve odada dene; beğendiklerini tek seferde al. Sende olanlar hemen takılır.",
+  "@shopHint": {
+    "description": "Dekor mağazası ipucu"
   }
 }

@@ -32,6 +32,25 @@ void main() {
       expect(HomeConfig.fromJson(null).minLevel, HomeConfig.defaults.minLevel);
     });
 
+    test('Pro\'ya özel ve sezonluk eşyalar uzaktan tanımlanır', () {
+      final c = HomeConfig.fromJson({
+        'proOnly': ['salon:kanepe:altin'],
+        'limited': {
+          'salon:duvar:cam': {'from': '2026-12-01', 'to': '2026-12-31'},
+          'bozuk': {'from': 'x'},
+        },
+      });
+      expect(c.isProOnly('salon:kanepe:altin'), isTrue);
+      expect(c.isProOnly('salon:kanepe:mavi'), isFalse);
+      expect(c.isLimited('salon:duvar:cam'), isTrue);
+      expect(c.isLimited('bozuk'), isFalse);
+      expect(c.isOnSale('salon:duvar:cam', DateTime(2026, 11, 30, 23)), isFalse);
+      expect(c.isOnSale('salon:duvar:cam', DateTime(2026, 12, 1, 0, 1)), isTrue);
+      expect(c.isOnSale('salon:duvar:cam', DateTime(2026, 12, 31, 23, 59)), isTrue);
+      expect(c.isOnSale('salon:duvar:cam', DateTime(2027, 1, 1)), isFalse);
+      expect(c.isOnSale('salon:kanepe:mavi', DateTime(2027, 1, 1)), isTrue);
+    });
+
     test('abonelik indirimi; bedava ürün bedava kalır', () {
       const c = HomeConfig.defaults;
       expect(c.priceFor('x', 100, SubscriptionTier.free), 100);

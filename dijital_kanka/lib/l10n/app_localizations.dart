@@ -5373,6 +5373,60 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'Açık kaynak lisansları'**
   String get settingsOpenSourceLicenses;
+
+  /// Dekor mağazasında ZC bakiyesi
+  ///
+  /// In tr, this message translates to:
+  /// **'Bakiyen: {coins} ZC'**
+  String shopBalance(int coins);
+
+  /// Denenen eşyaları geri al
+  ///
+  /// In tr, this message translates to:
+  /// **'Vazgeç'**
+  String get shopCancel;
+
+  /// Sepet boşken satın al düğmesi
+  ///
+  /// In tr, this message translates to:
+  /// **'Oda tamam'**
+  String get shopRoomDone;
+
+  /// Denenen eşyaların hepsini satın alma düğmesi
+  ///
+  /// In tr, this message translates to:
+  /// **'Odadakileri al · {cost} ZC'**
+  String shopBuyRoom(int cost);
+
+  /// Dekor satın alındıktan sonra
+  ///
+  /// In tr, this message translates to:
+  /// **'Odan yenilendi!'**
+  String get shopBought;
+
+  /// Eşya kartında: odada takılı
+  ///
+  /// In tr, this message translates to:
+  /// **'Takılı'**
+  String get shopEquipped;
+
+  /// Eşya kartında: sahip olunuyor
+  ///
+  /// In tr, this message translates to:
+  /// **'Sende var'**
+  String get shopOwned;
+
+  /// Pro'ya özel eşyaya Pro olmayan dokununca
+  ///
+  /// In tr, this message translates to:
+  /// **'Bu eşya Zibo Pro\'ya özel.'**
+  String get shopProOnlyMsg;
+
+  /// Dekor mağazası ipucu
+  ///
+  /// In tr, this message translates to:
+  /// **'Dokun ve odada dene; beğendiklerini tek seferde al. Sende olanlar hemen takılır.'**
+  String get shopHint;
 }
 
 class _AppLocalizationsDelegate

@@ -3023,4 +3023,36 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsOpenSourceLicenses => 'Open-source licenses';
+
+  @override
+  String shopBalance(int coins) {
+    return 'Balance: $coins ZC';
+  }
+
+  @override
+  String get shopCancel => 'Cancel';
+
+  @override
+  String get shopRoomDone => 'Room done';
+
+  @override
+  String shopBuyRoom(int cost) {
+    return 'Buy the look · $cost ZC';
+  }
+
+  @override
+  String get shopBought => 'Your room got a makeover!';
+
+  @override
+  String get shopEquipped => 'In use';
+
+  @override
+  String get shopOwned => 'Owned';
+
+  @override
+  String get shopProOnlyMsg => 'This item is for Zibo Pro members.';
+
+  @override
+  String get shopHint =>
+      'Tap to try things in the room, then buy them all at once. Items you own are put on right away.';
 }

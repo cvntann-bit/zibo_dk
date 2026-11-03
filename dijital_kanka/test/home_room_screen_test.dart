@@ -25,6 +25,8 @@ import 'fake_audioplayers_platform.dart';
 
 void main() {
   late HomeNeedsProvider needs;
+  late HomeDecorProvider decor;
+  late CoinProvider coins;
   final clock = DateTime(2026, 11, 3, 10);
 
   setUp(() {
@@ -37,15 +39,23 @@ void main() {
     tester.view.devicePixelRatio = 2.6;
     addTearDown(tester.view.reset);
     needs = HomeNeedsProvider(now: () => clock);
-    await tester.runAsync(() => needs.ready);
+    decor = HomeDecorProvider();
+    coins = CoinProvider(now: () => clock, isSoundEnabled: () => false);
+    await tester.runAsync(() async {
+      await needs.ready;
+      await decor.ready;
+      while (!coins.isReady) {
+        await Future<void>.delayed(const Duration(milliseconds: 5));
+      }
+    });
     await tester.pumpWidget(
       MultiProvider(
         providers: [
           ChangeNotifierProvider.value(value: needs),
-          ChangeNotifierProvider(create: (_) => HomeDecorProvider()),
+          ChangeNotifierProvider.value(value: decor),
           ChangeNotifierProvider(create: (_) => HomeConfigProvider()),
           ChangeNotifierProvider(create: (_) => SubscriptionProvider(now: () => clock)),
-          ChangeNotifierProvider(create: (_) => CoinProvider(now: () => clock, isSoundEnabled: () => false)),
+          ChangeNotifierProvider.value(value: coins),
           ChangeNotifierProvider(create: (_) => GamePointsProvider(now: () => clock)),
           ChangeNotifierProvider(create: (_) => GamesConfigProvider()),
         ],
@@ -144,12 +154,52 @@ void main() {
     await tearDownScreen(tester);
   });
 
-  testWidgets('dekor sekmesinde deneme seçici görünür', (tester) async {
+  testWidgets('dekor: dene → sepet → satın al; eşya sende kalır ve takılır', (tester) async {
     await pumpRoom(tester, HomeRoom.living);
+    coins.earnDailyLoginReward(1000);
+    final start = coins.balance;
     await tester.tap(find.text('Dekor'));
     await tester.pump();
-    expect(find.text('Duvar kağıdı'), findsOneWidget);
-    expect(find.text("Önizleme: eşyaları deneyebilirsin, kaydedilmez. Satın alma yakında."), findsOneWidget);
+    expect(find.text('Oda tamam'), findsOneWidget);
+    // Boya kategorisi açık: Gökyüzü (40 ZC) dene.
+    await tester.tap(find.bySemanticsLabel('Gökyüzü, 40 ZC'));
+    await tester.pump();
+    expect(decor.isOwned(HomeRoom.living, 'boya', 'gok'), isFalse);
+    final buy = find.widgetWithText(FilledButton, 'Odadakileri al · 40 ZC');
+    expect(buy, findsOneWidget);
+    tester.widget<FilledButton>(buy).onPressed!();
+    await tester.pump();
+    expect(coins.balance, start - 40);
+    expect(decor.isOwned(HomeRoom.living, 'boya', 'gok'), isTrue);
+    expect(decor.equipped(HomeRoom.living, 'boya'), 'gok');
+    expect(find.text('Odan yenilendi!'), findsOneWidget);
+    // Sahip olunan başlangıç boyasına dokununca ücretsiz geri takılır.
+    await tester.tap(find.bySemanticsLabel(RegExp(r'^Şeftali, ')));
+    await tester.pump();
+    expect(decor.equipped(HomeRoom.living, 'boya'), 'seftali');
+    expect(coins.balance, start - 40);
+    await tearDownScreen(tester);
+  });
+
+  testWidgets('dekor: ZC yetmezse satın alınmaz, deneme vazgeçilince temizlenir', (tester) async {
+    await pumpRoom(tester, HomeRoom.living);
+    final start = coins.balance;
+    await tester.tap(find.text('Dekor'));
+    await tester.pump();
+    await tester.ensureVisible(find.bySemanticsLabel('Gece mavisi, 80 ZC'));
+    await tester.pump();
+    await tester.tap(find.bySemanticsLabel('Gece mavisi, 80 ZC'));
+    await tester.pump();
+    final buy = find.widgetWithText(FilledButton, 'Odadakileri al · 80 ZC');
+    if (start < 80) {
+      tester.widget<FilledButton>(buy).onPressed!();
+      await tester.pump();
+      expect(find.text('Yetersiz Zibo Coin'), findsOneWidget);
+      expect(decor.isOwned(HomeRoom.living, 'boya', 'gece'), isFalse);
+    }
+    await tester.tap(find.byTooltip('Vazgeç'));
+    await tester.pump();
+    expect(find.text('Oda tamam'), findsOneWidget);
     await tearDownScreen(tester);
   });
 }

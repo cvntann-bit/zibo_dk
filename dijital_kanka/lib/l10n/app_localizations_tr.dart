@@ -3007,4 +3007,36 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get settingsOpenSourceLicenses => 'Açık kaynak lisansları';
+
+  @override
+  String shopBalance(int coins) {
+    return 'Bakiyen: $coins ZC';
+  }
+
+  @override
+  String get shopCancel => 'Vazgeç';
+
+  @override
+  String get shopRoomDone => 'Oda tamam';
+
+  @override
+  String shopBuyRoom(int cost) {
+    return 'Odadakileri al · $cost ZC';
+  }
+
+  @override
+  String get shopBought => 'Odan yenilendi!';
+
+  @override
+  String get shopEquipped => 'Takılı';
+
+  @override
+  String get shopOwned => 'Sende var';
+
+  @override
+  String get shopProOnlyMsg => 'Bu eşya Zibo Pro\'ya özel.';
+
+  @override
+  String get shopHint =>
+      'Dokun ve odada dene; beğendiklerini tek seferde al. Sende olanlar hemen takılır.';
 }

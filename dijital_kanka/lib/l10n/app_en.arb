@@ -885,5 +885,14 @@
   "carePlaySome": "One more game would make Zibo so happy",
   "carePlayHappy": "Zibo is super happy!",
   "carePlayHint": "Pick a game; Zibo gets happier when you finish it.",
-  "settingsOpenSourceLicenses": "Open-source licenses"
+  "settingsOpenSourceLicenses": "Open-source licenses",
+  "shopBalance": "Balance: {coins} ZC",
+  "shopCancel": "Cancel",
+  "shopRoomDone": "Room done",
+  "shopBuyRoom": "Buy the look · {cost} ZC",
+  "shopBought": "Your room got a makeover!",
+  "shopEquipped": "In use",
+  "shopOwned": "Owned",
+  "shopProOnlyMsg": "This item is for Zibo Pro members.",
+  "shopHint": "Tap to try things in the room, then buy them all at once. Items you own are put on right away."
 }

@@ -885,5 +885,14 @@
   "carePlaySome": "Un juego más haría muy feliz a Zibo",
   "carePlayHappy": "¡Zibo está feliz!",
   "carePlayHint": "Elige un juego; Zibo se alegra cuando lo terminas.",
-  "settingsOpenSourceLicenses": "Licencias de código abierto"
+  "settingsOpenSourceLicenses": "Licencias de código abierto",
+  "shopBalance": "Saldo: {coins} ZC",
+  "shopCancel": "Cancelar",
+  "shopRoomDone": "Habitación lista",
+  "shopBuyRoom": "Comprar todo · {cost} ZC",
+  "shopBought": "¡Tu habitación quedó renovada!",
+  "shopEquipped": "En uso",
+  "shopOwned": "Ya lo tienes",
+  "shopProOnlyMsg": "Este objeto es exclusivo de Zibo Pro.",
+  "shopHint": "Toca para probar en la habitación y cómpralo todo de una vez. Lo que ya tienes se coloca al instante."
 }

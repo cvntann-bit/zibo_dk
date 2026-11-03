@@ -5,8 +5,13 @@ import 'package:provider/provider.dart';
 import 'data/home_catalog.dart';
 import 'l10n/app_localizations.dart';
 import 'models/home_item.dart';
+import 'providers/coin_provider.dart';
+import 'providers/game_points_provider.dart';
+import 'providers/games_config_provider.dart';
+import 'providers/home_config_provider.dart';
 import 'providers/home_decor_provider.dart';
 import 'providers/home_needs_provider.dart';
+import 'providers/subscription_provider.dart';
 import 'screens/zibo_world_screen.dart';
 import 'widgets/home_art/room_view.dart';
 
@@ -41,6 +46,12 @@ class _Preview extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => HomeNeedsProvider()),
         ChangeNotifierProvider(create: (_) => HomeDecorProvider()),
+        // Oda ekranı (bakım + dekor mağazası) için.
+        ChangeNotifierProvider(create: (_) => HomeConfigProvider()),
+        ChangeNotifierProvider(create: (_) => SubscriptionProvider()),
+        ChangeNotifierProvider(create: (_) => CoinProvider(isSoundEnabled: () => false)..earnDailyLoginReward(2000)),
+        ChangeNotifierProvider(create: (_) => GamePointsProvider()),
+        ChangeNotifierProvider(create: (_) => GamesConfigProvider()),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
