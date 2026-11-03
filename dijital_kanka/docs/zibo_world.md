@@ -94,6 +94,7 @@ Sonuç: bunlar Zibo Dünyası bitene kadar canlıya çıkmaz. Her adım yine deb
 - Alt çubuk: Ana Sayfa | **Zibo Dünyası** | Profil | Mağaza.
 
 ## DÜZELTME LİSTESİ — fazlar bitince yapılacak (kullanıcı, 2026-11-03)
+**2026-11-03, Faz 6 sonrası:** kullanıcı "komple bir düzen alacağız, beğenmediğim noktalar var, baştan sona düzenleyeceğiz" dedi → sıradaki iş bu liste + kullanıcının yeni maddeleri; ekran ekran (taslak → onay → uygulama).
 Kullanıcı: "fazları bitirelim, düzeltmeleri en son yaparız". Fazlar sırayla sürer; aşağıdakiler en sona.
 1. **Giriş ekranı görsel tabanlı olacak.** Kullanıcı görselleri KENDİSİ üretecek: Zibo'nun Evi, Oyun Salonu ve diğer yerler (etkinlik, sıralama, arkadaşlar…) bir dünya/kasaba sahnesinde. **Eve basınca ev ekranı** (bugünkü 2×2 oda kesiti ya da odalar), **Oyun Salonu'na basınca oyunlar** açılır. Bugünkü Faz 3 ev kesiti (`ZiboWorldScreen`) o zaman "ev ekranı"na dönüşür; hub görsel + dokunma alanları olur.
    - Görsel teslim biçimi henüz konuşulmadı (tek sahne + dokunma koordinatları mı, arka plan + her bina ayrı şeffaf PNG mi). Öneri: ayrı parçalar — tek binayı değiştirmek, kilitli/"yakında" soluk gösterim, dokununca zıplama ve tablet yerleşimi kolay.
