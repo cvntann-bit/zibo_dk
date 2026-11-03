@@ -4156,5 +4156,82 @@
   "shopHint": "Dokun ve odada dene; beğendiklerini tek seferde al. Sende olanlar hemen takılır.",
   "@shopHint": {
     "description": "Dekor mağazası ipucu"
+  },
+  "eventsTitle": "Etkinlikler",
+  "@eventsTitle": {
+    "description": "Etkinlikler ekranı başlığı"
+  },
+  "eventsEmpty": "Şu an etkinlik yok. Yeni etkinlikler yakında burada!",
+  "@eventsEmpty": {
+    "description": "Etkin etkinlik yokken"
+  },
+  "eventsUpcomingTitle": "Yakında",
+  "@eventsUpcomingTitle": {
+    "description": "Yaklaşan etkinlikler başlığı"
+  },
+  "eventsStartsOn": "{date} tarihinde başlıyor",
+  "@eventsStartsOn": {
+    "description": "Yaklaşan etkinliğin başlangıcı",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "eventsEndsOn": "{date} tarihine kadar",
+  "@eventsEndsOn": {
+    "description": "Süren etkinliğin bitişi",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "eventsDay": "{day}. gün",
+  "@eventsDay": {
+    "description": "Takvim kutusunun günü",
+    "placeholders": {
+      "day": {
+        "type": "int"
+      }
+    }
+  },
+  "eventsOpenHint": "Bugünün kutusu hazır, aç bakalım!",
+  "@eventsOpenHint": {
+    "description": "Açılabilir kutu varken"
+  },
+  "eventsComeBack": "Yarın yeni bir kutu seni bekliyor.",
+  "@eventsComeBack": {
+    "description": "Bugünkü kutu açıldıktan sonra"
+  },
+  "eventsRewardZc": "+{amount} ZC",
+  "@eventsRewardZc": {
+    "description": "Kutudan çıkan ZC",
+    "placeholders": {
+      "amount": {
+        "type": "int"
+      }
+    }
+  },
+  "eventsRewardItem": "Yeni eşya: {name}",
+  "@eventsRewardItem": {
+    "description": "Kutudan çıkan eşya",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "eventsRewardEmpty": "Bu kutu boş çıktı, yarın şansını dene!",
+  "@eventsRewardEmpty": {
+    "description": "Ödülsüz kutu"
+  },
+  "eventsBoxOpened": "Kutu açıldı!",
+  "@eventsBoxOpened": {
+    "description": "Kutu açılınca pencere başlığı"
+  },
+  "eventsOk": "Harika",
+  "@eventsOk": {
+    "description": "Ödül penceresini kapatma düğmesi"
   }
 }

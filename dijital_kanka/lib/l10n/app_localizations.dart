@@ -5427,6 +5427,84 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'Dokun ve odada dene; beğendiklerini tek seferde al. Sende olanlar hemen takılır.'**
   String get shopHint;
+
+  /// Etkinlikler ekranı başlığı
+  ///
+  /// In tr, this message translates to:
+  /// **'Etkinlikler'**
+  String get eventsTitle;
+
+  /// Etkin etkinlik yokken
+  ///
+  /// In tr, this message translates to:
+  /// **'Şu an etkinlik yok. Yeni etkinlikler yakında burada!'**
+  String get eventsEmpty;
+
+  /// Yaklaşan etkinlikler başlığı
+  ///
+  /// In tr, this message translates to:
+  /// **'Yakında'**
+  String get eventsUpcomingTitle;
+
+  /// Yaklaşan etkinliğin başlangıcı
+  ///
+  /// In tr, this message translates to:
+  /// **'{date} tarihinde başlıyor'**
+  String eventsStartsOn(String date);
+
+  /// Süren etkinliğin bitişi
+  ///
+  /// In tr, this message translates to:
+  /// **'{date} tarihine kadar'**
+  String eventsEndsOn(String date);
+
+  /// Takvim kutusunun günü
+  ///
+  /// In tr, this message translates to:
+  /// **'{day}. gün'**
+  String eventsDay(int day);
+
+  /// Açılabilir kutu varken
+  ///
+  /// In tr, this message translates to:
+  /// **'Bugünün kutusu hazır, aç bakalım!'**
+  String get eventsOpenHint;
+
+  /// Bugünkü kutu açıldıktan sonra
+  ///
+  /// In tr, this message translates to:
+  /// **'Yarın yeni bir kutu seni bekliyor.'**
+  String get eventsComeBack;
+
+  /// Kutudan çıkan ZC
+  ///
+  /// In tr, this message translates to:
+  /// **'+{amount} ZC'**
+  String eventsRewardZc(int amount);
+
+  /// Kutudan çıkan eşya
+  ///
+  /// In tr, this message translates to:
+  /// **'Yeni eşya: {name}'**
+  String eventsRewardItem(String name);
+
+  /// Ödülsüz kutu
+  ///
+  /// In tr, this message translates to:
+  /// **'Bu kutu boş çıktı, yarın şansını dene!'**
+  String get eventsRewardEmpty;
+
+  /// Kutu açılınca pencere başlığı
+  ///
+  /// In tr, this message translates to:
+  /// **'Kutu açıldı!'**
+  String get eventsBoxOpened;
+
+  /// Ödül penceresini kapatma düğmesi
+  ///
+  /// In tr, this message translates to:
+  /// **'Harika'**
+  String get eventsOk;
 }
 
 class _AppLocalizationsDelegate

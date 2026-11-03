@@ -120,6 +120,16 @@ Taslaklar (birebir hedef görünüm):
 - **Yönetici uygulaması:** `events_screen.dart` (oluştur, tarih, ödül tablosu, aç/kapat) + `adminLog`.
 - Sınır: yeni etkinlik **türü** ilk kez eklenirken sürüm gerekir.
 - **Kontrol noktası (APK):** panelden açılan takvim uygulamada görünüyor, gün açılıyor, ödül geliyor.
+- **Uygulandı (2026-11-03):**
+  - Model `lib/models/zibo_event.dart` (`ZiboEvent.fromJson`: `type`, `enabled`, `title/description {tr,en,es}`, `start/end` 'YYYY-AA-GG' dahil, `catchUp` (varsayılan açık), `days [{zc} | {item: 'oda:kat:eşya'}]`; ZC gün başı en çok 1000). Bilinmeyen tür ve bozuk doküman yok sayılır.
+  - `EventsProvider` (`lib/providers/events_provider.dart`): açılışta `events where enabled == true` bir kez okunur; gün hesabı güvenilir saat; açılan günler `state/eventsState` (`opened {eventId: [gün]}`); `open()` önce işaretler, ödülü çağıran uygular (çift ödül yok). Kaçırılan günler `catchUp` ile sonradan açılır; etkinlik bitince açılmaz.
+  - Ödül: ZC → `CoinProvider.earnEventReward` (neden `Etkinlik: <id> gün N`); eşya → `HomeDecorProvider.markOwned`.
+  - **Yılbaşı eşyaları (yalnız etkinlikten, mağazada satılmaz, `HomeItem.eventOnly`):** salon köşe `cam` (Yılbaşı çamı), `kardan` (Kardan adam), salon puf `hediye` (Hediye kutuları) — kodla çizim, `tool/generate_home_catalog.py` EVENT_ITEMS.
+  - Ekran `lib/screens/events_screen.dart`: süren takvim (gün kutuları: açılabilir 🎁, açılmış ödül, kilitli 🔒, bugün kırmızı çerçeve), yaklaşanlar listesi, boş durum. Ödül penceresi (ZC ya da eşya küçük resmi).
+  - Giriş ekranı: Etkinlikler kapısı ekranı açar + açılmayı bekleyen kutu rozeti; süren etkinlik varsa evin altında lacivert etkinlik kartı.
+  - `firestore.rules`: `events/{id}` okuma giriş yapmış herkes, yazma `isAdmin()` — **Console'a yayınlanmadı (kullanıcı onayı bekliyor)**.
+  - **Yönetici uygulaması:** yeni "Etkinlik" sekmesi (`zibo_admin/lib/screens/events_screen.dart`): TR/EN/ES başlık + açıklama, başlangıç tarihi, gün sayısı (3–31), günlük ZC, son gün ödülü (Yılbaşı eşyalarından biri ya da ZC), telafi anahtarı, onay penceresinde kişi başı toplam ZC; liste + aç/kapat anahtarı; her yazım `adminLog` ile aynı batch'te.
+  - Testler: `test/events_test.dart` (model, aktif/yaklaşan, tek açma, telafi, bitiş, Firestore filtresi, ekranda ZC + eşya ödülü).
 
 ## Faz 7 — Sıralama ve Arkadaşlar (KARAR: 1.19.0)
 - **Sıralama:** haftalık oyun ★; istemci kendi puanını yazar, saatlik iş (`notification-scripts`) doğrular ve `leaderboards/{hafta}` tek belgesine ilk 100 + arkadaş görünümü yazar. Oyun başına üst sınırla hile kontrolü (`game_zibo.md` cap'leri). İsim "Zibo adı#etiket".

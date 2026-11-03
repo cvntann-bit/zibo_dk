@@ -24,6 +24,18 @@ SOAP_SHAPES = {
     ],
 }
 
+# Faz 6 (2026-11-03): yalnızca etkinlik ödülü olarak kazanılan sezonluk eşyalar.
+# Mağazada satılmaz (eventOnly); fiyat yalnızca nadirlik kademesi içindir.
+EVENT_ITEMS = {
+    ("salon", "kose"): [
+        ["cam", "Yılbaşı çamı", "xmasTree", "#2E8B57", 900],
+        ["kardan", "Kardan adam", "snowman", "#F2564B", 600],
+    ],
+    ("salon", "puf"): [
+        ["hediye", "Hediye kutuları", "giftBoxes", "#F2564B", 400],
+    ],
+}
+
 KIND_DART = {"swatch": "swatch", "wall": "wallpaper", "floor": "floor", "tile": "tile", "draw": "furniture", "blanket": "blanket", "cloth": "cloth"}
 ROOM_DART = {"mutfak": "kitchen", "banyo": "bath", "yatak": "bedroom", "salon": "living"}
 
@@ -49,6 +61,8 @@ foods = js_to_json(block(src, "const FOODS = [", "\n];"))
 groups = js_to_json(block(src, "const FOOD_GROUPS = [", "]];"))
 
 rooms["banyo"]["cat"]["sabun"] = SOAP_SHAPES
+for (rid, cid), extra in EVENT_ITEMS.items():
+    rooms[rid]["cat"][cid]["items"] += [it + ["event"] for it in extra]
 rooms["banyo"]["eq"]["sabun"] = "klasik"
 
 
@@ -68,8 +82,9 @@ def item(kind, it):
         iid, name, price = it
         return f"HomeItem({s(iid)}, {s(name)}, style: {s(iid)}, price: {price})"
     if kind == "draw":
-        iid, name, style, col, price = it
-        return f"HomeItem({s(iid)}, {s(name)}, style: {s(style)}, color: {color(col)}, price: {price})"
+        iid, name, style, col, price = it[:5]
+        event = ", eventOnly: true" if it[5:] == ["event"] else ""
+        return f"HomeItem({s(iid)}, {s(name)}, style: {s(style)}, color: {color(col)}, price: {price}{event})"
     iid, name, style, col, col2, price = it
     return f"HomeItem({s(iid)}, {s(name)}, style: {s(style)}, color: {color(col)}, color2: {color(col2)}, price: {price})"
 

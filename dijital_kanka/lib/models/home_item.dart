@@ -25,7 +25,7 @@ enum HomeRoom {
 enum HomeCategoryKind { swatch, wallpaper, floor, tile, furniture, blanket, cloth }
 
 class HomeItem {
-  const HomeItem(this.id, this.nameTr, {this.style, this.color, this.color2, required this.price});
+  const HomeItem(this.id, this.nameTr, {this.style, this.color, this.color2, required this.price, this.eventOnly = false});
 
   /// Kategori içinde kalıcı kimlik — satın alımlar bununla saklanır.
   final String id;
@@ -38,6 +38,10 @@ class HomeItem {
 
   /// ZC. 0 = başlangıç eşyası, herkese bedava.
   final int price;
+
+  /// Yalnızca etkinlik ödülü (Faz 6): mağazada satılmaz, sahip olunmadıkça
+  /// görünmez. [price] yalnızca nadirlik kademesini belirler.
+  final bool eventOnly;
 
   bool get isEmpty => style == 'none';
 }

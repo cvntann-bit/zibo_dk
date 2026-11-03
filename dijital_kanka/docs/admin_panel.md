@@ -213,3 +213,9 @@ Adımlar:
 
 **Yönetici v1 TAMAM (2026-10-29)** — A0–A6 + uygulama içi mesaj kartı (A5b; Zibo tarafı 1.18.0 sürümüyle gelir).
 - Sonra (Zibo sürümü gerektirenler): uygulama içi duyuru kutusu, reklam sıklığını `config/ads`'e taşıma.
+
+## Etkinlik sekmesi (2026-11-03, Zibo Dünyası Faz 6)
+`zibo_admin/lib/screens/events_screen.dart` → Firestore `events/{id}` (Zibo `ZiboEvent` şekli). Takvim etkinliği oluştur
+(TR/EN/ES başlık, başlangıç, gün sayısı, günlük ZC, son gün ödülü: Yılbaşı çamı / Kardan adam / Hediye kutuları / ZC,
+telafi), listede aç/kapat. Her yazım `adminLog` ile aynı batch'te. Kural `events/{id}` yazma `isAdmin()` — Console'a
+yayınlanması gerekiyor. Zibo tarafı 1.18.0 ile gelir.

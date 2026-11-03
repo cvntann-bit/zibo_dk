@@ -117,6 +117,29 @@ final Map<String, FurnitureArt> furnitureArt = {
   'toyBoat': (k, c, p) { return '''<path d="M0 40h96l-14 24H14z" fill="${k.grad(m(c, .2), m(c, -.2))}"/><rect x="44" y="-6" width="5" height="48" fill="#8B6A4A"/><path d="M49 -4l34 34H49z" fill="#FFFFFF" stroke="#D5DEE3" stroke-width="2"/><circle cx="30" cy="52" r="5" fill="#fff"/><circle cx="60" cy="52" r="5" fill="#fff"/>'''; },
   'bookShelf': (k, c, p) => '''<rect y="110" width="260" height="18" rx="9" fill="${k.grad(m(c, .2), m(c, -.2))}"/>${[('#FF8A80', 0, 26, 100), ('#7CC8F0', 30, 22, 86), ('#FFD64A', 56, 30, 104), ('#9FE3A8', 90, 24, 92)].map((e) { final (col, x, w, h) = e; return '''<rect x="${x + 12}" y="${110 - h}" width="$w" height="$h" rx="6" fill="$col"/>'''; }).join()}<g transform="translate(150 20) scale(.55)">${furnitureArt['teddy']!(k, '#D9975A', '')}</g>''',
 
+  // Yılbaşı etkinliği ödülleri (Faz 6) — salon köşesi (~200×320) ve puf yeri (~200×150).
+  'xmasTree': (k, c, p) =>
+      '''<path d="M40 292h120l-12 28H52z" fill="${k.grad('#F2705E', '#C2453A', true)}"/><rect x="86" y="262" width="28" height="32" fill="#8B5A2B"/>'''
+      '''<path d="M100 24L36 128h28L22 204h38L12 270h176l-48-66h38l-42-76h28z" fill="${k.grad(m(c, .22), m(c, -.22))}" stroke="${m(c, -.35)}" stroke-width="4" stroke-linejoin="round"/>'''
+      '''<path d="M54 160q46 26 96-6M38 236q62 32 124-4" fill="none" stroke="#FFD64A" stroke-width="5" stroke-linecap="round"/>'''
+      '''${const [(72, 128, '#F2564B'), (128, 118, '#FFD64A'), (62, 200, '#7CC8F0'), (142, 190, '#F7A8BE'), (100, 238, '#F2564B'), (46, 258, '#FFD64A'), (156, 254, '#7CC8F0'), (104, 172, '#FFFFFF')].map((e) => '<circle cx="${e.$1}" cy="${e.$2}" r="9" fill="${e.$3}" stroke="#14110C" stroke-width="2"/>').join()}'''
+      '''<path d="M100 2l7 15 16 2-12 11 3 16-14-8-14 8 3-16-12-11 16-2z" fill="#FFD64A" stroke="#C9952E" stroke-width="3" stroke-linejoin="round"/>''',
+  'snowman': (k, c, p) =>
+      '''<ellipse cx="100" cy="304" rx="78" ry="12" fill="#C9D6DF"/>'''
+      '''<circle cx="100" cy="240" r="68" fill="${k.grad('#FFFFFF', '#D6E2EA')}"/><circle cx="100" cy="148" r="50" fill="${k.grad('#FFFFFF', '#D6E2EA')}"/><circle cx="100" cy="76" r="38" fill="${k.grad('#FFFFFF', '#DCE6EE')}"/>'''
+      '''<rect x="62" y="104" width="76" height="16" rx="8" fill="$c"/><rect x="112" y="110" width="16" height="44" rx="6" fill="${m(c, -.15)}"/>'''
+      '''<rect x="64" y="22" width="72" height="12" rx="4" fill="#2E343C"/><rect x="76" y="-12" width="48" height="38" rx="6" fill="#2E343C"/><rect x="76" y="14" width="48" height="8" fill="$c"/>'''
+      '''<circle cx="86" cy="70" r="5" fill="#14110C"/><circle cx="114" cy="70" r="5" fill="#14110C"/><path d="M100 80l34 8-34 6z" fill="#FF8A3D"/>'''
+      '''${const [140, 166, 212, 244].map((y) => '<circle cx="100" cy="$y" r="6" fill="#2E343C"/>').join()}'''
+      '''<path d="M54 150l-38-26M146 150l38-26" stroke="#8B5A2B" stroke-width="6" stroke-linecap="round"/>''',
+  'giftBoxes': (k, c, p) =>
+      '''<ellipse cx="100" cy="150" rx="94" ry="10" fill="#3A1F0A" opacity=".18"/>'''
+      '''<rect x="8" y="54" width="104" height="94" rx="10" fill="${k.grad(m(c, .2), m(c, -.15))}"/><rect x="52" y="54" width="16" height="94" fill="#FFD64A"/><rect x="8" y="90" width="104" height="14" fill="#FFD64A"/>'''
+      '''<path d="M60 54c-22-24-40-8-24 2zM60 54c22-24 40-8 24 2z" fill="#FFD64A" stroke="#C9952E" stroke-width="3"/>'''
+      '''<rect x="104" y="86" width="86" height="62" rx="8" fill="${k.grad('#8ED0F2', '#4F9FD1')}"/><rect x="140" y="86" width="14" height="62" fill="#FFFFFF"/>'''
+      '''<path d="M147 86c-16-18-30-6-18 2zM147 86c16-18 30-6 18 2z" fill="#FFFFFF" stroke="#C9D6DF" stroke-width="3"/>'''
+      '''<rect x="34" y="16" width="56" height="40" rx="6" fill="${k.grad('#9FE3A8', '#4FAE63')}"/><rect x="56" y="16" width="12" height="40" fill="#F2564B"/>''',
+
   // Sabun şekilleri (Faz 0 kararı: sabun türü bir kez alınır, şekli dekor).
   // Taslakta yoktu; lavabo kenarında ~90×50 birimlik küçük çizimler.
   'soapBar': (k, c, p) => '''<rect x="0" y="10" width="90" height="40" rx="18" fill="${k.grad(m(c, .3), m(c, -.15))}" stroke="${m(c, -.3)}" stroke-width="3"/>${k.shine(14, 16, 40, 7, 3, .6)}''',

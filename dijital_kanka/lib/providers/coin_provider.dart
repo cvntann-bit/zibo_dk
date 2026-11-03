@@ -454,6 +454,13 @@ class CoinProvider extends ChangeNotifier {
     _earn(amount, 'Takas Gişesi');
   }
 
+  /// Zibo Dünyası etkinlik kutusu (docs/zibo_world_roadmap.md Faz 6). Tekrar
+  /// açma koruması `EventsProvider.open`'da; miktar orada da üstten sınırlı.
+  void earnEventReward({required int amount, required String eventId, required int day}) {
+    if (amount <= 0) return;
+    _earn(amount.clamp(1, 1000), 'Etkinlik: $eventId gün ${day + 1}');
+  }
+
   /// Instagram Takip Kartı: kullanıcı Instagram'ı açıp uygulamaya döndüğünde (bkz.
   /// `InstagramFollowProvider.markClaimed()` — tek seferlik, kalıcı bir
   /// bayrakla korunuyor, bu yüzden burada ayrıca bir tekrar-önleme

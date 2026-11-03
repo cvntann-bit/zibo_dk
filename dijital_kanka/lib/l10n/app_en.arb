@@ -894,5 +894,18 @@
   "shopEquipped": "In use",
   "shopOwned": "Owned",
   "shopProOnlyMsg": "This item is for Zibo Pro members.",
-  "shopHint": "Tap to try things in the room, then buy them all at once. Items you own are put on right away."
+  "shopHint": "Tap to try things in the room, then buy them all at once. Items you own are put on right away.",
+  "eventsTitle": "Events",
+  "eventsEmpty": "No events right now. New ones are coming soon!",
+  "eventsUpcomingTitle": "Coming soon",
+  "eventsStartsOn": "Starts on {date}",
+  "eventsEndsOn": "Until {date}",
+  "eventsDay": "Day {day}",
+  "eventsOpenHint": "Today's box is ready, open it!",
+  "eventsComeBack": "A new box is waiting tomorrow.",
+  "eventsRewardZc": "+{amount} ZC",
+  "eventsRewardItem": "New item: {name}",
+  "eventsRewardEmpty": "This box was empty, try again tomorrow!",
+  "eventsBoxOpened": "Box opened!",
+  "eventsOk": "Great"
 }

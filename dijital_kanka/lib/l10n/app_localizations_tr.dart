@@ -3039,4 +3039,54 @@ class AppLocalizationsTr extends AppLocalizations {
   @override
   String get shopHint =>
       'Dokun ve odada dene; beğendiklerini tek seferde al. Sende olanlar hemen takılır.';
+
+  @override
+  String get eventsTitle => 'Etkinlikler';
+
+  @override
+  String get eventsEmpty =>
+      'Şu an etkinlik yok. Yeni etkinlikler yakında burada!';
+
+  @override
+  String get eventsUpcomingTitle => 'Yakında';
+
+  @override
+  String eventsStartsOn(String date) {
+    return '$date tarihinde başlıyor';
+  }
+
+  @override
+  String eventsEndsOn(String date) {
+    return '$date tarihine kadar';
+  }
+
+  @override
+  String eventsDay(int day) {
+    return '$day. gün';
+  }
+
+  @override
+  String get eventsOpenHint => 'Bugünün kutusu hazır, aç bakalım!';
+
+  @override
+  String get eventsComeBack => 'Yarın yeni bir kutu seni bekliyor.';
+
+  @override
+  String eventsRewardZc(int amount) {
+    return '+$amount ZC';
+  }
+
+  @override
+  String eventsRewardItem(String name) {
+    return 'Yeni eşya: $name';
+  }
+
+  @override
+  String get eventsRewardEmpty => 'Bu kutu boş çıktı, yarın şansını dene!';
+
+  @override
+  String get eventsBoxOpened => 'Kutu açıldı!';
+
+  @override
+  String get eventsOk => 'Harika';
 }

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../admin_auth.dart';
 import 'admin_log_screen.dart';
 import 'announce_screen.dart';
+import 'events_screen.dart';
 import 'games_config_screen.dart';
 import 'summary_screen.dart';
 import 'user_screen.dart';
@@ -21,6 +22,7 @@ class _HomeShellState extends State<HomeShell> {
     (icon: Icons.insights_outlined, label: 'Özet'),
     (icon: Icons.tune, label: 'Ayarlar'),
     (icon: Icons.campaign_outlined, label: 'Duyuru'),
+    (icon: Icons.celebration_outlined, label: 'Etkinlik'),
     (icon: Icons.person_search_outlined, label: 'Kullanıcı'),
     (icon: Icons.receipt_long_outlined, label: 'Kayıt'),
   ];
@@ -29,7 +31,8 @@ class _HomeShellState extends State<HomeShell> {
     0 => const SummaryScreen(),
     1 => const GamesConfigScreen(),
     2 => const AnnounceScreen(),
-    3 => const UserScreen(),
+    3 => const EventsScreen(),
+    4 => const UserScreen(),
     _ => const AdminLogScreen(),
   };
 

@@ -5,6 +5,8 @@ import 'package:provider/provider.dart';
 import 'data/home_catalog.dart';
 import 'l10n/app_localizations.dart';
 import 'models/home_item.dart';
+import 'models/zibo_event.dart';
+import 'providers/events_provider.dart';
 import 'providers/coin_provider.dart';
 import 'providers/game_points_provider.dart';
 import 'providers/games_config_provider.dart';
@@ -52,6 +54,29 @@ class _Preview extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => CoinProvider(isSoundEnabled: () => false)..earnDailyLoginReward(2000)),
         ChangeNotifierProvider(create: (_) => GamePointsProvider()),
         ChangeNotifierProvider(create: (_) => GamesConfigProvider()),
+        // Örnek etkinlik: bugün başlamış 25 günlük takvim.
+        ChangeNotifierProvider(
+          create: (_) {
+            final today = DateTime.now();
+            final start = DateTime(today.year, today.month, today.day).subtract(const Duration(days: 2));
+            return EventsProvider()
+              ..setEvents([
+                ZiboEvent(
+                  id: 'onizleme',
+                  type: 'takvim',
+                  enabled: true,
+                  title: const {'tr': 'Yılbaşı takvimi', 'en': 'Advent calendar', 'es': 'Calendario de Navidad'},
+                  description: const {'tr': 'Her gün bir kutu, 25. gün büyük hediye!'},
+                  start: start,
+                  end: start.add(const Duration(days: 24)),
+                  days: [
+                    for (var i = 0; i < 25; i++)
+                      i == 24 ? const EventReward(itemKey: 'salon:kose:cam') : EventReward(zc: 10 + i * 2),
+                  ],
+                ),
+              ]);
+          },
+        ),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,

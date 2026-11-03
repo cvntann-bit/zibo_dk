@@ -9,6 +9,7 @@ import '../data/zibo_world_lines.dart';
 import '../l10n/app_localizations.dart';
 import '../models/home_item.dart';
 import '../models/home_need.dart';
+import '../providers/events_provider.dart';
 import '../providers/home_decor_provider.dart';
 import '../providers/home_needs_provider.dart';
 import '../utils/adaptive.dart';
@@ -16,6 +17,7 @@ import '../widgets/home_art/room_art.dart';
 import '../widgets/home_art/room_view.dart';
 import '../widgets/home_art/svg_kit.dart';
 import '../widgets/sticker_style.dart';
+import 'events_screen.dart';
 import 'game_hall_screen.dart';
 import 'home_room_screen.dart';
 
@@ -119,6 +121,7 @@ class _ZiboWorldScreenState extends State<ZiboWorldScreen> {
     final l10n = AppLocalizations.of(context)!;
     final needs = context.watch<HomeNeedsProvider>();
     final decor = context.watch<HomeDecorProvider>();
+    final events = context.watch<EventsProvider>();
     final hPad = Adaptive.horizontalPadding(context, maxWidth: 640, minPadding: 12);
     final want = needs.lowest;
     final wantLevel = needs.percent(want);
@@ -172,7 +175,12 @@ class _ZiboWorldScreenState extends State<ZiboWorldScreen> {
                       onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const GameHallPage())),
                     ),
                     const SizedBox(height: 10),
-                    _Door(icon: _doorIcons['events']!, label: l10n.worldDoorEvents, onTap: _comingSoon),
+                    _Door(
+                      icon: _doorIcons['events']!,
+                      label: l10n.worldDoorEvents,
+                      badge: events.openableCount,
+                      onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const EventsScreen())),
+                    ),
                     const SizedBox(height: 10),
                     _Door(icon: _doorIcons['leaderboard']!, label: l10n.worldDoorLeaderboard, onTap: _comingSoon, locked: true),
                     const SizedBox(height: 10),
@@ -183,7 +191,68 @@ class _ZiboWorldScreenState extends State<ZiboWorldScreen> {
             ),
           ],
         ),
+        if (events.active.isNotEmpty) ...[
+          const SizedBox(height: 12),
+          _EventCard(
+            title: events.active.first.titleFor(Localizations.localeOf(context)),
+            subtitle: events.openableCount > 0 ? l10n.eventsOpenHint : l10n.eventsComeBack,
+            onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const EventsScreen())),
+          ),
+        ],
       ],
+    );
+  }
+}
+
+/// Süren etkinliğin kartı (taslaktaki lacivert "Yılbaşı takvimi" kartı).
+class _EventCard extends StatelessWidget {
+  const _EventCard({required this.title, required this.subtitle, required this.onTap});
+
+  final String title;
+  final String subtitle;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      label: '$title. $subtitle',
+      excludeSemantics: true,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(18),
+          onTap: onTap,
+          child: Ink(
+            padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
+            decoration: stickerDecoration(fill: const Color(0xFF1F3B5C), borderRadius: BorderRadius.circular(18)),
+            child: Row(
+              children: [
+                SvgPicture.string(_svg60(_doorIcons['events']!), width: 46, height: 46),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: const TextStyle(
+                          fontFamily: 'Baloo2',
+                          fontVariations: [FontVariation('wght', 800)],
+                          fontSize: 16,
+                          height: 1.2,
+                          color: Colors.white,
+                        ),
+                      ),
+                      Text(subtitle, style: const TextStyle(fontSize: 12, color: Color(0xDDFFFFFF))),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
@@ -430,7 +499,7 @@ class _Bubble extends StatelessWidget {
 }
 
 class _Door extends StatelessWidget {
-  const _Door({required this.icon, required this.label, required this.onTap, this.locked = false});
+  const _Door({required this.icon, required this.label, required this.onTap, this.locked = false, this.badge = 0});
 
   final String icon;
   final String label;
@@ -439,12 +508,15 @@ class _Door extends StatelessWidget {
   /// Sıralama ve Arkadaşlar 1.18.0'a girmiyor (Faz 0 kararı) — soluk görünür.
   final bool locked;
 
+  /// Kırmızı sayı rozeti (ör. açılmayı bekleyen etkinlik kutusu); 0 = yok.
+  final int badge;
+
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     return Semantics(
       button: true,
-      label: label,
+      label: badge > 0 ? '$label ($badge)' : label,
       excludeSemantics: true,
       child: Opacity(
         opacity: locked ? 0.55 : 1,
@@ -474,6 +546,23 @@ class _Door extends StatelessWidget {
                   ),
                   if (locked)
                     Positioned(top: -2, right: 2, child: Icon(Icons.lock_rounded, size: 14, color: colorScheme.onSurfaceVariant)),
+                  if (badge > 0)
+                    Positioned(
+                      top: -10,
+                      right: -6,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFE2463A),
+                          border: Border.all(color: kStickerOutline, width: 2),
+                          borderRadius: BorderRadius.circular(99),
+                        ),
+                        child: Text(
+                          '$badge',
+                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 11),
+                        ),
+                      ),
+                    ),
                 ],
               ),
             ),

@@ -400,6 +400,8 @@ const homeRooms = <HomeRoomDef>[
         HomeItem('kaktus', 'Kaktüs', style: 'cactusPot', color: 0xFFE9A86B, price: 120),
         HomeItem('akvaryum', 'Akvaryum', style: 'aquarium', color: 0xFFD9975A, price: 600),
         HomeItem('yok', 'Boş', style: 'none', color: null, price: 0),
+        HomeItem('cam', 'Yılbaşı çamı', style: 'xmasTree', color: 0xFF2E8B57, price: 900, eventOnly: true),
+        HomeItem('kardan', 'Kardan adam', style: 'snowman', color: 0xFFF2564B, price: 600, eventOnly: true),
       ]),
       HomeCategory('duvar', 'Duvar süsü', HomeCategoryKind.furniture, [
         HomeItem('tablo', 'Tablo', style: 'frame', color: 0xFFE2A566, price: 0),
@@ -413,6 +415,7 @@ const homeRooms = <HomeRoomDef>[
         HomeItem('puf', 'Puf mercan', style: 'pouf', color: 0xFFFF9F8F, price: 140),
         HomeItem('puf_mavi', 'Puf mavi', style: 'pouf', color: 0xFF8ED0F2, price: 140),
         HomeItem('armut', 'Armut koltuk', style: 'beanbag', color: 0xFF9FD6A8, price: 300),
+        HomeItem('hediye', 'Hediye kutuları', style: 'giftBoxes', color: 0xFFF2564B, price: 400, eventOnly: true),
       ]),
     ],
   ),

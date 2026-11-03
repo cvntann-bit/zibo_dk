@@ -811,7 +811,8 @@ class _HomeRoomScreenState extends State<HomeRoomScreen> with SingleTickerProvid
         runSpacing: 8,
         children: [
           for (final item in category.items)
-            if (decor.isOwned(widget.room, category.id, item.id) || config.isOnSale(_key(category.id, item.id), now))
+            if (decor.isOwned(widget.room, category.id, item.id) ||
+                (!item.eventOnly && config.isOnSale(_key(category.id, item.id), now)))
               _ShopTile(
                 category: category,
                 item: item,

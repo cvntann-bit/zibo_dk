@@ -117,4 +117,5 @@ const furnitureViewBox = <String, String>{
   'duck': '-10 -10 110 80', 'toyBoat': '-10 -20 120 100',
   'soapBar': '-6 0 102 60', 'soapHeart': '-6 -4 102 64', 'soapStar': '-6 -4 102 64', 'soapCloud': '-6 0 102 60',
   'soapDuck': '-6 -6 102 76',
+  'xmasTree': '0 -4 200 328', 'snowman': '0 -16 200 336', 'giftBoxes': '0 10 200 154',
 };

@@ -273,6 +273,12 @@ service cloud.firestore {
       allow read: if request.auth != null;
       allow write: if isAdmin();
     }
+    // Zibo Dünyası etkinlikleri (EventsProvider, docs/zibo_world_roadmap.md Faz 6).
+    // Yönetici uygulamasından yazılır; açılan günler kullanıcının state/eventsState'inde.
+    match /events/{eventId} {
+      allow read: if request.auth != null;
+      allow write: if isAdmin();
+    }
 
     match /founderBadgeStatus/status {
       allow read: if request.auth != null;

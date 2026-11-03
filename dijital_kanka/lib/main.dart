@@ -36,6 +36,7 @@ import 'providers/games_config_provider.dart';
 import 'providers/home_config_provider.dart';
 import 'providers/home_decor_provider.dart';
 import 'providers/home_needs_provider.dart';
+import 'providers/events_provider.dart';
 import 'providers/goals_provider.dart';
 import 'providers/gratitude_provider.dart';
 import 'providers/hidden_badge_provider.dart';
@@ -840,6 +841,8 @@ class DijitalKankaApp extends StatelessWidget {
           },
         ),
         ChangeNotifierProvider(create: (_) => HomeDecorProvider(uid: uid)),
+        // Zibo Dünyası etkinlikleri (Faz 6): events koleksiyonu + açılan günler.
+        ChangeNotifierProvider(create: (context) => EventsProvider(uid: uid, now: _trustedNow(context))),
         // Yönetici panelinin uygulama içi mesaj kartları (docs/admin_panel.md).
         ChangeNotifierProvider(create: (_) => InAppMessageProvider(uid: uid)),
         ChangeNotifierProvider(

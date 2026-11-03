@@ -3070,4 +3070,53 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get shopHint =>
       'Toca para probar en la habitación y cómpralo todo de una vez. Lo que ya tienes se coloca al instante.';
+
+  @override
+  String get eventsTitle => 'Eventos';
+
+  @override
+  String get eventsEmpty => 'No hay eventos ahora. ¡Pronto habrá nuevos!';
+
+  @override
+  String get eventsUpcomingTitle => 'Próximamente';
+
+  @override
+  String eventsStartsOn(String date) {
+    return 'Empieza el $date';
+  }
+
+  @override
+  String eventsEndsOn(String date) {
+    return 'Hasta el $date';
+  }
+
+  @override
+  String eventsDay(int day) {
+    return 'Día $day';
+  }
+
+  @override
+  String get eventsOpenHint => '¡La caja de hoy está lista, ábrela!';
+
+  @override
+  String get eventsComeBack => 'Mañana te espera una nueva caja.';
+
+  @override
+  String eventsRewardZc(int amount) {
+    return '+$amount ZC';
+  }
+
+  @override
+  String eventsRewardItem(String name) {
+    return 'Objeto nuevo: $name';
+  }
+
+  @override
+  String get eventsRewardEmpty => 'Esta caja salió vacía, ¡prueba mañana!';
+
+  @override
+  String get eventsBoxOpened => '¡Caja abierta!';
+
+  @override
+  String get eventsOk => 'Genial';
 }

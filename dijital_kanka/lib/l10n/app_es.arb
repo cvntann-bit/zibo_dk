@@ -894,5 +894,18 @@
   "shopEquipped": "En uso",
   "shopOwned": "Ya lo tienes",
   "shopProOnlyMsg": "Este objeto es exclusivo de Zibo Pro.",
-  "shopHint": "Toca para probar en la habitación y cómpralo todo de una vez. Lo que ya tienes se coloca al instante."
+  "shopHint": "Toca para probar en la habitación y cómpralo todo de una vez. Lo que ya tienes se coloca al instante.",
+  "eventsTitle": "Eventos",
+  "eventsEmpty": "No hay eventos ahora. ¡Pronto habrá nuevos!",
+  "eventsUpcomingTitle": "Próximamente",
+  "eventsStartsOn": "Empieza el {date}",
+  "eventsEndsOn": "Hasta el {date}",
+  "eventsDay": "Día {day}",
+  "eventsOpenHint": "¡La caja de hoy está lista, ábrela!",
+  "eventsComeBack": "Mañana te espera una nueva caja.",
+  "eventsRewardZc": "+{amount} ZC",
+  "eventsRewardItem": "Objeto nuevo: {name}",
+  "eventsRewardEmpty": "Esta caja salió vacía, ¡prueba mañana!",
+  "eventsBoxOpened": "¡Caja abierta!",
+  "eventsOk": "Genial"
 }
