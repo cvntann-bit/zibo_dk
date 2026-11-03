@@ -20,6 +20,7 @@ class CareFx {
   final List<_Float> hearts = [];
   final List<_Float> zs = [];
   final List<_Float> pops = [];
+  final List<_Dust> dusts = [];
 
   /// Kalan duş karesi; bitince [onShowerDone] çağrılır.
   int shower = 0;
@@ -43,6 +44,7 @@ class CareFx {
       hearts.isNotEmpty ||
       zs.isNotEmpty ||
       pops.isNotEmpty ||
+      dusts.isNotEmpty ||
       shower > 0 ||
       sleeping;
 
@@ -103,6 +105,14 @@ class CareFx {
 
   void pop(String text) => pops.add(_Float(560, 420, 1.6, 46, text));
 
+  /// Zıplayan Zibo'nun ayak altından kalkan toz (odalar arası geçiş).
+  void dust(Offset feet) {
+    for (var i = 0; i < 7; i++) {
+      final dir = i.isEven ? 1 : -1;
+      dusts.add(_Dust(feet.dx + _r(-20, 20), feet.dy - _r(0, 10), dir * _r(1.2, 3.6), -_r(.2, 1.4), _r(10, 20)));
+    }
+  }
+
   /// Bir kare ilerletir.
   void step() {
     // Duş: damlalar, köpük erir, lekeler silinir.
@@ -159,7 +169,21 @@ class CareFx {
       p.a -= .012;
     }
     pops.removeWhere((p) => p.a <= 0);
+    for (final d in dusts) {
+      d.x += d.vx;
+      d.y += d.vy;
+      d.vx *= .94;
+      d.r += .9;
+      d.a -= .03;
+    }
+    dusts.removeWhere((d) => d.a <= 0);
   }
+}
+
+class _Dust {
+  _Dust(this.x, this.y, this.vx, this.vy, this.r);
+  double x, y, vx, vy, r;
+  double a = .85;
 }
 
 class _Spot {
@@ -209,15 +233,19 @@ class _Float {
 
 /// [CareFx]'i sahne ölçeğinde çizer.
 class CareFxPainter extends CustomPainter {
-  CareFxPainter(this.fx, {required Listenable repaint}) : super(repaint: repaint);
+  CareFxPainter(this.fx, {required Listenable repaint, this.offsetY = 0}) : super(repaint: repaint);
 
   final CareFx fx;
+
+  /// Uzatılmış tuvalde sahnenin üst boşluğu ([RoomScene.extraTop]).
+  final double offsetY;
 
   @override
   void paint(Canvas canvas, Size size) {
     final k = size.width / 900;
     canvas.save();
     canvas.scale(k);
+    canvas.translate(0, offsetY);
     final paint = Paint();
     double op(double a) => a.clamp(0.0, 1.0);
 
@@ -277,6 +305,9 @@ class CareFxPainter extends CustomPainter {
     }
     for (final p in fx.pops) {
       _text(canvas, p, const Color(0xFFFFD64A), const Color(0xFF14110C));
+    }
+    for (final d in fx.dusts) {
+      canvas.drawCircle(Offset(d.x, d.y), d.r, Paint()..color = const Color(0xFFE9DCC6).withValues(alpha: op(d.a)));
     }
     final soap = fx.soapAt;
     if (soap != null) {

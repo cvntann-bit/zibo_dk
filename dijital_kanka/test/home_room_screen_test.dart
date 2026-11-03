@@ -68,7 +68,7 @@ void main() {
             GlobalCupertinoLocalizations.delegate,
           ],
           supportedLocales: AppLocalizations.supportedLocales,
-          home: HomeRoomScreen(room: room, title: 'Oda'),
+          home: HomeRoomScreen(initialRoom: room),
         ),
       ),
     );
@@ -77,9 +77,12 @@ void main() {
 
   /// Sahne koordinatını ekran konumuna çevirir.
   Offset scenePoint(WidgetTester tester, Offset p) {
-    final box = tester.renderObject<RenderBox>(find.byType(RoomView));
+    final view = find.byType(RoomView);
+    final box = tester.renderObject<RenderBox>(view);
     final s = box.size.width / 900;
-    return box.localToGlobal(p * s);
+    // Tam ekranda tuval sahnenin üstüne uzar (RoomScene.extraTop).
+    final top = tester.widget<RoomView>(view).scene.extraTop;
+    return box.localToGlobal((p + Offset(0, top)) * s);
   }
 
   Future<void> frames(WidgetTester tester, int n) async {
@@ -160,7 +163,7 @@ void main() {
     final start = coins.balance;
     await tester.tap(find.text('Dekor'));
     await tester.pump();
-    expect(find.text('Oda tamam'), findsOneWidget);
+    expect(find.textContaining('Odadakileri al'), findsNothing);
     // Boya kategorisi açık: Gökyüzü (40 ZC) dene.
     await tester.tap(find.bySemanticsLabel('Gökyüzü, 40 ZC'));
     await tester.pump();
@@ -174,7 +177,9 @@ void main() {
     expect(decor.equipped(HomeRoom.living, 'boya'), 'gok');
     expect(find.text('Odan yenilendi!'), findsOneWidget);
     // Sahip olunan başlangıç boyasına dokununca ücretsiz geri takılır.
-    await tester.tap(find.bySemanticsLabel(RegExp(r'^Şeftali, ')));
+    final seftali = find.bySemanticsLabel(RegExp(r'^Şeftali, '));
+    await tester.dragUntilVisible(seftali, find.byType(ListView).last, const Offset(-120, 0));
+    tester.widget<InkWell>(find.descendant(of: seftali, matching: find.byType(InkWell))).onTap!();
     await tester.pump();
     expect(decor.equipped(HomeRoom.living, 'boya'), 'seftali');
     expect(coins.balance, start - 40);
@@ -186,7 +191,7 @@ void main() {
     final start = coins.balance;
     await tester.tap(find.text('Dekor'));
     await tester.pump();
-    await tester.ensureVisible(find.bySemanticsLabel('Gece mavisi, 80 ZC'));
+    await tester.dragUntilVisible(find.bySemanticsLabel('Gece mavisi, 80 ZC'), find.byType(ListView).last, const Offset(-120, 0));
     await tester.pump();
     await tester.tap(find.bySemanticsLabel('Gece mavisi, 80 ZC'));
     await tester.pump();
@@ -199,7 +204,21 @@ void main() {
     }
     await tester.tap(find.byTooltip('Vazgeç'));
     await tester.pump();
-    expect(find.text('Oda tamam'), findsOneWidget);
+    expect(find.textContaining('Odadakileri al'), findsNothing);
+    await tearDownScreen(tester);
+  });
+
+  testWidgets('odalar arası: kaydırınca ya da ihtiyaç çubuğuna dokununca oda değişir', (tester) async {
+    await pumpRoom(tester, HomeRoom.living);
+    expect(find.text('Salon'), findsWidgets);
+    // Sola kaydır → sıradaki oda (yatak odası).
+    await tester.fling(find.byType(RoomView), const Offset(-300, 0), 1200);
+    await frames(tester, 70);
+    expect(find.text('Yatak odası'), findsWidgets);
+    // Tokluk çubuğu → mutfak.
+    await tester.tap(find.bySemanticsLabel(RegExp(r'^Tokluk %')));
+    await frames(tester, 70);
+    expect(find.text('Mutfak'), findsWidgets);
     await tearDownScreen(tester);
   });
 }

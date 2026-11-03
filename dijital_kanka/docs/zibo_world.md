@@ -99,6 +99,15 @@ Kullanıcı: "fazları bitirelim, düzeltmeleri en son yaparız". Fazlar sırayl
 1. ✅ **YAPILDI (2026-11-03)** — `ZiboWorldScreen` artık görsel tabanlı (arka plan + 5 bina, gökyüzünde el sallayan Zibo ve balon; etiketler ayrı üst katmanda, arka sıranın etiketi binanın üstünde); eve dokununca `HomeHouseScreen` (halkalar + 2×2 ev kesiti), Oyun Salonu → `GameHallPage`, Etkinlikler → `EventsScreen` (kutu rozeti binada); Sıralama/Arkadaşlar soluk + kilit. Eski metin: **Giriş ekranı görsel tabanlı olacak.** Kullanıcı görselleri KENDİSİ üretecek: Zibo'nun Evi, Oyun Salonu ve diğer yerler (etkinlik, sıralama, arkadaşlar…) bir dünya/kasaba sahnesinde. **Eve basınca ev ekranı** (bugünkü 2×2 oda kesiti ya da odalar), **Oyun Salonu'na basınca oyunlar** açılır. Bugünkü Faz 3 ev kesiti (`ZiboWorldScreen`) o zaman "ev ekranı"na dönüşür; hub görsel + dokunma alanları olur.
    - Görsel teslim biçimi henüz konuşulmadı (tek sahne + dokunma koordinatları mı, arka plan + her bina ayrı şeffaf PNG mi). Öneri: ayrı parçalar — tek binayı değiştirmek, kilitli/"yakında" soluk gösterim, dokununca zıplama ve tablet yerleşimi kolay.
    - Kilitli yerler (Sıralama, Arkadaşlar 1.19.0) görselde de "yakında" görünmeli.
+1b. ✅ **Tam ekran ev (kullanıcı, 2026-11-03):** "zibo evini tam ekran yap, alttaki dekorasyon/yemek/bakım tam ekranın içinde
+   ince bar şeklinde sağa sola kaydırılarak seçilsin; odalarda sağa sola kaydırarak fade'li geçiş, Zibo kaydırılan yöne zıp zıp
+   gitsin, ayağının altından toz çıksın; ev çizimi kalksın, direkt salonda açılsın; bakım barları tam ekrana güzelce yerleşsin."
+   → `HomeRoomScreen(initialRoom)` tek tam ekran sayfa: tuval duvar yukarı / zemin aşağı uzar (`RoomScene.extraTop/Bottom`,
+   sarkıt lamba kablosu ve duş borusu tavana uzar); üstte geri + oda adı (oklar, noktalar) + 4 ihtiyaç çubuğu (bulunulan oda
+   vurgulu, dokununca o odaya gider); altta yarı saydam panel: Bakım/Dekor, başlık, çipler, yatay kayan tek sıra (yemek,
+   sabun, oyun, dekor eşyası), sepet. Oda sırası döngüsel mutfak · salon · yatak · banyo; kaydırınca Zibo zemin çizgisinde
+   kaydırılan yöne iki zıplamayla çıkar (inişlerde toz), oda solarak değişir, karşıdan zıplayarak gelir ("hareketi azalt"
+   açıksa anında). Giriş ekranındaki ev → salon; balon → en düşük ihtiyacın odası. 2×2 ev kesiti ekranı kaldırıldı.
 2. **Faz 4'ten kalanlar:** ~~yeni Zibo pozları~~ ✅ 2026-11-03 (8 poz, `docs/zibo_images_needed.md`), bakım ses efektleri, ödüllü reklamla +1 ücretsiz yemek (`unit_economics.md`'ye göre), bakım rozetleri (`add-badge`), analytics olayları.
 3. **Çeviri:** eşya, kategori, yemek ve sabun adları şimdilik yalnız Türkçe (katalog) — EN/ES.
 

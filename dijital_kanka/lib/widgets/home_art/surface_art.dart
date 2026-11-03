@@ -33,10 +33,10 @@ final Map<String, (int, int, String Function(String a, String b))> floorArt = {
 
 /// Duvar kağıdı katmanı (boyanın üstüne): boyanın biraz koyusu (gece
 /// mavisinde açığı). Desensizse boş.
-String wallpaperLayer(SvgKit k, String style, String wall, {required num height}) {
+String wallpaperLayer(SvgKit k, String style, String wall, {num y = 0, required num height}) {
   final draw = wallArt[style];
   if (style == 'duz' || draw == null) return '';
-  return k.tiled(draw(SvgKit.mix(wall, wall == '#4B6C9E' ? .16 : -.1)), 80, 80, x: 0, y: 0, width: 900, height: height);
+  return k.tiled(draw(SvgKit.mix(wall, wall == '#4B6C9E' ? .16 : -.1)), 80, 80, x: 0, y: y, width: 900, height: height);
 }
 
 /// Zemin deseni, verilen dikdörtgene döşenir.

@@ -30,7 +30,7 @@ class RoomView extends StatelessWidget {
       label: semanticLabel,
       excludeSemantics: true,
       child: AspectRatio(
-        aspectRatio: sceneWidth / sceneHeight,
+        aspectRatio: sceneWidth / scene.height,
         child: LayoutBuilder(
           builder: (context, constraints) {
             final s = constraints.maxWidth / sceneWidth;
@@ -42,7 +42,7 @@ class RoomView extends StatelessWidget {
                   if (showZibo)
                     Positioned(
                       left: zibo.x * s,
-                      top: (zibo.y - ziboLift) * s,
+                      top: (zibo.y + scene.extraTop - ziboLift) * s,
                       width: zibo.w * s,
                       height: zibo.h * s,
                       child: Image.asset('assets/images/home/zibo_${zibo.pose}.webp', fit: BoxFit.contain),
@@ -73,8 +73,10 @@ class RoomSceneCache {
     bool dark = false,
     String? foamFill,
     String foamStroke = '#CDEBF7',
+    double extraTop = 0,
+    double extraBottom = 0,
   }) {
-    final key = [room.id, care, pose, soapColor, dark, foamFill, foamStroke, for (final e in items.entries) '${e.key}=${e.value.id}'].join('|');
+    final key = [room.id, care, pose, soapColor, dark, foamFill, foamStroke, extraTop.round(), extraBottom.round(), for (final e in items.entries) '${e.key}=${e.value.id}'].join('|');
     if (key != _key || _scene == null) {
       _key = key;
       _scene = RoomArt.build(
@@ -86,6 +88,8 @@ class RoomSceneCache {
         dark: dark,
         foamFill: foamFill,
         foamStroke: foamStroke,
+        extraTop: extraTop,
+        extraBottom: extraBottom,
       );
     }
     return _scene!;

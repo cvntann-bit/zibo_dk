@@ -2,10 +2,12 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 
 import '../data/home_catalog.dart';
+import '../data/rarity_colors.dart';
 import '../l10n/app_localizations.dart';
 import '../models/home_item.dart';
 import '../models/home_need.dart';
@@ -16,7 +18,6 @@ import '../providers/home_config_provider.dart';
 import '../providers/home_decor_provider.dart';
 import '../providers/home_needs_provider.dart';
 import '../providers/subscription_provider.dart';
-import '../data/rarity_colors.dart';
 import '../widgets/home_art/care_fx.dart';
 import '../widgets/home_art/item_thumb.dart';
 import '../widgets/home_art/room_art.dart';
@@ -25,25 +26,31 @@ import '../widgets/home_art/svg_kit.dart';
 import '../widgets/sticker_style.dart';
 import 'game_webview_screen.dart';
 
-/// Zibo Dünyası'nda bir oda (docs/zibo_world_roadmap.md Faz 2 + Faz 4).
+/// Zibo'nun Evi — tam ekran oda (docs/zibo_world.md düzenleme turu, 2026-11-03).
 ///
-/// **Bakım** (varsayılan): odanın bakım oyunu — mutfakta besle, banyoda
-/// yıka, yatak odasında uyut (gerçek zamanlı), salonda oyna. Taslak:
-/// `docs/home_studio/index.html` bakım modu. İhtiyaçlar [HomeNeedsProvider]'a,
-/// harcamalar [CoinProvider]'a yazılır.
+/// Oda çizimi tüm ekranı kaplar (duvar yukarı, zemin aşağı uzar —
+/// [RoomScene.extraTop]/[RoomScene.extraBottom]). Üstte geri, oda adı ve
+/// dört ihtiyaç çubuğu; altta ince panel: Bakım/Dekor, çipler ve sağa-sola
+/// kayan tek sıra (yemekler, sabunlar, oyunlar ya da dekor eşyaları).
 ///
-/// **Dekor:** eşyalar DENENİR — deneme kaydedilmez, satın alma Faz 5.
+/// Odalar arası: sahneyi sağa/sola kaydır (ya da oda adındaki okları, ihtiyaç
+/// çubuklarını kullan) → Zibo kaydırılan yöne zıplaya zıplaya çıkar, her
+/// inişte ayağının altından toz kalkar, oda solarak değişir, Zibo karşı
+/// taraftan zıplayarak gelir. Giriş ekranındaki eve dokununca salonda açılır.
 ///
-/// Sahne üstte sabit (sürükleme listeyi kaydırmasın), panel altta kayar.
+/// **Bakım:** mutfakta besle, banyoda yıka, yatak odasında uyut (gerçek
+/// zamanlı), salonda oyna (Faz 4). **Dekor:** eşyaları dene, sepeti al (Faz 5).
 class HomeRoomScreen extends StatefulWidget {
-  const HomeRoomScreen({super.key, required this.room, required this.title});
+  const HomeRoomScreen({super.key, this.initialRoom = HomeRoom.living});
 
-  final HomeRoom room;
-  final String title;
+  final HomeRoom initialRoom;
 
   @override
   State<HomeRoomScreen> createState() => _HomeRoomScreenState();
 }
+
+/// Kaydırma sırası (döngüsel): mutfak · salon · yatak odası · banyo.
+const homeRoomOrder = [HomeRoom.kitchen, HomeRoom.living, HomeRoom.bedroom, HomeRoom.bath];
 
 enum _BathPhase { dirty, foamy, wet, clean }
 
@@ -53,17 +60,36 @@ const _mouth = Offset(455, 623);
 // Banyoda Zibo'nun gövdesi (sabun yalnız burada köpürür).
 const _bathZibo = Rect.fromLTRB(130, 340, 450, 640);
 
-class _HomeRoomScreenState extends State<HomeRoomScreen> with SingleTickerProviderStateMixin {
+// Geçiş: Zibo'nun zıplayarak kat ettiği yol (sahne birimi) ve zıplama yüksekliği.
+const _hopDistance = 700.0;
+const _hopHeight = 70.0;
+// Zıplayan Zibo odanın zemininde yürür (yatak/kanepe/küvetin önünde): ayak çizgisi ve boyu.
+const _hopFeetY = 1030.0;
+const _hopSpriteH = 440.0;
+
+class _HomeRoomScreenState extends State<HomeRoomScreen> with TickerProviderStateMixin {
+  late HomeRoom _room = widget.initialRoom;
   final _cache = RoomSceneCache();
   final _fx = CareFx();
   final _rnd = math.Random();
   final _frame = ValueNotifier<int>(0);
   late final Ticker _ticker;
+  late final AnimationController _hop;
   bool _care = true;
+
+  // Odalar arası geçiş.
+  HomeRoom? _hopTarget;
+  int _hopDir = -1; // ekranda Zibo'nun gittiği yön (-1 sol, +1 sağ)
+  ZiboSpot? _hopFrom;
+  bool _switched = false;
+  double _lastHopT = 0;
+  bool _swipeBlocked = false;
+  double _dragDx = 0;
+  RoomScene? _lastScene;
 
   // Dekor deneme.
   final Map<String, String> _preview = {};
-  late String _category = HomeDecorProvider.roomDef(widget.room).categories.first.id;
+  late String _category = HomeDecorProvider.roomDef(_room).categories.first.id;
 
   // Mutfak.
   String _foodGroup = 'meyve';
@@ -76,7 +102,6 @@ class _HomeRoomScreenState extends State<HomeRoomScreen> with SingleTickerProvid
   // Banyo.
   _BathPhase _phase = _BathPhase.clean;
   bool _scrubbing = false;
-  bool _bathReady = false;
 
   // Salon.
   bool _justPlayed = false;
@@ -85,23 +110,23 @@ class _HomeRoomScreenState extends State<HomeRoomScreen> with SingleTickerProvid
   void initState() {
     super.initState();
     _ticker = createTicker(_onTick);
+    _hop = AnimationController(vsync: this, duration: const Duration(milliseconds: 950))
+      ..addListener(_onHop)
+      ..addStatusListener((status) {
+        if (status == AnimationStatus.completed) {
+          setState(() {
+            _hopTarget = null;
+            _hopFrom = null;
+          });
+        }
+      });
     _fx.onShowerDone = () => setState(() => _phase = _BathPhase.wet);
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (_bathReady || widget.room != HomeRoom.bath) return;
-    _bathReady = true;
-    final h = context.read<HomeNeedsProvider>().percent(HomeNeed.hygiene);
-    if (h < 95) {
-      _phase = _BathPhase.dirty;
-      _fx.dirty(((100 - h) / 100 * 12).ceil().clamp(3, 12));
-    }
+    _enterRoom();
   }
 
   @override
   void dispose() {
+    _hop.dispose();
     _ticker.dispose();
     _frame.dispose();
     super.dispose();
@@ -120,17 +145,105 @@ class _HomeRoomScreenState extends State<HomeRoomScreen> with SingleTickerProvid
     // Uyurken enerji göstergesi saniyede bir tazelenir.
     if (_fx.sleeping && _frame.value % 60 == 0) context.read<HomeNeedsProvider>().refresh();
     _frame.value++;
-    if (!_fx.busy && _chew == 0 && _held == null && !_scrubbing) _ticker.stop();
+    if (!_fx.busy && _chew == 0 && _held == null && !_scrubbing && !_hop.isAnimating) _ticker.stop();
   }
 
-  HomeNeed get _need => switch (widget.room) {
+  HomeNeed _needOf(HomeRoom room) => switch (room) {
     HomeRoom.kitchen => HomeNeed.hunger,
     HomeRoom.bath => HomeNeed.hygiene,
     HomeRoom.bedroom => HomeNeed.energy,
     HomeRoom.living => HomeNeed.fun,
   };
 
+  String _roomName(AppLocalizations l10n, HomeRoom room) => switch (room) {
+    HomeRoom.kitchen => l10n.worldRoomKitchen,
+    HomeRoom.bath => l10n.worldRoomBath,
+    HomeRoom.bedroom => l10n.worldRoomBedroom,
+    HomeRoom.living => l10n.worldRoomLiving,
+  };
+
   void _say(String text) => setState(() => _msg = text);
+
+  // --- Odalar arası geçiş -----------------------------------------------------
+
+  /// Odaya girerken ve çıkarken odaya özgü durum.
+  void _enterRoom() {
+    _preview.clear();
+    _category = HomeDecorProvider.roomDef(_room).categories.first.id;
+    _msg = null;
+    _held = null;
+    _chew = 0;
+    _justPlayed = false;
+    _fx.clearBath();
+    _phase = _BathPhase.clean;
+    if (_room == HomeRoom.bath) {
+      final h = context.read<HomeNeedsProvider>().percent(HomeNeed.hygiene);
+      if (h < 95) {
+        _phase = _BathPhase.dirty;
+        _fx.dirty(((100 - h) / 100 * 12).ceil().clamp(3, 12));
+      }
+    }
+  }
+
+  /// [delta] +1 = sıradaki oda (Zibo sola gider), -1 = önceki oda (sağa).
+  void _go(int delta, {HomeRoom? to}) {
+    if (_hop.isAnimating || delta == 0) return;
+    final i = homeRoomOrder.indexOf(_room);
+    final target = to ?? homeRoomOrder[(i + delta) % homeRoomOrder.length];
+    if (target == _room) return;
+    HapticFeedback.selectionClick();
+    final scene = _lastScene;
+    setState(() {
+      _hopTarget = target;
+      _hopDir = delta > 0 ? -1 : 1;
+      _hopFrom = scene?.zibo;
+      _switched = false;
+      _lastHopT = 0;
+    });
+    if (MediaQuery.of(context).disableAnimations) {
+      setState(() {
+        _room = target;
+        _enterRoom();
+        _hopTarget = null;
+      });
+      return;
+    }
+    if (scene != null) _fx.dust(_feet(scene.zibo, 0, 0));
+    _hop.forward(from: 0);
+    _wake();
+  }
+
+  Offset _feet(ZiboSpot spot, double shift, double lift) => Offset(spot.x + spot.w / 2 + shift, _hopFeetY - lift);
+
+  /// Zıplama karesinin konumu: (yatay kayma, yükseklik, opaklık, hangi kutu).
+  (double, double, double, bool) _hopPose(double t) {
+    if (t < .45) {
+      final p = t / .45;
+      return (_hopDir * _hopDistance * p, (math.sin(p * 2 * math.pi)).abs() * _hopHeight, p < .75 ? 1.0 : 1 - (p - .75) / .25, false);
+    }
+    if (t < .55) return (0.0, 0.0, 0.0, true);
+    final p = (t - .55) / .45;
+    return (-_hopDir * _hopDistance * (1 - p), (math.sin(p * 2 * math.pi)).abs() * _hopHeight, p < .25 ? p / .25 : 1.0, true);
+  }
+
+  void _onHop() {
+    final t = _hop.value;
+    if (!_switched && t >= .5) {
+      _switched = true;
+      setState(() {
+        _room = _hopTarget!;
+        _enterRoom();
+      });
+    }
+    // İnişlerde toz: çıkışta yarı yolda, girişte yarı yolda ve sonunda.
+    bool crossed(double at) => _lastHopT < at && t >= at;
+    final from = _hopFrom;
+    final to = _lastScene?.zibo;
+    if (from != null && crossed(.225)) _fx.dust(_feet(from, _hopDir * _hopDistance * .5, 0));
+    if (to != null && crossed(.775)) _fx.dust(_feet(to, -_hopDir * _hopDistance * .5, 0));
+    if (to != null && t >= 1 && _lastHopT < 1) _fx.dust(_feet(to, 0, 0));
+    _lastHopT = t;
+  }
 
   // --- Mutfak --------------------------------------------------------------
 
@@ -173,14 +286,13 @@ class _HomeRoomScreenState extends State<HomeRoomScreen> with SingleTickerProvid
   HomeSoap _soap(HomeDecorProvider decor) =>
       homeSoaps.firstWhere((s) => s.id == decor.selectedSoap, orElse: () => homeSoaps.first);
 
+  bool get _canScrub => _phase == _BathPhase.dirty || _phase == _BathPhase.foamy;
+
   void _scrub(Offset p) {
-    if (_phase != _BathPhase.dirty && _phase != _BathPhase.foamy) return;
-    if (!_bathZibo.contains(p)) return;
+    if (!_canScrub || !_bathZibo.contains(p)) return;
     final soap = _soap(context.read<HomeDecorProvider>());
     final rainbow = soap.foam == null;
-    final fill = rainbow
-        ? _color(RoomArt.rainbow[_rnd.nextInt(RoomArt.rainbow.length)])
-        : Color(soap.foam!);
+    final fill = rainbow ? _color(RoomArt.rainbow[_rnd.nextInt(RoomArt.rainbow.length)]) : Color(soap.foam!);
     final wasRinseReady = _fx.dirt < .25;
     _fx.scrub(p, fill, Color(soap.foamStroke ?? 0xFFCDEBF7));
     // Panel (adımlar, duş düğmesi) yalnız eşik geçilince yeniden kurulur.
@@ -231,18 +343,75 @@ class _HomeRoomScreenState extends State<HomeRoomScreen> with SingleTickerProvid
     }
   }
 
+  // --- Dekor mağazası (Faz 5) ------------------------------------------------
+
+  String _key(String category, String itemId) => HomeDecorProvider.key(_room, category, itemId);
+
+  /// Denenen ama sahip olunmayan eşyalar ve (abonelik indirimli) fiyatları.
+  List<(String, HomeItem, int)> _cart(HomeDecorProvider decor) {
+    final config = context.read<HomeConfigProvider>().config;
+    final tier = context.read<SubscriptionProvider>().tier;
+    final def = HomeDecorProvider.roomDef(_room);
+    final cart = <(String, HomeItem, int)>[];
+    for (final e in _preview.entries) {
+      final item = def.category(e.key)?.item(e.value);
+      if (item == null || decor.isOwned(_room, e.key, e.value)) continue;
+      cart.add((e.key, item, config.priceFor(_key(e.key, e.value), item.price, tier)));
+    }
+    return cart;
+  }
+
+  void _tapItem(HomeDecorProvider decor, HomeCategory category, HomeItem item) {
+    final l10n = AppLocalizations.of(context)!;
+    final key = _key(category.id, item.id);
+    final owned = decor.isOwned(_room, category.id, item.id);
+    final config = context.read<HomeConfigProvider>().config;
+    if (!owned && config.isProOnly(key) && !context.read<SubscriptionProvider>().isPro) {
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(content: Text(l10n.shopProOnlyMsg)));
+      return;
+    }
+    setState(() {
+      if (owned) {
+        // Sahip olunan eşya hemen takılır (ücretsiz).
+        decor.equip(_room, category.id, item.id);
+        _preview.remove(category.id);
+      } else {
+        _preview[category.id] = item.id;
+      }
+    });
+  }
+
+  void _buyCart(HomeDecorProvider decor) {
+    final l10n = AppLocalizations.of(context)!;
+    final cart = _cart(decor);
+    if (cart.isEmpty) return;
+    final total = cart.fold<int>(0, (n, e) => n + e.$3);
+    final keys = [for (final e in cart) '${e.$1}:${e.$2.id}'].join(',');
+    final ok = context.read<CoinProvider>().spendOnHomeItem(itemKey: '${_room.id}:$keys', cost: total);
+    final messenger = ScaffoldMessenger.of(context)..hideCurrentSnackBar();
+    if (!ok) {
+      messenger.showSnackBar(SnackBar(content: Text(l10n.insufficientCoins)));
+      return;
+    }
+    for (final (category, item, _) in cart) {
+      decor.markOwned(_room, category, item.id);
+      decor.equip(_room, category, item.id);
+    }
+    setState(_preview.clear);
+    messenger.showSnackBar(SnackBar(content: Text(l10n.shopBought)));
+  }
+
   // --- Ortak ---------------------------------------------------------------
 
   static Color _color(String hex) => Color(int.parse('FF${hex.substring(1)}', radix: 16));
 
-  /// Sahne koordinatı (900×1200) ↔ ekran.
-  Offset _toScene(Offset local, double s) => local / s;
-
   String _pose(HomeNeedsProvider needs) {
     if (!_care) return 'happy';
-    final v = needs.percent(_need);
+    final v = needs.percent(_needOf(_room));
     // Bakım pozları kullanıcının ürettiği görseller (docs/zibo_images_needed.md).
-    return switch (widget.room) {
+    return switch (_room) {
       HomeRoom.kitchen =>
         _chew > 0
             ? 'eat_chew'
@@ -255,98 +424,133 @@ class _HomeRoomScreenState extends State<HomeRoomScreen> with SingleTickerProvid
     };
   }
 
+  /// Banyoda yıkanırken temizlik göstergesi adım adım dolar.
+  int _bathShown(int v) {
+    final shown = switch (_phase) {
+      _BathPhase.dirty || _BathPhase.foamy => ((1 - _fx.dirt) * 70).round(),
+      _BathPhase.wet => 85,
+      _BathPhase.clean => 100,
+    };
+    return math.max(v, shown);
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final decor = context.watch<HomeDecorProvider>();
     final needs = context.watch<HomeNeedsProvider>();
-    final def = HomeDecorProvider.roomDef(widget.room);
+    final def = HomeDecorProvider.roomDef(_room);
     final items = {
-      for (final c in def.categories)
-        c.id: (_care ? null : c.item(_preview[c.id] ?? '')) ?? decor.equippedItem(widget.room, c.id),
+      for (final c in def.categories) c.id: (_care ? null : c.item(_preview[c.id] ?? '')) ?? decor.equippedItem(_room, c.id),
     };
     final soap = _soap(decor);
     final asleep = needs.isAsleep;
-    _fx.sleeping = _care && widget.room == HomeRoom.bedroom && asleep;
+    _fx.sleeping = _care && _room == HomeRoom.bedroom && asleep;
     if (_fx.sleeping) _wake();
-    final foamy = _care && widget.room == HomeRoom.bath && (_phase == _BathPhase.dirty || _phase == _BathPhase.foamy);
-    final scene = _cache.get(
-      widget.room,
-      items,
-      care: _care,
-      pose: _pose(needs),
-      soapColor: SvgKit.hex(soap.bar ?? 0xFFFF9FBF),
-      dark: _care && widget.room == HomeRoom.bedroom && asleep,
-      foamFill: foamy ? (soap.foam == null ? 'rainbow' : SvgKit.hex(soap.foam!)) : null,
-      foamStroke: SvgKit.hex(soap.foamStroke ?? 0xFFCDEBF7),
-    );
+    final foamy = _care && _room == HomeRoom.bath && _canScrub;
     _fx
       ..soapBar = Color(soap.bar ?? 0xFFFF9FBF)
       ..soapStroke = Color(soap.barStroke ?? 0xFFE2668F);
+    final media = MediaQuery.of(context);
+    final wall = Color(items['boya']?.color ?? 0xFFFFE7B0);
+    final floor = Color(items['zemin']?.color ?? 0xFFD99A5B);
 
     return Scaffold(
-      appBar: plainStickerAppBar(context, title: widget.title),
-      body: LayoutBuilder(
-        builder: (context, constraints) {
-          // Sahne en fazla ekran yüksekliğinin ~%52'si; panel altta kayar.
-          final stageW = (constraints.maxHeight * 0.52 * 900 / 1200).clamp(0.0, constraints.maxWidth - 24);
-          return Column(
-            children: [
-              const SizedBox(height: 10),
-              Center(child: SizedBox(width: stageW, child: _stage(scene, stageW / 900))),
-              const SizedBox(height: 8),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: SegmentedButton<bool>(
-                  segments: [
-                    ButtonSegment(value: true, label: Text(l10n.careModeCare)),
-                    ButtonSegment(value: false, label: Text(l10n.careModeDecor)),
-                  ],
-                  selected: {_care},
-                  showSelectedIcon: false,
-                  onSelectionChanged: (v) => setState(() => _care = v.first),
+      backgroundColor: wall,
+      body: AnnotatedRegion<SystemUiOverlayStyle>(
+        value: SystemUiOverlayStyle.dark.copyWith(statusBarColor: Colors.transparent),
+        child: LayoutBuilder(
+          builder: (context, c) {
+            final s = math.min(c.maxWidth / 900, c.maxHeight / 1200);
+            final stageW = 900 * s;
+            final extra = math.max(0.0, c.maxHeight / s - 1200);
+            final topUnits = (media.padding.top + 118) / s;
+            final extraTop = math.min(extra, math.max(0.0, topUnits - 70));
+            final scene = _cache.get(
+              _room,
+              items,
+              care: _care,
+              pose: _pose(needs),
+              soapColor: SvgKit.hex(soap.bar ?? 0xFFFF9FBF),
+              dark: _care && _room == HomeRoom.bedroom && asleep,
+              foamFill: foamy ? (soap.foam == null ? 'rainbow' : SvgKit.hex(soap.foam!)) : null,
+              foamStroke: SvgKit.hex(soap.foamStroke ?? 0xFFCDEBF7),
+              extraTop: extraTop,
+              extraBottom: extra - extraTop,
+            );
+            _lastScene = scene;
+            final floorLine = ((800 + scene.extraTop) * s / c.maxHeight).clamp(0.0, 1.0);
+            return DecoratedBox(
+              // Geniş ekranda (tablet) sahnenin yanları: duvar ve zemin rengi.
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [wall, wall, floor, floor],
+                  stops: [0, floorLine, floorLine, 1],
                 ),
               ),
-              if (!_care) _shopBar(l10n, decor),
-              Expanded(
-                child: ListView(
-                  padding: const EdgeInsets.fromLTRB(16, 10, 16, 24),
-                  children: _care ? _carePanel(l10n, needs, decor) : _decorPanel(l10n, decor, def, items),
-                ),
+              child: Stack(
+                children: [
+                  Positioned(left: (c.maxWidth - stageW) / 2, top: 0, width: stageW, bottom: 0, child: _stage(l10n, scene, s)),
+                  Positioned(
+                    left: 0,
+                    right: 0,
+                    top: 0,
+                    child: SafeArea(bottom: false, child: _topBar(l10n, needs)),
+                  ),
+                  Positioned(
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    child: SafeArea(top: false, child: _bottomPanel(l10n, needs, decor, def, items)),
+                  ),
+                ],
               ),
-            ],
-          );
-        },
+            );
+          },
+        ),
       ),
     );
   }
 
-  Widget _stage(RoomScene scene, double s) {
-    final kitchenCare = _care && widget.room == HomeRoom.kitchen;
-    final bathCare = _care && widget.room == HomeRoom.bath;
-    return Container(
-      decoration: BoxDecoration(
-        border: Border.all(color: kStickerOutline, width: 3),
-        borderRadius: BorderRadius.circular(18),
-      ),
-      clipBehavior: Clip.antiAlias,
+  // --- Sahne ---------------------------------------------------------------
+
+  Widget _stage(AppLocalizations l10n, RoomScene scene, double s) {
+    final kitchenCare = _care && _room == HomeRoom.kitchen;
+    final bathCare = _care && _room == HomeRoom.bath;
+    Offset toScene(Offset local) => local / s - Offset(0, scene.extraTop);
+    return GestureDetector(
+      onHorizontalDragStart: (_) {
+        _swipeBlocked = _held != null || _scrubbing;
+        _dragDx = 0;
+      },
+      onHorizontalDragUpdate: (d) => _dragDx += d.delta.dx,
+      onHorizontalDragEnd: (d) {
+        if (_swipeBlocked) return;
+        final v = d.velocity.pixelsPerSecond.dx;
+        if (v.abs() < 250 && _dragDx.abs() < 70) return;
+        // Parmak sola → Zibo sola gider, sağdaki (sıradaki) oda gelir.
+        _go((v.abs() >= 250 ? v : _dragDx) < 0 ? 1 : -1);
+      },
       child: Listener(
         onPointerDown: (e) {
-          final p = _toScene(e.localPosition, s);
+          if (_hop.isAnimating) return;
+          final p = toScene(e.localPosition);
           if (kitchenCare && _plateFood != null && (p - _plate).distance < 110) {
             setState(() {
               _held = p;
               _down = p;
             });
             _wake();
-          } else if (bathCare) {
+          } else if (bathCare && _canScrub && _bathZibo.contains(p)) {
             _scrubbing = true;
             _fx.soapAt = p;
             _scrub(p);
           }
         },
         onPointerMove: (e) {
-          final p = _toScene(e.localPosition, s);
+          final p = toScene(e.localPosition);
           if (_held != null) {
             setState(() => _held = p);
           } else if (_scrubbing) {
@@ -355,7 +559,7 @@ class _HomeRoomScreenState extends State<HomeRoomScreen> with SingleTickerProvid
           }
         },
         onPointerUp: (e) {
-          final p = _toScene(e.localPosition, s);
+          final p = toScene(e.localPosition);
           if (_held != null) {
             final tapped = _down != null && (p - _down!).distance < 12;
             if (tapped || (p - _mouth).distance < 130) {
@@ -373,21 +577,50 @@ class _HomeRoomScreenState extends State<HomeRoomScreen> with SingleTickerProvid
           _scrubbing = false;
           _fx.soapAt = null;
         },
-        child: ValueListenableBuilder<int>(
-          valueListenable: _frame,
-          builder: (context, _, child) {
+        child: AnimatedBuilder(
+          animation: Listenable.merge([_frame, _hop]),
+          builder: (context, _) {
+            final hopping = _hopTarget != null;
             final lift = _chew > 0 ? math.sin(_chew / 5).abs() * 10 : 0.0;
             final food = _plateFood;
             final at = _held ?? _plate;
             final size = _held != null ? 120.0 : 104.0;
+            final (shift, hopLift, hopOpacity, arriving) = hopping ? _hopPose(_hop.value) : (0.0, 0.0, 0.0, false);
+            final spot = arriving ? scene.zibo : (_hopFrom ?? scene.zibo);
+            const hopH = _hopSpriteH;
+            const hopW = hopH * .789;
             return Stack(
+              clipBehavior: Clip.hardEdge,
               children: [
-                RoomView(scene: scene, semanticLabel: widget.title, ziboLift: lift),
-                Positioned.fill(child: IgnorePointer(child: CustomPaint(painter: CareFxPainter(_fx, repaint: _frame)))),
-                if (kitchenCare && food != null)
+                AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 280),
+                  child: KeyedSubtree(
+                    key: ValueKey(_room),
+                    child: RoomView(scene: scene, semanticLabel: _roomName(l10n, _room), ziboLift: lift, showZibo: !hopping),
+                  ),
+                ),
+                Positioned.fill(
+                  child: IgnorePointer(
+                    child: CustomPaint(painter: CareFxPainter(_fx, repaint: _frame, offsetY: scene.extraTop)),
+                  ),
+                ),
+                if (hopping && hopOpacity > 0)
+                  Positioned(
+                    left: (spot.x + spot.w / 2 - hopW / 2 + shift) * s,
+                    top: (_hopFeetY - hopH + scene.extraTop - hopLift) * s,
+                    width: hopW * s,
+                    height: hopH * s,
+                    child: IgnorePointer(
+                      child: Opacity(
+                        opacity: hopOpacity.clamp(0.0, 1.0),
+                        child: Image.asset('assets/images/home/zibo_happy.webp', fit: BoxFit.contain),
+                      ),
+                    ),
+                  ),
+                if (kitchenCare && food != null && !hopping)
                   Positioned(
                     left: (at.dx - size / 2) * s,
-                    top: (at.dy - size / 2 - (_held != null ? 0 : 26)) * s,
+                    top: (at.dy + scene.extraTop - size / 2 - (_held != null ? 0 : 26)) * s,
                     width: size * s,
                     height: size * s,
                     child: IgnorePointer(child: _FoodImage(id: food)),
@@ -400,445 +633,566 @@ class _HomeRoomScreenState extends State<HomeRoomScreen> with SingleTickerProvid
     );
   }
 
-  Widget _title(String text) => Padding(
-    padding: const EdgeInsets.only(bottom: 6),
-    child: Text(
-      text,
-      style: const TextStyle(fontFamily: 'Baloo2', fontVariations: [FontVariation('wght', 800)], fontSize: 18, height: 1.15),
+  // --- Üst çubuk -------------------------------------------------------------
+
+  Widget _topBar(AppLocalizations l10n, HomeNeedsProvider needs) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final current = _needOf(_room);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(12, 6, 12, 0),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              StickerIconButton(
+                icon: Icons.arrow_back_rounded,
+                onPressed: () => Navigator.of(context).maybePop(),
+                tooltip: MaterialLocalizations.of(context).backButtonTooltip,
+                backgroundColor: colorScheme.surfaceContainerLowest,
+                iconColor: colorScheme.onSurface,
+                size: 38,
+                iconSize: 18,
+                borderRadius: null,
+              ),
+              const Spacer(),
+              _RoomSwitcher(
+                title: _roomName(l10n, _room),
+                index: homeRoomOrder.indexOf(_room),
+                count: homeRoomOrder.length,
+                onPrev: () => _go(-1),
+                onNext: () => _go(1),
+              ),
+              const Spacer(),
+              const SizedBox(width: 38),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Container(
+            padding: const EdgeInsets.fromLTRB(8, 6, 8, 6),
+            decoration: stickerDecoration(
+              fill: colorScheme.surfaceContainerLowest.withValues(alpha: .9),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Row(
+              children: [
+                for (final need in HomeNeed.values)
+                  Expanded(
+                    child: _NeedPill(
+                      need: need,
+                      label: _needLabel(l10n, need),
+                      percent: need == HomeNeed.hygiene && _room == HomeRoom.bath && _care
+                          ? _bathShown(needs.percent(need))
+                          : needs.percent(need),
+                      selected: need == current,
+                      onTap: () {
+                        final target = need.room;
+                        final i = homeRoomOrder.indexOf(_room), j = homeRoomOrder.indexOf(target);
+                        _go(j > i ? 1 : -1, to: target);
+                      },
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // --- Alt panel -------------------------------------------------------------
+
+  Widget _bottomPanel(
+    AppLocalizations l10n,
+    HomeNeedsProvider needs,
+    HomeDecorProvider decor,
+    HomeRoomDef def,
+    Map<String, HomeItem> items,
+  ) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final v = needs.percent(_needOf(_room));
+    final cart = _care ? const <(String, HomeItem, int)>[] : _cart(decor);
+    final total = cart.fold<int>(0, (n, e) => n + e.$3);
+    final title = _care ? _careTitle(l10n, needs, v) : l10n.shopBalance(context.watch<CoinProvider>().balance);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(10, 0, 10, 8),
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(10, 8, 10, 8),
+        decoration: stickerDecoration(
+          fill: colorScheme.surfaceContainerLowest.withValues(alpha: .95),
+          borderRadius: BorderRadius.circular(22),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                SegmentedButton<bool>(
+                  segments: [
+                    ButtonSegment(value: true, label: Text(l10n.careModeCare)),
+                    ButtonSegment(value: false, label: Text(l10n.careModeDecor)),
+                  ],
+                  selected: {_care},
+                  showSelectedIcon: false,
+                  style: const ButtonStyle(visualDensity: VisualDensity.compact, tapTargetSize: MaterialTapTargetSize.shrinkWrap),
+                  onSelectionChanged: (sel) => setState(() {
+                    _care = sel.first;
+                    _preview.clear();
+                  }),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    title,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(fontFamily: 'Baloo2', fontVariations: [FontVariation('wght', 800)], fontSize: 14, height: 1.15),
+                  ),
+                ),
+              ],
+            ),
+            if (!_care && cart.isNotEmpty) ...[
+              const SizedBox(height: 6),
+              Row(
+                children: [
+                  IconButton(
+                    onPressed: () => setState(_preview.clear),
+                    tooltip: l10n.shopCancel,
+                    icon: const Icon(Icons.undo_rounded),
+                    visualDensity: VisualDensity.compact,
+                  ),
+                  Expanded(
+                    child: FilledButton(
+                      onPressed: () => _buyCart(decor),
+                      child: Text(l10n.shopBuyRoom(total), maxLines: 1, overflow: TextOverflow.ellipsis),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+            const SizedBox(height: 6),
+            ...(_care ? _careRows(l10n, needs, decor, v) : _decorRows(l10n, decor, def, items)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _careTitle(AppLocalizations l10n, HomeNeedsProvider needs, int v) => switch (_room) {
+    HomeRoom.kitchen => _msg ?? (v >= 100 ? l10n.careFeedTitleFull : v < 50 ? l10n.careFeedTitleHungry : l10n.careFeedTitleSome),
+    HomeRoom.bath => _phase == _BathPhase.clean ? l10n.careBathTitleClean : l10n.careBathTitleDirty,
+    HomeRoom.bedroom =>
+      needs.isAsleep
+          ? (v >= 100 ? l10n.careBedFull : l10n.careBedSleeping)
+          : (v >= 100 ? l10n.careBedRested : (v < 50 ? l10n.careBedTired : l10n.careBedSome)),
+    HomeRoom.living => v >= 100 ? l10n.carePlayHappy : v < 50 ? l10n.carePlayBored : l10n.carePlaySome,
+  };
+
+  /// Yatay kayan tek sıra.
+  Widget _strip(List<Widget> children, {double height = 92}) => SizedBox(
+    height: height,
+    child: ListView.separated(
+      scrollDirection: Axis.horizontal,
+      itemCount: children.length,
+      separatorBuilder: (_, _) => const SizedBox(width: 8),
+      itemBuilder: (_, i) => children[i],
     ),
   );
 
-  Widget _meter(AppLocalizations l10n, HomeNeed need, int percent, List<Color> colors) {
-    final colorScheme = Theme.of(context).colorScheme;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          l10n.worldNeedPercent(_needLabel(l10n, need), percent),
-          style: TextStyle(fontWeight: FontWeight.w800, fontSize: 12, color: colorScheme.onSurfaceVariant),
-        ),
-        const SizedBox(height: 4),
-        Container(
-          height: 14,
-          decoration: BoxDecoration(
-            color: colorScheme.surfaceContainerHighest,
-            border: Border.all(color: kStickerOutline, width: 2),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          clipBehavior: Clip.antiAlias,
-          child: Align(
-            alignment: Alignment.centerLeft,
-            child: FractionallySizedBox(
-              widthFactor: (percent / 100).clamp(0.0, 1.0),
-              heightFactor: 1,
-              child: DecoratedBox(decoration: BoxDecoration(gradient: LinearGradient(colors: colors))),
-            ),
-          ),
-        ),
-        const SizedBox(height: 10),
-      ],
-    );
-  }
+  Widget _chips(List<(String, bool, VoidCallback)> chips) => SizedBox(
+    height: 34,
+    child: ListView.separated(
+      scrollDirection: Axis.horizontal,
+      itemCount: chips.length,
+      separatorBuilder: (_, _) => const SizedBox(width: 6),
+      itemBuilder: (_, i) {
+        final (label, selected, onTap) = chips[i];
+        return ChoiceChip(
+          label: Text(label),
+          selected: selected,
+          onSelected: (_) => onTap(),
+          visualDensity: VisualDensity.compact,
+          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        );
+      },
+    ),
+  );
 
-  List<Widget> _carePanel(AppLocalizations l10n, HomeNeedsProvider needs, HomeDecorProvider decor) {
-    final v = needs.percent(_need);
-    return switch (widget.room) {
-      HomeRoom.kitchen => _kitchenPanel(l10n, needs, v),
-      HomeRoom.bath => _bathPanel(l10n, decor, v),
-      HomeRoom.bedroom => _bedPanel(l10n, needs, v),
-      HomeRoom.living => _livingPanel(l10n, v),
-    };
-  }
-
-  List<Widget> _kitchenPanel(AppLocalizations l10n, HomeNeedsProvider needs, int v) {
+  List<Widget> _careRows(AppLocalizations l10n, HomeNeedsProvider needs, HomeDecorProvider decor, int v) {
     final colorScheme = Theme.of(context).colorScheme;
-    final config = context.watch<HomeConfigProvider>().config;
-    final freeLeft = needs.freeFoodsLeft;
-    final groups = {
-      'meyve': l10n.careFoodFruit,
-      'yemek': l10n.careFoodMeal,
-      'tatli': l10n.careFoodSweet,
-      'icecek': l10n.careFoodDrink,
-    };
-    return [
-      _title(_msg ?? (v >= 100 ? l10n.careFeedTitleFull : v < 50 ? l10n.careFeedTitleHungry : l10n.careFeedTitleSome)),
-      _meter(l10n, HomeNeed.hunger, v, const [Color(0xFF9FE3A8), Color(0xFF3E8E4E)]),
-      Wrap(
-        spacing: 6,
-        runSpacing: 6,
-        children: [
-          for (final g in groups.entries)
-            ChoiceChip(label: Text(g.value), selected: _foodGroup == g.key, onSelected: (_) => setState(() => _foodGroup = g.key)),
-        ],
-      ),
-      const SizedBox(height: 10),
-      Wrap(
-        spacing: 8,
-        runSpacing: 8,
-        children: [
-          for (final f in homeFoods.where((f) => f.group == _foodGroup))
-            Builder(
-              builder: (context) {
-                final price = config.foodPrice(f.id, f.price);
-                final tag = price > 0 ? '$price ZC' : (freeLeft > 0 ? '${l10n.careFeedFree} · $freeLeft' : l10n.careFeedTomorrow);
-                return Semantics(
-                  button: true,
-                  label: '${f.nameTr}, $tag',
-                  excludeSemantics: true,
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(14),
+    switch (_room) {
+      case HomeRoom.kitchen:
+        final config = context.watch<HomeConfigProvider>().config;
+        final freeLeft = needs.freeFoodsLeft;
+        final groups = {
+          'meyve': l10n.careFoodFruit,
+          'yemek': l10n.careFoodMeal,
+          'tatli': l10n.careFoodSweet,
+          'icecek': l10n.careFoodDrink,
+        };
+        return [
+          _chips([for (final g in groups.entries) (g.value, _foodGroup == g.key, () => setState(() => _foodGroup = g.key))]),
+          const SizedBox(height: 6),
+          _strip([
+            for (final f in homeFoods.where((f) => f.group == _foodGroup))
+              Builder(
+                builder: (context) {
+                  final price = config.foodPrice(f.id, f.price);
+                  final tag = price > 0 ? '$price ZC' : (freeLeft > 0 ? '${l10n.careFeedFree} · $freeLeft' : l10n.careFeedTomorrow);
+                  return _Tile(
+                    semanticLabel: '${f.nameTr}, $tag',
                     onTap: () => _chooseFood(f),
-                    child: Ink(
-                      width: 92,
-                      padding: const EdgeInsets.fromLTRB(4, 6, 4, 6),
-                      decoration: stickerDecoration(fill: colorScheme.surfaceContainerLowest, borderRadius: BorderRadius.circular(14)),
-                      child: Column(
-                        children: [
-                          SizedBox(width: 56, height: 56, child: _FoodImage(id: f.id)),
-                          Text(
-                            f.nameTr,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 11),
-                          ),
-                          Text(
-                            tag,
-                            style: TextStyle(
-                              fontWeight: FontWeight.w800,
-                              fontSize: 10,
-                              color: price > 0 ? kGoldDeep : colorScheme.primary,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                );
-              },
-            ),
-        ],
-      ),
-    ];
-  }
-
-  List<Widget> _bathPanel(AppLocalizations l10n, HomeDecorProvider decor, int v) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final tier = context.watch<SubscriptionProvider>().tier;
-    final config = context.watch<HomeConfigProvider>().config;
-    final dirt = _fx.dirt;
-    final shown = switch (_phase) {
-      _BathPhase.dirty || _BathPhase.foamy => ((1 - dirt) * 70).round(),
-      _BathPhase.wet => 85,
-      _BathPhase.clean => 100,
-    };
-    final done = [
-      _phase.index > 1 || (_phase == _BathPhase.foamy && dirt < .25),
-      _phase.index >= 2,
-      _phase.index >= 3,
-    ];
-    final steps = [l10n.careBathStep1, l10n.careBathStep2, l10n.careBathStep3];
-    return [
-      _title(_phase == _BathPhase.clean ? l10n.careBathTitleClean : l10n.careBathTitleDirty),
-      _meter(l10n, HomeNeed.hygiene, v > shown ? v : shown, const [Color(0xFFBFE6F5), Color(0xFF3E9AD6)]),
-      for (var i = 0; i < 3; i++)
-        Padding(
-          padding: const EdgeInsets.only(bottom: 4),
-          child: Row(
+                    image: _FoodImage(id: f.id),
+                    title: f.nameTr,
+                    tag: tag,
+                    tagColor: price > 0 ? kGoldDeep : colorScheme.primary,
+                  );
+                },
+              ),
+          ]),
+        ];
+      case HomeRoom.bath:
+        final tier = context.watch<SubscriptionProvider>().tier;
+        final config = context.watch<HomeConfigProvider>().config;
+        final dirt = _fx.dirt;
+        final done = [_phase.index > 1 || (_phase == _BathPhase.foamy && dirt < .25), _phase.index >= 2, _phase.index >= 3];
+        final steps = [l10n.careBathStep1, l10n.careBathStep2, l10n.careBathStep3];
+        final current = done.indexOf(false);
+        return [
+          Row(
             children: [
-              Icon(
-                done[i] ? Icons.check_circle_rounded : Icons.radio_button_unchecked_rounded,
-                size: 18,
-                color: done[i] ? const Color(0xFF3E8E4E) : colorScheme.onSurfaceVariant,
-              ),
-              const SizedBox(width: 6),
-              Expanded(child: Text(steps[i], style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13))),
-            ],
-          ),
-        ),
-      const SizedBox(height: 8),
-      Row(
-        children: [
-          Expanded(
-            child: FilledButton(
-              onPressed: _phase == _BathPhase.foamy && dirt < .25 && _fx.shower == 0
-                  ? () {
-                      _fx.startShower();
-                      _wake();
-                      setState(() {});
-                    }
-                  : null,
-              child: Text(l10n.careBathShower),
-            ),
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: FilledButton(onPressed: _phase == _BathPhase.wet ? _towel : null, child: Text(l10n.careBathTowel)),
-          ),
-        ],
-      ),
-      const SizedBox(height: 12),
-      Text(l10n.careBathSoap, style: TextStyle(fontWeight: FontWeight.w800, fontSize: 12, color: colorScheme.onSurfaceVariant)),
-      const SizedBox(height: 6),
-      Wrap(
-        spacing: 6,
-        runSpacing: 6,
-        children: [
-          for (final sp in homeSoaps)
-            ChoiceChip(
-              avatar: CircleAvatar(
-                radius: 8,
-                backgroundColor: Color(sp.bar ?? 0xFFFF9FBF),
-                child: sp.foam == null ? const Text('🌈', style: TextStyle(fontSize: 9)) : null,
-              ),
-              label: Text(
-                decor.isSoapOwned(sp.id) ? sp.nameTr : '${sp.nameTr} · ${config.priceFor('soap:${sp.id}', sp.price, tier)} ZC',
-              ),
-              selected: decor.selectedSoap == sp.id,
-              onSelected: (_) => _buyOrSelectSoap(sp),
-            ),
-        ],
-      ),
-    ];
-  }
-
-  List<Widget> _bedPanel(AppLocalizations l10n, HomeNeedsProvider needs, int v) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final asleep = needs.isAsleep;
-    return [
-      _title(
-        asleep
-            ? (v >= 100 ? l10n.careBedFull : l10n.careBedSleeping)
-            : (v >= 100 ? l10n.careBedRested : (v < 50 ? l10n.careBedTired : l10n.careBedSome)),
-      ),
-      _meter(l10n, HomeNeed.energy, v, const [Color(0xFFFFE07A), Color(0xFFF3B23C)]),
-      FilledButton.icon(
-        onPressed: () => asleep ? needs.wake() : needs.startSleep(),
-        icon: Icon(asleep ? Icons.light_mode_rounded : Icons.bedtime_rounded),
-        label: Text(asleep ? l10n.careBedWake : l10n.careBedSleep),
-      ),
-      const SizedBox(height: 10),
-      Text(l10n.careBedNote, style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12, color: colorScheme.onSurfaceVariant)),
-    ];
-  }
-
-  List<Widget> _livingPanel(AppLocalizations l10n, int v) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final config = context.watch<GamesConfigProvider>().config;
-    final games = [
-      ('kule', l10n.gameNameKule),
-      ('hafiza', l10n.gameNameHafiza),
-      ('2048', l10n.gameName2048),
-      ('yakala', l10n.gameNameYakala),
-      ('tren', l10n.gameNameTren),
-      ('tugla', l10n.gameNameTugla),
-      ('zipla', l10n.gameNameZipla),
-    ];
-    return [
-      _title(v >= 100 ? l10n.carePlayHappy : v < 50 ? l10n.carePlayBored : l10n.carePlaySome),
-      _meter(l10n, HomeNeed.fun, v, const [Color(0xFFFFB7C8), Color(0xFFF2705E)]),
-      Wrap(
-        spacing: 8,
-        runSpacing: 8,
-        children: [
-          for (final (id, name) in games)
-            Opacity(
-              opacity: config.isEnabled(id) ? 1 : .5,
-              child: Semantics(
-                button: config.isEnabled(id),
-                label: name,
-                excludeSemantics: true,
-                child: InkWell(
-                  borderRadius: BorderRadius.circular(14),
-                  onTap: config.isEnabled(id) ? () => _play(id, name) : null,
-                  child: SizedBox(
-                    width: 76,
-                    child: Column(
-                      children: [
-                        Container(
-                          width: 64,
-                          height: 64,
-                          decoration: BoxDecoration(
-                            border: Border.all(color: kStickerOutline, width: 2),
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                          clipBehavior: Clip.antiAlias,
-                          child: Image.asset('assets/images/game_${id}_thumb.webp', fit: BoxFit.cover),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          name,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 11),
-                        ),
-                      ],
-                    ),
+              for (var i = 0; i < 3; i++)
+                Padding(
+                  padding: const EdgeInsets.only(right: 4),
+                  child: Icon(
+                    done[i] ? Icons.check_circle_rounded : Icons.radio_button_unchecked_rounded,
+                    size: 16,
+                    color: done[i] ? const Color(0xFF3E8E4E) : colorScheme.onSurfaceVariant,
                   ),
                 ),
+              const SizedBox(width: 4),
+              Expanded(
+                child: Text(
+                  current < 0 ? '' : steps[current],
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 12),
+                ),
               ),
-            ),
-        ],
-      ),
-      const SizedBox(height: 10),
-      Text(l10n.carePlayHint, style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12, color: colorScheme.onSurfaceVariant)),
-    ];
-  }
-
-  // --- Dekor mağazası (Faz 5) ------------------------------------------------
-
-  String _key(String category, String itemId) => HomeDecorProvider.key(widget.room, category, itemId);
-
-  /// Denenen ama sahip olunmayan eşyalar ve (abonelik indirimli) fiyatları.
-  List<(String, HomeItem, int)> _cart(HomeDecorProvider decor) {
-    final config = context.read<HomeConfigProvider>().config;
-    final tier = context.read<SubscriptionProvider>().tier;
-    final def = HomeDecorProvider.roomDef(widget.room);
-    final cart = <(String, HomeItem, int)>[];
-    for (final e in _preview.entries) {
-      final item = def.category(e.key)?.item(e.value);
-      if (item == null || decor.isOwned(widget.room, e.key, e.value)) continue;
-      cart.add((e.key, item, config.priceFor(_key(e.key, e.value), item.price, tier)));
-    }
-    return cart;
-  }
-
-  void _tapItem(HomeDecorProvider decor, HomeCategory category, HomeItem item) {
-    final l10n = AppLocalizations.of(context)!;
-    final key = _key(category.id, item.id);
-    final owned = decor.isOwned(widget.room, category.id, item.id);
-    final config = context.read<HomeConfigProvider>().config;
-    if (!owned && config.isProOnly(key) && !context.read<SubscriptionProvider>().isPro) {
-      ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text(l10n.shopProOnlyMsg)));
-      return;
-    }
-    setState(() {
-      if (owned) {
-        // Sahip olunan eşya hemen takılır (ücretsiz).
-        decor.equip(widget.room, category.id, item.id);
-        _preview.remove(category.id);
-      } else {
-        _preview[category.id] = item.id;
-      }
-    });
-  }
-
-  void _buyCart(HomeDecorProvider decor) {
-    final l10n = AppLocalizations.of(context)!;
-    final cart = _cart(decor);
-    if (cart.isEmpty) return;
-    final total = cart.fold<int>(0, (n, e) => n + e.$3);
-    final keys = [for (final e in cart) '${e.$1}:${e.$2.id}'].join(',');
-    final ok = context.read<CoinProvider>().spendOnHomeItem(itemKey: '${widget.room.id}:$keys', cost: total);
-    final messenger = ScaffoldMessenger.of(context)..hideCurrentSnackBar();
-    if (!ok) {
-      messenger.showSnackBar(SnackBar(content: Text(l10n.insufficientCoins)));
-      return;
-    }
-    for (final (category, item, _) in cart) {
-      decor.markOwned(widget.room, category, item.id);
-      decor.equip(widget.room, category, item.id);
-    }
-    setState(_preview.clear);
-    messenger.showSnackBar(SnackBar(content: Text(l10n.shopBought)));
-  }
-
-  /// Dekor modunda listenin üstünde sabit duran bakiye + sepet çubuğu (aşağıdaki
-  /// bir eşya denenince de "Odadakileri al" görünür kalsın).
-  Widget _shopBar(AppLocalizations l10n, HomeDecorProvider decor) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final balance = context.watch<CoinProvider>().balance;
-    final cart = _cart(decor);
-    final total = cart.fold<int>(0, (n, e) => n + e.$3);
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-      child: Row(
-        children: [
-          Flexible(
-            flex: 2,
-            fit: FlexFit.tight,
-            child: Text(
-              l10n.shopBalance(balance),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(fontWeight: FontWeight.w800, fontSize: 12, color: colorScheme.onSurfaceVariant),
-            ),
+            ],
           ),
-          if (cart.isNotEmpty)
-            IconButton(
-              onPressed: () => setState(_preview.clear),
-              tooltip: l10n.shopCancel,
-              icon: const Icon(Icons.undo_rounded),
-            ),
-          Flexible(
-            flex: 3,
-            child: FilledButton(
-              onPressed: cart.isEmpty ? null : () => _buyCart(decor),
-              child: Text(
-                cart.isEmpty ? l10n.shopRoomDone : l10n.shopBuyRoom(total),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
+          const SizedBox(height: 6),
+          Row(
+            children: [
+              Expanded(
+                child: FilledButton(
+                  onPressed: _phase == _BathPhase.foamy && dirt < .25 && _fx.shower == 0
+                      ? () {
+                          _fx.startShower();
+                          _wake();
+                          setState(() {});
+                        }
+                      : null,
+                  style: const ButtonStyle(visualDensity: VisualDensity.compact),
+                  child: Text(l10n.careBathShower),
+                ),
               ),
-            ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: FilledButton(
+                  onPressed: _phase == _BathPhase.wet ? _towel : null,
+                  style: const ButtonStyle(visualDensity: VisualDensity.compact),
+                  child: Text(l10n.careBathTowel),
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
-    );
+          const SizedBox(height: 6),
+          _strip(height: 64, [
+            for (final sp in homeSoaps)
+              ChoiceChip(
+                avatar: CircleAvatar(
+                  radius: 9,
+                  backgroundColor: Color(sp.bar ?? 0xFFFF9FBF),
+                  child: sp.foam == null ? const Text('🌈', style: TextStyle(fontSize: 9)) : null,
+                ),
+                label: Text(
+                  decor.isSoapOwned(sp.id) ? sp.nameTr : '${sp.nameTr} · ${config.priceFor('soap:${sp.id}', sp.price, tier)} ZC',
+                ),
+                selected: decor.selectedSoap == sp.id,
+                onSelected: (_) => _buyOrSelectSoap(sp),
+              ),
+          ]),
+        ];
+      case HomeRoom.bedroom:
+        final asleep = needs.isAsleep;
+        return [
+          FilledButton.icon(
+            onPressed: () => asleep ? needs.wake() : needs.startSleep(),
+            icon: Icon(asleep ? Icons.light_mode_rounded : Icons.bedtime_rounded),
+            label: Text(asleep ? l10n.careBedWake : l10n.careBedSleep),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            l10n.careBedNote,
+            textAlign: TextAlign.center,
+            style: TextStyle(fontWeight: FontWeight.w700, fontSize: 11, color: colorScheme.onSurfaceVariant),
+          ),
+        ];
+      case HomeRoom.living:
+        final config = context.watch<GamesConfigProvider>().config;
+        final games = [
+          ('kule', l10n.gameNameKule),
+          ('hafiza', l10n.gameNameHafiza),
+          ('2048', l10n.gameName2048),
+          ('yakala', l10n.gameNameYakala),
+          ('tren', l10n.gameNameTren),
+          ('tugla', l10n.gameNameTugla),
+          ('zipla', l10n.gameNameZipla),
+        ];
+        return [
+          _strip([
+            for (final (id, name) in games)
+              Opacity(
+                opacity: config.isEnabled(id) ? 1 : .5,
+                child: _Tile(
+                  semanticLabel: name,
+                  onTap: config.isEnabled(id) ? () => _play(id, name) : null,
+                  image: ClipRRect(
+                    borderRadius: BorderRadius.circular(10),
+                    child: Image.asset('assets/images/game_${id}_thumb.webp', fit: BoxFit.cover),
+                  ),
+                  title: name,
+                ),
+              ),
+          ]),
+        ];
+    }
   }
 
-  List<Widget> _decorPanel(AppLocalizations l10n, HomeDecorProvider decor, HomeRoomDef def, Map<String, HomeItem> items) {
-    final colorScheme = Theme.of(context).colorScheme;
+  List<Widget> _decorRows(AppLocalizations l10n, HomeDecorProvider decor, HomeRoomDef def, Map<String, HomeItem> items) {
     final config = context.watch<HomeConfigProvider>().config;
     final sub = context.watch<SubscriptionProvider>();
     final now = DateTime.now();
     final category = def.category(_category)!;
     return [
-      SizedBox(
-        height: 40,
-        child: ListView.separated(
-          scrollDirection: Axis.horizontal,
-          itemCount: def.categories.length,
-          separatorBuilder: (_, _) => const SizedBox(width: 8),
-          itemBuilder: (context, i) {
-            final c = def.categories[i];
-            final trying = _preview.containsKey(c.id) && !decor.isOwned(widget.room, c.id, _preview[c.id]!);
-            return ChoiceChip(
-              label: Text(trying ? '${c.nameTr} •' : c.nameTr),
-              selected: c.id == _category,
-              onSelected: (_) => setState(() => _category = c.id),
-            );
-          },
-        ),
-      ),
-      const SizedBox(height: 10),
-      Wrap(
-        spacing: 8,
-        runSpacing: 8,
+      _chips([
+        for (final c in def.categories)
+          (
+            _preview.containsKey(c.id) && !decor.isOwned(_room, c.id, _preview[c.id]!) ? '${c.nameTr} •' : c.nameTr,
+            c.id == _category,
+            () => setState(() => _category = c.id),
+          ),
+      ]),
+      const SizedBox(height: 6),
+      _strip(height: 112, [
+        for (final item in category.items)
+          if (decor.isOwned(_room, category.id, item.id) ||
+              (!item.eventOnly && config.isOnSale(_key(category.id, item.id), now)))
+            _ShopTile(
+              category: category,
+              item: item,
+              selected: items[category.id]?.id == item.id,
+              equipped: decor.equipped(_room, category.id) == item.id,
+              owned: decor.isOwned(_room, category.id, item.id),
+              price: config.priceFor(_key(category.id, item.id), item.price, sub.tier),
+              proOnly: config.isProOnly(_key(category.id, item.id)),
+              limited: config.isLimited(_key(category.id, item.id)),
+              onTap: () => _tapItem(decor, category, item),
+            ),
+      ]),
+    ];
+  }
+}
+
+String _needLabel(AppLocalizations l10n, HomeNeed need) => switch (need) {
+  HomeNeed.hunger => l10n.worldNeedHunger,
+  HomeNeed.hygiene => l10n.worldNeedHygiene,
+  HomeNeed.energy => l10n.worldNeedEnergy,
+  HomeNeed.fun => l10n.worldNeedFun,
+};
+
+const _needEmoji = {HomeNeed.hunger: '🍎', HomeNeed.hygiene: '🫧', HomeNeed.energy: '🌙', HomeNeed.fun: '🎈'};
+const _needColors = {
+  HomeNeed.hunger: [Color(0xFF9FE3A8), Color(0xFF3E8E4E)],
+  HomeNeed.hygiene: [Color(0xFFBFE6F5), Color(0xFF3E9AD6)],
+  HomeNeed.energy: [Color(0xFFFFE07A), Color(0xFFF3B23C)],
+  HomeNeed.fun: [Color(0xFFFFB7C8), Color(0xFFF2705E)],
+};
+
+/// Üstte oda adı, iki yanında oklar ve sıra noktaları.
+class _RoomSwitcher extends StatelessWidget {
+  const _RoomSwitcher({required this.title, required this.index, required this.count, required this.onPrev, required this.onNext});
+
+  final String title;
+  final int index;
+  final int count;
+  final VoidCallback onPrev;
+  final VoidCallback onNext;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.fromLTRB(2, 2, 2, 4),
+      decoration: stickerDecoration(fill: colorScheme.surfaceContainerLowest, borderRadius: BorderRadius.circular(99)),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          for (final item in category.items)
-            if (decor.isOwned(widget.room, category.id, item.id) ||
-                (!item.eventOnly && config.isOnSale(_key(category.id, item.id), now)))
-              _ShopTile(
-                category: category,
-                item: item,
-                selected: items[category.id]?.id == item.id,
-                equipped: decor.equipped(widget.room, category.id) == item.id,
-                owned: decor.isOwned(widget.room, category.id, item.id),
-                price: config.priceFor(_key(category.id, item.id), item.price, sub.tier),
-                proOnly: config.isProOnly(_key(category.id, item.id)),
-                limited: config.isLimited(_key(category.id, item.id)),
-                onTap: () => _tapItem(decor, category, item),
+          IconButton(
+            onPressed: onPrev,
+            icon: const Icon(Icons.chevron_left_rounded),
+            visualDensity: VisualDensity.compact,
+            tooltip: '◀',
+          ),
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(title, style: const TextStyle(fontFamily: 'Baloo2', fontVariations: [FontVariation('wght', 800)], fontSize: 17, height: 1.1)),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  for (var i = 0; i < count; i++)
+                    Container(
+                      width: i == index ? 14 : 6,
+                      height: 6,
+                      margin: const EdgeInsets.symmetric(horizontal: 2),
+                      decoration: BoxDecoration(
+                        color: i == index ? colorScheme.primary : colorScheme.outlineVariant,
+                        borderRadius: BorderRadius.circular(3),
+                      ),
+                    ),
+                ],
               ),
+            ],
+          ),
+          IconButton(
+            onPressed: onNext,
+            icon: const Icon(Icons.chevron_right_rounded),
+            visualDensity: VisualDensity.compact,
+            tooltip: '▶',
+          ),
         ],
       ),
-      const SizedBox(height: 12),
-      Text(
-        l10n.shopHint,
-        textAlign: TextAlign.center,
-        style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12, color: colorScheme.onSurfaceVariant),
+    );
+  }
+}
+
+/// Üst şeritte bir ihtiyaç: simge, ince çubuk, yüzde. Bulunulan odanınki vurgulu.
+class _NeedPill extends StatelessWidget {
+  const _NeedPill({required this.need, required this.label, required this.percent, required this.selected, required this.onTap});
+
+  final HomeNeed need;
+  final String label;
+  final int percent;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Semantics(
+      button: true,
+      selected: selected,
+      label: '$label %$percent',
+      excludeSemantics: true,
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          margin: const EdgeInsets.symmetric(horizontal: 2),
+          padding: const EdgeInsets.fromLTRB(4, 3, 4, 4),
+          decoration: BoxDecoration(
+            color: selected ? colorScheme.primaryContainer : Colors.transparent,
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Row(
+            children: [
+              Text(_needEmoji[need]!, style: const TextStyle(fontSize: 15)),
+              const SizedBox(width: 3),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text('%$percent', style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 10, height: 1.1)),
+                    const SizedBox(height: 2),
+                    Container(
+                      height: 6,
+                      decoration: BoxDecoration(
+                        color: colorScheme.surfaceContainerHighest,
+                        border: Border.all(color: kStickerOutline, width: 1),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      clipBehavior: Clip.antiAlias,
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: FractionallySizedBox(
+                          widthFactor: (percent / 100).clamp(0.0, 1.0),
+                          heightFactor: 1,
+                          child: DecoratedBox(decoration: BoxDecoration(gradient: LinearGradient(colors: _needColors[need]!))),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
-    ];
+    );
+  }
+}
+
+/// Alt sıradaki küçük kart (yemek, oyun).
+class _Tile extends StatelessWidget {
+  const _Tile({required this.semanticLabel, required this.onTap, required this.image, required this.title, this.tag, this.tagColor});
+
+  final String semanticLabel;
+  final VoidCallback? onTap;
+  final Widget image;
+  final String title;
+  final String? tag;
+  final Color? tagColor;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Semantics(
+      button: onTap != null,
+      label: semanticLabel,
+      excludeSemantics: true,
+      child: Material(
+        type: MaterialType.transparency,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(14),
+          onTap: onTap,
+          child: Ink(
+            width: 76,
+            padding: const EdgeInsets.fromLTRB(4, 5, 4, 4),
+            decoration: BoxDecoration(
+              color: colorScheme.surfaceContainerLowest,
+              border: Border.all(color: kStickerOutline, width: 2),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Column(
+              children: [
+                SizedBox(width: 46, height: 46, child: image),
+                const SizedBox(height: 2),
+                Text(title, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 10)),
+                if (tag != null)
+                  Text(
+                    tag!,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(fontWeight: FontWeight.w800, fontSize: 9, color: tagColor),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
 
@@ -883,68 +1237,53 @@ class _ShopTile extends StatelessWidget {
       selected: selected,
       label: '${item.nameTr}, $tag',
       excludeSemantics: true,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(16),
-        onTap: onTap,
-        child: Ink(
-          width: 96,
-          padding: const EdgeInsets.fromLTRB(4, 6, 4, 6),
-          decoration: BoxDecoration(
-            color: selected ? colorScheme.primaryContainer : colorScheme.surfaceContainerLowest,
-            border: Border.all(
-              color: selected ? kStickerOutline : (style?.color ?? colorScheme.outlineVariant),
-              width: selected ? 3 : 2,
+      child: Material(
+        type: MaterialType.transparency,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: onTap,
+          child: Ink(
+            width: 84,
+            padding: const EdgeInsets.fromLTRB(4, 5, 4, 4),
+            decoration: BoxDecoration(
+              color: selected ? colorScheme.primaryContainer : colorScheme.surfaceContainerLowest,
+              border: Border.all(
+                color: selected ? kStickerOutline : (style?.color ?? colorScheme.outlineVariant),
+                width: selected ? 3 : 2,
+              ),
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: style?.glowShadows,
             ),
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: style?.glowShadows,
-          ),
-          child: Column(
-            children: [
-              Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  HomeItemThumb(kind: category.kind, item: item),
-                  if (badge.isNotEmpty) Positioned(top: -4, right: -4, child: Text(badge, style: const TextStyle(fontSize: 13))),
-                ],
-              ),
-              const SizedBox(height: 2),
-              Text(
-                item.nameTr,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 11),
-              ),
-              Text(
-                tag,
-                style: TextStyle(
-                  fontWeight: FontWeight.w800,
-                  fontSize: 10,
-                  color: owned || equipped ? colorScheme.primary : kGoldDeep,
+            child: Column(
+              children: [
+                Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    HomeItemThumb(kind: category.kind, item: item, size: 50),
+                    if (badge.isNotEmpty) Positioned(top: -4, right: -4, child: Text(badge, style: const TextStyle(fontSize: 12))),
+                  ],
                 ),
-              ),
-              if (rarity != null && !owned)
+                const SizedBox(height: 2),
+                Text(item.nameTr, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 10)),
                 Text(
-                  rarity.localizedName(l10n),
-                  style: TextStyle(
-                    fontWeight: FontWeight.w800,
-                    fontSize: 9,
-                    color: style!.labelColor(Theme.of(context).brightness),
-                  ),
+                  tag,
+                  maxLines: 1,
+                  style: TextStyle(fontWeight: FontWeight.w800, fontSize: 9, color: owned || equipped ? colorScheme.primary : kGoldDeep),
                 ),
-            ],
+                if (rarity != null && !owned)
+                  Text(
+                    rarity.localizedName(l10n),
+                    maxLines: 1,
+                    style: TextStyle(fontWeight: FontWeight.w800, fontSize: 8, color: style!.labelColor(Theme.of(context).brightness)),
+                  ),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 }
-
-String _needLabel(AppLocalizations l10n, HomeNeed need) => switch (need) {
-  HomeNeed.hunger => l10n.worldNeedHunger,
-  HomeNeed.hygiene => l10n.worldNeedHygiene,
-  HomeNeed.energy => l10n.worldNeedEnergy,
-  HomeNeed.fun => l10n.worldNeedFun,
-};
 
 /// Yemek görseli: Fluent Emoji (MIT, `assets/images/home/food/`); simit ve
 /// churros kütüphanede yok, taslaktaki gibi kodla çizilir.

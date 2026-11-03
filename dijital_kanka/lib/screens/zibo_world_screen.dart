@@ -11,7 +11,6 @@ import '../providers/home_needs_provider.dart';
 import '../widgets/sticker_style.dart';
 import 'events_screen.dart';
 import 'game_hall_screen.dart';
-import 'home_house_screen.dart';
 import 'home_room_screen.dart';
 
 /// Alt bardaki 2. sekme — Zibo Dünyası (docs/zibo_world.md). Oyun Salonu
@@ -19,7 +18,7 @@ import 'home_room_screen.dart';
 ///
 /// Giriş ekranı kullanıcının ürettiği görsellerle (docs/zibo_images_needed.md,
 /// 2026-11-03): gökyüzü + çayır arka planı, patikadaki beş alanda binalar.
-/// **Eve dokununca** [HomeHouseScreen] (2×2 oda), **Oyun Salonu'na** dokununca
+/// **Eve dokununca** tam ekran [HomeRoomScreen] salonda açılır, **Oyun Salonu'na** dokununca
 /// [GameHallPage], Etkinlikler'e dokununca [EventsScreen] açılır; Sıralama ve
 /// Arkadaşlar 1.19.0'a kadar kilitli (soluk + kilit). Gökyüzünde el sallayan
 /// Zibo, konuşma balonuyla en düşük ihtiyacını söyler (dokununca o oda açılır).
@@ -97,13 +96,6 @@ class _ZiboWorldScreenState extends State<ZiboWorldScreen> {
 
   void _push(Widget page) => Navigator.of(context).push(MaterialPageRoute(builder: (_) => page));
 
-  String _roomTitle(AppLocalizations l10n, HomeRoom room) => switch (room) {
-    HomeRoom.kitchen => l10n.worldRoomKitchen,
-    HomeRoom.bath => l10n.worldRoomBath,
-    HomeRoom.bedroom => l10n.worldRoomBedroom,
-    HomeRoom.living => l10n.worldRoomLiving,
-  };
-
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -176,16 +168,14 @@ class _ZiboWorldScreenState extends State<ZiboWorldScreen> {
                       top: h * .17,
                       child: _SpeechBubble(
                         text: line,
-                        onTap: asking
-                            ? () => _push(HomeRoomScreen(room: want.room, title: _roomTitle(l10n, want.room)))
-                            : () => _push(const HomeHouseScreen()),
+                        onTap: () => _push(HomeRoomScreen(initialRoom: asking ? want.room : HomeRoom.living)),
                       ),
                     ),
                     building(_friends, l10n.worldDoorFriends, _comingSoon, locked: true, labelAbove: true),
                     building(_leaderboard, l10n.worldDoorLeaderboard, _comingSoon, locked: true, labelAbove: true),
                     building(_events, l10n.worldDoorEvents, () => _push(const EventsScreen()), badge: events.openableCount),
                     building(_games, l10n.tabGameHall, () => _push(const GameHallPage())),
-                    building(_home, l10n.worldHouseSign, () => _push(const HomeHouseScreen())),
+                    building(_home, l10n.worldHouseSign, () => _push(const HomeRoomScreen())),
                     ...labels,
                   ],
                 ),

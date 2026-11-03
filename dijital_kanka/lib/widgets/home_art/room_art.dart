@@ -25,11 +25,19 @@ class ZiboSpot {
 /// iki SVG. Küvetin önü, yorgan, kanepe oturağı gibi parçalar [front]'ta
 /// olduğu için Zibo "içinde oturuyor" görünür (docs/zibo_home_art.md).
 class RoomScene {
-  const RoomScene({required this.back, required this.front, required this.zibo});
+  const RoomScene({required this.back, required this.front, required this.zibo, this.extraTop = 0, this.extraBottom = 0});
 
   final String back;
   final String front;
   final ZiboSpot zibo;
+
+  /// Tam ekran için tuvalin 900×1200 sahnenin üstüne ve altına uzatıldığı
+  /// birim (duvar yukarı, zemin aşağı devam eder). Sahne koordinatları
+  /// değişmez; SVG `viewBox`'ı `0 -extraTop 900 (1200+extraTop+extraBottom)`.
+  final double extraTop;
+  final double extraBottom;
+
+  double get height => 1200 + extraTop + extraBottom;
 }
 
 /// Seçili eşyayı verir (takılı olan ya da mağazada denenen).
@@ -42,10 +50,14 @@ const _floor = 800;
 /// modudur (besleme, banyo, uyku, oyun — Faz 4); dekor modunda Zibo odanın
 /// önünde mutlu durur.
 class RoomArt {
-  RoomArt._(this.pick) : k = SvgKit();
+  RoomArt._(this.pick, this.top, this.bottom) : k = SvgKit();
 
   final HomePick pick;
   final SvgKit k;
+
+  /// [RoomScene.extraTop] / [RoomScene.extraBottom].
+  final double top;
+  final double bottom;
 
   static RoomScene build(
     HomeRoom room,
@@ -56,8 +68,10 @@ class RoomArt {
     bool dark = false,
     String? foamFill,
     String foamStroke = '#CDEBF7',
+    double extraTop = 0,
+    double extraBottom = 0,
   }) {
-    final art = RoomArt._(pick);
+    final art = RoomArt._(pick, extraTop.roundToDouble(), extraBottom.roundToDouble());
     return switch (room) {
       HomeRoom.kitchen => art._kitchen(care, pose),
       HomeRoom.bath => art._bath(care, pose, soapColor, foamFill, foamStroke),
@@ -80,23 +94,28 @@ class RoomArt {
     return '<g transform="translate($x $y)">${_art(style, _c(cat), part)}</g>';
   }
 
+  /// Tavana asılan şeylerin (sarkıt lamba, duş borusu) uzatılan tavana kadar
+  /// devam eden parçası.
+  String _toCeiling(num x, num width, String fill) =>
+      top <= 0 ? '' : '<rect x="$x" y="${-top}" width="$width" height="$top" fill="$fill"/>';
+
   String _wrap(String body) =>
-      '<svg viewBox="0 0 900 1200" xmlns="http://www.w3.org/2000/svg"><defs>${k.defs}</defs>$body</svg>';
+      '<svg viewBox="0 ${-top} 900 ${1200 + top + bottom}" xmlns="http://www.w3.org/2000/svg"><defs>${k.defs}</defs>$body</svg>';
 
   RoomScene _scene(String back, String front, ZiboSpot zibo) =>
-      RoomScene(back: _wrap(back), front: _wrap(front), zibo: zibo);
+      RoomScene(back: _wrap(back), front: _wrap(front), zibo: zibo, extraTop: top, extraBottom: bottom);
 
   /// Duvar boyası + isteğe bağlı duvar kağıdı + köşeden vuran ışık.
   String _walls(String lightPath, String lightOpacity, {bool wallpaper = true}) {
     final wall = _c('boya');
-    return '<rect width="900" height="$_floor" fill="${k.grad(SvgKit.mix(wall, .2), SvgKit.mix(wall, -.05))}"/>'
-        '${wallpaper ? wallpaperLayer(k, _style('desen'), wall, height: _floor) : ''}'
+    return '<rect y="${-top}" width="900" height="${_floor + top}" fill="${k.grad(SvgKit.mix(wall, .2), SvgKit.mix(wall, -.05))}"/>'
+        '${wallpaper ? wallpaperLayer(k, _style('desen'), wall, y: -top, height: _floor + top) : ''}'
         '<path d="$lightPath" fill="#fff" opacity="$lightOpacity"/>';
   }
 
   String _floorBlock(String board1, String board2, String shade, {int board = 30}) =>
       '<rect y="${_floor - board}" width="900" height="$board" fill="${k.grad(board1, board2)}"/>'
-      '${floorLayer(k, _style('zemin'), _c('zemin'), _c2('zemin'), y: _floor, height: 400)}'
+      '${floorLayer(k, _style('zemin'), _c('zemin'), _c2('zemin'), y: _floor, height: 400 + bottom)}'
       '<rect y="$_floor" width="900" height="400" fill="${k.grad(shade, '#00000000')}"/>';
 
   String _drape() {
@@ -133,7 +152,7 @@ class RoomArt {
         '${_floorBlock('#FFF8EA', '#E2D3B8', '#00000022')}'
         '${k.shadow(160, 842, 140)}${_draw('buzdolabi', 40, fy)}${k.shadow(380, 842, 110)}${_draw('dolap', 284, 532)}'
         '${accH > 0 ? _draw('tezgah', 300, 540 - accH) : ''}${k.shadow(590, 842, 130)}${_draw('ocak', 490, 532)}'
-        '${_draw('sarkit', feeding ? 365 : 634, 0)}'
+        '${_style('sarkit') == 'none' ? '' : _toCeiling((feeding ? 365 : 634) + 88, 4, '#5E5043')}${_draw('sarkit', feeding ? 365 : 634, 0)}'
         '${feeding ? '' : '${k.shadow(760, 1098, 150)}${_draw('sandalye', 700, 790)}$table${k.softEllipse(310, 1110, 170, 24, .3)}'}';
     final front = feeding
         ? '$table<ellipse cx="${tx + 140}" cy="792" rx="86" ry="18" fill="#FFFFFF" stroke="#D5DEE3" stroke-width="4"/>'
@@ -168,7 +187,7 @@ class RoomArt {
         '<g transform="translate(690 150)"><circle r="82" fill="${k.grad('#FFFFFF', '#CBD5DC')}"/><circle r="64" fill="${k.grad('#8FD6F5', '#E2F6FC')}"/>'
         '<circle cx="-18" cy="-14" r="16" fill="#fff" opacity=".7"/><circle cx="22" cy="20" r="9" fill="#fff" opacity=".6"/>'
         '<rect x="-64" y="-4" width="128" height="8" fill="#F1F4F6"/></g>'
-        '<g><rect x="150" y="0" width="16" height="250" fill="${k.chrome()}"/>'
+        '<g>${_toCeiling(150, 16, '#C9D0D8')}<rect x="150" y="0" width="16" height="250" fill="${k.chrome()}"/>'
         '<path d="M110 250h96l-14 34h-68z" fill="$head" stroke="${SvgKit.mix(dusC, -.35)}" stroke-width="2"/>'
         '${[126, 146, 166, 186].map((x) => '<circle cx="$x" cy="292" r="4" fill="#7D8590"/>').join()}</g>'
         '${_draw('havlu', 300, 250)}${_draw('raf', 240, 470)}$wallDeco${_draw('ayna', 640, 240)}'
@@ -218,7 +237,7 @@ class RoomArt {
         ? ''
         : '<g transform="translate(40 ${toyKind == 'ball' ? 1010 : 960}) scale(.9)">${_art(toyKind, _c('oyuncak'))}</g>';
     final quilt = '<g transform="translate(20 400)">${blanket(k, _style('nevresim'), _c('nevresim'), _c2('nevresim'))}</g>';
-    final night = dark ? '<rect width="900" height="1200" fill="#0B1435" opacity=".56"/><circle cx="577" cy="530" r="190" fill="url(#glow)"/>' : '';
+    final night = dark ? '<rect y="${-top}" width="900" height="${1200 + top + bottom}" fill="#0B1435" opacity=".56"/><circle cx="577" cy="530" r="190" fill="url(#glow)"/>' : '';
     final back =
         '${_walls('M600 0h300v380z', '.18')}$win$sus'
         '${_floorBlock('#FFF8EA', '#E2D3B8', '#00000022')}'
