@@ -104,4 +104,7 @@ Henüz üretilmedi — kullanıcı onayı bekleniyor. Hat: `promo_video/render.p
   seçili → sistemin belirlediği tek seferlik ödeme, borç değil. Ödeme yapılmadı.
 - Promosyon: ₺25.000 kredinin **₺2.623,93'ü harcandı (%10,5), ~₺22.376 kaldı**, geçerlilik 25 Ara 2026.
 - Google iade sayfaları: hesaba yatan ve harcanmayan para hesap kapatılırsa ödeme yöntemine iade edilir; promosyon kredisi iade edilmez.
-- Durum: kullanıcıya seçenekler sunuldu, karar bekleniyor.
+- **2026-11-03: Google Ads desteğine e-posta talebi gönderildi** (Bize Ulaşın → "Diğer" → E-posta; sohbet meşguldü). İstenen:
+  daha düşük doğrulama tutarı ya da kart doğrulama kodu; ödenirse ₺15.000'in hesap bakiyesi kalacağının ve kapatılırsa
+  iade edileceğinin yazılı teyidi. Yanıt yolu: telefon ya da e-posta (cvntann@gmail.com). Ek: duraklatma ekran görüntüsü.
+- Durum: Google'ın yanıtı bekleniyor.
