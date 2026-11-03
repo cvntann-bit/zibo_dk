@@ -79,6 +79,8 @@ Taslaklar (birebir hedef görünüm):
   - Etkinlik kartı Faz 6'ya kaldı (`EventsProvider` yok).
   - Tablet: içerik en fazla 640 dp, ortalanır.
 
+> **Not (2026-11-03):** giriş ekranı kullanıcının üreteceği görsellerle yeniden yapılacak — fazlar bitince, düzeltmeler listesinde (`zibo_world.md` "DÜZELTME LİSTESİ").
+
 ## Faz 4 — Bakım oyunları
 - **4a Besle (mutfak):** 57 yemek (Fluent → `assets/images/home/food/*.webp`, ~6 KB, toplam ~350 KB; simit/churros çizim), gruplar, tabağa koy, ağza sürükle (ya da dokun), çiğneme zıplaması, kırıntı + kalp parçacıkları, günde 3 ücretsiz (gün anahtarı `TrustedTimeProvider`), ZC ile özel yemek, isteğe bağlı ödüllü reklamla +1 (`AdService`, günlük sınır). **MIT lisans metni uygulamanın lisanslar ekranına** (`asset_library/LICENSE-fluent-emoji.txt`).
 - **4b Banyo:** temizlik düştükçe kir lekeleri, sabunu sürükle → köpük + baloncuk, duş, havlu, parıltı; sabun türleri bir kez alınır (renkli köpük), **sabun şekli** banyo dekor kategorisi olarak satılır.
