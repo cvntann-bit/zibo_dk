@@ -241,11 +241,17 @@ class _HomeRoomScreenState extends State<HomeRoomScreen> with SingleTickerProvid
   String _pose(HomeNeedsProvider needs) {
     if (!_care) return 'happy';
     final v = needs.percent(_need);
+    // Bakım pozları kullanıcının ürettiği görseller (docs/zibo_images_needed.md).
     return switch (widget.room) {
-      HomeRoom.kitchen => _chew > 0 || v >= 100 ? 'happy' : (v < 50 ? 'pout' : 'idle'),
-      HomeRoom.bath => _phase == _BathPhase.clean ? 'happy' : 'pout',
-      HomeRoom.bedroom => needs.isAsleep ? 'idle' : (v >= 100 ? 'happy' : 'pout'),
-      HomeRoom.living => _justPlayed || v >= 100 ? 'happy' : (v < 50 ? 'pout' : 'idle'),
+      HomeRoom.kitchen =>
+        _chew > 0
+            ? 'eat_chew'
+            : v >= 100
+            ? 'happy'
+            : (_plateFood != null ? 'eat_open' : (v < 50 ? 'pout' : 'idle')),
+      HomeRoom.bath => _phase == _BathPhase.clean ? 'bath_happy' : 'bath_pout',
+      HomeRoom.bedroom => needs.isAsleep ? 'sleep' : (v >= 100 ? 'happy' : (v < 50 ? 'yawn' : 'idle')),
+      HomeRoom.living => _justPlayed || v >= 100 ? 'happy' : (v < 50 ? 'pout' : 'play'),
     };
   }
 
@@ -602,7 +608,7 @@ class _HomeRoomScreenState extends State<HomeRoomScreen> with SingleTickerProvid
       _title(
         asleep
             ? (v >= 100 ? l10n.careBedFull : l10n.careBedSleeping)
-            : (v >= 100 ? l10n.careBedRested : l10n.careBedTired),
+            : (v >= 100 ? l10n.careBedRested : (v < 50 ? l10n.careBedTired : l10n.careBedSome)),
       ),
       _meter(l10n, HomeNeed.energy, v, const [Color(0xFFFFE07A), Color(0xFFF3B23C)]),
       FilledButton.icon(

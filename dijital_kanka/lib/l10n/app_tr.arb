@@ -4233,5 +4233,9 @@
   "eventsOk": "Harika",
   "@eventsOk": {
     "description": "Ödül penceresini kapatma düğmesi"
+  },
+  "careBedSome": "Zibo biraz dinlense iyi olur",
+  "@careBedSome": {
+    "description": "Yatak odası bakımı başlığı: enerji orta (50–99)"
   }
 }

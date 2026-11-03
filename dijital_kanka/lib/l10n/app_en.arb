@@ -907,5 +907,6 @@
   "eventsRewardItem": "New item: {name}",
   "eventsRewardEmpty": "This box was empty, try again tomorrow!",
   "eventsBoxOpened": "Box opened!",
-  "eventsOk": "Great"
+  "eventsOk": "Great",
+  "careBedSome": "Zibo could use a little rest"
 }

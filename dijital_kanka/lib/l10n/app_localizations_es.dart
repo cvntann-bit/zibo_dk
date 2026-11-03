@@ -3119,4 +3119,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get eventsOk => 'Genial';
+
+  @override
+  String get careBedSome => 'A Zibo le vendría bien descansar un poco';
 }

@@ -109,6 +109,7 @@ flutter:
     - assets/images/onboarding/
     - assets/images/home/
     - assets/images/home/food/
+    - assets/images/world/
     - assets/sounds/
     # Oyun Salonu oyunları — WebView içinde açılır (bkz. docs/game_zibo.md).
     - assets/games/kule/

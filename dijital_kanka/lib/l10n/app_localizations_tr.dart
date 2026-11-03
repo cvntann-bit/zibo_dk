@@ -3089,4 +3089,7 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get eventsOk => 'Harika';
+
+  @override
+  String get careBedSome => 'Zibo biraz dinlense iyi olur';
 }

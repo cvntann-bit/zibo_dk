@@ -5505,6 +5505,12 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'Harika'**
   String get eventsOk;
+
+  /// Yatak odası bakımı başlığı: enerji orta (50–99)
+  ///
+  /// In tr, this message translates to:
+  /// **'Zibo biraz dinlense iyi olur'**
+  String get careBedSome;
 }
 
 class _AppLocalizationsDelegate

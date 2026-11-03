@@ -3104,4 +3104,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get eventsOk => 'Great';
+
+  @override
+  String get careBedSome => 'Zibo could use a little rest';
 }

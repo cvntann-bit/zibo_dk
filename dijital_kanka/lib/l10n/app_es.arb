@@ -907,5 +907,6 @@
   "eventsRewardItem": "Objeto nuevo: {name}",
   "eventsRewardEmpty": "Esta caja salió vacía, ¡prueba mañana!",
   "eventsBoxOpened": "¡Caja abierta!",
-  "eventsOk": "Genial"
+  "eventsOk": "Genial",
+  "careBedSome": "A Zibo le vendría bien descansar un poco"
 }

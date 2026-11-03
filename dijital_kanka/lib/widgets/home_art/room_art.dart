@@ -7,7 +7,7 @@ import 'svg_kit.dart';
 /// birimlik sahnede sol üst köşe ve yükseklik. Genişlik `h × 0.789`, görsel
 /// bu kutuya ortalanarak sığdırılır.
 class ZiboSpot {
-  const ZiboSpot(this.pose, this.x, this.y, this.h);
+  const ZiboSpot(this.pose, this.x, this.y, this.h, {this.aspect = 0.789});
 
   /// 'happy' | 'pout' | 'idle' (`assets/images/home/zibo_<pose>.webp`).
   final String pose;
@@ -15,7 +15,10 @@ class ZiboSpot {
   final double y;
   final double h;
 
-  double get w => (h * 0.789).roundToDouble();
+  /// Kutunun en/boy oranı; oturan geniş pozlarda (küvet) daha büyük.
+  final double aspect;
+
+  double get w => (h * aspect).roundToDouble();
 }
 
 /// Bir odanın çizimi: Zibo'nun ARKASINDA ([back]) ve ÖNÜNDE ([front]) kalan
@@ -182,7 +185,7 @@ class RoomArt {
                 'fill="${foamFill == 'rainbow' ? rainbow[i % 6] : foamFill}" stroke="$foamStroke" stroke-width="3"/>',
           ).join()
         : '';
-    return _scene(back, caring ? '$tub$foamTop$duck' : '', caring ? ZiboSpot(pose, 120, 330, 430) : ZiboSpot(pose, 450, 640, 470));
+    return _scene(back, caring ? '$tub$foamTop$duck' : '', caring ? ZiboSpot(pose, 60, 262, 470, aspect: .93) : ZiboSpot(pose, 450, 640, 470));
   }
 
   RoomScene _bedroom(bool caring, String pose, bool dark) {
