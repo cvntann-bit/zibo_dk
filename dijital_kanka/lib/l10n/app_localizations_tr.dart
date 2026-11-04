@@ -3092,4 +3092,16 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get careBedSome => 'Zibo biraz dinlense iyi olur';
+
+  @override
+  String get careWakeFirst => 'Önce Zibo\'yu uyandır';
+
+  @override
+  String get careWakeLight => 'Işığı aç';
+
+  @override
+  String get careHidePanel => 'Paneli gizle';
+
+  @override
+  String get careShowPanel => 'Paneli göster';
 }

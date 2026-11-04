@@ -108,6 +108,11 @@ Kullanıcı: "fazları bitirelim, düzeltmeleri en son yaparız". Fazlar sırayl
    sabun, oyun, dekor eşyası), sepet. Oda sırası döngüsel mutfak · salon · yatak · banyo; kaydırınca Zibo zemin çizgisinde
    kaydırılan yöne iki zıplamayla çıkar (inişlerde toz), oda solarak değişir, karşıdan zıplayarak gelir ("hareketi azalt"
    açıksa anında). Giriş ekranındaki ev → salon; balon → en düşük ihtiyacın odası. 2×2 ev kesiti ekranı kaldırıldı.
+1c. ✅ **Panel ve uyku (kullanıcı, 2026-11-05):** "alttaki paneli gizleme olsun ya da daha zarif dursun; Zibo uyurken
+   kaydırınca geçiş olmasın, ortada fade'li 'Önce Zibo'yu uyandır' çıksın, ışığı açınca geçiş sağlansın." → panel daha
+   hafif (ince kenar, yumuşak gölge) + üstte tutamak (dokun/aşağı kaydır → gizlenir, altta "▲ Bakım/Dekor" hapı kalır,
+   dokun/yukarı kaydır → açılır). Uyurken her oda değiştirme isteği (kaydırma, oklar, ihtiyaç çubuğu) yerine ortada solarak
+   pencere: 💤 "Önce Zibo'yu uyandır" + "Işığı aç" → Zibo uyanır, ~0,45 sn sonra istenen odaya zıplayarak geçilir.
 2. **Faz 4'ten kalanlar:** ~~yeni Zibo pozları~~ ✅ 2026-11-03 (8 poz, `docs/zibo_images_needed.md`), bakım ses efektleri, ödüllü reklamla +1 ücretsiz yemek (`unit_economics.md`'ye göre), bakım rozetleri (`add-badge`), analytics olayları.
 3. **Çeviri:** eşya, kategori, yemek ve sabun adları şimdilik yalnız Türkçe (katalog) — EN/ES.
 

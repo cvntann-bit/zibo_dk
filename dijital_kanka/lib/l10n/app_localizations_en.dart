@@ -3107,4 +3107,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get careBedSome => 'Zibo could use a little rest';
+
+  @override
+  String get careWakeFirst => 'Wake Zibo up first';
+
+  @override
+  String get careWakeLight => 'Lights on';
+
+  @override
+  String get careHidePanel => 'Hide panel';
+
+  @override
+  String get careShowPanel => 'Show panel';
 }

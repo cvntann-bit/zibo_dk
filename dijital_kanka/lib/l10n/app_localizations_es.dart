@@ -3122,4 +3122,16 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get careBedSome => 'A Zibo le vendría bien descansar un poco';
+
+  @override
+  String get careWakeFirst => 'Primero despierta a Zibo';
+
+  @override
+  String get careWakeLight => 'Enciende la luz';
+
+  @override
+  String get careHidePanel => 'Ocultar panel';
+
+  @override
+  String get careShowPanel => 'Mostrar panel';
 }

@@ -221,4 +221,33 @@ void main() {
     expect(find.text('Mutfak'), findsWidgets);
     await tearDownScreen(tester);
   });
+
+  testWidgets('uyurken kaydırınca oda değişmez; "önce uyandır" → ışığı aç → geçiş', (tester) async {
+    await pumpRoom(tester, HomeRoom.bedroom);
+    await tester.tap(find.text('Işığı kapat, uyut'));
+    await tester.pump();
+    expect(needs.isAsleep, isTrue);
+    await tester.fling(find.byType(RoomView), const Offset(-300, 0), 1200);
+    await frames(tester, 20);
+    expect(find.text("Önce Zibo'yu uyandır"), findsOneWidget);
+    expect(find.text('Yatak odası'), findsWidgets);
+    await tester.tap(find.text('Işığı aç'));
+    await frames(tester, 100);
+    expect(needs.isAsleep, isFalse);
+    expect(find.text('Banyo'), findsWidgets);
+    await tearDownScreen(tester);
+  });
+
+  testWidgets('alt panel gizlenir ve hapla geri açılır', (tester) async {
+    await pumpRoom(tester, HomeRoom.living);
+    expect(find.text('Dekor'), findsOneWidget);
+    await tester.tap(find.bySemanticsLabel('Paneli gizle'));
+    await frames(tester, 20);
+    expect(find.bySemanticsLabel('Paneli göster'), findsOneWidget);
+    expect(find.text('Dekor'), findsNothing);
+    await tester.tap(find.bySemanticsLabel('Paneli göster'));
+    await frames(tester, 20);
+    expect(find.text('Dekor'), findsOneWidget);
+    await tearDownScreen(tester);
+  });
 }

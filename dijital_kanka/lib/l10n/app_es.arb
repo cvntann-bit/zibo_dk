@@ -908,5 +908,9 @@
   "eventsRewardEmpty": "Esta caja salió vacía, ¡prueba mañana!",
   "eventsBoxOpened": "¡Caja abierta!",
   "eventsOk": "Genial",
-  "careBedSome": "A Zibo le vendría bien descansar un poco"
+  "careBedSome": "A Zibo le vendría bien descansar un poco",
+  "careWakeFirst": "Primero despierta a Zibo",
+  "careWakeLight": "Enciende la luz",
+  "careHidePanel": "Ocultar panel",
+  "careShowPanel": "Mostrar panel"
 }

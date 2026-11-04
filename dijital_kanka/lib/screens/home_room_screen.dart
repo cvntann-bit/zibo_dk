@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -84,6 +85,12 @@ class _HomeRoomScreenState extends State<HomeRoomScreen> with TickerProviderStat
   bool _switched = false;
   double _lastHopT = 0;
   bool _swipeBlocked = false;
+
+  // Alt panel gizlenebilir; uyurken oda değiştirmek yerine "önce uyandır" çıkar.
+  bool _panelOpen = true;
+  bool _wakePrompt = false;
+  (int, HomeRoom?)? _pendingGo;
+  Timer? _promptTimer;
   double _dragDx = 0;
   RoomScene? _lastScene;
 
@@ -126,6 +133,7 @@ class _HomeRoomScreenState extends State<HomeRoomScreen> with TickerProviderStat
 
   @override
   void dispose() {
+    _promptTimer?.cancel();
     _hop.dispose();
     _ticker.dispose();
     _frame.dispose();
@@ -188,6 +196,19 @@ class _HomeRoomScreenState extends State<HomeRoomScreen> with TickerProviderStat
   /// [delta] +1 = sıradaki oda (Zibo sola gider), -1 = önceki oda (sağa).
   void _go(int delta, {HomeRoom? to}) {
     if (_hop.isAnimating || delta == 0) return;
+    // Zibo uyurken odadan çıkılmaz: ortada "önce uyandır" belirir, ışık
+    // açılınca istenen odaya geçilir.
+    if (_room == HomeRoom.bedroom && context.read<HomeNeedsProvider>().isAsleep) {
+      _promptTimer?.cancel();
+      setState(() {
+        _wakePrompt = true;
+        _pendingGo = (delta, to);
+      });
+      _promptTimer = Timer(const Duration(seconds: 4), () {
+        if (mounted) setState(() => _wakePrompt = false);
+      });
+      return;
+    }
     final i = homeRoomOrder.indexOf(_room);
     final target = to ?? homeRoomOrder[(i + delta) % homeRoomOrder.length];
     if (target == _room) return;
@@ -211,6 +232,21 @@ class _HomeRoomScreenState extends State<HomeRoomScreen> with TickerProviderStat
     if (scene != null) _fx.dust(_feet(scene.zibo, 0, 0));
     _hop.forward(from: 0);
     _wake();
+  }
+
+  /// "Önce uyandır" penceresindeki ışık: Zibo uyanır, ışık açılınca istenen odaya geçilir.
+  void _wakeAndGo() {
+    _promptTimer?.cancel();
+    context.read<HomeNeedsProvider>().wake();
+    final pending = _pendingGo;
+    setState(() {
+      _wakePrompt = false;
+      _pendingGo = null;
+    });
+    if (pending == null) return;
+    Future<void>.delayed(const Duration(milliseconds: 450), () {
+      if (mounted) _go(pending.$1, to: pending.$2);
+    });
   }
 
   Offset _feet(ZiboSpot spot, double shift, double lift) => Offset(spot.x + spot.w / 2 + shift, _hopFeetY - lift);
@@ -503,7 +539,32 @@ class _HomeRoomScreenState extends State<HomeRoomScreen> with TickerProviderStat
                     left: 0,
                     right: 0,
                     bottom: 0,
-                    child: SafeArea(top: false, child: _bottomPanel(l10n, needs, decor, def, items)),
+                    child: SafeArea(
+                      top: false,
+                      child: AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 220),
+                        transitionBuilder: (child, animation) => FadeTransition(
+                          opacity: animation,
+                          child: SlideTransition(
+                            position: Tween(begin: const Offset(0, .25), end: Offset.zero).animate(animation),
+                            child: child,
+                          ),
+                        ),
+                        child: _panelOpen
+                            ? KeyedSubtree(key: const ValueKey('panel'), child: _bottomPanel(l10n, needs, decor, def, items))
+                            : KeyedSubtree(key: const ValueKey('pill'), child: _collapsedPanel(l10n)),
+                      ),
+                    ),
+                  ),
+                  Positioned.fill(
+                    child: IgnorePointer(
+                      ignoring: !_wakePrompt,
+                      child: AnimatedOpacity(
+                        opacity: _wakePrompt ? 1 : 0,
+                        duration: const Duration(milliseconds: 260),
+                        child: Center(child: _wakeCard(l10n)),
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -716,15 +777,40 @@ class _HomeRoomScreenState extends State<HomeRoomScreen> with TickerProviderStat
     return Padding(
       padding: const EdgeInsets.fromLTRB(10, 0, 10, 8),
       child: Container(
-        padding: const EdgeInsets.fromLTRB(10, 8, 10, 8),
-        decoration: stickerDecoration(
-          fill: colorScheme.surfaceContainerLowest.withValues(alpha: .95),
-          borderRadius: BorderRadius.circular(22),
+        padding: const EdgeInsets.fromLTRB(10, 0, 10, 8),
+        decoration: BoxDecoration(
+          color: colorScheme.surfaceContainerLowest.withValues(alpha: .9),
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(color: kStickerOutline.withValues(alpha: .75), width: 1.5),
+          boxShadow: const [BoxShadow(color: Color(0x33000000), blurRadius: 16, offset: Offset(0, 4))],
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            // Tutamak: dokun ya da aşağı kaydır → panel gizlenir.
+            Semantics(
+              button: true,
+              label: l10n.careHidePanel,
+              excludeSemantics: true,
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () => setState(() => _panelOpen = false),
+                onVerticalDragEnd: (d) {
+                  if ((d.primaryVelocity ?? 0) > 100) setState(() => _panelOpen = false);
+                },
+                child: SizedBox(
+                  height: 18,
+                  child: Center(
+                    child: Container(
+                      width: 42,
+                      height: 4,
+                      decoration: BoxDecoration(color: colorScheme.outline, borderRadius: BorderRadius.circular(2)),
+                    ),
+                  ),
+                ),
+              ),
+            ),
             Row(
               children: [
                 SegmentedButton<bool>(
@@ -774,6 +860,75 @@ class _HomeRoomScreenState extends State<HomeRoomScreen> with TickerProviderStat
             ...(_care ? _careRows(l10n, needs, decor, v) : _decorRows(l10n, decor, def, items)),
           ],
         ),
+      ),
+    );
+  }
+
+  /// Gizlenmiş panel: altta küçük hap; dokununca ya da yukarı kaydırınca açılır.
+  Widget _collapsedPanel(AppLocalizations l10n) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Center(
+        child: Semantics(
+          button: true,
+          label: l10n.careShowPanel,
+          excludeSemantics: true,
+          child: GestureDetector(
+            onTap: () => setState(() => _panelOpen = true),
+            onVerticalDragEnd: (d) {
+              if ((d.primaryVelocity ?? 0) < -100) setState(() => _panelOpen = true);
+            },
+            child: Container(
+              padding: const EdgeInsets.fromLTRB(12, 6, 16, 6),
+              decoration: BoxDecoration(
+                color: colorScheme.surfaceContainerLowest.withValues(alpha: .92),
+                borderRadius: BorderRadius.circular(99),
+                border: Border.all(color: kStickerOutline.withValues(alpha: .75), width: 1.5),
+                boxShadow: const [BoxShadow(color: Color(0x33000000), blurRadius: 12, offset: Offset(0, 3))],
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.keyboard_arrow_up_rounded, size: 22),
+                  const SizedBox(width: 4),
+                  Text(
+                    _care ? l10n.careModeCare : l10n.careModeDecor,
+                    style: const TextStyle(fontFamily: 'Baloo2', fontVariations: [FontVariation('wght', 800)], fontSize: 15),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Uyurken oda değiştirmeye çalışınca ortada solarak beliren pencere.
+  Widget _wakeCard(AppLocalizations l10n) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 40),
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 14),
+      decoration: stickerDecoration(fill: colorScheme.surfaceContainerLowest, borderRadius: BorderRadius.circular(22)),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Text('💤', style: TextStyle(fontSize: 34)),
+          const SizedBox(height: 6),
+          Text(
+            l10n.careWakeFirst,
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontFamily: 'Baloo2', fontVariations: [FontVariation('wght', 800)], fontSize: 18, height: 1.15),
+          ),
+          const SizedBox(height: 12),
+          FilledButton.icon(
+            onPressed: _wakeAndGo,
+            icon: const Icon(Icons.light_mode_rounded),
+            label: Text(l10n.careWakeLight),
+          ),
+        ],
       ),
     );
   }

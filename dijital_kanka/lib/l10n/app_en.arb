@@ -908,5 +908,9 @@
   "eventsRewardEmpty": "This box was empty, try again tomorrow!",
   "eventsBoxOpened": "Box opened!",
   "eventsOk": "Great",
-  "careBedSome": "Zibo could use a little rest"
+  "careBedSome": "Zibo could use a little rest",
+  "careWakeFirst": "Wake Zibo up first",
+  "careWakeLight": "Lights on",
+  "careHidePanel": "Hide panel",
+  "careShowPanel": "Show panel"
 }

@@ -5511,6 +5511,30 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'Zibo biraz dinlense iyi olur'**
   String get careBedSome;
+
+  /// Zibo uyurken başka odaya geçilmek istenince ortada çıkan uyarı
+  ///
+  /// In tr, this message translates to:
+  /// **'Önce Zibo\'yu uyandır'**
+  String get careWakeFirst;
+
+  /// Uyandırma uyarısındaki düğme: ışığı açar, istenen odaya geçer
+  ///
+  /// In tr, this message translates to:
+  /// **'Işığı aç'**
+  String get careWakeLight;
+
+  /// Oda ekranında alt paneli gizleme tutamağı (erişilebilirlik)
+  ///
+  /// In tr, this message translates to:
+  /// **'Paneli gizle'**
+  String get careHidePanel;
+
+  /// Gizlenmiş alt paneli açan hap (erişilebilirlik)
+  ///
+  /// In tr, this message translates to:
+  /// **'Paneli göster'**
+  String get careShowPanel;
 }
 
 class _AppLocalizationsDelegate

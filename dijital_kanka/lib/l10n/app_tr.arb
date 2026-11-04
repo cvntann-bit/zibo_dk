@@ -4237,5 +4237,21 @@
   "careBedSome": "Zibo biraz dinlense iyi olur",
   "@careBedSome": {
     "description": "Yatak odası bakımı başlığı: enerji orta (50–99)"
+  },
+  "careWakeFirst": "Önce Zibo'yu uyandır",
+  "@careWakeFirst": {
+    "description": "Zibo uyurken başka odaya geçilmek istenince ortada çıkan uyarı"
+  },
+  "careWakeLight": "Işığı aç",
+  "@careWakeLight": {
+    "description": "Uyandırma uyarısındaki düğme: ışığı açar, istenen odaya geçer"
+  },
+  "careHidePanel": "Paneli gizle",
+  "@careHidePanel": {
+    "description": "Oda ekranında alt paneli gizleme tutamağı (erişilebilirlik)"
+  },
+  "careShowPanel": "Paneli göster",
+  "@careShowPanel": {
+    "description": "Gizlenmiş alt paneli açan hap (erişilebilirlik)"
   }
 }
