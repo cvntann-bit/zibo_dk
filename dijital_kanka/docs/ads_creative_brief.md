@@ -108,3 +108,17 @@ Henüz üretilmedi — kullanıcı onayı bekleniyor. Hat: `promo_video/render.p
   daha düşük doğrulama tutarı ya da kart doğrulama kodu; ödenirse ₺15.000'in hesap bakiyesi kalacağının ve kapatılırsa
   iade edileceğinin yazılı teyidi. Yanıt yolu: telefon ya da e-posta (cvntann@gmail.com). Ek: duraklatma ekran görüntüsü.
 - Durum: Google'ın yanıtı bekleniyor.
+
+## Google duraklatılmışken alternatifler (2026-11-05, kullanıcı sorusu: "TikTok veya başka nereden?")
+- **Gerçek:** Google'ın iyi sonucu iki şeyden geliyordu: Play'e doğrudan bağlı uygulama kampanyası (SDK gerekmeden kuruluma
+  optimize eder) + TR'de çok ucuz kurulum (~₺1,6) + bedava ₺25k kredi. `unit_economics.md`'ye göre kullanıcı başı gelir
+  ayda ~0,0015 $ → ücretli kurulum şu an HER kanalda zarar; Google'da da kendi parayla değil kredıyle dönüyordu.
+- **Meta (Instagram/Facebook) uygulama reklamı:** TR'de güçlü; kuruluma optimize için Meta SDK (ya da ücretli MMP) gerekir —
+  çocuk kullanıcı / Aileler riski ve Veri güvenliği beyanı değişikliği; SDK'sız yalnız tıklamaya optimize eder.
+- **TikTok Ads:** kitle uygun (genç); asgari günlük bütçe yüksek (kampanya/ad grup asgarisi var, teyit edilmeli) ve kuruluma
+  optimize için TikTok SDK/MMP gerekir — aynı Aileler riski.
+- **Yandex Direct / Huawei Petal Ads:** TR'de mobil uygulama kampanyası mümkün, hacim küçük; denenebilir, önce küçük bütçe.
+- **Öneri:** şimdilik ücretli değil organik: TikTok + Instagram Reels'e mevcut tanıtım videoları (`promo_video/`) ve 1.18.0
+  Zibo Dünyası görüntüleri; mağaza sayfası (ASO); uygulama içi davet (`ReferralProvider`) ve değerlendirme isteği (Faz S).
+  Google destek yanıtı gelince kalan ~₺22k kredi tekrar kullanılabilir (25 Ara'ya kadar).
+
