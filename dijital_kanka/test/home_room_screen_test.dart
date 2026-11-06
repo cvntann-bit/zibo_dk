@@ -325,4 +325,26 @@ void main() {
     expect(find.textContaining('Önce uyumam gerek'), findsNothing);
     await tearDownScreen(tester);
   });
+
+  testWidgets('mutfak: ücretsiz yemek bitince reklam izle → yemek tabağa gelir', (tester) async {
+    await pumpRoom(tester, HomeRoom.kitchen);
+    for (var i = 0; i < 3; i++) {
+      needs.useFreeFood();
+    }
+    await tester.pump();
+    expect(needs.adFoodsLeft, 2);
+    await tester.tap(find.bySemanticsLabel('Elma, 🎬 Reklam · +1'));
+    await tester.pumpAndSettle();
+    expect(find.text('Bir ücretsiz yemek daha?'), findsOneWidget);
+    await tester.tap(find.text('Reklam izle'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 700)); // MockAdService
+    await tester.pump();
+    expect(needs.freeFoodsLeft, 0);
+    expect(needs.adFoodsLeft, 1);
+    expect(sfx.played, [CareSound.plate]);
+    expect(find.textContaining('ağzına sürükle'), findsWidgets);
+    await frames(tester, 30);
+    await tearDownScreen(tester);
+  });
 }

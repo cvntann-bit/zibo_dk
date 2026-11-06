@@ -49,6 +49,7 @@ class HomeNeedsProvider extends ChangeNotifier {
   double _sleepStartEnergy = _startLevel;
   String? _freeFoodDay;
   int _freeFoodsUsed = 0;
+  int _adFoodsUsed = 0;
 
   late final Future<void> _ready;
   bool _isReady = false;
@@ -102,13 +103,38 @@ class HomeNeedsProvider extends ChangeNotifier {
     return (limit - used).clamp(0, limit);
   }
 
+  /// Gün değiştiyse ücretsiz ve reklam yemeği sayaçları sıfırlanır.
+  void _rollFoodDay() {
+    if (_freeFoodDay == _todayKey) return;
+    _freeFoodDay = _todayKey;
+    _freeFoodsUsed = 0;
+    _adFoodsUsed = 0;
+  }
+
+  /// Bugün ödüllü reklamla alınabilecek ek ücretsiz yemek — yalnız ücretsiz
+  /// kullanıcı ve yalnız ücretsiz yemekleri bitince.
+  int get adFoodsLeft {
+    if (_tier() != SubscriptionTier.free || freeFoodsLeft > 0) return 0;
+    final limit = _config().adFoodsPerDay;
+    final used = _freeFoodDay == _todayKey ? _adFoodsUsed : 0;
+    return (limit - used).clamp(0, limit);
+  }
+
+  /// Reklam sonuna kadar izlenince: bir ücretsiz yemek hakkı geri gelir.
+  bool grantAdFood() {
+    if (adFoodsLeft <= 0) return false;
+    _rollFoodDay();
+    _adFoodsUsed++;
+    _freeFoodsUsed--;
+    notifyListeners();
+    _save();
+    return true;
+  }
+
   /// Ücretsiz yemek hakkından bir tane düşer; hak yoksa false.
   bool useFreeFood() {
     if (freeFoodsLeft <= 0) return false;
-    if (_freeFoodDay != _todayKey) {
-      _freeFoodDay = _todayKey;
-      _freeFoodsUsed = 0;
-    }
+    _rollFoodDay();
     _freeFoodsUsed++;
     notifyListeners();
     _save();
@@ -179,6 +205,7 @@ class HomeNeedsProvider extends ChangeNotifier {
         _sleepStartEnergy = (data['sleepStartEnergy'] as num?)?.toDouble() ?? _stored[HomeNeed.energy]!;
         _freeFoodDay = data['freeFoodDay'] as String?;
         _freeFoodsUsed = (data['freeFoodsUsed'] as num?)?.toInt() ?? 0;
+        _adFoodsUsed = (data['adFoodsUsed'] as num?)?.toInt() ?? 0;
       } catch (_) {
         // Bozuk kayıt: varsayılanlarla devam (diğer provider'larla aynı kural).
       }
@@ -195,5 +222,6 @@ class HomeNeedsProvider extends ChangeNotifier {
     'sleepStartEnergy': _sleepStartEnergy,
     'freeFoodDay': _freeFoodDay,
     'freeFoodsUsed': _freeFoodsUsed,
+    'adFoodsUsed': _adFoodsUsed,
   });
 }

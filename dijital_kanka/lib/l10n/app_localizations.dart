@@ -5547,6 +5547,36 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'Yatak odasına git'**
   String get careTiredGoBed;
+
+  /// Ücretsiz yemekler bitince ücretsiz yemek kutucuğundaki etiket (reklamla +1)
+  ///
+  /// In tr, this message translates to:
+  /// **'🎬 Reklam · +1'**
+  String get careFeedAdTag;
+
+  /// Reklamla ücretsiz yemek onay penceresi başlığı
+  ///
+  /// In tr, this message translates to:
+  /// **'Bir ücretsiz yemek daha?'**
+  String get careFeedAdTitle;
+
+  /// Onay penceresindeki düğme
+  ///
+  /// In tr, this message translates to:
+  /// **'Reklam izle'**
+  String get careFeedAdWatch;
+
+  /// Reklam izlenemeyince mutfakta çıkan mesaj
+  ///
+  /// In tr, this message translates to:
+  /// **'Reklam şu an açılamadı, biraz sonra tekrar dene'**
+  String get careFeedAdFailed;
+
+  /// Reklamla ücretsiz yemek onay penceresi metni
+  ///
+  /// In tr, this message translates to:
+  /// **'Kısa bir reklam izle, bu yemek Zibo\'ya ücretsiz gelsin. Bugün kalan hak: {left}'**
+  String careFeedAdBody(int left);
 }
 
 class _AppLocalizationsDelegate

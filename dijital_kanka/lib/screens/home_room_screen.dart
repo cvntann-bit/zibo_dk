@@ -333,6 +333,35 @@ class _HomeRoomScreenState extends State<HomeRoomScreen> with TickerProviderStat
     _sound(CareSound.plate);
   }
 
+  /// Ücretsiz yemekler bitince: onay → ödüllü reklam → hak gelir, yemek tabağa.
+  Future<void> _adFood(HomeFood food) async {
+    final l10n = AppLocalizations.of(context)!;
+    final needs = context.read<HomeNeedsProvider>();
+    if (_chew > 0) return;
+    if (_plateFood != null) return _say(l10n.careFeedPlateFirst);
+    if (needs.percent(HomeNeed.hunger) >= 100) return _say(l10n.careFeedFullMsg);
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        icon: const Text('🎬', style: TextStyle(fontSize: 32)),
+        title: Text(l10n.careFeedAdTitle),
+        content: Text(l10n.careFeedAdBody(needs.adFoodsLeft)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text(MaterialLocalizations.of(context).cancelButtonLabel),
+          ),
+          FilledButton(onPressed: () => Navigator.of(context).pop(true), child: Text(l10n.careFeedAdWatch)),
+        ],
+      ),
+    );
+    if (ok != true || !mounted) return;
+    final earned = await context.read<CoinProvider>().showHomeFoodAd();
+    if (!mounted) return;
+    if (!earned) return _say(l10n.careFeedAdFailed);
+    if (needs.grantAdFood()) _chooseFood(food);
+  }
+
   void _eat() {
     final l10n = AppLocalizations.of(context)!;
     final needs = context.read<HomeNeedsProvider>();
@@ -1095,6 +1124,7 @@ class _HomeRoomScreenState extends State<HomeRoomScreen> with TickerProviderStat
       case HomeRoom.kitchen:
         final config = context.watch<HomeConfigProvider>().config;
         final freeLeft = needs.freeFoodsLeft;
+        final adLeft = needs.adFoodsLeft;
         final groups = {
           'meyve': l10n.careFoodFruit,
           'yemek': l10n.careFoodMeal,
@@ -1109,10 +1139,17 @@ class _HomeRoomScreenState extends State<HomeRoomScreen> with TickerProviderStat
               Builder(
                 builder: (context) {
                   final price = config.foodPrice(f.id, f.price);
-                  final tag = price > 0 ? '$price ZC' : (freeLeft > 0 ? '${l10n.careFeedFree} · $freeLeft' : l10n.careFeedTomorrow);
+                  final viaAd = price == 0 && freeLeft == 0 && adLeft > 0;
+                  final tag = price > 0
+                      ? '$price ZC'
+                      : freeLeft > 0
+                      ? '${l10n.careFeedFree} · $freeLeft'
+                      : viaAd
+                      ? l10n.careFeedAdTag
+                      : l10n.careFeedTomorrow;
                   return _Tile(
                     semanticLabel: '${f.nameTr}, $tag',
-                    onTap: () => _chooseFood(f),
+                    onTap: () => viaAd ? _adFood(f) : _chooseFood(f),
                     image: _FoodImage(id: f.id),
                     title: f.nameTr,
                     tag: tag,

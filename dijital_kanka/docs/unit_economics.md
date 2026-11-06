@@ -44,6 +44,7 @@ Kaynaklar: (1) rewarded reklam, (2) interstitial, (3) banner (şu an 0 fill), (4
 | 2048 uzun tur — her 120 hamlede bir mola (yalnızca ücretsiz) | Interstitial | `gameBreak` (2026-10-27) | `assets/games/2048/index.html` → `game_webview_screen.dart` |
 | Mağaza "Bugünün vitrini" | Rewarded | kostüm nadirliğine göre 1–5 video → 24 saat deneme, günde 1 deneme (2026-10-26) | `store_screen.dart` `_CostumeTrialCard`, `costume_provider.dart` |
 | Oyun Salonu ikinci şans / ekstra hak | Rewarded | tur başına 1 devam, 5 sn sayaç (2026-10-26) | `assets/games/{tren,tugla,kule}` |
+| Zibo'nun Evi mutfağı "+1 ücretsiz yemek" | Rewarded | yalnız ücretsiz kullanıcı, yalnız günlük 3 ücretsiz yemek bitince, günde en fazla 2 (`config/home.adFoodsPerDay`); coin VERMEZ; Pro'ya gösterilmez (2026-11-06) | `home_room_screen.dart` `_adFood`, `home_needs_provider.dart` `grantAdFood`, `coin_provider.dart` `showHomeFoodAd` (`rewarded_result` placement=`homeFood`) |
 | Banner | Banner | kod var, gerçek doluluk yok (bkz. hafıza: banner 0 fill) | `banner_ad_reload_signal.dart` |
 
 Tek giriş noktası `CoinProvider.showInterstitialAd(placement)` (Pro/reklamsız kontrolü + sıklık kuralları orada).
@@ -55,7 +56,7 @@ Tek giriş noktası `CoinProvider.showInterstitialAd(placement)` (Pro/reklamsız
 **Rewarded sınırları (kullanıcı "kendi denklemini kur" dedi):** toplam bir üst sınır KONMADI — rewarded en iyi gelir
 kalemi (fill %60–87, eCPM ~1 $) ve kullanıcı kendi isteğiyle izliyor; her kaynak zaten kendi doğal sınırına sahip:
 mağaza coin 2/gün, çark günlük hak, oyun devam turu başına 1 (turlar günlük oyun hakkıyla sınırlı), kostüm denemesi
-günde 1 deneme (≤5 video). Coin VERMEYEN rewarded'lar (deneme, oyun devamı) coin ekonomisini şişirmez.
+günde 1 deneme (≤5 video). Ev yemeği 2/gün (ücretsiz yemek ZC harcamasının yerini alır ama ZC gerçek para değil; sınır ZC havuzunu korur). Coin VERMEYEN rewarded'lar (deneme, oyun devamı) coin ekonomisini şişirmez.
 
 ### Kullanıcı başı gelir formülü (ÖLÇÜLECEK değerlerle doldurulur)
 

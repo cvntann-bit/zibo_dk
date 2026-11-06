@@ -3141,4 +3141,22 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get careTiredGoBed => 'Ir al dormitorio';
+
+  @override
+  String get careFeedAdTag => '🎬 Anuncio · +1';
+
+  @override
+  String get careFeedAdTitle => '¿Una comida gratis más?';
+
+  @override
+  String get careFeedAdWatch => 'Ver anuncio';
+
+  @override
+  String get careFeedAdFailed =>
+      'El anuncio no se pudo cargar, inténtalo en un rato';
+
+  @override
+  String careFeedAdBody(int left) {
+    return 'Mira un anuncio corto y esta comida será gratis para Zibo. Quedan hoy: $left';
+  }
 }

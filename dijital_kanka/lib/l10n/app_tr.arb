@@ -4261,5 +4261,30 @@
   "careTiredGoBed": "Yatak odasına git",
   "@careTiredGoBed": {
     "description": "Yorgunluk balonundaki düğme: yatak odasına geçer"
+  },
+  "careFeedAdTag": "🎬 Reklam · +1",
+  "@careFeedAdTag": {
+    "description": "Ücretsiz yemekler bitince ücretsiz yemek kutucuğundaki etiket (reklamla +1)"
+  },
+  "careFeedAdTitle": "Bir ücretsiz yemek daha?",
+  "@careFeedAdTitle": {
+    "description": "Reklamla ücretsiz yemek onay penceresi başlığı"
+  },
+  "careFeedAdWatch": "Reklam izle",
+  "@careFeedAdWatch": {
+    "description": "Onay penceresindeki düğme"
+  },
+  "careFeedAdFailed": "Reklam şu an açılamadı, biraz sonra tekrar dene",
+  "@careFeedAdFailed": {
+    "description": "Reklam izlenemeyince mutfakta çıkan mesaj"
+  },
+  "careFeedAdBody": "Kısa bir reklam izle, bu yemek Zibo'ya ücretsiz gelsin. Bugün kalan hak: {left}",
+  "@careFeedAdBody": {
+    "description": "Reklamla ücretsiz yemek onay penceresi metni",
+    "placeholders": {
+      "left": {
+        "type": "int"
+      }
+    }
   }
 }

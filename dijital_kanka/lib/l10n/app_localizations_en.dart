@@ -3125,4 +3125,22 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get careTiredGoBed => 'Go to the bedroom';
+
+  @override
+  String get careFeedAdTag => '🎬 Ad · +1';
+
+  @override
+  String get careFeedAdTitle => 'One more free meal?';
+
+  @override
+  String get careFeedAdWatch => 'Watch ad';
+
+  @override
+  String get careFeedAdFailed =>
+      'The ad couldn\'t load right now, try again a bit later';
+
+  @override
+  String careFeedAdBody(int left) {
+    return 'Watch a short ad and this meal is free for Zibo. Left today: $left';
+  }
 }

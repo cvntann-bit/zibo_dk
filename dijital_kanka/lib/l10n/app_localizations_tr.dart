@@ -3110,4 +3110,22 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get careTiredGoBed => 'Yatak odasına git';
+
+  @override
+  String get careFeedAdTag => '🎬 Reklam · +1';
+
+  @override
+  String get careFeedAdTitle => 'Bir ücretsiz yemek daha?';
+
+  @override
+  String get careFeedAdWatch => 'Reklam izle';
+
+  @override
+  String get careFeedAdFailed =>
+      'Reklam şu an açılamadı, biraz sonra tekrar dene';
+
+  @override
+  String careFeedAdBody(int left) {
+    return 'Kısa bir reklam izle, bu yemek Zibo\'ya ücretsiz gelsin. Bugün kalan hak: $left';
+  }
 }

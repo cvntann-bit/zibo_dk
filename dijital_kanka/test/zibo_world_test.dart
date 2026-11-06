@@ -171,6 +171,33 @@ void main() {
       clock = DateTime(2026, 11, 3, 0, 1);
       expect(p.freeFoodsLeft, 3);
     });
+
+    test('reklamla +1 yemek: yalnız ücretsiz kullanıcı, hak bitince, günde 2', () async {
+      final p = await make();
+      expect(p.adFoodsLeft, 0); // ücretsiz hak varken teklif yok
+      for (var i = 0; i < 3; i++) {
+        p.useFreeFood();
+      }
+      expect(p.adFoodsLeft, 2);
+      tier = SubscriptionTier.pro;
+      expect(p.adFoodsLeft, 0); // Pro'ya gösterilmez
+      tier = SubscriptionTier.free;
+      expect(p.grantAdFood(), isTrue);
+      expect(p.freeFoodsLeft, 1);
+      expect(p.adFoodsLeft, 0); // önce açılan hak kullanılır
+      expect(p.useFreeFood(), isTrue);
+      expect(p.adFoodsLeft, 1);
+      expect(p.grantAdFood(), isTrue);
+      expect(p.useFreeFood(), isTrue);
+      expect(p.adFoodsLeft, 0);
+      expect(p.grantAdFood(), isFalse);
+      clock = DateTime(2026, 11, 3, 0, 1);
+      expect(p.freeFoodsLeft, 3);
+      for (var i = 0; i < 3; i++) {
+        p.useFreeFood();
+      }
+      expect(p.adFoodsLeft, 2); // yeni gün, yeni hak
+    });
   });
 
   group('HomeDecorProvider', () {

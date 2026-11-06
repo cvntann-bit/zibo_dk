@@ -16,6 +16,7 @@ class HomeConfig {
     required this.freeFoodsPerDay,
     required this.proFreeFoodsPerDay,
     required this.proPlusFreeFoodsPerDay,
+    this.adFoodsPerDay = 2,
     required this.proDiscount,
     required this.proPlusDiscount,
     required this.proSleepSpeed,
@@ -39,6 +40,10 @@ class HomeConfig {
   final int freeFoodsPerDay;
   final int proFreeFoodsPerDay;
   final int proPlusFreeFoodsPerDay;
+
+  /// Ücretsiz yemekleri biten ÜCRETSİZ kullanıcının günde ödüllü reklamla
+  /// alabileceği ek ücretsiz yemek (docs/unit_economics.md). Pro'da yok.
+  final int adFoodsPerDay;
 
   /// Dekor ve sabun indirimi (0.1 = %10).
   final double proDiscount;
@@ -159,6 +164,7 @@ class HomeConfig {
       freeFoodsPerDay: int0('freeFoodsPerDay', defaults.freeFoodsPerDay),
       proFreeFoodsPerDay: int0('proFreeFoodsPerDay', defaults.proFreeFoodsPerDay),
       proPlusFreeFoodsPerDay: int0('proPlusFreeFoodsPerDay', defaults.proPlusFreeFoodsPerDay),
+      adFoodsPerDay: int0('adFoodsPerDay', defaults.adFoodsPerDay),
       proDiscount: num0('proDiscount', defaults.proDiscount),
       proPlusDiscount: num0('proPlusDiscount', defaults.proPlusDiscount),
       proSleepSpeed: num0('proSleepSpeed', defaults.proSleepSpeed),

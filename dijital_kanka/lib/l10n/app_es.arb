@@ -914,5 +914,10 @@
   "careHidePanel": "Ocultar panel",
   "careShowPanel": "Mostrar panel",
   "careTiredSleepFirst": "¡Primero necesito dormir, estoy muy cansado! 😴",
-  "careTiredGoBed": "Ir al dormitorio"
+  "careTiredGoBed": "Ir al dormitorio",
+  "careFeedAdTag": "🎬 Anuncio · +1",
+  "careFeedAdTitle": "¿Una comida gratis más?",
+  "careFeedAdWatch": "Ver anuncio",
+  "careFeedAdFailed": "El anuncio no se pudo cargar, inténtalo en un rato",
+  "careFeedAdBody": "Mira un anuncio corto y esta comida será gratis para Zibo. Quedan hoy: {left}"
 }

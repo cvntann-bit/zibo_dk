@@ -749,6 +749,19 @@ class CoinProvider extends ChangeNotifier {
     return earned;
   }
 
+  /// Zibo'nun Evi mutfağı: ücretsiz yemekler bitince "reklam izle, +1
+  /// ücretsiz yemek" (günde `HomeConfig.adFoodsPerDay`, yalnız ücretsiz
+  /// kullanıcı — Pro'ya bu seçenek gösterilmez). Coin VERMEZ; hakkı
+  /// `HomeNeedsProvider.grantAdFood` açar.
+  Future<bool> showHomeFoodAd() async {
+    final earned = await _adService.showRewardedAd();
+    AdAnalytics.log('rewarded_result', {
+      'placement': 'homeFood',
+      'ok': earned ? 1 : 0,
+    });
+    return earned;
+  }
+
   @override
   void dispose() {
     _orphanedPurchaseSub.cancel();
