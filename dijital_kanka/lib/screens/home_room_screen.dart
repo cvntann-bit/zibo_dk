@@ -18,7 +18,9 @@ import '../providers/games_config_provider.dart';
 import '../providers/home_config_provider.dart';
 import '../providers/home_decor_provider.dart';
 import '../providers/home_needs_provider.dart';
+import '../providers/sound_effects_provider.dart';
 import '../providers/subscription_provider.dart';
+import '../services/sound_effects_service.dart';
 import '../widgets/home_art/care_fx.dart';
 import '../widgets/home_art/item_thumb.dart';
 import '../widgets/home_art/room_art.dart';
@@ -42,9 +44,12 @@ import 'game_webview_screen.dart';
 /// **Bakım:** mutfakta besle, banyoda yıka, yatak odasında uyut (gerçek
 /// zamanlı), salonda oyna (Faz 4). **Dekor:** eşyaları dene, sepeti al (Faz 5).
 class HomeRoomScreen extends StatefulWidget {
-  const HomeRoomScreen({super.key, this.initialRoom = HomeRoom.living});
+  const HomeRoomScreen({super.key, this.initialRoom = HomeRoom.living, this.soundEffectsService});
 
   final HomeRoom initialRoom;
+
+  /// Testte kayıt tutan sahte servis enjekte edilir; yoksa gerçek oynatıcı.
+  final SoundEffectsService? soundEffectsService;
 
   @override
   State<HomeRoomScreen> createState() => _HomeRoomScreenState();
@@ -115,6 +120,10 @@ class _HomeRoomScreenState extends State<HomeRoomScreen> with TickerProviderStat
 
   // Salon.
   bool _justPlayed = false;
+
+  // Bakım sesleri: oynatıcı ilk seste kurulur (ses kapalıysa hiç kurulmaz).
+  SoundEffectsService? _sfx;
+  DateTime _lastBubble = DateTime(0);
   // Enerji düşükken salonda "önce uyumam gerek" balonu (kapatılabilir).
   bool _tiredDismissed = false;
 
@@ -138,6 +147,7 @@ class _HomeRoomScreenState extends State<HomeRoomScreen> with TickerProviderStat
 
   @override
   void dispose() {
+    _sfx?.dispose();
     _promptTimer?.cancel();
     _hop.dispose();
     _ticker.dispose();
@@ -244,6 +254,7 @@ class _HomeRoomScreenState extends State<HomeRoomScreen> with TickerProviderStat
   void _wakeAndGo() {
     _promptTimer?.cancel();
     context.read<HomeNeedsProvider>().wake();
+    _sound(CareSound.lightsOn);
     final pending = _pendingGo;
     setState(() {
       _wakePrompt = false;
@@ -268,6 +279,13 @@ class _HomeRoomScreenState extends State<HomeRoomScreen> with TickerProviderStat
     return (-_hopDir * _hopDistance * (1 - p), (math.sin(p * 2 * math.pi)).abs() * _hopHeight, p < .25 ? p / .25 : 1.0, true);
   }
 
+  /// Ayarlardaki "ses efektleri" açıksa bakım sesini çalar.
+  void _sound(CareSound sound) {
+    if (!(context.read<SoundEffectsProvider?>()?.enabled ?? false)) return;
+    _sfx ??= widget.soundEffectsService ?? AudioPlayersSoundEffectsService();
+    _sfx!.playCare(sound);
+  }
+
   void _onHop() {
     final t = _hop.value;
     if (!_switched && t >= .5) {
@@ -281,8 +299,14 @@ class _HomeRoomScreenState extends State<HomeRoomScreen> with TickerProviderStat
     bool crossed(double at) => _lastHopT < at && t >= at;
     final from = _hopFrom;
     final to = _lastScene?.zibo;
-    if (from != null && crossed(.225)) _fx.dust(_feet(from, _hopDir * _hopDistance * .5, 0));
-    if (to != null && crossed(.775)) _fx.dust(_feet(to, -_hopDir * _hopDistance * .5, 0));
+    if (from != null && crossed(.225)) {
+      _fx.dust(_feet(from, _hopDir * _hopDistance * .5, 0));
+      _sound(CareSound.hop);
+    }
+    if (to != null && crossed(.775)) {
+      _fx.dust(_feet(to, -_hopDir * _hopDistance * .5, 0));
+      _sound(CareSound.hop);
+    }
     if (to != null && t >= 1 && _lastHopT < 1) _fx.dust(_feet(to, 0, 0));
     _lastHopT = t;
   }
@@ -306,6 +330,7 @@ class _HomeRoomScreenState extends State<HomeRoomScreen> with TickerProviderStat
       _held = null;
       _msg = l10n.careFeedHint;
     });
+    _sound(CareSound.plate);
   }
 
   void _eat() {
@@ -314,6 +339,7 @@ class _HomeRoomScreenState extends State<HomeRoomScreen> with TickerProviderStat
     final food = homeFoods.firstWhere((f) => f.id == _plateFood);
     needs.add(HomeNeed.hunger, food.hunger.toDouble());
     _fx.eat(_mouth);
+    _sound(CareSound.chomp);
     setState(() {
       _plateFood = null;
       _held = null;
@@ -337,6 +363,11 @@ class _HomeRoomScreenState extends State<HomeRoomScreen> with TickerProviderStat
     final fill = rainbow ? _color(RoomArt.rainbow[_rnd.nextInt(RoomArt.rainbow.length)]) : Color(soap.foam!);
     final wasRinseReady = _fx.dirt < .25;
     _fx.scrub(p, fill, Color(soap.foamStroke ?? 0xFFCDEBF7));
+    final now = DateTime.now();
+    if (now.difference(_lastBubble).inMilliseconds > 170) {
+      _lastBubble = now;
+      _sound(CareSound.bubble);
+    }
     // Panel (adımlar, duş düğmesi) yalnız eşik geçilince yeniden kurulur.
     if (_phase == _BathPhase.dirty || wasRinseReady != (_fx.dirt < .25)) {
       setState(() => _phase = _BathPhase.foamy);
@@ -348,6 +379,7 @@ class _HomeRoomScreenState extends State<HomeRoomScreen> with TickerProviderStat
     _fx.towel();
     context.read<HomeNeedsProvider>().add(HomeNeed.hygiene, 100);
     setState(() => _phase = _BathPhase.clean);
+    _sound(CareSound.sparkle);
     _wake();
   }
 
@@ -1128,6 +1160,7 @@ class _HomeRoomScreenState extends State<HomeRoomScreen> with TickerProviderStat
                   onPressed: _phase == _BathPhase.foamy && dirt < .25 && _fx.shower == 0
                       ? () {
                           _fx.startShower();
+                          _sound(CareSound.shower);
                           _wake();
                           setState(() {});
                         }
@@ -1167,7 +1200,10 @@ class _HomeRoomScreenState extends State<HomeRoomScreen> with TickerProviderStat
         final asleep = needs.isAsleep;
         return [
           FilledButton.icon(
-            onPressed: () => asleep ? needs.wake() : needs.startSleep(),
+            onPressed: () {
+              asleep ? needs.wake() : needs.startSleep();
+              _sound(asleep ? CareSound.lightsOn : CareSound.lightsOff);
+            },
             icon: Icon(asleep ? Icons.light_mode_rounded : Icons.bedtime_rounded),
             label: Text(asleep ? l10n.careBedWake : l10n.careBedSleep),
           ),

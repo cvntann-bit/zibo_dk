@@ -17,16 +17,46 @@ import 'package:dijital_kanka/providers/games_config_provider.dart';
 import 'package:dijital_kanka/providers/home_config_provider.dart';
 import 'package:dijital_kanka/providers/home_decor_provider.dart';
 import 'package:dijital_kanka/providers/home_needs_provider.dart';
+import 'package:dijital_kanka/providers/sound_effects_provider.dart';
 import 'package:dijital_kanka/providers/subscription_provider.dart';
 import 'package:dijital_kanka/screens/home_room_screen.dart';
+import 'package:dijital_kanka/services/sound_effects_service.dart';
 import 'package:dijital_kanka/widgets/home_art/room_view.dart';
 
 import 'fake_audioplayers_platform.dart';
+
+/// Çalınan bakım seslerini kaydeder.
+class _RecordingSfx extends SoundEffectsService {
+  final played = <CareSound>[];
+
+  @override
+  Future<void> playCare(CareSound sound) async => played.add(sound);
+
+  @override
+  Future<void> playZiboTap() async {}
+  @override
+  Future<void> playCoinReward() async {}
+  @override
+  Future<void> playCoinPurchase() async {}
+  @override
+  Future<void> playGoalComplete() async {}
+  @override
+  Future<void> playCostumeBuy() async {}
+  @override
+  Future<void> playThemeBuy() async {}
+  @override
+  Future<void> playWaterDrop() async {}
+  @override
+  Future<void> playBadgeWin() async {}
+  @override
+  void dispose() {}
+}
 
 void main() {
   late HomeNeedsProvider needs;
   late HomeDecorProvider decor;
   late CoinProvider coins;
+  late _RecordingSfx sfx;
   final clock = DateTime(2026, 11, 3, 10);
   var now = clock;
 
@@ -41,6 +71,7 @@ void main() {
     tester.view.devicePixelRatio = 2.6;
     addTearDown(tester.view.reset);
     needs = HomeNeedsProvider(now: () => now);
+    sfx = _RecordingSfx();
     decor = HomeDecorProvider();
     coins = CoinProvider(now: () => clock, isSoundEnabled: () => false);
     await tester.runAsync(() async {
@@ -61,6 +92,7 @@ void main() {
           ChangeNotifierProvider.value(value: coins),
           ChangeNotifierProvider(create: (_) => GamePointsProvider(now: () => clock)),
           ChangeNotifierProvider(create: (_) => GamesConfigProvider()),
+          ChangeNotifierProvider(create: (_) => SoundEffectsProvider()),
         ],
         child: MaterialApp(
           locale: const Locale('tr'),
@@ -71,7 +103,7 @@ void main() {
             GlobalCupertinoLocalizations.delegate,
           ],
           supportedLocales: AppLocalizations.supportedLocales,
-          home: HomeRoomScreen(initialRoom: room),
+          home: HomeRoomScreen(initialRoom: room, soundEffectsService: sfx),
         ),
       ),
     );
@@ -114,6 +146,7 @@ void main() {
     await tester.pump();
     expect(needs.percent(HomeNeed.hunger), 92);
     expect(find.text('Ham ham, çok güzelmiş!'), findsOneWidget);
+    expect(sfx.played, [CareSound.plate, CareSound.chomp]);
     await frames(tester, 80);
     await tearDownScreen(tester);
   });
@@ -142,6 +175,8 @@ void main() {
     await tester.pump();
     expect(needs.percent(HomeNeed.hygiene), 100);
     expect(find.text('Zibo tertemiz!'), findsOneWidget);
+    expect(sfx.played.first, CareSound.bubble);
+    expect(sfx.played.where((s) => s != CareSound.bubble), [CareSound.shower, CareSound.sparkle]);
     await frames(tester, 120);
     await tearDownScreen(tester);
   });
@@ -151,11 +186,13 @@ void main() {
     await tester.tap(find.text('Işığı kapat, uyut'));
     await tester.pump();
     expect(needs.isAsleep, isTrue);
+    expect(sfx.played, [CareSound.lightsOff]);
     expect(find.text('Zibo uyuyor, şşş…'), findsOneWidget);
     await frames(tester, 40);
     await tester.tap(find.text('Işığı aç, uyandır'));
     await tester.pump();
     expect(needs.isAsleep, isFalse);
+    expect(sfx.played.last, CareSound.lightsOn);
     await frames(tester, 300);
     await tearDownScreen(tester);
   });
@@ -218,6 +255,7 @@ void main() {
     await tester.fling(find.byType(RoomView), const Offset(-300, 0), 1200);
     await frames(tester, 70);
     expect(find.text('Yatak odası'), findsWidgets);
+    expect(sfx.played, [CareSound.hop, CareSound.hop]);
     // Tokluk çubuğu → mutfak.
     await tester.tap(find.bySemanticsLabel(RegExp(r'^Tokluk %')));
     await frames(tester, 70);

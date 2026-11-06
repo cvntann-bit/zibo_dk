@@ -1,4 +1,34 @@
+import 'dart:math' as math;
+
 import 'package:audioplayers/audioplayers.dart';
+
+/// Zibo'nun Evi bakım sesleri (`tool/generate_care_sounds.py` ile kodla
+/// sentezlendi, 2026-11-06 → `assets/sounds/care_*.wav`).
+enum CareSound {
+  /// Odalar arası zıplamada her inişte.
+  hop,
+
+  /// Yemek tabağa gelince.
+  plate,
+
+  /// Zibo yemeği yiyince.
+  chomp,
+
+  /// Banyoda sabunla ovarken (köpük; 3 çeşitten rastgele).
+  bubble,
+
+  /// Duş düğmesi.
+  shower,
+
+  /// Havluyla kurulayıp tertemiz olunca.
+  sparkle,
+
+  /// Yatak odasında ışık kapatılıp Zibo uyutulunca.
+  lightsOff,
+
+  /// Işık açılıp Zibo uyandırılınca.
+  lightsOn,
+}
 
 /// `AdService`/`NotificationService` ile AYNI "gerçek implementasyon, testte
 /// enjekte edilebilir sahte" deseni — kısa UI ses efektleri için. Gerçek
@@ -74,6 +104,10 @@ abstract class SoundEffectsService {
   /// çalınan kutlama sesi (bkz. `assets/sounds/rozet_win_1.wav`).
   Future<void> playBadgeWin();
 
+  /// Zibo'nun Evi bakım sesi ([CareSound]). Soyut DEĞİL — testlerdeki kayıt
+  /// tutan alt sınıflar bozulmasın diye varsayılanı sessiz.
+  Future<void> playCare(CareSound sound) async {}
+
   /// Uygulama kapanırken/widget dispose edilirken native oynatıcı
   /// kaynaklarını serbest bırakır.
   void dispose();
@@ -122,6 +156,20 @@ class AudioPlayersSoundEffectsService extends SoundEffectsService {
 
   @override
   Future<void> playBadgeWin() => _play('sounds/rozet_win_1.wav');
+
+  static final _rnd = math.Random();
+
+  @override
+  Future<void> playCare(CareSound sound) => _play(switch (sound) {
+    CareSound.hop => 'sounds/care_hop.wav',
+    CareSound.plate => 'sounds/care_plate.wav',
+    CareSound.chomp => 'sounds/care_chomp.wav',
+    CareSound.bubble => 'sounds/care_bubble${_rnd.nextInt(3) + 1}.wav',
+    CareSound.shower => 'sounds/care_shower.wav',
+    CareSound.sparkle => 'sounds/care_sparkle.wav',
+    CareSound.lightsOff => 'sounds/care_lights_off.wav',
+    CareSound.lightsOn => 'sounds/care_lights_on.wav',
+  });
 
   @override
   void dispose() => _player.dispose();

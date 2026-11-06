@@ -83,3 +83,7 @@ ile çek.
 - `tool/store_capture_web.py`: Playwright + yüklü Chrome, 412x915 @3x → 1236x2745 PNG; test durumunu localStorage'a yazar (9 sahipli kostüm: 10+ "Moda İkonu" rozet pencerelerini tetikler; "reklamsız": Appodeal banner web'de çalışmıyor). Mağaza alt sekmeleri tek a11y düğümü → koordinatla tıklanır. `python tool/store_capture_web.py store_assets/web gez`.
 - `tool/store_panorama.py final8 <çıktı> <web klasörü> assets/images`: 8 karelik panorama (tek geniş tuval → 1080x1920 dilimler). Renk: icon mavisi #043A83 → bal #EFAE70 (OKLab + krem/gök ara durakları; doğrudan karışım çamurlu gri verir).
 - **KRİTİK tuzak:** `flutter run -d web-server` proje klasöründeki dosya değişikliklerini izleyip sayfayı YENİDEN YÜKLÜYOR → ekran görüntülerini PROJE DIŞINA (ör. scratchpad) yaz. Yakalama dili `LANG_CODE=tr|en|es` (state: `languageCode` + `badgeState` önceden alınmış rozetler → kutlama pencereleri çıkmaz; alt bar/Z/Rozetler kutusu koordinatla tıklanır). Sunucu ilk açılışta `main.dart.js` yayınlanana kadar boş sayfa verir (`curl .../main.dart.js` ile bekle). Port 8766 Windows'ta rezerve → 8790 kullanılıyor. Üretim: `python tool/store_panorama.py final8 <çıktı> <ekran klasörü> assets/images <tr|en|es>`.
+
+## Bakım sesleri — Python
+
+`generate_care_sounds.py`: Zibo'nun Evi bakım seslerini numpy/scipy ile sentezler (lisanssız) → `assets/sounds/care_*.wav` (44.1 kHz mono 16-bit, tepe ~0.3 — mevcut UI sesleriyle aynı yükseklik). Bir ses beğenilmezse ilgili fonksiyonu ayarla, betiği yeniden çalıştır. `python tool/generate_care_sounds.py`.
