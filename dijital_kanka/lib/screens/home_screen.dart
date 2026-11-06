@@ -320,7 +320,7 @@ class _HomeScreenState extends State<HomeScreen>
     // büyütülse bile, görselin büyük kısmı şeffaf olduğu için görünen
     // karakter kutunun çok altında kalıyordu).
     final screenSize = MediaQuery.sizeOf(context);
-    final twoPane = screenSize.width >= Adaptive.sideNavMinWidth && screenSize.width > screenSize.height;
+    final twoPane = screenSize.width >= Adaptive.homeTwoPaneMinWidth && screenSize.width > screenSize.height;
     final ziboHeight = (screenSize.height * 0.36).clamp(
       260.0,
       Adaptive.isWide(context) ? 500.0 : 400.0,

@@ -64,5 +64,6 @@ Tetikleyici: kullanıcı — Zibo tablette Yaşam Tarzı'nda ilk 11'de, çocukla
 - Play Console kontrolü (2026-10-29): TR girişinde 7" ve 10" tablet bölümlerinde zaten 8'er tasarımlı yatay görsel
   var (Zibo + başlık) → değiştirilmedi; istenirse tekrar eden 1–2 kare gerçek tablet ekranıyla değiştirilebilir.
 - [x] Sürüm 1.17.0+56 üretimde yayında (2026-10-29).
-- [ ] Sonraki sürümde: yan menü eşiği 1000 → 840 dp (Google'ın Expanded sınıfı); klavye odağı/Esc/Enter + fare hover
+- [x] Yan menü eşiği 1000 → 840 dp (2026-11-07, 1.18.0; `Adaptive.sideNavMinWidth`). İki bölmeli yatay Ana Sayfa 1000 dp'de kaldı (`homeTwoPaneMinWidth`) — 840–1000 arası yan menü + tek sütun.
+- [ ] Klavye odağı/Esc/Enter + fare hover
       kontrolü (fiziksel klavyeyle) → "Kısmen" maddeleri tamamlanır. Google eksik bulursa e-postadaki maddeye göre düzelt.

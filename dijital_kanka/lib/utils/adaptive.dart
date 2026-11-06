@@ -6,12 +6,17 @@ import 'package:flutter/widgets.dart';
 /// Telefonda (genişlik < 700) hiçbir şey değişmez; kurallar yalnızca geniş
 /// ekranda devreye girer. Eşikler `MediaQuery.sizeOf` genişliğine göre — test
 /// ortamının varsayılan 800×600 yüzeyi "dar tablet" sayılır ama yan menü
-/// (≥ 1000) devreye girmez.
+/// (≥ 840) devreye girmez.
 class Adaptive {
   Adaptive._();
 
-  /// Yan gezinme menüsü + iki bölmeli Ana Sayfa: yatay tablet / geniş pencere.
-  static const double sideNavMinWidth = 1000;
+  /// Yan gezinme menüsü: Google'ın "Expanded" pencere sınıfı (≥ 840 dp; 2026-11-07,
+  /// 1000'den indirildi — tablet rozeti Tier 2 önerisi).
+  static const double sideNavMinWidth = 840;
+
+  /// İki bölmeli (yatay) Ana Sayfa: yan menü düşüldükten sonra iki bölmeye yer
+  /// kalsın diye daha geniş eşik.
+  static const double homeTwoPaneMinWidth = 1000;
 
   /// Liste/form ağırlıklı ekranlarda içeriğin en fazla genişliği.
   static const double contentMaxWidth = 760;
