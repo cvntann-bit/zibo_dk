@@ -21,6 +21,7 @@ import '../providers/home_needs_provider.dart';
 import '../providers/sound_effects_provider.dart';
 import '../providers/subscription_provider.dart';
 import '../services/sound_effects_service.dart';
+import '../services/world_analytics.dart';
 import '../widgets/home_art/care_fx.dart';
 import '../widgets/home_art/item_thumb.dart';
 import '../widgets/home_art/room_art.dart';
@@ -143,6 +144,7 @@ class _HomeRoomScreenState extends State<HomeRoomScreen> with TickerProviderStat
       });
     _fx.onShowerDone = () => setState(() => _phase = _BathPhase.wet);
     _enterRoom();
+    WorldAnalytics.log('home_open', {'room': _room.id, 'asleep': context.read<HomeNeedsProvider>().isAsleep ? 1 : 0});
   }
 
   @override
@@ -219,6 +221,7 @@ class _HomeRoomScreenState extends State<HomeRoomScreen> with TickerProviderStat
       setState(() {
         _wakePrompt = true;
         _pendingGo = (delta, to);
+        WorldAnalytics.log('home_wake_prompt');
       });
       _promptTimer = Timer(const Duration(seconds: 4), () {
         if (mounted) setState(() => _wakePrompt = false);
@@ -228,6 +231,7 @@ class _HomeRoomScreenState extends State<HomeRoomScreen> with TickerProviderStat
     final i = homeRoomOrder.indexOf(_room);
     final target = to ?? homeRoomOrder[(i + delta) % homeRoomOrder.length];
     if (target == _room) return;
+    WorldAnalytics.log('home_room_switch', {'to': target.id});
     HapticFeedback.selectionClick();
     final scene = _lastScene;
     setState(() {
@@ -253,7 +257,9 @@ class _HomeRoomScreenState extends State<HomeRoomScreen> with TickerProviderStat
   /// "Önce uyandır" penceresindeki ışık: Zibo uyanır, ışık açılınca istenen odaya geçilir.
   void _wakeAndGo() {
     _promptTimer?.cancel();
-    context.read<HomeNeedsProvider>().wake();
+    final needs = context.read<HomeNeedsProvider>();
+    WorldAnalytics.log('home_wake', {'energy': needs.percent(HomeNeed.energy)});
+    needs.wake();
     _sound(CareSound.lightsOn);
     final pending = _pendingGo;
     setState(() {
@@ -313,18 +319,28 @@ class _HomeRoomScreenState extends State<HomeRoomScreen> with TickerProviderStat
 
   // --- Mutfak --------------------------------------------------------------
 
-  void _chooseFood(HomeFood food) {
+  void _chooseFood(HomeFood food, {bool viaAd = false}) {
     final l10n = AppLocalizations.of(context)!;
     final needs = context.read<HomeNeedsProvider>();
     if (_chew > 0) return;
     if (_plateFood != null) return _say(l10n.careFeedPlateFirst);
-    if (needs.percent(HomeNeed.hunger) >= 100) return _say(l10n.careFeedFullMsg);
+    void blocked(String reason) =>
+        WorldAnalytics.log('home_food_blocked', {'reason': reason, 'tier': context.read<SubscriptionProvider>().tier.name});
+    if (needs.percent(HomeNeed.hunger) >= 100) {
+      blocked('full');
+      return _say(l10n.careFeedFullMsg);
+    }
     final price = context.read<HomeConfigProvider>().config.foodPrice(food.id, food.price);
     if (price > 0) {
-      if (!context.read<CoinProvider>().spendOnFood(foodId: food.id, cost: price)) return _say(l10n.insufficientCoins);
+      if (!context.read<CoinProvider>().spendOnFood(foodId: food.id, cost: price)) {
+        blocked('no_coins');
+        return _say(l10n.insufficientCoins);
+      }
     } else if (!needs.useFreeFood()) {
+      blocked('no_free');
       return _say(l10n.careFeedNoFree);
     }
+    WorldAnalytics.log('home_food_pick', {'food': food.id, 'kind': price > 0 ? 'paid' : (viaAd ? 'ad' : 'free'), 'cost': price});
     setState(() {
       _plateFood = food.id;
       _held = null;
@@ -359,7 +375,7 @@ class _HomeRoomScreenState extends State<HomeRoomScreen> with TickerProviderStat
     final earned = await context.read<CoinProvider>().showHomeFoodAd();
     if (!mounted) return;
     if (!earned) return _say(l10n.careFeedAdFailed);
-    if (needs.grantAdFood()) _chooseFood(food);
+    if (needs.grantAdFood()) _chooseFood(food, viaAd: true);
   }
 
   void _eat() {
@@ -368,6 +384,7 @@ class _HomeRoomScreenState extends State<HomeRoomScreen> with TickerProviderStat
     final food = homeFoods.firstWhere((f) => f.id == _plateFood);
     needs.add(HomeNeed.hunger, food.hunger.toDouble());
     needs.recordFeed();
+    WorldAnalytics.log('home_feed', {'food': food.id});
     _fx.eat(_mouth);
     _sound(CareSound.chomp);
     setState(() {
@@ -410,6 +427,7 @@ class _HomeRoomScreenState extends State<HomeRoomScreen> with TickerProviderStat
     context.read<HomeNeedsProvider>()
       ..add(HomeNeed.hygiene, 100)
       ..recordBath();
+    WorldAnalytics.log('home_bath_done', {'soap': context.read<HomeDecorProvider>().selectedSoap});
     setState(() => _phase = _BathPhase.clean);
     _sound(CareSound.sparkle);
     _wake();
@@ -428,6 +446,7 @@ class _HomeRoomScreenState extends State<HomeRoomScreen> with TickerProviderStat
         return;
       }
       decor.markSoapOwned(soap.id);
+      WorldAnalytics.log('home_soap_buy', {'soap': soap.id, 'cost': price, 'tier': tier.name});
     }
     decor.selectSoap(soap.id);
   }
@@ -441,6 +460,7 @@ class _HomeRoomScreenState extends State<HomeRoomScreen> with TickerProviderStat
     await Navigator.of(context).push(MaterialPageRoute(builder: (_) => GameWebViewScreen(gameId: gameId, title: title)));
     if (!mounted) return;
     final gained = points.totalEarned - before;
+    WorldAnalytics.log('home_play', {'game': gameId, 'gained': gained});
     if (gained > 0) {
       needs.add(HomeNeed.fun, 25);
       _fx.pop('+$gained ★');
@@ -505,6 +525,12 @@ class _HomeRoomScreenState extends State<HomeRoomScreen> with TickerProviderStat
       decor.markOwned(_room, category, item.id);
       decor.equip(_room, category, item.id);
     }
+    WorldAnalytics.log('home_decor_buy', {
+      'room': _room.id,
+      'items': cart.length,
+      'cost': total,
+      'tier': context.read<SubscriptionProvider>().tier.name,
+    });
     setState(_preview.clear);
     messenger.showSnackBar(SnackBar(content: Text(l10n.shopBought)));
   }
@@ -1028,7 +1054,10 @@ class _HomeRoomScreenState extends State<HomeRoomScreen> with TickerProviderStat
                     ),
                   ),
                   IconButton(
-                    onPressed: () => setState(() => _tiredDismissed = true),
+                    onPressed: () {
+                      WorldAnalytics.log('home_tired_bubble', {'action': 'close'});
+                      setState(() => _tiredDismissed = true);
+                    },
                     icon: const Icon(Icons.close_rounded, size: 18),
                     tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
                     visualDensity: VisualDensity.compact,
@@ -1039,7 +1068,10 @@ class _HomeRoomScreenState extends State<HomeRoomScreen> with TickerProviderStat
               ),
               const SizedBox(height: 6),
               FilledButton.icon(
-                onPressed: () => _go(1, to: HomeRoom.bedroom),
+                onPressed: () {
+                  WorldAnalytics.log('home_tired_bubble', {'action': 'bed'});
+                  _go(1, to: HomeRoom.bedroom);
+                },
                 style: FilledButton.styleFrom(visualDensity: VisualDensity.compact),
                 icon: const Icon(Icons.bedtime_rounded, size: 18),
                 label: Text(l10n.careTiredGoBed),
@@ -1241,6 +1273,7 @@ class _HomeRoomScreenState extends State<HomeRoomScreen> with TickerProviderStat
         return [
           FilledButton.icon(
             onPressed: () {
+              WorldAnalytics.log(asleep ? 'home_wake' : 'home_sleep', {'energy': needs.percent(HomeNeed.energy)});
               asleep ? needs.wake() : needs.startSleep();
               _sound(asleep ? CareSound.lightsOn : CareSound.lightsOff);
             },

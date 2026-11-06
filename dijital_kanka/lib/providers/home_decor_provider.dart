@@ -23,6 +23,8 @@ class HomeDecorProvider extends ChangeNotifier {
   final CloudStateStore _store;
   final Map<String, Map<String, String>> _equipped = {};
   final Set<String> _owned = {};
+  // Satın alınanlar (etkinlik ödülleri hariç) — Ev Dekoratörü rozeti.
+  final Set<String> _bought = {};
   final Set<String> _soaps = {defaultSoap};
   String _soap = defaultSoap;
 
@@ -69,12 +71,15 @@ class HomeDecorProvider extends ChangeNotifier {
     return true;
   }
 
-  /// Satın alınan dekor eşyası sayısı (Ev Dekoratörü rozeti; sabunlar hariç).
-  int get purchasedDecorCount => _owned.length;
+  /// Satın alınan dekor eşyası sayısı (Ev Dekoratörü rozeti; sabunlar ve
+  /// etkinlik ödülleri hariç).
+  int get purchasedDecorCount => _bought.length;
 
-  void markOwned(HomeRoom room, String category, String itemId) {
+  /// [bought] false: etkinlik kutusundan gelen ödül (satın alma sayılmaz).
+  void markOwned(HomeRoom room, String category, String itemId, {bool bought = true}) {
     if (_item(room, category, itemId) == null) return;
     _owned.add(key(room, category, itemId));
+    if (bought) _bought.add(key(room, category, itemId));
     notifyListeners();
     _save();
   }
@@ -114,6 +119,7 @@ class HomeDecorProvider extends ChangeNotifier {
           }
         }
         _owned.addAll(((data['owned'] as List?) ?? const []).map((e) => '$e'));
+        _bought.addAll(((data['bought'] as List?) ?? const []).map((e) => '$e'));
         _soaps.addAll(((data['soaps'] as List?) ?? const []).map((e) => '$e'));
         final soap = data['soap'] as String?;
         if (soap != null && isSoapOwned(soap)) _soap = soap;
@@ -128,6 +134,7 @@ class HomeDecorProvider extends ChangeNotifier {
   Future<void> _save() => _store.save({
     'equipped': _equipped,
     'owned': _owned.toList()..sort(),
+    'bought': _bought.toList()..sort(),
     'soaps': _soaps.toList()..sort(),
     'soap': _soap,
   });

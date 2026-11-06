@@ -227,6 +227,15 @@ void main() {
   });
 
   group('HomeDecorProvider', () {
+    test('Ev Dekoratörü sayacı: yalnız satın alınanlar, etkinlik ödülü sayılmaz', () async {
+      final p = HomeDecorProvider();
+      await p.ready;
+      p.markOwned(HomeRoom.kitchen, 'boya', 'gok');
+      p.markOwned(HomeRoom.living, 'boya', 'gok', bought: false);
+      expect(p.purchasedDecorCount, 1);
+      expect(p.isOwned(HomeRoom.living, 'boya', 'gok'), isTrue);
+    });
+
     test('başlangıç eşyası takılı ve sahipli; satın alınmayan takılamaz', () async {
       final p = HomeDecorProvider();
       await p.ready;

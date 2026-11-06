@@ -9,6 +9,7 @@ import '../l10n/app_localizations.dart';
 import '../models/home_item.dart';
 import '../providers/events_provider.dart';
 import '../providers/home_needs_provider.dart';
+import '../services/world_analytics.dart';
 import '../widgets/sticker_style.dart';
 import 'events_screen.dart';
 import 'game_hall_screen.dart';
@@ -115,11 +116,17 @@ class _ZiboWorldScreenState extends State<ZiboWorldScreen> with SingleTickerProv
     super.dispose();
   }
 
-  void _comingSoon() {
+  void _comingSoon(String place) {
+    WorldAnalytics.log('world_locked_tap', {'place': place});
     final l10n = AppLocalizations.of(context)!;
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(SnackBar(content: Text(l10n.gameHallComingSoon)));
+  }
+
+  void _open(String place, String via, Widget page) {
+    WorldAnalytics.log('world_place_open', {'place': place, 'via': via});
+    _push(page);
   }
 
   void _push(Widget page) => Navigator.of(context).push(MaterialPageRoute(builder: (_) => page));
@@ -191,11 +198,11 @@ class _ZiboWorldScreenState extends State<ZiboWorldScreen> with SingleTickerProv
                         child: RepaintBoundary(child: CustomPaint(painter: _SkyPainter(_sky))),
                       ),
                     ),
-                    building(_friends, l10n.worldDoorFriends, _comingSoon, locked: true, labelAbove: true),
-                    building(_leaderboard, l10n.worldDoorLeaderboard, _comingSoon, locked: true, labelAbove: true),
-                    building(_events, l10n.worldDoorEvents, () => _push(const EventsScreen()), badge: events.openableCount),
-                    building(_games, l10n.tabGameHall, () => _push(const GameHallPage())),
-                    building(_home, l10n.worldHouseSign, () => _push(const HomeRoomScreen())),
+                    building(_friends, l10n.worldDoorFriends, () => _comingSoon('friends'), locked: true, labelAbove: true),
+                    building(_leaderboard, l10n.worldDoorLeaderboard, () => _comingSoon('leaderboard'), locked: true, labelAbove: true),
+                    building(_events, l10n.worldDoorEvents, () => _open('events', 'building', const EventsScreen()), badge: events.openableCount),
+                    building(_games, l10n.tabGameHall, () => _open('games', 'building', const GameHallPage())),
+                    building(_home, l10n.worldHouseSign, () => _open('home', 'building', const HomeRoomScreen())),
                     // Evden seslenen Zibo: balon evin çatısının üstünde, kuyruğu eve bakar.
                     Positioned(
                       left: w * .26,
@@ -206,7 +213,7 @@ class _ZiboWorldScreenState extends State<ZiboWorldScreen> with SingleTickerProv
                         child: Center(
                           child: _SpeechBubble(
                             text: line,
-                            onTap: () => _push(HomeRoomScreen(initialRoom: asking ? want.room : HomeRoom.living)),
+                            onTap: () => _open('home', 'bubble', HomeRoomScreen(initialRoom: asking ? want.room : HomeRoom.living)),
                           ),
                         ),
                       ),

@@ -8,6 +8,7 @@ import '../models/zibo_event.dart';
 import '../providers/coin_provider.dart';
 import '../providers/events_provider.dart';
 import '../providers/home_decor_provider.dart';
+import '../services/world_analytics.dart';
 import '../utils/adaptive.dart';
 import '../widgets/home_art/item_thumb.dart';
 import '../widgets/sticker_style.dart';
@@ -103,7 +104,9 @@ Future<void> openEventBox(BuildContext context, ZiboEvent event, int day) async 
   final decor = context.read<HomeDecorProvider>();
   if (reward.zc > 0) coins.earnEventReward(amount: reward.zc, eventId: event.id, day: day);
   final item = _rewardItem(reward);
-  if (item != null) decor.markOwned(item.$1, item.$2.id, item.$3.id);
+  // Ödül eşyası satın alma sayılmaz (Ev Dekoratörü rozeti).
+  if (item != null) decor.markOwned(item.$1, item.$2.id, item.$3.id, bought: false);
+  WorldAnalytics.log('event_box_open', {'event': event.id, 'day': day, 'zc': reward.zc, 'item': item != null ? 1 : 0});
   await showDialog<void>(
     context: context,
     builder: (context) => AlertDialog(
