@@ -12,6 +12,7 @@ import '../data/rarity_colors.dart';
 import '../l10n/app_localizations.dart';
 import '../models/home_item.dart';
 import '../models/home_need.dart';
+import '../models/subscription_tier.dart';
 import '../providers/coin_provider.dart';
 import '../providers/game_points_provider.dart';
 import '../providers/games_config_provider.dart';
@@ -492,11 +493,19 @@ class _HomeRoomScreenState extends State<HomeRoomScreen> with TickerProviderStat
     final key = _key(category.id, item.id);
     final owned = decor.isOwned(_room, category.id, item.id);
     final config = context.read<HomeConfigProvider>().config;
+    // Remote `proOnly` listesi eskisi gibi tamamen kilitli. Katalogdaki abone
+    // serileri (Altın Saray / Elmas) ise odada DENENEBİLİR — yalnız satın
+    // alma kilitli (sepette [_buyCart] durdurur); denemek aboneliğe teşvik.
     if (!owned && config.isProOnly(key) && !context.read<SubscriptionProvider>().isPro) {
       ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
         ..showSnackBar(SnackBar(content: Text(l10n.shopProOnlyMsg)));
       return;
+    }
+    if (!owned && !item.unlockedFor(context.read<SubscriptionProvider>().tier)) {
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(content: Text(_lockMsg(l10n, item))));
     }
     setState(() {
       if (owned) {
@@ -509,10 +518,24 @@ class _HomeRoomScreenState extends State<HomeRoomScreen> with TickerProviderStat
     });
   }
 
+  String _lockMsg(AppLocalizations l10n, HomeItem item) =>
+      item.requiredTier == SubscriptionTier.proPlus ? l10n.shopProPlusOnlyMsg : l10n.shopProOnlyMsg;
+
   void _buyCart(HomeDecorProvider decor) {
     final l10n = AppLocalizations.of(context)!;
     final cart = _cart(decor);
     if (cart.isEmpty) return;
+    // Denenen abone eşyası kilitliyse hiçbir şey satın alınmaz.
+    final tier = context.read<SubscriptionProvider>().tier;
+    for (final (_, item, _) in cart) {
+      if (!item.unlockedFor(tier)) {
+        WorldAnalytics.log('home_locked_buy', {'item': item.id, 'need': item.requiredTier!.name, 'tier': tier.name});
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(SnackBar(content: Text(_lockMsg(l10n, item))));
+        return;
+      }
+    }
     final total = cart.fold<int>(0, (n, e) => n + e.$3);
     final keys = [for (final e in cart) '${e.$1}:${e.$2.id}'].join(',');
     final ok = context.read<CoinProvider>().spendOnHomeItem(itemKey: '${_room.id}:$keys', cost: total);
@@ -1346,7 +1369,8 @@ class _HomeRoomScreenState extends State<HomeRoomScreen> with TickerProviderStat
               equipped: decor.equipped(_room, category.id) == item.id,
               owned: decor.isOwned(_room, category.id, item.id),
               price: config.priceFor(_key(category.id, item.id), item.price, sub.tier),
-              proOnly: config.isProOnly(_key(category.id, item.id)),
+              proOnly: config.isProOnly(_key(category.id, item.id)) || item.requiredTier == SubscriptionTier.pro,
+              proPlusOnly: item.requiredTier == SubscriptionTier.proPlus,
               limited: config.isLimited(_key(category.id, item.id)),
               onTap: () => _tapItem(decor, category, item),
             ),
@@ -1556,6 +1580,7 @@ class _ShopTile extends StatelessWidget {
     required this.owned,
     required this.price,
     required this.proOnly,
+    this.proPlusOnly = false,
     required this.limited,
     required this.onTap,
   });
@@ -1567,6 +1592,7 @@ class _ShopTile extends StatelessWidget {
   final bool owned;
   final int price;
   final bool proOnly;
+  final bool proPlusOnly;
   final bool limited;
   final VoidCallback onTap;
 
@@ -1582,7 +1608,7 @@ class _ShopTile extends StatelessWidget {
         : owned
         ? l10n.shopOwned
         : '$price ZC';
-    final badge = [if (proOnly) '👑', if (limited) '⏳'].join(' ');
+    final badge = [if (proPlusOnly) '💎' else if (proOnly) '👑', if (limited) '⏳'].join(' ');
     return Semantics(
       button: true,
       selected: selected,

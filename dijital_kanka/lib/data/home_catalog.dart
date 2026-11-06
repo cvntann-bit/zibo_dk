@@ -2,6 +2,7 @@
 // üretici: tool/generate_home_catalog.py. EN/ES adlar: tool/home_catalog_i18n.json.
 
 import '../models/home_item.dart';
+import '../models/subscription_tier.dart';
 
 const homeRooms = <HomeRoomDef>[
   HomeRoomDef(
@@ -26,6 +27,8 @@ const homeRooms = <HomeRoomDef>[
         HomeItem('kare', 'Kareli', nameEn: 'Checked', nameEs: 'Cuadros', style: 'kare', price: 160),
         HomeItem('yildiz', 'Yıldızlı', nameEn: 'Starry', nameEs: 'Estrellas', style: 'yildiz', price: 220),
         HomeItem('cicek', 'Çiçekli', nameEn: 'Floral', nameEs: 'Flores', style: 'cicek', price: 260),
+        HomeItem('damask', 'Altın damask', nameEn: 'Gold damask', nameEs: 'Damasco dorado', style: 'damask', price: 800, requiredTier: SubscriptionTier.pro),
+        HomeItem('elmas', 'Elmas kafes', nameEn: 'Diamond lattice', nameEs: 'Celosía de diamantes', style: 'elmas', price: 1100, requiredTier: SubscriptionTier.proPlus),
       ]),
       HomeCategory('zemin', 'Zemin', nameEn: 'Floor', nameEs: 'Suelo', HomeCategoryKind.floor, [
         HomeItem('ahsap', 'Ballı ahşap', nameEn: 'Honey wood', nameEs: 'Madera miel', style: 'ahsap', color: 0xFFD99A5B, color2: 0xFFBF7F43, price: 0),
@@ -33,6 +36,8 @@ const homeRooms = <HomeRoomDef>[
         HomeItem('karo', 'Beyaz karo', nameEn: 'White tile', nameEs: 'Azulejo blanco', style: 'karo', color: 0xFFF4F6F7, color2: 0xFFD3DADF, price: 220),
         HomeItem('dama', 'Dama', nameEn: 'Checkerboard', nameEs: 'Damero', style: 'dama', color: 0xFFFFF3DC, color2: 0xFFF0857D, price: 320),
         HomeItem('mavi', 'Mavi karo', nameEn: 'Blue tile', nameEs: 'Azulejo azul', style: 'karo', color: 0xFFBFE6EA, color2: 0xFF8FC7CF, price: 240),
+        HomeItem('mermer', 'Mermer', nameEn: 'Marble', nameEs: 'Mármol', style: 'mermer', color: 0xFFF7F2E9, color2: 0xFFCBBFAE, price: 1000, requiredTier: SubscriptionTier.pro),
+        HomeItem('kristal', 'Kristal zemin', nameEn: 'Crystal floor', nameEs: 'Suelo de cristal', style: 'kristal', color: 0xFFDDF5FF, color2: 0xFFA6DCF2, price: 1400, requiredTier: SubscriptionTier.proPlus),
       ]),
       HomeCategory('buzdolabi', 'Buzdolabı', nameEn: 'Fridge', nameEs: 'Nevera', HomeCategoryKind.furniture, [
         HomeItem('krem', 'Retro krem', nameEn: 'Retro cream', nameEs: 'Retro crema', style: 'retroFridge', color: 0xFFFFF0D2, price: 0),
@@ -45,6 +50,8 @@ const homeRooms = <HomeRoomDef>[
         HomeItem('ikiz_altin', 'İkiz altın', nameEn: 'Twin gold', nameEs: 'Doble dorado', style: 'twinFridge', color: 0xFFE9C46A, price: 1500),
         HomeItem('mini', 'Mini sarı', nameEn: 'Mini yellow', nameEs: 'Mini amarillo', style: 'miniFridge', color: 0xFFFFD65C, price: 250),
         HomeItem('mini_mor', 'Mini mor', nameEn: 'Mini purple', nameEs: 'Mini morado', style: 'miniFridge', color: 0xFFC9B6F2, price: 250),
+        HomeItem('saray', 'Saray buzdolabı', nameEn: 'Palace fridge', nameEs: 'Nevera palaciega', style: 'royalFridge', color: 0xFFFFF4DE, price: 1400, requiredTier: SubscriptionTier.pro),
+        HomeItem('kristal', 'Kristal buzdolabı', nameEn: 'Crystal fridge', nameEs: 'Nevera de cristal', style: 'crystalFridge', color: 0xFFCDEFFF, price: 1900, requiredTier: SubscriptionTier.proPlus),
       ]),
       HomeCategory('ocak', 'Ocak', nameEn: 'Stove', nameEs: 'Cocina', HomeCategoryKind.furniture, [
         HomeItem('krem', 'Krem', nameEn: 'Cream', nameEs: 'Crema', style: 'stove', color: 0xFFFFF0D2, price: 0),
@@ -95,6 +102,8 @@ const homeRooms = <HomeRoomDef>[
         HomeItem('kure', 'Cam küre', nameEn: 'Glass globe', nameEs: 'Globo de cristal', style: 'pendantGlobe', color: 0xFFC9952E, price: 200),
         HomeItem('kafes', 'Kafes', nameEn: 'Birdcage', nameEs: 'Jaula', style: 'pendantCage', color: 0xFF3E3A36, price: 220),
         HomeItem('yok', 'Yok', nameEn: 'None', nameEs: 'Ninguno', style: 'none', color: null, price: 0),
+        HomeItem('avize', 'Altın avize', nameEn: 'Golden chandelier', nameEs: 'Lámpara de araña dorada', style: 'chandelierGold', color: 0xFFE2B64A, price: 1000, requiredTier: SubscriptionTier.pro),
+        HomeItem('kavize', 'Kristal avize', nameEn: 'Crystal chandelier', nameEs: 'Lámpara de araña de cristal', style: 'chandelierCrystal', color: 0xFFCDEFFF, price: 1400, requiredTier: SubscriptionTier.proPlus),
       ]),
       HomeCategory('duvar', 'Duvar süsü', nameEn: 'Wall decor', nameEs: 'Decoración de pared', HomeCategoryKind.furniture, [
         HomeItem('kavanoz', 'Kavanoz rafı', nameEn: 'Jar shelf', nameEs: 'Estante de tarros', style: 'jarShelf', color: 0xFFD49A5C, price: 0),
@@ -143,6 +152,8 @@ const homeRooms = <HomeRoomDef>[
         HomeItem('mozaik_pembe', 'Pembe mozaik', nameEn: 'Pink mosaic', nameEs: 'Mosaico rosa', style: 'mozaik', color: 0xFFFFD3DF, color2: 0xFFF59AB3, price: 240),
         HomeItem('dama', 'Dama', nameEn: 'Checkerboard', nameEs: 'Damero', style: 'dama', color: 0xFFFFFFFF, color2: 0xFF5C86C4, price: 280),
         HomeItem('ahsap', 'Ahşap', nameEn: 'Wood', nameEs: 'Madera', style: 'ahsap', color: 0xFFD99A5B, color2: 0xFFBF7F43, price: 200),
+        HomeItem('mermer', 'Mermer', nameEn: 'Marble', nameEs: 'Mármol', style: 'mermer', color: 0xFFF7F2E9, color2: 0xFFCBBFAE, price: 1000, requiredTier: SubscriptionTier.pro),
+        HomeItem('kristal', 'Kristal zemin', nameEn: 'Crystal floor', nameEs: 'Suelo de cristal', style: 'kristal', color: 0xFFDDF5FF, color2: 0xFFA6DCF2, price: 1400, requiredTier: SubscriptionTier.proPlus),
       ]),
       HomeCategory('kuvet', 'Küvet', nameEn: 'Bathtub', nameEs: 'Bañera', HomeCategoryKind.furniture, [
         HomeItem('ayakli', 'Ayaklı beyaz', nameEn: 'Clawfoot white', nameEs: 'Con patas blanca', style: 'clawTub', color: 0xFFFFFFFF, price: 0),
@@ -153,6 +164,8 @@ const homeRooms = <HomeRoomDef>[
         HomeItem('kutu_mavi', 'Modern mavi', nameEn: 'Modern blue', nameEs: 'Moderno azul', style: 'boxTub', color: 0xFF9FD8F2, price: 650),
         HomeItem('yuvarlak', 'Yuvarlak sarı', nameEn: 'Round yellow', nameEs: 'Redondo amarillo', style: 'roundTub', color: 0xFFFFE08A, price: 800),
         HomeItem('yuvarlak_lila', 'Yuvarlak lila', nameEn: 'Round lilac', nameEs: 'Redondo lila', style: 'roundTub', color: 0xFFCDBDF2, price: 800),
+        HomeItem('saray', 'Saray küveti', nameEn: 'Palace bathtub', nameEs: 'Bañera palaciega', style: 'royalTub', color: 0xFFFFF4DE, price: 1600, requiredTier: SubscriptionTier.pro),
+        HomeItem('kristal', 'Kristal küvet', nameEn: 'Crystal bathtub', nameEs: 'Bañera de cristal', style: 'crystalTub', color: 0xFFCDEFFF, price: 2200, requiredTier: SubscriptionTier.proPlus),
       ]),
       HomeCategory('lavabo', 'Lavabo', nameEn: 'Sink', nameEs: 'Lavabo', HomeCategoryKind.furniture, [
         HomeItem('beyaz', 'Ayaklı beyaz', nameEn: 'Clawfoot white', nameEs: 'Con patas blanca', style: 'sink', color: 0xFFFFFFFF, price: 0),
@@ -169,6 +182,8 @@ const homeRooms = <HomeRoomDef>[
         HomeItem('kare_siyah', 'Kare siyah', nameEn: 'Square black', nameEs: 'Cuadrado negro', style: 'mirrorRect', color: 0xFF3E3A36, price: 180),
         HomeItem('kemer', 'Kemer altın', nameEn: 'Arch gold', nameEs: 'Arco dorado', style: 'mirrorArch', color: 0xFFF3C14B, price: 280),
         HomeItem('kemer_beyaz', 'Kemer beyaz', nameEn: 'Arch white', nameEs: 'Arco blanco', style: 'mirrorArch', color: 0xFFFBF6EC, price: 240),
+        HomeItem('tac', 'Taçlı ayna', nameEn: 'Crown mirror', nameEs: 'Espejo con corona', style: 'mirrorCrown', color: 0xFFE2B64A, price: 800, requiredTier: SubscriptionTier.pro),
+        HomeItem('elmas', 'Elmas ayna', nameEn: 'Diamond mirror', nameEs: 'Espejo diamante', style: 'mirrorDiamond', color: 0xFFCDEFFF, price: 1100, requiredTier: SubscriptionTier.proPlus),
       ]),
       HomeCategory('havlu', 'Havlu', nameEn: 'Towel', nameEs: 'Toalla', HomeCategoryKind.furniture, [
         HomeItem('gok', 'Mavi', nameEn: 'Blue', nameEs: 'Azul', style: 'towel', color: 0xFF7CC8F0, price: 0),
@@ -248,12 +263,16 @@ const homeRooms = <HomeRoomDef>[
         HomeItem('puan', 'Puantiye', nameEn: 'Polka dots', nameEs: 'Lunares', style: 'puan', price: 120),
         HomeItem('kalp', 'Kalpli', nameEn: 'Hearts', nameEs: 'Corazones', style: 'kalp', price: 180),
         HomeItem('cizgi', 'Çizgili', nameEn: 'Striped', nameEs: 'Rayas', style: 'cizgi', price: 140),
+        HomeItem('damask', 'Altın damask', nameEn: 'Gold damask', nameEs: 'Damasco dorado', style: 'damask', price: 800, requiredTier: SubscriptionTier.pro),
+        HomeItem('elmas', 'Elmas kafes', nameEn: 'Diamond lattice', nameEs: 'Celosía de diamantes', style: 'elmas', price: 1100, requiredTier: SubscriptionTier.proPlus),
       ]),
       HomeCategory('zemin', 'Zemin', nameEn: 'Floor', nameEs: 'Suelo', HomeCategoryKind.floor, [
         HomeItem('ahsap', 'Ballı ahşap', nameEn: 'Honey wood', nameEs: 'Madera miel', style: 'ahsap', color: 0xFFD99A5B, color2: 0xFFBF7F43, price: 0),
         HomeItem('balik', 'Balık sırtı', nameEn: 'Herringbone', nameEs: 'Espiga', style: 'balik', color: 0xFFE3AE73, color2: 0xFFB97E44, price: 260),
         HomeItem('koyu', 'Koyu ahşap', nameEn: 'Dark wood', nameEs: 'Madera oscura', style: 'ahsap', color: 0xFF94603A, color2: 0xFF7A4B2C, price: 150),
         HomeItem('lila', 'Lila karo', nameEn: 'Lilac tile', nameEs: 'Azulejo lila', style: 'karo', color: 0xFFE2D9F7, color2: 0xFFC3B5EC, price: 220),
+        HomeItem('mermer', 'Mermer', nameEn: 'Marble', nameEs: 'Mármol', style: 'mermer', color: 0xFFF7F2E9, color2: 0xFFCBBFAE, price: 1000, requiredTier: SubscriptionTier.pro),
+        HomeItem('kristal', 'Kristal zemin', nameEn: 'Crystal floor', nameEs: 'Suelo de cristal', style: 'kristal', color: 0xFFDDF5FF, color2: 0xFFA6DCF2, price: 1400, requiredTier: SubscriptionTier.proPlus),
       ]),
       HomeCategory('yatak', 'Yatak', nameEn: 'Bed', nameEs: 'Cama', HomeCategoryKind.furniture, [
         HomeItem('ahsap', 'Klasik ahşap', nameEn: 'Classic wood', nameEs: 'Clásico madera', style: 'bedClassic', color: 0xFFD9975A, price: 0),
@@ -262,6 +281,8 @@ const homeRooms = <HomeRoomDef>[
         HomeItem('bulut_pembe', 'Bulut pembe', nameEn: 'Cloud pink', nameEs: 'Nube rosa', style: 'bedCloud', color: 0xFFFFC2D4, price: 650),
         HomeItem('kanopi', 'Prenses kanopi', nameEn: 'Princess canopy', nameEs: 'Dosel de princesa', style: 'bedCanopy', color: 0xFFE7B5F0, price: 1200),
         HomeItem('kanopi_mavi', 'Kaptan kanopi', nameEn: 'Captain canopy', nameEs: 'Dosel capitán', style: 'bedCanopy', color: 0xFF9FD0F2, price: 1200),
+        HomeItem('saray', 'Kraliyet yatağı', nameEn: 'Royal bed', nameEs: 'Cama real', style: 'bedRoyal', color: 0xFFB3263A, price: 1800, requiredTier: SubscriptionTier.pro),
+        HomeItem('kristal', 'Kristal yatak', nameEn: 'Crystal bed', nameEs: 'Cama de cristal', style: 'bedCrystal', color: 0xFFA9DDF2, price: 2500, requiredTier: SubscriptionTier.proPlus),
       ]),
       HomeCategory('nevresim', 'Nevresim', nameEn: 'Bedding', nameEs: 'Ropa de cama', HomeCategoryKind.blanket, [
         HomeItem('mavi', 'Mavi düz', nameEn: 'Plain blue', nameEs: 'Azul liso', style: 'duz', color: 0xFF7CC8F0, color2: 0xFF7CC8F0, price: 0),
@@ -289,6 +310,8 @@ const homeRooms = <HomeRoomDef>[
         HomeItem('beyaz', 'Beyaz', nameEn: 'White', nameEs: 'Blanco', style: 'wardrobe', color: 0xFFFBF6EC, price: 400),
         HomeItem('nane', 'Nane', nameEn: 'Mint', nameEs: 'Menta', style: 'wardrobe', color: 0xFF9FE3C9, price: 450),
         HomeItem('lila', 'Lila', nameEn: 'Lilac', nameEs: 'Lila', style: 'wardrobe', color: 0xFFCDBDF2, price: 450),
+        HomeItem('saray', 'Saray gardırobu', nameEn: 'Palace wardrobe', nameEs: 'Armario palaciego', style: 'wardrobeRoyal', color: 0xFFFFF4DE, price: 1400, requiredTier: SubscriptionTier.pro),
+        HomeItem('kristal', 'Kristal gardırop', nameEn: 'Crystal wardrobe', nameEs: 'Armario de cristal', style: 'wardrobeCrystal', color: 0xFFCDEFFF, price: 1900, requiredTier: SubscriptionTier.proPlus),
       ]),
       HomeCategory('perde', 'Perde', nameEn: 'Curtains', nameEs: 'Cortinas', HomeCategoryKind.swatch, [
         HomeItem('mercan', 'Mercan', nameEn: 'Coral', nameEs: 'Coral', color: 0xFFFF9F8F, price: 0),
@@ -342,12 +365,16 @@ const homeRooms = <HomeRoomDef>[
         HomeItem('cicek', 'Çiçekli', nameEn: 'Floral', nameEs: 'Flores', style: 'cicek', price: 260),
         HomeItem('yildiz', 'Yıldızlı', nameEn: 'Starry', nameEs: 'Estrellas', style: 'yildiz', price: 220),
         HomeItem('bulut', 'Bulutlu', nameEn: 'Cloudy', nameEs: 'Nubes', style: 'bulut', price: 160),
+        HomeItem('damask', 'Altın damask', nameEn: 'Gold damask', nameEs: 'Damasco dorado', style: 'damask', price: 800, requiredTier: SubscriptionTier.pro),
+        HomeItem('elmas', 'Elmas kafes', nameEn: 'Diamond lattice', nameEs: 'Celosía de diamantes', style: 'elmas', price: 1100, requiredTier: SubscriptionTier.proPlus),
       ]),
       HomeCategory('zemin', 'Zemin', nameEn: 'Floor', nameEs: 'Suelo', HomeCategoryKind.floor, [
         HomeItem('ahsap', 'Ballı ahşap', nameEn: 'Honey wood', nameEs: 'Madera miel', style: 'ahsap', color: 0xFFD99A5B, color2: 0xFFBF7F43, price: 0),
         HomeItem('balik', 'Balık sırtı', nameEn: 'Herringbone', nameEs: 'Espiga', style: 'balik', color: 0xFFE3AE73, color2: 0xFFB97E44, price: 260),
         HomeItem('koyu', 'Koyu ahşap', nameEn: 'Dark wood', nameEs: 'Madera oscura', style: 'ahsap', color: 0xFF94603A, color2: 0xFF7A4B2C, price: 150),
         HomeItem('dama', 'Dama', nameEn: 'Checkerboard', nameEs: 'Damero', style: 'dama', color: 0xFFFFF3DC, color2: 0xFF9AA7B8, price: 300),
+        HomeItem('mermer', 'Mermer', nameEn: 'Marble', nameEs: 'Mármol', style: 'mermer', color: 0xFFF7F2E9, color2: 0xFFCBBFAE, price: 1000, requiredTier: SubscriptionTier.pro),
+        HomeItem('kristal', 'Kristal zemin', nameEn: 'Crystal floor', nameEs: 'Suelo de cristal', style: 'kristal', color: 0xFFDDF5FF, color2: 0xFFA6DCF2, price: 1400, requiredTier: SubscriptionTier.proPlus),
       ]),
       HomeCategory('kanepe', 'Kanepe', nameEn: 'Sofa', nameEs: 'Sofá', HomeCategoryKind.furniture, [
         HomeItem('mavi', 'Klasik mavi', nameEn: 'Classic blue', nameEs: 'Clásico azul', style: 'sofaClassic', color: 0xFF6FA8DC, price: 0),
@@ -356,6 +383,8 @@ const homeRooms = <HomeRoomDef>[
         HomeItem('retro_pembe', 'Yuvarlak pembe', nameEn: 'Round pink', nameEs: 'Redondo rosa', style: 'sofaRound', color: 0xFFF7A8BE, price: 800),
         HomeItem('kapitone', 'Kapitone bordo', nameEn: 'Tufted burgundy', nameEs: 'Capitoné burdeos', style: 'sofaTufted', color: 0xFFB34A55, price: 1400),
         HomeItem('kapitone_lacivert', 'Kapitone lacivert', nameEn: 'Tufted navy', nameEs: 'Capitoné azul marino', style: 'sofaTufted', color: 0xFF3E5F9C, price: 1400),
+        HomeItem('taht', 'Taht kanepe', nameEn: 'Throne sofa', nameEs: 'Sofá trono', style: 'sofaThrone', color: 0xFFB3263A, price: 1800, requiredTier: SubscriptionTier.pro),
+        HomeItem('kristal', 'Buz kanepe', nameEn: 'Ice sofa', nameEs: 'Sofá de hielo', style: 'sofaCrystal', color: 0xFFCDEFFF, price: 2500, requiredTier: SubscriptionTier.proPlus),
       ]),
       HomeCategory('tv', 'Televizyon', nameEn: 'TV', nameEs: 'Televisión', HomeCategoryKind.furniture, [
         HomeItem('retro', 'Retro tüplü', nameEn: 'Retro tube TV', nameEs: 'Retro de tubo', style: 'tvRetro', color: 0xFFE9A86B, price: 0),
@@ -379,6 +408,8 @@ const homeRooms = <HomeRoomDef>[
         HomeItem('kure', 'Küre', nameEn: 'Globe', nameEs: 'Globo', style: 'floorLampGlobe', color: 0xFFFFF3D1, price: 220),
         HomeItem('kavis', 'Kavisli', nameEn: 'Curved', nameEs: 'Curvo', style: 'floorLampArc', color: 0xFFF2B33D, price: 320),
         HomeItem('klasik_mavi', 'Klasik mavi', nameEn: 'Classic blue', nameEs: 'Clásico azul', style: 'floorLampCone', color: 0xFF8ED0F2, price: 120),
+        HomeItem('samdan', 'Altın şamdan', nameEn: 'Golden candelabra', nameEs: 'Candelabro dorado', style: 'floorCandelabra', color: 0xFFE2B64A, price: 900, requiredTier: SubscriptionTier.pro),
+        HomeItem('prizma', 'Prizma lambader', nameEn: 'Prism floor lamp', nameEs: 'Lámpara prisma', style: 'floorLampCrystal', color: 0xFFCDEFFF, price: 1300, requiredTier: SubscriptionTier.proPlus),
       ]),
       HomeCategory('hali', 'Halı', nameEn: 'Rug', nameEs: 'Alfombra', HomeCategoryKind.furniture, [
         HomeItem('mavi', 'Oval mavi', nameEn: 'Oval blue', nameEs: 'Ovalado azul', style: 'rugOval', color: 0xFF8ED0F2, price: 0),

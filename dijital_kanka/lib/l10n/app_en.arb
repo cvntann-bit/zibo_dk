@@ -932,5 +932,6 @@
   "badgeNameHomeCaretaker": "Loving Caretaker",
   "badgeRequirementHomeCaretaker": "Take care of Zibo on 7 different days (feed, bathe or put to bed)",
   "badgeNameHomeDecorator": "Home Decorator",
-  "badgeRequirementHomeDecorator": "Buy 10 decor items for Zibo's Home"
+  "badgeRequirementHomeDecorator": "Buy 10 decor items for Zibo's Home",
+  "shopProPlusOnlyMsg": "This item is exclusive to Zibo Pro+ (Diamond series)."
 }

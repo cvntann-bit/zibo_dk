@@ -13,6 +13,8 @@ import 'package:dijital_kanka/models/home_need.dart';
 import 'package:dijital_kanka/models/subscription_tier.dart';
 import 'package:dijital_kanka/providers/home_decor_provider.dart';
 import 'package:dijital_kanka/providers/home_needs_provider.dart';
+import 'package:dijital_kanka/widgets/home_art/furniture_art.dart';
+import 'package:dijital_kanka/widgets/home_art/surface_art.dart';
 
 void main() {
   setUp(() => SharedPreferences.setMockInitialValues({}));
@@ -224,6 +226,20 @@ void main() {
       }
       expect(p.adFoodsLeft, 2); // yeni gün, yeni hak
     });
+  });
+
+  test('abone serileri: her odada Altın Saray (Pro) ve Elmas (Pro+), katman kilidi', () {
+    final pro = [for (final d in homeRooms) for (final c in d.categories) for (final it in c.items) if (it.requiredTier == SubscriptionTier.pro) it];
+    final plus = [for (final d in homeRooms) for (final c in d.categories) for (final it in c.items) if (it.requiredTier == SubscriptionTier.proPlus) it];
+    expect(pro.length, 15);
+    expect(plus.length, 15);
+    expect(pro.first.unlockedFor(SubscriptionTier.free), isFalse);
+    expect(pro.first.unlockedFor(SubscriptionTier.pro), isTrue);
+    expect(plus.first.unlockedFor(SubscriptionTier.pro), isFalse);
+    expect(plus.first.unlockedFor(SubscriptionTier.proPlus), isTrue);
+    for (final it in [...pro, ...plus]) {
+      expect(furnitureArt.containsKey(it.style) || wallArt.containsKey(it.style) || floorArt.containsKey(it.style), isTrue, reason: it.style);
+    }
   });
 
   test('katalog çevirisi: her eşya, kategori, yemek ve sabunun EN/ES adı var', () {

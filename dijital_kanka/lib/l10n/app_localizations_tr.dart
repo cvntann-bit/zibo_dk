@@ -3172,4 +3172,7 @@ class AppLocalizationsTr extends AppLocalizations {
   @override
   String get badgeRequirementHomeDecorator =>
       'Zibo\'nun Evi için 10 dekor eşyası satın al';
+
+  @override
+  String get shopProPlusOnlyMsg => 'Bu eşya Zibo Pro+\'a özel (Elmas serisi).';
 }

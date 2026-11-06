@@ -932,5 +932,6 @@
   "badgeNameHomeCaretaker": "Cuidador Cariñoso",
   "badgeRequirementHomeCaretaker": "Cuida de Zibo en 7 días distintos (alimentar, bañar o acostar)",
   "badgeNameHomeDecorator": "Decorador del Hogar",
-  "badgeRequirementHomeDecorator": "Compra 10 objetos de decoración para la Casa de Zibo"
+  "badgeRequirementHomeDecorator": "Compra 10 objetos de decoración para la Casa de Zibo",
+  "shopProPlusOnlyMsg": "Este objeto es exclusivo de Zibo Pro+ (serie Diamante)."
 }

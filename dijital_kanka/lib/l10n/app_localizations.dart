@@ -5655,6 +5655,12 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'Zibo\'nun Evi için 10 dekor eşyası satın al'**
   String get badgeRequirementHomeDecorator;
+
+  /// Pro+ olmayan kullanıcı Elmas serisinden eşya almaya çalışınca
+  ///
+  /// In tr, this message translates to:
+  /// **'Bu eşya Zibo Pro+\'a özel (Elmas serisi).'**
+  String get shopProPlusOnlyMsg;
 }
 
 class _AppLocalizationsDelegate

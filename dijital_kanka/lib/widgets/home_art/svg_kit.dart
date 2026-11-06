@@ -51,6 +51,17 @@ class SvgKit {
     return 'url(#$id)';
   }
 
+  /// Çok duraklı doğrusal gradyan (eşit aralıklı); [diagonal] sol üstten sağ alta.
+  String gradStops(List<String> colors, {bool horizontal = false, bool diagonal = false}) {
+    final id = 'g${++_uid}';
+    final n = colors.length - 1;
+    _defs.add(
+      '<linearGradient id="$id" x1="0" y1="0" x2="${horizontal || diagonal ? 1 : 0}" y2="${horizontal ? 0 : 1}">'
+      '${[for (var i = 0; i <= n; i++) _stop((i / n).toStringAsFixed(3), colors[i])].join()}</linearGradient>',
+    );
+    return 'url(#$id)';
+  }
+
   /// Taslaktaki `<pattern>` dolgusunun karşılığı: [body] döşemesi
   /// ([w]×[h], kökü 0,0 — `patternUnits="userSpaceOnUse"` gibi) alanı
   /// kaplayacak kadar tekrarlanır ve alana kırpılır. flutter_svg `<pattern>`'i

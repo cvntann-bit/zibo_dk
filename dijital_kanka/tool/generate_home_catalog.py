@@ -40,6 +40,24 @@ EVENT_ITEMS = {
     ],
 }
 
+# Abonelere özel seriler (2026-11-06, docs/subscribe_model.md): yalnız Dart'ta çizilir
+# (lib/widgets/home_art/luxe_art.dart). Son öğe katman: "pro" = Altın Saray, "proPlus" = Elmas.
+GOLD, ICE = "#FFF4DE", "#CDEFFF"
+PRO_ITEMS = {
+    ("mutfak", "buzdolabi"): [["saray", "Saray buzdolabı", "royalFridge", GOLD, 1400, "pro"], ["kristal", "Kristal buzdolabı", "crystalFridge", ICE, 1900, "proPlus"]],
+    ("mutfak", "sarkit"): [["avize", "Altın avize", "chandelierGold", "#E2B64A", 1000, "pro"], ["kavize", "Kristal avize", "chandelierCrystal", ICE, 1400, "proPlus"]],
+    ("banyo", "kuvet"): [["saray", "Saray küveti", "royalTub", GOLD, 1600, "pro"], ["kristal", "Kristal küvet", "crystalTub", ICE, 2200, "proPlus"]],
+    ("banyo", "ayna"): [["tac", "Taçlı ayna", "mirrorCrown", "#E2B64A", 800, "pro"], ["elmas", "Elmas ayna", "mirrorDiamond", ICE, 1100, "proPlus"]],
+    ("yatak", "yatak"): [["saray", "Kraliyet yatağı", "bedRoyal", "#B3263A", 1800, "pro"], ["kristal", "Kristal yatak", "bedCrystal", "#A9DDF2", 2500, "proPlus"]],
+    ("yatak", "dolap"): [["saray", "Saray gardırobu", "wardrobeRoyal", GOLD, 1400, "pro"], ["kristal", "Kristal gardırop", "wardrobeCrystal", ICE, 1900, "proPlus"]],
+    ("salon", "kanepe"): [["taht", "Taht kanepe", "sofaThrone", "#B3263A", 1800, "pro"], ["kristal", "Buz kanepe", "sofaCrystal", ICE, 2500, "proPlus"]],
+    ("salon", "lambader"): [["samdan", "Altın şamdan", "floorCandelabra", "#E2B64A", 900, "pro"], ["prizma", "Prizma lambader", "floorLampCrystal", ICE, 1300, "proPlus"]],
+}
+for _rid in ("mutfak", "yatak", "salon"):
+    PRO_ITEMS[(_rid, "desen")] = [["damask", "Altın damask", 800, "pro"], ["elmas", "Elmas kafes", 1100, "proPlus"]]
+for _rid in ("mutfak", "banyo", "yatak", "salon"):
+    PRO_ITEMS[(_rid, "zemin")] = [["mermer", "Mermer", "mermer", "#F7F2E9", "#CBBFAE", 1000, "pro"], ["kristal", "Kristal zemin", "kristal", "#DDF5FF", "#A6DCF2", 1400, "proPlus"]]
+
 KIND_DART = {"swatch": "swatch", "wall": "wallpaper", "floor": "floor", "tile": "tile", "draw": "furniture", "blanket": "blanket", "cloth": "cloth"}
 ROOM_DART = {"mutfak": "kitchen", "banyo": "bath", "yatak": "bedroom", "salon": "living"}
 
@@ -67,6 +85,10 @@ groups = js_to_json(block(src, "const FOOD_GROUPS = [", "]];"))
 rooms["banyo"]["cat"]["sabun"] = SOAP_SHAPES
 for (rid, cid), extra in EVENT_ITEMS.items():
     rooms[rid]["cat"][cid]["items"] += [it + ["event"] for it in extra]
+for (rid, cid), extra in PRO_ITEMS.items():
+    ids = {it[0] for it in rooms[rid]["cat"][cid]["items"]}
+    assert not ids & {it[0] for it in extra}, (rid, cid, ids & {it[0] for it in extra})
+    rooms[rid]["cat"][cid]["items"] += [list(it) for it in extra]
 rooms["banyo"]["eq"]["sabun"] = "klasik"
 
 
@@ -91,7 +113,17 @@ def s(text):
     return "'" + text.replace("\\", "\\\\").replace("'", "\\'") + "'"
 
 
+TIER_DART = {"pro": ", requiredTier: SubscriptionTier.pro", "proPlus": ", requiredTier: SubscriptionTier.proPlus", "event": ", eventOnly: true"}
+
+
 def item(kind, it):
+    flag = ""
+    if it and it[-1] in TIER_DART:
+        flag, it = TIER_DART[it[-1]], it[:-1]
+    return _item(kind, it)[:-1] + flag + ")"
+
+
+def _item(kind, it):
     if kind == "swatch":
         iid, name, col, price = it
         return f"HomeItem({s(iid)}, {s(name)}{tr(name)}, color: {color(col)}, price: {price})"
@@ -100,8 +132,7 @@ def item(kind, it):
         return f"HomeItem({s(iid)}, {s(name)}{tr(name)}, style: {s(iid)}, price: {price})"
     if kind == "draw":
         iid, name, style, col, price = it[:5]
-        event = ", eventOnly: true" if it[5:] == ["event"] else ""
-        return f"HomeItem({s(iid)}, {s(name)}{tr(name)}, style: {s(style)}, color: {color(col)}, price: {price}{event})"
+        return f"HomeItem({s(iid)}, {s(name)}{tr(name)}, style: {s(style)}, color: {color(col)}, price: {price})"
     iid, name, style, col, col2, price = it
     return f"HomeItem({s(iid)}, {s(name)}{tr(name)}, style: {s(style)}, color: {color(col)}, color2: {color(col2)}, price: {price})"
 
@@ -111,6 +142,7 @@ lines = [
     "// üretici: tool/generate_home_catalog.py. EN/ES adlar: tool/home_catalog_i18n.json.",
     "",
     "import '../models/home_item.dart';",
+    "import '../models/subscription_tier.dart';",
     "",
     "const homeRooms = <HomeRoomDef>[",
 ]

@@ -4,6 +4,15 @@
 import 'svg_kit.dart';
 
 final Map<String, String Function(String c)> wallArt = {
+  // Altın Saray (Pro): boyanın tonunda damask + altın noktalar.
+  'damask': (c) =>
+      '''<path d="M40 8c8 10 18 12 18 24 0 10-10 14-18 22-8-8-18-12-18-22 0-12 10-14 18-24z" fill="$c"/>'''
+      '''<path d="M40 54v18M32 64h16" stroke="$c" stroke-width="4" stroke-linecap="round"/>'''
+      '''<circle cx="0" cy="0" r="4" fill="#E2B64A"/><circle cx="80" cy="0" r="4" fill="#E2B64A"/><circle cx="0" cy="80" r="4" fill="#E2B64A"/><circle cx="80" cy="80" r="4" fill="#E2B64A"/>''',
+  // Elmas (Pro+): elmas kafes + parıltı.
+  'elmas': (c) =>
+      '''<path d="M40 0L80 40L40 80L0 40z" fill="none" stroke="$c" stroke-width="3"/>'''
+      '''<path d="M40 30l5 10-5 10-5-10z" fill="#FFFFFF" opacity=".85"/><path d="M0 0l3 5-3 5-3-5zM80 80l3 5-3 5-3-5z" fill="#FFFFFF" opacity=".7"/>''',
   'duz': (c) => '',
   'puan': (c) => '''<circle cx="20" cy="20" r="8" fill="$c"/><circle cx="60" cy="60" r="8" fill="$c"/>''',
   'cizgi': (c) => '''<rect x="0" y="0" width="30" height="80" fill="$c"/>''',
@@ -24,6 +33,10 @@ final Map<String, (int, int, String Function(String a, String b))> tileArt = {
 };
 
 final Map<String, (int, int, String Function(String a, String b))> floorArt = {
+  // Altın Saray (Pro): damarlı mermer, altın derz.
+  'mermer': (160, 160, (a, b) => '''<rect width="160" height="160" fill="$a"/><path d="M0 40c30-10 50 20 80 6s50-30 80-10M20 160c10-40 40-50 70-60s50-10 70-40M0 110c20 0 30 10 50 4" fill="none" stroke="$b" stroke-width="3" opacity=".8"/><rect width="160" height="3" fill="#E2C77A"/><rect width="3" height="160" fill="#E2C77A"/>'''),
+  // Elmas (Pro+): kristal karolar.
+  'kristal': (120, 120, (a, b) => '''<rect width="120" height="120" fill="$a"/><path d="M0 0L60 60L0 120M120 0L60 60L120 120" fill="none" stroke="$b" stroke-width="3"/><path d="M60 60L0 0h120z" fill="#FFFFFF" opacity=".22"/><rect width="120" height="3" fill="$b"/><rect width="3" height="120" fill="$b"/><path d="M90 24l3 7 7 3-7 3-3 7-3-7-7-3 7-3z" fill="#FFFFFF" opacity=".9"/>'''),
   'ahsap': (240, 80, (a, b) => '''<rect width="240" height="80" fill="$a"/><rect y="38" width="240" height="4" fill="$b"/><rect y="78" width="240" height="4" fill="$b"/><rect x="70" width="4" height="38" fill="$b"/><rect x="180" y="42" width="4" height="38" fill="$b"/>'''),
   'karo': (120, 120, (a, b) => '''<rect width="120" height="120" fill="$a"/><rect width="120" height="5" fill="$b"/><rect width="5" height="120" fill="$b"/>'''),
   'dama': (160, 160, (a, b) => '''<rect width="160" height="160" fill="$a"/><rect width="80" height="80" fill="$b"/><rect x="80" y="80" width="80" height="80" fill="$b"/>'''),

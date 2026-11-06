@@ -6,6 +6,7 @@ import '../../models/home_item.dart';
 import 'furniture_art.dart';
 import 'surface_art.dart';
 import 'svg_kit.dart';
+import 'luxe_art.dart';
 
 /// Dekor mağazasında eşyanın küçük resmi — taslaktaki `thumb()` ve
 /// `tileSvg()` (docs/home_studio/index.html, docs/zibo_world_roadmap.md Faz 5).
@@ -73,7 +74,7 @@ class HomeItemThumb extends StatelessWidget {
           );
         }
       case HomeCategoryKind.furniture || HomeCategoryKind.swatch:
-        viewBox = furnitureViewBox[style] ?? '-10 -10 220 220';
+        viewBox = furnitureViewBox[style] ?? luxeViewBox[style] ?? '-10 -10 220 220';
         body = (furnitureArt[style] ?? furnitureArt['none']!)(k, c, '');
         // Yataklar taslaktaki gibi düz mavi yorganla gösterilir.
         if (style.startsWith('bed')) body += blanket(k, 'duz', '#8ED0F2', '#8ED0F2');

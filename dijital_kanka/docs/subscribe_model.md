@@ -97,7 +97,13 @@ Zarar etmeme: indirim ve ücretsiz yemek `unit_economics.md` ile hesaplanır; ab
 **Uygulama durumu (2026-11-03, 1.18.0 için kodda, yayında değil):** değerler `HomeConfig` varsayılanları + `config/home` ezmesi.
 - Ücretsiz yemek 3/5/7 — `HomeNeedsProvider.freeFoodsLeft`. Yemeklerde abonelik indirimi YOK.
 - Dekor + sabun indirimi %10/%20 — `HomeConfig.priceFor`; mağaza kartında indirimli fiyat görünür.
-- Pro'ya özel eşya ALTYAPISI hazır: `config/home.proOnly: ["oda:kategori:eşya"]` → kartta 👑, Pro olmayan alamaz (satın alınmış eşya abonelik bitince de kalır). Katalogda henüz Pro'ya özel seri YOK (çizilecek, kullanıcı onayıyla).
+- Pro'ya özel eşya ALTYAPISI hazır: `config/home.proOnly: ["oda:kategori:eşya"]` → kartta 👑, Pro olmayan alamaz (satın alınmış eşya abonelik bitince de kalır).
+- **Abone dekor serileri ✅ (2026-11-06, kullanıcı "Altın Saray + Elmas" seçti):** katalogda `HomeItem.requiredTier` (`tool/generate_home_catalog.py` `PRO_ITEMS`, çizimler `lib/widgets/home_art/luxe_art.dart`).
+  - **Altın Saray — Pro 👑** (krem + bordo kadife + altın + taç): saray buzdolabı 1400, altın avize 1000, saray küveti 1600, taçlı ayna 800, kraliyet yatağı 1800, saray gardırobu 1400, taht kanepe 1800, altın şamdan 900, altın damask duvar kağıdı 800 (mutfak/yatak/salon), mermer zemin 1000 (4 oda) ZC.
+  - **Elmas — Pro+ 💎** (buz mavisi kristal + gökkuşağı yansıması): kristal buzdolabı 1900, kristal avize 1400, kristal küvet 2200, elmas ayna 1100, kristal yatak 2500, kristal gardırop 1900, buz kanepe 2500, prizma lambader 1300, elmas kafes duvar kağıdı 1100, kristal zemin 1400 ZC.
+  - Fiyatlara abonelik indirimi (%10/%20) uygulanır; ZC harcatır (ZC havuzunu eritir, zarar yok).
+  - **Abone olmayan da odada DENEYEBİLİR** (dokununca "Bu eşya Zibo Pro'ya/Pro+'a özel" uyarısı + deneme); "Odadakileri al" kilitli eşya varsa satın almaz → analytics `home_locked_buy{item, need, tier}` (paywall talebi). Pro, Elmas'ı da dener ama alamaz.
+  - Paywall perk metni henüz EKLENMEDİ (Zibo Dünyası perk listesi kesinleşince).
 - Sezonluk/sınırlı eşya altyapısı: `config/home.limited: {"oda:kategori:eşya": {from, to}}` → kartta ⏳, aralık dışında mağazada görünmez.
 - Uyku hızı 1,5×/2× ve Pro+ yavaş düşüş — `HomeNeedsProvider`.
 - Bakım ödüllü reklamı henüz yok (düzeltme listesinde). Paywall'a perk metinleri EKLENMEDİ (liste kesinleşince).

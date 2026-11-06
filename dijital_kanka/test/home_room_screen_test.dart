@@ -347,4 +347,28 @@ void main() {
     await frames(tester, 30);
     await tearDownScreen(tester);
   });
+
+  testWidgets('abone serisi: Pro olmayan Taht kanepeyi dener ama satın alamaz', (tester) async {
+    await pumpRoom(tester, HomeRoom.living);
+    await tester.tap(find.text('Dekor'));
+    await tester.pump();
+    final chips = find.ancestor(of: find.text('Boya'), matching: find.byType(ListView)).first;
+    await tester.dragUntilVisible(find.text('Kanepe'), chips, const Offset(-80, 0));
+    await tester.pump();
+    await tester.tap(find.text('Kanepe'));
+    await tester.pump();
+    final tile = find.bySemanticsLabel('Taht kanepe, 1800 ZC');
+    await tester.dragUntilVisible(tile, find.byType(ListView).last, const Offset(-120, 0));
+    await tester.pump();
+    await tester.tap(tile);
+    await tester.pump();
+    expect(find.text("Bu eşya Zibo Pro'ya özel."), findsOneWidget);
+    final buy = find.widgetWithText(FilledButton, 'Odadakileri al · 1800 ZC');
+    expect(buy, findsOneWidget); // odada deneniyor
+    tester.widget<FilledButton>(buy).onPressed!();
+    await tester.pump();
+    expect(decor.isOwned(HomeRoom.living, 'kanepe', 'taht'), isFalse);
+    expect(find.text("Bu eşya Zibo Pro'ya özel."), findsOneWidget);
+    await tearDownScreen(tester);
+  });
 }

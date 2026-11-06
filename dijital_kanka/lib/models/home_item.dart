@@ -1,3 +1,5 @@
+import 'subscription_tier.dart';
+
 /// Zibo'nun Evi kataloğu modelleri. Veri: `lib/data/home_catalog.dart`
 /// (üretilmiş; kaynak taslak `docs/home_studio/`). Eşyalar görsel değil,
 /// kodla çizilir: [HomeItem.style] hangi çizimin, [HomeItem.color] hangi
@@ -25,7 +27,7 @@ enum HomeRoom {
 enum HomeCategoryKind { swatch, wallpaper, floor, tile, furniture, blanket, cloth }
 
 class HomeItem {
-  const HomeItem(this.id, this.nameTr, {this.nameEn = '', this.nameEs = '', this.style, this.color, this.color2, required this.price, this.eventOnly = false});
+  const HomeItem(this.id, this.nameTr, {this.nameEn = '', this.nameEs = '', this.style, this.color, this.color2, required this.price, this.eventOnly = false, this.requiredTier});
 
   /// Kategori içinde kalıcı kimlik — satın alımlar bununla saklanır.
   final String id;
@@ -47,6 +49,14 @@ class HomeItem {
   /// Yalnızca etkinlik ödülü (Faz 6): mağazada satılmaz, sahip olunmadıkça
   /// görünmez. [price] yalnızca nadirlik kademesini belirler.
   final bool eventOnly;
+
+  /// Abonelere özel seri (2026-11-06): Altın Saray = [SubscriptionTier.pro],
+  /// Elmas = [SubscriptionTier.proPlus]. Daha düşük katman satın alamaz
+  /// (satın alınmış eşya abonelik bitince de kalır). null = herkese açık.
+  final SubscriptionTier? requiredTier;
+
+  /// [tier] bu eşyayı satın alabilir mi?
+  bool unlockedFor(SubscriptionTier tier) => requiredTier == null || tier.index >= requiredTier!.index;
 
   bool get isEmpty => style == 'none';
 }

@@ -29,6 +29,7 @@ import 'package:flutter/foundation.dart';
 /// - `home_play` {game, gained} — salondan oyun (gained = kazanılan ★)
 /// - `home_decor_buy` {room, items, cost, tier} — dekor sepeti satın alındı
 /// - `home_soap_buy` {soap, cost, tier} — sabun satın alındı
+/// - `home_locked_buy` {item, need, tier} — abone serisi eşyayı abone olmadan almaya çalıştı (paywall talebi)
 /// - `event_box_open` {event, day, zc, item} — etkinlik kutusu açıldı
 ///
 /// Reklamla yemek: `rewarded_result{placement: homeFood}` ([AdAnalytics]).

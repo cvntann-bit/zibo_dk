@@ -4338,5 +4338,9 @@
   "badgeRequirementHomeDecorator": "Zibo'nun Evi için 10 dekor eşyası satın al",
   "@badgeRequirementHomeDecorator": {
     "description": "home_decorator rozetinin kazanma koşulu"
+  },
+  "shopProPlusOnlyMsg": "Bu eşya Zibo Pro+'a özel (Elmas serisi).",
+  "@shopProPlusOnlyMsg": {
+    "description": "Pro+ olmayan kullanıcı Elmas serisinden eşya almaya çalışınca"
   }
 }

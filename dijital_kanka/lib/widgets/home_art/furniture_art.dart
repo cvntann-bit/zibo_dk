@@ -8,6 +8,7 @@
 
 import 'dart:math' as math;
 
+import 'luxe_art.dart';
 import 'svg_kit.dart';
 
 typedef FurnitureArt = String Function(SvgKit k, String c, String p);
@@ -21,6 +22,8 @@ String bedBase(SvgKit k, String head, String c) =>
     '''<rect x="70" y="170" width="160" height="80" rx="38" fill="${k.grad('#FFFFFF', '#DCE3EA')}"/><rect x="270" y="170" width="160" height="80" rx="38" fill="${k.grad('#FFFFFF', '#DCE3EA')}"/>''';
 
 final Map<String, FurnitureArt> furnitureArt = {
+  // Abonelere özel seriler (Altın Saray / Elmas) — luxe_art.dart.
+  ...luxeArt,
   'retroFridge': (k, c, p) { return '''${k.feet(38, 176, 462)}<rect width="240" height="470" rx="72" fill="${k.grad(m(c, .28), m(c, -.14), true)}"/><rect x="10" y="168" width="220" height="7" rx="3" fill="${m(c, -.32)}"/>${k.handle(26, 112, 74, 20)}${k.handle(26, 202, 74, 20)}${k.shine(20, 26, 30, 118, 15)}${k.shine(20, 196, 30, 230, 15, .25)}'''; },
   'twinFridge': (k, c, p) { return '''${k.feet(30, 200, 502)}<rect width="256" height="510" rx="34" fill="${k.grad(m(c, .24), m(c, -.16), true)}"/><rect x="124" y="12" width="8" height="486" fill="${m(c, -.34)}"/>${k.handle(102, 150, 14, 120)}${k.handle(140, 150, 14, 120)}<rect x="28" y="52" width="74" height="60" rx="12" fill="${k.grad('#2D3B4C', '#5B7188')}"/>${k.shine(16, 20, 22, 460, 11, .3)}'''; },
   'miniFridge': (k, c, p) { return '''${k.feet(30, 138, 352)}<rect width="194" height="360" rx="56" fill="${k.grad(m(c, .3), m(c, -.12), true)}"/><rect x="10" y="120" width="174" height="7" rx="3" fill="${m(c, -.3)}"/>${k.handle(24, 78, 60, 18)}${k.handle(24, 150, 60, 18)}${k.shine(18, 22, 26, 84, 13)}${k.shine(18, 146, 26, 170, 13, .25)}'''; },

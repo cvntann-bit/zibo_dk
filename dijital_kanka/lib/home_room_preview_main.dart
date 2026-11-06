@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'data/home_catalog.dart';
 import 'l10n/app_localizations.dart';
 import 'models/home_item.dart';
+import 'models/subscription_tier.dart';
 import 'models/zibo_event.dart';
 import 'providers/events_provider.dart';
 import 'providers/coin_provider.dart';
@@ -18,8 +19,8 @@ import 'screens/zibo_world_screen.dart';
 import 'widgets/home_art/room_view.dart';
 
 /// Geliştirme önizlemesi (Firebase'siz): solda telefon boyutunda Zibo Dünyası
-/// giriş ekranı, sağda dört oda — üstte başlangıç takımıyla, altta her
-/// kategorinin SON eşyasıyla. Kodla çizilen odaları ve evi taslaklarla
+/// giriş ekranı, sağda dört oda — üstte başlangıç takımıyla, altında Altın Saray (Pro)
+/// ve Elmas (Pro+) serileriyle. Kodla çizilen odaları ve evi taslaklarla
 /// (docs/home_studio/, docs/zibo_world_prototype/) karşılaştırmak için.
 /// Çalıştır: `flutter run -d web-server -t lib/home_room_preview_main.dart`.
 void main() => runApp(const _Preview());
@@ -29,10 +30,14 @@ class _Preview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Map<String, HomeItem> pick(HomeRoomDef def, bool last) => {
-      for (final c in def.categories) c.id: last ? c.items.last : (c.item(def.defaults[c.id] ?? '') ?? c.items.first),
+    // tier null: başlangıç takımı; pro/proPlus: o seri (yoksa başlangıç eşyası).
+    Map<String, HomeItem> pick(HomeRoomDef def, SubscriptionTier? tier) => {
+      for (final c in def.categories)
+        c.id:
+            (tier == null ? null : c.items.where((it) => it.requiredTier == tier).firstOrNull) ??
+            (c.item(def.defaults[c.id] ?? '') ?? c.items.first),
     };
-    Widget row(bool last) => Row(
+    Widget row(SubscriptionTier? last) => Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         for (final def in homeRooms)
@@ -104,7 +109,7 @@ class _Preview extends StatelessWidget {
                   ),
                 ),
               ),
-              Expanded(child: SingleChildScrollView(child: Column(children: [row(false), row(true)]))),
+              Expanded(child: SingleChildScrollView(child: Column(children: [row(null), row(SubscriptionTier.pro), row(SubscriptionTier.proPlus)]))),
             ],
           ),
         ),

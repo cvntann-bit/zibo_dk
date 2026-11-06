@@ -3203,4 +3203,8 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get badgeRequirementHomeDecorator =>
       'Compra 10 objetos de decoración para la Casa de Zibo';
+
+  @override
+  String get shopProPlusOnlyMsg =>
+      'Este objeto es exclusivo de Zibo Pro+ (serie Diamante).';
 }
