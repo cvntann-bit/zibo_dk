@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../home_catalog_keys.dart';
 import '../theme.dart';
 
 /// Özet: `stats/{YYYY-MM-DD}` belgeleri — saatlik iş yazar
@@ -133,6 +134,10 @@ class _SummaryScreenState extends State<SummaryScreen> {
           const SizedBox(height: 20),
           _adsAndRevenue(heavy.first, today),
         ],
+        if (heavy.isNotEmpty && heavy.first['home'] is Map) ...[
+          const SizedBox(height: 20),
+          _home(heavy.first),
+        ],
         if (_purchases != null) ...[
           const SizedBox(height: 20),
           _purchaseVerification(_purchases!),
@@ -165,6 +170,69 @@ class _SummaryScreenState extends State<SummaryScreen> {
   }
 
   String _try(num? v) => v == null ? '—' : '₺${v.toStringAsFixed(v >= 100 ? 0 : 2).replaceAll('.', ',')}';
+
+  /// Zibo'nun Evi — dailyStats.js `home` (homeNeedsState sayaçları, 8 günlük eşya satışı) +
+  /// `activity` gün kovalarındaki ev harcamaları. 1.18.0 öncesi kullanıcılarda veri yok.
+  Widget _home(Map<String, dynamic> heavyDay) {
+    final home = (heavyDay['home'] as Map).cast<String, dynamic>();
+    final activity = (heavyDay['activity'] as Map?)?.cast<String, dynamic>() ?? const {};
+    final keys = activity.keys.toList()..sort((a, b) => b.compareTo(a));
+    final full = keys.length > 1 ? keys.sublist(1) : keys;
+    final y = full.isEmpty ? const <String, dynamic>{} : (activity[full.first] as Map).cast<String, dynamic>();
+    num sum7(String f) => full.take(7).fold<num>(0, (acc, k) => acc + ((activity[k] as Map)[f] as num? ?? 0));
+    final dayZc = (y['homeDecorZc'] as num? ?? 0) + (y['homeFoodZc'] as num? ?? 0) + (y['homeSoapZc'] as num? ?? 0);
+    final weekZc = sum7('homeDecorZc') + sum7('homeFoodZc') + sum7('homeSoapZc');
+    final top = (home['topItems'] as List? ?? const []).cast<Map>();
+    final names = {for (final e in homeCatalogKeys) e.$1: e.$2};
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          "Zibo'nun Evi${full.isEmpty ? '' : ' · dün (${full.first.substring(5)})'}",
+          style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800),
+        ),
+        const SizedBox(height: 8),
+        _tiles([
+          ('Evi olan kullanıcı', _n(home['users'] as num?), '7 günde bakım yapan ${_n(home['careActive7d'] as num?)}'),
+          ('Ev harcaması', _n(dayZc), 'ZC · ${_n(y['homeSpenders'] as num?)} kişi · 7 gün ${_n(weekZc)} ZC'),
+          (
+            'Harcama dağılımı · 7 gün',
+            _n(sum7('homeDecorZc')),
+            'dekor ZC · yemek ${_n(sum7('homeFoodZc'))} · sabun ${_n(sum7('homeSoapZc'))}',
+          ),
+          (
+            'Bakım (toplam)',
+            _n(home['feeds'] as num?),
+            'besleme · yıkama ${_n(home['baths'] as num?)} · uyku ${_n(home['sleeps'] as num?)}',
+          ),
+        ]),
+        if (top.isNotEmpty) ...[
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.fromLTRB(14, 12, 14, 8),
+            decoration: stickerDecoration(),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('En çok satılan eşyalar · 8 gün', style: TextStyle(fontWeight: FontWeight.w800)),
+                const SizedBox(height: 6),
+                for (final t in top)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 3),
+                    child: Row(
+                      children: [
+                        Expanded(child: Text(names[t['key']] ?? '${t['key']}', style: const TextStyle(fontSize: 13.5))),
+                        Text('×${_n(t['count'] as num?)}', style: const TextStyle(fontWeight: FontWeight.w800)),
+                      ],
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ],
+      ],
+    );
+  }
 
   /// Reklam & gelir — dailyStats.js `activity` (gün kovaları) + `revenue`. Ağır sayım günde bir, günün ilk
   /// saatinde → en yeni TAM gün "dün".

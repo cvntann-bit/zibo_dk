@@ -139,7 +139,7 @@ Taslaklar (birebir hedef görünüm):
 ## Faz 8 — Yönetici uygulaması ve istatistik
 - ✅ `config/home` düzenleyici (2026-11-07, `docs/admin_panel.md` "Ayarlar → Zibo'nun Evi").
 - Etkinlik ekranı (Faz 6).
-- `dailyStats.js`: ev harcaması (yemek/sabun/dekor ayrı), en çok satılan eşyalar, bakım sıklığı, ortalama ihtiyaçlar → Özet'e yeni kart.
+- ✅ `dailyStats.js` (2026-11-07, HEAVY_VERSION 6): ev harcaması (yemek/sabun/dekor ayrı), en çok satılan 10 eşya, bakım sayaçları, 7 günde bakım yapan → yönetici Özet'te "Zibo'nun Evi" bölümü. (Ortalama ihtiyaç YOK: saklanan değerler son açılıştaki, bayat.) Node bu makinede yok → ilk saatlik çalışmanın Actions log'una bak (`ev: N kullanıcı …` satırı).
 
 ## Faz 9 — Metin, ekonomi, kalite
 - **ARB:** tahmini 300+ anahtar × 3 dil (eşya adları, kategoriler, konuşma balonları, etkinlik metinleri). İçerik havuzları `xTr/xEn/xEs` deseni.

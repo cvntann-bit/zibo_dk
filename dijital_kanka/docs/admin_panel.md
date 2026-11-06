@@ -231,3 +231,8 @@ Ayarlar sekmesi artık iki sekmeli: **Oyunlar** (`config/games`, eskisi gibi) ve
   — `dijital_kanka/tool/generate_home_catalog.py` üretir (katalog değişince betiği çalıştır).
 - Yazma: değişen ÜST alanlar `SetOptions(mergeFields: …)` ile bütün olarak yazılır (listeden silinen eşya gerçekten
   gider), dokunulmayan alanlar kalır; her yayın `adminLog`'a düşer. Kural: `config/home` yazma `isAdmin()`.
+
+## Özet → Zibo'nun Evi bölümü (2026-11-07)
+`dailyStats.js` `home` + gün kovalarındaki ev harcamaları: evi olan kullanıcı ve 7 günde bakım yapan, dünkü ev
+harcaması (ZC, kişi, 7 gün toplamı), 7 günlük dekor/yemek/sabun dağılımı, toplam besleme/yıkama/uyku, 8 günün en çok
+satılan 10 eşyası (adlar `home_catalog_keys.dart`'tan). 1.18.0 öncesi kullanıcılarda veri yok.

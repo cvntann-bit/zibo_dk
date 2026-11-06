@@ -20,7 +20,7 @@ const { db, auth, userDateKey } = require('./common');
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const CHUNK = 300;
-const HEAVY_VERSION = 5;
+const HEAVY_VERSION = 6; // 6: Zibo'nun Evi (home) — 2026-11-07
 
 // Sahibin kendi (test/hediye) hesapları — yüksek bakiyeleri "dolaşımdaki ZC"yi şişirmesin (kullanıcı, 2026-10-29).
 const EXCLUDED_EMAILS = ['cvntann@gmail.com', 'zuleturquia@gmail.com'];
@@ -78,16 +78,65 @@ async function excludedUids() {
 }
 
 function emptyDay() {
-  return { coinAds: 0, coinAdUsers: new Set(), gameAds: 0, gameAdUsers: new Set(), purchases: 0, purchaseZc: 0, purchaseTry: 0 };
+  return {
+    coinAds: 0,
+    coinAdUsers: new Set(),
+    gameAds: 0,
+    gameAdUsers: new Set(),
+    purchases: 0,
+    purchaseZc: 0,
+    purchaseTry: 0,
+    // Zibo'nun Evi harcamaları (CoinProvider neden önekleri: 'Ev: ', 'Ev yemeği: ', 'Sabun: ').
+    homeDecorZc: 0,
+    homeFoodZc: 0,
+    homeSoapZc: 0,
+    homeSpenders: new Set(),
+  };
+}
+
+/** 'Ev: salon:kanepe:taht,hali:mavi' → ['salon:kanepe:taht', 'salon:hali:mavi'] */
+function homeItemKeys(reason) {
+  const body = reason.slice('Ev: '.length);
+  const i = body.indexOf(':');
+  if (i < 0) return [];
+  const room = body.slice(0, i);
+  return body
+    .slice(i + 1)
+    .split(',')
+    .filter((x) => x.includes(':'))
+    .map((x) => `${room}:${x}`);
+}
+
+/** Ev harcamasını gün kovasına ve 8 günlük eşya sayacına işler. */
+function addHomeSpend(bucket, homeItems, uid, t) {
+  const reason = String(t.reason || '');
+  const amount = Math.abs(Number(t.amount) || 0);
+  if (reason.startsWith('Ev yemeği: ')) {
+    bucket.homeFoodZc += amount;
+  } else if (reason.startsWith('Sabun: ')) {
+    bucket.homeSoapZc += amount;
+    const key = `soap:${reason.slice('Sabun: '.length)}`;
+    homeItems[key] = (homeItems[key] || 0) + 1;
+  } else if (reason.startsWith('Ev: ')) {
+    bucket.homeDecorZc += amount;
+    for (const key of homeItemKeys(reason)) homeItems[key] = (homeItems[key] || 0) + 1;
+  } else {
+    return;
+  }
+  bucket.homeSpenders.add(uid);
 }
 
 /** Son işlemleri gün kovalarına dağıtır. İşlem zamanı cihazın yerel ISO metni → ilk 10 karakter = yerel gün. */
-function addCoinActivity(activity, uid, data, dayKeys) {
+function addCoinActivity(activity, uid, data, dayKeys, homeItems) {
   for (const t of Array.isArray(data.transactions) ? data.transactions : []) {
-    if (!t || t.type !== 'earn') continue;
+    if (!t || (t.type !== 'earn' && t.type !== 'spend')) continue;
     const day = String(t.timestamp || '').slice(0, 10);
     if (!dayKeys.has(day)) continue;
     const bucket = activity[day];
+    if (t.type === 'spend') {
+      addHomeSpend(bucket, homeItems, uid, t);
+      continue;
+    }
     const reason = String(t.reason || '');
     if (reason === 'Reklam izleme') {
       bucket.coinAds += 1;
@@ -148,12 +197,17 @@ async function heavyCounts(now) {
   }
   let giftedForever = 0;
   const subscribers = [];
+  // Zibo'nun Evi (1.18.0+): homeNeedsState sayaçları + 8 günlük eşya satışı.
+  const home = { users: 0, careActive7d: 0, feeds: 0, baths: 0, sleeps: 0 };
+  const homeItems = {};
+  const careDayKeys = new Set([...dayKeys].sort().slice(-7));
   for (let i = 0; i < userRefs.length; i += CHUNK) {
     const chunk = userRefs.slice(i, i + CHUNK);
     const refs = chunk.flatMap((u) => [
       u.collection('state').doc('coinState'),
       u.collection('state').doc('subscriptionState'),
       u.collection('state').doc('gamePointsState'),
+      u.collection('state').doc('homeNeedsState'),
     ]);
     const snaps = await db.getAll(...refs);
     for (const snap of snaps) {
@@ -172,9 +226,17 @@ async function heavyCounts(now) {
         addGameActivity(activity, uid, data, dayKeys);
         continue;
       }
+      if (snap.id === 'homeNeedsState') {
+        home.users += 1;
+        home.feeds += Number(data.feedCount) || 0;
+        home.baths += Number(data.bathCount) || 0;
+        home.sleeps += Number(data.sleepCount) || 0;
+        if (careDayKeys.has(String(data.lastCareDay || ''))) home.careActive7d += 1;
+        continue;
+      }
       if (snap.id === 'coinState') {
         signals.push(coinSignals(uid, data));
-        addCoinActivity(activity, uid, data, dayKeys);
+        addCoinActivity(activity, uid, data, dayKeys, homeItems);
         coin.balance += Number(data.balance) || 0;
         coin.earned += Number(data.totalEarned) || 0;
         coin.spent += Number(data.totalSpent) || 0;
@@ -215,8 +277,16 @@ async function heavyCounts(now) {
       purchases: b.purchases,
       purchaseZc: b.purchaseZc,
       purchaseTry: Math.round(b.purchaseTry * 100) / 100,
+      homeDecorZc: b.homeDecorZc,
+      homeFoodZc: b.homeFoodZc,
+      homeSoapZc: b.homeSoapZc,
+      homeSpenders: b.homeSpenders.size,
     };
   }
+  home.topItems = Object.entries(homeItems)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 10)
+    .map(([key, count]) => ({ key, count }));
   subs.giftedForever = giftedForever;
   const revenue = {
     // Aylık/yıllık plan ayrımı subscriptionState'te yok → hepsi aylık fiyatla (üst sınır tahmini).
@@ -229,6 +299,7 @@ async function heavyCounts(now) {
     subs,
     revenue,
     activity: activityOut,
+    home,
     scannedUsers: userRefs.length,
     excluded: excludedTotals,
     suspects,
@@ -398,7 +469,11 @@ async function main() {
         `(işaretli ${heavy.suspects.filter((x) => x.flags.length).length}) | ` +
         `reklam (gün: coin/oyun izleyen) ${Object.entries(heavy.activity)
           .map(([d, a]) => `${d.slice(5)}=${a.coinAdUsers}/${a.gameAdUsers}`)
-          .join(' ')} | abonelik ~${heavy.revenue.subsMonthlyTry} TL/ay, coin satışı 7g ~${heavy.revenue.purchaseTry7d} TL`,
+          .join(' ')} | abonelik ~${heavy.revenue.subsMonthlyTry} TL/ay, coin satışı 7g ~${heavy.revenue.purchaseTry7d} TL` +
+        ` | ev: ${heavy.home.users} kullanıcı, 7g bakım ${heavy.home.careActive7d}, en çok satan ${heavy.home.topItems
+          .slice(0, 3)
+          .map((x) => `${x.key}×${x.count}`)
+          .join(' ')}`,
     );
   }
   if (!process.env.APPODEAL_API_KEY || !process.env.APPODEAL_USER_ID) {
