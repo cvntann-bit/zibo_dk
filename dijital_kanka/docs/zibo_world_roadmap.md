@@ -150,7 +150,7 @@ Taslaklar (birebir hedef görünüm):
 
 ## Faz 10 — Yayın
 - Bekleyen işler: tablet yan menü 840 dp, uygulama içi mesaj kartı testi, satın alma doğrulaması gerçek test alımı.
-- **Kullanıcı kararı (2026-11-07):** AAB'yi şimdi alma; önce kalan küçük işler (yönetici ev ayarları ekranı, günlük istatistik ev kartı, paywall Zibo Dünyası metinleri, tablet 840 dp) bitsin, sonra 1.18.0+57 AAB + TR/EN/ES sürüm notları birlikte.
+- **Kullanıcı kararı (2026-11-07):** AAB'yi şimdi alma; önce kalan küçük işler (yönetici ev ayarları ekranı, günlük istatistik ev kartı, paywall Zibo Dünyası metinleri, tablet 840 dp) bitsin, sonra 1.18.0+57 AAB + TR/EN/ES sürüm notları birlikte. → **4 küçük iş TAMAM (2026-11-07):** ev ayarları ekranı, Özet ev bölümü (dailyStats HEAVY_VERSION 6 — ilk Actions log'u kontrol edilecek), paywall metinleri, yan menü 840 dp.
 - `pubspec` 1.18.0+57, AAB (`release-aab` becerisi), sürüm notları TR/EN/ES (≤ 500 karakter).
 - Mağaza görselleri: Zibo Dünyası panoraması (`tool/CLAUDE.md`).
 - Kademeli yayın önerisi: %20 → %100; Crashlytics ve yönetici Özet'i izlenir.
