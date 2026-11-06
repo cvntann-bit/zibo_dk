@@ -137,7 +137,7 @@ Taslaklar (birebir hedef görünüm):
 - Kurallar ve maliyet: `zibo_online.md` (DAU 10k'da ~10–15 $/ay tahmini). Play Aileler ve çocuk güvenliği incelemesi.
 
 ## Faz 8 — Yönetici uygulaması ve istatistik
-- `config/home` düzenleyici (fiyat, düşüş hızı, ücretsiz yemek, uyku hızı, sezonluk ürün aç/kapat).
+- ✅ `config/home` düzenleyici (2026-11-07, `docs/admin_panel.md` "Ayarlar → Zibo'nun Evi").
 - Etkinlik ekranı (Faz 6).
 - `dailyStats.js`: ev harcaması (yemek/sabun/dekor ayrı), en çok satılan eşyalar, bakım sıklığı, ortalama ihtiyaçlar → Özet'e yeni kart.
 

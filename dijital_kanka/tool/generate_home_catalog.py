@@ -179,5 +179,31 @@ lines.append("")
 if missing:
     raise SystemExit("Çevirisi eksik adlar (tool/home_catalog_i18n.json): " + ", ".join(sorted(missing)))
 open(OUT, "w", encoding="utf8", newline="\n").write("\n".join(lines))
+
+# Yönetici uygulaması (zibo_admin) için aranabilir anahtar listesi: config/home'daki
+# fiyat ezmesi / sınırlı süre / Pro'ya özel listeleri bu anahtarları kullanır.
+ROOM_TR = {"mutfak": "Mutfak", "banyo": "Banyo", "yatak": "Yatak odası", "salon": "Salon"}
+TIER_TR = {"pro": "Pro", "proPlus": "Pro+", "event": "Etkinlik"}
+admin = [
+    "// ÜRETİLMİŞ DOSYA — elle düzenleme. Üretici: dijital_kanka/tool/generate_home_catalog.py.",
+    "// Zibo'nun Evi kataloğundaki satılabilir her şeyin config/home anahtarı.",
+    "",
+    "/// (anahtar, görünen ad, taban fiyat ZC, katman: '' / Pro / Pro+ / Etkinlik)",
+    "const homeCatalogKeys = <(String, String, int, String)>[",
+]
+for rid, room in rooms.items():
+    for cid, cat in room["cat"].items():
+        cname = cat["n"] if "n" in cat else cat["name"]
+        for it in cat["items"]:
+            tier = TIER_TR.get(it[-1], "")
+            price = [v for v in it if isinstance(v, int)][-1]
+            admin.append(f"  ({s(rid + ':' + cid + ':' + it[0])}, {s(ROOM_TR[rid] + ' · ' + cname + ' · ' + it[1])}, {price}, {s(tier)}),")
+for fid, name, hunger, price, group in foods:
+    admin.append(f"  ({s('food:' + fid)}, {s('Yemek · ' + name)}, {price}, ''),")
+for sid, name, *rest in soaps:
+    admin.append(f"  ({s('soap:' + sid)}, {s('Sabun · ' + name)}, {rest[-1]}, ''),")
+admin.append("];")
+admin.append("")
+open("../zibo_admin/lib/home_catalog_keys.dart", "w", encoding="utf8", newline="\n").write("\n".join(admin))
 n_items = sum(len(c["items"]) for r in rooms.values() for c in r["cat"].values())
 print(f"{len(rooms)} oda, {sum(len(r['cat']) for r in rooms.values())} kategori, {n_items} eşya, {len(foods)} yemek, {len(soaps)} sabun")

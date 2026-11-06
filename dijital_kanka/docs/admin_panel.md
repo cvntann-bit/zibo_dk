@@ -219,3 +219,15 @@ Adımlar:
 (TR/EN/ES başlık, başlangıç, gün sayısı, günlük ZC, son gün ödülü: Yılbaşı çamı / Kardan adam / Hediye kutuları / ZC,
 telafi), listede aç/kapat. Her yazım `adminLog` ile aynı batch'te. Kural `events/{id}` yazma `isAdmin()` — Console'a yayınlandı (2026-11-03);
 yayınlanması gerekiyor. Zibo tarafı 1.18.0 ile gelir.
+
+## Ayarlar → Zibo'nun Evi sekmesi (2026-11-07, Zibo Dünyası Faz 8)
+Ayarlar sekmesi artık iki sekmeli: **Oyunlar** (`config/games`, eskisi gibi) ve **Zibo'nun Evi** (`config/home`,
+`zibo_admin/lib/screens/home_config_screen.dart`).
+- Sayılar: ihtiyaç düşüş hızları (4), ihtiyaç tabanı, tam dinlenme süresi; ücretsiz yemek (Ücretsiz/Pro/Pro+) ve
+  reklamla +1 yemek hakkı; Pro/Pro+ dekor indirimi, uyku hızı, Pro+ düşüş çarpanı. Varsayılanlar Zibo'nun
+  `HomeConfig.defaults` aynası — **Zibo'da varsayılan değişirse panelde de değiştir.**
+- Listeler: fiyat değişiklikleri (`priceOverrides`), sınırlı süreli eşyalar (`limited`, tarih aralığı; bitiş günü dahil),
+  Pro'ya özel ek eşyalar (`proOnly`). Eşyalar aranabilir listeden seçilir: `zibo_admin/lib/home_catalog_keys.dart`
+  — `dijital_kanka/tool/generate_home_catalog.py` üretir (katalog değişince betiği çalıştır).
+- Yazma: değişen ÜST alanlar `SetOptions(mergeFields: …)` ile bütün olarak yazılır (listeden silinen eşya gerçekten
+  gider), dokunulmayan alanlar kalır; her yayın `adminLog`'a düşer. Kural: `config/home` yazma `isAdmin()`.
