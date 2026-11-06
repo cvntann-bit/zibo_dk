@@ -4342,5 +4342,13 @@
   "shopProPlusOnlyMsg": "Bu eşya Zibo Pro+'a özel (Elmas serisi).",
   "@shopProPlusOnlyMsg": {
     "description": "Pro+ olmayan kullanıcı Elmas serisinden eşya almaya çalışınca"
+  },
+  "paywallProPerkHome": "Zibo'nun Evi: günde 5 ücretsiz yemek, %10 dekor indirimi, Altın Saray serisi 👑",
+  "@paywallProPerkHome": {
+    "description": "Paywall Pro kartı: Zibo Dünyası ev avantajları"
+  },
+  "paywallProPlusPerkHome": "Zibo'nun Evi: günde 7 ücretsiz yemek, %20 indirim, Elmas serisi 💎",
+  "@paywallProPlusPerkHome": {
+    "description": "Paywall Pro+ kartı: Zibo Dünyası ev avantajları"
   }
 }

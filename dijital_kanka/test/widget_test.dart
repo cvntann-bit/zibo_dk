@@ -1246,6 +1246,8 @@ void main() {
       // Tek seferlik kartın butonu — `_FailingPurchaseService` her zaman
       // `false` döner; paywall AÇIK kalır, hata SnackBar'ı gösterilir (bkz.
       // AYRI "BAŞARILI" testi aşağıda, orada MockPurchaseService var).
+      await tester.ensureVisible(find.byKey(const Key('paywallOneTimeButton')));
+      await tester.pumpAndSettle();
       await tester.tap(find.byKey(const Key('paywallOneTimeButton')));
       await tester.pumpAndSettle();
       expect(find.byType(PaywallScreen), findsOneWidget);
@@ -1281,6 +1283,8 @@ void main() {
       // "yerleşti" sanıp ERKEN dönebiliyor). Açık `pump(duration)` ile
       // gecikmeyi BİZZAT ilerletip ANCAK ONDAN SONRA `pumpAndSettle()` ile
       // ortaya çıkan dialog animasyonlarını bitiriyoruz.
+      await tester.ensureVisible(find.byKey(const Key('paywallOneTimeButton')));
+      await tester.pumpAndSettle();
       await tester.tap(find.byKey(const Key('paywallOneTimeButton')));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 700));

@@ -103,10 +103,10 @@ Zarar etmeme: indirim ve ücretsiz yemek `unit_economics.md` ile hesaplanır; ab
   - **Elmas — Pro+ 💎** (buz mavisi kristal + gökkuşağı yansıması): kristal buzdolabı 1900, kristal avize 1400, kristal küvet 2200, elmas ayna 1100, kristal yatak 2500, kristal gardırop 1900, buz kanepe 2500, prizma lambader 1300, elmas kafes duvar kağıdı 1100, kristal zemin 1400 ZC.
   - Fiyatlara abonelik indirimi (%10/%20) uygulanır; ZC harcatır (ZC havuzunu eritir, zarar yok).
   - **Abone olmayan da odada DENEYEBİLİR** (dokununca "Bu eşya Zibo Pro'ya/Pro+'a özel" uyarısı + deneme); "Odadakileri al" kilitli eşya varsa satın almaz → analytics `home_locked_buy{item, need, tier}` (paywall talebi). Pro, Elmas'ı da dener ama alamaz.
-  - Paywall perk metni henüz EKLENMEDİ (Zibo Dünyası perk listesi kesinleşince).
+  - ✅ Paywall (2026-11-07): Pro kartına `paywallProPerkHome` ("Zibo'nun Evi: günde 5 ücretsiz yemek, %10 dekor indirimi, Altın Saray serisi 👑"), Pro+ kartına `paywallProPlusPerkHome` (7 yemek, %20, Elmas 💎); karşılaştırma tablosuna 4 satır (`paywall_comparison.dart`): günlük ücretsiz yemek 3/5/7, dekor+sabun indirimi ✗/%10/%20, özel dekor serisi ✗/Altın Saray/+ Elmas, Zibo daha hızlı dinlenir 1x/1,5x/2x. Değerler `HomeConfig` varsayılanları — `config/home`'dan değiştirilirse metinler de güncellenmeli.
 - Sezonluk/sınırlı eşya altyapısı: `config/home.limited: {"oda:kategori:eşya": {from, to}}` → kartta ⏳, aralık dışında mağazada görünmez.
 - Uyku hızı 1,5×/2× ve Pro+ yavaş düşüş — `HomeNeedsProvider`.
-- Bakım ödüllü reklamı henüz yok (düzeltme listesinde). Paywall'a perk metinleri EKLENMEDİ (liste kesinleşince).
+- Bakım ödüllü reklamı ✅ (reklamla +1 yemek, yalnız ücretsiz kullanıcı). Paywall perk metinleri ✅ 2026-11-07 (aşağıda).
 
 ## Paywall ekranı (`lib/screens/paywall_screen.dart`)
 

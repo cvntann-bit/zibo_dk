@@ -313,6 +313,7 @@ class _PaywallContentState extends State<PaywallContent>
                     l10n.paywallProPerkStreakFreeze,
                     l10n.paywallProPerkWheelNoAds,
                     l10n.paywallProPerkGames,
+                    l10n.paywallProPerkHome,
                   ],
                   priceLabel: _subscriptionPriceLabel(
                     proOffer,
@@ -342,6 +343,7 @@ class _PaywallContentState extends State<PaywallContent>
                     l10n.paywallProPlusPerkStreakFreeze,
                     l10n.paywallProPlusPerkMoneyAnalysis,
                     l10n.paywallProPlusPerkGames,
+                    l10n.paywallProPlusPerkHome,
                   ],
                   priceLabel: _subscriptionPriceLabel(
                     proPlusOffer,

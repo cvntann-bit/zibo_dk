@@ -65,6 +65,31 @@ const paywallComparisonRowsTr = [
     pro: '✗',
     proPlus: '✓',
   ),
+  // Zibo Dünyası avantajları (1.18.0, docs/subscribe_model.md) — HomeConfig varsayılanları.
+  PaywallComparisonRow(
+    label: "Zibo'nun Evi: günlük ücretsiz yemek",
+    free: "3",
+    pro: "5",
+    proPlus: "7",
+  ),
+  PaywallComparisonRow(
+    label: "Dekor ve sabun indirimi",
+    free: "✗",
+    pro: "%10",
+    proPlus: "%20",
+  ),
+  PaywallComparisonRow(
+    label: "Özel dekor serisi",
+    free: "✗",
+    pro: "Altın Saray",
+    proPlus: "+ Elmas",
+  ),
+  PaywallComparisonRow(
+    label: "Zibo daha hızlı dinlenir",
+    free: "1x",
+    pro: "1,5x",
+    proPlus: "2x",
+  ),
 ];
 
 const paywallComparisonRowsEn = [
@@ -110,6 +135,30 @@ const paywallComparisonRowsEn = [
     pro: '✗',
     proPlus: '✓',
   ),
+  PaywallComparisonRow(
+    label: "Zibo's Home: free meals a day",
+    free: "3",
+    pro: "5",
+    proPlus: "7",
+  ),
+  PaywallComparisonRow(
+    label: "Decor and soap discount",
+    free: "✗",
+    pro: "10%",
+    proPlus: "20%",
+  ),
+  PaywallComparisonRow(
+    label: "Exclusive decor series",
+    free: "✗",
+    pro: "Golden Palace",
+    proPlus: "+ Diamond",
+  ),
+  PaywallComparisonRow(
+    label: "Zibo rests faster",
+    free: "1x",
+    pro: "1.5x",
+    proPlus: "2x",
+  ),
 ];
 
 const paywallComparisonRowsEs = [
@@ -154,6 +203,30 @@ const paywallComparisonRowsEs = [
     free: '✗',
     pro: '✗',
     proPlus: '✓',
+  ),
+  PaywallComparisonRow(
+    label: "Casa de Zibo: comidas gratis al día",
+    free: "3",
+    pro: "5",
+    proPlus: "7",
+  ),
+  PaywallComparisonRow(
+    label: "Descuento en decoración y jabón",
+    free: "✗",
+    pro: "10 %",
+    proPlus: "20 %",
+  ),
+  PaywallComparisonRow(
+    label: "Serie de decoración exclusiva",
+    free: "✗",
+    pro: "Palacio Dorado",
+    proPlus: "+ Diamante",
+  ),
+  PaywallComparisonRow(
+    label: "Zibo descansa más rápido",
+    free: "1x",
+    pro: "1,5x",
+    proPlus: "2x",
   ),
 ];
 

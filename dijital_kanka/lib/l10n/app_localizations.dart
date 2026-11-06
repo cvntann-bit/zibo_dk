@@ -5661,6 +5661,18 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'Bu eşya Zibo Pro+\'a özel (Elmas serisi).'**
   String get shopProPlusOnlyMsg;
+
+  /// Paywall Pro kartı: Zibo Dünyası ev avantajları
+  ///
+  /// In tr, this message translates to:
+  /// **'Zibo\'nun Evi: günde 5 ücretsiz yemek, %10 dekor indirimi, Altın Saray serisi 👑'**
+  String get paywallProPerkHome;
+
+  /// Paywall Pro+ kartı: Zibo Dünyası ev avantajları
+  ///
+  /// In tr, this message translates to:
+  /// **'Zibo\'nun Evi: günde 7 ücretsiz yemek, %20 indirim, Elmas serisi 💎'**
+  String get paywallProPlusPerkHome;
 }
 
 class _AppLocalizationsDelegate

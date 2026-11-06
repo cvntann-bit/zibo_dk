@@ -3175,4 +3175,12 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get shopProPlusOnlyMsg => 'Bu eşya Zibo Pro+\'a özel (Elmas serisi).';
+
+  @override
+  String get paywallProPerkHome =>
+      'Zibo\'nun Evi: günde 5 ücretsiz yemek, %10 dekor indirimi, Altın Saray serisi 👑';
+
+  @override
+  String get paywallProPlusPerkHome =>
+      'Zibo\'nun Evi: günde 7 ücretsiz yemek, %20 indirim, Elmas serisi 💎';
 }

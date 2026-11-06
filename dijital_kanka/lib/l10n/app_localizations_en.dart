@@ -3191,4 +3191,12 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get shopProPlusOnlyMsg =>
       'This item is exclusive to Zibo Pro+ (Diamond series).';
+
+  @override
+  String get paywallProPerkHome =>
+      'Zibo\'s Home: 5 free meals a day, 10% decor discount, Golden Palace series 👑';
+
+  @override
+  String get paywallProPlusPerkHome =>
+      'Zibo\'s Home: 7 free meals a day, 20% discount, Diamond series 💎';
 }
