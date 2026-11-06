@@ -113,6 +113,16 @@ Kullanıcı: "fazları bitirelim, düzeltmeleri en son yaparız". Fazlar sırayl
    hafif (ince kenar, yumuşak gölge) + üstte tutamak (dokun/aşağı kaydır → gizlenir, altta "▲ Bakım/Dekor" hapı kalır,
    dokun/yukarı kaydır → açılır). Uyurken her oda değiştirme isteği (kaydırma, oklar, ihtiyaç çubuğu) yerine ortada solarak
    pencere: 💤 "Önce Zibo'yu uyandır" + "Işığı aç" → Zibo uyanır, ~0,45 sn sonra istenen odaya zıplayarak geçilir.
+1d. ✅ **Uyku, yorgunluk, sekme, gökyüzü (kullanıcı, 2026-11-06):**
+   - Zibo uyurken evden çıkıp tekrar girilince salon değil **yatak odası** açılır, Zibo uyur hâlde
+     (`HomeRoomScreen` `_room` başlangıcı `isAsleep` ise `bedroom`; giriş ekranındaki ev ve balon dahil her giriş).
+   - **Salonda yorgunluk balonu:** enerji %50'nin altındaysa Zibo esner (`yawn`) ve başının üstünde "Önce uyumam gerek,
+     çok yorgunum! 😴" balonu çıkar; "Yatak odasına git" düğmesi zıplayarak yatak odasına götürür, ✕ ile kapatılır
+     (odaya tekrar girince yeniden çıkar). Oyunlar ENGELLENMEZ (reklam/★ geliri oyunlardan). ARB: `careTiredSleepFirst`, `careTiredGoBed`.
+   - Alt bardaki Dünya sekmesi emojisi 🏡 → 🌍 (alt bar + tablet rayı).
+   - **Giriş ekranı:** gökyüzündeki Zibo görseli kaldırıldı; yerine kodla çizilen parlayan, ışınları dönen güneş
+     ve soldan sağa kayan 5 çizgi film bulutu (`_SkyPainter`, 120 sn döngü; yalnız sekme görünürken döner, "hareketi azalt"
+     açıksa durur). Konuşma balonu evin çatısının üstüne taşındı (kuyruğu eve bakar) — Zibo evde.
 2. **Faz 4'ten kalanlar:** ~~yeni Zibo pozları~~ ✅ 2026-11-03 (8 poz, `docs/zibo_images_needed.md`), bakım ses efektleri, ödüllü reklamla +1 ücretsiz yemek (`unit_economics.md`'ye göre), bakım rozetleri (`add-badge`), analytics olayları.
 3. **Çeviri:** eşya, kategori, yemek ve sabun adları şimdilik yalnız Türkçe (katalog) — EN/ES.
 

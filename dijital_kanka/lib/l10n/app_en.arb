@@ -912,5 +912,7 @@
   "careWakeFirst": "Wake Zibo up first",
   "careWakeLight": "Lights on",
   "careHidePanel": "Hide panel",
-  "careShowPanel": "Show panel"
+  "careShowPanel": "Show panel",
+  "careTiredSleepFirst": "I need to sleep first, I'm so tired! 😴",
+  "careTiredGoBed": "Go to the bedroom"
 }

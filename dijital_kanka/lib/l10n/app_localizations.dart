@@ -5535,6 +5535,18 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'Paneli göster'**
   String get careShowPanel;
+
+  /// Salonda enerji düşükken Zibo'nun konuşma balonu
+  ///
+  /// In tr, this message translates to:
+  /// **'Önce uyumam gerek, çok yorgunum! 😴'**
+  String get careTiredSleepFirst;
+
+  /// Yorgunluk balonundaki düğme: yatak odasına geçer
+  ///
+  /// In tr, this message translates to:
+  /// **'Yatak odasına git'**
+  String get careTiredGoBed;
 }
 
 class _AppLocalizationsDelegate

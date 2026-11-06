@@ -912,5 +912,7 @@
   "careWakeFirst": "Primero despierta a Zibo",
   "careWakeLight": "Enciende la luz",
   "careHidePanel": "Ocultar panel",
-  "careShowPanel": "Mostrar panel"
+  "careShowPanel": "Mostrar panel",
+  "careTiredSleepFirst": "¡Primero necesito dormir, estoy muy cansado! 😴",
+  "careTiredGoBed": "Ir al dormitorio"
 }

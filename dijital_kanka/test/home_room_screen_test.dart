@@ -28,22 +28,25 @@ void main() {
   late HomeDecorProvider decor;
   late CoinProvider coins;
   final clock = DateTime(2026, 11, 3, 10);
+  var now = clock;
 
   setUp(() {
     SharedPreferences.setMockInitialValues({});
     installFakeAudioplayersPlatform();
+    now = clock;
   });
 
-  Future<void> pumpRoom(WidgetTester tester, HomeRoom room) async {
+  Future<void> pumpRoom(WidgetTester tester, HomeRoom room, {bool asleep = false}) async {
     tester.view.physicalSize = const Size(1080, 2400);
     tester.view.devicePixelRatio = 2.6;
     addTearDown(tester.view.reset);
-    needs = HomeNeedsProvider(now: () => clock);
+    needs = HomeNeedsProvider(now: () => now);
     decor = HomeDecorProvider();
     coins = CoinProvider(now: () => clock, isSoundEnabled: () => false);
     await tester.runAsync(() async {
       await needs.ready;
       await decor.ready;
+      if (asleep) needs.startSleep();
       while (!coins.isReady) {
         await Future<void>.delayed(const Duration(milliseconds: 5));
       }
@@ -248,6 +251,40 @@ void main() {
     await tester.tap(find.bySemanticsLabel('Paneli göster'));
     await frames(tester, 20);
     expect(find.text('Dekor'), findsOneWidget);
+    await tearDownScreen(tester);
+  });
+
+  testWidgets('Zibo uyuyorsa ev salondan değil yatak odasından, uyur hâlde açılır', (tester) async {
+    await pumpRoom(tester, HomeRoom.living, asleep: true);
+    expect(find.text('Yatak odası'), findsWidgets);
+    expect(find.text('Zibo uyuyor, şşş…'), findsOneWidget);
+    await tearDownScreen(tester);
+  });
+
+  testWidgets('salonda yorgun Zibo: "önce uyumam gerek" balonu → yatak odasına götürür', (tester) async {
+    await pumpRoom(tester, HomeRoom.living);
+    expect(find.textContaining('Önce uyumam gerek'), findsNothing);
+    now = clock.add(const Duration(hours: 24));
+    needs.refresh();
+    await tester.pump();
+    expect(needs.percent(HomeNeed.energy), lessThan(50));
+    expect(find.textContaining('Önce uyumam gerek'), findsOneWidget);
+    await tester.tap(find.text('Yatak odasına git'));
+    await frames(tester, 100);
+    expect(find.text('Yatak odası'), findsWidgets);
+    expect(find.textContaining('Önce uyumam gerek'), findsNothing);
+    await tearDownScreen(tester);
+  });
+
+  testWidgets('yorgunluk balonu kapatılabilir', (tester) async {
+    await pumpRoom(tester, HomeRoom.living);
+    now = clock.add(const Duration(hours: 24));
+    needs.refresh();
+    await tester.pump();
+    expect(find.textContaining('Önce uyumam gerek'), findsOneWidget);
+    await tester.tap(find.byTooltip('Kapat'));
+    await tester.pump();
+    expect(find.textContaining('Önce uyumam gerek'), findsNothing);
     await tearDownScreen(tester);
   });
 }

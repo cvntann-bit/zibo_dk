@@ -3134,4 +3134,11 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get careShowPanel => 'Mostrar panel';
+
+  @override
+  String get careTiredSleepFirst =>
+      '¡Primero necesito dormir, estoy muy cansado! 😴';
+
+  @override
+  String get careTiredGoBed => 'Ir al dormitorio';
 }

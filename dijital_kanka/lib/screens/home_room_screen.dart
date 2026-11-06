@@ -67,9 +67,12 @@ const _hopHeight = 70.0;
 // Zıplayan Zibo odanın zemininde yürür (yatak/kanepe/küvetin önünde): ayak çizgisi ve boyu.
 const _hopFeetY = 1030.0;
 const _hopSpriteH = 440.0;
+// Salonda bu enerjinin altında "önce uyumam gerek" balonu çıkar.
+const _tiredBelow = 50;
 
 class _HomeRoomScreenState extends State<HomeRoomScreen> with TickerProviderStateMixin {
-  late HomeRoom _room = widget.initialRoom;
+  // Zibo uyuyorsa ev nereden açılırsa açılsın yatak odasında, uyur hâlde açılır.
+  late HomeRoom _room = context.read<HomeNeedsProvider>().isAsleep ? HomeRoom.bedroom : widget.initialRoom;
   final _cache = RoomSceneCache();
   final _fx = CareFx();
   final _rnd = math.Random();
@@ -112,6 +115,8 @@ class _HomeRoomScreenState extends State<HomeRoomScreen> with TickerProviderStat
 
   // Salon.
   bool _justPlayed = false;
+  // Enerji düşükken salonda "önce uyumam gerek" balonu (kapatılabilir).
+  bool _tiredDismissed = false;
 
   @override
   void initState() {
@@ -182,6 +187,7 @@ class _HomeRoomScreenState extends State<HomeRoomScreen> with TickerProviderStat
     _held = null;
     _chew = 0;
     _justPlayed = false;
+    _tiredDismissed = false;
     _fx.clearBath();
     _phase = _BathPhase.clean;
     if (_room == HomeRoom.bath) {
@@ -456,9 +462,18 @@ class _HomeRoomScreenState extends State<HomeRoomScreen> with TickerProviderStat
             : (_plateFood != null ? 'eat_open' : (v < 50 ? 'pout' : 'idle')),
       HomeRoom.bath => _phase == _BathPhase.clean ? 'bath_happy' : 'bath_pout',
       HomeRoom.bedroom => needs.isAsleep ? 'sleep' : (v >= 100 ? 'happy' : (v < 50 ? 'yawn' : 'idle')),
-      HomeRoom.living => _justPlayed || v >= 100 ? 'happy' : (v < 50 ? 'pout' : 'play'),
+      HomeRoom.living =>
+        _justPlayed || v >= 100
+            ? 'happy'
+            : _tired(needs)
+            ? 'yawn'
+            : (v < 50 ? 'pout' : 'play'),
     };
   }
+
+  /// Salonda enerji yarının altındaysa Zibo yorgundur.
+  bool _tired(HomeNeedsProvider needs) =>
+      _room == HomeRoom.living && !needs.isAsleep && needs.percent(HomeNeed.energy) < _tiredBelow;
 
   /// Banyoda yıkanırken temizlik göstergesi adım adım dolar.
   int _bathShown(int v) {
@@ -580,6 +595,7 @@ class _HomeRoomScreenState extends State<HomeRoomScreen> with TickerProviderStat
   Widget _stage(AppLocalizations l10n, RoomScene scene, double s) {
     final kitchenCare = _care && _room == HomeRoom.kitchen;
     final bathCare = _care && _room == HomeRoom.bath;
+    final showTired = _care && !_tiredDismissed && _tired(context.watch<HomeNeedsProvider>());
     Offset toScene(Offset local) => local / s - Offset(0, scene.extraTop);
     return GestureDetector(
       onHorizontalDragStart: (_) {
@@ -676,6 +692,16 @@ class _HomeRoomScreenState extends State<HomeRoomScreen> with TickerProviderStat
                         opacity: hopOpacity.clamp(0.0, 1.0),
                         child: Image.asset('assets/images/home/zibo_happy.webp', fit: BoxFit.contain),
                       ),
+                    ),
+                  ),
+                if (showTired && !hopping)
+                  Positioned(
+                    left: 60 * s,
+                    width: 580 * s,
+                    top: (scene.zibo.y + scene.extraTop + 10) * s,
+                    child: FractionalTranslation(
+                      translation: const Offset(0, -1),
+                      child: Center(child: _tiredBubble(l10n)),
                     ),
                   ),
                 if (kitchenCare && food != null && !hopping)
@@ -902,6 +928,64 @@ class _HomeRoomScreenState extends State<HomeRoomScreen> with TickerProviderStat
           ),
         ),
       ),
+    );
+  }
+
+  /// Salonda yorgun Zibo'nun konuşma balonu: yatak odasına götürür ya da kapatılır.
+  Widget _tiredBubble(AppLocalizations l10n) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          padding: const EdgeInsets.fromLTRB(14, 8, 6, 10),
+          decoration: stickerDecoration(fill: colorScheme.surfaceContainerLowest, borderRadius: BorderRadius.circular(18)),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Flexible(
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: Text(
+                        l10n.careTiredSleepFirst,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontFamily: 'Baloo2',
+                          fontVariations: const [FontVariation('wght', 800)],
+                          fontSize: 16,
+                          height: 1.15,
+                          color: colorScheme.onSurface,
+                        ),
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () => setState(() => _tiredDismissed = true),
+                    icon: const Icon(Icons.close_rounded, size: 18),
+                    tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
+                    visualDensity: VisualDensity.compact,
+                    constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                    padding: EdgeInsets.zero,
+                  ),
+                ],
+              ),
+              const SizedBox(height: 6),
+              FilledButton.icon(
+                onPressed: () => _go(1, to: HomeRoom.bedroom),
+                style: FilledButton.styleFrom(visualDensity: VisualDensity.compact),
+                icon: const Icon(Icons.bedtime_rounded, size: 18),
+                label: Text(l10n.careTiredGoBed),
+              ),
+            ],
+          ),
+        ),
+        // Zibo'ya bakan kuyruk.
+        CustomPaint(size: const Size(22, 12), painter: _BubbleTail(colorScheme.surfaceContainerLowest)),
+      ],
     );
   }
 
@@ -1464,4 +1548,31 @@ class _FoodImage extends StatelessWidget {
     if (svg != null) return SvgPicture.string(svg, fit: BoxFit.contain);
     return Image.asset('assets/images/home/food/$id.webp', fit: BoxFit.contain);
   }
+}
+
+/// Konuşma balonunun aşağı bakan kuyruğu (sticker çerçeveli).
+class _BubbleTail extends CustomPainter {
+  _BubbleTail(this.fill);
+
+  final Color fill;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final path = Path()
+      ..moveTo(0, -2)
+      ..lineTo(size.width / 2, size.height)
+      ..lineTo(size.width, -2);
+    canvas.drawPath(path, Paint()..color = fill);
+    canvas.drawPath(
+      path,
+      Paint()
+        ..color = kStickerOutline
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2
+        ..strokeJoin = StrokeJoin.round,
+    );
+  }
+
+  @override
+  bool shouldRepaint(_BubbleTail old) => old.fill != fill;
 }

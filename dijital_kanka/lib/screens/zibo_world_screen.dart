@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -20,13 +21,16 @@ import 'home_room_screen.dart';
 /// 2026-11-03): gökyüzü + çayır arka planı, patikadaki beş alanda binalar.
 /// **Eve dokununca** tam ekran [HomeRoomScreen] salonda açılır, **Oyun Salonu'na** dokununca
 /// [GameHallPage], Etkinlikler'e dokununca [EventsScreen] açılır; Sıralama ve
-/// Arkadaşlar 1.19.0'a kadar kilitli (soluk + kilit). Gökyüzünde el sallayan
-/// Zibo, konuşma balonuyla en düşük ihtiyacını söyler (dokununca o oda açılır).
+/// Arkadaşlar 1.19.0'a kadar kilitli (soluk + kilit). Gökyüzünde kodla çizilen
+/// parlayan güneş ve yavaşça kayan bulutlar var (2026-11-06, Zibo görseli kalktı);
+/// evin üstündeki konuşma balonu Zibo'nun en düşük ihtiyacını söyler (dokununca
+/// o oda açılır; Zibo uyuyorsa ev yatak odasında açılır).
 ///
 /// Sahne görselin oranında (1440×2580) çizilir, genişlik en çok 600 dp;
 /// yerleşim görselin kesirleriyle (fx, fy) — bina konumları arka plandaki
 /// alanlara göre ölçüldü. İhtiyaçlar zamanla düştüğü için sekme görünürken
-/// dakikada bir yenilenir — `IndexedStack` için [isActive] korumalı.
+/// dakikada bir yenilenir; gökyüzü animasyonu da yalnız sekme görünürken
+/// döner — `IndexedStack` için [isActive] korumalı ("hareketi azalt" açıksa durur).
 class ZiboWorldScreen extends StatefulWidget {
   const ZiboWorldScreen({super.key, this.isActive = false});
 
@@ -56,9 +60,14 @@ const _games = _Place('world_games', .770, .742, .30, 1024 / 821);
 const _home = _Place('world_home', .464, .875, .38, 1024 / 809);
 
 const _sceneAspect = 1440 / 2580;
+// Gökyüzü katmanının alt sınırı ve evin çatısı (sahne yüksekliğinin kesri).
+const _skyBottom = .36;
+const _homeRoofY = .625;
 
-class _ZiboWorldScreenState extends State<ZiboWorldScreen> {
+class _ZiboWorldScreenState extends State<ZiboWorldScreen> with SingleTickerProviderStateMixin {
   Timer? _timer;
+  // Gökyüzü: bir tur = bulutların ekranı bir kez geçmesi.
+  late final AnimationController _sky = AnimationController(vsync: this, duration: const Duration(seconds: 120));
 
   @override
   void initState() {
@@ -69,7 +78,25 @@ class _ZiboWorldScreenState extends State<ZiboWorldScreen> {
   @override
   void didUpdateWidget(ZiboWorldScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.isActive != widget.isActive) _syncTimer();
+    if (oldWidget.isActive != widget.isActive) {
+      _syncTimer();
+      _syncSky();
+    }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _syncSky();
+  }
+
+  void _syncSky() {
+    final run = widget.isActive && !MediaQuery.of(context).disableAnimations;
+    if (run && !_sky.isAnimating) {
+      _sky.repeat();
+    } else if (!run && _sky.isAnimating) {
+      _sky.stop();
+    }
   }
 
   void _syncTimer() {
@@ -84,6 +111,7 @@ class _ZiboWorldScreenState extends State<ZiboWorldScreen> {
   @override
   void dispose() {
     _timer?.cancel();
+    _sky.dispose();
     super.dispose();
   }
 
@@ -105,7 +133,6 @@ class _ZiboWorldScreenState extends State<ZiboWorldScreen> {
     final asking = needs.percent(want) < 70;
     final now = DateTime.now();
     final line = ziboWorldLineForLocale(Localizations.localeOf(context), asking ? want : null, now.day * 24 + now.hour);
-    final pose = needs.percent(want) < 30 ? 'pout' : 'wave';
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -134,7 +161,6 @@ class _ZiboWorldScreenState extends State<ZiboWorldScreen> {
           );
         }
 
-        final ziboH = h * .22;
         return DecoratedBox(
           // Sahne kenarlarında (tablet) gökyüzünden çimene geçen zemin.
           decoration: const BoxDecoration(
@@ -155,20 +181,14 @@ class _ZiboWorldScreenState extends State<ZiboWorldScreen> {
                   clipBehavior: Clip.none,
                   children: [
                     Positioned.fill(child: Image.asset('assets/images/world/world_bg.webp', fit: BoxFit.fill)),
-                    // Gökyüzünde Zibo + konuşma balonu.
+                    // Gökyüzü: parlayan güneş + kayan bulutlar (yalnız üst kısım).
                     Positioned(
-                      left: w * .05,
-                      top: h * .14,
-                      height: ziboH,
-                      child: Image.asset('assets/images/home/zibo_$pose.webp', fit: BoxFit.contain),
-                    ),
-                    Positioned(
-                      left: w * .38,
-                      right: w * .05,
-                      top: h * .17,
-                      child: _SpeechBubble(
-                        text: line,
-                        onTap: () => _push(HomeRoomScreen(initialRoom: asking ? want.room : HomeRoom.living)),
+                      left: 0,
+                      right: 0,
+                      top: 0,
+                      height: h * _skyBottom,
+                      child: IgnorePointer(
+                        child: RepaintBoundary(child: CustomPaint(painter: _SkyPainter(_sky))),
                       ),
                     ),
                     building(_friends, l10n.worldDoorFriends, _comingSoon, locked: true, labelAbove: true),
@@ -176,6 +196,21 @@ class _ZiboWorldScreenState extends State<ZiboWorldScreen> {
                     building(_events, l10n.worldDoorEvents, () => _push(const EventsScreen()), badge: events.openableCount),
                     building(_games, l10n.tabGameHall, () => _push(const GameHallPage())),
                     building(_home, l10n.worldHouseSign, () => _push(const HomeRoomScreen())),
+                    // Evden seslenen Zibo: balon evin çatısının üstünde, kuyruğu eve bakar.
+                    Positioned(
+                      left: w * .26,
+                      right: w * .26,
+                      top: h * _homeRoofY,
+                      child: FractionalTranslation(
+                        translation: const Offset(0, -1),
+                        child: Center(
+                          child: _SpeechBubble(
+                            text: line,
+                            onTap: () => _push(HomeRoomScreen(initialRoom: asking ? want.room : HomeRoom.living)),
+                          ),
+                        ),
+                      ),
+                    ),
                     ...labels,
                   ],
                 ),
@@ -305,7 +340,7 @@ class _Label extends StatelessWidget {
   }
 }
 
-/// Gökyüzündeki Zibo'nun konuşma balonu (sol altta Zibo'ya bakan kuyruk).
+/// Evdeki Zibo'nun konuşma balonu (altta eve bakan kuyruk).
 class _SpeechBubble extends StatelessWidget {
   const _SpeechBubble({required this.text, required this.onTap});
 
@@ -321,15 +356,180 @@ class _SpeechBubble extends StatelessWidget {
       excludeSemantics: true,
       child: GestureDetector(
         onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          decoration: stickerDecoration(fill: colorScheme.surfaceContainerLowest, borderRadius: BorderRadius.circular(18)),
-          child: Text(
-            text,
-            style: TextStyle(fontWeight: FontWeight.w800, fontSize: 14, height: 1.25, color: colorScheme.onSurface),
-          ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: stickerDecoration(fill: colorScheme.surfaceContainerLowest, borderRadius: BorderRadius.circular(18)),
+              child: Text(
+                text,
+                textAlign: TextAlign.center,
+                style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13, height: 1.25, color: colorScheme.onSurface),
+              ),
+            ),
+            CustomPaint(size: const Size(20, 11), painter: _TailPainter(colorScheme.surfaceContainerLowest)),
+          ],
         ),
       ),
     );
   }
+}
+
+/// Konuşma balonunun aşağı bakan kuyruğu.
+class _TailPainter extends CustomPainter {
+  _TailPainter(this.fill);
+
+  final Color fill;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final path = Path()
+      ..moveTo(0, -2)
+      ..lineTo(size.width / 2, size.height)
+      ..lineTo(size.width, -2);
+    canvas.drawPath(path, Paint()..color = fill);
+    canvas.drawPath(
+      path,
+      Paint()
+        ..color = kStickerOutline
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2
+        ..strokeJoin = StrokeJoin.round,
+    );
+  }
+
+  @override
+  bool shouldRepaint(_TailPainter old) => old.fill != fill;
+}
+
+/// Bir bulutun yolu: dikey konum ve boy (gökyüzü katmanının kesri), hız
+/// (bir turda ekranı kaç kez geçtiği) ve başlangıç kayması.
+class _Cloud {
+  const _Cloud(this.fy, this.size, this.speed, this.phase, this.opacity);
+
+  final double fy;
+  final double size;
+  final int speed;
+  final double phase;
+  final double opacity;
+}
+
+// Uzaktakiler küçük, yavaş ve soluk; yakındakiler büyük ve hızlı.
+const _clouds = [
+  _Cloud(.20, .15, 1, .10, .80),
+  _Cloud(.52, .12, 1, .62, .70),
+  _Cloud(.36, .22, 2, .35, .95),
+  _Cloud(.72, .17, 2, .85, .85),
+  _Cloud(.10, .19, 3, .55, .90),
+];
+
+/// Gökyüzü: sol üstte parlayan, ışınları yavaşça dönen güneş ve soldan sağa
+/// kayan çizgi film bulutları (sticker konturlu). [t] 0..1 döngüsü.
+class _SkyPainter extends CustomPainter {
+  _SkyPainter(this.t) : super(repaint: t);
+
+  final Animation<double> t;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final v = t.value;
+    _sun(canvas, size, v);
+    for (final c in _clouds) {
+      final cw = size.width * c.size * 1.9;
+      // Ekranın solundan girer, sağından çıkar; sonra başa sarar.
+      final x = ((v * c.speed + c.phase) % 1) * (size.width + cw * 2) - cw;
+      _cloud(canvas, Offset(x, size.height * c.fy), size.width * c.size, c.opacity);
+    }
+  }
+
+  void _sun(Canvas canvas, Size size, double v) {
+    final r = size.width * .085;
+    final c = Offset(size.width * .54, size.height * .31);
+    final pulse = 1 + math.sin(v * math.pi * 2 * 12) * .04;
+    // Hale.
+    canvas.drawCircle(
+      c,
+      r * 2.4 * pulse,
+      Paint()
+        ..shader = RadialGradient(
+          colors: const [Color(0x80FFF3B0), Color(0x00FFF3B0)],
+        ).createShader(Rect.fromCircle(center: c, radius: r * 2.4 * pulse)),
+    );
+    // Dönen ışınlar.
+    final ray = Paint()
+      ..color = const Color(0xFFFFC93C)
+      ..style = PaintingStyle.fill;
+    final rayLine = Paint()
+      ..color = kStickerOutline
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2
+      ..strokeJoin = StrokeJoin.round;
+    canvas.save();
+    canvas.translate(c.dx, c.dy);
+    canvas.rotate(v * math.pi * 2 * 2);
+    for (var i = 0; i < 10; i++) {
+      final a = i * math.pi * 2 / 10;
+      final inner = r * 1.18, outer = r * (i.isEven ? 1.62 : 1.45), half = .17;
+      final path = Path()
+        ..moveTo(math.cos(a - half) * inner, math.sin(a - half) * inner)
+        ..lineTo(math.cos(a) * outer, math.sin(a) * outer)
+        ..lineTo(math.cos(a + half) * inner, math.sin(a + half) * inner)
+        ..close();
+      canvas.drawPath(path, ray);
+      canvas.drawPath(path, rayLine);
+    }
+    canvas.restore();
+    // Gövde.
+    final body = Rect.fromCircle(center: c, radius: r);
+    canvas.drawCircle(
+      c,
+      r,
+      Paint()
+        ..shader = const RadialGradient(
+          center: Alignment(-.35, -.35),
+          colors: [Color(0xFFFFF6B8), Color(0xFFFFD447), Color(0xFFFFB627)],
+          stops: [0, .55, 1],
+        ).createShader(body),
+    );
+    canvas.drawCircle(
+      c,
+      r,
+      Paint()
+        ..color = kStickerOutline
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2.5,
+    );
+    // Parıltı.
+    canvas.drawOval(
+      Rect.fromCenter(center: c + Offset(-r * .38, -r * .42), width: r * .42, height: r * .24),
+      Paint()..color = const Color(0xCCFFFFFF),
+    );
+  }
+
+  void _cloud(Canvas canvas, Offset center, double w, double opacity) {
+    // Altı düz, üstü kabarık: üç tepe + taban.
+    final h = w * .42;
+    final base = Rect.fromCenter(center: center + Offset(0, h * .18), width: w * 1.7, height: h * .62);
+    final shape = Path()
+      ..addRRect(RRect.fromRectAndRadius(base, Radius.circular(h * .31)))
+      ..addOval(Rect.fromCircle(center: center + Offset(-w * .42, h * .05), radius: h * .38))
+      ..addOval(Rect.fromCircle(center: center + Offset(0, -h * .2), radius: h * .55))
+      ..addOval(Rect.fromCircle(center: center + Offset(w * .42, h * .02), radius: h * .42));
+    final merged = Path.combine(PathOperation.union, shape, Path());
+    canvas.saveLayer(null, Paint()..color = Color.fromRGBO(0, 0, 0, opacity));
+    canvas.drawPath(merged.shift(Offset(0, h * .12)), Paint()..color = const Color(0x22427AA1));
+    canvas.drawPath(merged, Paint()..color = Colors.white);
+    canvas.drawPath(
+      merged,
+      Paint()
+        ..color = const Color(0xFF9CC7E4)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2,
+    );
+    canvas.restore();
+  }
+
+  @override
+  bool shouldRepaint(_SkyPainter old) => false;
 }

@@ -3104,4 +3104,10 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get careShowPanel => 'Paneli göster';
+
+  @override
+  String get careTiredSleepFirst => 'Önce uyumam gerek, çok yorgunum! 😴';
+
+  @override
+  String get careTiredGoBed => 'Yatak odasına git';
 }

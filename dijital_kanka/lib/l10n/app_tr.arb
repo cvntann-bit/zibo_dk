@@ -4253,5 +4253,13 @@
   "careShowPanel": "Paneli göster",
   "@careShowPanel": {
     "description": "Gizlenmiş alt paneli açan hap (erişilebilirlik)"
+  },
+  "careTiredSleepFirst": "Önce uyumam gerek, çok yorgunum! 😴",
+  "@careTiredSleepFirst": {
+    "description": "Salonda enerji düşükken Zibo'nun konuşma balonu"
+  },
+  "careTiredGoBed": "Yatak odasına git",
+  "@careTiredGoBed": {
+    "description": "Yorgunluk balonundaki düğme: yatak odasına geçer"
   }
 }
