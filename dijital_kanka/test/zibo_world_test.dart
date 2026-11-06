@@ -226,6 +226,32 @@ void main() {
     });
   });
 
+  test('katalog çevirisi: her eşya, kategori, yemek ve sabunun EN/ES adı var', () {
+    for (final def in homeRooms) {
+      for (final c in def.categories) {
+        expect(c.nameEn, isNotEmpty, reason: c.nameTr);
+        expect(c.nameEs, isNotEmpty, reason: c.nameTr);
+        for (final it in c.items) {
+          expect(it.nameEn, isNotEmpty, reason: it.nameTr);
+          expect(it.nameEs, isNotEmpty, reason: it.nameTr);
+        }
+      }
+    }
+    for (final f in homeFoods) {
+      expect(f.nameEn, isNotEmpty, reason: f.nameTr);
+      expect(f.nameEs, isNotEmpty, reason: f.nameTr);
+    }
+    for (final sp in homeSoaps) {
+      expect(sp.nameEn, isNotEmpty, reason: sp.nameTr);
+      expect(sp.nameEs, isNotEmpty, reason: sp.nameTr);
+    }
+    final apple = homeFoods.firstWhere((f) => f.id == 'red_apple');
+    expect(apple.nameFor('tr'), 'Elma');
+    expect(apple.nameFor('en'), 'Apple');
+    expect(apple.nameFor('es'), 'Manzana');
+    expect(apple.nameFor('de'), 'Elma');
+  });
+
   group('HomeDecorProvider', () {
     test('Ev Dekoratörü sayacı: yalnız satın alınanlar, etkinlik ödülü sayılmaz', () async {
       final p = HomeDecorProvider();

@@ -97,7 +97,7 @@ Taslaklar (birebir hedef görünüm):
   - Pozlar: mutfak (yerken/tok mutlu, <50 somurtkan, değilse bekleyen), banyo (temiz mutlu), yatak (uyurken bekleyen, dolunca mutlu), salon (oynayınca mutlu).
   - Lisans: Ayarlar → "Açık kaynak lisansları" (Flutter `LicensePage`), Fluent Emoji MIT metni `lib/data/third_party_licenses.dart`.
   - Testler: `test/home_room_screen_test.dart` (besle, yıka, uyut, dekor).
-  - **Ertelenenler (düzeltme listesine):** yeni Zibo pozları (küvette, uyuyan, yiyen — kullanıcı), ses efektleri, ödüllü reklamla +1 yemek, rozetler, analytics olayları, yemek/eşya adlarının EN/ES çevirisi.
+  - **Ertelenenler (düzeltme listesine):** yeni Zibo pozları, ses efektleri, ödüllü reklamla +1 yemek, rozetler, analytics olayları, yemek/eşya adlarının EN/ES çevirisi — HEPSİ ✅ 2026-11-06 (`docs/zibo_world.md` düzeltme listesi 1–3).
 
 ## Faz 5 — Dekor mağazası
 - Oda başına kategoriler (mutfak 13, banyo 14 — sabun şekli dahil, yatak 12, salon 13; toplam 52 kategori, 279 eşya), modeller ve renkler `home_catalog.dart`'tan.

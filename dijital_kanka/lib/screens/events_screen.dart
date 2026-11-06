@@ -120,7 +120,7 @@ Future<void> openEventBox(BuildContext context, ZiboEvent event, int day) async 
             const Text('🎁', style: TextStyle(fontSize: 56)),
           const SizedBox(height: 10),
           if (reward.zc > 0) Text(l10n.eventsRewardZc(reward.zc), style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 18)),
-          if (item != null) Text(l10n.eventsRewardItem(item.$3.nameTr), textAlign: TextAlign.center),
+          if (item != null) Text(l10n.eventsRewardItem(item.$3.nameFor(Localizations.localeOf(context).languageCode)), textAlign: TextAlign.center),
           if (reward.zc <= 0 && item == null) Text(l10n.eventsRewardEmpty, textAlign: TextAlign.center),
         ],
       ),

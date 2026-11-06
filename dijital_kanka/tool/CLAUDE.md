@@ -87,3 +87,7 @@ ile çek.
 ## Bakım sesleri — Python
 
 `generate_care_sounds.py`: Zibo'nun Evi bakım seslerini numpy/scipy ile sentezler (lisanssız) → `assets/sounds/care_*.wav` (44.1 kHz mono 16-bit, tepe ~0.3 — mevcut UI sesleriyle aynı yükseklik). Bir ses beğenilmezse ilgili fonksiyonu ayarla, betiği yeniden çalıştır. `python tool/generate_care_sounds.py`.
+
+## Ev kataloğu — Python
+
+`generate_home_catalog.py`: `docs/home_studio/index.html` → `lib/data/home_catalog.dart` (elle düzenlenmez). EN/ES adlar `home_catalog_i18n.json` (TR ad → [EN, ES]); yeni TR ad eklenince JSON'a da ekle, yoksa betik eksikleri yazıp durur.

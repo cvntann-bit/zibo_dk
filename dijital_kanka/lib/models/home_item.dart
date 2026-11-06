@@ -25,11 +25,16 @@ enum HomeRoom {
 enum HomeCategoryKind { swatch, wallpaper, floor, tile, furniture, blanket, cloth }
 
 class HomeItem {
-  const HomeItem(this.id, this.nameTr, {this.style, this.color, this.color2, required this.price, this.eventOnly = false});
+  const HomeItem(this.id, this.nameTr, {this.nameEn = '', this.nameEs = '', this.style, this.color, this.color2, required this.price, this.eventOnly = false});
 
   /// Kategori içinde kalıcı kimlik — satın alımlar bununla saklanır.
   final String id;
   final String nameTr;
+  final String nameEn;
+  final String nameEs;
+
+  /// Dile göre ad (EN/ES boşsa TR) — `tool/home_catalog_i18n.json`.
+  String nameFor(String languageCode) => homeName(languageCode, nameTr, nameEn, nameEs);
 
   /// Çizim türü ya da desen adı; `'none'` = boş yuva ("Yok").
   final String? style;
@@ -47,10 +52,15 @@ class HomeItem {
 }
 
 class HomeCategory {
-  const HomeCategory(this.id, this.nameTr, this.kind, this.items);
+  const HomeCategory(this.id, this.nameTr, this.kind, this.items, {this.nameEn = '', this.nameEs = ''});
 
   final String id;
   final String nameTr;
+  final String nameEn;
+  final String nameEs;
+
+  /// Dile göre ad (EN/ES boşsa TR) — `tool/home_catalog_i18n.json`.
+  String nameFor(String languageCode) => homeName(languageCode, nameTr, nameEn, nameEs);
   final HomeCategoryKind kind;
   final List<HomeItem> items;
 
@@ -81,11 +91,16 @@ class HomeRoomDef {
 }
 
 class HomeFood {
-  const HomeFood(this.id, this.nameTr, {required this.hunger, required this.price, required this.group});
+  const HomeFood(this.id, this.nameTr, {this.nameEn = '', this.nameEs = '', required this.hunger, required this.price, required this.group});
 
   /// Fluent görselleri için dosya adı da bu (`simit`/`churros` kodla çizilir).
   final String id;
   final String nameTr;
+  final String nameEn;
+  final String nameEs;
+
+  /// Dile göre ad (EN/ES boşsa TR) — `tool/home_catalog_i18n.json`.
+  String nameFor(String languageCode) => homeName(languageCode, nameTr, nameEn, nameEs);
 
   /// Tokluğa eklenen puan (0–100 ölçeği).
   final int hunger;
@@ -96,10 +111,15 @@ class HomeFood {
 }
 
 class HomeSoap {
-  const HomeSoap(this.id, this.nameTr, {this.foam, this.foamStroke, this.bar, this.barStroke, required this.price});
+  const HomeSoap(this.id, this.nameTr, {this.nameEn = '', this.nameEs = '', this.foam, this.foamStroke, this.bar, this.barStroke, required this.price});
 
   final String id;
   final String nameTr;
+  final String nameEn;
+  final String nameEs;
+
+  /// Dile göre ad (EN/ES boşsa TR) — `tool/home_catalog_i18n.json`.
+  String nameFor(String languageCode) => homeName(languageCode, nameTr, nameEn, nameEs);
 
   /// Köpük rengi; `null` = gökkuşağı (karışık renk).
   final int? foam;
@@ -110,3 +130,10 @@ class HomeSoap {
 
   bool get isRainbow => foam == null;
 }
+
+/// Katalog adlarının dile göre seçimi: EN/ES boşsa Türkçe ad.
+String homeName(String languageCode, String tr, String en, String es) => switch (languageCode) {
+  'en' when en.isNotEmpty => en,
+  'es' when es.isNotEmpty => es,
+  _ => tr,
+};

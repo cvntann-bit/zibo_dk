@@ -3,12 +3,16 @@
 Kaynak: taslak sayfa (`docs/home_studio/index.html`) — odalar, kategoriler, eşyalar, yemekler, sabunlar.
 Taslak değişince bu betik yeniden çalıştırılır; Dart dosyası elle düzenlenmez.
 
+EN/ES adlar `tool/home_catalog_i18n.json`'dan gelir (TR ad → [EN, ES]); yeni bir TR ad
+eklenince oraya da eklenmeli, yoksa betik hangi adların eksik olduğunu yazıp durur.
+
 Kullanım (dijital_kanka/ içinde): python tool/generate_home_catalog.py
 """
 import json
 import re
 
 SRC = "docs/home_studio/index.html"
+I18N = "tool/home_catalog_i18n.json"
 OUT = "lib/data/home_catalog.dart"
 
 # Faz 0 kararı (2026-11-02): sabun türü bir kez alınır, sabunun ŞEKLİ banyo dekor ürünüdür.
@@ -66,6 +70,19 @@ for (rid, cid), extra in EVENT_ITEMS.items():
 rooms["banyo"]["eq"]["sabun"] = "klasik"
 
 
+I18N_NAMES = json.load(open(I18N, encoding="utf8"))
+missing = set()
+
+
+def tr(name):
+    """Ad argümanından sonra eklenen EN/ES adlar."""
+    pair = I18N_NAMES.get(name)
+    if pair is None:
+        missing.add(name)
+        return ""
+    return f", nameEn: {s(pair[0])}, nameEs: {s(pair[1])}"
+
+
 def color(c):
     return "null" if not c or c == "rainbow" else "0xFF" + c.lstrip("#").upper()
 
@@ -77,22 +94,21 @@ def s(text):
 def item(kind, it):
     if kind == "swatch":
         iid, name, col, price = it
-        return f"HomeItem({s(iid)}, {s(name)}, color: {color(col)}, price: {price})"
+        return f"HomeItem({s(iid)}, {s(name)}{tr(name)}, color: {color(col)}, price: {price})"
     if kind == "wall":
         iid, name, price = it
-        return f"HomeItem({s(iid)}, {s(name)}, style: {s(iid)}, price: {price})"
+        return f"HomeItem({s(iid)}, {s(name)}{tr(name)}, style: {s(iid)}, price: {price})"
     if kind == "draw":
         iid, name, style, col, price = it[:5]
         event = ", eventOnly: true" if it[5:] == ["event"] else ""
-        return f"HomeItem({s(iid)}, {s(name)}, style: {s(style)}, color: {color(col)}, price: {price}{event})"
+        return f"HomeItem({s(iid)}, {s(name)}{tr(name)}, style: {s(style)}, color: {color(col)}, price: {price}{event})"
     iid, name, style, col, col2, price = it
-    return f"HomeItem({s(iid)}, {s(name)}, style: {s(style)}, color: {color(col)}, color2: {color(col2)}, price: {price})"
+    return f"HomeItem({s(iid)}, {s(name)}{tr(name)}, style: {s(style)}, color: {color(col)}, color2: {color(col2)}, price: {price})"
 
 
 lines = [
     "// ÜRETİLMİŞ DOSYA — elle düzenleme. Kaynak: docs/home_studio/index.html,",
-    "// üretici: tool/generate_home_catalog.py. Adlar şimdilik yalnız TR (EN/ES Faz 9,",
-    "// docs/zibo_world_roadmap.md).",
+    "// üretici: tool/generate_home_catalog.py. EN/ES adlar: tool/home_catalog_i18n.json.",
     "",
     "import '../models/home_item.dart';",
     "",
@@ -105,7 +121,8 @@ for rid, room in rooms.items():
     lines.append("    defaults: {" + ", ".join(f"{s(k)}: {s(v)}" for k, v in room["eq"].items()) + "},")
     lines.append("    categories: [")
     for cid, cat in room["cat"].items():
-        lines.append(f"      HomeCategory({s(cid)}, {s(cat['n'] if 'n' in cat else cat['name'])}, HomeCategoryKind.{KIND_DART[cat['k'] if 'k' in cat else cat['kind']]}, [")
+        cname = cat['n'] if 'n' in cat else cat['name']
+        lines.append(f"      HomeCategory({s(cid)}, {s(cname)}{tr(cname)}, HomeCategoryKind.{KIND_DART[cat['k'] if 'k' in cat else cat['kind']]}, [")
         for it in cat["items"]:
             lines.append(f"        {item(cat['k'] if 'k' in cat else cat['kind'], it)},")
         lines.append("      ]),")
@@ -118,15 +135,17 @@ lines.append("")
 lines.append("/// Ücretsiz olanlar (fiyat 0) günlük ücretsiz yemek hakkından düşer.")
 lines.append("const homeFoods = <HomeFood>[")
 for fid, name, hunger, price, group in foods:
-    lines.append(f"  HomeFood({s(fid)}, {s(name)}, hunger: {hunger}, price: {price}, group: {s(group)}),")
+    lines.append(f"  HomeFood({s(fid)}, {s(name)}{tr(name)}, hunger: {hunger}, price: {price}, group: {s(group)}),")
 lines.append("];")
 lines.append("")
 lines.append("/// Sabun türü köpük rengini belirler, bir kez alınır. `foam` null = gökkuşağı.")
 lines.append("const homeSoaps = <HomeSoap>[")
 for sid, name, foam, stroke, bar, barStroke, price in soaps:
-    lines.append(f"  HomeSoap({s(sid)}, {s(name)}, foam: {color(foam)}, foamStroke: {color(stroke)}, bar: {color(bar)}, barStroke: {color(barStroke)}, price: {price}),")
+    lines.append(f"  HomeSoap({s(sid)}, {s(name)}{tr(name)}, foam: {color(foam)}, foamStroke: {color(stroke)}, bar: {color(bar)}, barStroke: {color(barStroke)}, price: {price}),")
 lines.append("];")
 lines.append("")
+if missing:
+    raise SystemExit("Çevirisi eksik adlar (tool/home_catalog_i18n.json): " + ", ".join(sorted(missing)))
 open(OUT, "w", encoding="utf8", newline="\n").write("\n".join(lines))
 n_items = sum(len(c["items"]) for r in rooms.values() for c in r["cat"].values())
 print(f"{len(rooms)} oda, {sum(len(r['cat']) for r in rooms.values())} kategori, {n_items} eşya, {len(foods)} yemek, {len(soaps)} sabun")

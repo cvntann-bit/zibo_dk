@@ -1154,6 +1154,7 @@ class _HomeRoomScreenState extends State<HomeRoomScreen> with TickerProviderStat
   );
 
   List<Widget> _careRows(AppLocalizations l10n, HomeNeedsProvider needs, HomeDecorProvider decor, int v) {
+    final lang = Localizations.localeOf(context).languageCode;
     final colorScheme = Theme.of(context).colorScheme;
     switch (_room) {
       case HomeRoom.kitchen:
@@ -1183,10 +1184,10 @@ class _HomeRoomScreenState extends State<HomeRoomScreen> with TickerProviderStat
                       ? l10n.careFeedAdTag
                       : l10n.careFeedTomorrow;
                   return _Tile(
-                    semanticLabel: '${f.nameTr}, $tag',
+                    semanticLabel: '${f.nameFor(lang)}, $tag',
                     onTap: () => viaAd ? _adFood(f) : _chooseFood(f),
                     image: _FoodImage(id: f.id),
-                    title: f.nameTr,
+                    title: f.nameFor(lang),
                     tag: tag,
                     tagColor: price > 0 ? kGoldDeep : colorScheme.primary,
                   );
@@ -1261,7 +1262,7 @@ class _HomeRoomScreenState extends State<HomeRoomScreen> with TickerProviderStat
                   child: sp.foam == null ? const Text('🌈', style: TextStyle(fontSize: 9)) : null,
                 ),
                 label: Text(
-                  decor.isSoapOwned(sp.id) ? sp.nameTr : '${sp.nameTr} · ${config.priceFor('soap:${sp.id}', sp.price, tier)} ZC',
+                  decor.isSoapOwned(sp.id) ? sp.nameFor(lang) : '${sp.nameFor(lang)} · ${config.priceFor('soap:${sp.id}', sp.price, tier)} ZC',
                 ),
                 selected: decor.selectedSoap == sp.id,
                 onSelected: (_) => _buyOrSelectSoap(sp),
@@ -1319,6 +1320,7 @@ class _HomeRoomScreenState extends State<HomeRoomScreen> with TickerProviderStat
   }
 
   List<Widget> _decorRows(AppLocalizations l10n, HomeDecorProvider decor, HomeRoomDef def, Map<String, HomeItem> items) {
+    final lang = Localizations.localeOf(context).languageCode;
     final config = context.watch<HomeConfigProvider>().config;
     final sub = context.watch<SubscriptionProvider>();
     final now = DateTime.now();
@@ -1327,7 +1329,7 @@ class _HomeRoomScreenState extends State<HomeRoomScreen> with TickerProviderStat
       _chips([
         for (final c in def.categories)
           (
-            _preview.containsKey(c.id) && !decor.isOwned(_room, c.id, _preview[c.id]!) ? '${c.nameTr} •' : c.nameTr,
+            _preview.containsKey(c.id) && !decor.isOwned(_room, c.id, _preview[c.id]!) ? '${c.nameFor(lang)} •' : c.nameFor(lang),
             c.id == _category,
             () => setState(() => _category = c.id),
           ),
@@ -1570,6 +1572,7 @@ class _ShopTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final lang = Localizations.localeOf(context).languageCode;
     final l10n = AppLocalizations.of(context)!;
     final colorScheme = Theme.of(context).colorScheme;
     final rarity = homeItemRarity(item.price);
@@ -1583,7 +1586,7 @@ class _ShopTile extends StatelessWidget {
     return Semantics(
       button: true,
       selected: selected,
-      label: '${item.nameTr}, $tag',
+      label: '${item.nameFor(lang)}, $tag',
       excludeSemantics: true,
       child: Material(
         type: MaterialType.transparency,
@@ -1612,7 +1615,7 @@ class _ShopTile extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 2),
-                Text(item.nameTr, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 10)),
+                Text(item.nameFor(lang), maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 10)),
                 Text(
                   tag,
                   maxLines: 1,
