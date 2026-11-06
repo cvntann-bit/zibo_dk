@@ -1,6 +1,7 @@
 import '../models/badge_definition.dart';
 import 'collection_badges.dart';
 import 'hidden_badges.dart';
+import 'home_badges.dart';
 import 'loyalty_badges.dart';
 import 'module_mastery_badges.dart';
 import 'social_badges.dart';
@@ -58,5 +59,6 @@ const allBadges = <ZiboBadgeDefinition>[
   ...collectionBadges,
   ...loyaltyBadges,
   ...socialBadges,
+  ...homeBadges,
   ...hiddenBadges,
 ];

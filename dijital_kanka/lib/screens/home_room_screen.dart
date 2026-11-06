@@ -367,6 +367,7 @@ class _HomeRoomScreenState extends State<HomeRoomScreen> with TickerProviderStat
     final needs = context.read<HomeNeedsProvider>();
     final food = homeFoods.firstWhere((f) => f.id == _plateFood);
     needs.add(HomeNeed.hunger, food.hunger.toDouble());
+    needs.recordFeed();
     _fx.eat(_mouth);
     _sound(CareSound.chomp);
     setState(() {
@@ -406,7 +407,9 @@ class _HomeRoomScreenState extends State<HomeRoomScreen> with TickerProviderStat
 
   void _towel() {
     _fx.towel();
-    context.read<HomeNeedsProvider>().add(HomeNeed.hygiene, 100);
+    context.read<HomeNeedsProvider>()
+      ..add(HomeNeed.hygiene, 100)
+      ..recordBath();
     setState(() => _phase = _BathPhase.clean);
     _sound(CareSound.sparkle);
     _wake();

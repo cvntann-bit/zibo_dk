@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import '../data/collection_badges.dart';
 import '../data/consistency_badges.dart';
 import '../data/hidden_badges.dart';
+import '../data/home_badges.dart';
 import '../data/loyalty_badges.dart';
 import '../data/module_mastery_badges.dart';
 import '../data/social_badges.dart';
@@ -196,6 +197,40 @@ class BadgeProvider extends ChangeNotifier {
   /// (uygulamanın açıldığı TOPLAM benzersiz gün, `currentStreak`'ten
   /// FARKLI — bir gün kaçırılsa da sıfırlanmaz). [daysSinceFirstUsed] —
   /// `ProfileProvider.daysSinceFirstUsed()`.
+  /// Zibo'nun Evi bakım rozetleri — AYNI "tek slot" deseni. Sayaçlar
+  /// `HomeNeedsProvider` (besleme, yıkama, sayılan uyku, bakım günü) ve
+  /// `HomeDecorProvider.purchasedDecorCount`.
+  void reconcileHomeBadges({
+    required int feedCount,
+    required int bathCount,
+    required int sleepCount,
+    required int careDays,
+    required int decorCount,
+  }) {
+    ZiboBadgeDefinition? lastNewlyEarned;
+    for (final badge in homeBadges) {
+      if (_earned.containsKey(badge.id)) continue;
+      final meetsRequirement = switch (badge.id) {
+        'home_first_bite' => feedCount >= 1,
+        'home_chef' => feedCount >= 50,
+        'home_squeaky_clean' => bathCount >= 20,
+        'home_sleepyhead' => sleepCount >= 15,
+        'home_caretaker' => careDays >= 7,
+        'home_decorator' => decorCount >= 10,
+        _ => false,
+      };
+      if (meetsRequirement) {
+        _earned[badge.id] = BadgeRecord(earnedAt: DateTime.now(), claimed: false);
+        lastNewlyEarned = badge;
+      }
+    }
+    if (lastNewlyEarned != null) {
+      notifyListeners();
+      unawaited(_save());
+      pendingBadgePopup.value = lastNewlyEarned;
+    }
+  }
+
   void reconcileLoyaltyBadges({
     required int totalDaysOpened,
     required int daysSinceFirstUsed,

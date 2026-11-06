@@ -3159,4 +3159,48 @@ class AppLocalizationsEs extends AppLocalizations {
   String careFeedAdBody(int left) {
     return 'Mira un anuncio corto y esta comida será gratis para Zibo. Quedan hoy: $left';
   }
+
+  @override
+  String get badgeCategoryHome => 'Insignias de la Casa de Zibo';
+
+  @override
+  String get badgeNameHomeFirstBite => 'Primer Bocado';
+
+  @override
+  String get badgeRequirementHomeFirstBite =>
+      'Alimenta a Zibo por primera vez en la Casa de Zibo';
+
+  @override
+  String get badgeNameHomeChef => 'Chef Zibo';
+
+  @override
+  String get badgeRequirementHomeChef => 'Alimenta a Zibo un total de 50 veces';
+
+  @override
+  String get badgeNameHomeSqueakyClean => 'Limpísimo';
+
+  @override
+  String get badgeRequirementHomeSqueakyClean =>
+      'Baña a Zibo y sécalo con la toalla un total de 20 veces';
+
+  @override
+  String get badgeNameHomeSleepyhead => 'Dormilón';
+
+  @override
+  String get badgeRequirementHomeSleepyhead =>
+      'Acuesta a Zibo y déjalo descansar un total de 15 veces (al menos 30 % de energía)';
+
+  @override
+  String get badgeNameHomeCaretaker => 'Cuidador Cariñoso';
+
+  @override
+  String get badgeRequirementHomeCaretaker =>
+      'Cuida de Zibo en 7 días distintos (alimentar, bañar o acostar)';
+
+  @override
+  String get badgeNameHomeDecorator => 'Decorador del Hogar';
+
+  @override
+  String get badgeRequirementHomeDecorator =>
+      'Compra 10 objetos de decoración para la Casa de Zibo';
 }

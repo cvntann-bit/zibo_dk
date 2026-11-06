@@ -3143,4 +3143,48 @@ class AppLocalizationsEn extends AppLocalizations {
   String careFeedAdBody(int left) {
     return 'Watch a short ad and this meal is free for Zibo. Left today: $left';
   }
+
+  @override
+  String get badgeCategoryHome => 'Zibo\'s Home Badges';
+
+  @override
+  String get badgeNameHomeFirstBite => 'First Bite';
+
+  @override
+  String get badgeRequirementHomeFirstBite =>
+      'Feed Zibo for the first time in Zibo\'s Home';
+
+  @override
+  String get badgeNameHomeChef => 'Chef Zibo';
+
+  @override
+  String get badgeRequirementHomeChef => 'Feed Zibo a total of 50 times';
+
+  @override
+  String get badgeNameHomeSqueakyClean => 'Squeaky Clean';
+
+  @override
+  String get badgeRequirementHomeSqueakyClean =>
+      'Bathe Zibo and towel him dry a total of 20 times';
+
+  @override
+  String get badgeNameHomeSleepyhead => 'Sleepyhead';
+
+  @override
+  String get badgeRequirementHomeSleepyhead =>
+      'Put Zibo to bed and let him rest a total of 15 times (at least 30% energy)';
+
+  @override
+  String get badgeNameHomeCaretaker => 'Loving Caretaker';
+
+  @override
+  String get badgeRequirementHomeCaretaker =>
+      'Take care of Zibo on 7 different days (feed, bathe or put to bed)';
+
+  @override
+  String get badgeNameHomeDecorator => 'Home Decorator';
+
+  @override
+  String get badgeRequirementHomeDecorator =>
+      'Buy 10 decor items for Zibo\'s Home';
 }

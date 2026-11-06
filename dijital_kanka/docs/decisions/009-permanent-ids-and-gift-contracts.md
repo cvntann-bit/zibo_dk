@@ -9,7 +9,7 @@ kullanılıyor.
 - **Kostüm ID'leri** (`lib/data/costumes.dart`): `zibo_hippi`, `zibo_sporcu`, `zibo_asker`, `zibo_hoca`, `zibo_punk`, `zibo_rapci`, `zibo_gentleman`, `zibo_samurai`, `zibo_gladyator`, `zibo_korsan`, `zibo_cyborg`, `zibo_astronot`, `zibo_king`, `zibo_zombi`, `zibo_altin`, `zibo_elmas` — DEĞİŞMEZ. Fiyata göre sıralı tanımlı (Mağaza ızgarası listeyi olduğu gibi dolaşır).
 - **`founder_badge`** = `costumes.dart`'ta OLMAYAN, satılamayan pseudo-kostüm ID. `CostumeProvider.markOwned('founder_badge')` çalışır (provider satın-alma agnostik). `ownedRealCostumeCount` / `ownsAllCostumes` bunu BİLEREK DIŞLAR (`every((c) => isOwned(c.id))`, sayım DEĞİL — sayım `founder_badge` yüzünden yanlış pozitif verir).
 - **Tema ID'leri** (`lib/data/app_themes.dart`): 22 tema. `pickRandomUnownedStandardTheme` yalnızca `!isPremiumAnimated` olanlardan seçer.
-- **Rozet ID'leri** (`lib/data/*_badges.dart`): 24 rozet, 6 kategori. `BadgeCategory` enum: `consistency`/`moduleMastery`/`collection`/`loyalty`/`social`/`hidden`. `allBadges` (`consistency_badges.dart`'ta) tüm kategori listelerini birleştirir.
+- **Rozet ID'leri** (`lib/data/*_badges.dart`): 30 rozet, 7 kategori. `BadgeCategory` enum: `consistency`/`moduleMastery`/`collection`/`loyalty`/`social`/`home`/`hidden` (`home` 2026-11-06: `home_first_bite`, `home_chef`, `home_squeaky_clean`, `home_sleepyhead`, `home_caretaker`, `home_decorator`). `allBadges` (`consistency_badges.dart`'ta) tüm kategori listelerini birleştirir.
 - **`badge_gift_rewards.dart`** — `Map<String, BadgeGiftReward>`, 9 rozet → kostüm/tema hediyesi:
   ```
   iron_will→zibo_sporcu · grateful_heart→zibo_hippi · unyielding→zibo_gladyator

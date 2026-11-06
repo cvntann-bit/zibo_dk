@@ -1,6 +1,6 @@
 ---
 name: add-badge
-description: Zibo rozet sistemine yeni bir rozet (veya yeni bir rozet kategorisi) ekler. Kullanıcı "yeni rozet ekle", "şu koşulu sağlayınca rozet versin", "yeni rozet kategorisi" dediğinde kullan. Rozet sistemi 6 kategorili, otomatik tetikleme + konfeti kutlaması + ZC ödülü mimarisine sahip.
+description: Zibo rozet sistemine yeni bir rozet (veya yeni bir rozet kategorisi) ekler. Kullanıcı "yeni rozet ekle", "şu koşulu sağlayınca rozet versin", "yeni rozet kategorisi" dediğinde kullan. Rozet sistemi 7 kategorili, otomatik tetikleme + konfeti kutlaması + ZC ödülü mimarisine sahip.
 ---
 
 # Yeni rozet ekleme prosedürü
@@ -9,7 +9,8 @@ Tam bağlam: `dijital_kanka/docs/history/badge-system.md`. Mimari özet: `dijita
 
 ## Mevcut yapı
 
-- 6 kategori: `BadgeCategory` enum (`consistency`/`moduleMastery`/`collection`/`loyalty`/`social`/`hidden`).
+- 7 kategori: `BadgeCategory` enum (`consistency`/`moduleMastery`/`collection`/`loyalty`/`social`/`home`/`hidden`). `home` = Zibo'nun Evi (sayaçlar `HomeNeedsProvider`/`HomeDecorProvider`, koordinatörde isteğe bağlı parametre).
+- Yuvarlak madalyon görseli beyaz zeminde ve çevresinde parçacıklar varsa: `python tool/cut_round_badges.py <girdi> <çıktı>` (yalnız daireyi keser, 512 px WebP).
 - Her kategori: `lib/data/<kategori>_badges.dart` — `List<ZiboBadgeDefinition>`.
 - `allBadges` (`lib/data/consistency_badges.dart`'ta) tüm kategori listelerini birleştirir.
 - `BadgeProvider.reconcile<Kategori>Badges({...sayaçlar})` — her kategorinin kendi eşik kontrolü, "tek slot, en son yeni kazanılan `pendingBadgePopup`'a yazılır".

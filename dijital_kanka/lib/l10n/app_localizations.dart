@@ -5577,6 +5577,84 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'Kısa bir reklam izle, bu yemek Zibo\'ya ücretsiz gelsin. Bugün kalan hak: {left}'**
   String careFeedAdBody(int left);
+
+  /// Rozet galerisinde ev bakım rozetleri bölüm başlığı
+  ///
+  /// In tr, this message translates to:
+  /// **'Zibo\'nun Evi Rozetleri'**
+  String get badgeCategoryHome;
+
+  /// home_first_bite rozetinin adı
+  ///
+  /// In tr, this message translates to:
+  /// **'İlk Lokma'**
+  String get badgeNameHomeFirstBite;
+
+  /// home_first_bite rozetinin kazanma koşulu
+  ///
+  /// In tr, this message translates to:
+  /// **'Zibo\'nun Evi\'nde Zibo\'yu ilk kez besle'**
+  String get badgeRequirementHomeFirstBite;
+
+  /// home_chef rozetinin adı
+  ///
+  /// In tr, this message translates to:
+  /// **'Şef Zibo'**
+  String get badgeNameHomeChef;
+
+  /// home_chef rozetinin kazanma koşulu
+  ///
+  /// In tr, this message translates to:
+  /// **'Zibo\'yu toplam 50 kez besle'**
+  String get badgeRequirementHomeChef;
+
+  /// home_squeaky_clean rozetinin adı
+  ///
+  /// In tr, this message translates to:
+  /// **'Mis Gibi'**
+  String get badgeNameHomeSqueakyClean;
+
+  /// home_squeaky_clean rozetinin kazanma koşulu
+  ///
+  /// In tr, this message translates to:
+  /// **'Zibo\'yu toplam 20 kez yıkayıp havluyla kurula'**
+  String get badgeRequirementHomeSqueakyClean;
+
+  /// home_sleepyhead rozetinin adı
+  ///
+  /// In tr, this message translates to:
+  /// **'Uykucu'**
+  String get badgeNameHomeSleepyhead;
+
+  /// home_sleepyhead rozetinin kazanma koşulu
+  ///
+  /// In tr, this message translates to:
+  /// **'Zibo\'yu toplam 15 kez uyutup dinlendir (en az %30 enerji)'**
+  String get badgeRequirementHomeSleepyhead;
+
+  /// home_caretaker rozetinin adı
+  ///
+  /// In tr, this message translates to:
+  /// **'Sevgi Dolu Bakıcı'**
+  String get badgeNameHomeCaretaker;
+
+  /// home_caretaker rozetinin kazanma koşulu
+  ///
+  /// In tr, this message translates to:
+  /// **'7 farklı günde Zibo\'ya bakım yap (besle, yıka ya da uyut)'**
+  String get badgeRequirementHomeCaretaker;
+
+  /// home_decorator rozetinin adı
+  ///
+  /// In tr, this message translates to:
+  /// **'Ev Dekoratörü'**
+  String get badgeNameHomeDecorator;
+
+  /// home_decorator rozetinin kazanma koşulu
+  ///
+  /// In tr, this message translates to:
+  /// **'Zibo\'nun Evi için 10 dekor eşyası satın al'**
+  String get badgeRequirementHomeDecorator;
 }
 
 class _AppLocalizationsDelegate

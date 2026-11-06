@@ -919,5 +919,18 @@
   "careFeedAdTitle": "One more free meal?",
   "careFeedAdWatch": "Watch ad",
   "careFeedAdFailed": "The ad couldn't load right now, try again a bit later",
-  "careFeedAdBody": "Watch a short ad and this meal is free for Zibo. Left today: {left}"
+  "careFeedAdBody": "Watch a short ad and this meal is free for Zibo. Left today: {left}",
+  "badgeCategoryHome": "Zibo's Home Badges",
+  "badgeNameHomeFirstBite": "First Bite",
+  "badgeRequirementHomeFirstBite": "Feed Zibo for the first time in Zibo's Home",
+  "badgeNameHomeChef": "Chef Zibo",
+  "badgeRequirementHomeChef": "Feed Zibo a total of 50 times",
+  "badgeNameHomeSqueakyClean": "Squeaky Clean",
+  "badgeRequirementHomeSqueakyClean": "Bathe Zibo and towel him dry a total of 20 times",
+  "badgeNameHomeSleepyhead": "Sleepyhead",
+  "badgeRequirementHomeSleepyhead": "Put Zibo to bed and let him rest a total of 15 times (at least 30% energy)",
+  "badgeNameHomeCaretaker": "Loving Caretaker",
+  "badgeRequirementHomeCaretaker": "Take care of Zibo on 7 different days (feed, bathe or put to bed)",
+  "badgeNameHomeDecorator": "Home Decorator",
+  "badgeRequirementHomeDecorator": "Buy 10 decor items for Zibo's Home"
 }

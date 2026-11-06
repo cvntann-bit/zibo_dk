@@ -69,6 +69,9 @@ class HomeDecorProvider extends ChangeNotifier {
     return true;
   }
 
+  /// Satın alınan dekor eşyası sayısı (Ev Dekoratörü rozeti; sabunlar hariç).
+  int get purchasedDecorCount => _owned.length;
+
   void markOwned(HomeRoom room, String category, String itemId) {
     if (_item(room, category, itemId) == null) return;
     _owned.add(key(room, category, itemId));

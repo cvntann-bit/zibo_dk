@@ -49,7 +49,7 @@ no letters, no people.
 | 13 | `world_leaderboard` | Sıralama (1.19.0, kilitli) | `A small round stadium with a three-step podium on top and a big shiny golden trophy.` | ✅ 2026-11-03 |
 | 14 | `world_friends` | Arkadaşlar (1.19.0, kilitli) | `A friendly park pavilion café with a striped awning, two benches, a big round tree and a heart-shaped sign without letters.` | ✅ 2026-11-03 |
 
-## C. Zibo'nun Evi bakım rozetleri (düzeltme listesi madde 2, öneri 2026-11-06 — ONAY BEKLİYOR)
+## C. Zibo'nun Evi bakım rozetleri (düzeltme listesi madde 2) — ✅ onaylandı ve teslim alındı 2026-11-06
 Yeni rozet kategorisi **"Zibo'nun Evi"** (`BadgeCategory.home`). Mevcut rozetlerle aynı stil: yuvarlak parlak madalyon,
 metal çerçeve + taş süsler, ortada tek 3D ikon (Zibo YOK). Beyaz arka plan JPG/PNG, ≥1024×1024; kırpma/şeffaflık bizde.
 Görselde YAZI, HARF, SAYI olmaz (rozet adı uygulamada 3 dilde).
@@ -64,14 +64,14 @@ no numbers, no characters, square 1024x1024.
 
 | # | Dosya | Rozet (TR) | Koşul | ZC | Prompt (stil kilidinden sonra) | Durum |
 |---|---|---|---|---|---|---|
-| 1 | `ev_ilk_lokma_rozet` | İlk Lokma | Zibo'yu ilk kez besle | 15 | `Warm peach-orange rim with amber gems; in the center a shiny red apple with one cute bite taken out, a small green leaf, tiny crumbs and sparkles.` | bekliyor |
-| 2 | `ev_sef_rozet` | Şef Zibo | Zibo'yu 50 kez besle | 40 | `Gold rim with ruby red gems and golden laurel leaves; in the center a puffy white chef hat above a small steaming copper soup pot with a wooden spoon.` | bekliyor |
-| 3 | `ev_mis_gibi_rozet` | Mis Gibi | Zibo'yu 20 kez yıka (havluyla bitir) | 40 | `Light aqua-turquoise rim with pearl gems; in the center a happy yellow rubber duck sitting in a pile of white soap foam with rainbow-tinted bubbles and a pink soap bar.` | bekliyor |
-| 4 | `ev_uykucu_rozet` | Uykucu | Zibo'yu 15 kez uyutup dinlendir | 40 | `Lavender-purple rim with amethyst gems; in the center a fluffy white pillow with a soft blue striped nightcap resting on it, a tiny crescent moon and twinkling stars above.` | bekliyor |
-| 5 | `ev_bakici_rozet` | Sevgi Dolu Bakıcı | 7 farklı günde Zibo'ya bakım yap (besle/yıka/uyut) | 75 | `Rose-gold rim with pink diamond gems; in the center a tiny cozy cottage with a red roof and a big glowing heart-shaped window, small hearts floating around.` | bekliyor |
-| 6 | `ev_dekorator_rozet` | Ev Dekoratörü | Evine 10 dekor eşyası satın al | 50 | `Coral and teal rim with turquoise gems; in the center a small cute armchair next to a paint roller dripping mint paint and a little potted plant.` | bekliyor |
+| 1 | `ev_ilk_lokma_rozet` | İlk Lokma | Zibo'yu ilk kez besle | 15 | `Warm peach-orange rim with amber gems; in the center a shiny red apple with one cute bite taken out, a small green leaf, tiny crumbs and sparkles.` | ✅ 2026-11-06 |
+| 2 | `ev_sef_rozet` | Şef Zibo | Zibo'yu 50 kez besle | 40 | `Gold rim with ruby red gems and golden laurel leaves; in the center a puffy white chef hat above a small steaming copper soup pot with a wooden spoon.` | ✅ 2026-11-06 |
+| 3 | `ev_mis_gibi_rozet` | Mis Gibi | Zibo'yu 20 kez yıka (havluyla bitir) | 40 | `Light aqua-turquoise rim with pearl gems; in the center a happy yellow rubber duck sitting in a pile of white soap foam with rainbow-tinted bubbles and a pink soap bar.` | ✅ 2026-11-06 |
+| 4 | `ev_uykucu_rozet` | Uykucu | Zibo'yu 15 kez uyutup dinlendir | 40 | `Lavender-purple rim with amethyst gems; in the center a fluffy white pillow with a soft blue striped nightcap resting on it, a tiny crescent moon and twinkling stars above.` | ✅ 2026-11-06 |
+| 5 | `ev_bakici_rozet` | Sevgi Dolu Bakıcı | 7 farklı günde Zibo'ya bakım yap (besle/yıka/uyut) | 75 | `Rose-gold rim with pink diamond gems; in the center a tiny cozy cottage with a red roof and a big glowing heart-shaped window, small hearts floating around.` | ✅ 2026-11-06 |
+| 6 | `ev_dekorator_rozet` | Ev Dekoratörü | Evine 10 dekor eşyası satın al | 50 | `Coral and teal rim with turquoise gems; in the center a small cute armchair next to a paint roller dripping mint paint and a little potted plant.` | ✅ 2026-11-06 |
 
-**Kod notları:** sayaçlar `HomeNeedsProvider`'a (`feedCount`, `bathCount`, `sleepCount`, `careDays`) — uyku yalnız
+**İşleme:** `tool/cut_round_badges.py` (çevredeki parçacıklar atılır, yalnız daire kalır, 512 px WebP). **Kod notları:** sayaçlar `HomeNeedsProvider`'a (`feedCount`, `bathCount`, `sleepCount`, `careDays`) — uyku yalnız
 en az %30 enerji kazanıp uyanınca sayılır (ışığı aç/kapa ile kasılmasın); dekor sayısı `HomeDecorProvider` sahiplik
 listesinden (başlangıç eşyaları hariç). Toplam ödül 260 ZC (tek seferlik; `unit_economics.md`'ye göre zararsız).
 

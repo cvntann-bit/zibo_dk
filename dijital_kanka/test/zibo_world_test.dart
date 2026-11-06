@@ -172,6 +172,32 @@ void main() {
       expect(p.freeFoodsLeft, 3);
     });
 
+    test('rozet sayaçları: besleme/yıkama, bakım günü günde 1, uyku yalnız %30+ enerjiyle', () async {
+      final p = await make();
+      p.recordFeed();
+      p.recordFeed();
+      p.recordBath();
+      expect(p.feedCount, 2);
+      expect(p.bathCount, 1);
+      expect(p.careDays, 1); // aynı gün tek sayılır
+      clock = clock.add(const Duration(hours: 10)); // enerji düşsün
+      // Kısa uyku (ışığı aç/kapa) sayılmaz.
+      p.startSleep();
+      clock = clock.add(const Duration(minutes: 5));
+      p.wake();
+      expect(p.sleepCount, 0);
+      // Uzun uyku sayılır (60 dk = %100 hız).
+      p.startSleep();
+      clock = clock.add(const Duration(minutes: 40));
+      p.refresh();
+      p.wake();
+      expect(p.sleepCount, 1);
+      // Ertesi gün bakım yeni gün sayılır.
+      clock = clock.add(const Duration(days: 1));
+      p.recordFeed();
+      expect(p.careDays, 2);
+    });
+
     test('reklamla +1 yemek: yalnız ücretsiz kullanıcı, hak bitince, günde 2', () async {
       final p = await make();
       expect(p.adFoodsLeft, 0); // ücretsiz hak varken teklif yok

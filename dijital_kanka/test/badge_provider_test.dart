@@ -409,6 +409,68 @@ void main() {
     );
   });
 
+  group('BadgeProvider — reconcileHomeBadges', () {
+    late BadgeProvider provider;
+
+    setUp(() async {
+      provider = BadgeProvider();
+      await Future<void>.delayed(Duration.zero);
+    });
+
+    void reconcile({int feed = 0, int bath = 0, int sleep = 0, int days = 0, int decor = 0}) {
+      provider.reconcileHomeBadges(
+        feedCount: feed,
+        bathCount: bath,
+        sleepCount: sleep,
+        careDays: days,
+        decorCount: decor,
+      );
+    }
+
+    test('Eşik dolmadan hiçbir ev rozeti kazanılmaz', () {
+      reconcile(feed: 0, bath: 19, sleep: 14, days: 6, decor: 9);
+      for (final id in ['home_first_bite', 'home_chef', 'home_squeaky_clean', 'home_sleepyhead', 'home_caretaker', 'home_decorator']) {
+        expect(provider.isEarned(id), isFalse, reason: id);
+      }
+      expect(pendingBadgePopup.value, isNull);
+    });
+
+    test('ilk besleme → İlk Lokma; 50 besleme → Şef Zibo', () {
+      reconcile(feed: 1);
+      expect(provider.isEarned('home_first_bite'), isTrue);
+      expect(provider.isEarned('home_chef'), isFalse);
+      expect(pendingBadgePopup.value?.id, 'home_first_bite');
+      reconcile(feed: 50);
+      expect(provider.isEarned('home_chef'), isTrue);
+      expect(pendingBadgePopup.value?.id, 'home_chef');
+    });
+
+    test('yıkama, uyku, bakım günü ve dekor eşikleri', () {
+      reconcile(bath: 20, sleep: 15, days: 7, decor: 10);
+      expect(provider.isEarned('home_squeaky_clean'), isTrue);
+      expect(provider.isEarned('home_sleepyhead'), isTrue);
+      expect(provider.isEarned('home_caretaker'), isTrue);
+      expect(provider.isEarned('home_decorator'), isTrue);
+      expect(provider.isEarned('home_first_bite'), isFalse);
+    });
+
+    test('Zaten kazanılmış ev rozeti tekrar bildirmez', () {
+      reconcile(feed: 1);
+      pendingBadgePopup.value = null;
+      reconcile(feed: 1);
+      expect(pendingBadgePopup.value, isNull);
+    });
+
+    test('Kalıcılık: kazanılan ev rozeti yeniden başlatmada hatırlanır', () async {
+      reconcile(decor: 10);
+      await provider.markClaimed('home_decorator');
+      final reloaded = BadgeProvider();
+      await Future<void>.delayed(Duration.zero);
+      expect(reloaded.isEarned('home_decorator'), isTrue);
+      expect(reloaded.isClaimed('home_decorator'), isTrue);
+    });
+  });
+
   group('BadgeProvider — reconcileSocialBadges', () {
     late BadgeProvider provider;
 

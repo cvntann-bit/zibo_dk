@@ -6,6 +6,8 @@ import '../providers/dream_journal_provider.dart';
 import '../providers/goals_provider.dart';
 import '../providers/gratitude_provider.dart';
 import '../providers/hidden_badge_provider.dart';
+import '../providers/home_decor_provider.dart';
+import '../providers/home_needs_provider.dart';
 import '../providers/manifest_provider.dart';
 import '../providers/money_provider.dart';
 import '../providers/mood_provider.dart';
@@ -88,6 +90,8 @@ class BadgeCoordinator {
     required this.profile,
     required this.referral,
     required this.hiddenBadge,
+    this.homeNeeds,
+    this.homeDecor,
   }) {
     badges.addListener(_reconcile);
     goals.addListener(_reconcile);
@@ -103,6 +107,8 @@ class BadgeCoordinator {
     profile.addListener(_reconcile);
     referral.addListener(_reconcile);
     hiddenBadge.addListener(_reconcile);
+    homeNeeds?.addListener(_reconcile);
+    homeDecor?.addListener(_reconcile);
     _reconcile();
   }
 
@@ -120,6 +126,11 @@ class BadgeCoordinator {
   final ProfileProvider profile;
   final ReferralProvider referral;
   final HiddenBadgeProvider hiddenBadge;
+
+  /// Zibo'nun Evi rozetleri (2026-11-06). İsteğe bağlı: verilmezse ev
+  /// rozetleri kontrol edilmez.
+  final HomeNeedsProvider? homeNeeds;
+  final HomeDecorProvider? homeDecor;
 
   void _reconcile() {
     // Bkz. yukarıdaki "2026 bug düzeltmesi" notu — `badges` henüz kendi
@@ -154,6 +165,16 @@ class BadgeCoordinator {
       hasSharedAtLeastOnce: false,
       successfulReferralCount: referral.successfulReferralCount,
     );
+    final needs = homeNeeds, decor = homeDecor;
+    if (needs != null && needs.isReady && decor != null && decor.isReady) {
+      badges.reconcileHomeBadges(
+        feedCount: needs.feedCount,
+        bathCount: needs.bathCount,
+        sleepCount: needs.sleepCount,
+        careDays: needs.careDays,
+        decorCount: decor.purchasedDecorCount,
+      );
+    }
     badges.reconcileHiddenBadges(
       nightOwlDaysCount: hiddenBadge.nightOwlDaysCount,
       earlyBirdDaysCount: hiddenBadge.earlyBirdDaysCount,
@@ -183,5 +204,7 @@ class BadgeCoordinator {
     profile.removeListener(_reconcile);
     referral.removeListener(_reconcile);
     hiddenBadge.removeListener(_reconcile);
+    homeNeeds?.removeListener(_reconcile);
+    homeDecor?.removeListener(_reconcile);
   }
 }

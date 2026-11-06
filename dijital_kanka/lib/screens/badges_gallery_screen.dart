@@ -75,6 +75,8 @@ class _BadgesGalleryScreenState extends State<BadgesGalleryScreen> {
         return l10n.badgeCategoryLoyalty;
       case BadgeCategory.social:
         return l10n.badgeCategorySocial;
+      case BadgeCategory.home:
+        return l10n.badgeCategoryHome;
       case BadgeCategory.hidden:
         return l10n.badgeCategoryHidden;
     }

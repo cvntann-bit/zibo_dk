@@ -4,7 +4,7 @@ import '../l10n/app_localizations.dart';
 /// Altısı da dolu: [consistency] + [moduleMastery] + [collection] +
 /// [loyalty] + [social] + [hidden] (Gizli/Eğlenceli — bkz. altta
 /// [ZiboBadgeDefinition.isHidden]).
-enum BadgeCategory { consistency, moduleMastery, collection, loyalty, social, hidden }
+enum BadgeCategory { consistency, moduleMastery, collection, loyalty, social, home, hidden }
 
 /// Tek bir rozetin SABİT tanımı (id, kategori, görsel, ödül) — HANGİ
 /// KOŞULDA kazanıldığı BURADA DEĞİL, `BadgeProvider`'ın kategoriye özel
@@ -107,6 +107,18 @@ class ZiboBadgeDefinition {
         return l10n.badgeNameEarlyBird;
       case 'balance_master':
         return l10n.badgeNameBalanceMaster;
+      case 'home_first_bite':
+        return l10n.badgeNameHomeFirstBite;
+      case 'home_chef':
+        return l10n.badgeNameHomeChef;
+      case 'home_squeaky_clean':
+        return l10n.badgeNameHomeSqueakyClean;
+      case 'home_sleepyhead':
+        return l10n.badgeNameHomeSleepyhead;
+      case 'home_caretaker':
+        return l10n.badgeNameHomeCaretaker;
+      case 'home_decorator':
+        return l10n.badgeNameHomeDecorator;
       default:
         return id;
     }
@@ -162,6 +174,18 @@ class ZiboBadgeDefinition {
         return l10n.badgeRequirementEarlyBird;
       case 'balance_master':
         return l10n.badgeRequirementBalanceMaster;
+      case 'home_first_bite':
+        return l10n.badgeRequirementHomeFirstBite;
+      case 'home_chef':
+        return l10n.badgeRequirementHomeChef;
+      case 'home_squeaky_clean':
+        return l10n.badgeRequirementHomeSqueakyClean;
+      case 'home_sleepyhead':
+        return l10n.badgeRequirementHomeSleepyhead;
+      case 'home_caretaker':
+        return l10n.badgeRequirementHomeCaretaker;
+      case 'home_decorator':
+        return l10n.badgeRequirementHomeDecorator;
       default:
         return '';
     }

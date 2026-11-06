@@ -4286,5 +4286,57 @@
         "type": "int"
       }
     }
+  },
+  "badgeCategoryHome": "Zibo'nun Evi Rozetleri",
+  "@badgeCategoryHome": {
+    "description": "Rozet galerisinde ev bakım rozetleri bölüm başlığı"
+  },
+  "badgeNameHomeFirstBite": "İlk Lokma",
+  "@badgeNameHomeFirstBite": {
+    "description": "home_first_bite rozetinin adı"
+  },
+  "badgeRequirementHomeFirstBite": "Zibo'nun Evi'nde Zibo'yu ilk kez besle",
+  "@badgeRequirementHomeFirstBite": {
+    "description": "home_first_bite rozetinin kazanma koşulu"
+  },
+  "badgeNameHomeChef": "Şef Zibo",
+  "@badgeNameHomeChef": {
+    "description": "home_chef rozetinin adı"
+  },
+  "badgeRequirementHomeChef": "Zibo'yu toplam 50 kez besle",
+  "@badgeRequirementHomeChef": {
+    "description": "home_chef rozetinin kazanma koşulu"
+  },
+  "badgeNameHomeSqueakyClean": "Mis Gibi",
+  "@badgeNameHomeSqueakyClean": {
+    "description": "home_squeaky_clean rozetinin adı"
+  },
+  "badgeRequirementHomeSqueakyClean": "Zibo'yu toplam 20 kez yıkayıp havluyla kurula",
+  "@badgeRequirementHomeSqueakyClean": {
+    "description": "home_squeaky_clean rozetinin kazanma koşulu"
+  },
+  "badgeNameHomeSleepyhead": "Uykucu",
+  "@badgeNameHomeSleepyhead": {
+    "description": "home_sleepyhead rozetinin adı"
+  },
+  "badgeRequirementHomeSleepyhead": "Zibo'yu toplam 15 kez uyutup dinlendir (en az %30 enerji)",
+  "@badgeRequirementHomeSleepyhead": {
+    "description": "home_sleepyhead rozetinin kazanma koşulu"
+  },
+  "badgeNameHomeCaretaker": "Sevgi Dolu Bakıcı",
+  "@badgeNameHomeCaretaker": {
+    "description": "home_caretaker rozetinin adı"
+  },
+  "badgeRequirementHomeCaretaker": "7 farklı günde Zibo'ya bakım yap (besle, yıka ya da uyut)",
+  "@badgeRequirementHomeCaretaker": {
+    "description": "home_caretaker rozetinin kazanma koşulu"
+  },
+  "badgeNameHomeDecorator": "Ev Dekoratörü",
+  "@badgeNameHomeDecorator": {
+    "description": "home_decorator rozetinin adı"
+  },
+  "badgeRequirementHomeDecorator": "Zibo'nun Evi için 10 dekor eşyası satın al",
+  "@badgeRequirementHomeDecorator": {
+    "description": "home_decorator rozetinin kazanma koşulu"
   }
 }

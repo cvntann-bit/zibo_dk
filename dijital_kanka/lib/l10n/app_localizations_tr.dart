@@ -3128,4 +3128,48 @@ class AppLocalizationsTr extends AppLocalizations {
   String careFeedAdBody(int left) {
     return 'Kısa bir reklam izle, bu yemek Zibo\'ya ücretsiz gelsin. Bugün kalan hak: $left';
   }
+
+  @override
+  String get badgeCategoryHome => 'Zibo\'nun Evi Rozetleri';
+
+  @override
+  String get badgeNameHomeFirstBite => 'İlk Lokma';
+
+  @override
+  String get badgeRequirementHomeFirstBite =>
+      'Zibo\'nun Evi\'nde Zibo\'yu ilk kez besle';
+
+  @override
+  String get badgeNameHomeChef => 'Şef Zibo';
+
+  @override
+  String get badgeRequirementHomeChef => 'Zibo\'yu toplam 50 kez besle';
+
+  @override
+  String get badgeNameHomeSqueakyClean => 'Mis Gibi';
+
+  @override
+  String get badgeRequirementHomeSqueakyClean =>
+      'Zibo\'yu toplam 20 kez yıkayıp havluyla kurula';
+
+  @override
+  String get badgeNameHomeSleepyhead => 'Uykucu';
+
+  @override
+  String get badgeRequirementHomeSleepyhead =>
+      'Zibo\'yu toplam 15 kez uyutup dinlendir (en az %30 enerji)';
+
+  @override
+  String get badgeNameHomeCaretaker => 'Sevgi Dolu Bakıcı';
+
+  @override
+  String get badgeRequirementHomeCaretaker =>
+      '7 farklı günde Zibo\'ya bakım yap (besle, yıka ya da uyut)';
+
+  @override
+  String get badgeNameHomeDecorator => 'Ev Dekoratörü';
+
+  @override
+  String get badgeRequirementHomeDecorator =>
+      'Zibo\'nun Evi için 10 dekor eşyası satın al';
 }

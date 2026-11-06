@@ -51,6 +51,21 @@ class HomeNeedsProvider extends ChangeNotifier {
   int _freeFoodsUsed = 0;
   int _adFoodsUsed = 0;
 
+  // Rozet sayaçları (kalıcı, ömür boyu). Uyku yalnız en az [_sleepCountMin]
+  // enerji kazanıp uyanınca sayılır — ışığı aç/kapa ile kasılmasın.
+  int _feedCount = 0;
+  int _bathCount = 0;
+  int _sleepCount = 0;
+  int _careDays = 0;
+  String? _lastCareDay;
+  double _sleepBaseEnergy = _startLevel;
+  static const _sleepCountMin = 30.0;
+
+  int get feedCount => _feedCount;
+  int get bathCount => _bathCount;
+  int get sleepCount => _sleepCount;
+  int get careDays => _careDays;
+
   late final Future<void> _ready;
   bool _isReady = false;
   bool get isReady => _isReady;
@@ -153,11 +168,37 @@ class HomeNeedsProvider extends ChangeNotifier {
     _save();
   }
 
+  /// Bugün ilk bakım ise bakım günü sayacı artar.
+  void _markCareDay() {
+    final today = _todayKey;
+    if (_lastCareDay == today) return;
+    _lastCareDay = today;
+    _careDays++;
+  }
+
+  /// Mutfakta Zibo bir yemeği yediğinde (rozet sayacı).
+  void recordFeed() {
+    _feedCount++;
+    _markCareDay();
+    notifyListeners();
+    _save();
+  }
+
+  /// Banyoda havluyla kurulanıp tertemiz olunca (rozet sayacı).
+  void recordBath() {
+    _bathCount++;
+    _markCareDay();
+    notifyListeners();
+    _save();
+  }
+
   void startSleep() {
     if (isAsleep) return;
     _settle();
     _sleepStartedAt = _now();
     _sleepStartEnergy = _stored[HomeNeed.energy]!;
+    _sleepBaseEnergy = _sleepStartEnergy;
+    _markCareDay();
     notifyListeners();
     _save();
   }
@@ -165,6 +206,7 @@ class HomeNeedsProvider extends ChangeNotifier {
   void wake() {
     if (!isAsleep) return;
     _settle();
+    if (_sleepStartEnergy - _sleepBaseEnergy >= _sleepCountMin) _sleepCount++;
     _stored[HomeNeed.energy] = _sleepStartEnergy;
     _sleepStartedAt = null;
     notifyListeners();
@@ -206,6 +248,12 @@ class HomeNeedsProvider extends ChangeNotifier {
         _freeFoodDay = data['freeFoodDay'] as String?;
         _freeFoodsUsed = (data['freeFoodsUsed'] as num?)?.toInt() ?? 0;
         _adFoodsUsed = (data['adFoodsUsed'] as num?)?.toInt() ?? 0;
+        _feedCount = (data['feedCount'] as num?)?.toInt() ?? 0;
+        _bathCount = (data['bathCount'] as num?)?.toInt() ?? 0;
+        _sleepCount = (data['sleepCount'] as num?)?.toInt() ?? 0;
+        _careDays = (data['careDays'] as num?)?.toInt() ?? 0;
+        _lastCareDay = data['lastCareDay'] as String?;
+        _sleepBaseEnergy = (data['sleepBaseEnergy'] as num?)?.toDouble() ?? _sleepStartEnergy;
       } catch (_) {
         // Bozuk kayıt: varsayılanlarla devam (diğer provider'larla aynı kural).
       }
@@ -223,5 +271,11 @@ class HomeNeedsProvider extends ChangeNotifier {
     'freeFoodDay': _freeFoodDay,
     'freeFoodsUsed': _freeFoodsUsed,
     'adFoodsUsed': _adFoodsUsed,
+    'feedCount': _feedCount,
+    'bathCount': _bathCount,
+    'sleepCount': _sleepCount,
+    'careDays': _careDays,
+    'lastCareDay': _lastCareDay,
+    'sleepBaseEnergy': _sleepBaseEnergy,
   });
 }

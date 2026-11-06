@@ -20,6 +20,8 @@ import '../providers/coin_provider.dart';
 import '../providers/goals_provider.dart';
 import '../providers/gratitude_provider.dart';
 import '../providers/hidden_badge_provider.dart';
+import '../providers/home_decor_provider.dart';
+import '../providers/home_needs_provider.dart';
 import '../providers/in_app_message_provider.dart';
 import '../providers/locale_provider.dart';
 import '../providers/manifest_provider.dart';
@@ -260,6 +262,9 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
         // 2026 güncellemesi — Gizli/Eğlenceli Rozetler (Gece Kuşu/Erken
         // Kuş) için.
         hiddenBadge: context.read<HiddenBadgeProvider>(),
+        // Zibo'nun Evi bakım rozetleri (2026-11-06).
+        homeNeeds: context.read<HomeNeedsProvider>(),
+        homeDecor: context.read<HomeDecorProvider>(),
       );
       // Kurucu Üye rozeti — bkz. `_maybeClaimFounderBadge()` dokümantasyonu.
       unawaited(_maybeClaimFounderBadge());
