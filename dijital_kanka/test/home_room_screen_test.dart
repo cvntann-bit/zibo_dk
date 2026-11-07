@@ -114,10 +114,10 @@ void main() {
   Offset scenePoint(WidgetTester tester, Offset p) {
     final view = find.byType(RoomView);
     final box = tester.renderObject<RenderBox>(view);
-    final s = box.size.width / 900;
-    // Tam ekranda tuval sahnenin üstüne uzar (RoomScene.extraTop).
-    final top = tester.widget<RoomView>(view).scene.extraTop;
-    return box.localToGlobal((p + Offset(0, top)) * s);
+    final scene = tester.widget<RoomView>(view).scene;
+    final s = box.size.width / scene.width;
+    // Tam ekranda tuval sahnenin üstüne (extraTop) ve geniş ekranda yanlara (extraSide) uzar.
+    return box.localToGlobal((p + Offset(scene.extraSide, scene.extraTop)) * s);
   }
 
   Future<void> frames(WidgetTester tester, int n) async {
@@ -369,6 +369,25 @@ void main() {
     await tester.pump();
     expect(decor.isOwned(HomeRoom.living, 'kanepe', 'taht'), isFalse);
     expect(find.text("Bu eşya Zibo Pro'ya özel."), findsOneWidget);
+    await tearDownScreen(tester);
+  });
+
+  testWidgets('yatay tablet: oda iki yana uzar, Zibo ortada kalır, besleme çalışır', (tester) async {
+    await pumpRoom(tester, HomeRoom.kitchen);
+    tester.view.physicalSize = const Size(2560, 1600);
+    tester.view.devicePixelRatio = 2;
+    await tester.pump();
+    final view = tester.widget<RoomView>(find.byType(RoomView));
+    expect(view.scene.extraSide, greaterThan(0));
+    expect(tester.getSize(find.byType(RoomView)).width, closeTo(1280, 1));
+    await tester.tap(find.bySemanticsLabel('Elma, Ücretsiz · 3'));
+    await tester.pump();
+    final gesture = await tester.startGesture(scenePoint(tester, const Offset(455, 760)));
+    await gesture.moveTo(scenePoint(tester, const Offset(455, 630)));
+    await gesture.up();
+    await tester.pump();
+    expect(needs.percent(HomeNeed.hunger), 92);
+    await frames(tester, 80);
     await tearDownScreen(tester);
   });
 }

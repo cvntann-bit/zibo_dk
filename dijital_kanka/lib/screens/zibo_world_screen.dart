@@ -63,6 +63,8 @@ const _home = _Place('world_home', .464, .875, .38, 1024 / 809);
 const _sceneAspect = 1440 / 2580;
 // Gökyüzü katmanının alt sınırı ve evin çatısı (sahne yüksekliğinin kesri).
 const _skyBottom = .36;
+// Görseldeki ufuk çizgisi (gökyüzü → tepeler), kenar renkleri ölçülerek.
+const _horizonY = .415;
 const _homeRoofY = .625;
 
 class _ZiboWorldScreenState extends State<ZiboWorldScreen> with SingleTickerProviderStateMixin {
@@ -143,8 +145,17 @@ class _ZiboWorldScreenState extends State<ZiboWorldScreen> with SingleTickerProv
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final w = constraints.maxWidth.clamp(0.0, 600.0);
+        // Yatay (tablet) ekranda sahne yüksekliğe sığar, kaydırma olmaz; dikeyde
+        // genişliğe sığar (en çok 720) ve kaydırılır. Sahne ekrandan darsa iki
+        // yan, görselin ufkuyla hizalı gökyüzü + tepeler + çimenle dolar ve
+        // bulutlar boydan boya kayar (2026-11-07, tablet düzeltmesi).
+        final screenW = constraints.maxWidth;
+        final wide = screenW > constraints.maxHeight * .9;
+        final h0 = wide ? constraints.maxHeight : screenW.clamp(0.0, 720.0) / _sceneAspect;
+        final w = wide ? (h0 * _sceneAspect).clamp(0.0, screenW) : screenW.clamp(0.0, 720.0);
         final h = w / _sceneAspect;
+        final framed = w < screenW - 1;
+        final sceneLeft = (screenW - w) / 2;
         final labels = <Widget>[];
         // Arka sıradaki binaların etiketi üstlerine konur (alt kenarları öndeki binaların arkasında kalır).
         Widget building(_Place p, String label, VoidCallback onTap, {bool locked = false, int badge = 0, bool labelAbove = false}) {
@@ -168,36 +179,52 @@ class _ZiboWorldScreenState extends State<ZiboWorldScreen> with SingleTickerProv
           );
         }
 
-        return DecoratedBox(
-          // Sahne kenarlarında (tablet) gökyüzünden çimene geçen zemin.
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [Color(0xFF8ECDF0), Color(0xFFCFE9F7), Color(0xFF7DC45A), Color(0xFF5DA845)],
-              stops: [0, .4, .42, 1],
+        final bg = Image.asset('assets/images/world/world_bg.webp', fit: BoxFit.fill);
+        final sky = IgnorePointer(
+          child: RepaintBoundary(
+            child: CustomPaint(
+              painter: _SkyPainter(_sky, unit: w, sunX: framed ? (sceneLeft + w * .54) / screenW : null),
             ),
           ),
+        );
+        return ClipRect(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.only(bottom: 80),
-            child: Center(
-              child: SizedBox(
-                width: w,
-                height: h,
-                child: Stack(
-                  clipBehavior: Clip.none,
-                  children: [
-                    Positioned.fill(child: Image.asset('assets/images/world/world_bg.webp', fit: BoxFit.fill)),
-                    // Gökyüzü: parlayan güneş + kayan bulutlar (yalnız üst kısım).
-                    Positioned(
-                      left: 0,
-                      right: 0,
-                      top: 0,
-                      height: h * _skyBottom,
-                      child: IgnorePointer(
-                        child: RepaintBoundary(child: CustomPaint(painter: _SkyPainter(_sky))),
-                      ),
-                    ),
+            padding: EdgeInsets.only(bottom: wide ? 0 : 80),
+            child: SizedBox(
+              width: screenW,
+              height: h + (wide ? 0 : 0),
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  // Çerçeveli (tablet): yanlarda görselin ufkuyla hizalı manzara.
+                  if (framed) Positioned.fill(child: CustomPaint(painter: _MeadowPainter(horizon: h * _horizonY))),
+                  Positioned(
+                    left: sceneLeft,
+                    width: w,
+                    top: 0,
+                    height: h,
+                    child: framed
+                        // Görselin kenarları manzaraya yumuşakça karışsın.
+                        ? ShaderMask(
+                            blendMode: BlendMode.dstIn,
+                            shaderCallback: (rect) => const LinearGradient(
+                              colors: [Color(0x00000000), Color(0xFF000000), Color(0xFF000000), Color(0x00000000)],
+                              stops: [0, .06, .94, 1],
+                            ).createShader(rect),
+                            child: bg,
+                          )
+                        : bg,
+                  ),
+                  // Gökyüzü: parlayan güneş + kayan bulutlar (çerçeveliyse boydan boya).
+                  Positioned(left: 0, width: screenW, top: 0, height: h * _skyBottom, child: sky),
+                  Positioned(
+                    left: sceneLeft,
+                    width: w,
+                    top: 0,
+                    height: h,
+                    child: Stack(
+                      clipBehavior: Clip.none,
+                      children: [
                     building(_friends, l10n.worldDoorFriends, () => _comingSoon('friends'), locked: true, labelAbove: true),
                     building(_leaderboard, l10n.worldDoorLeaderboard, () => _comingSoon('leaderboard'), locked: true, labelAbove: true),
                     building(_events, l10n.worldDoorEvents, () => _open('events', 'building', const EventsScreen()), badge: events.openableCount),
@@ -219,8 +246,10 @@ class _ZiboWorldScreenState extends State<ZiboWorldScreen> with SingleTickerProv
                       ),
                     ),
                     ...labels,
-                  ],
-                ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -434,25 +463,32 @@ const _clouds = [
 /// Gökyüzü: sol üstte parlayan, ışınları yavaşça dönen güneş ve soldan sağa
 /// kayan çizgi film bulutları (sticker konturlu). [t] 0..1 döngüsü.
 class _SkyPainter extends CustomPainter {
-  _SkyPainter(this.t) : super(repaint: t);
+  _SkyPainter(this.t, {this.unit, this.sunX}) : super(repaint: t);
 
   final Animation<double> t;
+
+  /// Bulut ve güneş boyunun ölçüsü (sahne genişliği); null = tuval genişliği.
+  final double? unit;
+
+  /// Güneşin yatay yeri (tuval genişliğinin kesri); null = .54.
+  final double? sunX;
 
   @override
   void paint(Canvas canvas, Size size) {
     final v = t.value;
     _sun(canvas, size, v);
     for (final c in _clouds) {
-      final cw = size.width * c.size * 1.9;
+      final u = unit ?? size.width;
+      final cw = u * c.size * 1.9;
       // Ekranın solundan girer, sağından çıkar; sonra başa sarar.
       final x = ((v * c.speed + c.phase) % 1) * (size.width + cw * 2) - cw;
-      _cloud(canvas, Offset(x, size.height * c.fy), size.width * c.size, c.opacity);
+      _cloud(canvas, Offset(x, size.height * c.fy), u * c.size, c.opacity);
     }
   }
 
   void _sun(Canvas canvas, Size size, double v) {
-    final r = size.width * .085;
-    final c = Offset(size.width * .54, size.height * .31);
+    final r = (unit ?? size.width) * .085;
+    final c = Offset(size.width * (sunX ?? .54), size.height * .31);
     final pulse = 1 + math.sin(v * math.pi * 2 * 12) * .04;
     // Hale.
     canvas.drawCircle(
@@ -539,4 +575,52 @@ class _SkyPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_SkyPainter old) => false;
+}
+
+/// Tablette sahnenin yanları: görselin ufkuyla hizalı gökyüzü, iki sıra yumuşak
+/// tepe ve aşağı doğru koyulaşan çimen (renkler world_bg kenarlarından ölçüldü).
+class _MeadowPainter extends CustomPainter {
+  _MeadowPainter({required this.horizon});
+
+  final double horizon;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final w = size.width;
+    canvas.drawRect(
+      Rect.fromLTWH(0, 0, w, horizon + 2),
+      Paint()
+        ..shader = const LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [Color(0xFF8FCEF1), Color(0xFFB3DDF5), Color(0xFFE0F3FD)],
+          stops: [0, .5, 1],
+        ).createShader(Rect.fromLTWH(0, 0, w, horizon)),
+    );
+    Path hills(double base, double amp, double period, double phase) {
+      final path = Path()..moveTo(0, size.height);
+      path.lineTo(0, base);
+      for (var x = 0.0; x <= w; x += 8) {
+        path.lineTo(x, base - amp * (0.5 + 0.5 * math.sin(x / period + phase)));
+      }
+      return path
+        ..lineTo(w, size.height)
+        ..close();
+    }
+
+    canvas.drawPath(hills(horizon + 14, 22, 120, 1.3), Paint()..color = const Color(0xFFA6CF5D));
+    canvas.drawPath(
+      hills(horizon + 40, 18, 90, 4.1),
+      Paint()
+        ..shader = const LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [Color(0xFF8BBE4A), Color(0xFF6EA831), Color(0xFF4F8A2C), Color(0xFF3A712C)],
+          stops: [0, .25, .7, 1],
+        ).createShader(Rect.fromLTWH(0, horizon, w, size.height - horizon)),
+    );
+  }
+
+  @override
+  bool shouldRepaint(_MeadowPainter old) => old.horizon != horizon;
 }

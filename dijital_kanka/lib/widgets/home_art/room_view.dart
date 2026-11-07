@@ -30,10 +30,10 @@ class RoomView extends StatelessWidget {
       label: semanticLabel,
       excludeSemantics: true,
       child: AspectRatio(
-        aspectRatio: sceneWidth / scene.height,
+        aspectRatio: scene.width / scene.height,
         child: LayoutBuilder(
           builder: (context, constraints) {
-            final s = constraints.maxWidth / sceneWidth;
+            final s = constraints.maxWidth / scene.width;
             return RepaintBoundary(
               child: Stack(
                 fit: StackFit.expand,
@@ -41,7 +41,7 @@ class RoomView extends StatelessWidget {
                   SvgPicture.string(scene.back, fit: BoxFit.fill),
                   if (showZibo)
                     Positioned(
-                      left: zibo.x * s,
+                      left: (zibo.x + scene.extraSide) * s,
                       top: (zibo.y + scene.extraTop - ziboLift) * s,
                       width: zibo.w * s,
                       height: zibo.h * s,
@@ -75,8 +75,9 @@ class RoomSceneCache {
     String foamStroke = '#CDEBF7',
     double extraTop = 0,
     double extraBottom = 0,
+    double extraSide = 0,
   }) {
-    final key = [room.id, care, pose, soapColor, dark, foamFill, foamStroke, extraTop.round(), extraBottom.round(), for (final e in items.entries) '${e.key}=${e.value.id}'].join('|');
+    final key = [room.id, care, pose, soapColor, dark, foamFill, foamStroke, extraTop.round(), extraBottom.round(), extraSide.round(), for (final e in items.entries) '${e.key}=${e.value.id}'].join('|');
     if (key != _key || _scene == null) {
       _key = key;
       _scene = RoomArt.build(
@@ -90,6 +91,7 @@ class RoomSceneCache {
         foamStroke: foamStroke,
         extraTop: extraTop,
         extraBottom: extraBottom,
+        extraSide: extraSide,
       );
     }
     return _scene!;

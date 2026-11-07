@@ -233,19 +233,23 @@ class _Float {
 
 /// [CareFx]'i sahne ölçeğinde çizer.
 class CareFxPainter extends CustomPainter {
-  CareFxPainter(this.fx, {required Listenable repaint, this.offsetY = 0}) : super(repaint: repaint);
+  CareFxPainter(this.fx, {required Listenable repaint, this.offsetY = 0, this.offsetX = 0, this.sceneWidth = 900}) : super(repaint: repaint);
 
   final CareFx fx;
 
   /// Uzatılmış tuvalde sahnenin üst boşluğu ([RoomScene.extraTop]).
   final double offsetY;
 
+  /// Yana uzatılmış tuvalde sahnenin sol boşluğu ([RoomScene.extraSide]) ve tuval genişliği.
+  final double offsetX;
+  final double sceneWidth;
+
   @override
   void paint(Canvas canvas, Size size) {
-    final k = size.width / 900;
+    final k = size.width / sceneWidth;
     canvas.save();
     canvas.scale(k);
-    canvas.translate(0, offsetY);
+    canvas.translate(offsetX, offsetY);
     final paint = Paint();
     double op(double a) => a.clamp(0.0, 1.0);
 

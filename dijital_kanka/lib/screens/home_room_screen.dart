@@ -625,8 +625,14 @@ class _HomeRoomScreenState extends State<HomeRoomScreen> with TickerProviderStat
         value: SystemUiOverlayStyle.dark.copyWith(statusBarColor: Colors.transparent),
         child: LayoutBuilder(
           builder: (context, c) {
-            final s = math.min(c.maxWidth / 900, c.maxHeight / 1200);
-            final stageW = 900 * s;
+            // Yatay geniş ekranda (tablet) oda yüksekliğe sığar; açık panelin
+            // payı düşülür ki Zibo ve eşyalar panelin üstünde kalsın. Duvar ve
+            // zemin iki yana uzar (extraSide) — oda ekranı boydan boya doldurur.
+            final landscape = c.maxWidth > c.maxHeight * 1.1;
+            final reserve = landscape && _panelOpen ? 150.0 : 0.0;
+            final s = math.min(c.maxWidth / 900, (c.maxHeight - reserve) / 1200);
+            final stageW = c.maxWidth;
+            final extraSide = math.max(0.0, (c.maxWidth / s - 900) / 2);
             final extra = math.max(0.0, c.maxHeight / s - 1200);
             final topUnits = (media.padding.top + 118) / s;
             final extraTop = math.min(extra, math.max(0.0, topUnits - 70));
@@ -641,6 +647,7 @@ class _HomeRoomScreenState extends State<HomeRoomScreen> with TickerProviderStat
               foamStroke: SvgKit.hex(soap.foamStroke ?? 0xFFCDEBF7),
               extraTop: extraTop,
               extraBottom: extra - extraTop,
+              extraSide: extraSide,
             );
             _lastScene = scene;
             final floorLine = ((800 + scene.extraTop) * s / c.maxHeight).clamp(0.0, 1.0);
@@ -661,7 +668,7 @@ class _HomeRoomScreenState extends State<HomeRoomScreen> with TickerProviderStat
                     left: 0,
                     right: 0,
                     top: 0,
-                    child: SafeArea(bottom: false, child: _topBar(l10n, needs)),
+                    child: SafeArea(bottom: false, child: _wideCap(_topBar(l10n, needs), 760)),
                   ),
                   Positioned(
                     left: 0,
@@ -679,7 +686,7 @@ class _HomeRoomScreenState extends State<HomeRoomScreen> with TickerProviderStat
                           ),
                         ),
                         child: _panelOpen
-                            ? KeyedSubtree(key: const ValueKey('panel'), child: _bottomPanel(l10n, needs, decor, def, items))
+                            ? KeyedSubtree(key: const ValueKey('panel'), child: _wideCap(_bottomPanel(l10n, needs, decor, def, items), 820))
                             : KeyedSubtree(key: const ValueKey('pill'), child: _collapsedPanel(l10n)),
                       ),
                     ),
@@ -703,13 +710,17 @@ class _HomeRoomScreenState extends State<HomeRoomScreen> with TickerProviderStat
     );
   }
 
+  /// Geniş ekranda (tablet) üst çubuk ve alt panel ortada [maxWidth] ile sınırlı.
+  Widget _wideCap(Widget child, double maxWidth) =>
+      Center(child: ConstrainedBox(constraints: BoxConstraints(maxWidth: maxWidth), child: child));
+
   // --- Sahne ---------------------------------------------------------------
 
   Widget _stage(AppLocalizations l10n, RoomScene scene, double s) {
     final kitchenCare = _care && _room == HomeRoom.kitchen;
     final bathCare = _care && _room == HomeRoom.bath;
     final showTired = _care && !_tiredDismissed && _tired(context.watch<HomeNeedsProvider>());
-    Offset toScene(Offset local) => local / s - Offset(0, scene.extraTop);
+    Offset toScene(Offset local) => local / s - Offset(scene.extraSide, scene.extraTop);
     return GestureDetector(
       onHorizontalDragStart: (_) {
         _swipeBlocked = _held != null || _scrubbing;
@@ -791,12 +802,12 @@ class _HomeRoomScreenState extends State<HomeRoomScreen> with TickerProviderStat
                 ),
                 Positioned.fill(
                   child: IgnorePointer(
-                    child: CustomPaint(painter: CareFxPainter(_fx, repaint: _frame, offsetY: scene.extraTop)),
+                    child: CustomPaint(painter: CareFxPainter(_fx, repaint: _frame, offsetY: scene.extraTop, offsetX: scene.extraSide, sceneWidth: scene.width)),
                   ),
                 ),
                 if (hopping && hopOpacity > 0)
                   Positioned(
-                    left: (spot.x + spot.w / 2 - hopW / 2 + shift) * s,
+                    left: (spot.x + scene.extraSide + spot.w / 2 - hopW / 2 + shift) * s,
                     top: (_hopFeetY - hopH + scene.extraTop - hopLift) * s,
                     width: hopW * s,
                     height: hopH * s,
@@ -809,7 +820,7 @@ class _HomeRoomScreenState extends State<HomeRoomScreen> with TickerProviderStat
                   ),
                 if (showTired && !hopping)
                   Positioned(
-                    left: 60 * s,
+                    left: (60 + scene.extraSide) * s,
                     width: 580 * s,
                     top: (scene.zibo.y + scene.extraTop + 10) * s,
                     child: FractionalTranslation(
@@ -819,7 +830,7 @@ class _HomeRoomScreenState extends State<HomeRoomScreen> with TickerProviderStat
                   ),
                 if (kitchenCare && food != null && !hopping)
                   Positioned(
-                    left: (at.dx - size / 2) * s,
+                    left: (at.dx + scene.extraSide - size / 2) * s,
                     top: (at.dy + scene.extraTop - size / 2 - (_held != null ? 0 : 26)) * s,
                     width: size * s,
                     height: size * s,

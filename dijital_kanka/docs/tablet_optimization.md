@@ -67,3 +67,13 @@ Tetikleyici: kullanıcı — Zibo tablette Yaşam Tarzı'nda ilk 11'de, çocukla
 - [x] Yan menü eşiği 1000 → 840 dp (2026-11-07, 1.18.0; `Adaptive.sideNavMinWidth`). İki bölmeli yatay Ana Sayfa 1000 dp'de kaldı (`homeTwoPaneMinWidth`) — 840–1000 arası yan menü + tek sütun.
 - [ ] Klavye odağı/Esc/Enter + fare hover
       kontrolü (fiziksel klavyeyle) → "Kısmen" maddeleri tamamlanır. Google eksik bulursa e-postadaki maddeye göre düzelt.
+
+## Zibo Dünyası tablet düzeltmesi (2026-11-07, kullanıcı: "yan çevirince Zibo Dünyası ve odalar bozuk")
+- **Odalar:** `RoomScene.extraSide` — yatay geniş ekranda tuval iki yana uzar (duvar, duvar kağıdı, fayans, zemin,
+  gece örtüsü `-side … 900+side`), eşyalar ortadaki 900 birimde. Yatayda açık panelin payı (150 dp) düşülerek oda
+  yüksekliğe sığar. Üst çubuk (ihtiyaç barları) en çok 760 dp, alt panel 820 dp, ortalı (`_wideCap`).
+- **Giriş ekranı:** yatayda sahne yüksekliğe sığar (kaydırma yok), dikeyde genişliğe (en çok 720). Sahne ekrandan
+  darsa yanlarda `_MeadowPainter` (görselin ufkuna — %41,5 — hizalı gökyüzü, iki sıra tepe, çimen; renkler görsel
+  kenarlarından ölçüldü), görsel kenarları `ShaderMask` ile %6 yumuşar, bulutlar ve güneş boydan boya
+  (`_SkyPainter(unit, sunX)`).
+- İsteğe bağlı: yatay ayrı arka plan görseli (`docs/zibo_images_needed.md` D).

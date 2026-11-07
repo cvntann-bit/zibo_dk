@@ -25,7 +25,7 @@ class ZiboSpot {
 /// iki SVG. Küvetin önü, yorgan, kanepe oturağı gibi parçalar [front]'ta
 /// olduğu için Zibo "içinde oturuyor" görünür (docs/zibo_home_art.md).
 class RoomScene {
-  const RoomScene({required this.back, required this.front, required this.zibo, this.extraTop = 0, this.extraBottom = 0});
+  const RoomScene({required this.back, required this.front, required this.zibo, this.extraTop = 0, this.extraBottom = 0, this.extraSide = 0});
 
   final String back;
   final String front;
@@ -37,7 +37,12 @@ class RoomScene {
   final double extraTop;
   final double extraBottom;
 
+  /// Yatay geniş ekranda (tablet) tuvalin iki yana uzatıldığı birim — duvar
+  /// ve zemin yanlara devam eder, eşyalar ortadaki 900 birimde kalır.
+  final double extraSide;
+
   double get height => 1200 + extraTop + extraBottom;
+  double get width => 900 + 2 * extraSide;
 }
 
 /// Seçili eşyayı verir (takılı olan ya da mağazada denenen).
@@ -50,7 +55,7 @@ const _floor = 800;
 /// modudur (besleme, banyo, uyku, oyun — Faz 4); dekor modunda Zibo odanın
 /// önünde mutlu durur.
 class RoomArt {
-  RoomArt._(this.pick, this.top, this.bottom) : k = SvgKit();
+  RoomArt._(this.pick, this.top, this.bottom, [this.side = 0]) : k = SvgKit();
 
   final HomePick pick;
   final SvgKit k;
@@ -58,6 +63,7 @@ class RoomArt {
   /// [RoomScene.extraTop] / [RoomScene.extraBottom].
   final double top;
   final double bottom;
+  final double side;
 
   static RoomScene build(
     HomeRoom room,
@@ -70,8 +76,9 @@ class RoomArt {
     String foamStroke = '#CDEBF7',
     double extraTop = 0,
     double extraBottom = 0,
+    double extraSide = 0,
   }) {
-    final art = RoomArt._(pick, extraTop.roundToDouble(), extraBottom.roundToDouble());
+    final art = RoomArt._(pick, extraTop.roundToDouble(), extraBottom.roundToDouble(), extraSide.roundToDouble());
     return switch (room) {
       HomeRoom.kitchen => art._kitchen(care, pose),
       HomeRoom.bath => art._bath(care, pose, soapColor, foamFill, foamStroke),
@@ -100,23 +107,23 @@ class RoomArt {
       top <= 0 ? '' : '<rect x="$x" y="${-top}" width="$width" height="$top" fill="$fill"/>';
 
   String _wrap(String body) =>
-      '<svg viewBox="0 ${-top} 900 ${1200 + top + bottom}" xmlns="http://www.w3.org/2000/svg"><defs>${k.defs}</defs>$body</svg>';
+      '<svg viewBox="${-side} ${-top} ${900 + 2 * side} ${1200 + top + bottom}" xmlns="http://www.w3.org/2000/svg"><defs>${k.defs}</defs>$body</svg>';
 
   RoomScene _scene(String back, String front, ZiboSpot zibo) =>
-      RoomScene(back: _wrap(back), front: _wrap(front), zibo: zibo, extraTop: top, extraBottom: bottom);
+      RoomScene(back: _wrap(back), front: _wrap(front), zibo: zibo, extraTop: top, extraBottom: bottom, extraSide: side);
 
   /// Duvar boyası + isteğe bağlı duvar kağıdı + köşeden vuran ışık.
   String _walls(String lightPath, String lightOpacity, {bool wallpaper = true}) {
     final wall = _c('boya');
-    return '<rect y="${-top}" width="900" height="${_floor + top}" fill="${k.grad(SvgKit.mix(wall, .2), SvgKit.mix(wall, -.05))}"/>'
-        '${wallpaper ? wallpaperLayer(k, _style('desen'), wall, y: -top, height: _floor + top) : ''}'
+    return '<rect x="${-side}" y="${-top}" width="${900 + 2 * side}" height="${_floor + top}" fill="${k.grad(SvgKit.mix(wall, .2), SvgKit.mix(wall, -.05))}"/>'
+        '${wallpaper ? wallpaperLayer(k, _style('desen'), wall, y: -top, height: _floor + top, x: -side, width: 900 + 2 * side) : ''}'
         '<path d="$lightPath" fill="#fff" opacity="$lightOpacity"/>';
   }
 
   String _floorBlock(String board1, String board2, String shade, {int board = 30}) =>
-      '<rect y="${_floor - board}" width="900" height="$board" fill="${k.grad(board1, board2)}"/>'
-      '${floorLayer(k, _style('zemin'), _c('zemin'), _c2('zemin'), y: _floor, height: 400 + bottom)}'
-      '<rect y="$_floor" width="900" height="400" fill="${k.grad(shade, '#00000000')}"/>';
+      '<rect x="${-side}" y="${_floor - board}" width="${900 + 2 * side}" height="$board" fill="${k.grad(board1, board2)}"/>'
+      '${floorLayer(k, _style('zemin'), _c('zemin'), _c2('zemin'), y: _floor, height: 400 + bottom, x: -side, width: 900 + 2 * side)}'
+      '<rect x="${-side}" y="$_floor" width="${900 + 2 * side}" height="400" fill="${k.grad(shade, '#00000000')}"/>';
 
   String _drape() {
     final curtain = _c('perde');
@@ -182,8 +189,8 @@ class RoomArt {
     final tub = _draw('kuvet', 40, 590);
     final back =
         '${_walls('M600 0h300v380z', '.2', wallpaper: false)}'
-        '${tileLayer(k, _style('fayans'), _c('fayans'), _c2('fayans'), y: 430, height: _floor - 430)}'
-        '<rect y="420" width="900" height="18" rx="6" fill="${k.grad('#FFFFFF', '#D5DEE3')}"/>'
+        '${tileLayer(k, _style('fayans'), _c('fayans'), _c2('fayans'), y: 430, height: _floor - 430, x: -side, width: 900 + 2 * side)}'
+        '<rect x="${-side}" y="420" width="${900 + 2 * side}" height="18" rx="6" fill="${k.grad('#FFFFFF', '#D5DEE3')}"/>'
         '<g transform="translate(690 150)"><circle r="82" fill="${k.grad('#FFFFFF', '#CBD5DC')}"/><circle r="64" fill="${k.grad('#8FD6F5', '#E2F6FC')}"/>'
         '<circle cx="-18" cy="-14" r="16" fill="#fff" opacity=".7"/><circle cx="22" cy="20" r="9" fill="#fff" opacity=".6"/>'
         '<rect x="-64" y="-4" width="128" height="8" fill="#F1F4F6"/></g>'
@@ -237,7 +244,7 @@ class RoomArt {
         ? ''
         : '<g transform="translate(40 ${toyKind == 'ball' ? 1010 : 960}) scale(.9)">${_art(toyKind, _c('oyuncak'))}</g>';
     final quilt = '<g transform="translate(20 400)">${blanket(k, _style('nevresim'), _c('nevresim'), _c2('nevresim'))}</g>';
-    final night = dark ? '<rect y="${-top}" width="900" height="${1200 + top + bottom}" fill="#0B1435" opacity=".56"/><circle cx="577" cy="530" r="190" fill="url(#glow)"/>' : '';
+    final night = dark ? '<rect x="${-side}" y="${-top}" width="${900 + 2 * side}" height="${1200 + top + bottom}" fill="#0B1435" opacity=".56"/><circle cx="577" cy="530" r="190" fill="url(#glow)"/>' : '';
     final back =
         '${_walls('M600 0h300v380z', '.18')}$win$sus'
         '${_floorBlock('#FFF8EA', '#E2D3B8', '#00000022')}'

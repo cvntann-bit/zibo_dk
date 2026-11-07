@@ -46,22 +46,28 @@ final Map<String, (int, int, String Function(String a, String b))> floorArt = {
 
 /// Duvar kağıdı katmanı (boyanın üstüne): boyanın biraz koyusu (gece
 /// mavisinde açığı). Desensizse boş.
-String wallpaperLayer(SvgKit k, String style, String wall, {num y = 0, required num height}) {
+String wallpaperLayer(SvgKit k, String style, String wall, {num y = 0, required num height, num x = 0, num width = 900}) {
   final draw = wallArt[style];
   if (style == 'duz' || draw == null) return '';
-  return k.tiled(draw(SvgKit.mix(wall, wall == '#4B6C9E' ? .16 : -.1)), 80, 80, x: 0, y: y, width: 900, height: height);
+  final x0 = _alignedStart(x, 80);
+  return k.tiled(draw(SvgKit.mix(wall, wall == '#4B6C9E' ? .16 : -.1)), 80, 80, x: x0, y: y, width: width + x - x0, height: height);
 }
 
+/// Yana uzatılmış tuvalde desen 0'a hizalı kalsın: [x]'ten küçük ilk [w] katı.
+num _alignedStart(num x, num w) => x >= 0 ? x : -((-x / w).ceil() * w);
+
 /// Zemin deseni, verilen dikdörtgene döşenir.
-String floorLayer(SvgKit k, String style, String a, String b, {required num y, required num height, num width = 900}) {
+String floorLayer(SvgKit k, String style, String a, String b, {required num y, required num height, num width = 900, num x = 0}) {
   final (w, h, draw) = floorArt[style] ?? floorArt['ahsap']!;
-  return k.tiled(draw(a, b), w, h, x: 0, y: y, width: width, height: height);
+  final x0 = _alignedStart(x, w);
+  return k.tiled(draw(a, b), w, h, x: x0, y: y, width: width + x - x0, height: height);
 }
 
 /// Fayans deseni, verilen dikdörtgene döşenir.
-String tileLayer(SvgKit k, String style, String a, String l, {required num y, required num height, num width = 900}) {
+String tileLayer(SvgKit k, String style, String a, String l, {required num y, required num height, num width = 900, num x = 0}) {
   final (w, h, draw) = tileArt[style] ?? tileArt['duz']!;
-  return k.tiled(draw(a, l), w, h, x: 0, y: y, width: width, height: height);
+  final x0 = _alignedStart(x, w);
+  return k.tiled(draw(a, l), w, h, x: x0, y: y, width: width + x - x0, height: height);
 }
 
 String _fabric(String style, String a, String b) => '<rect width="80" height="80" fill="$a"/>${(wallArt[style] ?? wallArt['duz']!)(b)}';

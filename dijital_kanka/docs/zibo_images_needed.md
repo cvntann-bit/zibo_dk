@@ -75,6 +75,21 @@ no numbers, no characters, square 1024x1024.
 en az %30 enerji kazanıp uyanınca sayılır (ışığı aç/kapa ile kasılmasın); dekor sayısı `HomeDecorProvider` sahiplik
 listesinden (başlangıç eşyaları hariç). Toplam ödül 260 ZC (tek seferlik; `unit_economics.md`'ye göre zararsız).
 
+## D. Tablet (yatay) giriş ekranı arka planı — İSTEĞE BAĞLI (2026-11-07)
+Kullanıcı: "gerekirse bu görüntüyü yeniden tablet için uyarlayalım". Kodla geçici çözüm yapıldı (yatayda sahne
+yüksekliğe sığar, yanlar ufukla hizalı çizilmiş gökyüzü/tepe/çimen, bulutlar boydan boya). En iyi sonuç için
+yatay ayrı bir arka plan: aynı stil, binasız, **2560×1600 (16:10)**, beyaz değil tam sahne (gökyüzü + çayır).
+Binalar aynı görseller kalır; konumlar yeni görsele göre ölçülür.
+```
+Same art style as the reference background image (cute cartoon meadow world map for a kids mobile app, soft
+gradients, glossy highlights), but a WIDE LANDSCAPE composition 2560x1600: blue sky with a few fluffy clouds in the
+top 40%, rolling green hills on the horizon, a big flowery meadow below. A winding sandy path connects FIVE empty
+round grass clearings (no buildings on them): one large clearing at bottom center, two medium clearings left and
+right of it slightly higher, two smaller clearings further back near the horizon (left and right). Bushes and
+flowers along the left and right edges. No buildings, no characters, no text.
+```
+Teslim: `world_bg_wide` (JPG/PNG). Gelince `ZiboWorldScreen` yatayda bu görseli kullanır, 5 bina konumu yeniden ölçülür.
+
 ## Öncelik
 Önce A1–A6 (bakım oyunlarında hemen kullanılır), sonra B (giriş ekranı yeniden yapımı), A7–A8 en son.
 
