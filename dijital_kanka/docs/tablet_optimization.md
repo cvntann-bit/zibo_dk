@@ -76,4 +76,9 @@ Tetikleyici: kullanıcı — Zibo tablette Yaşam Tarzı'nda ilk 11'de, çocukla
   darsa yanlarda `_MeadowPainter` (görselin ufkuna — %41,5 — hizalı gökyüzü, iki sıra tepe, çimen; renkler görsel
   kenarlarından ölçüldü), görsel kenarları `ShaderMask` ile %6 yumuşar, bulutlar ve güneş boydan boya
   (`_SkyPainter(unit, sunX)`).
-- İsteğe bağlı: yatay ayrı arka plan görseli (`docs/zibo_images_needed.md` D).
+- **Yatay görsel (2026-11-07, aynı gün):** kullanıcı `world_bg_wide` üretti (1024×637, binasız, 5 çimen adacığı).
+  Ekran genişliği ≥ 1,2 × yükseklik ise `_wide` yerleşimi: görsel ekranı kaplar (en çok %12 kırpma), daha fazlası
+  gerekirse sığdırılır, boşluk üstte kalır ve `_MeadowPainter` + üst kenar yumuşatma ile dolar. Bina konumları
+  adacıklardan ölçüldü (`_WorldLayout`: dikey `_tall`, yatay `_wide`). 0,9–1,2 arası (kareye yakın) eski dikey-görsel
+  + yan manzara düzeni sürer. Test: `test/zibo_world_layout_test.dart`. Görsel 1024 px — daha büyük aslı gelirse
+  aynı dosya adıyla değiştirilir, konumlar kesir olduğu için değişmez.

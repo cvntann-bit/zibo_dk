@@ -75,7 +75,7 @@ no numbers, no characters, square 1024x1024.
 en az %30 enerji kazanıp uyanınca sayılır (ışığı aç/kapa ile kasılmasın); dekor sayısı `HomeDecorProvider` sahiplik
 listesinden (başlangıç eşyaları hariç). Toplam ödül 260 ZC (tek seferlik; `unit_economics.md`'ye göre zararsız).
 
-## D. Tablet (yatay) giriş ekranı arka planı — İSTEĞE BAĞLI (2026-11-07)
+## D. Tablet (yatay) giriş ekranı arka planı — ✅ teslim alındı ve uygulandı 2026-11-07 (`assets/images/world/world_bg_wide.webp`, 1024×637)
 Kullanıcı: "gerekirse bu görüntüyü yeniden tablet için uyarlayalım". Kodla geçici çözüm yapıldı (yatayda sahne
 yüksekliğe sığar, yanlar ufukla hizalı çizilmiş gökyüzü/tepe/çimen, bulutlar boydan boya). En iyi sonuç için
 yatay ayrı bir arka plan: aynı stil, binasız, **2560×1600 (16:10)**, beyaz değil tam sahne (gökyüzü + çayır).

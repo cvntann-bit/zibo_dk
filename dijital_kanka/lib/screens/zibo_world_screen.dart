@@ -27,7 +27,8 @@ import 'home_room_screen.dart';
 /// evin üstündeki konuşma balonu Zibo'nun en düşük ihtiyacını söyler (dokununca
 /// o oda açılır; Zibo uyuyorsa ev yatak odasında açılır).
 ///
-/// Sahne görselin oranında (1440×2580) çizilir, genişlik en çok 600 dp;
+/// Sahne görselin oranında (1440×2580) çizilir, genişlik en çok 720 dp; yan
+/// çevrilmiş tablette ayrı yatay görsel (world_bg_wide, 1024×637) kullanılır;
 /// yerleşim görselin kesirleriyle (fx, fy) — bina konumları arka plandaki
 /// alanlara göre ölçüldü. İhtiyaçlar zamanla düştüğü için sekme görünürken
 /// dakikada bir yenilenir; gökyüzü animasyonu da yalnız sekme görünürken
@@ -53,19 +54,74 @@ class _Place {
   final double aspect;
 }
 
-// Arka plandaki alanlar (uzaktan yakına): arka-sol, arka-sağ, orta-sol, orta-sağ, ön.
-const _friends = _Place('world_friends', .273, .505, .23, 1024 / 967);
-const _leaderboard = _Place('world_leaderboard', .776, .562, .24, 1024 / 884);
-const _events = _Place('world_events', .240, .657, .29, 1024 / 951);
-const _games = _Place('world_games', .770, .742, .30, 1024 / 821);
-const _home = _Place('world_home', .464, .875, .38, 1024 / 809);
+/// Bir arka plan görseli ve üstündeki yerleşim. Binalar (uzaktan yakına):
+/// arka-sol Arkadaşlar, arka-sağ Sıralama, orta-sol Etkinlikler, orta-sağ
+/// Oyun Salonu, ön Ev. Kesirler görseldeki alanlara göre ölçüldü.
+class _WorldLayout {
+  const _WorldLayout({
+    required this.asset,
+    required this.aspect,
+    required this.friends,
+    required this.leaderboard,
+    required this.events,
+    required this.games,
+    required this.home,
+    required this.skyBottom,
+    required this.horizonY,
+    required this.homeRoofY,
+    required this.bubbleInset,
+  });
 
-const _sceneAspect = 1440 / 2580;
-// Gökyüzü katmanının alt sınırı ve evin çatısı (sahne yüksekliğinin kesri).
-const _skyBottom = .36;
-// Görseldeki ufuk çizgisi (gökyüzü → tepeler), kenar renkleri ölçülerek.
-const _horizonY = .415;
-const _homeRoofY = .625;
+  final String asset;
+
+  /// Görselin oranı (genişlik / yükseklik).
+  final double aspect;
+  final _Place friends, leaderboard, events, games, home;
+
+  /// Gökyüzü katmanının alt sınırı, görseldeki ufuk ve evin çatısı (yükseklik kesri).
+  final double skyBottom, horizonY, homeRoofY;
+
+  /// Konuşma balonunun iki yandan boşluğu (genişlik kesri).
+  final double bubbleInset;
+}
+
+/// Dikey görsel (1440×2580) — telefon ve dik tablet.
+const _tall = _WorldLayout(
+  asset: 'world_bg',
+  aspect: 1440 / 2580,
+  friends: _Place('world_friends', .273, .505, .23, 1024 / 967),
+  leaderboard: _Place('world_leaderboard', .776, .562, .24, 1024 / 884),
+  events: _Place('world_events', .240, .657, .29, 1024 / 951),
+  games: _Place('world_games', .770, .742, .30, 1024 / 821),
+  home: _Place('world_home', .464, .875, .38, 1024 / 809),
+  skyBottom: .36,
+  horizonY: .415,
+  homeRoofY: .625,
+  bubbleInset: .26,
+);
+
+/// Yatay görsel (1024×637, 2026-11-07) — yan çevrilmiş tablet. Alanlar
+/// görseldeki patikanın içindeki çimen adacıklarından ölçüldü.
+const _wide = _WorldLayout(
+  asset: 'world_bg_wide',
+  aspect: 1024 / 637,
+  friends: _Place('world_friends', .351, .484, .125, 1024 / 967),
+  leaderboard: _Place('world_leaderboard', .647, .489, .13, 1024 / 884),
+  events: _Place('world_events', .221, .640, .165, 1024 / 951),
+  games: _Place('world_games', .778, .648, .17, 1024 / 821),
+  home: _Place('world_home', .500, .860, .22, 1024 / 809),
+  skyBottom: .32,
+  horizonY: .34,
+  homeRoofY: .55,
+  bubbleInset: .34,
+);
+
+/// Yatay görsele geçiş: ekran en az bu kadar yatay olmalı (genişlik / yükseklik).
+const _wideFrom = 1.2;
+
+/// Yatay görsel ekranı kaplarken kenarlardan en çok bu kadarı kırpılabilir;
+/// daha fazlası gerekiyorsa görsel sığdırılır, boşluk manzarayla dolar.
+const _maxCrop = 1.12;
 
 class _ZiboWorldScreenState extends State<ZiboWorldScreen> with SingleTickerProviderStateMixin {
   Timer? _timer;
@@ -133,6 +189,18 @@ class _ZiboWorldScreenState extends State<ZiboWorldScreen> with SingleTickerProv
 
   void _push(Widget page) => Navigator.of(context).push(MaterialPageRoute(builder: (_) => page));
 
+  /// Görselin kenarını saydamlaştırır: yatayda iki yan, dikeyde üst (ve [end] ise alt).
+  static Widget _fade(Widget child, Axis axis, {bool end = true}) => ShaderMask(
+        blendMode: BlendMode.dstIn,
+        shaderCallback: (rect) => LinearGradient(
+          begin: axis == Axis.horizontal ? Alignment.centerLeft : Alignment.topCenter,
+          end: axis == Axis.horizontal ? Alignment.centerRight : Alignment.bottomCenter,
+          colors: [const Color(0x00000000), const Color(0xFF000000), const Color(0xFF000000), Color(end ? 0x00000000 : 0xFF000000)],
+          stops: const [0, .06, .94, 1],
+        ).createShader(rect),
+        child: child,
+      );
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -149,13 +217,33 @@ class _ZiboWorldScreenState extends State<ZiboWorldScreen> with SingleTickerProv
         // genişliğe sığar (en çok 720) ve kaydırılır. Sahne ekrandan darsa iki
         // yan, görselin ufkuyla hizalı gökyüzü + tepeler + çimenle dolar ve
         // bulutlar boydan boya kayar (2026-11-07, tablet düzeltmesi).
+        //
+        // Yan çevrilmiş tablette (genişlik ≥ 1,2 × yükseklik) ayrı yatay görsel
+        // (world_bg_wide) ekranı kaplar; en çok %12 kırpılır, daha fazlası
+        // gerekirse sığdırılır ve boşluk yine manzarayla dolar.
         final screenW = constraints.maxWidth;
-        final wide = screenW > constraints.maxHeight * .9;
-        final h0 = wide ? constraints.maxHeight : screenW.clamp(0.0, 720.0) / _sceneAspect;
-        final w = wide ? (h0 * _sceneAspect).clamp(0.0, screenW) : screenW.clamp(0.0, 720.0);
-        final h = w / _sceneAspect;
+        final screenH = constraints.maxHeight;
+        final landscape = screenW >= screenH * _wideFrom;
+        final lay = landscape ? _wide : _tall;
+        final fitHeight = !landscape && screenW > screenH * .9;
+        double w;
+        double sceneTop = 0;
+        if (landscape) {
+          final cw = math.max(screenW, screenH * lay.aspect);
+          final cover = cw <= screenW * _maxCrop && cw / lay.aspect <= screenH * _maxCrop;
+          w = cover ? cw : math.min(screenW, screenH * lay.aspect);
+          final hh = w / lay.aspect;
+          // Kırpılıyorsa ortadan; sığdırılıyorsa boşluk üstte (gökyüzü) kalır.
+          sceneTop = hh > screenH ? (screenH - hh) / 2 : screenH - hh;
+        } else {
+          final h0 = fitHeight ? screenH : screenW.clamp(0.0, 720.0) / lay.aspect;
+          w = fitHeight ? (h0 * lay.aspect).clamp(0.0, screenW) : screenW.clamp(0.0, 720.0);
+        }
+        final h = w / lay.aspect;
         final framed = w < screenW - 1;
+        final topGap = sceneTop > 1;
         final sceneLeft = (screenW - w) / 2;
+        final stageH = landscape ? screenH : h;
         final labels = <Widget>[];
         // Arka sıradaki binaların etiketi üstlerine konur (alt kenarları öndeki binaların arkasında kalır).
         Widget building(_Place p, String label, VoidCallback onTap, {bool locked = false, int badge = 0, bool labelAbove = false}) {
@@ -179,62 +267,61 @@ class _ZiboWorldScreenState extends State<ZiboWorldScreen> with SingleTickerProv
           );
         }
 
-        final bg = Image.asset('assets/images/world/world_bg.webp', fit: BoxFit.fill);
+        Widget bg = Image.asset('assets/images/world/${lay.asset}.webp', fit: BoxFit.fill);
+        // Görselin kenarları manzaraya yumuşakça karışsın (yanlar ve/veya üst).
+        if (framed) bg = _fade(bg, Axis.horizontal);
+        if (topGap) bg = _fade(bg, Axis.vertical, end: false);
         final sky = IgnorePointer(
           child: RepaintBoundary(
             child: CustomPaint(
-              painter: _SkyPainter(_sky, unit: w, sunX: framed ? (sceneLeft + w * .54) / screenW : null),
+              painter: _SkyPainter(
+                _sky,
+                // Bulut/güneş boyu dikey sahnedekiyle aynı oranda kalsın.
+                unit: landscape ? h * _tall.aspect : w,
+                sunX: framed || landscape ? (sceneLeft + w * .54) / screenW : null,
+              ),
             ),
           ),
         );
         return ClipRect(
           child: SingleChildScrollView(
-            padding: EdgeInsets.only(bottom: wide ? 0 : 80),
+            padding: EdgeInsets.only(bottom: fitHeight || landscape ? 0 : 80),
             child: SizedBox(
               width: screenW,
-              height: h + (wide ? 0 : 0),
+              height: stageH,
               child: Stack(
                 clipBehavior: Clip.none,
                 children: [
-                  // Çerçeveli (tablet): yanlarda görselin ufkuyla hizalı manzara.
-                  if (framed) Positioned.fill(child: CustomPaint(painter: _MeadowPainter(horizon: h * _horizonY))),
+                  // Boşluk varsa (tablet): görselin ufkuyla hizalı manzara.
+                  if (framed || topGap)
+                    Positioned.fill(child: CustomPaint(painter: _MeadowPainter(horizon: sceneTop + h * lay.horizonY))),
+                  Positioned(left: sceneLeft, width: w, top: sceneTop, height: h, child: bg),
+                  // Gökyüzü: parlayan güneş + kayan bulutlar (boşluk varsa boydan boya).
                   Positioned(
-                    left: sceneLeft,
-                    width: w,
-                    top: 0,
-                    height: h,
-                    child: framed
-                        // Görselin kenarları manzaraya yumuşakça karışsın.
-                        ? ShaderMask(
-                            blendMode: BlendMode.dstIn,
-                            shaderCallback: (rect) => const LinearGradient(
-                              colors: [Color(0x00000000), Color(0xFF000000), Color(0xFF000000), Color(0x00000000)],
-                              stops: [0, .06, .94, 1],
-                            ).createShader(rect),
-                            child: bg,
-                          )
-                        : bg,
+                    left: 0,
+                    width: screenW,
+                    top: math.min(0.0, sceneTop),
+                    height: math.max(0.0, sceneTop) + h * lay.skyBottom,
+                    child: sky,
                   ),
-                  // Gökyüzü: parlayan güneş + kayan bulutlar (çerçeveliyse boydan boya).
-                  Positioned(left: 0, width: screenW, top: 0, height: h * _skyBottom, child: sky),
                   Positioned(
                     left: sceneLeft,
                     width: w,
-                    top: 0,
+                    top: sceneTop,
                     height: h,
                     child: Stack(
                       clipBehavior: Clip.none,
                       children: [
-                    building(_friends, l10n.worldDoorFriends, () => _comingSoon('friends'), locked: true, labelAbove: true),
-                    building(_leaderboard, l10n.worldDoorLeaderboard, () => _comingSoon('leaderboard'), locked: true, labelAbove: true),
-                    building(_events, l10n.worldDoorEvents, () => _open('events', 'building', const EventsScreen()), badge: events.openableCount),
-                    building(_games, l10n.tabGameHall, () => _open('games', 'building', const GameHallPage())),
-                    building(_home, l10n.worldHouseSign, () => _open('home', 'building', const HomeRoomScreen())),
+                    building(lay.friends, l10n.worldDoorFriends, () => _comingSoon('friends'), locked: true, labelAbove: true),
+                    building(lay.leaderboard, l10n.worldDoorLeaderboard, () => _comingSoon('leaderboard'), locked: true, labelAbove: true),
+                    building(lay.events, l10n.worldDoorEvents, () => _open('events', 'building', const EventsScreen()), badge: events.openableCount),
+                    building(lay.games, l10n.tabGameHall, () => _open('games', 'building', const GameHallPage())),
+                    building(lay.home, l10n.worldHouseSign, () => _open('home', 'building', const HomeRoomScreen())),
                     // Evden seslenen Zibo: balon evin çatısının üstünde, kuyruğu eve bakar.
                     Positioned(
-                      left: w * .26,
-                      right: w * .26,
-                      top: h * _homeRoofY,
+                      left: w * lay.bubbleInset,
+                      right: w * lay.bubbleInset,
+                      top: h * lay.homeRoofY,
                       child: FractionalTranslation(
                         translation: const Offset(0, -1),
                         child: Center(
